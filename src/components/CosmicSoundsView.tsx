@@ -277,6 +277,97 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
+  // ─── Guided Sonic Tour: all trines then all squares ───
+  const playGuidedTour = useCallback(async () => {
+    toggleOrPlay("guided-tour", async () => {
+      stopPlaying();
+      const id = "guided-tour";
+      setPlaying(id);
+      playingRef.current = id;
+
+      // Play each trine
+      for (const g of TRINE_GROUPS) {
+        if (playingRef.current !== id) break;
+        const tourStepId = `tour-trine-${g.label}`;
+        setHighlightedPlanet(tourStepId);
+        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sine");
+        await new Promise(r => setTimeout(r, 3500));
+      }
+
+      // Play each square
+      for (const g of SQUARE_GROUPS) {
+        if (playingRef.current !== id) break;
+        const tourStepId = `tour-square-${g.label}`;
+        setHighlightedPlanet(tourStepId);
+        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sawtooth");
+        await new Promise(r => setTimeout(r, 3500));
+      }
+
+      if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  // ─── Current Sky positions ───
+  const currentSkyFreqs = useMemo(() => {
+    const now = new Date();
+    const positions = getPlanetaryPositions(now);
+    const SKY_PLANETS: { key: keyof typeof positions; label: string; glyph: string }[] = [
+      { key: "sun", label: "Sun", glyph: "☉" },
+      { key: "moon", label: "Moon", glyph: "☽" },
+      { key: "mercury", label: "Mercury", glyph: "☿" },
+      { key: "venus", label: "Venus", glyph: "♀" },
+      { key: "mars", label: "Mars", glyph: "♂" },
+      { key: "jupiter", label: "Jupiter", glyph: "♃" },
+      { key: "saturn", label: "Saturn", glyph: "♄" },
+      { key: "uranus", label: "Uranus", glyph: "♅" },
+      { key: "neptune", label: "Neptune", glyph: "♆" },
+      { key: "pluto", label: "Pluto", glyph: "♇" },
+      { key: "northNode", label: "North Node", glyph: "☊" },
+      { key: "chiron", label: "Chiron", glyph: "⚷" },
+    ];
+    return SKY_PLANETS.map(p => {
+      const pos = positions[p.key];
+      const signName = pos?.signName as ZodiacSign | undefined;
+      if (!signName || !SIGNS.includes(signName)) return null;
+      return { planet: p.label, glyph: p.glyph, sign: signName, freq: signFreq(signName) };
+    }).filter(Boolean) as { planet: string; glyph: string; sign: ZodiacSign; freq: number }[];
+  }, []);
+
+  const [skyHighlight, setSkyHighlight] = useState<string | null>(null);
+
+  const playSkyChord = useCallback(() => {
+    toggleOrPlay("sky-chord", () => {
+      stopPlaying();
+      const id = "sky-chord";
+      setPlaying(id);
+      playingRef.current = id;
+      setSkyHighlight("all");
+      getEngine().playChord(currentSkyFreqs.map(f => f.freq), 6, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 6000);
+    });
+  }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
+
+  const playSkyArpeggio = useCallback(async () => {
+    toggleOrPlay("sky-arp", async () => {
+      stopPlaying();
+      const id = "sky-arp";
+      setPlaying(id);
+      playingRef.current = id;
+      for (let i = 0; i < currentSkyFreqs.length; i++) {
+        if (playingRef.current !== id) break;
+        setSkyHighlight(currentSkyFreqs[i].planet);
+        getEngine().playTone(currentSkyFreqs[i].freq, 0.8, "sine", -0.6 + (1.2 * i / Math.max(1, currentSkyFreqs.length - 1)));
+        await new Promise(r => setTimeout(r, 500));
+      }
+      setSkyHighlight(null);
+      if (playingRef.current === id) {
+        setSkyHighlight("all");
+        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 4, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 4000);
+      }
+    });
+  }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
+
   // Natal chart chord
   const natalFreqs = useMemo(() => {
     if (!selectedChart?.planets) return null;
