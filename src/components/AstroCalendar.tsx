@@ -45,6 +45,7 @@ import { RetroGradesHub } from "./RetroGradesHub";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
+const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 
 
 
