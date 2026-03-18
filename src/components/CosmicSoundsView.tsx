@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
-import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves } from "lucide-react";
+import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves, Globe } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { getPlanetaryPositions } from "@/lib/astrology";
 
 // ─── Zodiac → Chromatic note mapping (Aries = C4, ascending by semitone) ───
 const SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"] as const;
@@ -276,6 +277,97 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
+  // ─── Guided Sonic Tour: all trines then all squares ───
+  const playGuidedTour = useCallback(async () => {
+    toggleOrPlay("guided-tour", async () => {
+      stopPlaying();
+      const id = "guided-tour";
+      setPlaying(id);
+      playingRef.current = id;
+
+      // Play each trine
+      for (const g of TRINE_GROUPS) {
+        if (playingRef.current !== id) break;
+        const tourStepId = `tour-trine-${g.label}`;
+        setHighlightedPlanet(tourStepId);
+        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sine");
+        await new Promise(r => setTimeout(r, 3500));
+      }
+
+      // Play each square
+      for (const g of SQUARE_GROUPS) {
+        if (playingRef.current !== id) break;
+        const tourStepId = `tour-square-${g.label}`;
+        setHighlightedPlanet(tourStepId);
+        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sawtooth");
+        await new Promise(r => setTimeout(r, 3500));
+      }
+
+      if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  // ─── Current Sky positions ───
+  const currentSkyFreqs = useMemo(() => {
+    const now = new Date();
+    const positions = getPlanetaryPositions(now);
+    const SKY_PLANETS: { key: keyof typeof positions; label: string; glyph: string }[] = [
+      { key: "sun", label: "Sun", glyph: "☉" },
+      { key: "moon", label: "Moon", glyph: "☽" },
+      { key: "mercury", label: "Mercury", glyph: "☿" },
+      { key: "venus", label: "Venus", glyph: "♀" },
+      { key: "mars", label: "Mars", glyph: "♂" },
+      { key: "jupiter", label: "Jupiter", glyph: "♃" },
+      { key: "saturn", label: "Saturn", glyph: "♄" },
+      { key: "uranus", label: "Uranus", glyph: "♅" },
+      { key: "neptune", label: "Neptune", glyph: "♆" },
+      { key: "pluto", label: "Pluto", glyph: "♇" },
+      { key: "northNode", label: "North Node", glyph: "☊" },
+      { key: "chiron", label: "Chiron", glyph: "⚷" },
+    ];
+    return SKY_PLANETS.map(p => {
+      const pos = positions[p.key];
+      const signName = pos?.signName as ZodiacSign | undefined;
+      if (!signName || !SIGNS.includes(signName)) return null;
+      return { planet: p.label, glyph: p.glyph, sign: signName, freq: signFreq(signName) };
+    }).filter(Boolean) as { planet: string; glyph: string; sign: ZodiacSign; freq: number }[];
+  }, []);
+
+  const [skyHighlight, setSkyHighlight] = useState<string | null>(null);
+
+  const playSkyChord = useCallback(() => {
+    toggleOrPlay("sky-chord", () => {
+      stopPlaying();
+      const id = "sky-chord";
+      setPlaying(id);
+      playingRef.current = id;
+      setSkyHighlight("all");
+      getEngine().playChord(currentSkyFreqs.map(f => f.freq), 6, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 6000);
+    });
+  }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
+
+  const playSkyArpeggio = useCallback(async () => {
+    toggleOrPlay("sky-arp", async () => {
+      stopPlaying();
+      const id = "sky-arp";
+      setPlaying(id);
+      playingRef.current = id;
+      for (let i = 0; i < currentSkyFreqs.length; i++) {
+        if (playingRef.current !== id) break;
+        setSkyHighlight(currentSkyFreqs[i].planet);
+        getEngine().playTone(currentSkyFreqs[i].freq, 0.8, "sine", -0.6 + (1.2 * i / Math.max(1, currentSkyFreqs.length - 1)));
+        await new Promise(r => setTimeout(r, 500));
+      }
+      setSkyHighlight(null);
+      if (playingRef.current === id) {
+        setSkyHighlight("all");
+        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 4, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 4000);
+      }
+    });
+  }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
+
   // Natal chart chord
   const natalFreqs = useMemo(() => {
     if (!selectedChart?.planets) return null;
@@ -415,7 +507,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       </section>
 
       {/* ── Section 2: Zodiac Chord Chart — Trines & Squares ── */}
-      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} onPlaySingleSign={playSign} />
+      <ZodiacChordChart playing={playing} highlightedPlanet={highlightedPlanet} onPlayGroup={playGroupChord} onPlaySingleSign={playSign} onPlayGuidedTour={playGuidedTour} />
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Waves size={18} className="text-primary" />
@@ -552,6 +644,61 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         </section>
       )}
 
+      {/* ── Section 4: Current Sky as Sound ── */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Globe size={18} className="text-primary" />
+          <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Current Sky — What Today Sounds Like</h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          These are the live transiting positions right now. Every planet currently occupies a zodiac sign — 
+          play the <strong>Sky Chord</strong> to hear all of today's cosmic frequencies simultaneously, 
+          or the <strong>Sky Arpeggio</strong> to hear each planet's current voice one by one.
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {currentSkyFreqs.map(({ planet, glyph, sign, freq }) => {
+            const isHi = skyHighlight === planet || skyHighlight === "all";
+            return (
+              <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
+                isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
+              }`}>
+                <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{glyph}</span>
+                <div>
+                  <p className="text-[11px] font-medium text-foreground">{planet}</p>
+                  <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-3 justify-center pt-2">
+          <button
+            onClick={playSkyChord}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "sky-chord"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "sky-chord" ? <Square size={14} /> : <Play size={14} />}
+            {playing === "sky-chord" ? "Stop" : "Play Sky Chord"}
+          </button>
+          <button
+            onClick={playSkyArpeggio}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "sky-arp"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "sky-arp" ? <Square size={14} /> : <Music size={14} />}
+            {playing === "sky-arp" ? "Stop" : "Play Sky Arpeggio"}
+          </button>
+        </div>
+      </section>
+
       {/* Footer teaching */}
       <div className="text-center text-xs text-muted-foreground/70 pt-4 pb-8 border-t border-border space-y-2">
         <p>Frequencies based on the chromatic zodiac scale: Aries = C4 (261.63 Hz), ascending by semitone.</p>
@@ -578,11 +725,13 @@ const SQUARE_GROUPS: { label: string; emoji: string; signs: ZodiacSign[]; color:
 
 interface ChordChartProps {
   playing: string | null;
+  highlightedPlanet?: string | null;
   onPlayGroup: (id: string, signs: ZodiacSign[], duration?: number, waveform?: OscillatorType) => void;
   onPlaySingleSign: (sign: ZodiacSign) => void;
+  onPlayGuidedTour?: () => void;
 }
 
-function ZodiacChordChart({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
+function ZodiacChordChart({ playing, highlightedPlanet, onPlayGroup, onPlaySingleSign, onPlayGuidedTour }: ChordChartProps) {
   const [expandedTrine, setExpandedTrine] = useState<string | null>(null);
   const [expandedSquare, setExpandedSquare] = useState<string | null>(null);
 
@@ -747,6 +896,28 @@ function ZodiacChordChart({ playing, onPlayGroup, onPlaySingleSign }: ChordChart
           })}
         </div>
       </div>
+
+      {/* Guided Tour Button */}
+      {onPlayGuidedTour && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={onPlayGuidedTour}
+            className={`flex items-center gap-2 px-6 py-3 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "guided-tour"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "guided-tour" ? <Square size={14} /> : <Sparkles size={14} />}
+            {playing === "guided-tour" ? "Stop Tour" : "🎵 Guided Sonic Tour — All Trines → All Squares"}
+          </button>
+          {playing === "guided-tour" && highlightedPlanet && (
+            <span className="ml-3 text-xs text-primary animate-pulse self-center">
+              {highlightedPlanet.replace('tour-trine-', '△ ').replace('tour-square-', '□ ')}
+            </span>
+          )}
+        </div>
+      )}
     </section>
   );
 }
