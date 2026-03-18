@@ -614,15 +614,27 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           and squares clash with creative tension.
         </p>
         {/* Volume */}
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <button onClick={() => setMuted(!muted)} className="text-muted-foreground hover:text-foreground transition-colors">
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
-          <input
-            type="range" min="0" max="1" step="0.05" value={muted ? 0 : volume}
-            onChange={e => { setVolume(parseFloat(e.target.value)); setMuted(false); }}
-            className="w-32 accent-primary"
-          />
+        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMuted(!muted)} className="text-muted-foreground hover:text-foreground transition-colors">
+              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground w-10">Vol</span>
+            <input
+              type="range" min="0" max="1" step="0.05" value={muted ? 0 : volume}
+              onChange={e => { setVolume(parseFloat(e.target.value)); setMuted(false); }}
+              className="w-24 accent-primary"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Waves size={16} className="text-muted-foreground" />
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground w-10">Reverb</span>
+            <input
+              type="range" min="0" max="1" step="0.05" value={reverb}
+              onChange={e => setReverb(parseFloat(e.target.value))}
+              className="w-24 accent-primary"
+            />
+          </div>
           {playing && (
             <button onClick={stopPlaying} className="flex items-center gap-1.5 text-xs text-destructive hover:text-destructive/80 transition-colors">
               <Square size={12} /> Stop
