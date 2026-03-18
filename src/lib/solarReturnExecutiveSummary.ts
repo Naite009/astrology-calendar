@@ -253,7 +253,7 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
   // Eclipse sensitivity patterns
   if (analysis.eclipseSensitivity && analysis.eclipseSensitivity.length > 0) {
     const eclipseCount = analysis.eclipseSensitivity.length;
-    if (eclipseHouses.length > 0) {
+    if (eclipseCount > 0) {
       patterns.push({
         pattern: 'Eclipse activation in your chart',
         description: `Eclipses are touching sensitive points in your chart — these are accelerators of fate. Events around eclipse dates carry more weight and longer consequences.`,
