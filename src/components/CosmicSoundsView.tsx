@@ -500,15 +500,21 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           {natalFreqs ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {natalFreqs.map(({ planet, sign, freq }) => (
-                  <div key={planet} className="flex items-center gap-2 p-2.5 rounded-sm border border-border bg-card">
-                    <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet]}</span>
-                    <div>
-                      <p className="text-[11px] font-medium text-foreground">{planet}</p>
-                      <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                {natalFreqs.map(({ planet, sign, freq }) => {
+                  const isHi = highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
+                  const label = PLANET_LABELS[planet] || planet;
+                  return (
+                    <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
+                      isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
+                    }`}>
+                      <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet] || "•"}</span>
+                      <div>
+                        <p className="text-[11px] font-medium text-foreground">{label}</p>
+                        <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="flex gap-3 justify-center pt-2">
