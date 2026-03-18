@@ -1616,18 +1616,26 @@ function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordCha
   const cy = size / 2;
   const r = 155;
   const glyphR = r + 32;
-  const hitR = r + 32; // clickable glyph area radius
 
+  // Aries at 9 o'clock (180°), counter-clockwise (Taurus upper-left, Cancer at 12, Libra at 3)
   const signPositions = SIGNS.map((sign, i) => {
-    const angle = (i * 30 - 90) * (Math.PI / 180);
+    const angleDeg = 180 - i * 30; // counter-clockwise from 9 o'clock
+    const angle = angleDeg * (Math.PI / 180);
     return {
       sign,
       x: cx + r * Math.cos(angle),
-      y: cy + r * Math.sin(angle),
+      y: cy - r * Math.sin(angle),
       gx: cx + glyphR * Math.cos(angle),
-      gy: cy + glyphR * Math.sin(angle),
+      gy: cy - glyphR * Math.sin(angle),
     };
   });
+
+  // Check if any wheel-level audio is playing (sign solo, trine, or square)
+  const isWheelPlaying = playing !== null && (
+    SIGNS.some(s => playing === s) ||
+    TRINE_GROUPS.some(g => playing === `trine-${g.label}`) ||
+    SQUARE_GROUPS.some(g => playing === `square-${g.label}`)
+  );
 
   const trineLines = TRINE_GROUPS.map(g => ({
     ...g,
