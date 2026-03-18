@@ -225,12 +225,30 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       playingRef.current = id;
       const freqs = SIGNS.map(s => signFreq(s));
       await getEngine().playArpeggio(freqs, 0.6);
-      // Gentle final chord — only play the trine signs (fire triad) for a clean resolution
-      if (playingRef.current === id) {
-        const resolutionFreqs = [signFreq("Aries"), signFreq("Leo"), signFreq("Sagittarius")];
-        getEngine().playChord(resolutionFreqs, 3, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
-      }
+      if (playingRef.current === id) { setPlaying(null); playingRef.current = null; }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  const playAll12 = useCallback(() => {
+    toggleOrPlay("all-12", () => {
+      stopPlaying();
+      const id = "all-12";
+      setPlaying(id);
+      playingRef.current = id;
+      const freqs = SIGNS.map(s => signFreq(s));
+      getEngine().playChord(freqs, 5, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  // Grouped chord helpers
+  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 4, waveform: OscillatorType = "sine") => {
+    toggleOrPlay(id, () => {
+      stopPlaying();
+      setPlaying(id);
+      playingRef.current = id;
+      getEngine().playChord(signs.map(s => signFreq(s)), duration, waveform);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, duration * 1000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
@@ -355,7 +373,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           ))}
         </div>
 
-        <div className="flex gap-3 justify-center pt-2">
+        <div className="flex flex-wrap gap-3 justify-center pt-2">
           <button
             onClick={playZodiacScale}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
@@ -365,12 +383,24 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
             }`}
           >
             {playing === "zodiac-scale" ? <Square size={14} /> : <Play size={14} />}
-            {playing === "zodiac-scale" ? "Stop" : "Play Full Zodiac Scale"}
+            {playing === "zodiac-scale" ? "Stop" : "Play Scale (1–12)"}
+          </button>
+          <button
+            onClick={playAll12}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "all-12"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "all-12" ? <Square size={14} /> : <Music size={14} />}
+            {playing === "all-12" ? "Stop" : "Play All 12 Together"}
           </button>
         </div>
       </section>
 
-      {/* ── Section 2: Aspect Intervals ── */}
+      {/* ── Section 2: Zodiac Chord Chart — Trines & Squares ── */}
+      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} />
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Waves size={18} className="text-primary" />
@@ -499,26 +529,6 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         </section>
       )}
 
-      {/* ── Section 4: Element Chords ── */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Sparkles size={18} className="text-primary" />
-          <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Element Chords</h3>
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          The four elements group three signs each — and because they're all 120° apart (trines), 
-          each element forms a naturally harmonious chord. Fire blazes with major brightness, 
-          Water flows in deep resonance, Air shimmers with lightness, and Earth grounds with warmth.
-        </p>
-        <ElementChords playing={playing} onPlay={(id, freqs, waveform) => {
-          stopPlaying();
-          setPlaying(id);
-          playingRef.current = id;
-          getEngine().playChord(freqs, 4, waveform);
-          setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
-        }} />
-      </section>
-
       {/* Footer teaching */}
       <div className="text-center text-xs text-muted-foreground/70 pt-4 pb-8 border-t border-border space-y-2">
         <p>Frequencies based on the chromatic zodiac scale: Aries = C4 (261.63 Hz), ascending by semitone.</p>
@@ -528,45 +538,200 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   );
 };
 
-// ─── Element Chords Sub-component ───
-const ELEMENTS: { name: string; signs: ZodiacSign[]; color: string; waveform: OscillatorType; desc: string }[] = [
-  { name: "🔥 Fire", signs: ["Aries", "Leo", "Sagittarius"], color: "hsl(15 80% 55%)", waveform: "sine", desc: "Cardinal fire, fixed fire, mutable fire — pure creative force" },
-  { name: "🌍 Earth", signs: ["Taurus", "Virgo", "Capricorn"], color: "hsl(100 40% 40%)", waveform: "triangle", desc: "Grounded, material, the body's wisdom — stable and warm" },
-  { name: "💨 Air", signs: ["Gemini", "Libra", "Aquarius"], color: "hsl(200 60% 55%)", waveform: "sine", desc: "Thought, connection, social — light and crystalline" },
-  { name: "💧 Water", signs: ["Cancer", "Scorpio", "Pisces"], color: "hsl(220 60% 45%)", waveform: "sine", desc: "Feeling, intuition, the unconscious — deep and flowing" },
+// ─── Zodiac Chord Chart: Trines (Elements) & Squares (Modalities) ───
+
+const TRINE_GROUPS: { label: string; emoji: string; signs: ZodiacSign[]; color: string; desc: string }[] = [
+  { label: "Fire △", emoji: "🔥", signs: ["Aries", "Leo", "Sagittarius"], color: "hsl(15 80% 55%)", desc: "Creative force, will, spirit — naturally harmonious (major third intervals)" },
+  { label: "Earth △", emoji: "🌍", signs: ["Taurus", "Virgo", "Capricorn"], color: "hsl(100 40% 40%)", desc: "Material world, body, resources — grounded stability" },
+  { label: "Air △", emoji: "💨", signs: ["Gemini", "Libra", "Aquarius"], color: "hsl(200 60% 55%)", desc: "Mind, connection, ideas — light, crystalline resonance" },
+  { label: "Water △", emoji: "💧", signs: ["Cancer", "Scorpio", "Pisces"], color: "hsl(220 60% 45%)", desc: "Emotion, intuition, the unconscious — deep flowing tones" },
 ];
 
-function ElementChords({ playing, onPlay }: { playing: string | null; onPlay: (id: string, freqs: number[], waveform: OscillatorType) => void }) {
+const SQUARE_GROUPS: { label: string; emoji: string; signs: ZodiacSign[]; color: string; desc: string }[] = [
+  { label: "Cardinal □", emoji: "⚡", signs: ["Aries", "Cancer", "Libra", "Capricorn"], color: "hsl(0 70% 50%)", desc: "Initiators — action, beginnings, leadership. 90° tension that drives change." },
+  { label: "Fixed □", emoji: "🗿", signs: ["Taurus", "Leo", "Scorpio", "Aquarius"], color: "hsl(35 70% 50%)", desc: "Stabilizers — persistence, depth, resistance. Stubborn dissonance." },
+  { label: "Mutable □", emoji: "🌊", signs: ["Gemini", "Virgo", "Sagittarius", "Pisces"], color: "hsl(270 50% 55%)", desc: "Adapters — flexibility, change, transitions. Restless shifting tones." },
+];
+
+interface ChordChartProps {
+  playing: string | null;
+  onPlayGroup: (id: string, signs: ZodiacSign[], duration?: number, waveform?: OscillatorType) => void;
+}
+
+function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {ELEMENTS.map(el => {
-        const id = `element-${el.name}`;
-        const freqs = el.signs.map(s => signFreq(s));
+    <section className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Sparkles size={18} className="text-primary" />
+        <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Zodiac Chord Chart</h3>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        The zodiac organizes into natural chords. <strong>Trines</strong> (△ 120° apart) share an element — 
+        they sound consonant and harmonious, like a major chord. <strong>Squares</strong> (□ 90° apart) share a modality — 
+        they create tension and friction, like dissonant intervals clashing and driving forward.
+      </p>
+
+      {/* ── Visual Wheel Diagram ── */}
+      <div className="flex justify-center">
+        <ZodiacWheelDiagram playing={playing} onPlayGroup={onPlayGroup} />
+      </div>
+
+      {/* ── Trines (Elements) ── */}
+      <div>
+        <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+          △ Trines — Element Chords <span className="text-muted-foreground/50">(harmony)</span>
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TRINE_GROUPS.map(g => {
+            const id = `trine-${g.label}`;
+            return (
+              <button
+                key={g.label}
+                onClick={() => onPlayGroup(id, g.signs, 4, "sine")}
+                className={`group text-left p-4 rounded-sm border transition-all duration-300 ${
+                  playing === id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-card hover:bg-secondary/30"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
+                  {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground font-mono mb-1">
+                  {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
+                </p>
+                <p className="text-xs text-muted-foreground">{g.desc}</p>
+                {playing === id && <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Squares (Modalities) ── */}
+      <div>
+        <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+          □ Squares — Modality Chords <span className="text-muted-foreground/50">(tension)</span>
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {SQUARE_GROUPS.map(g => {
+            const id = `square-${g.label}`;
+            return (
+              <button
+                key={g.label}
+                onClick={() => onPlayGroup(id, g.signs, 4, "sawtooth")}
+                className={`group text-left p-4 rounded-sm border transition-all duration-300 ${
+                  playing === id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-card hover:bg-secondary/30"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
+                  {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground font-mono mb-1">
+                  {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
+                </p>
+                <p className="text-xs text-muted-foreground">{g.desc}</p>
+                {playing === id && <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Interactive Zodiac Wheel Diagram ───
+// SVG wheel showing all 12 signs with colored lines for trines and squares
+
+function ZodiacWheelDiagram({ playing, onPlayGroup }: ChordChartProps) {
+  const size = 380;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 150;
+  const glyphR = r + 28;
+
+  const signPositions = SIGNS.map((sign, i) => {
+    const angle = (i * 30 - 90) * (Math.PI / 180); // Start at top
+    return {
+      sign,
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      gx: cx + glyphR * Math.cos(angle),
+      gy: cy + glyphR * Math.sin(angle),
+    };
+  });
+
+  const trineLines = TRINE_GROUPS.map(g => ({
+    ...g,
+    indices: g.signs.map(s => SIGNS.indexOf(s)),
+    id: `trine-${g.label}`,
+  }));
+
+  const squareLines = SQUARE_GROUPS.map(g => ({
+    ...g,
+    indices: g.signs.map(s => SIGNS.indexOf(s)),
+    id: `square-${g.label}`,
+  }));
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full">
+      {/* Outer circle */}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.4" />
+
+      {/* Trine triangles */}
+      {trineLines.map(t => {
+        const pts = t.indices.map(i => signPositions[i]);
+        const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+        const isActive = playing === t.id;
         return (
-          <button
-            key={el.name}
-            onClick={() => onPlay(id, freqs, el.waveform)}
-            className={`group text-left p-4 rounded-sm border transition-all duration-300 ${
-              playing === id
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50 bg-card hover:bg-secondary/30"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">{el.name}</span>
-              <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-            <p className="text-[10px] text-muted-foreground font-mono mb-1">
-              {el.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
-            </p>
-            <p className="text-xs text-muted-foreground">{el.desc}</p>
-            {playing === id && (
-              <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />
-            )}
-          </button>
+          <g key={t.id} className="cursor-pointer" onClick={() => onPlayGroup(t.id, t.signs, 4, "sine")}>
+            <path d={d} fill={isActive ? t.color.replace(')', ' / 0.15)').replace('hsl', 'hsl') : "none"} 
+              stroke={t.color} strokeWidth={isActive ? 2.5 : 1.5} opacity={isActive ? 1 : 0.5}
+              strokeDasharray={isActive ? "none" : "none"} />
+          </g>
         );
       })}
-    </div>
+
+      {/* Square lines (dashed) */}
+      {squareLines.map(s => {
+        const pts = s.indices.map(i => signPositions[i]);
+        const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+        const isActive = playing === s.id;
+        return (
+          <g key={s.id} className="cursor-pointer" onClick={() => onPlayGroup(s.id, s.signs, 4, "sawtooth")}>
+            <path d={d} fill={isActive ? s.color.replace(')', ' / 0.1)').replace('hsl', 'hsl') : "none"} 
+              stroke={s.color} strokeWidth={isActive ? 2.5 : 1} opacity={isActive ? 1 : 0.35}
+              strokeDasharray="6 4" />
+          </g>
+        );
+      })}
+
+      {/* Sign dots and glyphs */}
+      {signPositions.map((pos, i) => {
+        const sign = SIGNS[i];
+        const isHighlighted = 
+          TRINE_GROUPS.some(g => playing === `trine-${g.label}` && g.signs.includes(sign)) ||
+          SQUARE_GROUPS.some(g => playing === `square-${g.label}` && g.signs.includes(sign));
+        return (
+          <g key={sign}>
+            <circle cx={pos.x} cy={pos.y} r={isHighlighted ? 6 : 4} fill={SIGN_COLORS[sign]} opacity={isHighlighted ? 1 : 0.7}>
+              {isHighlighted && <animate attributeName="r" values="6;8;6" dur="1s" repeatCount="indefinite" />}
+            </circle>
+            <text x={pos.gx} y={pos.gy} textAnchor="middle" dominantBaseline="central"
+              fontSize={isHighlighted ? "16" : "14"} fill={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--muted-foreground))"}
+              className="select-none" style={{ transition: 'font-size 0.3s' }}>
+              {SIGN_GLYPHS[sign]}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Legend */}
+      <text x={cx} y={size - 8} textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" opacity="0.6">
+        solid △ = trines (harmony) · dashed □ = squares (tension) · click shapes to play
+      </text>
+    </svg>
   );
 }
 
