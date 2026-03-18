@@ -429,8 +429,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         if (playingRef.current !== id) break;
         const tourStepId = `tour-trine-${g.label}`;
         setHighlightedPlanet(tourStepId);
-        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sine");
-        await new Promise(r => setTimeout(r, 3500));
+        getEngine().playTrineChord(g.signs.map(s => signFreq(s)), 4);
+        await new Promise(r => setTimeout(r, 4500));
       }
 
       // Play each square
@@ -438,8 +438,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         if (playingRef.current !== id) break;
         const tourStepId = `tour-square-${g.label}`;
         setHighlightedPlanet(tourStepId);
-        getEngine().playChord(g.signs.map(s => signFreq(s)), 3, "sawtooth");
-        await new Promise(r => setTimeout(r, 3500));
+        getEngine().playSquareChord(g.signs.map(s => signFreq(s)), 4);
+        await new Promise(r => setTimeout(r, 4500));
       }
 
       if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); }
