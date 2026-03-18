@@ -86,11 +86,14 @@ class CosmicAudioEngine {
       this.convolver = this.ctx.createConvolver();
       this.convolver.buffer = this.createReverbIR(this.ctx, 3, 2.5); // 3s decay, warm
 
-      // Dry/wet routing
+      // Reverb as additive send (dry stays full, reverb adds spaciousness)
       this.dryGain = this.ctx.createGain();
-      this.dryGain.gain.value = 1 - this.reverbMix;
+      this.dryGain.gain.value = 1.0; // always full dry
       this.reverbGain = this.ctx.createGain();
       this.reverbGain.gain.value = this.reverbMix;
+
+      this.convolver = this.ctx.createConvolver();
+      this.convolver.buffer = this.createReverbIR(this.ctx, 4, 2);
 
       this.masterGain.connect(this.dryGain);
       this.dryGain.connect(this.ctx.destination);
@@ -103,16 +106,13 @@ class CosmicAudioEngine {
     return this.ctx;
   }
 
-  // Generate a synthetic reverb impulse response
   private createReverbIR(ctx: AudioContext, duration: number, decay: number): AudioBuffer {
     const sampleRate = ctx.sampleRate;
     const length = sampleRate * duration;
     const buffer = ctx.createBuffer(2, length, sampleRate);
-
     for (let channel = 0; channel < 2; channel++) {
       const data = buffer.getChannelData(channel);
       for (let i = 0; i < length; i++) {
-        // Exponential decay with random noise = reverb tail
         data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
       }
     }
@@ -121,7 +121,7 @@ class CosmicAudioEngine {
 
   setReverbMix(mix: number): void {
     this.reverbMix = Math.max(0, Math.min(1, mix));
-    if (this.dryGain) this.dryGain.gain.value = 1 - this.reverbMix;
+    // Only adjust the reverb send level; dry stays at 1.0
     if (this.reverbGain) this.reverbGain.gain.value = this.reverbMix;
   }
 
