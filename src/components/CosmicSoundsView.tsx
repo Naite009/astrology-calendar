@@ -980,7 +980,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
             <>
               <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {natalFreqs.map(({ planet, sign, freq }) => {
+                {natalFreqs.map(({ planet, sign, freq, note }) => {
                   const natalId = `natal-${planet}`;
                   const isHi = playing === natalId || highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
                   const label = PLANET_LABELS[planet] || planet;
