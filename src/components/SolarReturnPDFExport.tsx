@@ -1766,12 +1766,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             orb:          a.orb,
             interpretation: a.interpretation,
           })) || [],
-        monthlyForecasts: analysis.monthlyForecasts || [],
-        fourSeasons: analysis.quarterlySeasons || analysis.fourSeasons || [],
-        yearAheadReading: analysis.narrativeReading || '',
-        affirmation:       analysis.affirmationText       || '',
-        affirmationQuote:  analysis.affirmationQuote      || '"You can\'t use up creativity. The more you use, the more you have."',
-        affirmationAuthor: analysis.affirmationAuthor     || '— Maya Angelou',
+        monthlyForecasts: (analysis as any).monthlyForecasts || [],
+        fourSeasons: (analysis as any).quarterlySeasons || (analysis as any).fourSeasons || [],
+        yearAheadReading: (analysis as any).narrativeReading || '',
+        affirmation:       (analysis as any).affirmationText       || '',
+        affirmationQuote:  (analysis as any).affirmationQuote      || '"You can\'t use up creativity. The more you use, the more you have."',
+        affirmationAuthor: (analysis as any).affirmationAuthor     || '— Maya Angelou',
       }
     };
 
