@@ -53,10 +53,15 @@ const ASPECTS: AspectDef[] = [
 ];
 
 // ─── Planets ───
-const PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"] as const;
+const PLANETS = ["Sun","Moon","Ascendant","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","NorthNode","Chiron","Lilith","Ceres","Pallas","Juno","Vesta"] as const;
 const PLANET_GLYPHS: Record<string, string> = {
-  Sun: "☉", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
+  Sun: "☉", Moon: "☽", Ascendant: "AC", Mercury: "☿", Venus: "♀", Mars: "♂",
   Jupiter: "♃", Saturn: "♄", Uranus: "♅", Neptune: "♆", Pluto: "♇",
+  NorthNode: "☊", Chiron: "⚷", Lilith: "⚸",
+  Ceres: "⚳", Pallas: "⚴", Juno: "⚵", Vesta: "⚶",
+};
+const PLANET_LABELS: Record<string, string> = {
+  NorthNode: "North Node", Ascendant: "Ascendant",
 };
 
 // ─── Audio Engine ───
