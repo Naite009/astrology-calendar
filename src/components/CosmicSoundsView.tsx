@@ -69,6 +69,7 @@ const PLANET_LABELS: Record<string, string> = {
 class CosmicAudioEngine {
   private ctx: AudioContext | null = null;
   private activeOscs: OscillatorNode[] = [];
+  private activeNodes: AudioNode[] = [];
   private masterGain: GainNode | null = null;
 
   private getCtx(): AudioContext {
@@ -82,6 +83,11 @@ class CosmicAudioEngine {
     return this.ctx;
   }
 
+  private trackOsc(osc: OscillatorNode) {
+    this.activeOscs.push(osc);
+    osc.onended = () => { this.activeOscs = this.activeOscs.filter(o => o !== osc); };
+  }
+
   playTone(freq: number, duration: number, waveform: OscillatorType = "sine", pan = 0): void {
     const ctx = this.getCtx();
     const osc = ctx.createOscillator();
@@ -92,7 +98,6 @@ class CosmicAudioEngine {
     osc.frequency.value = freq;
     panner.pan.value = pan;
     
-    // Gentle envelope
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.08);
     gain.gain.setValueAtTime(0.25, ctx.currentTime + duration - 0.15);
@@ -104,10 +109,7 @@ class CosmicAudioEngine {
     
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + duration);
-    this.activeOscs.push(osc);
-    osc.onended = () => {
-      this.activeOscs = this.activeOscs.filter(o => o !== osc);
-    };
+    this.trackOsc(osc);
   }
 
   playChord(freqs: number[], duration: number, waveform: OscillatorType = "sine"): void {
@@ -132,9 +134,137 @@ class CosmicAudioEngine {
       panner.connect(this.masterGain!);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + duration);
-      this.activeOscs.push(osc);
-      osc.onended = () => { this.activeOscs = this.activeOscs.filter(o => o !== osc); };
+      this.trackOsc(osc);
     });
+  }
+
+  // ─── Lush trine chord: warm, breathy, slow-attack pad with detuning + sub-octave ───
+  playTrineChord(freqs: number[], duration: number): void {
+    const ctx = this.getCtx();
+    const t = ctx.currentTime;
+    const voices = freqs.length;
+    const perVoice = Math.min(0.12, 0.4 / voices);
+
+    freqs.forEach((freq, i) => {
+      const pan = voices > 1 ? -0.7 + (1.4 * i / (voices - 1)) : 0;
+
+      // Layer 1: main sine with slow attack
+      const osc1 = ctx.createOscillator();
+      osc1.type = "sine";
+      osc1.frequency.value = freq;
+      const g1 = ctx.createGain();
+      g1.gain.setValueAtTime(0, t);
+      g1.gain.linearRampToValueAtTime(perVoice, t + 0.8); // slow bloom
+      g1.gain.setValueAtTime(perVoice, t + duration - 1);
+      g1.gain.linearRampToValueAtTime(0, t + duration);
+      const p1 = ctx.createStereoPanner();
+      p1.pan.value = pan;
+      osc1.connect(g1); g1.connect(p1); p1.connect(this.masterGain!);
+      osc1.start(t); osc1.stop(t + duration);
+      this.trackOsc(osc1);
+
+      // Layer 2: slightly detuned triangle for shimmer
+      const osc2 = ctx.createOscillator();
+      osc2.type = "triangle";
+      osc2.frequency.value = freq * 1.003; // +5 cents
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0, t);
+      g2.gain.linearRampToValueAtTime(perVoice * 0.4, t + 1.2);
+      g2.gain.setValueAtTime(perVoice * 0.4, t + duration - 1.2);
+      g2.gain.linearRampToValueAtTime(0, t + duration);
+      const p2 = ctx.createStereoPanner();
+      p2.pan.value = pan * -0.5; // slightly opposite for width
+      osc2.connect(g2); g2.connect(p2); p2.connect(this.masterGain!);
+      osc2.start(t); osc2.stop(t + duration);
+      this.trackOsc(osc2);
+
+      // Layer 3: sub-octave sine for warmth (only on root)
+      if (i === 0) {
+        const sub = ctx.createOscillator();
+        sub.type = "sine";
+        sub.frequency.value = freq / 2;
+        const gs = ctx.createGain();
+        gs.gain.setValueAtTime(0, t);
+        gs.gain.linearRampToValueAtTime(perVoice * 0.5, t + 1);
+        gs.gain.setValueAtTime(perVoice * 0.5, t + duration - 1.5);
+        gs.gain.linearRampToValueAtTime(0, t + duration);
+        sub.connect(gs); gs.connect(this.masterGain!);
+        sub.start(t); sub.stop(t + duration);
+        this.trackOsc(sub);
+      }
+    });
+  }
+
+  // ─── Ominous square chord: dark, grinding, with beating + low drone ───
+  playSquareChord(freqs: number[], duration: number): void {
+    const ctx = this.getCtx();
+    const t = ctx.currentTime;
+    const voices = freqs.length;
+    const perVoice = Math.min(0.1, 0.35 / voices);
+
+    // Low drone foundation
+    const drone = ctx.createOscillator();
+    drone.type = "sawtooth";
+    drone.frequency.value = freqs[0] / 2; // one octave below root
+    const droneGain = ctx.createGain();
+    droneGain.gain.setValueAtTime(0, t);
+    droneGain.gain.linearRampToValueAtTime(perVoice * 0.6, t + 0.5);
+    droneGain.gain.setValueAtTime(perVoice * 0.6, t + duration - 0.8);
+    droneGain.gain.linearRampToValueAtTime(0, t + duration);
+    // Low-pass filter on drone for rumble
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = 300;
+    lpf.Q.value = 2;
+    drone.connect(lpf); lpf.connect(droneGain); droneGain.connect(this.masterGain!);
+    drone.start(t); drone.stop(t + duration);
+    this.trackOsc(drone);
+    this.activeNodes.push(lpf);
+
+    freqs.forEach((freq, i) => {
+      const pan = voices > 1 ? -0.6 + (1.2 * i / (voices - 1)) : 0;
+
+      // Layer 1: sawtooth — gritty
+      const osc1 = ctx.createOscillator();
+      osc1.type = "sawtooth";
+      osc1.frequency.value = freq;
+      const g1 = ctx.createGain();
+      g1.gain.setValueAtTime(0, t);
+      g1.gain.linearRampToValueAtTime(perVoice, t + 0.3);
+      g1.gain.setValueAtTime(perVoice, t + duration - 0.5);
+      g1.gain.linearRampToValueAtTime(0, t + duration);
+      const p1 = ctx.createStereoPanner();
+      p1.pan.value = pan;
+      osc1.connect(g1); g1.connect(p1); p1.connect(this.masterGain!);
+      osc1.start(t); osc1.stop(t + duration);
+      this.trackOsc(osc1);
+
+      // Layer 2: detuned square wave for beating dissonance
+      const osc2 = ctx.createOscillator();
+      osc2.type = "square";
+      osc2.frequency.value = freq * 0.99; // -17 cents for beating
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0, t);
+      g2.gain.linearRampToValueAtTime(perVoice * 0.3, t + 0.5);
+      g2.gain.setValueAtTime(perVoice * 0.3, t + duration - 0.6);
+      g2.gain.linearRampToValueAtTime(0, t + duration);
+      const p2 = ctx.createStereoPanner();
+      p2.pan.value = pan * -0.7;
+      osc2.connect(g2); g2.connect(p2); p2.connect(this.masterGain!);
+      osc2.start(t); osc2.stop(t + duration);
+      this.trackOsc(osc2);
+    });
+
+    // Add a slow LFO tremolo to master for unease
+    const lfo = ctx.createOscillator();
+    lfo.type = "sine";
+    lfo.frequency.value = 3; // 3Hz tremolo
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = perVoice * 0.15;
+    lfo.connect(lfoGain);
+    lfoGain.connect(this.masterGain!.gain);
+    lfo.start(t); lfo.stop(t + duration);
+    this.trackOsc(lfo);
   }
 
   async playArpeggio(freqs: number[], noteDuration: number, waveform: OscillatorType = "sine"): Promise<void> {
