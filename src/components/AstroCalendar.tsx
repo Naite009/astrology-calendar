@@ -1021,6 +1021,15 @@ export const AstroCalendar = () => {
             />
           </Suspense>
         )}
+
+        {viewMode === "cosmic-sounds" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <CosmicSoundsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
       </div>
 
       {/* User Form Modal */}
