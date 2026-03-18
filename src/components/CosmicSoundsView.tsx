@@ -507,7 +507,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       </section>
 
       {/* ── Section 2: Zodiac Chord Chart — Trines & Squares ── */}
-      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} onPlaySingleSign={playSign} />
+      <ZodiacChordChart playing={playing} highlightedPlanet={highlightedPlanet} onPlayGroup={playGroupChord} onPlaySingleSign={playSign} onPlayGuidedTour={playGuidedTour} />
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Waves size={18} className="text-primary" />
