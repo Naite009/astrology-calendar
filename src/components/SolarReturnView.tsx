@@ -28,6 +28,12 @@ import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCar
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
 import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
+import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
+import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
+import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryCard';
+import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
+import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
+import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
