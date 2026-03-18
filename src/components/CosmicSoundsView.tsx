@@ -860,6 +860,15 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
               </div>
 
               <div className="flex gap-3 justify-center pt-2">
+                {playing && (playing.startsWith("natal-") || playing === "natal-chord" || playing === "natal-arp") && (
+                  <button
+                    onClick={stopPlaying}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <Square size={14} />
+                    Stop
+                  </button>
+                )}
                 <button
                   onClick={playNatalChord}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
