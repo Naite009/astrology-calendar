@@ -704,7 +704,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       }
     }
     return freqs.length > 0 ? freqs : null;
-  }, [selectedChart]);
+  }, [selectedChart, freqMode]);
 
   const playNatalChord = useCallback(() => {
     if (!natalFreqs) return;
