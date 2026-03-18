@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
-import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves } from "lucide-react";
+import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves, Globe } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { getPlanetaryPositions } from "@/lib/astrology";
 
 // ─── Zodiac → Chromatic note mapping (Aries = C4, ascending by semitone) ───
 const SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"] as const;
