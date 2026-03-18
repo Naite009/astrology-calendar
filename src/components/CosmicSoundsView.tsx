@@ -605,8 +605,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setPlaying(id);
       playingRef.current = id;
       setHighlightedPlanet("all");
-      getEngine().playChord(natalFreqs.map(f => f.freq), 5, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 5000);
+      getEngine().playChord(natalFreqs.map(f => f.freq), 10, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 10000);
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
