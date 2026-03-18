@@ -205,6 +205,9 @@ export const AstroCalendar = () => {
     if (viewMode === "tarot-functions") {
       return "Tarot Functions";
     }
+    if (viewMode === "cosmic-sounds") {
+      return "Cosmic Sounds";
+    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
