@@ -390,10 +390,18 @@ export function downloadBirthdayJSONStandalone(
     house: (profYear as any).house || (profYear as any).houseNumber || null,
   } : null;
 
+  // Build absolute cake image URL from Vite asset import
+  const natalSun = natalChart.planets?.Sun?.sign || '';
+  const cakeAssetPath = CAKE_IMAGES[natalSun] || '';
+  const cakeImageUrl = cakeAssetPath
+    ? `${window.location.origin}${cakeAssetPath.startsWith('/') ? '' : '/'}${cakeAssetPath}`
+    : '';
+
   const payload = {
     report_type: "solar_return_birthday",
     data: {
       name: natalChart.name || '',
+      cakeImageUrl,
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
       solarReturnYear: srChart.solarReturnYear,
