@@ -694,7 +694,13 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         sign = pos?.sign;
       }
       if (sign && SIGNS.includes(sign as ZodiacSign)) {
-        freqs.push({ planet: p, sign: sign as ZodiacSign, freq: signFreq(sign as ZodiacSign) });
+        const freq = freqMode === "cousto" && COUSTO_FREQS[p]
+          ? COUSTO_FREQS[p].freq
+          : signFreq(sign as ZodiacSign);
+        const note = freqMode === "cousto" && COUSTO_FREQS[p]
+          ? COUSTO_FREQS[p].note
+          : NOTE_NAMES[sign as ZodiacSign];
+        freqs.push({ planet: p, sign: sign as ZodiacSign, freq, note });
       }
     }
     return freqs.length > 0 ? freqs : null;
