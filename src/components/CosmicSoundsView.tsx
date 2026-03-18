@@ -400,7 +400,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       </section>
 
       {/* ── Section 2: Zodiac Chord Chart — Trines & Squares ── */}
-      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} />
+      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} onPlaySingleSign={playSign} />
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Waves size={18} className="text-primary" />
@@ -556,9 +556,13 @@ const SQUARE_GROUPS: { label: string; emoji: string; signs: ZodiacSign[]; color:
 interface ChordChartProps {
   playing: string | null;
   onPlayGroup: (id: string, signs: ZodiacSign[], duration?: number, waveform?: OscillatorType) => void;
+  onPlaySingleSign: (sign: ZodiacSign) => void;
 }
 
-function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
+function ZodiacChordChart({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
+  const [expandedTrine, setExpandedTrine] = useState<string | null>(null);
+  const [expandedSquare, setExpandedSquare] = useState<string | null>(null);
+
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-2">
@@ -571,9 +575,15 @@ function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
         they create tension and friction, like dissonant intervals clashing and driving forward.
       </p>
 
+      {/* Note about Aspect □ vs Modality □ */}
+      <div className="p-3 rounded-sm border border-border bg-card/50 text-xs text-muted-foreground leading-relaxed">
+        <strong className="text-foreground">□ Aspect Interval vs □ Modality Chord:</strong> The <em>Aspect Interval</em> section above plays a generic square interval — just two notes 3 semitones apart (C + D♯) — demonstrating what 90° <em>sounds like</em> as a pure interval. 
+        The <em>Modality Chords</em> below play the <strong>actual signs</strong> that form squares around the wheel (e.g., Cardinal = Aries + Cancer + Libra + Capricorn) — all 4 notes together, showing how the real zodiac tensions stack up as a full chord.
+      </div>
+
       {/* ── Visual Wheel Diagram ── */}
       <div className="flex justify-center">
-        <ZodiacWheelDiagram playing={playing} onPlayGroup={onPlayGroup} />
+        <ZodiacWheelDiagram playing={playing} onPlayGroup={onPlayGroup} onPlaySingleSign={onPlaySingleSign} />
       </div>
 
       {/* ── Trines (Elements) ── */}
@@ -584,24 +594,64 @@ function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {TRINE_GROUPS.map(g => {
             const id = `trine-${g.label}`;
+            const isExpanded = expandedTrine === g.label;
             return (
-              <button
-                key={g.label}
-                onClick={() => onPlayGroup(id, g.signs, 4, "sine")}
-                className={`group text-left p-4 rounded-sm border transition-all duration-300 ${
-                  playing === id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-card hover:bg-secondary/30"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
-                  {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+              <div key={g.label} className={`rounded-sm border transition-all duration-300 ${
+                playing === id || g.signs.some(s => playing === `${id}-${s}`) ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-secondary/30"
+              }`}>
+                <div className="flex items-center gap-2 p-4 pb-2">
+                  <button
+                    onClick={() => onPlayGroup(id, g.signs, 4, "sine")}
+                    className="group flex-1 text-left"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
+                      {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setExpandedTrine(isExpanded ? null : g.label)}
+                    className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors px-2 py-1 border border-border rounded-sm"
+                  >
+                    {isExpanded ? "▾ Less" : "▸ Solo"}
+                  </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground font-mono mb-1">
-                  {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
-                </p>
-                <p className="text-xs text-muted-foreground">{g.desc}</p>
-                {playing === id && <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
-              </button>
+                <div className="px-4 pb-2">
+                  <p className="text-[10px] text-muted-foreground font-mono mb-1">
+                    {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{g.desc}</p>
+                </div>
+                {isExpanded && (
+                  <div className="px-4 pb-3 pt-1 border-t border-border/50 flex flex-wrap gap-2">
+                    {g.signs.map(s => {
+                      const soloId = `${id}-${s}`;
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => onPlaySingleSign(s)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs border transition-all ${
+                            playing === s ? "border-primary bg-primary/10 text-foreground" : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <span style={{ color: SIGN_COLORS[s] }}>{SIGN_GLYPHS[s]}</span>
+                          <span>{s}</span>
+                          <span className="text-[9px] font-mono text-muted-foreground">{NOTE_NAMES[s]}</span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => onPlayGroup(id, g.signs, 4, "sine")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs border transition-all ${
+                        playing === id ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Music size={12} /> All Together
+                    </button>
+                  </div>
+                )}
+                {(playing === id || g.signs.some(s => playing === s)) && <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
+              </div>
             );
           })}
         </div>
@@ -615,24 +665,61 @@ function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {SQUARE_GROUPS.map(g => {
             const id = `square-${g.label}`;
+            const isExpanded = expandedSquare === g.label;
             return (
-              <button
-                key={g.label}
-                onClick={() => onPlayGroup(id, g.signs, 4, "sawtooth")}
-                className={`group text-left p-4 rounded-sm border transition-all duration-300 ${
-                  playing === id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-card hover:bg-secondary/30"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
-                  {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+              <div key={g.label} className={`rounded-sm border transition-all duration-300 ${
+                playing === id || g.signs.some(s => playing === `${id}-${s}`) ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-secondary/30"
+              }`}>
+                <div className="flex items-center gap-2 p-4 pb-2">
+                  <button
+                    onClick={() => onPlayGroup(id, g.signs, 4, "sawtooth")}
+                    className="group flex-1 text-left"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-foreground">{g.emoji} {g.label}</span>
+                      {playing === id ? <Square size={14} className="text-primary" /> : <Play size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setExpandedSquare(isExpanded ? null : g.label)}
+                    className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors px-2 py-1 border border-border rounded-sm"
+                  >
+                    {isExpanded ? "▾ Less" : "▸ Solo"}
+                  </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground font-mono mb-1">
-                  {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
-                </p>
-                <p className="text-xs text-muted-foreground">{g.desc}</p>
-                {playing === id && <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
-              </button>
+                <div className="px-4 pb-2">
+                  <p className="text-[10px] text-muted-foreground font-mono mb-1">
+                    {g.signs.map(s => `${SIGN_GLYPHS[s]} ${s} (${NOTE_NAMES[s]})`).join(" · ")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{g.desc}</p>
+                </div>
+                {isExpanded && (
+                  <div className="px-4 pb-3 pt-1 border-t border-border/50 flex flex-wrap gap-2">
+                    {g.signs.map(s => (
+                      <button
+                        key={s}
+                        onClick={() => onPlaySingleSign(s)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs border transition-all ${
+                          playing === s ? "border-primary bg-primary/10 text-foreground" : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <span style={{ color: SIGN_COLORS[s] }}>{SIGN_GLYPHS[s]}</span>
+                        <span>{s}</span>
+                        <span className="text-[9px] font-mono text-muted-foreground">{NOTE_NAMES[s]}</span>
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => onPlayGroup(id, g.signs, 4, "sawtooth")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs border transition-all ${
+                        playing === id ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Music size={12} /> All Together
+                    </button>
+                  </div>
+                )}
+                {(playing === id || g.signs.some(s => playing === s)) && <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />}
+              </div>
             );
           })}
         </div>
@@ -644,7 +731,7 @@ function ZodiacChordChart({ playing, onPlayGroup }: ChordChartProps) {
 // ─── Interactive Zodiac Wheel Diagram ───
 // SVG wheel showing all 12 signs with colored lines for trines and squares
 
-function ZodiacWheelDiagram({ playing, onPlayGroup }: ChordChartProps) {
+function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
   const size = 380;
   const cx = size / 2;
   const cy = size / 2;
