@@ -373,7 +373,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           ))}
         </div>
 
-        <div className="flex gap-3 justify-center pt-2">
+        <div className="flex flex-wrap gap-3 justify-center pt-2">
           <button
             onClick={playZodiacScale}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
@@ -383,12 +383,24 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
             }`}
           >
             {playing === "zodiac-scale" ? <Square size={14} /> : <Play size={14} />}
-            {playing === "zodiac-scale" ? "Stop" : "Play Full Zodiac Scale"}
+            {playing === "zodiac-scale" ? "Stop" : "Play Scale (1–12)"}
+          </button>
+          <button
+            onClick={playAll12}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "all-12"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "all-12" ? <Square size={14} /> : <Music size={14} />}
+            {playing === "all-12" ? "Stop" : "Play All 12 Together"}
           </button>
         </div>
       </section>
 
-      {/* ── Section 2: Aspect Intervals ── */}
+      {/* ── Section 2: Zodiac Chord Chart — Trines & Squares ── */}
+      <ZodiacChordChart playing={playing} onPlayGroup={playGroupChord} />
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Waves size={18} className="text-primary" />
