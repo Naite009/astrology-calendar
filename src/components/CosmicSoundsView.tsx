@@ -427,58 +427,77 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         </div>
       </section>
 
-      {/* ── Section 3: Your Natal Chart as Sound ── */}
-      {natalFreqs && (
+      {/* ── Section 3: Birth Chart as Sound ── */}
+      {allCharts.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Music size={18} className="text-primary" />
-            <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">
-              {chartName ? `${chartName}'s` : "Your"} Birth Chart as Sound
-            </h3>
+            <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Birth Chart as Sound</h3>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Every planet in your natal chart sits in a zodiac sign — each sign has a frequency. 
-            Together, they form your unique celestial chord. This is the sound the cosmos made when you were born.
+            Every planet in a natal chart sits in a zodiac sign — each sign has a frequency. 
+            <strong> Birth Chord</strong> plays all planet tones simultaneously, like a piano chord — the full harmonic fingerprint of the moment you were born. 
+            <strong> Birth Arpeggio</strong> plays each planet one at a time in sequence, so you can hear each voice individually before they merge into the chord.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {natalFreqs.map(({ planet, sign, freq }) => (
-              <div key={planet} className="flex items-center gap-2 p-2.5 rounded-sm border border-border bg-card">
-                <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet]}</span>
-                <div>
-                  <p className="text-[11px] font-medium text-foreground">{planet}</p>
-                  <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Chart selector */}
+          {allCharts.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Chart:</span>
+              <select
+                value={selectedChartIdx}
+                onChange={e => setSelectedChartIdx(Number(e.target.value))}
+                className="text-xs bg-secondary border border-border rounded-sm px-3 py-1.5 text-foreground"
+              >
+                {allCharts.map((c, i) => (
+                  <option key={c.id || i} value={i}>{c.name || `Chart ${i + 1}`}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div className="flex gap-3 justify-center pt-2">
-            <button
-              onClick={playNatalChord}
-              disabled={playing === "natal-chord"}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
-                playing === "natal-chord"
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Play size={14} />
-              Play Birth Chord
-            </button>
-            <button
-              onClick={playNatalArpeggio}
-              disabled={playing === "natal-arp"}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
-                playing === "natal-arp"
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Music size={14} />
-              Play Birth Arpeggio
-            </button>
-          </div>
+          {natalFreqs ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {natalFreqs.map(({ planet, sign, freq }) => (
+                  <div key={planet} className="flex items-center gap-2 p-2.5 rounded-sm border border-border bg-card">
+                    <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet]}</span>
+                    <div>
+                      <p className="text-[11px] font-medium text-foreground">{planet}</p>
+                      <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 justify-center pt-2">
+                <button
+                  onClick={playNatalChord}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+                    playing === "natal-chord"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {playing === "natal-chord" ? <Square size={14} /> : <Play size={14} />}
+                  {playing === "natal-chord" ? "Stop" : "Play Birth Chord"}
+                </button>
+                <button
+                  onClick={playNatalArpeggio}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+                    playing === "natal-arp"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {playing === "natal-arp" ? <Square size={14} /> : <Music size={14} />}
+                  {playing === "natal-arp" ? "Stop" : "Play Birth Arpeggio"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">Selected chart has no planet data.</p>
+          )}
         </section>
       )}
 
