@@ -20,6 +20,27 @@ const signFreq = (sign: ZodiacSign): number => {
   return BASE_FREQ * Math.pow(2, idx / 12);
 };
 
+// ─── Cousto Orbital Frequencies (Hans Cousto "The Cosmic Octave") ───
+const COUSTO_FREQS: Record<string, { freq: number; note: string; label: string }> = {
+  Sun: { freq: 126.22, note: "B", label: "Sun (central tone)" },
+  Moon: { freq: 210.42, note: "G♯", label: "Synodic Moon" },
+  Mercury: { freq: 141.27, note: "C♯", label: "Mercury orbit" },
+  Venus: { freq: 221.23, note: "A", label: "Venus orbit" },
+  Mars: { freq: 144.72, note: "D", label: "Mars orbit" },
+  Jupiter: { freq: 183.58, note: "F♯", label: "Jupiter orbit" },
+  Saturn: { freq: 147.85, note: "D", label: "Saturn orbit" },
+  Uranus: { freq: 207.36, note: "G♯", label: "Uranus orbit" },
+  Neptune: { freq: 211.44, note: "G♯", label: "Neptune orbit" },
+  Pluto: { freq: 140.25, note: "C♯", label: "Pluto orbit" },
+  Chiron: { freq: 172.06, note: "F", label: "Chiron orbit" },
+  NorthNode: { freq: 234.16, note: "A♯", label: "Lunar Node cycle" },
+  Earth: { freq: 136.10, note: "C♯", label: "Earth year — Om̐" },
+};
+
+const OM_FREQ = 136.10;
+
+type FreqMode = "sign" | "cousto";
+
 const SIGN_COLORS: Record<ZodiacSign, string> = {
   Aries: "hsl(0 80% 55%)", Taurus: "hsl(140 50% 40%)", Gemini: "hsl(50 80% 50%)",
   Cancer: "hsl(210 60% 60%)", Leo: "hsl(35 90% 55%)", Virgo: "hsl(100 40% 45%)",
