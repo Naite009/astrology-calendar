@@ -704,8 +704,52 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       }
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
+  // ─── Binaural beat modes ───
+  const [binauralTimer, setBinauralTimer] = useState(60); // seconds
+  const [showExplainer, setShowExplainer] = useState(false);
 
-  return (
+  const binauralRootFreqs = useMemo(() => {
+    if (!natalFreqs) return [];
+    // Use the top 3 most prominent: Sun, Moon, Ascendant if present, else first 3
+    const priority = ["Sun", "Moon", "Ascendant"];
+    const sorted = [...natalFreqs].sort((a, b) => {
+      const ai = priority.indexOf(a.planet);
+      const bi = priority.indexOf(b.planet);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+    return sorted.slice(0, 3).map(f => f.freq);
+  }, [natalFreqs]);
+
+  const playThetaMeditation = useCallback(() => {
+    const id = "theta-meditation";
+    toggleOrPlay(id, () => {
+      stopPlaying();
+      setPlaying(id);
+      playingRef.current = id;
+      const dur = binauralTimer;
+      const freqs = binauralRootFreqs.length > 0 ? binauralRootFreqs : [signFreq("Cancer" as ZodiacSign)];
+      // Lower the base frequencies for a calmer feel
+      const lowFreqs = freqs.map(f => f / 2);
+      getEngine().playBinauralChord(lowFreqs, 6, dur); // 6 Hz theta
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, dur * 1000);
+    });
+  }, [binauralRootFreqs, binauralTimer, getEngine, stopPlaying, toggleOrPlay]);
+
+  const playDeltaSleep = useCallback(() => {
+    const id = "delta-sleep";
+    toggleOrPlay(id, () => {
+      stopPlaying();
+      setPlaying(id);
+      playingRef.current = id;
+      const dur = binauralTimer;
+      const freqs = binauralRootFreqs.length > 0 ? binauralRootFreqs : [signFreq("Pisces" as ZodiacSign)];
+      // Drop to sub-bass for sleep
+      const lowFreqs = freqs.map(f => f / 4);
+      getEngine().playBinauralChord(lowFreqs, 2, dur); // 2 Hz delta
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, dur * 1000);
+    });
+  }, [binauralRootFreqs, binauralTimer, getEngine, stopPlaying, toggleOrPlay]);
+
     <div className="max-w-5xl mx-auto space-y-10">
       {/* Header */}
       <div className="text-center space-y-3">
