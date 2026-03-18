@@ -53,10 +53,15 @@ const ASPECTS: AspectDef[] = [
 ];
 
 // ─── Planets ───
-const PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"] as const;
+const PLANETS = ["Sun","Moon","Ascendant","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","NorthNode","Chiron","Lilith","Ceres","Pallas","Juno","Vesta"] as const;
 const PLANET_GLYPHS: Record<string, string> = {
-  Sun: "☉", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
+  Sun: "☉", Moon: "☽", Ascendant: "AC", Mercury: "☿", Venus: "♀", Mars: "♂",
   Jupiter: "♃", Saturn: "♄", Uranus: "♅", Neptune: "♆", Pluto: "♇",
+  NorthNode: "☊", Chiron: "⚷", Lilith: "⚸",
+  Ceres: "⚳", Pallas: "⚴", Juno: "⚵", Vesta: "⚶",
+};
+const PLANET_LABELS: Record<string, string> = {
+  NorthNode: "North Node", Ascendant: "Ascendant",
 };
 
 // ─── Audio Engine ───
@@ -157,6 +162,7 @@ interface Props {
 export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) => {
   const engineRef = useRef<CosmicAudioEngine | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
+  const [highlightedPlanet, setHighlightedPlanet] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.3);
   const [muted, setMuted] = useState(false);
   const playingRef = useRef<string | null>(null);
@@ -182,6 +188,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const stopPlaying = useCallback(() => {
     getEngine().stopAll();
     setPlaying(null);
+    setHighlightedPlanet(null);
     playingRef.current = null;
   }, [getEngine]);
 
@@ -289,8 +296,9 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       const id = "natal-chord";
       setPlaying(id);
       playingRef.current = id;
+      setHighlightedPlanet("all");
       getEngine().playChord(natalFreqs.map(f => f.freq), 5, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 5000);
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
@@ -301,10 +309,17 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       const id = "natal-arp";
       setPlaying(id);
       playingRef.current = id;
-      await getEngine().playArpeggio(natalFreqs.map(f => f.freq), 0.8);
+      for (let i = 0; i < natalFreqs.length; i++) {
+        if (playingRef.current !== id) break;
+        setHighlightedPlanet(natalFreqs[i].planet);
+        getEngine().playTone(natalFreqs[i].freq, 0.8, "sine", -0.6 + (1.2 * i / Math.max(1, natalFreqs.length - 1)));
+        await new Promise(r => setTimeout(r, 480));
+      }
+      setHighlightedPlanet(null);
       if (playingRef.current === id) {
         getEngine().playChord(natalFreqs.map(f => f.freq), 4, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
+        setHighlightedPlanet("all");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 4000);
       }
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
@@ -464,8 +479,10 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Every planet in a natal chart sits in a zodiac sign — each sign has a frequency. 
-            <strong> Birth Chord</strong> plays all planet tones simultaneously, like a piano chord — the full harmonic fingerprint of the moment you were born. 
-            <strong> Birth Arpeggio</strong> plays each planet one at a time in sequence, so you can hear each voice individually before they merge into the chord.
+            This includes the <strong>Ascendant</strong>, <strong>Chiron</strong>, <strong>North Node</strong>, and the <strong>Goddess asteroids</strong> (Ceres, Pallas, Juno, Vesta) — 
+            yes, they all vibrate! Each body adds its own harmonic voice to your birth sound.
+            <strong> Birth Chord</strong> plays all tones simultaneously. 
+            <strong> Birth Arpeggio</strong> plays each one in sequence, highlighting as it goes, before merging into the full chord.
           </p>
 
           {/* Chart selector */}
@@ -487,15 +504,21 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           {natalFreqs ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {natalFreqs.map(({ planet, sign, freq }) => (
-                  <div key={planet} className="flex items-center gap-2 p-2.5 rounded-sm border border-border bg-card">
-                    <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet]}</span>
-                    <div>
-                      <p className="text-[11px] font-medium text-foreground">{planet}</p>
-                      <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                {natalFreqs.map(({ planet, sign, freq }) => {
+                  const isHi = highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
+                  const label = PLANET_LABELS[planet] || planet;
+                  return (
+                    <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
+                      isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
+                    }`}>
+                      <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet] || "•"}</span>
+                      <div>
+                        <p className="text-[11px] font-medium text-foreground">{label}</p>
+                        <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="flex gap-3 justify-center pt-2">
