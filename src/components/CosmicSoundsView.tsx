@@ -71,16 +71,58 @@ class CosmicAudioEngine {
   private activeOscs: OscillatorNode[] = [];
   private activeNodes: AudioNode[] = [];
   private masterGain: GainNode | null = null;
+  private reverbGain: GainNode | null = null;
+  private dryGain: GainNode | null = null;
+  private convolver: ConvolverNode | null = null;
+  private reverbMix = 0.4; // 0 = dry, 1 = full reverb
 
   private getCtx(): AudioContext {
     if (!this.ctx || this.ctx.state === "closed") {
       this.ctx = new AudioContext();
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = 0.3;
-      this.masterGain.connect(this.ctx.destination);
+
+      // Create reverb via impulse response
+      this.convolver = this.ctx.createConvolver();
+      this.convolver.buffer = this.createReverbIR(this.ctx, 3, 2.5); // 3s decay, warm
+
+      // Dry/wet routing
+      this.dryGain = this.ctx.createGain();
+      this.dryGain.gain.value = 1 - this.reverbMix;
+      this.reverbGain = this.ctx.createGain();
+      this.reverbGain.gain.value = this.reverbMix;
+
+      this.masterGain.connect(this.dryGain);
+      this.dryGain.connect(this.ctx.destination);
+
+      this.masterGain.connect(this.convolver);
+      this.convolver.connect(this.reverbGain);
+      this.reverbGain.connect(this.ctx.destination);
     }
     if (this.ctx.state === "suspended") this.ctx.resume();
     return this.ctx;
+  }
+
+  // Generate a synthetic reverb impulse response
+  private createReverbIR(ctx: AudioContext, duration: number, decay: number): AudioBuffer {
+    const sampleRate = ctx.sampleRate;
+    const length = sampleRate * duration;
+    const buffer = ctx.createBuffer(2, length, sampleRate);
+
+    for (let channel = 0; channel < 2; channel++) {
+      const data = buffer.getChannelData(channel);
+      for (let i = 0; i < length; i++) {
+        // Exponential decay with random noise = reverb tail
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+      }
+    }
+    return buffer;
+  }
+
+  setReverbMix(mix: number): void {
+    this.reverbMix = Math.max(0, Math.min(1, mix));
+    if (this.dryGain) this.dryGain.gain.value = 1 - this.reverbMix;
+    if (this.reverbGain) this.reverbGain.gain.value = this.reverbMix;
   }
 
   private trackOsc(osc: OscillatorNode) {
