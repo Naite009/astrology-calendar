@@ -810,6 +810,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 6. Year Priority Engine — weighted theme ranking */}
       <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
+      {/* 7. Your Year's Playbook — Action Guidance */}
+      <ActionGuidanceCard guidance={actionGuidance} />
+
+      {/* 8. Activation Timeline — When themes peak */}
+      {activationData.transitHits.length > 0 && (
+        <ActivationTimeline data={activationData} />
+      )}
+
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
