@@ -338,6 +338,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const [highlightedPlanet, setHighlightedPlanet] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.3);
   const [muted, setMuted] = useState(false);
+  const [reverb, setReverb] = useState(0.4);
   const playingRef = useRef<string | null>(null);
   
   // Chart selector
