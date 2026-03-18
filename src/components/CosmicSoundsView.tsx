@@ -657,14 +657,22 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     });
   }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
-  // Natal chart chord
+  // Natal chart chord — use houseCusps.house1 for Ascendant sign
   const natalFreqs = useMemo(() => {
     if (!selectedChart?.planets) return null;
     const freqs: { planet: string; sign: ZodiacSign; freq: number }[] = [];
     for (const p of PLANETS) {
-      const pos = selectedChart.planets[p as keyof typeof selectedChart.planets];
-      if (pos?.sign && SIGNS.includes(pos.sign as ZodiacSign)) {
-        freqs.push({ planet: p, sign: pos.sign as ZodiacSign, freq: signFreq(pos.sign as ZodiacSign) });
+      let sign: string | undefined;
+      if (p === "Ascendant") {
+        // Ascendant must come from house cusps, not planets object
+        sign = selectedChart.houseCusps?.house1?.sign;
+        if (!sign) sign = selectedChart.planets?.Ascendant?.sign;
+      } else {
+        const pos = selectedChart.planets[p as keyof typeof selectedChart.planets];
+        sign = pos?.sign;
+      }
+      if (sign && SIGNS.includes(sign as ZodiacSign)) {
+        freqs.push({ planet: p, sign: sign as ZodiacSign, freq: signFreq(sign as ZodiacSign) });
       }
     }
     return freqs.length > 0 ? freqs : null;
