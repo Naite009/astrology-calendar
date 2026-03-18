@@ -257,10 +257,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                 const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
                 if (btn) btn.click();
               } else if (tier === 'gift') {
-                toast.promise(
-                  generateBirthdayGiftPDF(analysis, selectedSR, selectedNatal),
-                  { loading: 'Generating Birthday Gift Print...', success: 'PDF downloaded!', error: 'PDF generation failed' }
-                );
+                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
               } else if (tier === 't4' || tier === 't5') {
                 toast.info('Coming soon — this tier is under development');
               } else {
