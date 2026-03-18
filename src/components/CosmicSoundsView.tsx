@@ -1007,7 +1007,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
                       <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet] || "•"}</span>
                       <div className="text-left">
                         <p className="text-[11px] font-medium text-foreground">{label}</p>
-                        <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                        <p className="text-[9px] text-muted-foreground font-mono">{freqMode === "cousto" ? (COUSTO_FREQS[planet]?.label || sign) : sign} · {note} · {Math.round(freq)} Hz</p>
                       </div>
                     </button>
                   );
