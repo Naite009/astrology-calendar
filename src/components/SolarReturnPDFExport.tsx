@@ -7,6 +7,10 @@ import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsI
 import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { useState } from 'react';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
+import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
+import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
+import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
+import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
