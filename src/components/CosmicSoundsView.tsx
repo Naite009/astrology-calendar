@@ -479,8 +479,10 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Every planet in a natal chart sits in a zodiac sign — each sign has a frequency. 
-            <strong> Birth Chord</strong> plays all planet tones simultaneously, like a piano chord — the full harmonic fingerprint of the moment you were born. 
-            <strong> Birth Arpeggio</strong> plays each planet one at a time in sequence, so you can hear each voice individually before they merge into the chord.
+            This includes the <strong>Ascendant</strong>, <strong>Chiron</strong>, <strong>North Node</strong>, and the <strong>Goddess asteroids</strong> (Ceres, Pallas, Juno, Vesta) — 
+            yes, they all vibrate! Each body adds its own harmonic voice to your birth sound.
+            <strong> Birth Chord</strong> plays all tones simultaneously. 
+            <strong> Birth Arpeggio</strong> plays each one in sequence, highlighting as it goes, before merging into the full chord.
           </p>
 
           {/* Chart selector */}
