@@ -794,6 +794,18 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
     return calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
   }, [srChart, natalChart]);
 
+  // Compute identity shift
+  const identityShift = useMemo(() => generateIdentityShift(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+
+  // Compute life domain scores
+  const lifeDomainScores = useMemo(() => calculateLifeDomainScores(analysis), [analysis]);
+
+  // Compute contradiction resolutions
+  const contradictions = useMemo(() => detectContradictions(analysis, srChart), [analysis, srChart]);
+
+  // Compute lunar weather map
+  const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+
   return (
     <div className="space-y-4 mt-4">
       {/* Executive Summary — Top Opportunities, Challenges, Core Focus */}
