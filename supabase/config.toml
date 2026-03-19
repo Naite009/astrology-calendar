@@ -2,3 +2,6 @@ project_id = "ccdjecgztodkgifzjttc"
 
 [functions.extract-document-text]
 verify_jwt = false
+
+[functions.generate-sr-ai-reading]
+verify_jwt = false

@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone } from '@/components/SolarReturnPDFExport';
+import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone, buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
@@ -42,6 +42,7 @@ import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
 import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
+import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -112,6 +113,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
+  const [showAiReading, setShowAiReading] = useState(false);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -275,6 +277,14 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                 setActiveTier(prev => prev === tier ? null : tier as any);
               }
             }}
+            onGenerateAiReading={() => setShowAiReading(true)}
+          />
+
+          <AiReadingModal
+            open={showAiReading}
+            onClose={() => setShowAiReading(false)}
+            personName={selectedNatal.name || 'Chart'}
+            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal)}
           />
 
           {activeTier && analysis && (
