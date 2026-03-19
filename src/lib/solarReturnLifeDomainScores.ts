@@ -132,7 +132,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     };
   }
 
-  return results as LifeDomainScores;
+  return results as unknown as LifeDomainScores;
 }
 
 function generateAdvice(domain: string, score: number): string {
