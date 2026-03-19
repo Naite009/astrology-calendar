@@ -1999,6 +1999,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           windowCount: data.activationWindows.length,
         };
       })(),
+      identityShift: generateIdentityShift(analysis, srChart, natalChart),
+      lifeDomainScores: calculateLifeDomainScores(analysis),
+      contradictions: detectContradictions(analysis, srChart),
+      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
   };
 
