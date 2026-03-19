@@ -34,6 +34,14 @@ import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryC
 import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
 import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
+import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
+import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { detectContradictions } from '@/lib/solarReturnContradictions';
+import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
+import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
+import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
+import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
+import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -786,14 +794,31 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
     return calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
   }, [srChart, natalChart]);
 
+  // Compute identity shift
+  const identityShift = useMemo(() => generateIdentityShift(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+
+  // Compute life domain scores
+  const lifeDomainScores = useMemo(() => calculateLifeDomainScores(analysis), [analysis]);
+
+  // Compute contradiction resolutions
+  const contradictions = useMemo(() => detectContradictions(analysis, srChart), [analysis, srChart]);
+
+  // Compute lunar weather map
+  const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+
   return (
     <div className="space-y-4 mt-4">
       {/* Executive Summary — Top Opportunities, Challenges, Core Focus */}
       <ExecutiveSummaryCard summary={executiveSummary} />
 
+      {/* Identity Shift — Who you are becoming */}
+      <IdentityShiftCard shift={identityShift} />
+
+      {/* Life Domain Scores — Career, Love, Health, Growth */}
+      <LifeDomainScoresCard scores={lifeDomainScores} />
+
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
-
 
       {/* 3. Natal Overlay — where this year lands in the natal chart */}
       <NatalOverlayCard analysis={analysis} />
@@ -816,6 +841,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 8. Activation Timeline — When themes peak */}
       {activationData.transitHits.length > 0 && (
         <ActivationTimeline data={activationData} />
+      )}
+
+      {/* 9. Lunar Emotional Weather Map */}
+      <LunarWeatherCard weather={lunarWeather} />
+
+      {/* 10. Contradiction Resolution */}
+      {contradictions.length > 0 && (
+        <ContradictionCard contradictions={contradictions} />
       )}
 
       {/* Dashboard Details */}

@@ -10,6 +10,10 @@ import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
+import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
+import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { detectContradictions } from '@/lib/solarReturnContradictions';
+import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -499,6 +503,10 @@ export function downloadBirthdayJSONStandalone(
           windowCount: data.activationWindows.length,
         };
       })(),
+      identityShift: generateIdentityShift(analysis, srChart, natalChart),
+      lifeDomainScores: calculateLifeDomainScores(analysis),
+      contradictions: detectContradictions(analysis, srChart),
+      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     }
   };
 
@@ -1995,6 +2003,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           windowCount: data.activationWindows.length,
         };
       })(),
+      identityShift: generateIdentityShift(analysis, srChart, natalChart),
+      lifeDomainScores: calculateLifeDomainScores(analysis),
+      contradictions: detectContradictions(analysis, srChart),
+      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
   };
 
