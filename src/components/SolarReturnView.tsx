@@ -811,9 +811,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* Executive Summary — Top Opportunities, Challenges, Core Focus */}
       <ExecutiveSummaryCard summary={executiveSummary} />
 
+      {/* Identity Shift — Who you are becoming */}
+      <IdentityShiftCard shift={identityShift} />
+
+      {/* Life Domain Scores — Career, Love, Health, Growth */}
+      <LifeDomainScoresCard scores={lifeDomainScores} />
+
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
-
 
       {/* 3. Natal Overlay — where this year lands in the natal chart */}
       <NatalOverlayCard analysis={analysis} />
@@ -836,6 +841,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 8. Activation Timeline — When themes peak */}
       {activationData.transitHits.length > 0 && (
         <ActivationTimeline data={activationData} />
+      )}
+
+      {/* 9. Lunar Emotional Weather Map */}
+      <LunarWeatherCard weather={lunarWeather} />
+
+      {/* 10. Contradiction Resolution */}
+      {contradictions.length > 0 && (
+        <ContradictionCard contradictions={contradictions} />
       )}
 
       {/* Dashboard Details */}
