@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,9 @@ import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
 import { LunarWorkbookSection } from "./LunarWorkbookSection";
+import { useSolarReturnChart } from "@/hooks/useSolarReturnChart";
+import { analyzeSolarReturn } from "@/lib/solarReturnAnalysis";
+import { calculateActivationWindows } from "@/lib/solarReturnActivationWindows";
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -229,7 +232,41 @@ export const LunarCycleView = ({
   };
   
   const activeChart = getActiveChart();
-  
+
+  // Compute SR activation data for the active chart's most recent Solar Return
+  const { getSolarReturnsForChart } = useSolarReturnChart();
+  const srActivationData = useMemo(() => {
+    if (!activeChart) return null;
+    const srCharts = getSolarReturnsForChart(activeChart.id);
+    if (srCharts.length === 0) return null;
+    // Find the most recent SR chart (highest year)
+    const latestSR = srCharts.reduce((a, b) => a.solarReturnYear > b.solarReturnYear ? a : b);
+    try {
+      const analysis = analyzeSolarReturn(latestSR, activeChart);
+      // Build planet degree map from analysis overlays
+      const srPlanetPositions: Record<string, number> = {};
+      const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      for (const overlay of analysis.houseOverlays) {
+        const signIdx = SIGNS.indexOf(overlay.srSign);
+        if (signIdx >= 0) {
+          const degMatch = overlay.srDegree.match(/(\d+)/);
+          const deg = degMatch ? parseInt(degMatch[1]) : 0;
+          srPlanetPositions[`SR ${overlay.planet}`] = signIdx * 30 + deg;
+        }
+      }
+      // Add ASC and MC
+      if (analysis.yearlyTheme) {
+        const ascIdx = SIGNS.indexOf(analysis.yearlyTheme.ascendantSign);
+        if (ascIdx >= 0) srPlanetPositions['SR Ascendant'] = ascIdx * 30;
+      }
+      const birthDate = new Date(activeChart.birthDate || '');
+      return calculateActivationWindows(srPlanetPositions, latestSR.solarReturnYear, birthDate.getMonth(), birthDate.getDate());
+    } catch (e) {
+      console.error('[LunarCycle] SR activation calc error:', e);
+      return null;
+    }
+  }, [activeChart, getSolarReturnsForChart]);
+
   const handleChartChange = (value: string) => {
     setLocalSelectedChart(value);
     onSelectChart?.(value);
@@ -1089,6 +1126,7 @@ Keep the tone deep, insightful, and practically applicable.`
               ? natalAspects.map(a => `${a.aspect} ${a.planet}`).join(', ') 
               : undefined
           }}
+          activationData={srActivationData}
         />
       )}
       
