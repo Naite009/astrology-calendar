@@ -42,6 +42,7 @@ import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
 import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
+import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
