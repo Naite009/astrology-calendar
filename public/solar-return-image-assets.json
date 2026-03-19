@@ -15,7 +15,12 @@
     "neptune": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/neptune.png",
     "pluto": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/pluto.png",
     "chiron": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/chiron.png",
-    "northnode": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/northnode.png"
+    "northnode": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/northnode.png",
+    "ceres": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/ceres.png",
+    "pallas": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/pallas.png",
+    "juno": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/juno.png",
+    "vesta": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/vesta.png",
+    "lilith": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/lilith.png"
   },
 
   "cakeImages": {
