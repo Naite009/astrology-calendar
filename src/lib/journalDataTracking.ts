@@ -33,9 +33,9 @@ const PHASES: { name: string; emoji: string; min: number; max: number }[] = [
 
 export function getMoonPhaseForDate(date: Date): MoonPhaseTag {
   const astroDate = Astronomy.MakeTime(date);
-  const sunLon = Astronomy.EclipticGeoMoon(astroDate); // we need Sun too
   const sun = Astronomy.SunPosition(astroDate);
   const moon = Astronomy.EclipticGeoMoon(astroDate);
+  const illInfo = Astronomy.Illumination(Astronomy.Body.Moon, astroDate);
   
   let angle = moon.lon - sun.elon;
   if (angle < 0) angle += 360;
