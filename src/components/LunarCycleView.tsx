@@ -14,6 +14,9 @@ import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
 import { LunarWorkbookSection } from "./LunarWorkbookSection";
+import { useSolarReturnChart } from "@/hooks/useSolarReturnChart";
+import { analyzeSolarReturn } from "@/lib/solarReturnAnalysis";
+import { calculateActivationWindows } from "@/lib/solarReturnActivationWindows";
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
