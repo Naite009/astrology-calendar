@@ -1,0 +1,55 @@
+{
+  "description": "All image assets required by the Solar Return PDF renderer in Replit",
+  "generated": "2026-03-19",
+  "instructions": "All URLs are public and permanent. Download or fetch directly from these URLs in your Replit PDF renderer.",
+
+  "planetImages": {
+    "sun": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/sun.png",
+    "moon": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/moon.png",
+    "mercury": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/mercury.png",
+    "venus": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/venus.png",
+    "mars": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/mars.png",
+    "jupiter": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/jupiter.png",
+    "saturn": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/saturn.png",
+    "uranus": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/uranus.png",
+    "neptune": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/neptune.png",
+    "pluto": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/pluto.png",
+    "chiron": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/chiron.png",
+    "northnode": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/northnode.png"
+  },
+
+  "cakeImages": {
+    "_note": "One per zodiac sign. Used on Cover page. Selected by natal Sun sign.",
+    "aries": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/aries.png",
+    "taurus": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/taurus.png",
+    "gemini": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/gemini.png",
+    "cancer": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/cancer.png",
+    "leo": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/leo.png",
+    "virgo": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/virgo.png",
+    "libra": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/libra.png",
+    "scorpio": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/scorpio.png",
+    "sagittarius": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/sagittarius.png",
+    "capricorn": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/capricorn.png",
+    "aquarius": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/aquarius.png",
+    "pisces": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/cakes/pisces.png"
+  },
+
+  "usage": {
+    "planetImages": "Used in Planet Spotlight (3-col grid) and Natal vs SR shift cards. Key matches planet name lowercase.",
+    "cakeImages": "Used on Cover page. Key matches natal Sun sign lowercase. Also provided as 'cakeImageUrl' in the JSON export."
+  },
+
+  "workflow": {
+    "step1": "In Lovable, user generates a Solar Return chart and clicks a tier export button (T1-T5 or Birthday Gift)",
+    "step2": "This produces a JSON file with ALL analysis data. The JSON already includes 'cakeImageUrl' pointing to the correct cake.",
+    "step3": "In Replit, paste/upload the JSON. The PDF renderer reads the data and fetches images from the URLs above.",
+    "step4": "Planet images are NOT in the JSON export — use this manifest to fetch them by key (e.g. planetImages['sun']).",
+    "step5": "Click generate in Replit to produce the PDF."
+  },
+
+  "otherAssets": {
+    "signColorThemes": "Already embedded in the JSON export under 'signColorThemes' — no separate images needed.",
+    "profectionWheel": "Drawn programmatically via jsPDF canvas — no image file needed.",
+    "fonts": "Uses Times (built into jsPDF) — no custom font files needed."
+  }
+}
