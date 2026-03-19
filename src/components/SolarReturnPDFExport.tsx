@@ -519,6 +519,150 @@ export function downloadBirthdayJSONStandalone(
   URL.revokeObjectURL(url);
 }
 
+// ── Build full JSON data object (reusable, no download) ──
+export function buildFullJsonStandalone(
+  analysis: SolarReturnAnalysis,
+  srChart: SolarReturnChart,
+  natalChart: NatalChart
+): Record<string, any> {
+  const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
+    planet,
+    natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
+    natalHouse: String((data as any).house || '').replace(/^H/, ''),
+    srPosition: (() => {
+      const srPlanet = srChart.planets?.[planet];
+      return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
+    })(),
+    srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
+    shift: (() => {
+      const natal = (data as any).sign;
+      const sr = srChart.planets?.[planet]?.sign;
+      return (!sr || natal === sr) ? 'Same sign' : `${natal} → ${sr}`;
+    })(),
+  }));
+
+  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => ({
+    srPlanet: a.planet1 || a.srPlanet || '',
+    natalPlanet: a.planet2 || a.natalPlanet || '',
+    aspect: a.type || a.aspect || '',
+    aspectType: a.type || a.aspectType || '',
+    orb: a.orb ?? null,
+    interpretation: a.interpretation || '',
+    exactDate: a.exactDate || '',
+  }));
+
+  const profYear = analysis.profectionYear;
+  const mappedProfectionYear = profYear ? {
+    ...profYear,
+    house: (profYear as any).house || (profYear as any).houseNumber || null,
+  } : null;
+
+  const natalSun = natalChart.planets?.Sun?.sign || '';
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const cakeImageUrl = natalSun
+    ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
+    : '';
+
+  return {
+    name: natalChart.name || '',
+    cakeImageUrl,
+    birthDate: natalChart.birthDate || '',
+    birthLocation: natalChart.birthLocation || '',
+    solarReturnYear: srChart.solarReturnYear,
+    natalSun: natalChart.planets?.Sun?.sign || '',
+    natalMoon: natalChart.planets?.Moon?.sign || '',
+    natalRising: natalChart.houseCusps?.house1?.sign || '',
+    srSun: natalChart.planets?.Sun?.sign || '',
+    srMoon: analysis.moonSign || '',
+    srRising: analysis.yearlyTheme?.ascendantSign || '',
+    yearlyTheme: analysis.yearlyTheme,
+    sunHouse: analysis.sunHouse,
+    sunNatalHouse: analysis.sunNatalHouse,
+    moonHouse: analysis.moonHouse,
+    moonNatalHouse: analysis.moonNatalHouse,
+    profectionYear: mappedProfectionYear,
+    lordOfTheYear: analysis.lordOfTheYear,
+    moonPhase: analysis.moonPhase,
+    moonAngularity: analysis.moonAngularity,
+    moonLateDegree: analysis.moonLateDegree,
+    moonVOC: analysis.moonVOC,
+    moonMetonicAges: analysis.moonMetonicAges,
+    srMoonAspects: analysis.srMoonAspects,
+    stelliums: analysis.stelliums,
+    srToNatalAspects: mappedSrToNatalAspects,
+    srInternalAspects: analysis.srInternalAspects,
+    angularPlanets: analysis.angularPlanets,
+    planetPositions: mappedPlanetPositions,
+    houseOverlays: analysis.houseOverlays,
+    elementBalance: analysis.elementBalance,
+    modalityBalance: analysis.modalityBalance,
+    hemisphericEmphasis: analysis.hemisphericEmphasis,
+    saturnFocus: analysis.saturnFocus,
+    nodesFocus: analysis.nodesFocus,
+    retrogrades: analysis.retrogrades,
+    vertex: analysis.vertex,
+    mutualReceptions: analysis.mutualReceptions,
+    dignityReport: analysis.dignityReport,
+    healthOverlay: analysis.healthOverlay,
+    eclipseSensitivity: analysis.eclipseSensitivity,
+    enhancedRetrogrades: analysis.enhancedRetrogrades,
+    quarterlyFocus: analysis.quarterlyFocus,
+    fixedStars: analysis.fixedStars,
+    arabicParts: analysis.arabicParts,
+    firdaria: analysis.firdaria,
+    antisciaContacts: analysis.antisciaContacts,
+    solarArcs: analysis.solarArcs,
+    synthesisSections: analysis.synthesisSections,
+    executiveSummary: generateExecutiveSummary(analysis, natalChart),
+    actionGuidance: (() => {
+      const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
+      for (const [key, val] of Object.entries(srChart.planets || {})) {
+        if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
+      }
+      return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+    })(),
+    activationWindows: (() => {
+      const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const toAbs = (pos: any): number | null => {
+        if (!pos?.sign) return null;
+        const idx = SIGNS.indexOf(pos.sign);
+        if (idx < 0) return null;
+        return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+      };
+      const srPositions: Record<string, number> = {};
+      const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
+      for (const p of keyTargets) {
+        const pos = srChart.planets?.[p as keyof typeof srChart.planets];
+        const deg = pos ? toAbs(pos) : null;
+        if (deg !== null) srPositions[p] = deg;
+      }
+      const bd = natalChart.birthDate || '';
+      const parts = bd.split('-');
+      const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
+      const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
+      const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+      return {
+        peakPeriods: data.peakPeriods,
+        monthlyThemes: data.monthlyThemes.map(m => ({
+          ...m,
+          transitHits: m.transitHits.map(h => ({
+            ...h,
+            exactDate: h.exactDate.toISOString(),
+            windowStart: h.windowStart.toISOString(),
+            windowEnd: h.windowEnd.toISOString(),
+          })),
+        })),
+        transitHitCount: data.transitHits.length,
+        windowCount: data.activationWindows.length,
+      };
+    })(),
+    identityShift: generateIdentityShift(analysis, srChart, natalChart),
+    lifeDomainScores: calculateLifeDomainScores(analysis),
+    contradictions: detectContradictions(analysis, srChart),
+    lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+  };
+}
+
 // ── Birthday Gift Print PDF (comprehensive, no AI narrative required) ──
 export async function generateBirthdayGiftPDF(
   analysis: SolarReturnAnalysis,
