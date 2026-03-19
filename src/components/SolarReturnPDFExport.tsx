@@ -503,6 +503,10 @@ export function downloadBirthdayJSONStandalone(
           windowCount: data.activationWindows.length,
         };
       })(),
+      identityShift: generateIdentityShift(analysis, srChart, natalChart),
+      lifeDomainScores: calculateLifeDomainScores(analysis),
+      contradictions: detectContradictions(analysis, srChart),
+      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     }
   };
 
