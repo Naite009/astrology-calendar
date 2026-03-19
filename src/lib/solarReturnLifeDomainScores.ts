@@ -83,9 +83,12 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
 
     // 3. Stelliums in domain houses
     for (const st of analysis.stelliums) {
-      if (houses.includes(st.house)) {
-        score += 1.5;
-        drivers.push(`Stellium in ${ordinal(st.house)} House`);
+      if (st.locationType === 'house') {
+        const hNum = parseInt(st.location, 10);
+        if (!isNaN(hNum) && houses.includes(hNum)) {
+          score += 1.5;
+          drivers.push(`Stellium in ${ordinal(hNum)} House`);
+        }
       }
     }
 
