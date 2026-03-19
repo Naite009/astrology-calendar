@@ -2542,10 +2542,11 @@ const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
 
 // ─── Relocation Tab ─────────────────────────────────────────────────
 
-const RelocationTab = ({ analysis, srChart, natalChart }: {
+const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
   analysis: SolarReturnAnalysis;
   srChart: SolarReturnChart;
   natalChart: NatalChart;
+  srChartsForNatal: SolarReturnChart[];
 }) => {
   return (
     <div className="space-y-4 mt-4">
