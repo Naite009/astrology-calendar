@@ -52,6 +52,7 @@ interface LunarWorkbookSectionProps {
     newMoonHouse?: string;
     natalAspects?: string;
   };
+  activationData?: SRActivationData | null;
 }
 
 const PHASE_CONFIG = {
