@@ -28,6 +28,7 @@ import { SignLunationData } from "@/lib/signLunationData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { JournalContextBanner } from "@/components/solarReturn/JournalContextBanner";
 
 interface KeyPhaseDates {
   firstQuarter: { date: Date; sign: string } | null;
