@@ -1126,6 +1126,7 @@ Keep the tone deep, insightful, and practically applicable.`
               ? natalAspects.map(a => `${a.aspect} ${a.planet}`).join(', ') 
               : undefined
           }}
+          activationData={srActivationData}
         />
       )}
       
