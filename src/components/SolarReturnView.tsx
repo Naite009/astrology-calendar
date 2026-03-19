@@ -34,6 +34,14 @@ import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryC
 import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
 import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
+import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
+import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { detectContradictions } from '@/lib/solarReturnContradictions';
+import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
+import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
+import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
+import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
+import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
