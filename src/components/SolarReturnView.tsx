@@ -2595,6 +2595,14 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
           </p>
         </div>
       )}
+
+      {/* Interactive comparison tool */}
+      <RelocationComparisonTool
+        srCharts={srChartsForNatal}
+        natalChart={natalChart}
+        currentSR={srChart}
+        currentAnalysis={analysis}
+      />
     </div>
   );
 };
