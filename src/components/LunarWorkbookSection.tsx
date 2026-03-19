@@ -736,6 +736,9 @@ export const LunarWorkbookSection = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Cosmic context banner — auto-tags with moon phase, eclipse, transits */}
+        <JournalContextBanner date={new Date()} activationData={null} compact />
+
         {/* Mode toggle */}
         <div className="flex items-center gap-2 mb-4">
           <Button
