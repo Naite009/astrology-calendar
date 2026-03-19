@@ -232,7 +232,40 @@ export const LunarCycleView = ({
   };
   
   const activeChart = getActiveChart();
-  
+
+  // Compute SR activation data for the active chart's most recent Solar Return
+  const { getSolarReturnsForChart } = useSolarReturnChart();
+  const srActivationData = useMemo(() => {
+    if (!activeChart) return null;
+    const srCharts = getSolarReturnsForChart(activeChart.id);
+    if (srCharts.length === 0) return null;
+    // Find the most recent SR chart (highest year)
+    const latestSR = srCharts.reduce((a, b) => a.solarReturnYear > b.solarReturnYear ? a : b);
+    try {
+      const analysis = analyzeSolarReturn(latestSR, activeChart);
+      // Build planet degree map from analysis overlays
+      const srPlanetPositions: Record<string, number> = {};
+      const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      for (const overlay of analysis.houseOverlays) {
+        const signIdx = SIGNS.indexOf(overlay.srSign);
+        if (signIdx >= 0) {
+          const degMatch = overlay.srDegree.match(/(\d+)/);
+          const deg = degMatch ? parseInt(degMatch[1]) : 0;
+          srPlanetPositions[`SR ${overlay.planet}`] = signIdx * 30 + deg;
+        }
+      }
+      // Add ASC and MC
+      if (analysis.yearlyTheme) {
+        const ascIdx = SIGNS.indexOf(analysis.yearlyTheme.ascendantSign);
+        if (ascIdx >= 0) srPlanetPositions['SR Ascendant'] = ascIdx * 30;
+      }
+      return calculateActivationWindows(srPlanetPositions, latestSR.solarReturnYear);
+    } catch (e) {
+      console.error('[LunarCycle] SR activation calc error:', e);
+      return null;
+    }
+  }, [activeChart, getSolarReturnsForChart]);
+
   const handleChartChange = (value: string) => {
     setLocalSelectedChart(value);
     onSelectChart?.(value);
