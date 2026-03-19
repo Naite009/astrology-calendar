@@ -321,7 +321,8 @@ export const LunarWorkbookSection = ({
   signData,
   balsamicStart,
   balsamicEnd,
-  natalContext
+  natalContext,
+  activationData,
 }: LunarWorkbookSectionProps) => {
   const [activePhase, setActivePhase] = useState<PhaseKey>('newMoon');
   const [isGuidedMode, setIsGuidedMode] = useState(false);
