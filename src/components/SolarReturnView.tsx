@@ -43,6 +43,7 @@ import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresC
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
+import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -313,7 +314,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           </TabsContent>
 
           <TabsContent value="relocation">
-            <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+            <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} srChartsForNatal={srChartsForNatal} />
           </TabsContent>
         </Tabs>
       )}
@@ -2542,10 +2543,11 @@ const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
 
 // ─── Relocation Tab ─────────────────────────────────────────────────
 
-const RelocationTab = ({ analysis, srChart, natalChart }: {
+const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
   analysis: SolarReturnAnalysis;
   srChart: SolarReturnChart;
   natalChart: NatalChart;
+  srChartsForNatal: SolarReturnChart[];
 }) => {
   return (
     <div className="space-y-4 mt-4">
@@ -2594,6 +2596,14 @@ const RelocationTab = ({ analysis, srChart, natalChart }: {
           </p>
         </div>
       )}
+
+      {/* Interactive comparison tool */}
+      <RelocationComparisonTool
+        srCharts={srChartsForNatal}
+        natalChart={natalChart}
+        currentSR={srChart}
+        currentAnalysis={analysis}
+      />
     </div>
   );
 };
