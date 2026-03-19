@@ -40,7 +40,7 @@ export function getMoonPhaseForDate(date: Date): MoonPhaseTag {
   let angle = moon.lon - sun.elon;
   if (angle < 0) angle += 360;
   
-  const illumination = Math.round(Astronomy.Illumination('Moon', astroDate).phase_fraction * 100);
+  const illumination = Math.round(illInfo.phase_fraction * 100);
   
   const phaseInfo = PHASES.find(p => angle >= p.min && angle < p.max) || PHASES[0];
   
