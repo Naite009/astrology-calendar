@@ -1932,6 +1932,26 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       nodesFocus:  analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
       vertex: analysis.vertex,
+      // Tier 4
+      mutualReceptions: analysis.mutualReceptions,
+      dignityReport: analysis.dignityReport,
+      healthOverlay: analysis.healthOverlay,
+      eclipseSensitivity: analysis.eclipseSensitivity,
+      enhancedRetrogrades: analysis.enhancedRetrogrades,
+      quarterlyFocus: analysis.quarterlyFocus,
+      // Tier 5
+      fixedStars: analysis.fixedStars,
+      arabicParts: analysis.arabicParts,
+      firdaria: analysis.firdaria,
+      antisciaContacts: analysis.antisciaContacts,
+      solarArcs: analysis.solarArcs,
+      synthesisSections: analysis.synthesisSections,
+      // Strategy & Timing
+      cakeImageUrl: (() => {
+        const natalSun = natalChart.planets?.Sun?.sign || '';
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        return natalSun ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png` : '';
+      })(),
       executiveSummary: generateExecutiveSummary(analysis, natalChart),
       actionGuidance: (() => {
         const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
@@ -1939,6 +1959,41 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
         }
         return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+      })(),
+      activationWindows: (() => {
+        const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+        const toAbs = (pos: any): number | null => {
+          if (!pos?.sign) return null;
+          const idx = SIGNS.indexOf(pos.sign);
+          if (idx < 0) return null;
+          return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+        };
+        const srPositions: Record<string, number> = {};
+        const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
+        for (const p of keyTargets) {
+          const pos = srChart.planets?.[p as keyof typeof srChart.planets];
+          const deg = pos ? toAbs(pos) : null;
+          if (deg !== null) srPositions[p] = deg;
+        }
+        const bd = natalChart.birthDate || '';
+        const parts = bd.split('-');
+        const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
+        const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
+        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+        return {
+          peakPeriods: data.peakPeriods,
+          monthlyThemes: data.monthlyThemes.map(m => ({
+            ...m,
+            transitHits: m.transitHits.map(h => ({
+              ...h,
+              exactDate: h.exactDate.toISOString(),
+              windowStart: h.windowStart.toISOString(),
+              windowEnd: h.windowEnd.toISOString(),
+            })),
+          })),
+          transitHitCount: data.transitHits.length,
+          windowCount: data.activationWindows.length,
+        };
       })(),
     };
   };
