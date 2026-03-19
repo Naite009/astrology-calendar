@@ -259,7 +259,8 @@ export const LunarCycleView = ({
         const ascIdx = SIGNS.indexOf(analysis.yearlyTheme.ascendantSign);
         if (ascIdx >= 0) srPlanetPositions['SR Ascendant'] = ascIdx * 30;
       }
-      return calculateActivationWindows(srPlanetPositions, latestSR.solarReturnYear);
+      const birthDate = new Date(activeChart.birthDate || '');
+      return calculateActivationWindows(srPlanetPositions, latestSR.solarReturnYear, birthDate.getMonth(), birthDate.getDate());
     } catch (e) {
       console.error('[LunarCycle] SR activation calc error:', e);
       return null;
