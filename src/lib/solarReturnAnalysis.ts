@@ -463,11 +463,17 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
   Jupiter: { domain: 'growth, opportunity, faith, and expansion', drive: 'to explore, teach, and find meaning', body: 'liver, hips, and fat metabolism' },
   Saturn: { domain: 'discipline, limits, responsibility, and time', drive: 'to structure, earn through effort, and endure', body: 'bones, teeth, knees, and skin' },
   Uranus: { domain: 'disruption, liberation, innovation, and sudden change', drive: 'to break free, rebel, and reinvent', body: 'nervous system and circulation' },
-  Neptune: { domain: 'imagination, spirituality, illusion, and dissolution', drive: 'to transcend, dissolve boundaries, and dream', body: 'immune system and lymphatic' },
-  Pluto: { domain: 'power, transformation, obsession, and psychological depth', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
-  Chiron: { domain: 'wounding, healing, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
-  NorthNode: { domain: 'soul growth direction, karmic pull, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
+  Neptune: { domain: 'imagination, sensitivity, confusion, and foggy boundaries', drive: 'to dissolve what is rigid and open to intuition', body: 'immune system and lymphatic' },
+  Pluto: { domain: 'deep change, power dynamics, obsession, and therapy breakthroughs', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
+  Chiron: { domain: 'old sore spots, insecurity, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
+  NorthNode: { domain: 'soul growth direction, unfamiliar territory, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
   Ascendant: { domain: 'your visible self, first impressions, and physical presence', drive: 'to project identity into the world', body: 'head and overall constitution' },
+  Juno: { domain: 'committed partnership, marriage, and what you need in a partner', drive: 'to find loyalty, equality, and deep commitment', body: '' },
+  Vesta: { domain: 'devotion, sacred focus, and what you sacrifice for', drive: 'to dedicate yourself fully to what matters most', body: '' },
+  Pallas: { domain: 'strategic wisdom, pattern recognition, and creative intelligence', drive: 'to see the big picture and craft elegant solutions', body: '' },
+  Ceres: { domain: 'nurturing, nourishment, and cycles of loss and return', drive: 'to care for others and process grief into growth', body: '' },
+  Lilith: { domain: 'raw power, suppressed desires, and reclaimed autonomy', drive: 'to own the parts of yourself others find uncomfortable', body: '' },
+  Eris: { domain: 'disruption, whistleblowing, and necessary confrontation', drive: 'to expose what is hidden and demand authenticity', body: '' },
 };
 
 const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
