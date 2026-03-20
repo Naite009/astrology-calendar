@@ -512,7 +512,7 @@ export const detectBigThreeAspects = (chart: NatalChart): BigThreeAspect[] => {
     
     for (const aspectDef of ASPECTS) {
       const orb = calculateOrb(sunDeg, moonDeg, aspectDef.angle);
-      if (orb <= aspectDef.orb) {
+      if (orb <= getEffectiveOrb('Sun', 'Moon', aspectDef.name)) {
         const interp = SUN_ASPECT_INTERPRETATIONS['Moon']?.[aspectDef.name];
         if (interp) {
           aspects.push({
