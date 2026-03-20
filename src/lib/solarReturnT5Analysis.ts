@@ -99,6 +99,7 @@ export interface SRSynthesisSection {
   strength: 'strong' | 'moderate' | 'quiet';
   highlights: string[];
   interpretation: string;
+  narrative: string; // personalized paragraph weaving all key planets together
 }
 
 // ─── Fixed Stars Catalog (epoch 2000, precession ~1°/72yr) ──────────
