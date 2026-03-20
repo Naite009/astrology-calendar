@@ -104,6 +104,8 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
         const natalDeg = toAbsDeg(natalPos);
         if (natalDeg === null) continue;
 
+        const natalHouse = (natalPos as any).house || null;
+
         for (const asp of ASPECT_DEFS) {
           let diff = Math.abs(angle.deg - natalDeg);
           if (diff > 180) diff = 360 - diff;
@@ -121,7 +123,9 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
             acts.push({
               angleName: angle.name,
               angleDomain: angleInfo.domain,
+              angleHouse: angleInfo.house,
               natalPlanet: displayPlanet,
+              natalHouse: typeof natalHouse === 'number' ? natalHouse : null,
               planetMeaning: meaning,
               aspectName: asp.name,
               aspectGlyph: asp.glyph,
