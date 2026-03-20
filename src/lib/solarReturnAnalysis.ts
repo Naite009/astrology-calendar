@@ -242,6 +242,7 @@ export interface SRHouseOverlay {
   srHouseTheme: string;
   natalHouse: number | null;
   houseTheme: string;
+  interpretation: string;
 }
 
 export interface SRKeyAspect extends Aspect {
