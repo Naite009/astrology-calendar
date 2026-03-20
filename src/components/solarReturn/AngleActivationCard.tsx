@@ -193,7 +193,10 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
                 <Target size={14} className="text-primary flex-shrink-0" />
               )}
               <p className="text-xs font-medium text-foreground">
-                SR {act.angleName} {act.aspectGlyph} Natal {act.natalPlanet}
+                SR {act.angleName}
+                <span className="text-primary/70 font-normal ml-1">(H{act.angleHouse})</span>
+                {' '}{act.aspectGlyph} Natal {act.natalPlanet}
+                {act.natalHouse && <span className="text-primary/70 font-normal ml-1">(H{act.natalHouse})</span>}
                 <span className="text-muted-foreground font-normal ml-1.5">({act.orb}°)</span>
               </p>
             </div>
