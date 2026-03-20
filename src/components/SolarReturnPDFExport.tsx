@@ -373,7 +373,8 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
 export function downloadBirthdayJSONStandalone(
   analysis: SolarReturnAnalysis,
   srChart: SolarReturnChart,
-  natalChart: NatalChart
+  natalChart: NatalChart,
+  aiReadings?: { plain: string; astro: string }
 ) {
   const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
     planet,
