@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Eye, Target, Crosshair } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEffectiveOrb } from '@/lib/aspectOrbs';
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -13,14 +14,12 @@ const toAbsDeg = (pos: { sign: string; degree: number; minutes?: number } | unde
 };
 
 const ASPECT_DEFS = [
-  { name: 'conjunct', angle: 0, glyph: '☌', priority: 1 },
-  { name: 'opposite', angle: 180, glyph: '☍', priority: 2 },
-  { name: 'square', angle: 90, glyph: '□', priority: 3 },
-  { name: 'trine', angle: 120, glyph: '△', priority: 4 },
-  { name: 'sextile', angle: 60, glyph: '⚹', priority: 5 },
+  { name: 'conjunct', angle: 0, glyph: '☌', priority: 1, key: 'conjunction' },
+  { name: 'opposite', angle: 180, glyph: '☍', priority: 2, key: 'opposition' },
+  { name: 'square', angle: 90, glyph: '□', priority: 3, key: 'square' },
+  { name: 'trine', angle: 120, glyph: '△', priority: 4, key: 'trine' },
+  { name: 'sextile', angle: 60, glyph: '⚹', priority: 5, key: 'sextile' },
 ] as const;
-
-const ORB = 3;
 
 const PLANET_MEANINGS: Record<string, string> = {
   Sun: 'identity, purpose, vitality',
@@ -81,7 +80,7 @@ export function PlanetToAngleCard({ natalChart, srChart }: Props) {
         Visible Activations — SR Planets on Natal Angles
       </h3>
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-        SR Planets → Natal ASC / DSC / MC / IC (within {ORB}° orb)
+        SR Planets → Natal ASC / DSC / MC / IC (planet-specific orbs)
       </p>
 
       <div className="space-y-3">
@@ -144,7 +143,8 @@ export function usePlanetToAngleActivations(natalChart: NatalChart, srChart: Sol
           let diff = Math.abs(srDeg - angle.deg);
           if (diff > 180) diff = 360 - diff;
           const orb = Math.abs(diff - asp.angle);
-          if (orb <= ORB) {
+          const effectiveOrb = getEffectiveOrb(planetName, angle.name, asp.key);
+          if (orb <= effectiveOrb) {
             const angleInfo = ANGLE_MEANINGS[angle.name];
             const meaning = PLANET_MEANINGS[planetName] || '';
             const displayPlanet = planetName === 'NorthNode' ? 'North Node' : planetName;

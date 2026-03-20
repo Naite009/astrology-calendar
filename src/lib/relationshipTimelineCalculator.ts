@@ -1,5 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { RelationshipTimelineConfig, MonthlyTransitEvent, MonthlySnapshot, RelationshipPhase } from '@/types/relationshipTimeline';
+import { getEffectiveOrb } from './aspectOrbs';
 
 export class RelationshipTimelineCalculator {
   private config: RelationshipTimelineConfig;
@@ -152,21 +153,24 @@ export class RelationshipTimelineCalculator {
   /**
    * Calculate aspect between two positions
    */
-  private calculateAspect(position1: number, position2: number): { type: string; orb: number } | null {
+  private calculateAspect(position1: number, position2: number, planet1?: string, planet2?: string): { type: string; orb: number } | null {
     const diff = Math.abs(position1 - position2);
     const normalizedDiff = diff > 180 ? 360 - diff : diff;
     
     const aspectTypes = [
-      { name: 'conjunction', angle: 0, orb: 8 },
-      { name: 'sextile', angle: 60, orb: 6 },
-      { name: 'square', angle: 90, orb: 8 },
-      { name: 'trine', angle: 120, orb: 8 },
-      { name: 'opposition', angle: 180, orb: 8 }
+      { name: 'conjunction', angle: 0 },
+      { name: 'sextile', angle: 60 },
+      { name: 'square', angle: 90 },
+      { name: 'trine', angle: 120 },
+      { name: 'opposition', angle: 180 }
     ];
     
     for (const aspectType of aspectTypes) {
       const orb = Math.abs(normalizedDiff - aspectType.angle);
-      if (orb <= aspectType.orb) {
+      const effectiveOrb = (planet1 && planet2) 
+        ? getEffectiveOrb(planet1, planet2, aspectType.name) 
+        : 8;
+      if (orb <= effectiveOrb) {
         return { type: aspectType.name, orb };
       }
     }

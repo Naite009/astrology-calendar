@@ -2,6 +2,7 @@
 // Detects and interprets how other planets aspect the Big Three
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { getEffectiveOrb } from './aspectOrbs';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -49,12 +50,12 @@ const PLANET_SYMBOLS: Record<string, string> = {
 
 // Aspect definitions with orbs
 const ASPECTS = [
-  { name: 'conjunction', symbol: '☌', angle: 0, orb: 8, nature: 'fusion' },
-  { name: 'opposition', symbol: '☍', angle: 180, orb: 8, nature: 'tension' },
-  { name: 'trine', symbol: '△', angle: 120, orb: 8, nature: 'flow' },
-  { name: 'square', symbol: '□', angle: 90, orb: 8, nature: 'tension' },
-  { name: 'sextile', symbol: '⚹', angle: 60, orb: 6, nature: 'opportunity' },
-  { name: 'quincunx', symbol: '⚻', angle: 150, orb: 3, nature: 'adjustment' },
+  { name: 'conjunction', symbol: '☌', angle: 0, nature: 'fusion' },
+  { name: 'opposition', symbol: '☍', angle: 180, nature: 'tension' },
+  { name: 'trine', symbol: '△', angle: 120, nature: 'flow' },
+  { name: 'square', symbol: '□', angle: 90, nature: 'tension' },
+  { name: 'sextile', symbol: '⚹', angle: 60, nature: 'opportunity' },
+  { name: 'quincunx', symbol: '⚻', angle: 150, nature: 'adjustment' },
 ];
 
 // Get absolute longitude from position
@@ -511,7 +512,7 @@ export const detectBigThreeAspects = (chart: NatalChart): BigThreeAspect[] => {
     
     for (const aspectDef of ASPECTS) {
       const orb = calculateOrb(sunDeg, moonDeg, aspectDef.angle);
-      if (orb <= aspectDef.orb) {
+      if (orb <= getEffectiveOrb('Sun', 'Moon', aspectDef.name)) {
         const interp = SUN_ASPECT_INTERPRETATIONS['Moon']?.[aspectDef.name];
         if (interp) {
           aspects.push({
@@ -542,7 +543,7 @@ export const detectBigThreeAspects = (chart: NatalChart): BigThreeAspect[] => {
       
       for (const aspectDef of ASPECTS) {
         const orb = calculateOrb(sunDeg, planetDeg, aspectDef.angle);
-        if (orb <= aspectDef.orb) {
+        if (orb <= getEffectiveOrb('Sun', planetName, aspectDef.name)) {
           const interp = SUN_ASPECT_INTERPRETATIONS[planetName]?.[aspectDef.name];
           if (interp) {
             aspects.push({
@@ -575,7 +576,7 @@ export const detectBigThreeAspects = (chart: NatalChart): BigThreeAspect[] => {
       
       for (const aspectDef of ASPECTS) {
         const orb = calculateOrb(moonDeg, planetDeg, aspectDef.angle);
-        if (orb <= aspectDef.orb) {
+        if (orb <= getEffectiveOrb('Moon', planetName, aspectDef.name)) {
           const interp = MOON_ASPECT_INTERPRETATIONS[planetName]?.[aspectDef.name];
           if (interp) {
             aspects.push({

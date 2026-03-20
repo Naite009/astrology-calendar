@@ -39,13 +39,15 @@ export interface SynastryReport {
   soulContract: string;
 }
 
-// Aspect types with their angles and orbs
+import { getEffectiveOrb } from './aspectOrbs';
+
+// Aspect types with their angles and base orbs (effective orb computed per planet pair)
 const ASPECT_DEFINITIONS = {
   conjunction: { angle: 0, orb: 8, symbol: '☌', harmonious: null },
-  opposition: { angle: 180, orb: 8, symbol: '☍', harmonious: false },
-  trine: { angle: 120, orb: 8, symbol: '△', harmonious: true },
+  opposition: { angle: 180, orb: 7, symbol: '☍', harmonious: false },
+  trine: { angle: 120, orb: 7, symbol: '△', harmonious: true },
   square: { angle: 90, orb: 7, symbol: '□', harmonious: false },
-  sextile: { angle: 60, orb: 6, symbol: '⚹', harmonious: true },
+  sextile: { angle: 60, orb: 5, symbol: '⚹', harmonious: true },
   quincunx: { angle: 150, orb: 3, symbol: '⚻', harmonious: false },
   semisextile: { angle: 30, orb: 2, symbol: '⚺', harmonious: true }
 };
@@ -402,10 +404,11 @@ function calculateAngle(pos1: NatalPlanetPosition, pos2: NatalPlanetPosition): n
 /**
  * Determine aspect type from angle
  */
-function getAspectType(angle: number): { type: string; orb: number } | null {
+function getAspectType(angle: number, planet1?: string, planet2?: string): { type: string; orb: number } | null {
   for (const [type, def] of Object.entries(ASPECT_DEFINITIONS)) {
     const orb = Math.abs(angle - def.angle);
-    if (orb <= def.orb) {
+    const effectiveOrb = (planet1 && planet2) ? getEffectiveOrb(planet1, planet2, type) : def.orb;
+    if (orb <= effectiveOrb) {
       return { type, orb };
     }
   }
@@ -465,7 +468,7 @@ export function calculateSynastryAspects(chart1: NatalChart, chart2: NatalChart)
   for (const [name1, pos1] of Object.entries(planets1)) {
     for (const [name2, pos2] of Object.entries(planets2)) {
       const angle = calculateAngle(pos1, pos2);
-      const aspectInfo = getAspectType(angle);
+      const aspectInfo = getAspectType(angle, name1, name2);
       
       if (aspectInfo) {
         const interpData = getInterpretation(name1, name2, aspectInfo.type);

@@ -5,18 +5,19 @@ import { ChevronDown, AlertTriangle, Sparkles } from "lucide-react";
 import { useState, useMemo } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { CHALLENGING_HEALTH_ASPECTS, SUPPORTIVE_HEALTH_ASPECTS } from "@/lib/healthAstrology";
+import { getEffectiveOrb } from "@/lib/aspectOrbs";
 
 interface HealthAspectsCardProps {
   natalChart: NatalChart;
 }
 
-// Simple aspect detection
-const ASPECT_ORBS = {
-  conjunction: { orb: 8, symbol: '☌' },
-  opposition: { orb: 8, symbol: '☍' },
-  square: { orb: 7, symbol: '□' },
-  trine: { orb: 8, symbol: '△' },
-  sextile: { orb: 6, symbol: '⚹' }
+// Aspect symbols for display
+const ASPECT_SYMBOLS: Record<string, string> = {
+  conjunction: '☌',
+  opposition: '☍',
+  square: '□',
+  trine: '△',
+  sextile: '⚹',
 };
 
 const SIGN_DEGREES: Record<string, number> = {
@@ -41,17 +42,24 @@ export const HealthAspectsCard = ({ natalChart }: HealthAspectsCardProps) => {
     return SIGN_DEGREES[planet.sign] + planet.degree + (planet.minutes || 0) / 60;
   };
 
-  // Detect aspects between two planets
-  const detectAspect = (planet1Deg: number, planet2Deg: number): { type: string; orb: number } | null => {
+  // Detect aspects between two planets using planet-specific orbs
+  const detectAspect = (planet1Deg: number, planet2Deg: number, p1Name: string, p2Name: string): { type: string; orb: number } | null => {
     let diff = Math.abs(planet1Deg - planet2Deg);
     if (diff > 180) diff = 360 - diff;
 
-    if (diff <= ASPECT_ORBS.conjunction.orb) return { type: 'conjunction', orb: diff };
-    if (Math.abs(diff - 180) <= ASPECT_ORBS.opposition.orb) return { type: 'opposition', orb: Math.abs(diff - 180) };
-    if (Math.abs(diff - 90) <= ASPECT_ORBS.square.orb) return { type: 'square', orb: Math.abs(diff - 90) };
-    if (Math.abs(diff - 120) <= ASPECT_ORBS.trine.orb) return { type: 'trine', orb: Math.abs(diff - 120) };
-    if (Math.abs(diff - 60) <= ASPECT_ORBS.sextile.orb) return { type: 'sextile', orb: Math.abs(diff - 60) };
-    
+    const aspects = [
+      { type: 'conjunction', angle: 0 },
+      { type: 'opposition', angle: 180 },
+      { type: 'square', angle: 90 },
+      { type: 'trine', angle: 120 },
+      { type: 'sextile', angle: 60 },
+    ];
+    for (const a of aspects) {
+      const orb = Math.abs(diff - a.angle);
+      if (orb <= getEffectiveOrb(p1Name, p2Name, a.type)) {
+        return { type: a.type, orb };
+      }
+    }
     return null;
   };
 
@@ -70,7 +78,7 @@ export const HealthAspectsCard = ({ natalChart }: HealthAspectsCardProps) => {
         const deg2 = getAbsoluteDegree(p2);
         if (deg1 === null || deg2 === null) continue;
 
-        const aspect = detectAspect(deg1, deg2);
+        const aspect = detectAspect(deg1, deg2, planetList[i], planetList[j]);
         if (!aspect) continue;
 
         const pairKey = `${planetList[i]}-${planetList[j]}`;
