@@ -244,135 +244,173 @@ function generateAdvice(domain: string, level: number, tone: DomainTone): string
 
 /* ── Main Scoring Engine ── */
 
+/**
+ * Scoring philosophy: Activity level 0-10 should feel like a real spread.
+ * - 0-2: Quiet — very few planets touching this area
+ * - 3-4: Lightly Active — some energy but not a focus
+ * - 5-6: Active — real things happening here
+ * - 7-8: Highly Active — this is a major theme of the year
+ * - 9-10: Exceptional — rare, requires stellium + angular + multiple aspects
+ *
+ * Most domains for most charts should land 2-6. Hitting 8+ should be uncommon.
+ */
+
 export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDomainScores {
   const domainKeys = ['career', 'love', 'health', 'growth'] as const;
   const results: Record<string, LifeDomainScore> = {};
 
   for (const domain of domainKeys) {
-    let activity = 3; // baseline
+    let activity = 0; // start at zero — earn every point
     const allDrivers: DriverDetail[] = [];
     const breakdown: ScoreContribution[] = [];
     const houses = DOMAIN_HOUSES[domain];
     const activityWeights = PLANET_ACTIVITY_WEIGHT[domain];
     const houseReasons = HOUSE_REASONS[domain];
 
-    breakdown.push({ source: 'Baseline', points: 3, reason: 'Every domain starts at 3 — a neutral starting point' });
-
-    // 1. House occupancy
+    // 1. House occupancy — only planets with explicit weight for this domain count significantly
+    let houseOccupantCount = 0;
     for (const overlay of analysis.houseOverlays) {
       const h = overlay.srHouse || 0;
       if (houses.includes(h)) {
-        const w = activityWeights[overlay.planet] || 0.5;
-        activity += w;
-        const nature = getNature(overlay.planet);
-        const effect = getEffect(overlay.planet);
-        const houseDesc = houseReasons[h] || `house ${h}`;
-        const planetDesc = PLANET_PLAIN[overlay.planet] || overlay.planet;
+        const explicitWeight = activityWeights[overlay.planet];
+        if (explicitWeight && explicitWeight > 0) {
+          // Diminishing returns: first 2 planets full weight, then halved
+          const diminish = houseOccupantCount >= 2 ? 0.5 : 1;
+          const w = Math.min(explicitWeight, 1.5) * diminish; // cap individual contribution
+          activity += w;
+          houseOccupantCount++;
+          const nature = getNature(overlay.planet);
+          const effect = getEffect(overlay.planet);
+          const houseDesc = houseReasons[h] || `house ${h}`;
+          const planetDesc = PLANET_PLAIN[overlay.planet] || overlay.planet;
 
-        allDrivers.push({ planet: overlay.planet, house: h, effect, nature, points: w });
-        breakdown.push({
-          source: `${overlay.planet} in ${ordinal(h)} House`,
-          points: w,
-          reason: `${overlay.planet} (${planetDesc}) is in your ${ordinal(h)} House — ${houseDesc}. Nature: ${nature}.`,
-          nature,
-        });
+          allDrivers.push({ planet: overlay.planet, house: h, effect, nature, points: Math.round(w * 10) / 10 });
+          breakdown.push({
+            source: `${overlay.planet} in ${ordinal(h)} House`,
+            points: Math.round(w * 10) / 10,
+            reason: `${overlay.planet} (${planetDesc}) is in your ${ordinal(h)} House — ${houseDesc}. Nature: ${nature}.${diminish < 1 ? ' (diminishing returns — 3rd+ planet in domain houses)' : ''}`,
+            nature,
+          });
+        }
+        // Planets without explicit weight for this domain: minimal contribution
+        else {
+          const w = 0.2;
+          activity += w;
+          const nature = getNature(overlay.planet);
+          allDrivers.push({ planet: overlay.planet, house: h, effect: getEffect(overlay.planet), nature, points: w });
+          breakdown.push({
+            source: `${overlay.planet} in ${ordinal(h)} House`,
+            points: w,
+            reason: `${overlay.planet} is present but not a key planet for ${domain} — minor activation`,
+            nature,
+          });
+        }
       }
     }
 
-    // 2. Sun/Moon in domain houses
+    // 2. Sun/Moon bonus ONLY if in domain houses AND not already counted
     const sunH = analysis.sunHouse.house;
     if (sunH && houses.includes(sunH) && !allDrivers.some(d => d.planet === 'Sun')) {
-      activity += 1.5;
+      const w = 1.0;
+      activity += w;
       const nature = getNature('Sun');
-      allDrivers.push({ planet: 'Sun', house: sunH, effect: getEffect('Sun'), nature, points: 1.5 });
+      allDrivers.push({ planet: 'Sun', house: sunH, effect: getEffect('Sun'), nature, points: w });
       breakdown.push({
         source: `Sun in ${ordinal(sunH)} House`,
-        points: 1.5,
+        points: w,
         reason: `Your Sun (core identity for the year) lands in the ${ordinal(sunH)} House — ${houseReasons[sunH] || ''}. This makes ${domain} a central theme.`,
         nature,
       });
     }
     const moonH = analysis.moonHouse.house;
     if (moonH && houses.includes(moonH) && !allDrivers.some(d => d.planet === 'Moon')) {
-      activity += 1;
+      const w = 0.7;
+      activity += w;
       const nature = getNature('Moon');
-      allDrivers.push({ planet: 'Moon', house: moonH, effect: getEffect('Moon'), nature, points: 1 });
+      allDrivers.push({ planet: 'Moon', house: moonH, effect: getEffect('Moon'), nature, points: w });
       breakdown.push({
         source: `Moon in ${ordinal(moonH)} House`,
-        points: 1,
+        points: w,
         reason: `Your Moon (emotional needs) is in the ${ordinal(moonH)} House — your feelings are drawn here.`,
         nature,
       });
     }
 
-    // 3. Stelliums
+    // 3. Stelliums — meaningful but not overwhelming
     for (const st of analysis.stelliums) {
       if (st.locationType === 'house') {
         const hNum = parseInt(st.location, 10);
         if (!isNaN(hNum) && houses.includes(hNum)) {
-          activity += 1.5;
+          activity += 1.0;
           breakdown.push({
             source: `Stellium in ${ordinal(hNum)} House`,
-            points: 1.5,
-            reason: `3+ planets clustered in your ${ordinal(hNum)} House (${houseReasons[hNum] || ''}) — major concentration of energy`,
+            points: 1.0,
+            reason: `3+ planets clustered in your ${ordinal(hNum)} House (${houseReasons[hNum] || ''}) — concentrated energy`,
           });
         }
       }
     }
 
-    // 4. Aspects — benefics boost, malefics add activity but note challenge
+    // 4. Aspects — ONLY count aspects where BOTH planets are relevant to this domain
+    // AND apply heavy diminishing returns (max 2 pts total from aspects)
     const allAspects = [...analysis.srToNatalAspects, ...analysis.srInternalAspects];
     let aspectBoost = 0;
     const aspectDetails: string[] = [];
+    const MAX_ASPECT_CONTRIBUTION = 2.0;
     for (const asp of allAspects) {
+      if (aspectBoost >= MAX_ASPECT_CONTRIBUTION) break;
       const p1w = activityWeights[asp.planet1] || 0;
       const p2w = activityWeights[asp.planet2] || 0;
+      // At least one planet must be a key player for this domain
       if (p1w > 0 || p2w > 0) {
-        const weight = Math.max(p1w, p2w) * 0.3;
-        // All aspects add activity (things are happening), but we track them
+        let weight: number;
         if (BENEFIC_ASPECTS.includes(asp.type)) {
-          activity += weight;
-          aspectBoost += weight;
-          aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type} (+${weight.toFixed(1)})`);
+          weight = 0.15; // small per aspect
         } else if (MALEFIC_ASPECTS.includes(asp.type)) {
-          activity += weight * 0.3; // still adds activity, just less
-          aspectBoost += weight * 0.3;
-          aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type} (+${(weight * 0.3).toFixed(1)} challenging)`);
+          weight = 0.1;
+        } else {
+          weight = 0.05; // conjunctions etc
         }
+        const remaining = MAX_ASPECT_CONTRIBUTION - aspectBoost;
+        weight = Math.min(weight, remaining);
+        activity += weight;
+        aspectBoost += weight;
+        aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type}`);
       }
     }
     if (aspectBoost > 0) {
       breakdown.push({
         source: `Aspects (${aspectDetails.length} relevant)`,
         points: Math.round(aspectBoost * 10) / 10,
-        reason: `All aspects add activation — trines/sextiles flow easily, squares/oppositions activate through friction. Details: ${aspectDetails.slice(0, 5).join('; ')}${aspectDetails.length > 5 ? ` + ${aspectDetails.length - 5} more` : ''}`,
+        reason: `Relevant aspects add activation — capped at ${MAX_ASPECT_CONTRIBUTION} total. ${aspectDetails.slice(0, 4).join('; ')}${aspectDetails.length > 4 ? ` + ${aspectDetails.length - 4} more` : ''}`,
       });
     }
 
-    // 5. Angular planets
+    // 5. Angular planets — only if they matter for this domain
     for (const ap of analysis.angularPlanets) {
       if ((activityWeights[ap] || 0) > 0) {
-        activity += 0.5;
+        const w = 0.4;
+        activity += w;
         const nature = getNature(ap);
-        allDrivers.push({ planet: ap, house: 0, effect: 'angular emphasis', nature, points: 0.5 });
+        allDrivers.push({ planet: ap, house: 0, effect: 'angular emphasis', nature, points: w });
         breakdown.push({
           source: `${ap} angular`,
-          points: 0.5,
+          points: w,
           reason: `${ap} (${PLANET_PLAIN[ap] || ap}) is on a chart angle — angular planets are louder in your year`,
           nature,
         });
       }
     }
 
-    // 6. Saturn in domain houses — adds activity with challenging tone
+    // 6. Saturn focus — adds a touch if in domain houses
     if (analysis.saturnFocus?.house && houses.includes(analysis.saturnFocus.house)) {
       if (!allDrivers.some(d => d.planet === 'Saturn')) {
-        activity += 0.5;
-        allDrivers.push({ planet: 'Saturn', house: analysis.saturnFocus.house, effect: getEffect('Saturn'), nature: 'malefic', points: 0.5 });
+        activity += 0.3;
+        allDrivers.push({ planet: 'Saturn', house: analysis.saturnFocus.house, effect: getEffect('Saturn'), nature: 'malefic', points: 0.3 });
         breakdown.push({
           source: `Saturn focus in ${ordinal(analysis.saturnFocus.house)} House`,
-          points: 0.5,
-          reason: `Saturn brings serious work and responsibility — it activates this area through demand, not ease`,
+          points: 0.3,
+          reason: `Saturn brings serious work — it activates this area through demand, not ease`,
           nature: 'malefic',
         });
       }
@@ -384,7 +422,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     results[domain] = {
       domain: domain.charAt(0).toUpperCase() + domain.slice(1),
       activityLevel: finalActivity,
-      score: finalActivity, // backward compat
+      score: finalActivity,
       tone,
       label: activityLabel(finalActivity, tone),
       drivers: allDrivers,
