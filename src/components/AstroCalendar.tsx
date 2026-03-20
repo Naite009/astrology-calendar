@@ -660,6 +660,16 @@ export const AstroCalendar = () => {
                 Moon
               </button>
               <button
+                onClick={() => setViewMode("moon-cycle")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "moon-cycle"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ☽ Cycle
+              </button>
+              <button
                 onClick={() => setViewMode("retrogrades")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "retrogrades"
