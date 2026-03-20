@@ -536,7 +536,7 @@ export const LunarWorkbookSection = ({
                 </div>
               </>
             )}
-          </CardContent>
+          </CollapsibleContent>
         </Collapsible>
       )}
 
