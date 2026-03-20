@@ -38,11 +38,11 @@ const PLANET_MEANINGS: Record<string, string> = {
   Chiron: 'healing, wounds, mentorship',
 };
 
-const ANGLE_MEANINGS: Record<string, { label: string; domain: string }> = {
-  Ascendant: { label: 'Ascendant', domain: 'personal direction, identity, how the year begins' },
-  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters' },
-  Midheaven: { label: 'Midheaven', domain: 'career, reputation, public visibility' },
-  IC: { label: 'IC', domain: 'home, family, emotional foundations' },
+const ANGLE_MEANINGS: Record<string, { label: string; domain: string; house: number }> = {
+  Ascendant: { label: 'Ascendant', domain: 'personal direction, identity, how the year begins', house: 1 },
+  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters', house: 7 },
+  Midheaven: { label: 'Midheaven', domain: 'career, reputation, public visibility', house: 10 },
+  IC: { label: 'IC', domain: 'home, family, emotional foundations', house: 4 },
 };
 
 const ASPECT_RULES: Record<string, string> = {
