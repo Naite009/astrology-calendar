@@ -28,14 +28,47 @@ interface ThemeFinderCardProps {
   chartName: string;
   natalHouse?: string;
   saveJournal: (u: Partial<LunarJournalEntry>) => void;
+  initialCandidates?: ThemeCandidate[];
+  initialShiftAreas?: ShiftArea[];
 }
+
+const PISCES_SEED_CANDIDATES: ThemeCandidate[] = [
+  {
+    title: "Strength and steadiness",
+    whySuggested: "Your body is front and center — restricted breathing, stomach angst, back tension. You want to start heavy lifting and move more. The desire for physical strength is a clear signal.",
+    bodyClues: "Restricted breathing, stomach angst, right-side back tension",
+    lifeClues: "Want to start heavy lifting, eat healthier, focus on physical routines",
+    draftIntentionStem: "I begin building a steadier and stronger relationship with my body.",
+  },
+  {
+    title: "Letting direction form without forcing it",
+    whySuggested: "You feel inspired by coding and building, but you're not ready to leap. The work direction is alive but still forming — and that's okay.",
+    bodyClues: "Anxiety eases when you start working on the app",
+    lifeClues: "Coding feels inspiring, but no clear commitment yet",
+    draftIntentionStem: "I allow my next work direction to emerge without pressure.",
+  },
+  {
+    title: "Healthier resilience",
+    whySuggested: "Mental toughness, kids' sports frustration, and body stress signals suggest a need to redefine strength in a more supportive way — resilience that doesn't cost you your peace.",
+    bodyClues: "Body tension patterns linked to performance pressure",
+    lifeClues: "Focus on kids and mental toughness, frustration around wanting to be tougher but also gentler",
+    draftIntentionStem: "I choose resilience that supports my body instead of stressing it.",
+  },
+];
+
+const PISCES_SEED_SHIFTS: ShiftArea[] = [
+  { area: "Body regulation", description: "Breathing and physical tension are active signals — your body is asking for a different relationship with stress." },
+  { area: "Releasing performance pressure", description: "The push toward toughness and excellence may need softening into something more sustainable." },
+  { area: "Allowing uncertainty", description: "You named 'inspiration' as your theme but also said what needs to shift is unclear — that forming state is valid and worth protecting." },
+];
 
 export const ThemeFinderCard = ({
   journal, cycleSign, cycleDegree, chartName, natalHouse, saveJournal,
+  initialCandidates, initialShiftAreas,
 }: ThemeFinderCardProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [candidates, setCandidates] = useState<ThemeCandidate[]>([]);
-  const [shiftAreas, setShiftAreas] = useState<ShiftArea[]>([]);
+  const [candidates, setCandidates] = useState<ThemeCandidate[]>(initialCandidates || []);
+  const [shiftAreas, setShiftAreas] = useState<ShiftArea[]>(initialShiftAreas || []);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [reactions, setReactions] = useState<Record<number, string>>({});
 
