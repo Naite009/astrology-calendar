@@ -194,7 +194,7 @@ function findTransitAspectsAtDate(date: Date, chart: NatalChart): Array<{ transi
     { name: 'Saturn', body: Astronomy.Body.Saturn },
     { name: 'Jupiter', body: Astronomy.Body.Jupiter },
   ];
-  const { getTransitOrb } = require('@/lib/aspectOrbs');
+  
   const aspectDefs = [
     { name: 'Conjunction', angle: 0, symbol: '☌', key: 'conjunction' },
     { name: 'Square', angle: 90, symbol: '□', key: 'square' },
