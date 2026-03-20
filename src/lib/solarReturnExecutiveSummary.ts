@@ -176,17 +176,24 @@ export function generateExecutiveSummary(
 ): ExecutiveSummary {
   const items: OpportunityChallenge[] = [];
 
-  // Score aspects
-  for (const asp of analysis.srToNatalAspects.slice(0, 15)) {
+  // Score aspects — use tighter aspects first for more meaningful results
+  const sortedAspects = [...analysis.srToNatalAspects].sort((a, b) => a.orb - b.orb);
+  for (const asp of sortedAspects.slice(0, 15)) {
     const { score, isOpp } = scoreAspectOpportunity(asp);
-    const p1Noun = PLANET_NOUNS[asp.planet1] || asp.planet1;
-    const p2Noun = PLANET_NOUNS[asp.planet2] || asp.planet2;
+    const p1Info = PLANET_PLAIN[asp.planet1];
+    const p2Info = PLANET_PLAIN[asp.planet2];
+
+    // Skip aspects where we have no real content for either planet
+    if (!p1Info && !p2Info) continue;
+
+    const tightLabel = asp.orb <= 0.5 ? 'exact' : asp.orb <= 1 ? 'very tight' : asp.orb <= 2 ? 'close' : 'present';
+    const tightNote = asp.orb <= 1 ? ' This is one of the strongest aspects in your chart this year — you\'ll feel it clearly.' : '';
 
     items.push({
       type: isOpp ? 'opportunity' : 'challenge',
-      title: `${asp.planet1} ${asp.type} ${asp.planet2}`,
-      description: buildAspectDescription(asp.planet1, asp.planet2, asp.type, isOpp),
-      source: `${asp.planet1} ${asp.type} natal ${asp.planet2} (${asp.orb}° orb)`,
+      title: buildAspectTitle(asp.planet1, asp.planet2, asp.type, tightLabel),
+      description: buildAspectDescription(asp.planet1, asp.planet2, asp.type, isOpp) + tightNote,
+      source: `${asp.planet1} ${asp.type} natal ${asp.planet2} (${asp.orb.toFixed(1)}° orb — ${tightLabel})`,
       intensity: Math.round(score),
     });
   }
