@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
+import { MetricTracker } from "./moonCycle/MetricTracker";
 import { 
   Moon, 
   Sparkles, 
