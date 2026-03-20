@@ -304,8 +304,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     if (profH === satH) {
       patterns.push({
         pattern: `Profection year and Saturn converge on House ${profH}`,
-        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this is not coincidence. Life is demanding maturity in this area.`,
-        connection: 'When the profection year aligns with Saturn\'s house, the theme is amplified. This happens roughly every 12 years.',
+        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this isn't random. Two different timing systems are pointing at the same area of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
+        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will demand your attention. This alignment happens roughly every 12 years.',
         category: 'cycle',
       });
     }
