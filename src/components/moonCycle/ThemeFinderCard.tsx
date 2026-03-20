@@ -65,11 +65,15 @@ const PISCES_SEED_SHIFTS: ShiftArea[] = [
 
 export const ThemeFinderCard = ({
   journal, cycleSign, cycleDegree, chartName, natalHouse, saveJournal,
-  initialCandidates, initialShiftAreas,
+  initialCandidates, initialShiftAreas, seedPisces,
 }: ThemeFinderCardProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [candidates, setCandidates] = useState<ThemeCandidate[]>(initialCandidates || []);
-  const [shiftAreas, setShiftAreas] = useState<ShiftArea[]>(initialShiftAreas || []);
+  const [candidates, setCandidates] = useState<ThemeCandidate[]>(
+    initialCandidates || (seedPisces ? PISCES_SEED_CANDIDATES : [])
+  );
+  const [shiftAreas, setShiftAreas] = useState<ShiftArea[]>(
+    initialShiftAreas || (seedPisces ? PISCES_SEED_SHIFTS : [])
+  );
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [reactions, setReactions] = useState<Record<number, string>>({});
 
