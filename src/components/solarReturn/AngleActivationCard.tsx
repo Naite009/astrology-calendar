@@ -38,11 +38,11 @@ const PLANET_MEANINGS: Record<string, string> = {
   Chiron: 'healing, wounds, mentorship',
 };
 
-const ANGLE_MEANINGS: Record<string, { label: string; domain: string }> = {
-  Ascendant: { label: 'Ascendant', domain: 'personal direction, identity, how the year begins' },
-  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters' },
-  Midheaven: { label: 'Midheaven', domain: 'career, reputation, public visibility' },
-  IC: { label: 'IC', domain: 'home, family, emotional foundations' },
+const ANGLE_MEANINGS: Record<string, { label: string; domain: string; house: number }> = {
+  Ascendant: { label: 'Ascendant', domain: 'personal direction, identity, how the year begins', house: 1 },
+  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters', house: 7 },
+  Midheaven: { label: 'Midheaven', domain: 'career, reputation, public visibility', house: 10 },
+  IC: { label: 'IC', domain: 'home, family, emotional foundations', house: 4 },
 };
 
 const ASPECT_RULES: Record<string, string> = {
@@ -56,7 +56,9 @@ const ASPECT_RULES: Record<string, string> = {
 interface Activation {
   angleName: string;
   angleDomain: string;
+  angleHouse: number;
   natalPlanet: string;
+  natalHouse: number | null;
   planetMeaning: string;
   aspectName: string;
   aspectGlyph: string;
@@ -102,6 +104,8 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
         const natalDeg = toAbsDeg(natalPos);
         if (natalDeg === null) continue;
 
+        const natalHouse = (natalPos as any).house || null;
+
         for (const asp of ASPECT_DEFS) {
           let diff = Math.abs(angle.deg - natalDeg);
           if (diff > 180) diff = 360 - diff;
@@ -119,7 +123,9 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
             acts.push({
               angleName: angle.name,
               angleDomain: angleInfo.domain,
+              angleHouse: angleInfo.house,
               natalPlanet: displayPlanet,
+              natalHouse: typeof natalHouse === 'number' ? natalHouse : null,
               planetMeaning: meaning,
               aspectName: asp.name,
               aspectGlyph: asp.glyph,
@@ -187,7 +193,10 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
                 <Target size={14} className="text-primary flex-shrink-0" />
               )}
               <p className="text-xs font-medium text-foreground">
-                SR {act.angleName} {act.aspectGlyph} Natal {act.natalPlanet}
+                SR {act.angleName}
+                <span className="text-primary/70 font-normal ml-1">(H{act.angleHouse})</span>
+                {' '}{act.aspectGlyph} Natal {act.natalPlanet}
+                {act.natalHouse && <span className="text-primary/70 font-normal ml-1">(H{act.natalHouse})</span>}
                 <span className="text-muted-foreground font-normal ml-1.5">({act.orb}°)</span>
               </p>
             </div>
