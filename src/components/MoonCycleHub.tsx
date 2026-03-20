@@ -30,10 +30,10 @@ export const MoonCycleHub = ({
     <div className="space-y-4">
       <div className="text-center mb-2">
         <h2 className="font-serif text-2xl font-light tracking-widest text-foreground">
-          ☽ Cycle Tracker
+          ☽ Moon Cycle Workbook
         </h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Track lunar phases against your natal chart · Discover patterns · Journal your experience
+        <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
+          A monthly emotional work cycle · Track what rises, what peaks, and what asks to be released
         </p>
       </div>
 
@@ -44,9 +44,6 @@ export const MoonCycleHub = ({
           </TabsTrigger>
           <TabsTrigger value="calendar" className="text-xs">
             📅 Calendar
-          </TabsTrigger>
-          <TabsTrigger value="journal" className="text-xs">
-            📓 Journal
           </TabsTrigger>
           <TabsTrigger value="patterns" className="text-xs">
             🔮 Patterns
@@ -67,23 +64,6 @@ export const MoonCycleHub = ({
 
         <TabsContent value="calendar">
           <MoonPhasesView year={currentYear} />
-        </TabsContent>
-
-        <TabsContent value="journal">
-          {/* The journal is currently embedded in LunarCycleView via LunarWorkbookSection.
-              For now, point users to the Dashboard tab where the workbook lives.
-              Phase 2 will extract it as a standalone sub-tab. */}
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">
-              📓 Your lunar journal is in the <strong>Dashboard</strong> tab — scroll down to the ☽ Cycle Workbook section.
-            </p>
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className="mt-2 text-xs text-primary underline"
-            >
-              Go to Dashboard →
-            </button>
-          </div>
         </TabsContent>
 
         <TabsContent value="patterns">

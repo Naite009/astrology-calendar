@@ -5,105 +5,86 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 
 interface MetricTrackerProps {
-  mood: number | null;
   energy: number | null;
-  clarity: number | null;
   stress: number | null;
   sleepQuality: number | null;
-  communicationQuality: number | null;
-  intuition: number | null;
-  productivity: number | null;
+  sensitivity: number | null;
   dreamIntensity: number | null;
-  conflictLevel: number | null;
-  bodySensitivity: number | null;
   tags: string[];
   journalText: string;
+  lifeAreas?: string[];
   onMetricChange: (field: string, value: number) => void;
   onTagsChange: (tags: string[]) => void;
   onJournalTextChange: (text: string) => void;
+  onLifeAreasChange?: (areas: string[]) => void;
 }
 
-const METRICS = [
-  { key: "mood", label: "Mood", emoji: "😊", low: "Low", high: "Great" },
-  { key: "energy", label: "Energy", emoji: "⚡", low: "Drained", high: "Vibrant" },
-  { key: "clarity", label: "Clarity", emoji: "💎", low: "Foggy", high: "Crystal" },
-  { key: "stress", label: "Stress", emoji: "😰", low: "Calm", high: "Intense" },
-  { key: "sleepQuality", label: "Sleep", emoji: "😴", low: "Poor", high: "Deep" },
-  { key: "communicationQuality", label: "Communication", emoji: "💬", low: "Muddled", high: "Flowing" },
-  { key: "intuition", label: "Intuition", emoji: "🔮", low: "Quiet", high: "Loud" },
-  { key: "productivity", label: "Productivity", emoji: "📈", low: "Stalled", high: "On Fire" },
-  { key: "dreamIntensity", label: "Dreams", emoji: "🌙", low: "None", high: "Vivid" },
-  { key: "conflictLevel", label: "Conflict", emoji: "⚔️", low: "None", high: "Heated" },
-  { key: "bodySensitivity", label: "Body", emoji: "🧘", low: "Numb", high: "Heightened" },
+const BODY_METRICS = [
+  { key: "energy", dbField: "energy", label: "Energy", emoji: "⚡", low: "Depleted", high: "Alive" },
+  { key: "stress", dbField: "stress", label: "Stress", emoji: "🫁", low: "Calm", high: "Activated" },
+  { key: "sleepQuality", dbField: "sleep_quality", label: "Sleep", emoji: "😴", low: "Restless", high: "Deep" },
+  { key: "sensitivity", dbField: "body_sensitivity", label: "Sensitivity", emoji: "🌊", low: "Grounded", high: "Porous" },
+  { key: "dreamIntensity", dbField: "dream_intensity", label: "Dream Intensity", emoji: "🌙", low: "None", high: "Vivid" },
 ];
 
-// Map camelCase to snake_case for DB fields
-const FIELD_MAP: Record<string, string> = {
-  mood: "mood",
-  energy: "energy",
-  clarity: "clarity",
-  stress: "stress",
-  sleepQuality: "sleep_quality",
-  communicationQuality: "communication_quality",
-  intuition: "intuition",
-  productivity: "productivity",
-  dreamIntensity: "dream_intensity",
-  conflictLevel: "conflict_level",
-  bodySensitivity: "body_sensitivity",
-};
-
-const STARTER_TAGS = [
+const WORKSHOP_TAGS = [
+  "dream",
   "important conversation",
   "short trip",
-  "errands",
-  "writing",
-  "siblings",
-  "fatigue",
-  "retreat",
-  "vivid dreams",
-  "crying release",
-  "insight",
-  "spiritual practice",
-  "conflict",
+  "rest day",
   "breakthrough",
+  "surprise",
+  "release",
+  "intuition",
+  "overwhelm",
+  "grief",
+  "recovery",
+  "forgiveness",
+  "creative flow",
+  "boundary issue",
+  "synchronicity",
+  "spiritual practice",
+  "crying release",
   "news",
-  "home focus",
-  "relationship focus",
-  "career focus",
+];
+
+const LIFE_AREAS = [
+  { key: "body", label: "Body", emoji: "🧘" },
+  { key: "work", label: "Work", emoji: "💼" },
+  { key: "communication", label: "Communication", emoji: "💬" },
+  { key: "home", label: "Home", emoji: "🏠" },
+  { key: "children", label: "Children", emoji: "👶" },
+  { key: "creativity", label: "Creativity", emoji: "🎨" },
+  { key: "partnership", label: "Partnership", emoji: "💕" },
+  { key: "money", label: "Money", emoji: "💰" },
+  { key: "health", label: "Health", emoji: "🩺" },
+  { key: "travel", label: "Travel", emoji: "✈️" },
+  { key: "spirituality", label: "Spirituality", emoji: "🙏" },
+  { key: "career", label: "Career", emoji: "⭐" },
 ];
 
 export const MetricTracker = ({
-  mood,
   energy,
-  clarity,
   stress,
   sleepQuality,
-  communicationQuality,
-  intuition,
-  productivity,
+  sensitivity,
   dreamIntensity,
-  conflictLevel,
-  bodySensitivity,
   tags,
   journalText,
+  lifeAreas = [],
   onMetricChange,
   onTagsChange,
   onJournalTextChange,
+  onLifeAreasChange,
 }: MetricTrackerProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const values: Record<string, number | null> = {
-    mood,
     energy,
-    clarity,
     stress,
     sleepQuality,
-    communicationQuality,
-    intuition,
-    productivity,
+    sensitivity,
     dreamIntensity,
-    conflictLevel,
-    bodySensitivity,
   };
 
   const toggleTag = (tag: string) => {
@@ -111,6 +92,15 @@ export const MetricTracker = ({
       onTagsChange(tags.filter((t) => t !== tag));
     } else {
       onTagsChange([...tags, tag]);
+    }
+  };
+
+  const toggleLifeArea = (area: string) => {
+    if (!onLifeAreasChange) return;
+    if (lifeAreas.includes(area)) {
+      onLifeAreasChange(lifeAreas.filter((a) => a !== area));
+    } else {
+      onLifeAreasChange([...lifeAreas, area]);
     }
   };
 
@@ -124,10 +114,10 @@ export const MetricTracker = ({
           className="w-full flex items-center justify-between text-sm font-medium"
         >
           <span className="flex items-center gap-2">
-            📊 Track Your Experience
+            🧘 Body State + Experience
             {trackedCount > 0 && (
               <Badge variant="secondary" className="text-[10px]">
-                {trackedCount}/11
+                {trackedCount}/5
               </Badge>
             )}
           </span>
@@ -137,10 +127,11 @@ export const MetricTracker = ({
         </button>
 
         {isExpanded && (
-          <div className="space-y-5 pt-2">
-            {/* Metric Sliders */}
+          <div className="space-y-6 pt-2">
+            {/* Body State Sliders */}
             <div className="space-y-3">
-              {METRICS.map((m) => (
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">How is your body?</p>
+              {BODY_METRICS.map((m) => (
                 <div key={m.key} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span>
@@ -151,7 +142,7 @@ export const MetricTracker = ({
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground w-12 text-right">
+                    <span className="text-[10px] text-muted-foreground w-14 text-right">
                       {m.low}
                     </span>
                     <Slider
@@ -159,10 +150,10 @@ export const MetricTracker = ({
                       max={10}
                       step={1}
                       value={[values[m.key] ?? 5]}
-                      onValueChange={([v]) => onMetricChange(FIELD_MAP[m.key], v)}
+                      onValueChange={([v]) => onMetricChange(m.dbField, v)}
                       className="flex-1"
                     />
-                    <span className="text-[10px] text-muted-foreground w-12">
+                    <span className="text-[10px] text-muted-foreground w-14">
                       {m.high}
                     </span>
                   </div>
@@ -170,11 +161,33 @@ export const MetricTracker = ({
               ))}
             </div>
 
+            {/* Life Areas Activated */}
+            {onLifeAreasChange && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Life areas activated</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {LIFE_AREAS.map((area) => (
+                    <button
+                      key={area.key}
+                      onClick={() => toggleLifeArea(area.key)}
+                      className={`rounded-full px-2.5 py-1 text-[10px] border transition-all ${
+                        lifeAreas.includes(area.key)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {area.emoji} {area.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Tags */}
             <div className="space-y-2">
-              <p className="text-xs font-medium">🏷️ Tags</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">What showed up?</p>
               <div className="flex flex-wrap gap-1.5">
-                {STARTER_TAGS.map((tag) => (
+                {WORKSHOP_TAGS.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
@@ -192,12 +205,12 @@ export const MetricTracker = ({
 
             {/* Free-form Journal */}
             <div className="space-y-2">
-              <p className="text-xs font-medium">📝 Free Journal</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">What actually happened?</p>
               <Textarea
-                placeholder="Anything else you want to note about today's experience..."
+                placeholder="What is surfacing? What conversations, dreams, or events stood out? What does your body need?"
                 value={journalText || ""}
                 onChange={(e) => onJournalTextChange(e.target.value)}
-                className="min-h-[80px] bg-background border-border/50 text-sm resize-none"
+                className="min-h-[100px] bg-background border-border/50 text-sm resize-none"
               />
             </div>
           </div>

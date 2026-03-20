@@ -60,32 +60,32 @@ const PHASE_CONFIG = {
   newMoon: {
     emoji: "🌑",
     title: "New Moon",
-    subtitle: "Planting Seeds",
-    description: "At the New Moon you are planting seeds in the dark, fertile soil. Your soul wants something to grow. It's a quiet, inward time when the sun (our divine masculine) and the moon (our divine feminine) come together to create new life.",
+    subtitle: "Seed + New Beginning",
+    description: "Name the next emotional piece and begin working with it. Allow the intention to develop over a day or two if needed. Honor the darkness and not-knowing. Work with what is feeling important to the heart right now.",
   },
   firstQuarter: {
     emoji: "🌓",
     title: "First Quarter",
-    subtitle: "Taking Action",
-    description: "At the First Quarter Moon plans are underway. We feel the waxing/rising/yang energy. It's a busy time. We're feeling an internal PUSH to grow. You're getting feedback from the world and overcoming obstacles.",
+    subtitle: "Action + Friction",
+    description: "Notice choices, effort, resistance, and movement. Something is pushing this cycle forward. Where do you need courage, effort, or adjustment?",
   },
   fullMoon: {
     emoji: "🌕",
     title: "Full Moon",
-    subtitle: "Illumination",
-    description: "At the Full Moon, the fruit is ripe. There's lots of LIGHT in the sky to see what's going on. The energy is moving quickly and things will naturally come to a head. It's the time for gratitude and releasing what's not needed.",
+    subtitle: "Culmination + Visibility",
+    description: "Notice what becomes clear, emotional, visible, or complete. The fruit is ripe. What peaked, ripened, or demanded acknowledgment?",
   },
   lastQuarter: {
     emoji: "🌗",
     title: "Last Quarter",
-    subtitle: "Letting Go",
-    description: "At the Last Quarter Moon you're tying up loose ends, finishing things, cleaning up 'energy leaks'. You're reflecting on the cycle and what was learned. It's a good time for letting go and breaking negative patterns.",
+    subtitle: "Integration + Release",
+    description: "Reflect on what is no longer working and what is ready to be let go. Tie up loose ends. What lesson did this cycle teach?",
   },
   balsamic: {
     emoji: "🌘",
     title: "Balsamic Moon",
-    subtitle: "Rest & Renewal",
-    description: "The Dark Moon/Balsamic Moon is a time for quiet, rest and contemplation. Empty your mind, slow down and open to guidance. Your energy is lower. Honor this dark time. We're moving back towards the regenerative dark.",
+    subtitle: "Sacred Listening Window",
+    description: "Take things off your plate. Get quiet. Pay attention to dreams and early morning feelings. Do not overload yourself. Listen for the next emotional piece asking to be held.",
   }
 };
 
@@ -366,11 +366,11 @@ export const LunarWorkbookSection = ({
 
   // Guided mode steps for New Moon phase
   const newMoonSteps = [
-    { field: 'new_moon_feelings', label: "What FEELS important right now?", placeholder: "What is my soul telling me is 'up' right now?", icon: <Heart className="h-4 w-4 text-rose-500" /> },
-    { field: 'new_moon_showing_up', label: "What's SHOWING UP in your life?", placeholder: "What issues have been at the forefront of your mind?", icon: <Eye className="h-4 w-4 text-amber-500" /> },
-    { field: 'new_moon_house_themes', label: "House Themes", placeholder: "What area of life is being illuminated?", icon: <Target className="h-4 w-4 text-primary" /> },
-    { field: 'new_moon_intentions', label: "My Intention(s) for this cycle", placeholder: "Write your intentions as a prayer, affirmation, or wish...", icon: <Sparkles className="h-4 w-4 text-primary" /> },
-    { field: 'new_moon_body_sensations', label: "How would I FEEL with this present?", placeholder: "Focus on sensations in your body...", icon: <Zap className="h-4 w-4 text-purple-500" /> },
+    { field: 'new_moon_feelings', label: "What wants to be worked with this cycle?", placeholder: "What is surfacing from within? What emotional theme feels alive now?", icon: <Heart className="h-4 w-4 text-rose-500" /> },
+    { field: 'new_moon_showing_up', label: "What is showing up in your life?", placeholder: "What is the world reflecting back to you?", icon: <Eye className="h-4 w-4 text-amber-500" /> },
+    { field: 'new_moon_house_themes', label: "House Themes", placeholder: "What area of life is being illuminated? What would it mean to nurture this gently?", icon: <Target className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_intentions', label: "Intention(s) for this cycle", placeholder: "Write when emotionally clear. Allow the words to develop over a day or two if needed...", icon: <Sparkles className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_body_sensations', label: "How would I feel with this present?", placeholder: "Focus on sensations in your body. What does it feel like to hold this intention?", icon: <Zap className="h-4 w-4 text-purple-500" /> },
   ];
 
   const handleGenerateIntentions = async () => {
@@ -513,36 +513,36 @@ export const LunarWorkbookSection = ({
             )}
 
             <JournalField
-              label="What FEELS important right now? (inside ☽)"
-              placeholder="What is my soul telling me is 'up' right now? What's wanting to be conceived?"
+              label="What wants to be worked with this cycle?"
+              placeholder="What is surfacing from within? What emotional theme feels alive now?"
               value={journal?.new_moon_feelings}
               onChange={(v) => updateField('new_moon_feelings', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="What's SHOWING UP in your life? (outside ☼)"
-              placeholder="What issues have been at the forefront of your mind over the past few days/week?"
+              label="What is showing up in your life?"
+              placeholder="What issues have been at the forefront? What is the world reflecting back to you?"
               value={journal?.new_moon_showing_up}
               onChange={(v) => updateField('new_moon_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-amber-500" />}
             />
             <JournalField
               label="House Themes"
-              placeholder="What area of life is being illuminated for you? What are the themes of that house?"
+              placeholder="What area of life is being illuminated? What would it mean to nurture this gently?"
               value={journal?.new_moon_house_themes}
               onChange={(v) => updateField('new_moon_house_themes', v)}
               icon={<Target className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="My Intention(s) for this cycle"
-              placeholder="Allow the intentions to come to you. Write your intentions as a prayer, affirmation, or wish..."
+              label="Intention(s) for this cycle"
+              placeholder="Write when emotionally clear. Allow the words to develop over a day or two if needed..."
               value={journal?.new_moon_intentions}
               onChange={(v) => updateField('new_moon_intentions', v)}
               icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="How would I FEEL with this present?"
-              placeholder="Focus on the sensations in your body rather than emotions..."
+              label="How would I feel with this present?"
+              placeholder="Focus on sensations in your body. What does it feel like to hold this intention?"
               value={journal?.new_moon_body_sensations}
               onChange={(v) => updateField('new_moon_body_sensations', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
@@ -584,22 +584,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up in my life?"
-              placeholder="What feedback are you receiving? What obstacles are you facing?"
+              label="What action am I taking?"
+              placeholder="What is moving? What effort or decision is shaping this cycle?"
               value={journal?.first_quarter_showing_up}
               onChange={(v) => updateField('first_quarter_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-amber-500" />}
             />
             <JournalField
-              label="Obstacles & Challenges"
-              placeholder="What's pushing back? What resistance are you feeling?"
+              label="What tension or challenge is present?"
+              placeholder="Where do I need courage or adjustment? What's pushing back?"
               value={journal?.first_quarter_obstacles}
               onChange={(v) => updateField('first_quarter_obstacles', v)}
               icon={<Target className="h-4 w-4 text-red-500" />}
             />
             <JournalField
-              label="Adjustments I'm Making"
-              placeholder="How are you adapting? What decisions are you making?"
+              label="What action actually moved the story?"
+              placeholder="What decision did I make? How am I adapting?"
               value={journal?.first_quarter_adjustments}
               onChange={(v) => updateField('first_quarter_adjustments', v)}
               icon={<RefreshCw className="h-4 w-4 text-primary" />}
@@ -611,22 +611,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up / being illuminated?"
-              placeholder="What is spirit asking you to pay attention to? What has come to fruition?"
+              label="What came to light?"
+              placeholder="What became obvious, emotional, or visible? What peaked or ripened?"
               value={journal?.full_moon_showing_up}
               onChange={(v) => updateField('full_moon_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-yellow-500" />}
             />
             <JournalField
-              label="What am I grateful for?"
-              placeholder="Express gratitude for the light and revelation..."
+              label="What result or realization became visible?"
+              placeholder="What demanded acknowledgment? What am I grateful for in this revelation?"
               value={journal?.full_moon_gratitude}
               onChange={(v) => updateField('full_moon_gratitude', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="What am I releasing?"
-              placeholder="What's not needed? What's ready to be let go?"
+              label="What needs release?"
+              placeholder="What peaked emotionally and now asks to be let go?"
               value={journal?.full_moon_releasing}
               onChange={(v) => updateField('full_moon_releasing', v)}
               icon={<RefreshCw className="h-4 w-4 text-purple-500" />}
@@ -638,22 +638,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up in my life?"
-              placeholder="What loose ends need tying? What's finishing?"
+              label="What no longer fits?"
+              placeholder="What is no longer worth carrying forward? What has run its course?"
               value={journal?.last_quarter_showing_up}
               onChange={(v) => updateField('last_quarter_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-purple-500" />}
             />
             <JournalField
-              label="What am I letting go of?"
-              placeholder="What needs to be surrendered? What doesn't serve anymore?"
+              label="What lesson did this cycle teach me?"
+              placeholder="What did I learn about myself, my patterns, or my needs?"
               value={journal?.last_quarter_letting_go}
               onChange={(v) => updateField('last_quarter_letting_go', v)}
               icon={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
             />
             <JournalField
-              label="Patterns I'm Releasing"
-              placeholder="What negative patterns are you breaking?"
+              label="What do I need to edit, forgive, or reframe?"
+              placeholder="What patterns am I releasing? What perspective is shifting?"
               value={journal?.last_quarter_patterns}
               onChange={(v) => updateField('last_quarter_patterns', v)}
               icon={<Zap className="h-4 w-4 text-amber-500" />}
@@ -664,37 +664,43 @@ export const LunarWorkbookSection = ({
       case 'balsamic':
         return (
           <>
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 mb-2">
+              <p className="text-xs text-muted-foreground italic leading-relaxed">
+                🕯️ <strong>Sacred Listening Window</strong> — Take things off your plate. Get quiet. 
+                Pay attention to dreams and early morning feelings. Listen for what is rising up to be worked with next.
+              </p>
+            </div>
             <JournalField
-              label="What's showing up within me?"
-              placeholder="As you slow down and go inward, what guidance are you receiving?"
+              label="What is distilling down from the last cycle?"
+              placeholder="What is rising up asking for care? What feels emotionally charged enough to work with?"
               value={journal?.balsamic_reflections}
               onChange={(v) => updateField('balsamic_reflections', v)}
               icon={<Moon className="h-4 w-4 text-muted-foreground" />}
             />
             <JournalField
-              label="What has evolved for me this cycle?"
-              placeholder="Reflect on your journey from New Moon to now..."
+              label="What am I noticing in dreams or early morning consciousness?"
+              placeholder="What intuitive nudges, exhaustion, or quiet signals are showing up?"
               value={journal?.balsamic_evolved}
               onChange={(v) => updateField('balsamic_evolved', v)}
               icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="How am I different?"
-              placeholder="Yes it can be very subtle, but our soul asks us to grow a tiny bit in each cycle..."
+              label="What wants rest instead of force?"
+              placeholder="What is ending quietly? What needs compassionate witnessing?"
               value={journal?.balsamic_different}
               onChange={(v) => updateField('balsamic_different', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="Wisdom I'm taking into the next cycle"
-              placeholder="What did you learn? What will you carry forward?"
+              label="Wisdom I'm carrying into the next cycle"
+              placeholder="What did this cycle teach? What do I know now that I didn't before?"
               value={journal?.cycle_wisdom}
               onChange={(v) => updateField('cycle_wisdom', v)}
               icon={<Target className="h-4 w-4 text-primary" />}
             />
             <JournalField
               label="What's stirring for the next cycle?"
-              placeholder="What are the inner stirrings inside of your being asking you to pay attention to?"
+              placeholder="What early signals, feelings, or themes are beginning to form?"
               value={journal?.cycle_next_stirrings}
               onChange={(v) => updateField('cycle_next_stirrings', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
@@ -804,19 +810,13 @@ export const LunarWorkbookSection = ({
           </Tabs>
         )}
 
-        {/* Metric Tracking */}
+        {/* Body State + Experience Tracking */}
         <MetricTracker
-          mood={journal?.mood ?? null}
           energy={journal?.energy ?? null}
-          clarity={journal?.clarity ?? null}
           stress={journal?.stress ?? null}
           sleepQuality={journal?.sleep_quality ?? null}
-          communicationQuality={journal?.communication_quality ?? null}
-          intuition={journal?.intuition ?? null}
-          productivity={journal?.productivity ?? null}
+          sensitivity={journal?.body_sensitivity ?? null}
           dreamIntensity={journal?.dream_intensity ?? null}
-          conflictLevel={journal?.conflict_level ?? null}
-          bodySensitivity={journal?.body_sensitivity ?? null}
           tags={(journal?.tags as string[]) ?? []}
           journalText={journal?.journal_text ?? ""}
           onMetricChange={(field, value) => saveJournal({ [field]: value })}
