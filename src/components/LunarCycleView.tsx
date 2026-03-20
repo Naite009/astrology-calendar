@@ -102,6 +102,31 @@ function findNewMoons(referenceDate: Date, cycleOffset = 0): { previous: { date:
   };
 }
 
+// Find the nearest New Moon in a specific sign (searching forward or backward)
+function findNewMoonInSign(sign: string, direction: 'next' | 'previous', fromDate: Date): Date | null {
+  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  if (signIndex < 0) return null;
+  
+  let searchDate = new Date(fromDate);
+  // Search up to 14 cycles (~14 months) to guarantee finding the sign
+  for (let i = 0; i < 14; i++) {
+    const offset = direction === 'next' ? 30 : -30;
+    const nm = Astronomy.SearchMoonPhase(0, searchDate, offset);
+    if (!nm) { searchDate.setDate(searchDate.getDate() + offset); continue; }
+    
+    const vec = Astronomy.GeoVector(Astronomy.Body.Moon, nm.date, false);
+    const ecl = Astronomy.Ecliptic(vec);
+    const lon = ((ecl.elon % 360) + 360) % 360;
+    const nmSignIndex = Math.floor(lon / 30);
+    
+    if (nmSignIndex === signIndex) return nm.date;
+    
+    // Move search cursor past this New Moon
+    searchDate = new Date(nm.date.getTime() + (direction === 'next' ? 2 : -2) * 24 * 60 * 60 * 1000);
+  }
+  return null;
+}
+
 // Calculate which natal house a given ecliptic longitude falls in
 function calculateNatalHouse(longitude: number, houseCusps: NatalChart['houseCusps']): number | null {
   if (!houseCusps) return null;
