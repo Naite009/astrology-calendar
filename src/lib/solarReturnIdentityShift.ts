@@ -137,15 +137,22 @@ function buildNarrative(
 ): string {
   const parts: string[] = [];
 
-  parts.push(`This year, your identity is being reshaped. The Solar Return Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} House)` : ''} directs your vital energy toward ${sunArch.keyword} — you are learning what it means to live as ${sunArch.becoming}.`);
+  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what the Sun in ${sunSign} is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
 
   if (ascSign !== sunSign) {
-    parts.push(`Meanwhile, ${ascSign} Rising gives you a new social skin: people encounter your ${ascArch.keyword} first. The way you walk into rooms, start conversations, and handle first impressions is shifting toward ${ascArch.mode}.`);
+    parts.push(`At the same time, people will experience you differently this year. ${ascSign} Rising means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
   } else {
-    parts.push(`With both your Sun and Ascendant in ${sunSign}, there is no gap between who you are becoming and how the world sees you — an unusually integrated year where inner purpose and outer presentation align.`);
+    parts.push(`With both your Sun and Rising in ${sunSign}, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
   }
 
-  parts.push(`The North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''} marks the growth edge: ${nodeArch.keyword}. This is where the universe is asking you to stretch beyond comfort. The integration of ${sunArch.keyword}, ${ascArch.keyword}, and ${nodeArch.keyword} defines who you are becoming this year.`);
+  // Avoid repeating the same keyword/plain if node matches sun or asc
+  if (nodeSign === sunSign && nodeSign === ascSign) {
+    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. Lean all the way in.`);
+  } else if (nodeSign === sunSign) {
+    parts.push(`Your growth edge (North Node) is in the same sign as your Sun — ${nodeSign}${nodeHouse ? `, in the ${ordinal(nodeHouse)} House` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning, specifically through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}.`);
+  } else {
+    parts.push(`The stretch this year comes from your North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
+  }
 
   return parts.join(' ');
 }
