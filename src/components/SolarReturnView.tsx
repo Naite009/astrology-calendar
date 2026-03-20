@@ -125,6 +125,43 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
     return analyzeSolarReturn(selectedSR, selectedNatal);
   }, [selectedSR, selectedNatal]);
 
+  const handleBirthdayGiftExport = useCallback(async () => {
+    if (!analysis || !selectedSR || !selectedNatal) return;
+
+    // If AI readings already exist, download immediately
+    if (aiReadings.plain && aiReadings.astro) {
+      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+      return;
+    }
+
+    // Auto-generate both readings first
+    setIsGeneratingForExport(true);
+    toast.info('Generating AI readings before export… this takes about a minute.');
+    const controller = new AbortController();
+    abortExportRef.current = controller;
+
+    try {
+      const fullJson = buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+
+      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, () => {});
+      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, () => {});
+
+      const finalReadings = { plain: plainResult, astro: astroResult };
+      setAiReadings(finalReadings);
+      toast.success('AI readings generated — downloading JSON');
+      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, finalReadings);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('Auto-generate AI error:', err);
+        toast.error(err.message || 'Failed to generate AI readings');
+        // Download anyway with whatever we have
+        downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+      }
+    } finally {
+      setIsGeneratingForExport(false);
+    }
+  }, [analysis, selectedSR, selectedNatal, aiReadings]);
+
   if (!allCharts.length) {
     return (
       <div className="text-center py-20 text-muted-foreground">
