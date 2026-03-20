@@ -43,6 +43,7 @@ import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresC
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
+import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
 
 const ZODIAC_SIGNS = [
