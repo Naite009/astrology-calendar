@@ -644,9 +644,9 @@ LUNAR CYCLE CONTEXT:
 - Degree: ${interpretation.degree}°
 - Ruler: ${interpretation.ruler} in ${interpretation.rulerSign}${interpretation.rulerRetrograde ? ' (Retrograde)' : ''}
 - Sign Theme: ${interpretation.signTheme}
-${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}` : ''}
-${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => c.name).join(', ')}` : ''}
-${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType}`).join(', ')}` : ''}
+${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}\n  FELT SENSE: ${interpretation.stelliumFeltSense}` : ''}
+${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => `${c.symbol}${c.name} at ${c.degree.toFixed(1)}° ${c.sign}`).join(', ')}\n  IMPORTANT: For EACH conjunct planet, explain specifically HOW that planet's energy will be felt during this cycle. Saturn = weight, discipline, sober clarity. Neptune = dissolving boundaries, heightened intuition. Don't just say "concentrated energy" — describe the SOMATIC FELT SENSE of each planet.` : ''}
+${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType} (${a.orb.toFixed(1)}°)`).join(', ')}` : ''}
 
 ${keyPhasesInfo}
 
