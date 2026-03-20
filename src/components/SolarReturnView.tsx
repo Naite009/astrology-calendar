@@ -274,7 +274,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
               if (tier === 'gift') {
-                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
+                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
               } else {
                 setActiveTier(prev => prev === tier ? null : tier as any);
               }
