@@ -332,6 +332,7 @@ export const LunarWorkbookSection = ({
   const [isInterpretingTarot, setIsInterpretingTarot] = useState(false);
   const [isInterpretingOracle, setIsInterpretingOracle] = useState(false);
   const [selectedPastJournal, setSelectedPastJournal] = useState<LunarJournalEntry | null>(null);
+  const [simpleMode, setSimpleMode] = useState(true);
   
   const { 
     journal, 
