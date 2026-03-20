@@ -538,7 +538,8 @@ export function downloadBirthdayJSONStandalone(
 export function buildFullJsonStandalone(
   analysis: SolarReturnAnalysis,
   srChart: SolarReturnChart,
-  natalChart: NatalChart
+  natalChart: NatalChart,
+  aiReadings?: { plain: string; astro: string }
 ): Record<string, any> {
   const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
     planet,
