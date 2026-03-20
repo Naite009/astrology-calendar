@@ -656,6 +656,7 @@ export const getNewMoonInterpretation = (date: Date, moonLongitude: number): New
     rulerRetrograde,
     rulerAspects,
     mainTheme: generateMainTheme(sign, signInfo, conjunctions, aspects, rulerSign, rulerRetrograde),
+    conjunctionPairSyntheses: generateConjunctionPairSyntheses(conjunctions),
     whatToSet: generateWhatToSet(sign, signInfo, conjunctions, degree),
     howToWork: generateHowToWork(aspects, signInfo, rulerSign, rulerAspects),
     soulLevel: generateSoulLevel(conjunctions, sign, rulerRetrograde),
