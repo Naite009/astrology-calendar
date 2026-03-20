@@ -1541,6 +1541,7 @@ Keep the tone deep, insightful, and practically applicable.`
       {/* Lunar Workbook Section - Only shows when a chart is selected */}
       {activeChart && newMoons && keyPhases && (
         <LunarWorkbookSection
+          key={`workbook-${activeChart.id || 'user'}-${newMoons.previous.date.toISOString()}`}
           chartId={activeChart.id || 'user'}
           chartName={activeChart.name || 'Your Chart'}
           cycleStartDate={newMoons.previous.date}
