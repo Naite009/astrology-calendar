@@ -208,6 +208,9 @@ export const AstroCalendar = () => {
     if (viewMode === "cosmic-sounds") {
       return "Cosmic Sounds";
     }
+    if (viewMode === "moon-cycle") {
+      return "☽ Cycle Tracker";
+    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
