@@ -839,6 +839,18 @@ export const AstroCalendar = () => {
           />
         )}
 
+        {viewMode === "moon-cycle" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <MoonCycleHub
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartForTiming}
+              onSelectChart={selectChartForTiming}
+              currentYear={currentDate.getFullYear()}
+            />
+          </Suspense>
+        )}
+
 
         {viewMode === "timing" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading Timing…</div>}>
