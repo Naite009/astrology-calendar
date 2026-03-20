@@ -105,8 +105,9 @@ export function generateIdentityShift(
     },
   ];
 
-  // Headline
-  const headline = `Becoming ${ascArch.becoming.replace('the ', 'The ')} Who ${sunArch.mode.charAt(0).toUpperCase() + sunArch.mode.slice(1)}`;
+  // Headline — title-case all words
+  const titleCase = (s: string) => s.replace(/\b\w/g, c => c.toUpperCase());
+  const headline = `Becoming ${titleCase(ascArch.becoming)} Who ${titleCase(sunArch.mode)}`;
 
   // Main narrative
   const becomingNarrative = buildNarrative(srSunSign, srSunHouse, srAscSign, nodeSign, nodeHouse, sunArch, ascArch, nodeArch);
