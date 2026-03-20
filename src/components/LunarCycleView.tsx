@@ -151,17 +151,18 @@ function calculateNatalHouse(longitude: number, houseCusps: NatalChart['houseCus
   return 1;
 }
 
-// Find natal aspects to a given longitude
+// Find natal aspects to a given longitude (Moon phase → natal planet)
 function findPhaseNatalAspects(longitude: number, chart: NatalChart) {
+  const { getEffectiveOrb } = require('@/lib/aspectOrbs');
   const aspects: Array<{ planet: string; aspect: string; orb: number; symbol: string }> = [];
   const aspectDefs = [
-    { name: 'Conjunction', angle: 0, orb: 3, symbol: '☌' },
-    { name: 'Semi-sextile', angle: 30, orb: 2, symbol: '⚺' },
-    { name: 'Sextile', angle: 60, orb: 3, symbol: '⚹' },
-    { name: 'Square', angle: 90, orb: 5, symbol: '□' },
-    { name: 'Trine', angle: 120, orb: 5, symbol: '△' },
-    { name: 'Quincunx', angle: 150, orb: 3, symbol: '⚻' },
-    { name: 'Opposition', angle: 180, orb: 5, symbol: '☍' },
+    { name: 'Conjunction', angle: 0, symbol: '☌', key: 'conjunction' },
+    { name: 'Semi-sextile', angle: 30, symbol: '⚺', key: 'semisextile' },
+    { name: 'Sextile', angle: 60, symbol: '⚹', key: 'sextile' },
+    { name: 'Square', angle: 90, symbol: '□', key: 'square' },
+    { name: 'Trine', angle: 120, symbol: '△', key: 'trine' },
+    { name: 'Quincunx', angle: 150, symbol: '⚻', key: 'quincunx' },
+    { name: 'Opposition', angle: 180, symbol: '☍', key: 'opposition' },
   ];
 
   Object.entries(chart.planets).forEach(([planet, data]) => {
@@ -172,7 +173,9 @@ function findPhaseNatalAspects(longitude: number, chart: NatalChart) {
     if (diff > 180) diff = 360 - diff;
     
     for (const ad of aspectDefs) {
-      if (Math.abs(diff - ad.angle) <= ad.orb) {
+      // Moon is the transiting body here; use planet-specific orbs
+      const effectiveOrb = getEffectiveOrb('Moon', planet, ad.key);
+      if (Math.abs(diff - ad.angle) <= effectiveOrb) {
         aspects.push({ planet, aspect: ad.name, orb: Math.abs(diff - ad.angle), symbol: ad.symbol });
         break;
       }
