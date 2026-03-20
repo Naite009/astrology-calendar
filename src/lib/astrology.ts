@@ -2,6 +2,7 @@ import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
 import { getAccurateAsteroidPosition } from './asteroidEphemeris';
 import { calculatePlacidusHouses, getCoordinatesFromLocation as getExtendedCoordinates, PlacidusHouses } from './placidusHouses';
+import { getEffectiveOrb as getOrbForPair } from './aspectOrbs';
 // Zodiac signs mapping
 const ZODIAC_SIGNS = [
   { name: 'Aries', symbol: '♈' },
