@@ -153,7 +153,6 @@ function calculateNatalHouse(longitude: number, houseCusps: NatalChart['houseCus
 
 // Find natal aspects to a given longitude (Moon phase → natal planet)
 function findPhaseNatalAspects(longitude: number, chart: NatalChart) {
-  const { getEffectiveOrb } = require('@/lib/aspectOrbs');
   const aspects: Array<{ planet: string; aspect: string; orb: number; symbol: string }> = [];
   const aspectDefs = [
     { name: 'Conjunction', angle: 0, symbol: '☌', key: 'conjunction' },
