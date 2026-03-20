@@ -986,7 +986,7 @@ Keep the tone deep, insightful, and practically applicable.`
                                 <div className="flex flex-wrap gap-1.5">
                                   {transitAsp.slice(0, 5).map((t, ti) => (
                                     <Badge key={ti} variant="outline" className="text-[10px] border-primary/30">
-                                      {t.symbol} ♅♆♇♄♃.includes(t.transit[0]) ? '' : ''}{t.transit} {t.aspect} natal {t.natal} ({t.orb.toFixed(1)}°)
+                                      {t.transit} {t.symbol} {t.aspect} natal {t.natal} ({t.orb.toFixed(1)}°)
                                     </Badge>
                                   ))}
                                 </div>
