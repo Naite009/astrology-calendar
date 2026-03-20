@@ -748,6 +748,10 @@ export function buildFullJsonStandalone(
         12: 'Rest, retreat, healing, spirituality',
       },
     },
+
+    // AI-generated readings (both modes)
+    aiReadingPlain: aiReadings?.plain || null,
+    aiReadingAstro: aiReadings?.astro || null,
   };
 }
 
