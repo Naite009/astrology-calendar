@@ -16,6 +16,7 @@ import {
   BookOpen,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   AlertCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useLunarJournal, LunarJournalEntry } from "@/hooks/useLunarJournal";
 import { SignLunationData } from "@/lib/signLunationData";
 import { supabase } from "@/integrations/supabase/client";
