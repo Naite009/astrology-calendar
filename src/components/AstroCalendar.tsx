@@ -46,10 +46,10 @@ import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
 const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
+const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
 
 
-
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -207,6 +207,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "cosmic-sounds") {
       return "Cosmic Sounds";
+    }
+    if (viewMode === "moon-cycle") {
+      return "☽ Cycle Tracker";
     }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
@@ -657,6 +660,16 @@ export const AstroCalendar = () => {
                 Moon
               </button>
               <button
+                onClick={() => setViewMode("moon-cycle")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "moon-cycle"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ☽ Cycle
+              </button>
+              <button
                 onClick={() => setViewMode("retrogrades")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "retrogrades"
@@ -1001,6 +1014,18 @@ export const AstroCalendar = () => {
             savedCharts={savedCharts}
             currentYear={currentDate.getFullYear()}
           />
+        )}
+
+        {viewMode === "moon-cycle" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <MoonCycleHub
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartForTiming}
+              onSelectChart={selectChartForTiming}
+              currentYear={currentDate.getFullYear()}
+            />
+          </Suspense>
         )}
 
         {viewMode === "foundations" && (

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
+import { MetricTracker } from "./moonCycle/MetricTracker";
 import { 
   Moon, 
   Sparkles, 
@@ -802,6 +803,26 @@ export const LunarWorkbookSection = ({
             ))}
           </Tabs>
         )}
+
+        {/* Metric Tracking */}
+        <MetricTracker
+          mood={journal?.mood ?? null}
+          energy={journal?.energy ?? null}
+          clarity={journal?.clarity ?? null}
+          stress={journal?.stress ?? null}
+          sleepQuality={journal?.sleep_quality ?? null}
+          communicationQuality={journal?.communication_quality ?? null}
+          intuition={journal?.intuition ?? null}
+          productivity={journal?.productivity ?? null}
+          dreamIntensity={journal?.dream_intensity ?? null}
+          conflictLevel={journal?.conflict_level ?? null}
+          bodySensitivity={journal?.body_sensitivity ?? null}
+          tags={(journal?.tags as string[]) ?? []}
+          journalText={journal?.journal_text ?? ""}
+          onMetricChange={(field, value) => saveJournal({ [field]: value })}
+          onTagsChange={(tags) => saveJournal({ tags })}
+          onJournalTextChange={(text) => saveJournal({ journal_text: text })}
+        />
 
         {/* Past Cycles */}
         {pastJournals.length > 0 && (
