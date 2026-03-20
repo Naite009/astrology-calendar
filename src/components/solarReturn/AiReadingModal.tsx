@@ -3,6 +3,8 @@ import { X, Sparkles, Loader2, RotateCcw, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 
+export type AiReadingMode = 'plain' | 'astro';
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -14,6 +16,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
   const [reading, setReading] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [mode, setMode] = useState<AiReadingMode>('plain');
   const abortRef = useRef<AbortController | null>(null);
 
   const generate = useCallback(async () => {
@@ -34,7 +37,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ fullJson }),
+        body: JSON.stringify({ fullJson, mode }),
         signal: controller.signal,
       });
 
@@ -93,7 +96,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [buildFullJson]);
+  }, [buildFullJson, mode]);
 
   const handleClose = () => {
     abortRef.current?.abort();
@@ -105,12 +108,14 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SolarReturn_AI_Reading_${personName.replace(/\s+/g, '_')}.md`;
+    a.download = `SolarReturn_AI_Reading_${personName.replace(/\s+/g, '_')}_${mode}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   if (!open) return null;
+
+  const modeLabel = mode === 'plain' ? 'Plain Language' : 'Astrology Mind';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -119,11 +124,43 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <h2 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
             <Sparkles size={16} className="text-primary" />
-            AI Solar Return Reading — {personName}
+            AI Reading — {personName}
           </h2>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X size={18} />
           </button>
+        </div>
+
+        {/* Mode Toggle */}
+        <div className="px-5 py-2.5 border-b border-border flex items-center gap-3">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Voice:</span>
+          <div className="flex rounded-full border border-border overflow-hidden">
+            <button
+              onClick={() => { if (!isStreaming) setMode('plain'); }}
+              className={`px-3 py-1 text-[11px] font-medium transition-colors ${
+                mode === 'plain'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Plain Language
+            </button>
+            <button
+              onClick={() => { if (!isStreaming) setMode('astro'); }}
+              className={`px-3 py-1 text-[11px] font-medium transition-colors ${
+                mode === 'astro'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Astrology Mind
+            </button>
+          </div>
+          <span className="text-[10px] text-muted-foreground ml-1">
+            {mode === 'plain'
+              ? 'No jargon — concrete life advice for anyone'
+              : 'Full astrological detail with placements, aspects & technical depth'}
+          </span>
         </div>
 
         {/* Body */}
@@ -132,14 +169,16 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
             <div className="text-center py-12 space-y-4">
               <Sparkles size={36} className="mx-auto text-primary/50" />
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Generate a comprehensive AI-written reading that synthesizes your entire Solar Return — identity shift, emotional landscape, life domain scores, contradictions, activation windows, and more — into a personalized narrative.
+                {mode === 'plain'
+                  ? 'Generate a reading that translates your entire Solar Return into plain, actionable life guidance — no astrology background needed.'
+                  : 'Generate a technically rich reading that uses full astrological language — placements, aspects, dignities, timing windows, and chart-level synthesis.'}
               </p>
               <button
                 onClick={generate}
                 className="text-[11px] uppercase tracking-widest px-6 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
               >
                 <Sparkles size={14} />
-                Generate Full AI Reading
+                Generate {modeLabel} Reading
               </button>
             </div>
           )}
@@ -147,7 +186,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
           {isStreaming && !reading && (
             <div className="text-center py-12">
               <Loader2 size={28} className="animate-spin mx-auto text-primary mb-3" />
-              <p className="text-sm text-muted-foreground">Synthesizing your complete Solar Return data...</p>
+              <p className="text-sm text-muted-foreground">Synthesizing your complete Solar Return data ({modeLabel})...</p>
             </div>
           )}
 
