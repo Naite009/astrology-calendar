@@ -42,17 +42,24 @@ export const HealthAspectsCard = ({ natalChart }: HealthAspectsCardProps) => {
     return SIGN_DEGREES[planet.sign] + planet.degree + (planet.minutes || 0) / 60;
   };
 
-  // Detect aspects between two planets
-  const detectAspect = (planet1Deg: number, planet2Deg: number): { type: string; orb: number } | null => {
+  // Detect aspects between two planets using planet-specific orbs
+  const detectAspect = (planet1Deg: number, planet2Deg: number, p1Name: string, p2Name: string): { type: string; orb: number } | null => {
     let diff = Math.abs(planet1Deg - planet2Deg);
     if (diff > 180) diff = 360 - diff;
 
-    if (diff <= ASPECT_ORBS.conjunction.orb) return { type: 'conjunction', orb: diff };
-    if (Math.abs(diff - 180) <= ASPECT_ORBS.opposition.orb) return { type: 'opposition', orb: Math.abs(diff - 180) };
-    if (Math.abs(diff - 90) <= ASPECT_ORBS.square.orb) return { type: 'square', orb: Math.abs(diff - 90) };
-    if (Math.abs(diff - 120) <= ASPECT_ORBS.trine.orb) return { type: 'trine', orb: Math.abs(diff - 120) };
-    if (Math.abs(diff - 60) <= ASPECT_ORBS.sextile.orb) return { type: 'sextile', orb: Math.abs(diff - 60) };
-    
+    const aspects = [
+      { type: 'conjunction', angle: 0 },
+      { type: 'opposition', angle: 180 },
+      { type: 'square', angle: 90 },
+      { type: 'trine', angle: 120 },
+      { type: 'sextile', angle: 60 },
+    ];
+    for (const a of aspects) {
+      const orb = Math.abs(diff - a.angle);
+      if (orb <= getEffectiveOrb(p1Name, p2Name, a.type)) {
+        return { type: a.type, orb };
+      }
+    }
     return null;
   };
 
