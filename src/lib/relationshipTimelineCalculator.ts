@@ -1,5 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { RelationshipTimelineConfig, MonthlyTransitEvent, MonthlySnapshot, RelationshipPhase } from '@/types/relationshipTimeline';
+import { getEffectiveOrb } from './aspectOrbs';
 
 export class RelationshipTimelineCalculator {
   private config: RelationshipTimelineConfig;

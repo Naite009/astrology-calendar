@@ -50,12 +50,12 @@ const PLANET_SYMBOLS: Record<string, string> = {
 
 // Aspect definitions with orbs
 const ASPECTS = [
-  { name: 'conjunction', symbol: '☌', angle: 0, orb: 8, nature: 'fusion' },
-  { name: 'opposition', symbol: '☍', angle: 180, orb: 8, nature: 'tension' },
-  { name: 'trine', symbol: '△', angle: 120, orb: 8, nature: 'flow' },
-  { name: 'square', symbol: '□', angle: 90, orb: 8, nature: 'tension' },
-  { name: 'sextile', symbol: '⚹', angle: 60, orb: 6, nature: 'opportunity' },
-  { name: 'quincunx', symbol: '⚻', angle: 150, orb: 3, nature: 'adjustment' },
+  { name: 'conjunction', symbol: '☌', angle: 0, nature: 'fusion' },
+  { name: 'opposition', symbol: '☍', angle: 180, nature: 'tension' },
+  { name: 'trine', symbol: '△', angle: 120, nature: 'flow' },
+  { name: 'square', symbol: '□', angle: 90, nature: 'tension' },
+  { name: 'sextile', symbol: '⚹', angle: 60, nature: 'opportunity' },
+  { name: 'quincunx', symbol: '⚻', angle: 150, nature: 'adjustment' },
 ];
 
 // Get absolute longitude from position

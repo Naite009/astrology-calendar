@@ -5,18 +5,19 @@ import { ChevronDown, AlertTriangle, Sparkles } from "lucide-react";
 import { useState, useMemo } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { CHALLENGING_HEALTH_ASPECTS, SUPPORTIVE_HEALTH_ASPECTS } from "@/lib/healthAstrology";
+import { getEffectiveOrb } from "@/lib/aspectOrbs";
 
 interface HealthAspectsCardProps {
   natalChart: NatalChart;
 }
 
-// Simple aspect detection
-const ASPECT_ORBS = {
-  conjunction: { orb: 8, symbol: '☌' },
-  opposition: { orb: 8, symbol: '☍' },
-  square: { orb: 7, symbol: '□' },
-  trine: { orb: 8, symbol: '△' },
-  sextile: { orb: 6, symbol: '⚹' }
+// Aspect symbols for display
+const ASPECT_SYMBOLS: Record<string, string> = {
+  conjunction: '☌',
+  opposition: '☍',
+  square: '□',
+  trine: '△',
+  sextile: '⚹',
 };
 
 const SIGN_DEGREES: Record<string, number> = {
