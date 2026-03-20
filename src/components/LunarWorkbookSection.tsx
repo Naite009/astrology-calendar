@@ -321,6 +321,7 @@ export const LunarWorkbookSection = ({
         chartName={chartName}
         natalHouse={natalContext?.newMoonHouse}
         saveJournal={saveJournal}
+        seedPisces={cycleSign === 'Pisces' && !journal?.id}
       />
 
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
