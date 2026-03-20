@@ -681,19 +681,73 @@ Keep the tone deep, insightful, and practically applicable.`
   };
   
   // Check for natal chart aspects to this new moon
+  // Planet identity descriptions — what IS this body?
+  const PLANET_IDENTITY: Record<string, string> = {
+    Sun: 'Your core identity, ego, and life force — who you ARE at the deepest level.',
+    Moon: 'Your emotional nature, instincts, and inner world — how you FEEL and what you need to feel safe.',
+    Mercury: 'Your mind, communication style, and how you process information — how you THINK and speak.',
+    Venus: 'Your values, love language, and relationship style — what you DESIRE and find beautiful.',
+    Mars: 'Your drive, anger, and how you take action — what you FIGHT for and how you assert yourself.',
+    Jupiter: 'Your growth edge, where luck finds you, and your sense of meaning — where life EXPANDS.',
+    Saturn: 'Your discipline, fears, and mastery path — where you face your hardest LESSONS.',
+    Uranus: 'Your need for freedom, where you break rules, and sudden insights — where you REBEL.',
+    Neptune: 'Your spirituality, imagination, and blind spots — where you DISSOLVE boundaries.',
+    Pluto: 'Your deepest power, shadow, and transformation — where you DIE and are REBORN.',
+    NorthNode: 'Your soul\'s growth direction this lifetime — the unfamiliar territory you\'re meant to GROW into.',
+    SouthNode: 'Your past-life gifts and comfort zone — what comes naturally but can hold you BACK.',
+    Chiron: 'Your deepest wound that becomes your greatest healing gift — where you HURT and ultimately TEACH.',
+    Ascendant: 'Your rising sign — the lens through which you meet the world and others\' first impression of you.',
+    Midheaven: 'Your public reputation and career direction — how the world SEES your purpose.',
+    Ceres: 'The asteroid of nurturing — how you CARE for others and need to be cared for. Mothering style, food, and body comfort.',
+    Vesta: 'The asteroid of sacred focus — what you DEVOTE yourself to with ritual dedication. Your inner flame.',
+    Juno: 'The asteroid of committed partnership — what you NEED in a long-term partner and marriage.',
+    Pallas: 'The asteroid of strategic wisdom — how you see PATTERNS, solve problems, and fight for justice.',
+    Lilith: 'Black Moon Lilith — your wild, untamed power that refuses to be domesticated. Raw feminine rage and authenticity.',
+    PartOfFortune: 'An Arabic Part showing where worldly luck and material abundance flow most naturally.',
+    Vertex: 'A fated point — encounters and events here feel destined, as if the universe arranged them.',
+  };
+
+  // Aspect type explanations — what does this geometric relationship DO?
+  const ASPECT_FELT_SENSE: Record<string, { symbol: string; what: string; feel: string }> = {
+    Conjunction: {
+      symbol: '☌',
+      what: 'Same degree — the New Moon lands directly ON this point, fusing its energy with the lunar seed moment.',
+      feel: 'This is the loudest hit. You\'ll feel this area of life activated immediately, like a spotlight turning on. The themes of this planet are inseparable from your intentions this cycle.'
+    },
+    Sextile: {
+      symbol: '⚹',
+      what: '60° apart — a gentle opening, like a door left ajar. Opportunity knocks but you have to walk through it.',
+      feel: 'Subtle but real. You\'ll notice easy openings, helpful conversations, or small synchronicities related to this planet\'s themes. It won\'t hit you over the head — you have to reach for it.'
+    },
+    Square: {
+      symbol: '□',
+      what: '90° apart — friction and tension. The New Moon energy pushes against this part of your chart, creating pressure to act.',
+      feel: 'You\'ll feel this as restlessness, irritation, or a sense that something HAS to change. It\'s uncomfortable but productive — the tension is what creates momentum. Don\'t avoid the discomfort; it\'s pointing you toward growth.'
+    },
+    Trine: {
+      symbol: '△',
+      what: '120° apart — natural flow and ease. The New Moon energy harmonizes with this part of your chart effortlessly.',
+      feel: 'This feels like support arriving without asking. Talents flow, things click into place, and this planet\'s gifts are available to you. The risk is taking it for granted — consciously use this ease.'
+    },
+    Opposition: {
+      symbol: '☍',
+      what: '180° apart — full polarity. The New Moon illuminates what\'s OPPOSITE this point, creating an awareness axis.',
+      feel: 'You\'ll feel pulled between two poles — your needs vs. others\', inner world vs. outer demands. Other people may embody this planet\'s energy FOR you. The lesson is integration, not choosing sides.'
+    },
+  };
+
   const getNatalAspects = () => {
     if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
-    const aspects: Array<{ planet: string; aspect: string; orb: number }> = [];
+    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string; feel: string }; natalSign: string; natalDegree: number }> = [];
     
     Object.entries(activeChart.planets).forEach(([planet, data]) => {
-      const planetData = data as { sign: string; degree: number; house?: number };
-      const planetDegree = planetData.degree + (ZODIAC_SIGNS.indexOf(planetData.sign) * 30);
+      const planetData = data as { sign: string; degree: number; minutes?: number; house?: number };
+      const planetDegree = planetData.degree + (planetData.minutes || 0) / 60 + (ZODIAC_SIGNS.indexOf(planetData.sign) * 30);
       let diff = Math.abs(newMoonDegree - planetDegree);
       if (diff > 180) diff = 360 - diff;
       
-      // Check for major aspects using centralized orb system
       const aspectChecks = [
         { name: 'Conjunction', angle: 0, key: 'conjunction' },
         { name: 'Sextile', angle: 60, key: 'sextile' },
@@ -704,7 +758,15 @@ Keep the tone deep, insightful, and practically applicable.`
       for (const ac of aspectChecks) {
         const orbVal = Math.abs(diff - ac.angle);
         if (orbVal <= getEffectiveOrbFn('Moon', planet, ac.key)) {
-          aspects.push({ planet, aspect: ac.name, orb: orbVal });
+          aspects.push({
+            planet,
+            aspect: ac.name,
+            orb: orbVal,
+            planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
+            aspectInfo: ASPECT_FELT_SENSE[ac.name] || { symbol: '', what: '', feel: '' },
+            natalSign: planetData.sign,
+            natalDegree: planetData.degree,
+          });
           break;
         }
       }
@@ -1394,17 +1456,37 @@ Keep the tone deep, insightful, and practically applicable.`
             <CollapsibleContent>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in the natal chart:
+                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in the natal chart. Each aspect describes a geometric relationship between the New Moon and a point in your chart — here's what each one IS and how you'll FEEL it this cycle:
                 </p>
-                <div className="space-y-2">
-                  {natalAspects.map((aspect, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                      <span className="font-medium capitalize">{aspect.planet}</span>
-                      <Badge variant={aspect.aspect === 'Conjunction' || aspect.aspect === 'Trine' || aspect.aspect === 'Sextile' ? 'default' : 'secondary'}>
-                        {aspect.aspect} ({aspect.orb.toFixed(1)}°)
-                      </Badge>
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  {natalAspects.map((aspect, i) => {
+                    const isHarmonious = aspect.aspect === 'Conjunction' || aspect.aspect === 'Trine' || aspect.aspect === 'Sextile';
+                    return (
+                      <div key={i} className="p-4 bg-secondary/30 rounded-lg space-y-2 border border-border/50">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-base capitalize flex items-center gap-2">
+                            <span className="text-lg">{aspect.aspectInfo.symbol}</span>
+                            {aspect.aspect} to {aspect.planet}
+                            <span className="text-xs text-muted-foreground font-normal">
+                              (natal {aspect.natalSign} {aspect.natalDegree}° — {aspect.orb.toFixed(1)}° orb)
+                            </span>
+                          </span>
+                          <Badge variant={isHarmonious ? 'default' : 'secondary'} className="text-xs">
+                            {isHarmonious ? 'Supportive' : 'Growth Edge'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm font-medium text-foreground/90">
+                          What is {aspect.planet}? <span className="font-normal text-muted-foreground">{aspect.planetIdentity}</span>
+                        </p>
+                        <p className="text-sm font-medium text-foreground/90">
+                          What does {aspect.aspectInfo.symbol} {aspect.aspect.toLowerCase()} mean? <span className="font-normal text-muted-foreground">{aspect.aspectInfo.what}</span>
+                        </p>
+                        <p className="text-sm italic text-foreground/80 bg-background/50 p-2 rounded">
+                          🫀 How you'll feel it: {aspect.aspectInfo.feel}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </CollapsibleContent>
