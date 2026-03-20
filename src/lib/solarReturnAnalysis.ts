@@ -242,6 +242,7 @@ export interface SRHouseOverlay {
   srHouseTheme: string;
   natalHouse: number | null;
   houseTheme: string;
+  interpretation: string;
 }
 
 export interface SRKeyAspect extends Aspect {
@@ -463,11 +464,17 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
   Jupiter: { domain: 'growth, opportunity, faith, and expansion', drive: 'to explore, teach, and find meaning', body: 'liver, hips, and fat metabolism' },
   Saturn: { domain: 'discipline, limits, responsibility, and time', drive: 'to structure, earn through effort, and endure', body: 'bones, teeth, knees, and skin' },
   Uranus: { domain: 'disruption, liberation, innovation, and sudden change', drive: 'to break free, rebel, and reinvent', body: 'nervous system and circulation' },
-  Neptune: { domain: 'imagination, spirituality, illusion, and dissolution', drive: 'to transcend, dissolve boundaries, and dream', body: 'immune system and lymphatic' },
-  Pluto: { domain: 'power, transformation, obsession, and psychological depth', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
-  Chiron: { domain: 'wounding, healing, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
-  NorthNode: { domain: 'soul growth direction, karmic pull, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
+  Neptune: { domain: 'imagination, sensitivity, confusion, and foggy boundaries', drive: 'to dissolve what is rigid and open to intuition', body: 'immune system and lymphatic' },
+  Pluto: { domain: 'deep change, power dynamics, obsession, and therapy breakthroughs', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
+  Chiron: { domain: 'old sore spots, insecurity, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
+  NorthNode: { domain: 'soul growth direction, unfamiliar territory, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
   Ascendant: { domain: 'your visible self, first impressions, and physical presence', drive: 'to project identity into the world', body: 'head and overall constitution' },
+  Juno: { domain: 'committed partnership, marriage, and what you need in a partner', drive: 'to find loyalty, equality, and deep commitment', body: '' },
+  Vesta: { domain: 'devotion, sacred focus, and what you sacrifice for', drive: 'to dedicate yourself fully to what matters most', body: '' },
+  Pallas: { domain: 'strategic wisdom, pattern recognition, and creative intelligence', drive: 'to see the big picture and craft elegant solutions', body: '' },
+  Ceres: { domain: 'nurturing, nourishment, and cycles of loss and return', drive: 'to care for others and process grief into growth', body: '' },
+  Lilith: { domain: 'raw power, suppressed desires, and reclaimed autonomy', drive: 'to own the parts of yourself others find uncomfortable', body: '' },
+  Eris: { domain: 'disruption, whistleblowing, and necessary confrontation', drive: 'to expose what is hidden and demand authenticity', body: '' },
 };
 
 const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
@@ -589,6 +596,64 @@ const generateStelliumInterpretation = (location: string, planets: string[], typ
     return `A stellium of ${planets.length} planets (${planetList}) in ${location}. This house becomes the primary arena of your year — ${theme.toLowerCase()}. With this much planetary energy concentrated here, events and inner development in this life area are unavoidable and transformative.`;
   }
 };
+
+// ─── House Overlay Interpretation Engine ────────────────────────────
+
+const PLANET_OVERLAY_DRIVE: Record<string, { what: string; shift: string }> = {
+  Sun: { what: 'your core identity and sense of purpose', shift: 'where you feel most alive and visible' },
+  Moon: { what: 'your emotional needs and comfort patterns', shift: 'where you instinctively seek safety and belonging' },
+  Mercury: { what: 'your thinking, conversations, and daily logistics', shift: 'where your mind is busiest and most curious' },
+  Venus: { what: 'your love style, spending habits, and sense of beauty', shift: 'where you attract pleasure and connection' },
+  Mars: { what: 'your drive, ambition, and how you handle anger', shift: 'where you put your energy and fight for results' },
+  Jupiter: { what: 'your opportunities, optimism, and desire to grow', shift: 'where life opens doors and rewards risk' },
+  Saturn: { what: 'your responsibilities, fears, and long-term commitments', shift: 'where life demands maturity and hard work' },
+  Uranus: { what: 'your need for freedom, sudden changes, and experimentation', shift: 'where expect-the-unexpected events show up' },
+  Neptune: { what: 'your imagination, sensitivity, and tendency toward confusion', shift: 'where boundaries get foggy and intuition runs high' },
+  Pluto: { what: 'your deepest drives, control issues, and capacity for transformation', shift: 'where deep change happens whether you choose it or not' },
+  Chiron: { what: 'your old sore spots and where you help others heal', shift: 'where insecurity surfaces but also where you grow the most' },
+  NorthNode: { what: 'your growth direction — unfamiliar territory that stretches you', shift: 'the life area calling you forward this year' },
+  Juno: { what: 'your partnership needs and what you expect from commitment', shift: 'where loyalty and relationship dynamics play out' },
+  Vesta: { what: 'your devotion and what you sacrifice for', shift: 'where you pour focused, dedicated energy' },
+  Pallas: { what: 'your strategic intelligence and ability to see patterns', shift: 'where you apply creative problem-solving' },
+  Ceres: { what: 'your nurturing style and relationship with nourishment', shift: 'where you care for others and process letting go' },
+  Lilith: { what: 'your raw power and the parts of yourself others find uncomfortable', shift: 'where you reclaim autonomy and refuse to be tamed' },
+  Eris: { what: 'your willingness to disrupt and demand truth', shift: 'where you challenge the status quo' },
+};
+
+function generateOverlayInterpretation(
+  planet: string,
+  srSign: string,
+  srHouse: number | null,
+  natalLandingHouse: number | null,
+  natalOriginalHouse: number | null,
+): string {
+  const drive = PLANET_OVERLAY_DRIVE[planet] || { what: `${planet}'s themes`, shift: `where ${planet} focuses` };
+  const signFelt = getSignFeltSense(srSign);
+  const srArea = srHouse ? (SR_HOUSE_LIFE_AREA[srHouse] || `house ${srHouse}`) : 'an unknown area';
+  const natalArea = natalLandingHouse ? (SR_HOUSE_LIFE_AREA[natalLandingHouse] || `house ${natalLandingHouse}`) : null;
+
+  let interp = `${planet} in ${srSign} in your Solar Return chart focuses on ${srArea}. `;
+  interp += `${planet} represents ${drive.what}, and in ${srSign} this year, you feel it as ${signFelt}. `;
+
+  if (natalOriginalHouse && srHouse && natalOriginalHouse !== srHouse) {
+    const origArea = SR_HOUSE_LIFE_AREA[natalOriginalHouse] || `house ${natalOriginalHouse}`;
+    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house — meaning ${drive.shift} moves from ${origArea} to ${srArea}. `;
+  } else if (natalOriginalHouse && srHouse && natalOriginalHouse === srHouse) {
+    interp += `${planet} returns to its natal house this year, reinforcing its lifelong themes around ${srArea}. This is a year of deepening, not redirecting, this energy. `;
+  }
+
+  if (natalArea && natalLandingHouse !== srHouse) {
+    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events.`;
+  }
+
+  return interp.trim();
+}
+
+function ordinalSuffix(n: number): string {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 // ─── Main Analysis ──────────────────────────────────────────────────
 
@@ -713,6 +778,17 @@ export const analyzeSolarReturn = (
     if (deg === null) continue;
     const sh = findSRHouse(deg, srChart);
     const nh = findNatalHouse(deg, natalChart);
+
+    // Find natal house of this planet in natal chart
+    const natalPos = natalChart.planets[planet as keyof typeof natalChart.planets];
+    let natalOrigHouse: number | null = null;
+    if (natalPos) {
+      const natalDeg = toAbsDeg(natalPos);
+      if (natalDeg !== null) natalOrigHouse = findNatalHouse(natalDeg, natalChart);
+    }
+
+    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse);
+
     houseOverlays.push({
       planet,
       srSign: pos.sign,
@@ -721,6 +797,7 @@ export const analyzeSolarReturn = (
       srHouseTheme: sh ? houseThemes[sh] : '',
       natalHouse: nh,
       houseTheme: nh ? houseThemes[nh] : '',
+      interpretation: interp,
     });
   }
 
@@ -934,8 +1011,28 @@ export const analyzeSolarReturn = (
         { name: 'Balsamic', min: 292.5, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
       ];
       const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
-      // Check if Sun-Moon are close enough for eclipse possibility (within ~12° for solar, ~6° of nodes for lunar)
-      const isEclipse = diff < 12 || diff > 348 || (diff > 168 && diff < 192);
+      // Eclipse requires Sun-Moon alignment AND proximity to the nodal axis (within ~12° of nodes)
+      let isEclipse = false;
+      const nnPos = srChart.planets.NorthNode;
+      if (nnPos) {
+        const nnDeg = toAbsDeg(nnPos);
+        if (nnDeg !== null) {
+          const snDeg = (nnDeg + 180) % 360;
+          // Check if Sun or Moon is near either node
+          for (const lumDeg of [sunDeg, moonDeg]) {
+            for (const nodeDeg of [nnDeg, snDeg]) {
+              let nDiff = Math.abs(lumDeg - nodeDeg);
+              if (nDiff > 180) nDiff = 360 - nDiff;
+              if (nDiff <= 12) {
+                // Also check Sun-Moon are in New or Full phase range
+                if (diff < 15 || diff > 345 || (diff > 165 && diff < 195)) {
+                  isEclipse = true;
+                }
+              }
+            }
+          }
+        }
+      }
       moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100 };
     }
   }
