@@ -1201,7 +1201,7 @@ export const getIngressInterpretation = (planet: string, sign: string): string =
 
 // Calculate daily aspects between planets
 export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => {
-  const { getEffectiveOrb: getOrb } = await import('./aspectOrbs');
+  
   const aspects: Aspect[] = [];
   const aspectTypes = [
     { angle: 0, name: 'conjunction', symbol: '☌' },
