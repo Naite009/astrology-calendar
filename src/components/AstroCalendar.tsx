@@ -49,7 +49,7 @@ const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ de
 
 
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
