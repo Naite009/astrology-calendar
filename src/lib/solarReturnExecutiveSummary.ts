@@ -67,6 +67,23 @@ const PLANET_PLAIN: Record<string, { does: string; examples: string }> = {
   Vesta: { does: 'what you\'re deeply devoted to and protect as sacred', examples: 'work you do for its own sake, spiritual practices, the cause you won\'t give up on' },
 };
 
+// Build meaningful titles instead of just "Planet Aspect Planet"
+function buildAspectTitle(p1: string, p2: string, aspectType: string, tightLabel: string): string {
+  const p1Noun = PLANET_NOUNS[p1] || p1.toLowerCase();
+  const p2Noun = PLANET_NOUNS[p2] || p2.toLowerCase();
+  const ASPECT_VERB: Record<string, string> = {
+    Conjunction: 'fuses with',
+    Trine: 'supports',
+    Sextile: 'opens doors for',
+    Square: 'challenges',
+    Opposition: 'pulls against',
+    Quincunx: 'awkwardly adjusts',
+  };
+  const verb = ASPECT_VERB[aspectType] || 'connects to';
+  const tightTag = tightLabel === 'exact' || tightLabel === 'very tight' ? ' (strong)' : '';
+  return `${p1} ${verb} your ${p2Noun}${tightTag}`;
+}
+
 // Aspect-type specific practical descriptions
 function buildAspectDescription(p1: string, p2: string, aspectType: string, isOpp: boolean): string {
   const p1Info = PLANET_PLAIN[p1];
