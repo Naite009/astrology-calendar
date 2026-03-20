@@ -746,6 +746,19 @@ export const LunarWorkbookSection = ({
     }
   };
 
+  // Same-sign recall: find past journals with same cycle_sign
+  const sameSignJournals = pastJournals.filter(pj => pj.cycle_sign === cycleSign);
+
+  if (isLoading) {
+    return (
+      <Card className="bg-background border">
+        <CardContent className="p-6 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-background border">
       <CardHeader className="pb-2">
@@ -763,121 +776,252 @@ export const LunarWorkbookSection = ({
             )}
           </div>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {cycleSign} New Moon at {cycleDegree}° • {cycleStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {cycleSign} New Moon at {cycleDegree}° • {cycleStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+          <button
+            onClick={() => setSimpleMode(!simpleMode)}
+            className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
+              simpleMode 
+                ? 'bg-primary text-primary-foreground border-primary' 
+                : 'bg-background text-muted-foreground border-border'
+            }`}
+          >
+            {simpleMode ? '🌿 Simple' : '🔬 Full'}
+          </button>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Cosmic context banner — auto-tags with moon phase, eclipse, transits */}
         <JournalContextBanner date={new Date()} activationData={activationData ?? null} compact />
 
-        {/* Mode toggle */}
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            variant={!isGuidedMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsGuidedMode(false)}
-          >
-            Full View
-          </Button>
-          <Button
-            variant={isGuidedMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => { setIsGuidedMode(true); setGuidedStep(0); }}
-          >
-            <Wand2 className="h-3 w-3 mr-1" />
-            Guided Mode
-          </Button>
+        {/* ★ WHAT IS SURFACING — First thing user sees */}
+        <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🔴</span>
+            <h3 className="font-serif text-base font-medium">What is surfacing right now?</h3>
+          </div>
+          <p className="text-xs text-muted-foreground italic">
+            Do not overthink. Choose the thing with emotion attached.
+          </p>
+          <Textarea
+            placeholder="What feels emotionally charged? What keeps coming up? What feels important — even if small? What showed up in the last 2–3 days? What is your body telling you?"
+            value={journal?.what_is_surfacing || ''}
+            onChange={(e) => saveJournal({ what_is_surfacing: e.target.value })}
+            className="min-h-[100px] bg-background border-border/50 text-sm resize-none"
+          />
         </div>
 
-        {isGuidedMode ? (
-          <GuidedStep
-            stepNumber={guidedStep + 1}
-            totalSteps={newMoonSteps.length}
+        {/* Intention Status */}
+        <div className="flex items-center gap-2 p-3 bg-secondary/20 rounded-lg flex-wrap">
+          <span className="text-xs text-muted-foreground">Intention:</span>
+          {(['unclear', 'forming', 'ready'] as const).map((status) => (
+            <button
+              key={status}
+              onClick={() => saveJournal({ intention_status: status })}
+              className={`text-[10px] px-2.5 py-1 rounded-full border transition-all capitalize ${
+                (journal?.intention_status || 'unclear') === status
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:border-primary/50'
+              }`}
+            >
+              {status === 'unclear' && '🌫️ '}
+              {status === 'forming' && '🌱 '}
+              {status === 'ready' && '✨ '}
+              {status}
+            </button>
+          ))}
+          <span className="text-[10px] text-muted-foreground ml-auto italic">
+            Let it form over 1–3 days
+          </span>
+        </div>
+
+        {/* Same-Sign Recall */}
+        {sameSignJournals.length > 0 && (
+          <div className="p-3 bg-secondary/20 rounded-lg border border-border/50 space-y-2">
+            <h4 className="text-xs font-medium flex items-center gap-2">
+              <History className="h-3 w-3" />
+              Same-Sign Recall — Past {cycleSign} Cycles
+            </h4>
+            {sameSignJournals.slice(0, 3).map((pj) => (
+              <div key={pj.id} className="p-2 bg-background rounded border border-border/30 text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">
+                    🌑 {new Date(pj.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button onClick={() => setSelectedPastJournal(pj)} className="text-primary underline text-[10px]">
+                    View
+                  </button>
+                </div>
+                {pj.new_moon_intentions && (
+                  <p className="text-muted-foreground italic line-clamp-2">"{pj.new_moon_intentions}"</p>
+                )}
+                {pj.what_is_surfacing && (
+                  <p className="text-muted-foreground line-clamp-1">Surfacing: {pj.what_is_surfacing}</p>
+                )}
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground italic">
+              Notice repeating emotional themes across these {cycleSign} cycles.
+            </p>
+          </div>
+        )}
+
+        {/* Mode toggle (only in full mode) */}
+        {!simpleMode && (
+          <div className="flex items-center gap-2">
+            <Button variant={!isGuidedMode ? "default" : "outline"} size="sm" onClick={() => setIsGuidedMode(false)}>Full View</Button>
+            <Button variant={isGuidedMode ? "default" : "outline"} size="sm" onClick={() => { setIsGuidedMode(true); setGuidedStep(0); }}>
+              <Wand2 className="h-3 w-3 mr-1" /> Guided
+            </Button>
+          </div>
+        )}
+
+        {/* Phase Journal */}
+        {simpleMode ? (
+          <div className="space-y-3">
+            <Tabs value={activePhase} onValueChange={(v) => setActivePhase(v as PhaseKey)}>
+              <TabsList className="grid w-full grid-cols-5 mb-3">
+                {PHASE_ORDER.map((phase) => (
+                  <TabsTrigger key={phase} value={phase} className="text-xs px-1">
+                    <span className="mr-1">{PHASE_CONFIG[phase].emoji}</span>
+                    <span className="hidden sm:inline">{PHASE_CONFIG[phase].title.split(' ')[0]}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {PHASE_ORDER.map((phase) => {
+                const config = PHASE_CONFIG[phase];
+                const isCurrentPhase = phase === currentPhase;
+                return (
+                  <TabsContent key={phase} value={phase}>
+                    <div className="space-y-3">
+                      {isCurrentPhase && (
+                        <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/30 rounded-lg">
+                          <AlertCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          <p className="text-xs font-medium">You're in this phase now</p>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{config.emoji}</span>
+                        <div>
+                          <h3 className="font-medium text-sm">{config.title}</h3>
+                          <p className="text-xs text-muted-foreground">{config.subtitle}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3">{config.description}</p>
+                      {phase === 'newMoon' && <JournalField label="Intention(s) for this cycle" placeholder="What wants to be worked with? Write when ready..." value={journal?.new_moon_intentions} onChange={(v) => updateField('new_moon_intentions', v)} icon={<Sparkles className="h-4 w-4 text-primary" />} />}
+                      {phase === 'firstQuarter' && <JournalField label="What action is shaping this cycle?" placeholder="What tension, decision, or courage is needed?" value={journal?.first_quarter_showing_up} onChange={(v) => updateField('first_quarter_showing_up', v)} icon={<Zap className="h-4 w-4 text-amber-500" />} />}
+                      {phase === 'fullMoon' && <JournalField label="What came to light?" placeholder="What peaked, became visible, or demands release?" value={journal?.full_moon_showing_up} onChange={(v) => updateField('full_moon_showing_up', v)} icon={<Eye className="h-4 w-4 text-yellow-500" />} />}
+                      {phase === 'lastQuarter' && <JournalField label="What lesson did this cycle teach?" placeholder="What no longer fits? What needs to be released?" value={journal?.last_quarter_letting_go} onChange={(v) => updateField('last_quarter_letting_go', v)} icon={<RefreshCw className="h-4 w-4 text-purple-500" />} />}
+                      {phase === 'balsamic' && <JournalField label="What is rising up to be worked with next?" placeholder="Dreams, morning feelings, fatigue, quiet signals..." value={journal?.balsamic_reflections} onChange={(v) => updateField('balsamic_reflections', v)} icon={<Moon className="h-4 w-4 text-muted-foreground" />} />}
+                    </div>
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
+          </div>
+        ) : isGuidedMode ? (
+          <GuidedStep stepNumber={guidedStep + 1} totalSteps={newMoonSteps.length}
             onNext={() => setGuidedStep(prev => Math.min(prev + 1, newMoonSteps.length - 1))}
             onPrev={() => setGuidedStep(prev => Math.max(prev - 1, 0))}
-            isFirst={guidedStep === 0}
-            isLast={guidedStep === newMoonSteps.length - 1}
-          >
-            <JournalField
-              label={newMoonSteps[guidedStep].label}
-              placeholder={newMoonSteps[guidedStep].placeholder}
+            isFirst={guidedStep === 0} isLast={guidedStep === newMoonSteps.length - 1}>
+            <JournalField label={newMoonSteps[guidedStep].label} placeholder={newMoonSteps[guidedStep].placeholder}
               value={(journal as any)?.[newMoonSteps[guidedStep].field] || ''}
               onChange={(v) => updateField(newMoonSteps[guidedStep].field as keyof LunarJournalEntry, v)}
-              icon={newMoonSteps[guidedStep].icon}
-            />
+              icon={newMoonSteps[guidedStep].icon} />
           </GuidedStep>
         ) : (
           <Tabs value={activePhase} onValueChange={(v) => setActivePhase(v as PhaseKey)}>
             <TabsList className="grid w-full grid-cols-5 mb-4">
               {PHASE_ORDER.map((phase) => (
-                <TabsTrigger 
-                  key={phase} 
-                  value={phase} 
-                  className="text-xs px-1"
-                >
+                <TabsTrigger key={phase} value={phase} className="text-xs px-1">
                   <span className="mr-1">{PHASE_CONFIG[phase].emoji}</span>
                   <span className="hidden sm:inline">{PHASE_CONFIG[phase].title.split(' ')[0]}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
-
             {PHASE_ORDER.map((phase) => (
               <TabsContent key={phase} value={phase}>
-                <ScrollArea className="h-[600px] pr-4">
-                  {renderPhaseContent(phase)}
-                </ScrollArea>
+                <ScrollArea className="h-[600px] pr-4">{renderPhaseContent(phase)}</ScrollArea>
               </TabsContent>
             ))}
           </Tabs>
         )}
 
+        {/* ★ SURPRISE TRACKER */}
+        <div className="p-3 bg-secondary/20 rounded-lg border border-border/50 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⚡</span>
+            <h4 className="text-xs font-medium">What happened that you did NOT expect?</h4>
+          </div>
+          <p className="text-[10px] text-muted-foreground italic">Follow this. Unexpected = often the real movement of the cycle.</p>
+          <Textarea placeholder="Any surprises, unexpected events, or things you didn't see coming?"
+            value={journal?.surprise_event || ''} onChange={(e) => saveJournal({ surprise_event: e.target.value })}
+            className="min-h-[60px] bg-background border-border/50 text-sm resize-none" />
+        </div>
+
+        {/* ★ REAL LIFE EVENT LOG */}
+        <Collapsible>
+          <CollapsibleTrigger className="w-full flex items-center justify-between p-3 bg-secondary/20 rounded-lg border border-border/50 text-sm font-medium">
+            <span className="flex items-center gap-2">📋 Real Life Event Log</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 pt-3">
+            <JournalField label="What actually happened?" placeholder="Events, shifts, conversations, decisions..."
+              value={journal?.real_life_what_happened} onChange={(v) => saveJournal({ real_life_what_happened: v })}
+              icon={<Eye className="h-4 w-4 text-amber-500" />} />
+            <JournalField label="Important conversations?" placeholder="What was said that matters?"
+              value={journal?.real_life_conversations} onChange={(v) => saveJournal({ real_life_conversations: v })}
+              icon={<Target className="h-4 w-4 text-primary" />} />
+            <JournalField label="Body signals?" placeholder="Tension, fatigue, energy shifts, sensitivity..."
+              value={journal?.real_life_body_signals} onChange={(v) => saveJournal({ real_life_body_signals: v })}
+              icon={<Heart className="h-4 w-4 text-rose-500" />} />
+            <JournalField label="Synchronicities?" placeholder="Repeated numbers, themes, meaningful coincidences..."
+              value={journal?.real_life_synchronicities} onChange={(v) => saveJournal({ real_life_synchronicities: v })}
+              icon={<Sparkles className="h-4 w-4 text-primary" />} />
+            <JournalField label="Emotional reactions?" placeholder="What triggered you? What moved you?"
+              value={journal?.real_life_emotional_reactions} onChange={(v) => saveJournal({ real_life_emotional_reactions: v })}
+              icon={<Zap className="h-4 w-4 text-purple-500" />} />
+            <JournalField label="Something repeated?" placeholder="Themes, patterns, situations that keep showing up..."
+              value={journal?.real_life_repeated} onChange={(v) => saveJournal({ real_life_repeated: v })}
+              icon={<RefreshCw className="h-4 w-4 text-muted-foreground" />} />
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* Body State + Experience Tracking */}
-        <MetricTracker
-          energy={journal?.energy ?? null}
-          stress={journal?.stress ?? null}
-          sleepQuality={journal?.sleep_quality ?? null}
-          sensitivity={journal?.body_sensitivity ?? null}
-          dreamIntensity={journal?.dream_intensity ?? null}
-          tags={(journal?.tags as string[]) ?? []}
+        <MetricTracker energy={journal?.energy ?? null} stress={journal?.stress ?? null}
+          sleepQuality={journal?.sleep_quality ?? null} sensitivity={journal?.body_sensitivity ?? null}
+          dreamIntensity={journal?.dream_intensity ?? null} tags={(journal?.tags as string[]) ?? []}
           journalText={journal?.journal_text ?? ""}
           onMetricChange={(field, value) => saveJournal({ [field]: value })}
           onTagsChange={(tags) => saveJournal({ tags })}
-          onJournalTextChange={(text) => saveJournal({ journal_text: text })}
-        />
+          onJournalTextChange={(text) => saveJournal({ journal_text: text })} />
 
         {/* Past Cycles */}
         {pastJournals.length > 0 && (
           <div className="border-t pt-4 mt-6">
             <h4 className="font-medium flex items-center gap-2 mb-3">
-              <History className="h-4 w-4" />
-              Past Cycles ({pastJournals.length})
+              <History className="h-4 w-4" /> Past Cycles ({pastJournals.length})
             </h4>
             <ScrollArea className="h-[200px]">
               <div className="grid gap-2">
                 {pastJournals.map((pj) => (
-                  <PastJournalCard 
-                    key={pj.id} 
-                    journal={pj} 
-                    onSelect={() => setSelectedPastJournal(pj)} 
-                  />
+                  <PastJournalCard key={pj.id} journal={pj} onSelect={() => setSelectedPastJournal(pj)} />
                 ))}
               </div>
             </ScrollArea>
           </div>
         )}
 
-        {/* Past journal viewer modal/overlay */}
+        {/* Past journal viewer */}
         {selectedPastJournal && (
           <div className="fixed inset-0 bg-background/95 z-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{selectedPastJournal.cycle_sign} New Moon Cycle</span>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedPastJournal(null)}>
-                    ✕
-                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedPastJournal(null)}>✕</Button>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {new Date(selectedPastJournal.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -886,39 +1030,29 @@ export const LunarWorkbookSection = ({
               <CardContent>
                 <ScrollArea className="h-[60vh]">
                   <div className="space-y-4">
+                    {selectedPastJournal.what_is_surfacing && (
+                      <div><h5 className="font-medium text-sm mb-1">🔴 What Was Surfacing</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.what_is_surfacing}</p></div>
+                    )}
                     {selectedPastJournal.new_moon_intentions && (
-                      <div>
-                        <h5 className="font-medium text-sm mb-1">Intentions</h5>
-                        <p className="text-sm text-muted-foreground">{selectedPastJournal.new_moon_intentions}</p>
-                      </div>
+                      <div><h5 className="font-medium text-sm mb-1">Intentions</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.new_moon_intentions}</p></div>
                     )}
-                    {selectedPastJournal.tarot_card_name && (
-                      <div>
-                        <h5 className="font-medium text-sm mb-1">🃏 Tarot: {selectedPastJournal.tarot_card_name}</h5>
-                        {selectedPastJournal.tarot_ai_interpretation && (
-                          <p className="text-sm text-muted-foreground">{selectedPastJournal.tarot_ai_interpretation}</p>
-                        )}
-                      </div>
+                    {selectedPastJournal.surprise_event && (
+                      <div><h5 className="font-medium text-sm mb-1">⚡ Surprise</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.surprise_event}</p></div>
                     )}
-                    {selectedPastJournal.oracle_card_name && (
-                      <div>
-                        <h5 className="font-medium text-sm mb-1">✨ Oracle: {selectedPastJournal.oracle_card_name}</h5>
-                        {selectedPastJournal.oracle_ai_interpretation && (
-                          <p className="text-sm text-muted-foreground">{selectedPastJournal.oracle_ai_interpretation}</p>
-                        )}
-                      </div>
+                    {selectedPastJournal.real_life_what_happened && (
+                      <div><h5 className="font-medium text-sm mb-1">📋 What Happened</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.real_life_what_happened}</p></div>
                     )}
-                    {selectedPastJournal.balsamic_evolved && (
-                      <div>
-                        <h5 className="font-medium text-sm mb-1">What Evolved</h5>
-                        <p className="text-sm text-muted-foreground">{selectedPastJournal.balsamic_evolved}</p>
-                      </div>
+                    {selectedPastJournal.balsamic_dreams && (
+                      <div><h5 className="font-medium text-sm mb-1">🌙 Balsamic Dreams</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.balsamic_dreams}</p></div>
                     )}
                     {selectedPastJournal.cycle_wisdom && (
-                      <div>
-                        <h5 className="font-medium text-sm mb-1">Cycle Wisdom</h5>
-                        <p className="text-sm text-muted-foreground">{selectedPastJournal.cycle_wisdom}</p>
-                      </div>
+                      <div><h5 className="font-medium text-sm mb-1">Cycle Wisdom</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.cycle_wisdom}</p></div>
                     )}
                   </div>
                 </ScrollArea>
