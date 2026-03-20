@@ -30,6 +30,7 @@ interface ThemeFinderCardProps {
   saveJournal: (u: Partial<LunarJournalEntry>) => void;
   initialCandidates?: ThemeCandidate[];
   initialShiftAreas?: ShiftArea[];
+  seedPisces?: boolean;
 }
 
 const PISCES_SEED_CANDIDATES: ThemeCandidate[] = [
