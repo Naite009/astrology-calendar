@@ -112,6 +112,7 @@ export interface NewMoonInterpretation {
   hasStellium: boolean;
   stelliumPlanets: string[];
   stelliumSign: string;
+  stelliumFeltSense: string;
   
   // Ruler's aspects and condition
   rulerRetrograde: boolean;
