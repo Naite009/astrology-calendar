@@ -1069,23 +1069,47 @@ Keep the tone deep, insightful, and practically applicable.`
                         const transitAsp = activeChart ? findTransitAspectsAtDate(pe.date, activeChart) : [];
                         const houseInterp = house && PHASE_HOUSE_INTERP[pe.phaseKey]?.[house] ? PHASE_HOUSE_INTERP[pe.phaseKey][house] : null;
 
+                        // For balsamic: check if end falls in a different house
+                        const balEndHouse = pe.isRange && pe.balsamicEndLongitude && activeChart
+                          ? calculateNatalHouse(pe.balsamicEndLongitude, activeChart.houseCusps) : null;
+                        const balSpansTwoHouses = balEndHouse && house && balEndHouse !== house;
+                        const balEndHouseInterp = balSpansTwoHouses && PHASE_HOUSE_INTERP[pe.phaseKey]?.[balEndHouse] ? PHASE_HOUSE_INTERP[pe.phaseKey][balEndHouse] : null;
+
                         return (
-                          <div key={idx} className="p-4 bg-secondary/20 rounded-xl border border-border/40 space-y-2.5">
+                          <div key={idx} className={`p-4 rounded-xl border space-y-2.5 ${pe.phaseKey === 'balsamic' ? 'bg-muted/40 border-border/60' : 'bg-secondary/20 border-border/40'}`}>
                             <div className="flex items-start gap-3">
                               <span className="text-2xl mt-0.5">{pe.emoji}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
                                   <p className="font-medium text-foreground">{pe.label}</p>
                                   {pe.sign && <Badge variant="outline" className="text-xs">{pe.degree}° {ZODIAC_SYMBOLS[pe.sign]} {pe.sign}</Badge>}
-                                  {pe.isRange && <Badge variant="secondary" className="text-xs">Rest & Release</Badge>}
+                                  {pe.isRange && pe.balsamicEndSign && pe.balsamicEndSign !== pe.sign && (
+                                    <Badge variant="outline" className="text-xs">→ {pe.balsamicEndDegree}° {ZODIAC_SYMBOLS[pe.balsamicEndSign]} {pe.balsamicEndSign}</Badge>
+                                  )}
+                                  {pe.isRange && <Badge variant="secondary" className="text-xs">Sacred Rest</Badge>}
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-0.5">{dt.date}</p>
-                                {!pe.isRange && <p className="text-xs text-primary font-medium">{dt.time}</p>}
+                                {/* Show times for balsamic too */}
+                                <p className="text-xs text-primary font-medium">{dt.time}</p>
                                 {pe.isRange && pe.rangeEnd && (
-                                  <p className="text-xs text-muted-foreground">through {pe.rangeEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    through {pe.rangeEnd.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at{' '}
+                                    {pe.rangeEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}
+                                  </p>
                                 )}
                               </div>
                             </div>
+
+                            {/* Balsamic degree explanation */}
+                            {pe.phaseKey === 'balsamic' && (
+                              <div className="ml-9 p-2.5 bg-background/40 rounded-lg border border-border/20">
+                                <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                                  The Balsamic Moon begins when the Sun-Moon separation reaches 315° (45° before the next conjunction). 
+                                  This is the final ~3½ days of the cycle — the "dark of the Moon" — when the crescent thins toward invisible. 
+                                  Traditionally a time of composting, release, dreams, and deep rest before rebirth.
+                                </p>
+                              </div>
+                            )}
 
                             {/* House placement + interpretation */}
                             {house && (
@@ -1095,6 +1119,19 @@ Keep the tone deep, insightful, and practically applicable.`
                                 </p>
                                 {houseInterp && (
                                   <p className="text-xs text-foreground/75 leading-relaxed">{houseInterp}</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* If balsamic spans two houses */}
+                            {balSpansTwoHouses && balEndHouse && (
+                              <div className="ml-9 p-3 bg-background/60 rounded-lg border border-border/30 space-y-1.5">
+                                <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                                  <Moon className="h-3 w-3" /> Shifts into {ordinalLCV(balEndHouse)} House — {HOUSE_TOPICS_LCV[balEndHouse]}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">The Moon moves into this house during the balsamic window.</p>
+                                {balEndHouseInterp && (
+                                  <p className="text-xs text-foreground/75 leading-relaxed">{balEndHouseInterp}</p>
                                 )}
                               </div>
                             )}
