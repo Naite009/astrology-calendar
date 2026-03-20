@@ -117,6 +117,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
   const [showAiReading, setShowAiReading] = useState(false);
   const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
+  const [isGeneratingForExport, setIsGeneratingForExport] = useState(false);
+  const abortExportRef = useRef<AbortController | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
