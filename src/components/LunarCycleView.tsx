@@ -1348,6 +1348,17 @@ Keep the tone deep, insightful, and practically applicable.`
                   </p>
                 </div>
               )}
+              
+              {/* Conjunction pair syntheses */}
+              {interpretation.conjunctionPairSyntheses && interpretation.conjunctionPairSyntheses.length > 0 && (
+                <div className="space-y-3">
+                  {interpretation.conjunctionPairSyntheses.map((synthesis, i) => (
+                    <div key={i} className="p-3 bg-secondary/40 rounded-lg border border-border/50">
+                      <p className="text-sm leading-relaxed text-foreground/90">{synthesis}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </CollapsibleContent>
         </Card>
