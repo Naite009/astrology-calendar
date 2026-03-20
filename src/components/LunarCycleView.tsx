@@ -13,6 +13,7 @@ import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
+import { getEffectiveOrb as getEffectiveOrbFn, getTransitOrb as getTransitOrbFn } from "@/lib/aspectOrbs";
 import { LunarWorkbookSection } from "./LunarWorkbookSection";
 import { useSolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { analyzeSolarReturn } from "@/lib/solarReturnAnalysis";
