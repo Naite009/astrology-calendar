@@ -667,37 +667,69 @@ export const LunarWorkbookSection = ({
           <>
             <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 mb-2">
               <p className="text-xs text-muted-foreground italic leading-relaxed">
-                🕯️ <strong>Sacred Listening Window</strong> — Take things off your plate. Get quiet. 
-                Pay attention to dreams and early morning feelings. Listen for what is rising up to be worked with next.
+                🕯️ <strong>Sacred Listening Window</strong> — This is where the next cycle begins. 
+                Take things off your plate. Get quiet. Do not skip this phase.
               </p>
             </div>
             <JournalField
-              label="What is distilling down from the last cycle?"
-              placeholder="What is rising up asking for care? What feels emotionally charged enough to work with?"
-              value={journal?.balsamic_reflections}
-              onChange={(v) => updateField('balsamic_reflections', v)}
+              label="What dreams are you having?"
+              placeholder="Record any dreams, recurring images, or nighttime impressions..."
+              value={journal?.balsamic_dreams}
+              onChange={(v) => saveJournal({ balsamic_dreams: v })}
               icon={<Moon className="h-4 w-4 text-muted-foreground" />}
             />
             <JournalField
-              label="What am I noticing in dreams or early morning consciousness?"
-              placeholder="What intuitive nudges, exhaustion, or quiet signals are showing up?"
-              value={journal?.balsamic_evolved}
-              onChange={(v) => updateField('balsamic_evolved', v)}
-              icon={<Sparkles className="h-4 w-4 text-primary" />}
+              label="What are your morning thoughts?"
+              placeholder="What surfaces first thing? What worries or feelings greet you?"
+              value={journal?.balsamic_morning_thoughts}
+              onChange={(v) => saveJournal({ balsamic_morning_thoughts: v })}
+              icon={<Eye className="h-4 w-4 text-amber-500" />}
+            />
+            {/* Fatigue + Withdrawal sliders */}
+            <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/20 rounded-lg">
+              <div className="space-y-1">
+                <label className="text-xs flex items-center gap-1">😴 Fatigue Level</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">Low</span>
+                  <input type="range" min={1} max={10} value={journal?.balsamic_fatigue ?? 5}
+                    onChange={(e) => saveJournal({ balsamic_fatigue: parseInt(e.target.value) })}
+                    className="flex-1 accent-primary h-1.5" />
+                  <span className="text-[10px] text-muted-foreground">High</span>
+                  <span className="text-xs text-muted-foreground w-6">{journal?.balsamic_fatigue ?? '—'}</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs flex items-center gap-1">🚪 Desire to Withdraw</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">Low</span>
+                  <input type="range" min={1} max={10} value={journal?.balsamic_withdrawal ?? 5}
+                    onChange={(e) => saveJournal({ balsamic_withdrawal: parseInt(e.target.value) })}
+                    className="flex-1 accent-primary h-1.5" />
+                  <span className="text-[10px] text-muted-foreground">Strong</span>
+                  <span className="text-xs text-muted-foreground w-6">{journal?.balsamic_withdrawal ?? '—'}</span>
+                </div>
+              </div>
+            </div>
+            <JournalField
+              label="What needs to end?"
+              placeholder="What has run its course? What is complete?"
+              value={journal?.balsamic_needs_to_end}
+              onChange={(v) => saveJournal({ balsamic_needs_to_end: v })}
+              icon={<RefreshCw className="h-4 w-4 text-purple-500" />}
             />
             <JournalField
-              label="What wants rest instead of force?"
-              placeholder="What is ending quietly? What needs compassionate witnessing?"
-              value={journal?.balsamic_different}
-              onChange={(v) => updateField('balsamic_different', v)}
-              icon={<Heart className="h-4 w-4 text-rose-500" />}
-            />
-            <JournalField
-              label="Wisdom I'm carrying into the next cycle"
-              placeholder="What did this cycle teach? What do I know now that I didn't before?"
-              value={journal?.cycle_wisdom}
-              onChange={(v) => updateField('cycle_wisdom', v)}
+              label="What needs to come off your plate?"
+              placeholder="What can you let go of, delegate, or stop doing?"
+              value={journal?.balsamic_off_plate}
+              onChange={(v) => saveJournal({ balsamic_off_plate: v })}
               icon={<Target className="h-4 w-4 text-primary" />}
+            />
+            <JournalField
+              label="What is distilling down from this cycle?"
+              placeholder="What wisdom is emerging? What feels emotionally charged enough to work with next?"
+              value={journal?.balsamic_reflections}
+              onChange={(v) => updateField('balsamic_reflections', v)}
+              icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
               label="What's stirring for the next cycle?"
@@ -713,16 +745,6 @@ export const LunarWorkbookSection = ({
         return null;
     }
   };
-
-  if (isLoading) {
-    return (
-      <Card className="bg-background border">
-        <CardContent className="p-6 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="bg-background border">
