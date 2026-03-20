@@ -346,6 +346,7 @@ const generateConjunctionPairSyntheses = (conjunctions: PlanetPosition[]): strin
   return syntheses;
 };
 
+const generateMainTheme = (
   sign: string,
   signInfo: typeof SIGN_RULERS[string],
   conjunctions: PlanetPosition[],
