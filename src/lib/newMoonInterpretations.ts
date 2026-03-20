@@ -232,23 +232,21 @@ const generateMainTheme = (
     theme += `${signInfo.ruler} ${signInfo.rulerSymbol} in ${rulerSign} guides how this energy manifests. `;
   }
   
-  // Add conjunction info (most important)
+  // Add conjunction info — explain each planet's specific meaning
   if (conjunctions.length > 0) {
-    const conjNames = conjunctions.map(c => `${c.symbol}${c.name}`).join(', ');
-    theme += `With ${conjNames} conjunct, this is a powerful moment of concentrated energy. `;
+    for (const conj of conjunctions) {
+      const meaning = CONJUNCTION_FELT_SENSE[conj.name];
+      if (meaning) {
+        theme += meaning + ' ';
+      } else {
+        theme += `${conj.symbol}${conj.name} joins this New Moon, adding its energy to the seed moment. `;
+      }
+    }
     
-    // Special meanings for specific conjunctions
-    if (conjunctions.some(c => c.name === 'Pluto')) {
-      theme += `Pluto adds soul-depth — set intentions from your deepest truth, not ego desires. `;
-    }
-    if (conjunctions.some(c => c.name === 'Mars')) {
-      theme += `Mars brings fire and urgency — your mind may be active, ready to act. `;
-    }
-    if (conjunctions.some(c => c.name === 'Mercury')) {
-      theme += `Mercury heightens mental activity — thoughts are seeds now. `;
-    }
-    if (conjunctions.some(c => c.name === 'Venus')) {
-      theme += `Venus softens the energy — intentions around love, beauty, and values are favored. `;
+    // If multiple conjunctions, add a synthesis sentence
+    if (conjunctions.length >= 2) {
+      const names = conjunctions.map(c => c.name).join(' and ');
+      theme += `With ${names} together at this New Moon, their energies merge — what begins now carries all of these threads simultaneously. `;
     }
   }
   
