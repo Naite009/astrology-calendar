@@ -652,7 +652,7 @@ ${keyPhasesInfo}
 
 Write in a professional astrologer's voice with these sections:
 ## 🌑 ${isPersonalized ? `This Lunar Cycle for ${activeChart?.name}` : 'This Lunar Cycle\'s Theme'}
-${isPersonalized ? `A 2-3 paragraph exploration of how this ${interpretation.sign} New Moon activates ${activeChart?.name}'s natal chart. Reference the house placement and any natal aspects.` : 'A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.'}
+${isPersonalized ? `A 2-3 paragraph exploration of how this ${interpretation.sign} New Moon activates ${activeChart?.name}'s natal chart. Reference the SPECIFIC HOUSE where the New Moon falls and explain what that house governs. For EACH conjunct planet, explain HOW ${activeChart?.name} will physically/emotionally FEEL that planet's energy — use somatic language (weight, buzzing, softening, dissolving, charging). If there's a stellium, name every planet in it and explain the combined effect.` : `A 2-3 paragraph exploration of what this particular New Moon is initiating. For EACH conjunct planet, explain the FELT SENSE — how does Saturn feel different from Neptune? How does their conjunction change the texture of this cycle? Name every planet, explain each one's contribution, then synthesize.`}
 
 ## ✨ ${isPersonalized ? `${activeChart?.name}'s Soul Intention` : 'Soul Intention for This Cycle'}
 ${isPersonalized ? `What ${activeChart?.name}'s soul is being asked to grow into during these 29 days, based on their natal chart activation.` : 'What the soul is being asked to grow into during these 29 days. Be specific and psychological.'}
