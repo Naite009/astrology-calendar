@@ -360,7 +360,7 @@ const generateMainTheme = (
       }
     }
     
-    // If multiple conjunctions, add a synthesis sentence
+    // If multiple conjunctions, add a synthesis sentence (generic fallback — specific pairs handled separately)
     if (conjunctions.length >= 2) {
       const names = conjunctions.map(c => c.name).join(' and ');
       theme += `With ${names} together at this New Moon, their energies merge — what begins now carries all of these threads simultaneously. `;
