@@ -938,7 +938,8 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
       
       for (const aspectType of aspectTypes) {
         const orbValue = Math.abs(diff - aspectType.angle);
-        if (orbValue <= aspectType.orb) {
+        const effectiveOrb = getEffectiveOrbNarr(planet1Key, planet2Key, aspectType.name);
+        if (orbValue <= effectiveOrb) {
           // Try deep interpretation first, then fall back to original
           const deepInterp = getDeepAspectInterpretation(planet1Key, planet2Key, aspectType.name);
           

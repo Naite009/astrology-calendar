@@ -217,7 +217,8 @@ function findTransitAspectsAtDate(date: Date, chart: NatalChart): Array<{ transi
         if (diff > 180) diff = 360 - diff;
         
         for (const ad of aspectDefs) {
-          if (Math.abs(diff - ad.angle) <= ad.orb) {
+          const effectiveOrb = getTransitOrbFn(tb.name, planet, ad.key);
+          if (Math.abs(diff - ad.angle) <= effectiveOrb) {
             results.push({ transit: tb.name, natal: planet, aspect: ad.name, orb: Math.abs(diff - ad.angle), symbol: ad.symbol });
             break;
           }

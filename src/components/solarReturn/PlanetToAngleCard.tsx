@@ -143,7 +143,8 @@ export function usePlanetToAngleActivations(natalChart: NatalChart, srChart: Sol
           let diff = Math.abs(srDeg - angle.deg);
           if (diff > 180) diff = 360 - diff;
           const orb = Math.abs(diff - asp.angle);
-          if (orb <= ORB) {
+          const effectiveOrb = getEffectiveOrb(planetName, angle.name, asp.key);
+          if (orb <= effectiveOrb) {
             const angleInfo = ANGLE_MEANINGS[angle.name];
             const meaning = PLANET_MEANINGS[planetName] || '';
             const displayPlanet = planetName === 'NorthNode' ? 'North Node' : planetName;
