@@ -324,15 +324,23 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     }
   }
 
-  // Moon metonic cycle
+  // Moon metonic cycle — list ALL past echo ages with calendar years
   if (analysis.moonMetonicAges && analysis.moonMetonicAges.length > 1) {
-    const pastAges = analysis.moonMetonicAges.filter(a => a < (analysis.profectionYear?.age || 0));
+    const currentAge = analysis.profectionYear?.age || 0;
+    const pastAges = analysis.moonMetonicAges.filter(a => a < currentAge);
     if (pastAges.length > 0) {
-      const echoAge = pastAges[pastAges.length - 1];
+      // Derive birth year from natalChart.birthDate
+      const birthYearNum = natalChart.birthDate ? parseInt(natalChart.birthDate.split(/[-/]/)[0].length === 4 ? natalChart.birthDate.split(/[-/]/)[0] : natalChart.birthDate.split(/[-/]/)[2]) : 0;
+      const echoLines = pastAges.map(a => {
+        const calYear = birthYearNum ? `${birthYearNum + a}` : '';
+        return calYear ? `Age ${a} (${calYear})` : `Age ${a}`;
+      });
+      const mostRecent = pastAges[pastAges.length - 1];
+      const mostRecentYear = birthYearNum ? ` (${birthYearNum + mostRecent})` : '';
       patterns.push({
-        pattern: `Emotional echo from age ${echoAge}`,
-        description: `Your SR Moon was in the same sign at age ${echoAge}. The emotional themes from that year are reverberating now — not repeating exactly, but rhyming.`,
-        connection: 'The Metonic cycle (19 years) returns the Moon to the same sign. What was happening emotionally at that age? The lesson is deepening.',
+        pattern: `Emotional echo from age ${mostRecent}${mostRecentYear}`,
+        description: `Your SR Moon was in the same sign at: ${echoLines.join(' → ')}. The emotional themes from those years are reverberating now — not repeating exactly, but rhyming. The most recent echo was age ${mostRecent}${mostRecentYear}.`,
+        connection: `The Metonic cycle returns the Moon to the same sign every ~19 years. Think back to what was happening emotionally at each of those ages — the pattern is deepening.`,
         category: 'recurring',
       });
     }
