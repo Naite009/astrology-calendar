@@ -1456,17 +1456,37 @@ Keep the tone deep, insightful, and practically applicable.`
             <CollapsibleContent>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in the natal chart:
+                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in the natal chart. Each aspect describes a geometric relationship between the New Moon and a point in your chart — here's what each one IS and how you'll FEEL it this cycle:
                 </p>
-                <div className="space-y-2">
-                  {natalAspects.map((aspect, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                      <span className="font-medium capitalize">{aspect.planet}</span>
-                      <Badge variant={aspect.aspect === 'Conjunction' || aspect.aspect === 'Trine' || aspect.aspect === 'Sextile' ? 'default' : 'secondary'}>
-                        {aspect.aspect} ({aspect.orb.toFixed(1)}°)
-                      </Badge>
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  {natalAspects.map((aspect, i) => {
+                    const isHarmonious = aspect.aspect === 'Conjunction' || aspect.aspect === 'Trine' || aspect.aspect === 'Sextile';
+                    return (
+                      <div key={i} className="p-4 bg-secondary/30 rounded-lg space-y-2 border border-border/50">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-base capitalize flex items-center gap-2">
+                            <span className="text-lg">{aspect.aspectInfo.symbol}</span>
+                            {aspect.aspect} to {aspect.planet}
+                            <span className="text-xs text-muted-foreground font-normal">
+                              (natal {aspect.natalSign} {aspect.natalDegree}° — {aspect.orb.toFixed(1)}° orb)
+                            </span>
+                          </span>
+                          <Badge variant={isHarmonious ? 'default' : 'secondary'} className="text-xs">
+                            {isHarmonious ? 'Supportive' : 'Growth Edge'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm font-medium text-foreground/90">
+                          What is {aspect.planet}? <span className="font-normal text-muted-foreground">{aspect.planetIdentity}</span>
+                        </p>
+                        <p className="text-sm font-medium text-foreground/90">
+                          What does {aspect.aspectInfo.symbol} {aspect.aspect.toLowerCase()} mean? <span className="font-normal text-muted-foreground">{aspect.aspectInfo.what}</span>
+                        </p>
+                        <p className="text-sm italic text-foreground/80 bg-background/50 p-2 rounded">
+                          🫀 How you'll feel it: {aspect.aspectInfo.feel}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </CollapsibleContent>
