@@ -884,18 +884,36 @@ Keep the tone deep, insightful, and practically applicable.`
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                {/* Cycle Navigation */}
-                <div className="flex items-center justify-between mb-4 p-2 bg-muted/30 rounded-lg">
+                {/* Cycle Navigation — jump to any date or browse */}
+                <div className="flex items-center justify-between gap-2 mb-4 p-2.5 bg-muted/30 rounded-lg flex-wrap">
                   <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o - 1)} className="text-xs">
-                    ← Previous Cycle
+                    ← Previous
                   </Button>
-                  {cycleOffset !== 0 && (
-                    <Button variant="outline" size="sm" onClick={() => setCycleOffset(0)} className="text-xs">
-                      Current Cycle
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="month"
+                      className="text-xs border border-border rounded-md px-2 py-1.5 bg-background text-foreground"
+                      value={(() => {
+                        const d = newMoons?.previous.date || new Date();
+                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                      })()}
+                      onChange={(e) => {
+                        const [year, month] = e.target.value.split('-').map(Number);
+                        const target = new Date(year, month - 1, 15);
+                        const now = new Date();
+                        const diffMs = target.getTime() - now.getTime();
+                        const diffMonths = Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000));
+                        setCycleOffset(diffMonths);
+                      }}
+                    />
+                    {cycleOffset !== 0 && (
+                      <Button variant="outline" size="sm" onClick={() => setCycleOffset(0)} className="text-[10px] px-2 py-1 h-auto">
+                        ↩ Today
+                      </Button>
+                    )}
+                  </div>
                   <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o + 1)} className="text-xs">
-                    Next Cycle →
+                    Next →
                   </Button>
                 </div>
 
