@@ -185,9 +185,7 @@ export function generateExecutiveSummary(
     items.push({
       type: isOpp ? 'opportunity' : 'challenge',
       title: `${asp.planet1} ${asp.type} ${asp.planet2}`,
-      description: isOpp
-        ? `Your ${p1Noun} flows naturally with your natal ${p2Noun} this year — doors open when you engage with this energy.`
-        : `Your ${p1Noun} creates friction with your natal ${p2Noun} — growth comes through working with this tension, not avoiding it.`,
+      description: buildAspectDescription(asp.planet1, asp.planet2, asp.type, isOpp),
       source: `${asp.planet1} ${asp.type} natal ${asp.planet2} (${asp.orb}° orb)`,
       intensity: Math.round(score),
     });
