@@ -1011,8 +1011,28 @@ export const analyzeSolarReturn = (
         { name: 'Balsamic', min: 292.5, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
       ];
       const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
-      // Check if Sun-Moon are close enough for eclipse possibility (within ~12° for solar, ~6° of nodes for lunar)
-      const isEclipse = diff < 12 || diff > 348 || (diff > 168 && diff < 192);
+      // Eclipse requires Sun-Moon alignment AND proximity to the nodal axis (within ~12° of nodes)
+      let isEclipse = false;
+      const nnPos = srChart.planets.NorthNode;
+      if (nnPos) {
+        const nnDeg = toAbsDeg(nnPos);
+        if (nnDeg !== null) {
+          const snDeg = (nnDeg + 180) % 360;
+          // Check if Sun or Moon is near either node
+          for (const lumDeg of [sunDeg, moonDeg]) {
+            for (const nodeDeg of [nnDeg, snDeg]) {
+              let nDiff = Math.abs(lumDeg - nodeDeg);
+              if (nDiff > 180) nDiff = 360 - nDiff;
+              if (nDiff <= 12) {
+                // Also check Sun-Moon are in New or Full phase range
+                if (diff < 15 || diff > 345 || (diff > 165 && diff < 195)) {
+                  isEclipse = true;
+                }
+              }
+            }
+          }
+        }
+      }
       moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100 };
     }
   }
