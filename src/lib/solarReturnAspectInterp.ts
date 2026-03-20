@@ -121,6 +121,26 @@ export const planetLifeMeanings: Record<string, {
     inYourLife: 'Chiron is your SENSITIVE SPOT — the place where you\'ve been hurt but where you can also become a healer for others. Your greatest wisdom comes from this wound.',
     bodyFeeling: 'Chiron activation feels tender — like pressing on a bruise. Something aches, but the ache is calling you to pay attention and heal.',
   },
+  Juno: {
+    rules: 'Committed partnership, loyalty, what you need in marriage',
+    inYourLife: 'Juno is what you NEED from a committed partner — not what you think you want, but the non-negotiable things that make or break a long-term relationship. It\'s your deal-breakers and your deepest partnership needs.',
+    bodyFeeling: 'Juno activation feels like a pull toward commitment — or frustration when a relationship isn\'t meeting your real needs. You feel it in your chest as longing or resentment.',
+  },
+  Vesta: {
+    rules: 'Devotion, sacred focus, what you protect',
+    inYourLife: 'Vesta is what you\'re DEVOTED to — the work or practice you do for its own sake, not for money or recognition. It\'s what you protect as sacred and won\'t let anyone disrespect.',
+    bodyFeeling: 'Vesta activation feels like quiet intensity — a focused flame. You feel most yourself when you\'re doing this thing, and irritated when people interrupt it.',
+  },
+  Pallas: {
+    rules: 'Strategy, pattern recognition, creative intelligence',
+    inYourLife: 'Pallas is how you SEE PATTERNS others miss — your strategic mind, your ability to solve complex problems, and your creative intelligence. It\'s the part of you that sees the whole board.',
+    bodyFeeling: 'Pallas activation feels like a "click" — suddenly you see how things connect. Your mind gets sharp and you want to reorganize, strategize, or design something.',
+  },
+  Ceres: {
+    rules: 'Nurturing, food, mothering, self-care',
+    inYourLife: 'Ceres is how you TAKE CARE of people and how you need to be taken care of. It\'s your relationship with food, comfort, and the physical experience of being nurtured or nurturing someone else.',
+    bodyFeeling: 'Ceres activation feels like a pull to feed someone (literally or emotionally), or a deep hunger for comfort — wanting a home-cooked meal, a hug, or to feel physically safe.',
+  },
   'North Node': {
     rules: 'Soul growth, destiny, unfamiliar territory',
     inYourLife: 'Your North Node is where your SOUL wants to grow — it feels unfamiliar and slightly scary because it\'s the direction you haven\'t mastered yet.',
