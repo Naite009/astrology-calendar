@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
 import { MetricTracker } from "./moonCycle/MetricTracker";
 import { ThemeFinderCard } from "./moonCycle/ThemeFinderCard";
