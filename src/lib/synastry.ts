@@ -39,13 +39,15 @@ export interface SynastryReport {
   soulContract: string;
 }
 
-// Aspect types with their angles and orbs
+import { getEffectiveOrb } from './aspectOrbs';
+
+// Aspect types with their angles and base orbs (effective orb computed per planet pair)
 const ASPECT_DEFINITIONS = {
   conjunction: { angle: 0, orb: 8, symbol: '☌', harmonious: null },
-  opposition: { angle: 180, orb: 8, symbol: '☍', harmonious: false },
-  trine: { angle: 120, orb: 8, symbol: '△', harmonious: true },
+  opposition: { angle: 180, orb: 7, symbol: '☍', harmonious: false },
+  trine: { angle: 120, orb: 7, symbol: '△', harmonious: true },
   square: { angle: 90, orb: 7, symbol: '□', harmonious: false },
-  sextile: { angle: 60, orb: 6, symbol: '⚹', harmonious: true },
+  sextile: { angle: 60, orb: 5, symbol: '⚹', harmonious: true },
   quincunx: { angle: 150, orb: 3, symbol: '⚻', harmonious: false },
   semisextile: { angle: 30, orb: 2, symbol: '⚺', harmonious: true }
 };
