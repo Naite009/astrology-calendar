@@ -1132,25 +1132,30 @@ export const analyzeSolarReturn = (
     const satSRHouse = satDeg !== null ? findSRHouse(satDeg, srChart) : null;
     const satNatalHouse = satDeg !== null ? findNatalHouse(satDeg, natalChart) : null;
     const saturnHouseInterps: Record<number, string> = {
-      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year.',
-      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable.',
-      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project.',
-      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. Emotional maturity is tested.',
-      5: 'Saturn restricts or matures creative expression and romance. Children may be a source of responsibility. Joy must be earned this year.',
-      6: 'Saturn emphasizes health, work discipline, and daily routines. A year to build better habits and take physical well-being seriously.',
-      7: 'Saturn tests partnerships. Relationships face reality checks — commitment is demanded or unsustainable connections end.',
-      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. Psychological maturity deepens.',
-      9: 'Saturn structures higher learning, travel, or philosophical beliefs. Formal education or publishing may require extra effort.',
-      10: 'Saturn at the career peak — professional responsibilities increase significantly. Authority figures are prominent. Reputation is being forged.',
-      11: 'Saturn asks you to get serious about your social circle and future goals. Friendships may be tested or reduced to the most meaningful.',
-      12: 'Saturn in the hidden house — solitude, spiritual discipline, or institutional involvement. Facing karma and unconscious patterns.',
+      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year. In daily life: you\'ll be more serious about how you present yourself, possibly changing your appearance, taking on a leadership role you didn\'t ask for, or feeling like people expect more from you.',
+      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable. In daily life: budgeting becomes essential, you may take on a second job or reduce spending, and you\'ll think hard about what\'s truly worth your money and time.',
+      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project. In daily life: important documents, contracts, or difficult conversations that can\'t be avoided. You may enroll in a course that requires real effort.',
+      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. In daily life: repairs, a parent needing help, feeling the weight of family expectations, or making hard decisions about where you live.',
+      5: 'Saturn restricts or matures creative expression and romance. In daily life: creative projects require discipline rather than inspiration. Dating feels serious or dry. If you have children, their needs demand more structure from you this year.',
+      6: 'Saturn emphasizes health, work discipline, and daily routines. In daily life: you\'ll need to commit to better habits — doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
+      7: 'Saturn tests partnerships — commitment is demanded or unsustainable connections end. In daily life: hard conversations with a partner about what\'s working and what isn\'t. Couples may formalize (marriage, moving in) or separate. Business partnerships face similar reality checks. You learn exactly where the boundaries are.',
+      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. In daily life: insurance claims, debt restructuring, estate matters, or a period where you confront something you\'ve been avoiding about power dynamics in close relationships.',
+      9: 'Saturn structures higher learning, travel, or philosophical beliefs. In daily life: a degree program that demands real work, travel that\'s more obligation than vacation, or a period where your beliefs are tested by reality.',
+      10: 'Saturn at the career peak — professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or a promotion that comes with real pressure. What you build professionally this year has staying power.',
+      11: 'Saturn asks you to get serious about your social circle and future goals. In daily life: you may drift away from friends who don\'t share your values, join a structured group or board, or realize some friendships require actual work to maintain.',
+      12: 'Saturn in the hidden house — facing old patterns, needing more alone time, or dealing with institutions (hospitals, courts, large organizations). In daily life: therapy, meditation practice, a need to withdraw and process, or caring for someone behind the scenes.',
     };
+    const isRetro = !!(saturnPos as any).isRetrograde;
+    const retroNote = isRetro
+      ? ` Saturn is retrograde in your Solar Return, which turns its lessons inward — instead of external pressure, the hard work is psychological. You\'re re-examining old commitments, past responsibilities, and whether the structures you built still hold. Progress feels slow because the work is internal, but what you resolve now prevents repeating the same patterns.`
+      : '';
+    const signNote = saturnPos.sign ? ` In ${saturnPos.sign}, Saturn expresses its demands through ${getSaturnSignStyle(saturnPos.sign)}.` : '';
     saturnFocus = {
       sign: saturnPos.sign,
       house: satSRHouse,
       natalHouse: satNatalHouse,
-      isRetrograde: !!(saturnPos as any).isRetrograde,
-      interpretation: satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.',
+      isRetrograde: isRetro,
+      interpretation: (satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.') + signNote + retroNote,
     };
   }
 
