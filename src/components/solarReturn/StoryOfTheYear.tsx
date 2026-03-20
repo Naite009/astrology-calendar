@@ -115,7 +115,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div className="bg-muted/30 border border-border rounded-sm p-3">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What You're Reading</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            A Solar Return chart is cast for the exact moment the Sun returns to your natal degree each birthday. This chart — with its own Ascendant, Moon placement, and planetary positions — acts as a <strong className="text-foreground">blueprint for the year ahead</strong>. The house the Sun falls in shows where your energy and attention go. The Moon's sign and house reveal your emotional landscape. The aspects between SR and natal planets highlight what gets activated. Together, these signals tell the story of your year.
+            Every year on your birthday, the Sun returns to the exact same spot it was when you were born. At that precise moment, we cast a new chart — a snapshot of the sky. This "birthday chart" acts as a <strong className="text-foreground">blueprint for the year ahead</strong>. Below, we break down what it says about where your attention goes, how you'll feel, and what creates momentum.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where Your Energy Goes This Year</p>
           <p className="text-sm text-foreground leading-relaxed">
-            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> places your central focus on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where your vitality, willpower, and conscious attention are directed all year — it's where the biggest developments happen and where you feel most engaged.
+            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> means your main focus this year is on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where the biggest developments happen — it's the area of life where you'll spend the most energy, make the most decisions, and see the most visible results.
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where You Feel It Most</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> reveals where your emotional attention and daily experience will be most intense: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Your emotional needs this year are filtered through {analysis.moonSign} — {blending?.releasing ? `meaning patterns around ${blending.releasing} are active in your inner world` : 'shaping how you process and react to everything'}.
+              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> shows where your emotional life is most active: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Think of it as what keeps you up at night, what you daydream about, and what triggers your strongest reactions this year.{blending?.releasing ? ` You may notice that patterns around ${blending.releasing} are especially present in your emotional world.` : ''}
             </p>
           </div>
         )}
@@ -142,7 +142,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Emotional Tone of the Year</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The SR Moon Phase is <strong>{currentEntry.phase}</strong> ({currentEntry.phaseAngle}° separation), which sets the year's emotional undertone toward {cycleStageText}.
+              This year's Moon phase is <strong>{currentEntry.phase}</strong>, which means the overall emotional flavor is about {cycleStageText}. Think of it like a season: some years feel like spring (new beginnings), others feel like autumn (harvesting what you've built). This year's season is {currentEntry.cycleStage.toLowerCase()}.
             </p>
           </div>
         )}
@@ -150,14 +150,14 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         {/* 4. Aspect catalyst — skip Sun-Sun */}
         {aspectNarrative && topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') && (
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Adds Momentum</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Creates Momentum</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The tightest aspect in the chart — <strong>{aspectNarrative}</strong> — acts as a catalyst. {topAspect.type === 'Conjunction' ? 'This fusion of energies intensifies both planets, creating a concentrated force in your year.' :
-              topAspect.type === 'Opposition' ? 'This tension between opposing forces creates awareness through contrast — what you want vs. what you must accommodate.' :
-              topAspect.type === 'Square' ? 'This friction generates action — uncomfortable pressure that demands you make changes rather than coast.' :
-              topAspect.type === 'Trine' ? 'This natural flow between compatible energies creates ease and talent — things in this area come naturally this year.' :
-              topAspect.type === 'Sextile' ? 'This opportunity aspect rewards initiative — the door is open but you must walk through it.' :
-              'This aspect adds complexity and nuance to the year\'s themes.'}
+              The strongest connection in this year's chart is between <strong>{topAspect.planet1}</strong> and <strong>{topAspect.planet2}</strong> ({topAspect.type.toLowerCase()}, {topAspect.orb.toFixed(1)}° apart). {topAspect.type === 'Conjunction' ? 'These two forces blend together — when one activates, the other automatically comes along. You can\'t deal with one without dealing with the other.' :
+              topAspect.type === 'Opposition' ? 'These two forces pull in opposite directions, like a tug-of-war. You\'ll feel torn between them at times. The solution isn\'t choosing one — it\'s finding a way to honor both.' :
+              topAspect.type === 'Square' ? 'These two forces create friction — like two people who disagree but force each other to be sharper. It\'s uncomfortable but it\'s what pushes you to actually act instead of staying still.' :
+              topAspect.type === 'Trine' ? 'These two forces work together easily — things related to them come naturally this year. The only risk is taking the ease for granted and not making the most of it.' :
+              topAspect.type === 'Sextile' ? 'These two forces create a quiet opportunity — it won\'t force itself on you, but if you notice it and act, things flow smoothly.' :
+              'These two forces interact in a way that adds nuance and complexity to the year.'}
             </p>
           </div>
         )}

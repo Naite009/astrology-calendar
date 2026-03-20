@@ -291,7 +291,7 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       patterns.push({
         pattern: theme.description,
         description: theme.significance,
-        connection: 'This pattern from your birth chart is being re-activated by your Solar Return. Pay attention — life is highlighting a core lesson.',
+        connection: 'This same pattern exists in your birth chart — meaning it\'s a lifelong theme for you, not just this year. The fact that it shows up again now means this is a year where that part of your life gets extra attention. Notice what\'s familiar.',
         category: 'natal-echo',
       });
     }
@@ -304,8 +304,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     if (profH === satH) {
       patterns.push({
         pattern: `Profection year and Saturn converge on House ${profH}`,
-        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this is not coincidence. Life is demanding maturity in this area.`,
-        connection: 'When the profection year aligns with Saturn\'s house, the theme is amplified. This happens roughly every 12 years.',
+        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this isn't random. Two different timing systems are pointing at the same area of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
+        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will demand your attention. This alignment happens roughly every 12 years.',
         category: 'cycle',
       });
     }
@@ -317,8 +317,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     if (eclipseCount > 0) {
       patterns.push({
         pattern: 'Eclipse activation in your chart',
-        description: `Eclipses are touching sensitive points in your chart — these are accelerators of fate. Events around eclipse dates carry more weight and longer consequences.`,
-        connection: 'Eclipse cycles repeat every 18.6 years (Saros) — check if similar themes appeared that many years ago.',
+        description: `Eclipses this year touch sensitive points in your chart. Think of eclipses as "fast-forward" buttons — events around eclipse dates tend to happen faster, feel more significant, and have longer-lasting effects than normal. Mark the eclipse dates on your calendar and pay attention to what happens within two weeks of each one.`,
+        connection: 'Eclipse cycles repeat every 18.6 years. Think back to what was happening in your life that many years ago — similar themes may reappear now in a new form.',
         category: 'eclipse',
       });
     }

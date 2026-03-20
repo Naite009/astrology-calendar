@@ -171,11 +171,22 @@ export function NatalOverlayCard({ analysis }: Props) {
         <Compass size={16} className="text-primary" />
         How This Year Lands in Your Natal Chart
       </h3>
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
         Solar Return → Natal House Overlay
       </p>
 
-      {/* Main arena summary with explanation */}
+      {/* Teaching context */}
+      <div className="bg-muted/30 border border-border rounded-sm p-3 mb-4">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1">
+          <HelpCircle size={10} />
+          What This Means
+        </p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Your birth chart is like a permanent map of your life, divided into 12 sections (houses), each covering a different area — money, relationships, career, etc. Every birthday, a new chart is created. When we place this year's planets onto your permanent map, we can see <strong className="text-foreground">which parts of your life will get the most attention</strong>. Below, we show where each key planet falls and what it activates for you.
+        </p>
+      </div>
+
+      {/* Main arena summary */}
       {dominantHouse && (
         <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-4">
           <p className="text-xs font-medium text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
@@ -188,13 +199,13 @@ export function NatalOverlayCard({ analysis }: Props) {
           <p className="text-[10px] text-muted-foreground mt-1.5 flex items-start gap-1">
             <HelpCircle size={10} className="flex-shrink-0 mt-0.5" />
             <span>
-              Why this house? {dominantHouse.count} Solar Return points ({dominantHouse.labels.join(', ')}) all fall into your natal {dominantHouse.house}{ordinal(dominantHouse.house)} house. When multiple placements stack in one natal house, that life area becomes the dominant arena of the year.
+              Why this house? {dominantHouse.count} of this year's key planets ({dominantHouse.labels.join(', ')}) all fall into your birth chart's {dominantHouse.house}{ordinal(dominantHouse.house)} house. When multiple planets pile up in the same section of your chart, that area of life becomes the main storyline of the year — it's where the biggest events, decisions, and changes show up.
             </span>
           </p>
         </div>
       )}
 
-      {/* Priority overlay cards */}
+      {/* Priority overlay cards with explanations */}
       <div className="space-y-3 mb-4">
         {priorityPoints.map((p) => (
           <div key={p.label} className="flex gap-3 items-start">
