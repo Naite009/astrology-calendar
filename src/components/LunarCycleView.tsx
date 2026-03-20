@@ -79,17 +79,17 @@ function findKeyPhaseDates(newMoonDate: Date): KeyPhaseDates {
   };
 }
 
-// Find the previous and next new moons
-function findNewMoons(referenceDate: Date): { previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } {
-  // Search backwards for previous new moon
-  const prevSearch = Astronomy.SearchMoonPhase(0, referenceDate, -30);
-  // Search forwards for next new moon
-  const nextSearch = Astronomy.SearchMoonPhase(0, referenceDate, 30);
+// Find the previous and next new moons (with cycle offset)
+function findNewMoons(referenceDate: Date, cycleOffset = 0): { previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } {
+  let searchDate = new Date(referenceDate);
+  if (cycleOffset !== 0) searchDate.setDate(searchDate.getDate() + cycleOffset * 30);
+
+  const prevSearch = Astronomy.SearchMoonPhase(0, searchDate, -30);
+  const nextSearch = Astronomy.SearchMoonPhase(0, searchDate, 30);
   
-  const prevDate = prevSearch?.date || new Date(referenceDate.getTime() - 29.5 * 24 * 60 * 60 * 1000);
-  const nextDate = nextSearch?.date || new Date(referenceDate.getTime() + 29.5 * 24 * 60 * 60 * 1000);
+  const prevDate = prevSearch?.date || new Date(searchDate.getTime() - 29.5 * 24 * 60 * 60 * 1000);
+  const nextDate = nextSearch?.date || new Date(searchDate.getTime() + 29.5 * 24 * 60 * 60 * 1000);
   
-  // Get moon longitude at each new moon
   const prevVector = Astronomy.GeoVector(Astronomy.Body.Moon, prevDate, false);
   const prevEcliptic = Astronomy.Ecliptic(prevVector);
   
@@ -101,6 +101,180 @@ function findNewMoons(referenceDate: Date): { previous: { date: Date; longitude:
     next: { date: nextDate, longitude: nextEcliptic.elon }
   };
 }
+
+// Calculate which natal house a given ecliptic longitude falls in
+function calculateNatalHouse(longitude: number, houseCusps: NatalChart['houseCusps']): number | null {
+  if (!houseCusps) return null;
+  const cuspLongitudes: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
+    if (cusp) {
+      const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+      cuspLongitudes.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+    }
+  }
+  if (cuspLongitudes.length !== 12) return null;
+  for (let i = 0; i < 12; i++) {
+    const nextI = (i + 1) % 12;
+    let start = cuspLongitudes[i];
+    let end = cuspLongitudes[nextI];
+    if (end < start) end += 360;
+    let deg = longitude;
+    if (deg < start) deg += 360;
+    if (deg >= start && deg < end) return i + 1;
+  }
+  return 1;
+}
+
+// Find natal aspects to a given longitude
+function findPhaseNatalAspects(longitude: number, chart: NatalChart) {
+  const aspects: Array<{ planet: string; aspect: string; orb: number; symbol: string }> = [];
+  const aspectDefs = [
+    { name: 'Conjunction', angle: 0, orb: 3, symbol: '☌' },
+    { name: 'Semi-sextile', angle: 30, orb: 2, symbol: '⚺' },
+    { name: 'Sextile', angle: 60, orb: 3, symbol: '⚹' },
+    { name: 'Square', angle: 90, orb: 5, symbol: '□' },
+    { name: 'Trine', angle: 120, orb: 5, symbol: '△' },
+    { name: 'Quincunx', angle: 150, orb: 3, symbol: '⚻' },
+    { name: 'Opposition', angle: 180, orb: 5, symbol: '☍' },
+  ];
+
+  Object.entries(chart.planets).forEach(([planet, data]) => {
+    if (!data) return;
+    const pd = data as { sign: string; degree: number; minutes?: number };
+    const planetLon = ZODIAC_SIGNS.indexOf(pd.sign) * 30 + pd.degree + (pd.minutes || 0) / 60;
+    let diff = Math.abs(longitude - planetLon);
+    if (diff > 180) diff = 360 - diff;
+    
+    for (const ad of aspectDefs) {
+      if (Math.abs(diff - ad.angle) <= ad.orb) {
+        aspects.push({ planet, aspect: ad.name, orb: Math.abs(diff - ad.angle), symbol: ad.symbol });
+        break;
+      }
+    }
+  });
+  return aspects.sort((a, b) => a.orb - b.orb);
+}
+
+// Find outer planet transits active at a given date
+function findTransitAspectsAtDate(date: Date, chart: NatalChart): Array<{ transit: string; natal: string; aspect: string; orb: number; symbol: string }> {
+  const results: Array<{ transit: string; natal: string; aspect: string; orb: number; symbol: string }> = [];
+  const transitBodies: Array<{ name: string; body: Astronomy.Body }> = [
+    { name: 'Uranus', body: Astronomy.Body.Uranus },
+    { name: 'Neptune', body: Astronomy.Body.Neptune },
+    { name: 'Pluto', body: Astronomy.Body.Pluto },
+    { name: 'Saturn', body: Astronomy.Body.Saturn },
+    { name: 'Jupiter', body: Astronomy.Body.Jupiter },
+  ];
+  const aspectDefs = [
+    { name: 'Conjunction', angle: 0, orb: 3, symbol: '☌' },
+    { name: 'Square', angle: 90, orb: 3, symbol: '□' },
+    { name: 'Opposition', angle: 180, orb: 3, symbol: '☍' },
+    { name: 'Trine', angle: 120, orb: 3, symbol: '△' },
+    { name: 'Sextile', angle: 60, orb: 3, symbol: '⚹' },
+  ];
+
+  for (const tb of transitBodies) {
+    try {
+      const vec = Astronomy.GeoVector(tb.body, date, false);
+      const ecl = Astronomy.Ecliptic(vec);
+      const transitLon = ((ecl.elon % 360) + 360) % 360;
+      
+      Object.entries(chart.planets).forEach(([planet, data]) => {
+        if (!data) return;
+        const pd = data as { sign: string; degree: number; minutes?: number };
+        const natalLon = ZODIAC_SIGNS.indexOf(pd.sign) * 30 + pd.degree + (pd.minutes || 0) / 60;
+        let diff = Math.abs(transitLon - natalLon);
+        if (diff > 180) diff = 360 - diff;
+        
+        for (const ad of aspectDefs) {
+          if (Math.abs(diff - ad.angle) <= ad.orb) {
+            results.push({ transit: tb.name, natal: planet, aspect: ad.name, orb: Math.abs(diff - ad.angle), symbol: ad.symbol });
+            break;
+          }
+        }
+      });
+    } catch { /* skip */ }
+  }
+  return results;
+}
+
+const ordinalLCV = (n: number) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
+
+const HOUSE_TOPICS_LCV: Record<number, string> = {
+  1: "identity · body · self-presentation",
+  2: "money · values · security",
+  3: "communication · siblings · learning",
+  4: "home · family · roots",
+  5: "creativity · romance · play",
+  6: "work · health · routines",
+  7: "relationships · agreements",
+  8: "intimacy · fear · transformation",
+  9: "beliefs · teaching · meaning",
+  10: "career · visibility · calling",
+  11: "friends · groups · future goals",
+  12: "rest · dreams · solitude",
+};
+
+// Phase house interpretations — subtle for new moon, intense for full moon
+const PHASE_HOUSE_INTERP: Record<string, Record<number, string>> = {
+  newMoon: {
+    1: "A quiet seed drops into your sense of self. New beginnings around identity or appearance stir subtly — you may not notice until later.",
+    2: "Something stirs around money, possessions, or self-worth. A new value is forming beneath the surface.",
+    3: "A new idea, conversation, or learning path wants to begin. Communication opens gently.",
+    4: "The seed falls into your emotional foundations — home, family, roots. Something private and deep is beginning.",
+    5: "Creative energy stirs. Joy, romance, play, or children may be involved. Something wants expression from the heart.",
+    6: "A fresh start around health, daily routines, or work habits. The body asks for quiet attention.",
+    7: "New energy enters relationships. A partnership may shift or ask for a new understanding.",
+    8: "Deep water. Something around intimacy, shared resources, or transformation is seeding beneath the surface.",
+    9: "A new belief or direction is forming. Travel, education, or meaning-making may be involved.",
+    10: "Career or public role gets a subtle reset. Something is changing in how the world sees you.",
+    11: "New energy in friendships, groups, or future visions. Community connections quietly shift.",
+    12: "The quietest seed. Something is forming in your unconscious, dreams, or spiritual life. Don't push.",
+  },
+  fullMoon: {
+    1: "Who you are is illuminated. Others see you clearly now. Identity themes reach a powerful emotional peak.",
+    2: "A financial or values matter culminates with intensity. What you've been building becomes visible.",
+    3: "A communication or learning matter peaks. Information arrives with force. Words carry maximum impact.",
+    4: "Home and emotional life reach a crescendo. Family dynamics or deep feelings demand attention.",
+    5: "Creative projects, romance, or joy hit a powerful peak. What you've poured your heart into is on display.",
+    6: "Health or work routine reaches a turning point. Daily life demands attention or reveals clear results.",
+    7: "Relationship illumination. What's working and what isn't becomes impossible to ignore.",
+    8: "Deep emotional or financial entanglements peak. Secrets surface. Transformation accelerates.",
+    9: "A belief or educational path reaches fruition with intensity. What you've been reaching toward becomes clear.",
+    10: "Career or reputation peaks powerfully. Professional recognition or a calling turning point arrives.",
+    11: "Friendships, groups, or future goals culminate with emotional charge. A social matter demands resolution.",
+    12: "Hidden things surface with force. Dreams intensify. What's been unconscious becomes visible.",
+  },
+  firstQuarter: {
+    1: "Tension between your new direction and old habits. Push through — this friction builds something real.",
+    2: "Money or values decisions create pressure. Choose between security and growth.",
+    3: "A conversation or decision creates tension. Speak up — clarity comes through action.",
+    4: "Home or family pressure needs active attention. Work through the tension, don't avoid it.",
+    5: "Creative friction. Joy or romance asks for a bold, possibly vulnerable move.",
+    6: "Work or health demands action. Adjust your daily routines — small moves matter most.",
+    7: "Relationship friction drives growth. Honest communication is required right now.",
+    8: "Trust or intimacy is tested. Go deeper, not wider.",
+    9: "Beliefs face a challenge. Stay open — growth lives inside this friction.",
+    10: "Career pressure. Step up and make the call even without perfect information.",
+    11: "Social dynamics create productive tension. Which friendships actually support your growth?",
+    12: "Inner conflict. The unconscious pushes against conscious plans. Rest if you can.",
+  },
+  lastQuarter: {
+    1: "Release an outdated version of yourself. Who you were at the start of this cycle has already changed.",
+    2: "Let go of a financial pattern or value that no longer serves you.",
+    3: "Release a story or communication pattern that needs editing.",
+    4: "Release an emotional pattern or family dynamic. Something in your inner life asks to be cleared.",
+    5: "Let go of a creative project or romantic attachment that's run its course.",
+    6: "Release a health habit or work pattern that has evolved past its usefulness.",
+    7: "Release a relationship expectation. Partnerships need space to evolve.",
+    8: "Release a fear or control pattern. What you surrender creates space.",
+    9: "Release an old belief. Your understanding has evolved — let the old framework dissolve.",
+    10: "Release a career expectation. Your calling is refining itself.",
+    11: "Release a group affiliation or future plan that no longer aligns.",
+    12: "Deep release. Something unconscious is completing. Trust the dissolving process.",
+  },
+};
 
 // Get days in the current lunar cycle
 function getLunarCycleDays(start: Date, end: Date): Array<{ date: Date; moonSign: string; moonPhase: string; dayNumber: number }> {
