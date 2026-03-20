@@ -495,6 +495,32 @@ export const LunarWorkbookSection = ({
           {config.description}
         </p>
 
+        {(() => {
+          const houseNum = natalContext?.newMoonHouse ? parseInt(natalContext.newMoonHouse, 10) : null;
+          const prompts = houseNum ? HOUSE_PROMPTS[houseNum] : null;
+          const topics = houseNum ? HOUSE_TOPICS[houseNum] : null;
+          if (!houseNum || !prompts) return null;
+          return (
+            <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Moon className="h-4 w-4 text-primary" />
+                <h4 className="font-medium text-sm">
+                  {ordinal(houseNum)} House Reflection
+                </h4>
+                <Badge variant="outline" className="ml-auto text-xs">{topics}</Badge>
+              </div>
+              <ul className="space-y-2">
+                {prompts.map((p, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                    <span className="text-primary mt-0.5">›</span>
+                    <span className="italic">{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
+
         {renderPhaseFields(phase)}
       </div>
     );
