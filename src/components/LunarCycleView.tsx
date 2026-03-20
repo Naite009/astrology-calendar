@@ -1032,11 +1032,31 @@ Keep the tone deep, insightful, and practically applicable.`
                   if (keyPhases.firstQuarter) phaseEntries.push({ emoji: '🌓', label: 'First Quarter', date: keyPhases.firstQuarter.date, sign: keyPhases.firstQuarter.sign, degree: keyPhases.firstQuarter.degree, longitude: keyPhases.firstQuarter.longitude, phaseKey: 'firstQuarter' });
                   if (keyPhases.fullMoon) phaseEntries.push({ emoji: '🌕', label: 'Full Moon', date: keyPhases.fullMoon.date, sign: keyPhases.fullMoon.sign, degree: keyPhases.fullMoon.degree, longitude: keyPhases.fullMoon.longitude, phaseKey: 'fullMoon' });
                   if (keyPhases.lastQuarter) phaseEntries.push({ emoji: '🌗', label: 'Last Quarter', date: keyPhases.lastQuarter.date, sign: keyPhases.lastQuarter.sign, degree: keyPhases.lastQuarter.degree, longitude: keyPhases.lastQuarter.longitude, phaseKey: 'lastQuarter' });
-                  // Balsamic
+                   // Balsamic — calculate actual Moon positions
                   if (newMoons?.next) {
                     const balStart = new Date(newMoons.next.date); balStart.setDate(balStart.getDate() - 4);
                     const balEnd = new Date(newMoons.next.date); balEnd.setDate(balEnd.getDate() - 1);
-                    phaseEntries.push({ emoji: '🌘', label: 'Balsamic Moon', date: balStart, sign: '', degree: 0, longitude: 0, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd });
+                    // Get Moon longitude at balsamic start and end
+                    try {
+                      const vecStart = Astronomy.GeoVector(Astronomy.Body.Moon, balStart, false);
+                      const eclStart = Astronomy.Ecliptic(vecStart);
+                      const lonStart = ((eclStart.elon % 360) + 360) % 360;
+                      const signIdxStart = Math.floor(lonStart / 30);
+                      const vecEnd = Astronomy.GeoVector(Astronomy.Body.Moon, balEnd, false);
+                      const eclEnd = Astronomy.Ecliptic(vecEnd);
+                      const lonEnd = ((eclEnd.elon % 360) + 360) % 360;
+                      const signIdxEnd = Math.floor(lonEnd / 30);
+                      phaseEntries.push({
+                        emoji: '🌘', label: 'Balsamic Moon', date: balStart,
+                        sign: ZODIAC_SIGNS[signIdxStart], degree: Math.floor(lonStart % 30),
+                        longitude: lonStart, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd,
+                        balsamicEndSign: ZODIAC_SIGNS[signIdxEnd],
+                        balsamicEndDegree: Math.floor(lonEnd % 30),
+                        balsamicEndLongitude: lonEnd,
+                      });
+                    } catch {
+                      phaseEntries.push({ emoji: '🌘', label: 'Balsamic Moon', date: balStart, sign: '', degree: 0, longitude: 0, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd });
+                    }
                   }
 
                   return (
