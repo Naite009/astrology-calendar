@@ -513,36 +513,36 @@ export const LunarWorkbookSection = ({
             )}
 
             <JournalField
-              label="What FEELS important right now? (inside ☽)"
-              placeholder="What is my soul telling me is 'up' right now? What's wanting to be conceived?"
+              label="What wants to be worked with this cycle?"
+              placeholder="What is surfacing from within? What emotional theme feels alive now?"
               value={journal?.new_moon_feelings}
               onChange={(v) => updateField('new_moon_feelings', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="What's SHOWING UP in your life? (outside ☼)"
-              placeholder="What issues have been at the forefront of your mind over the past few days/week?"
+              label="What is showing up in your life?"
+              placeholder="What issues have been at the forefront? What is the world reflecting back to you?"
               value={journal?.new_moon_showing_up}
               onChange={(v) => updateField('new_moon_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-amber-500" />}
             />
             <JournalField
               label="House Themes"
-              placeholder="What area of life is being illuminated for you? What are the themes of that house?"
+              placeholder="What area of life is being illuminated? What would it mean to nurture this gently?"
               value={journal?.new_moon_house_themes}
               onChange={(v) => updateField('new_moon_house_themes', v)}
               icon={<Target className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="My Intention(s) for this cycle"
-              placeholder="Allow the intentions to come to you. Write your intentions as a prayer, affirmation, or wish..."
+              label="Intention(s) for this cycle"
+              placeholder="Write when emotionally clear. Allow the words to develop over a day or two if needed..."
               value={journal?.new_moon_intentions}
               onChange={(v) => updateField('new_moon_intentions', v)}
               icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="How would I FEEL with this present?"
-              placeholder="Focus on the sensations in your body rather than emotions..."
+              label="How would I feel with this present?"
+              placeholder="Focus on sensations in your body. What does it feel like to hold this intention?"
               value={journal?.new_moon_body_sensations}
               onChange={(v) => updateField('new_moon_body_sensations', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
