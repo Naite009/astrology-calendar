@@ -299,6 +299,20 @@ const PHASE_HOUSE_INTERP: Record<string, Record<number, string>> = {
     11: "Release a group affiliation or future plan that no longer aligns.",
     12: "Deep release. Something unconscious is completing. Trust the dissolving process.",
   },
+  balsamic: {
+    1: "Your sense of self is composting. Identity questions may feel heavy — let them dissolve rather than solving them.",
+    2: "Financial or value patterns are distilling. What you thought mattered may be quietly shifting beneath the surface.",
+    3: "Old stories and mental patterns are dissolving. Your mind may feel foggy — that's the clearing, not a problem.",
+    4: "Home and emotional foundations are in deep release. Dreams about family or the past may surface. Rest here.",
+    5: "Creative energy is at its lowest ebb. Joy and play need quiet — don't force expression right now.",
+    6: "Health and routines are asking for rest, not optimization. Your body is processing. Listen to fatigue signals.",
+    7: "Relationship patterns are composting. Don't try to fix anything right now — let things settle on their own.",
+    8: "Deep psychic clearing. Old fears, grief, or control patterns are dissolving in the dark. This is sacred work.",
+    9: "Beliefs and meaning-making are in retreat. You may feel lost or directionless — that's the old map dissolving.",
+    10: "Career ambitions are at low tide. Professional identity is resetting in the dark. Don't push for visibility yet.",
+    11: "Social energy is at its lowest. The desire to withdraw from groups or collective demands is valid and wise.",
+    12: "The most natural balsamic placement. You are deep in the unconscious. Dreams, intuition, and spiritual impressions are vivid. Surrender.",
+  },
 };
 
 // Get days in the current lunar cycle
@@ -1012,17 +1026,38 @@ Keep the tone deep, insightful, and practically applicable.`
                   const phaseEntries: Array<{
                     emoji: string; label: string; date: Date; sign: string; degree: number;
                     longitude: number; phaseKey: string; isRange?: boolean; rangeEnd?: Date;
+                    balsamicEndSign?: string; balsamicEndDegree?: number; balsamicEndLongitude?: number;
                   }> = [
                     { emoji: '🌑', label: 'New Moon', date: newMoons!.previous.date, sign: interpretation.sign, degree: interpretation.degree, longitude: newMoonLon, phaseKey: 'newMoon' },
                   ];
                   if (keyPhases.firstQuarter) phaseEntries.push({ emoji: '🌓', label: 'First Quarter', date: keyPhases.firstQuarter.date, sign: keyPhases.firstQuarter.sign, degree: keyPhases.firstQuarter.degree, longitude: keyPhases.firstQuarter.longitude, phaseKey: 'firstQuarter' });
                   if (keyPhases.fullMoon) phaseEntries.push({ emoji: '🌕', label: 'Full Moon', date: keyPhases.fullMoon.date, sign: keyPhases.fullMoon.sign, degree: keyPhases.fullMoon.degree, longitude: keyPhases.fullMoon.longitude, phaseKey: 'fullMoon' });
                   if (keyPhases.lastQuarter) phaseEntries.push({ emoji: '🌗', label: 'Last Quarter', date: keyPhases.lastQuarter.date, sign: keyPhases.lastQuarter.sign, degree: keyPhases.lastQuarter.degree, longitude: keyPhases.lastQuarter.longitude, phaseKey: 'lastQuarter' });
-                  // Balsamic
+                   // Balsamic — calculate actual Moon positions
                   if (newMoons?.next) {
                     const balStart = new Date(newMoons.next.date); balStart.setDate(balStart.getDate() - 4);
                     const balEnd = new Date(newMoons.next.date); balEnd.setDate(balEnd.getDate() - 1);
-                    phaseEntries.push({ emoji: '🌘', label: 'Balsamic Moon', date: balStart, sign: '', degree: 0, longitude: 0, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd });
+                    // Get Moon longitude at balsamic start and end
+                    try {
+                      const vecStart = Astronomy.GeoVector(Astronomy.Body.Moon, balStart, false);
+                      const eclStart = Astronomy.Ecliptic(vecStart);
+                      const lonStart = ((eclStart.elon % 360) + 360) % 360;
+                      const signIdxStart = Math.floor(lonStart / 30);
+                      const vecEnd = Astronomy.GeoVector(Astronomy.Body.Moon, balEnd, false);
+                      const eclEnd = Astronomy.Ecliptic(vecEnd);
+                      const lonEnd = ((eclEnd.elon % 360) + 360) % 360;
+                      const signIdxEnd = Math.floor(lonEnd / 30);
+                      phaseEntries.push({
+                        emoji: '🌘', label: 'Balsamic Moon', date: balStart,
+                        sign: ZODIAC_SIGNS[signIdxStart], degree: Math.floor(lonStart % 30),
+                        longitude: lonStart, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd,
+                        balsamicEndSign: ZODIAC_SIGNS[signIdxEnd],
+                        balsamicEndDegree: Math.floor(lonEnd % 30),
+                        balsamicEndLongitude: lonEnd,
+                      });
+                    } catch {
+                      phaseEntries.push({ emoji: '🌘', label: 'Balsamic Moon', date: balStart, sign: '', degree: 0, longitude: 0, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd });
+                    }
                   }
 
                   return (
@@ -1034,23 +1069,47 @@ Keep the tone deep, insightful, and practically applicable.`
                         const transitAsp = activeChart ? findTransitAspectsAtDate(pe.date, activeChart) : [];
                         const houseInterp = house && PHASE_HOUSE_INTERP[pe.phaseKey]?.[house] ? PHASE_HOUSE_INTERP[pe.phaseKey][house] : null;
 
+                        // For balsamic: check if end falls in a different house
+                        const balEndHouse = pe.isRange && pe.balsamicEndLongitude && activeChart
+                          ? calculateNatalHouse(pe.balsamicEndLongitude, activeChart.houseCusps) : null;
+                        const balSpansTwoHouses = balEndHouse && house && balEndHouse !== house;
+                        const balEndHouseInterp = balSpansTwoHouses && PHASE_HOUSE_INTERP[pe.phaseKey]?.[balEndHouse] ? PHASE_HOUSE_INTERP[pe.phaseKey][balEndHouse] : null;
+
                         return (
-                          <div key={idx} className="p-4 bg-secondary/20 rounded-xl border border-border/40 space-y-2.5">
+                          <div key={idx} className={`p-4 rounded-xl border space-y-2.5 ${pe.phaseKey === 'balsamic' ? 'bg-muted/40 border-border/60' : 'bg-secondary/20 border-border/40'}`}>
                             <div className="flex items-start gap-3">
                               <span className="text-2xl mt-0.5">{pe.emoji}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
                                   <p className="font-medium text-foreground">{pe.label}</p>
                                   {pe.sign && <Badge variant="outline" className="text-xs">{pe.degree}° {ZODIAC_SYMBOLS[pe.sign]} {pe.sign}</Badge>}
-                                  {pe.isRange && <Badge variant="secondary" className="text-xs">Rest & Release</Badge>}
+                                  {pe.isRange && pe.balsamicEndSign && pe.balsamicEndSign !== pe.sign && (
+                                    <Badge variant="outline" className="text-xs">→ {pe.balsamicEndDegree}° {ZODIAC_SYMBOLS[pe.balsamicEndSign]} {pe.balsamicEndSign}</Badge>
+                                  )}
+                                  {pe.isRange && <Badge variant="secondary" className="text-xs">Sacred Rest</Badge>}
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-0.5">{dt.date}</p>
-                                {!pe.isRange && <p className="text-xs text-primary font-medium">{dt.time}</p>}
+                                {/* Show times for balsamic too */}
+                                <p className="text-xs text-primary font-medium">{dt.time}</p>
                                 {pe.isRange && pe.rangeEnd && (
-                                  <p className="text-xs text-muted-foreground">through {pe.rangeEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    through {pe.rangeEnd.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at{' '}
+                                    {pe.rangeEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}
+                                  </p>
                                 )}
                               </div>
                             </div>
+
+                            {/* Balsamic degree explanation */}
+                            {pe.phaseKey === 'balsamic' && (
+                              <div className="ml-9 p-2.5 bg-background/40 rounded-lg border border-border/20">
+                                <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                                  The Balsamic Moon begins when the Sun-Moon separation reaches 315° (45° before the next conjunction). 
+                                  This is the final ~3½ days of the cycle — the "dark of the Moon" — when the crescent thins toward invisible. 
+                                  Traditionally a time of composting, release, dreams, and deep rest before rebirth.
+                                </p>
+                              </div>
+                            )}
 
                             {/* House placement + interpretation */}
                             {house && (
@@ -1060,6 +1119,19 @@ Keep the tone deep, insightful, and practically applicable.`
                                 </p>
                                 {houseInterp && (
                                   <p className="text-xs text-foreground/75 leading-relaxed">{houseInterp}</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* If balsamic spans two houses */}
+                            {balSpansTwoHouses && balEndHouse && (
+                              <div className="ml-9 p-3 bg-background/60 rounded-lg border border-border/30 space-y-1.5">
+                                <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                                  <Moon className="h-3 w-3" /> Shifts into {ordinalLCV(balEndHouse)} House — {HOUSE_TOPICS_LCV[balEndHouse]}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">The Moon moves into this house during the balsamic window.</p>
+                                {balEndHouseInterp && (
+                                  <p className="text-xs text-foreground/75 leading-relaxed">{balEndHouseInterp}</p>
                                 )}
                               </div>
                             )}
