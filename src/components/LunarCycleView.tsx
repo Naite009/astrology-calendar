@@ -102,6 +102,31 @@ function findNewMoons(referenceDate: Date, cycleOffset = 0): { previous: { date:
   };
 }
 
+// Find the nearest New Moon in a specific sign (searching forward or backward)
+function findNewMoonInSign(sign: string, direction: 'next' | 'previous', fromDate: Date): Date | null {
+  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  if (signIndex < 0) return null;
+  
+  let searchDate = new Date(fromDate);
+  // Search up to 14 cycles (~14 months) to guarantee finding the sign
+  for (let i = 0; i < 14; i++) {
+    const offset = direction === 'next' ? 30 : -30;
+    const nm = Astronomy.SearchMoonPhase(0, searchDate, offset);
+    if (!nm) { searchDate.setDate(searchDate.getDate() + offset); continue; }
+    
+    const vec = Astronomy.GeoVector(Astronomy.Body.Moon, nm.date, false);
+    const ecl = Astronomy.Ecliptic(vec);
+    const lon = ((ecl.elon % 360) + 360) % 360;
+    const nmSignIndex = Math.floor(lon / 30);
+    
+    if (nmSignIndex === signIndex) return nm.date;
+    
+    // Move search cursor past this New Moon
+    searchDate = new Date(nm.date.getTime() + (direction === 'next' ? 2 : -2) * 24 * 60 * 60 * 1000);
+  }
+  return null;
+}
+
 // Calculate which natal house a given ecliptic longitude falls in
 function calculateNatalHouse(longitude: number, houseCusps: NatalChart['houseCusps']): number | null {
   if (!houseCusps) return null;
@@ -884,37 +909,93 @@ Keep the tone deep, insightful, and practically applicable.`
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                {/* Cycle Navigation — jump to any date or browse */}
-                <div className="flex items-center justify-between gap-2 mb-4 p-2.5 bg-muted/30 rounded-lg flex-wrap">
-                  <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o - 1)} className="text-xs">
-                    ← Previous
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="month"
-                      className="text-xs border border-border rounded-md px-2 py-1.5 bg-background text-foreground"
-                      value={(() => {
-                        const d = newMoons?.previous.date || new Date();
-                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                      })()}
-                      onChange={(e) => {
-                        const [year, month] = e.target.value.split('-').map(Number);
-                        const target = new Date(year, month - 1, 15);
-                        const now = new Date();
-                        const diffMs = target.getTime() - now.getTime();
-                        const diffMonths = Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000));
-                        setCycleOffset(diffMonths);
-                      }}
-                    />
-                    {cycleOffset !== 0 && (
-                      <Button variant="outline" size="sm" onClick={() => setCycleOffset(0)} className="text-[10px] px-2 py-1 h-auto">
-                        ↩ Today
-                      </Button>
-                    )}
+                {/* Cycle Navigation — jump to any date, sign, or browse */}
+                <div className="flex flex-col gap-2 mb-4 p-2.5 bg-muted/30 rounded-lg">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o - 1)} className="text-xs">
+                      ← Previous
+                    </Button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <input
+                        type="month"
+                        className="text-xs border border-border rounded-md px-2 py-1.5 bg-background text-foreground"
+                        value={(() => {
+                          const d = newMoons?.previous.date || new Date();
+                          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        })()}
+                        onChange={(e) => {
+                          const [year, month] = e.target.value.split('-').map(Number);
+                          const target = new Date(year, month - 1, 15);
+                          const now = new Date();
+                          const diffMs = target.getTime() - now.getTime();
+                          const diffMonths = Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000));
+                          setCycleOffset(diffMonths);
+                        }}
+                      />
+                      {cycleOffset !== 0 && (
+                        <Button variant="outline" size="sm" onClick={() => setCycleOffset(0)} className="text-[10px] px-2 py-1 h-auto">
+                          ↩ Today
+                        </Button>
+                      )}
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o + 1)} className="text-xs">
+                      Next →
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o + 1)} className="text-xs">
-                    Next →
-                  </Button>
+                  {/* Sign filter — jump to New Moon in a specific sign */}
+                  <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide mr-1">Find by sign:</span>
+                    <Select
+                      value=""
+                      onValueChange={(sign) => {
+                        const refDate = newMoons?.previous.date || new Date();
+                        // Search backward first for the most recent one
+                        const prevInSign = findNewMoonInSign(sign, 'previous', refDate);
+                        if (prevInSign) {
+                          const now = new Date();
+                          const diffMs = prevInSign.getTime() - now.getTime();
+                          const diffMonths = Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000));
+                          setCycleOffset(diffMonths);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-[130px] h-7 text-xs">
+                        <SelectValue placeholder="← Previous in…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ZODIAC_SIGNS.map(s => (
+                          <SelectItem key={s} value={s} className="text-xs">
+                            {ZODIAC_SYMBOLS[s]} {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value=""
+                      onValueChange={(sign) => {
+                        const refDate = newMoons?.previous.date || new Date();
+                        // Search forward for the next one
+                        const nextInSign = findNewMoonInSign(sign, 'next', new Date(refDate.getTime() + 2 * 24 * 60 * 60 * 1000));
+                        if (nextInSign) {
+                          const now = new Date();
+                          const diffMs = nextInSign.getTime() - now.getTime();
+                          const diffMonths = Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000));
+                          setCycleOffset(diffMonths);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-[130px] h-7 text-xs">
+                        <SelectValue placeholder="Next in… →" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ZODIAC_SIGNS.map(s => (
+                          <SelectItem key={s} value={s} className="text-xs">
+                            {ZODIAC_SYMBOLS[s]} {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {(() => {
