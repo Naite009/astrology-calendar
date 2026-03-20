@@ -1,5 +1,6 @@
-import { LifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
-import { Briefcase, Heart, Activity, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { LifeDomainScores, LifeDomainScore, ScoreContribution } from '@/lib/solarReturnLifeDomainScores';
+import { Briefcase, Heart, Activity, TrendingUp, ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 
 interface Props {
   scores: LifeDomainScores;
@@ -26,6 +27,80 @@ const BAR_COLORS: Record<string, string> = {
   Growth: 'bg-violet-500',
 };
 
+const DomainCard = ({ d }: { d: LifeDomainScore }) => {
+  const [expanded, setExpanded] = useState(false);
+  const Icon = DOMAIN_ICONS[d.domain] || TrendingUp;
+  const color = DOMAIN_COLORS[d.domain] || 'text-primary';
+  const barColor = BAR_COLORS[d.domain] || 'bg-primary';
+
+  return (
+    <div className="p-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon size={14} className={color} />
+          <span className="text-sm font-medium text-foreground">{d.domain}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-serif font-bold text-foreground">{d.score.toFixed(1)}</span>
+          <span className={`text-[9px] uppercase tracking-wider font-medium ${color}`}>{d.label}</span>
+        </div>
+      </div>
+
+      {/* Score bar */}
+      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${barColor}`}
+          style={{ width: `${(d.score / 10) * 100}%` }}
+        />
+      </div>
+
+      {/* Advice */}
+      <p className="text-[11px] text-muted-foreground leading-relaxed">{d.advice}</p>
+
+      {/* Show breakdown toggle */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 transition-colors active:scale-[0.97]"
+      >
+        {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        {expanded ? 'Hide' : 'Show'} how this score was calculated
+      </button>
+
+      {/* Full breakdown */}
+      {expanded && d.breakdown && (
+        <div className="mt-2 space-y-1.5 border-t border-border pt-2">
+          <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium mb-1">
+            Score Breakdown — Where Each Point Comes From
+          </div>
+          {d.breakdown.map((b, i) => (
+            <div key={i} className="flex gap-2 text-[11px]">
+              <div className="flex-shrink-0 w-10 text-right font-mono">
+                {b.points >= 0 ? (
+                  <span className="text-emerald-600">+{b.points.toFixed(1)}</span>
+                ) : (
+                  <span className="text-amber-600">{b.points.toFixed(1)}</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <span className="font-medium text-foreground">{b.source}</span>
+                <span className="text-muted-foreground"> — {b.reason}</span>
+              </div>
+            </div>
+          ))}
+          <div className="flex gap-2 text-[11px] border-t border-border pt-1.5 mt-1.5">
+            <div className="flex-shrink-0 w-10 text-right font-mono font-bold text-foreground">
+              ={d.score.toFixed(1)}
+            </div>
+            <div className="flex-1 font-medium text-foreground">
+              Final score (capped at 10)
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const LifeDomainScoresCard = ({ scores }: Props) => {
   const domains = [scores.career, scores.love, scores.health, scores.growth];
 
@@ -33,50 +108,16 @@ export const LifeDomainScoresCard = ({ scores }: Props) => {
     <div className="border border-primary/20 rounded-sm bg-card overflow-hidden">
       <div className="p-5 border-b border-border">
         <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Life Domain Scores</div>
-        <p className="text-[11px] text-muted-foreground">How strongly each area of life is activated this year</p>
+        <p className="text-[11px] text-muted-foreground">
+          How strongly each area of life is activated this year — based on which planets land in which houses.
+          Tap "show how this score was calculated" to see every point.
+        </p>
       </div>
 
       <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 divide-border">
-        {domains.map((d) => {
-          const Icon = DOMAIN_ICONS[d.domain] || TrendingUp;
-          const color = DOMAIN_COLORS[d.domain] || 'text-primary';
-          const barColor = BAR_COLORS[d.domain] || 'bg-primary';
-
-          return (
-            <div key={d.domain} className="p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Icon size={14} className={color} />
-                  <span className="text-sm font-medium text-foreground">{d.domain}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-serif font-bold text-foreground">{d.score.toFixed(1)}</span>
-                  <span className={`text-[9px] uppercase tracking-wider font-medium ${color}`}>{d.label}</span>
-                </div>
-              </div>
-
-              {/* Score bar */}
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${barColor}`}
-                  style={{ width: `${(d.score / 10) * 100}%` }}
-                />
-              </div>
-
-              {/* Drivers */}
-              {d.drivers.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {d.drivers.map((dr, i) => (
-                    <span key={i} className="text-[9px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{dr}</span>
-                  ))}
-                </div>
-              )}
-
-              {/* Advice */}
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{d.advice}</p>
-            </div>
-          );
-        })}
+        {domains.map((d) => (
+          <DomainCard key={d.domain} d={d} />
+        ))}
       </div>
     </div>
   );
