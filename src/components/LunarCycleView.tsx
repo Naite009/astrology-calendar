@@ -1026,6 +1026,7 @@ Keep the tone deep, insightful, and practically applicable.`
                   const phaseEntries: Array<{
                     emoji: string; label: string; date: Date; sign: string; degree: number;
                     longitude: number; phaseKey: string; isRange?: boolean; rangeEnd?: Date;
+                    balsamicEndSign?: string; balsamicEndDegree?: number; balsamicEndLongitude?: number;
                   }> = [
                     { emoji: '🌑', label: 'New Moon', date: newMoons!.previous.date, sign: interpretation.sign, degree: interpretation.degree, longitude: newMoonLon, phaseKey: 'newMoon' },
                   ];
