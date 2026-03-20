@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
 import { MetricTracker } from "./moonCycle/MetricTracker";
 import { ThemeFinderCard } from "./moonCycle/ThemeFinderCard";
+import { PatternsInsightsSection } from "./moonCycle/PatternsInsightsSection";
 import {
   Moon, Sparkles, Save, History, Loader2, Heart, Eye, Zap, Target,
   RefreshCw, Wand2, BookOpen, ChevronDown, AlertCircle, Feather, Wind
@@ -531,6 +532,13 @@ export const LunarWorkbookSection = ({
           </CardContent>
         </Card>
       )}
+
+      {/* ═══ 9 · Patterns + Insights ═══ */}
+      <PatternsInsightsSection
+        pastJournals={pastJournals}
+        currentJournal={journal}
+        cycleSign={cycleSign}
+      />
 
       {/* ═══ 11 · Sign-as-Practice / Learn Your Chart ═══ */}
       {signPractice && (
