@@ -96,7 +96,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
   addToCount('SR Moon', analysis.moonNatalHouse?.house ?? null);
   for (const ov of overlays) {
     if (!['Sun', 'Moon'].includes(ov.planet)) {
-      addToCount(`SR ${ov.planet}`, ov.natalHouse);
+      addToCount(`SR ${ov.planet}`, (ov as any).srInNatalHouse ?? ov.natalHouse);
     }
   }
 

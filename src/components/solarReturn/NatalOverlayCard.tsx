@@ -59,14 +59,14 @@ export function NatalOverlayCard({ analysis }: Props) {
     // Saturn & Jupiter from overlays
     for (const ov of analysis.houseOverlays || []) {
       if (ov.planet === 'Saturn' || ov.planet === 'Jupiter') {
-        addPoint(`SR ${ov.planet}`, ov.natalHouse, true);
+        addPoint(`SR ${ov.planet}`, (ov as any).srInNatalHouse ?? ov.natalHouse, true);
       }
     }
 
     // Other overlays (non-priority)
     for (const ov of analysis.houseOverlays || []) {
       if (['Sun', 'Moon', 'Saturn', 'Jupiter'].includes(ov.planet)) continue;
-      addPoint(`SR ${ov.planet}`, ov.natalHouse, false);
+      addPoint(`SR ${ov.planet}`, (ov as any).srInNatalHouse ?? ov.natalHouse, false);
     }
 
     // Build narratives
