@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
 import { MetricTracker } from "./moonCycle/MetricTracker";
+import { ThemeFinderCard } from "./moonCycle/ThemeFinderCard";
 import {
   Moon, Sparkles, Save, History, Loader2, Heart, Eye, Zap, Target,
   RefreshCw, Wand2, BookOpen, ChevronDown, AlertCircle, Feather, Wind
