@@ -798,8 +798,11 @@ export const analyzeSolarReturn = (
       srDegree: `${pos.degree}°${pos.minutes || 0}'`,
       srHouse: sh,
       srHouseTheme: sh ? houseThemes[sh] : '',
-      natalHouse: nh,
-      houseTheme: nh ? houseThemes[nh] : '',
+      natalHouse: natalOrigHouse,
+      natalHouseTheme: natalOrigHouse ? houseThemes[natalOrigHouse] : '',
+      srInNatalHouse: nh,
+      srInNatalHouseTheme: nh ? houseThemes[nh] : '',
+      houseTheme: natalOrigHouse ? houseThemes[natalOrigHouse] : '',
       interpretation: interp,
     });
   }
