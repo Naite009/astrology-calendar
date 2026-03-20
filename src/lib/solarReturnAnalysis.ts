@@ -240,8 +240,11 @@ export interface SRHouseOverlay {
   srDegree: string;
   srHouse: number | null;
   srHouseTheme: string;
-  natalHouse: number | null;
-  houseTheme: string;
+  natalHouse: number | null;       // planet's house in the NATAL chart
+  natalHouseTheme: string;
+  srInNatalHouse: number | null;   // where the SR planet's degree falls in natal houses (overlay)
+  srInNatalHouseTheme: string;
+  houseTheme: string;              // kept for backward compat (= natalHouseTheme)
   interpretation: string;
 }
 
