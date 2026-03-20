@@ -105,9 +105,9 @@ export function generateIdentityShift(
     },
   ];
 
-  // Headline — proper sentence: "The Mystic Who Trusts the Unseen"
+  // Headline — proper sentence with full title case
   const titleCase = (s: string) => s.replace(/\b\w/g, c => c.toUpperCase());
-  const headline = `${titleCase(ascArch.becoming)} Who ${sunArch.headline_verb.charAt(0).toUpperCase() + sunArch.headline_verb.slice(1)}`;
+  const headline = `${titleCase(ascArch.becoming)} Who ${titleCase(sunArch.headline_verb)}`;
 
   // Main narrative
   const becomingNarrative = buildNarrative(srSunSign, srSunHouse, srAscSign, nodeSign, nodeHouse, sunArch, ascArch, nodeArch);
