@@ -332,7 +332,20 @@ const getAspectMeaning = (planet: string, aspectType: string): string => {
   }
 };
 
-const generateMainTheme = (
+// Generate conjunction pair synthesis paragraphs for all pairs among conjunct planets
+const generateConjunctionPairSyntheses = (conjunctions: PlanetPosition[]): string[] => {
+  if (conjunctions.length < 2) return [];
+  const syntheses: string[] = [];
+  for (let i = 0; i < conjunctions.length; i++) {
+    for (let j = i + 1; j < conjunctions.length; j++) {
+      const pair = [conjunctions[i].name, conjunctions[j].name].sort().join('+');
+      const synthesis = CONJUNCTION_PAIR_SYNTHESIS[pair];
+      if (synthesis) syntheses.push(synthesis);
+    }
+  }
+  return syntheses;
+};
+
   sign: string,
   signInfo: typeof SIGN_RULERS[string],
   conjunctions: PlanetPosition[],
