@@ -2,6 +2,7 @@
 // Detects and interprets how other planets aspect the Big Three
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { getEffectiveOrb } from './aspectOrbs';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
