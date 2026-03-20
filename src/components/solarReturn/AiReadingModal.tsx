@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { X, Sparkles, Loader2, RotateCcw, Download } from 'lucide-react';
+import { X, Sparkles, Loader2, RotateCcw, Download, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 
@@ -10,112 +10,147 @@ interface Props {
   onClose: () => void;
   personName: string;
   buildFullJson: () => Record<string, any>;
+  onReadingsUpdate?: (readings: { plain: string; astro: string }) => void;
 }
 
-export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Props) => {
-  const [reading, setReading] = useState('');
+async function fetchReading(
+  fullJson: Record<string, any>,
+  mode: AiReadingMode,
+  signal: AbortSignal,
+  onDelta: (text: string) => void,
+): Promise<string> {
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sr-ai-reading`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ fullJson, mode }),
+    signal,
+  });
+
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    if (resp.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
+    if (resp.status === 402) throw new Error('AI credits needed — please add credits in Settings.');
+    throw new Error(errData.error || 'Failed to generate reading');
+  }
+
+  const reader = resp.body?.getReader();
+  if (!reader) throw new Error('No response body');
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let accumulated = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let newlineIdx: number;
+    while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+      let line = buffer.slice(0, newlineIdx);
+      buffer = buffer.slice(newlineIdx + 1);
+      if (line.endsWith('\r')) line = line.slice(0, -1);
+      if (line.startsWith(':') || line.trim() === '') continue;
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === '[DONE]') break;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) {
+          accumulated += content;
+          onDelta(accumulated);
+        }
+      } catch {
+        buffer = line + '\n' + buffer;
+        break;
+      }
+    }
+  }
+  return accumulated;
+}
+
+export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onReadingsUpdate }: Props) => {
+  const [readings, setReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
+  const [activeView, setActiveView] = useState<AiReadingMode>('plain');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMode, setStreamingMode] = useState<AiReadingMode | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
-  const [mode, setMode] = useState<AiReadingMode>('plain');
+  const [currentStreamText, setCurrentStreamText] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
-  const generate = useCallback(async () => {
-    setReading('');
+  const generateBoth = useCallback(async () => {
+    setReadings({ plain: '', astro: '' });
     setIsStreaming(true);
     setHasStarted(true);
 
     const controller = new AbortController();
     abortRef.current = controller;
+    const fullJson = buildFullJson();
 
     try {
-      const fullJson = buildFullJson();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sr-ai-reading`;
-
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ fullJson, mode }),
-        signal: controller.signal,
+      // Generate plain first
+      setStreamingMode('plain');
+      setActiveView('plain');
+      setCurrentStreamText('');
+      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, (text) => {
+        setCurrentStreamText(text);
       });
+      setReadings(prev => ({ ...prev, plain: plainResult }));
 
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        if (resp.status === 429) {
-          toast.error('Rate limit exceeded — please wait a moment and try again.');
-        } else if (resp.status === 402) {
-          toast.error('AI credits needed — please add credits in Settings.');
-        } else {
-          toast.error(errData.error || 'Failed to generate reading');
-        }
-        setIsStreaming(false);
-        return;
-      }
-
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error('No response body');
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let accumulated = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        let newlineIdx: number;
-        while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
-          let line = buffer.slice(0, newlineIdx);
-          buffer = buffer.slice(newlineIdx + 1);
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              accumulated += content;
-              setReading(accumulated);
-            }
-          } catch {
-            buffer = line + '\n' + buffer;
-            break;
-          }
-        }
-      }
+      // Then astro
+      setStreamingMode('astro');
+      setActiveView('astro');
+      setCurrentStreamText('');
+      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, (text) => {
+        setCurrentStreamText(text);
+      });
+      const final = { plain: plainResult, astro: astroResult };
+      setReadings(final);
+      onReadingsUpdate?.(final);
+      toast.success('Both readings generated');
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('AI reading error:', err);
-        toast.error('Failed to generate reading');
+        toast.error(err.message || 'Failed to generate reading');
       }
     } finally {
       setIsStreaming(false);
+      setStreamingMode(null);
+      setCurrentStreamText('');
       abortRef.current = null;
     }
-  }, [buildFullJson, mode]);
+  }, [buildFullJson, onReadingsUpdate]);
 
   const handleClose = () => {
     abortRef.current?.abort();
     onClose();
   };
 
-  const downloadReading = () => {
-    const blob = new Blob([reading], { type: 'text/markdown' });
+  const downloadReading = (mode: AiReadingMode) => {
+    const text = readings[mode];
+    if (!text) return;
+    const blob = new Blob([text], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SolarReturn_AI_Reading_${personName.replace(/\s+/g, '_')}_${mode}.md`;
+    const label = mode === 'plain' ? 'PlainLanguage' : 'AstrologyMind';
+    a.download = `SolarReturn_AI_${label}_${personName.replace(/\s+/g, '_')}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   if (!open) return null;
 
-  const modeLabel = mode === 'plain' ? 'Plain Language' : 'Astrology Mind';
+  // What to display in the body
+  const displayText = streamingMode === activeView ? currentStreamText : readings[activeView];
+  const isCurrentlyStreaming = isStreaming && streamingMode === activeView;
+  const otherMode: AiReadingMode = activeView === 'plain' ? 'astro' : 'plain';
+  const otherDone = !!readings[otherMode];
+  const currentDone = !!readings[activeView];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -131,37 +166,42 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
           </button>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="px-5 py-2.5 border-b border-border flex items-center gap-3">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Voice:</span>
-          <div className="flex rounded-full border border-border overflow-hidden">
-            <button
-              onClick={() => { if (!isStreaming) setMode('plain'); }}
-              className={`px-3 py-1 text-[11px] font-medium transition-colors ${
-                mode === 'plain'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Plain Language
-            </button>
-            <button
-              onClick={() => { if (!isStreaming) setMode('astro'); }}
-              className={`px-3 py-1 text-[11px] font-medium transition-colors ${
-                mode === 'astro'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Astrology Mind
-            </button>
+        {/* Mode Toggle (view switcher, not generation control) */}
+        {hasStarted && (
+          <div className="px-5 py-2.5 border-b border-border flex items-center gap-3">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">View:</span>
+            <div className="flex rounded-full border border-border overflow-hidden">
+              <button
+                onClick={() => { if (!isStreaming || streamingMode !== 'plain') setActiveView('plain'); }}
+                className={`px-3 py-1 text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
+                  activeView === 'plain'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Plain Language
+                {readings.plain && <CheckCircle2 size={10} className={activeView === 'plain' ? 'text-primary-foreground' : 'text-green-500'} />}
+              </button>
+              <button
+                onClick={() => { if (!isStreaming || streamingMode !== 'astro') setActiveView('astro'); }}
+                className={`px-3 py-1 text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
+                  activeView === 'astro'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Astrology Mind
+                {readings.astro && <CheckCircle2 size={10} className={activeView === 'astro' ? 'text-primary-foreground' : 'text-green-500'} />}
+              </button>
+            </div>
+            {isStreaming && (
+              <span className="text-[10px] text-muted-foreground ml-1">
+                Generating {streamingMode === 'plain' ? 'Plain Language' : 'Astrology Mind'}...
+                {streamingMode === 'plain' ? ' (Astrology Mind is next)' : ''}
+              </span>
+            )}
           </div>
-          <span className="text-[10px] text-muted-foreground ml-1">
-            {mode === 'plain'
-              ? 'No jargon — concrete life advice for anyone'
-              : 'Full astrological detail with placements, aspects & technical depth'}
-          </span>
-        </div>
+        )}
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -169,31 +209,41 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
             <div className="text-center py-12 space-y-4">
               <Sparkles size={36} className="mx-auto text-primary/50" />
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                {mode === 'plain'
-                  ? 'Generate a reading that translates your entire Solar Return into plain, actionable life guidance — no astrology background needed.'
-                  : 'Generate a technically rich reading that uses full astrological language — placements, aspects, dignities, timing windows, and chart-level synthesis.'}
+                Generate two complete AI readings of your Solar Return — one in plain everyday language (for anyone), and one with full astrological detail (for astrology readers). Both will be included in your JSON export.
               </p>
               <button
-                onClick={generate}
+                onClick={generateBoth}
                 className="text-[11px] uppercase tracking-widest px-6 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
               >
                 <Sparkles size={14} />
-                Generate {modeLabel} Reading
+                Generate Both Readings
               </button>
             </div>
           )}
 
-          {isStreaming && !reading && (
+          {isCurrentlyStreaming && !displayText && (
             <div className="text-center py-12">
               <Loader2 size={28} className="animate-spin mx-auto text-primary mb-3" />
-              <p className="text-sm text-muted-foreground">Synthesizing your complete Solar Return data ({modeLabel})...</p>
+              <p className="text-sm text-muted-foreground">
+                Synthesizing {activeView === 'plain' ? 'Plain Language' : 'Astrology Mind'} reading...
+              </p>
             </div>
           )}
 
-          {reading && (
+          {/* Show "waiting" if viewing the mode that hasn't started yet */}
+          {hasStarted && !displayText && !isCurrentlyStreaming && !currentDone && (
+            <div className="text-center py-12">
+              <Loader2 size={28} className="animate-spin mx-auto text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground">
+                {activeView === 'astro' ? 'Astrology Mind' : 'Plain Language'} reading will generate next...
+              </p>
+            </div>
+          )}
+
+          {displayText && (
             <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-headings:text-sm prose-headings:uppercase prose-headings:tracking-widest prose-headings:font-medium prose-p:text-muted-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-li:text-muted-foreground">
-              <ReactMarkdown>{reading}</ReactMarkdown>
-              {isStreaming && (
+              <ReactMarkdown>{displayText}</ReactMarkdown>
+              {isCurrentlyStreaming && (
                 <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />
               )}
             </div>
@@ -201,20 +251,30 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson }: Pro
         </div>
 
         {/* Footer */}
-        {reading && !isStreaming && (
-          <div className="flex items-center gap-2 px-5 py-3 border-t border-border">
+        {(readings.plain || readings.astro) && !isStreaming && (
+          <div className="flex items-center gap-2 px-5 py-3 border-t border-border flex-wrap">
             <button
-              onClick={generate}
+              onClick={generateBoth}
               className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
             >
-              <RotateCcw size={12} /> Regenerate
+              <RotateCcw size={12} /> Regenerate Both
             </button>
-            <button
-              onClick={downloadReading}
-              className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-            >
-              <Download size={12} /> Download as Markdown
-            </button>
+            {readings.plain && (
+              <button
+                onClick={() => downloadReading('plain')}
+                className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                <Download size={12} /> Plain Language .md
+              </button>
+            )}
+            {readings.astro && (
+              <button
+                onClick={() => downloadReading('astro')}
+                className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                <Download size={12} /> Astrology Mind .md
+              </button>
+            )}
           </div>
         )}
       </div>

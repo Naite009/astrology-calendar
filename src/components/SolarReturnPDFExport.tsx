@@ -373,7 +373,8 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
 export function downloadBirthdayJSONStandalone(
   analysis: SolarReturnAnalysis,
   srChart: SolarReturnChart,
-  natalChart: NatalChart
+  natalChart: NatalChart,
+  aiReadings?: { plain: string; astro: string }
 ) {
   const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
     planet,
@@ -522,6 +523,9 @@ export function downloadBirthdayJSONStandalone(
       lifeDomainScores: calculateLifeDomainScores(analysis),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+      // AI-generated readings (both modes, if available)
+      aiReadingPlain: aiReadings?.plain || null,
+      aiReadingAstro: aiReadings?.astro || null,
     }
   };
 
@@ -538,7 +542,8 @@ export function downloadBirthdayJSONStandalone(
 export function buildFullJsonStandalone(
   analysis: SolarReturnAnalysis,
   srChart: SolarReturnChart,
-  natalChart: NatalChart
+  natalChart: NatalChart,
+  aiReadings?: { plain: string; astro: string }
 ): Record<string, any> {
   const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
     planet,
@@ -747,6 +752,10 @@ export function buildFullJsonStandalone(
         12: 'Rest, retreat, healing, spirituality',
       },
     },
+
+    // AI-generated readings (both modes)
+    aiReadingPlain: aiReadings?.plain || null,
+    aiReadingAstro: aiReadings?.astro || null,
   };
 }
 

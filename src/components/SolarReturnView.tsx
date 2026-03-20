@@ -115,6 +115,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
   const [showAiReading, setShowAiReading] = useState(false);
+  const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -273,7 +274,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
               if (tier === 'gift') {
-                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
+                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
               } else {
                 setActiveTier(prev => prev === tier ? null : tier as any);
               }
@@ -285,7 +286,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             open={showAiReading}
             onClose={() => setShowAiReading(false)}
             personName={selectedNatal.name || 'Chart'}
-            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal)}
+            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings)}
+            onReadingsUpdate={(r) => setAiReadings(r)}
           />
 
           {activeTier && analysis && (
@@ -295,7 +297,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
               onClose={() => setActiveTier(null)}
               onDownload={(tier) => {
                 if (selectedSR && selectedNatal) {
-                  downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
+                  downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
                 }
               }}
             />
