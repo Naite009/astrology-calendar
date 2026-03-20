@@ -30,7 +30,37 @@ const PLANET_MEANINGS: Record<string, { symbol: string; energy: string; gift: st
   Pluto: { symbol: '♇', energy: 'transformation, power, depth', gift: 'soul-level intention' },
 };
 
-// Retrograde meanings
+// Felt-sense descriptions for each planet conjunct the New Moon
+// These explain HOW you feel the planet's energy during this cycle, not just what it "means"
+const CONJUNCTION_FELT_SENSE: Record<string, string> = {
+  Mercury: '♿Mercury joins this New Moon — your mind is wired into the seed moment. Expect racing thoughts, an urge to name things, write things down, or talk through what you\'re feeling. Mental energy is high; use it to articulate your intentions clearly. You may notice synchronicities in conversations or messages.',
+  Venus: '♀Venus joins this New Moon — there\'s a softening, a pull toward beauty and connection. You may feel more tender, romantic, or aesthetically sensitive. Intentions around love, pleasure, finances, or self-worth land with extra grace. Your body may crave comfort — nice textures, good food, beauty around you.',
+  Mars: '♂Mars joins this New Moon — expect a physical charge. Your body may feel restless, heated, or buzzing with adrenaline. There\'s urgency to DO something, to start, to push. Channel this into bold action rather than irritability. This is a cycle that demands courage — timid intentions won\'t stick.',
+  Jupiter: '♃Jupiter joins this New Moon — everything feels bigger, more possible. There\'s optimism and expansion in the air. You may feel generous, philosophical, or hungry for meaning. Intentions set now have a quality of "why not dream larger?" But watch for overcommitting — Jupiter can inflate expectations beyond what\'s realistic.',
+  Saturn: '♄Saturn joins this New Moon — you may feel the weight of responsibility, a sober clarity about what\'s real and what isn\'t. This isn\'t heavy in a bad way — it\'s grounding. Intentions set now have bones; they\'re built to last. You may feel older, more serious, or unusually clear about boundaries and commitments. There\'s a "no more excuses" quality to this energy.',
+  Uranus: '♅Uranus joins this New Moon — expect the unexpected. You may feel electrically charged, restless, or suddenly clear about something you need to change. There\'s a rebellious quality — old patterns feel suffocating. Intentions around freedom, authenticity, or radical change have extra voltage. Don\'t be surprised if your plans shift suddenly.',
+  Neptune: '♆Neptune joins this New Moon — boundaries dissolve. You may feel unusually intuitive, dreamy, or emotionally porous. The line between imagination and reality blurs. Intentions work best when they come from intuition rather than logic — let your inner compass guide you. Watch for confusion or escapism; ground spiritual insights in practical steps.',
+  Pluto: '♇Pluto joins this New Moon — this operates at the soul level. You may feel an undercurrent of intensity, a pull toward truth that won\'t let you settle for surface-level intentions. Old power dynamics may surface. Set intentions from your deepest authentic self, not from ego or fear. What begins now involves permanent transformation.',
+  NorthNode: '☊North Node joins this New Moon — this cycle carries karmic significance. You may feel a pull toward unfamiliar territory that nonetheless feels "right." Intentions aligned with your growth direction — even uncomfortable ones — have destiny-level support.',
+  Chiron: '⚷Chiron joins this New Moon — old wounds may surface, not to hurt you but to be seen. This cycle is about healing through honest acknowledgment. Intentions around self-compassion, mentoring others through shared experience, or finally addressing something you\'ve avoided are deeply supported.',
+};
+
+// Stellium felt-sense: what it means to have 4+ planets concentrated in one sign
+const STELLIUM_FELT_SENSE: Record<string, string> = {
+  Aries: 'Multiple planets concentrated in Aries — your body is on high alert. Everything feels urgent, personal, and identity-defining. The temptation is to act impulsively on all fronts at once. Focus that fire on ONE bold intention.',
+  Taurus: 'Multiple planets concentrated in Taurus — life slows down and gets sensory. You feel everything through your body: comfort, resistance, desire. This cycle anchors intentions in physical reality. What you plant now grows slowly but permanently.',
+  Gemini: 'Multiple planets concentrated in Gemini — your mind is a switchboard. Ideas, conversations, connections, information — it all floods in simultaneously. The challenge is scattered energy. The gift is seeing connections nobody else can see.',
+  Cancer: 'Multiple planets concentrated in Cancer — emotions run deep and close to the surface. Home, family, and belonging dominate. You may feel unusually protective or nostalgic. Intentions around emotional security and nurturing have extraordinary power now.',
+  Leo: 'Multiple planets concentrated in Leo — there\'s a magnetic pull toward self-expression and recognition. Creativity, romance, and the need to be SEEN all intensify. The spotlight is on you whether you want it or not. Use it for something meaningful.',
+  Virgo: 'Multiple planets concentrated in Virgo — the details matter. You may feel pulled to organize, improve, heal, or fix things. Health awareness heightens. The gift is practical magic — turning intention into method. Don\'t let perfectionism paralyze you.',
+  Libra: 'Multiple planets concentrated in Libra — relationships become the central stage. Fairness, beauty, and balance dominate your awareness. You may feel torn between your needs and others\'. Intentions around partnership, aesthetics, or justice carry weight.',
+  Scorpio: 'Multiple planets concentrated in Scorpio — intensity deepens. Nothing feels casual. You may notice power dynamics, hidden truths surfacing, or a pull toward deep intimacy. This cycle doesn\'t do "light." Intentions around transformation, research, or psychological honesty are potent.',
+  Sagittarius: 'Multiple planets concentrated in Sagittarius — the horizon expands. You may feel restless, philosophical, or hungry for adventure and meaning. Conventions feel stifling. Intentions around travel, education, publishing, or spiritual exploration have big energy behind them.',
+  Capricorn: 'Multiple planets concentrated in Capricorn — ambition crystallizes. You may feel unusually focused on goals, status, or legacy. There\'s a seriousness to this cycle that demands maturity. Intentions around career, authority, or long-term building have structural support.',
+  Aquarius: 'Multiple planets concentrated in Aquarius — you feel the collective pulse. Community, innovation, and "the future" dominate awareness. You may question convention or feel called to serve something larger than yourself. Intentions around group work, technology, or social change carry electricity.',
+  Pisces: 'Multiple planets concentrated in Pisces — boundaries dissolve. You may feel unusually empathic, dreamy, or spiritually open. The mundane feels thin and the mystical feels close. Intentions work through imagination and surrender rather than willpower. Ground yourself — too much dissolution leads to confusion.',
+};
+
 const RETROGRADE_MEANINGS: Record<string, string> = {
   Mercury: 'review communications and plans',
   Venus: 'reassess values and relationships',
@@ -82,6 +112,7 @@ export interface NewMoonInterpretation {
   hasStellium: boolean;
   stelliumPlanets: string[];
   stelliumSign: string;
+  stelliumFeltSense: string;
   
   // Ruler's aspects and condition
   rulerRetrograde: boolean;
@@ -232,23 +263,21 @@ const generateMainTheme = (
     theme += `${signInfo.ruler} ${signInfo.rulerSymbol} in ${rulerSign} guides how this energy manifests. `;
   }
   
-  // Add conjunction info (most important)
+  // Add conjunction info — explain each planet's specific meaning
   if (conjunctions.length > 0) {
-    const conjNames = conjunctions.map(c => `${c.symbol}${c.name}`).join(', ');
-    theme += `With ${conjNames} conjunct, this is a powerful moment of concentrated energy. `;
+    for (const conj of conjunctions) {
+      const meaning = CONJUNCTION_FELT_SENSE[conj.name];
+      if (meaning) {
+        theme += meaning + ' ';
+      } else {
+        theme += `${conj.symbol}${conj.name} joins this New Moon, adding its energy to the seed moment. `;
+      }
+    }
     
-    // Special meanings for specific conjunctions
-    if (conjunctions.some(c => c.name === 'Pluto')) {
-      theme += `Pluto adds soul-depth — set intentions from your deepest truth, not ego desires. `;
-    }
-    if (conjunctions.some(c => c.name === 'Mars')) {
-      theme += `Mars brings fire and urgency — your mind may be active, ready to act. `;
-    }
-    if (conjunctions.some(c => c.name === 'Mercury')) {
-      theme += `Mercury heightens mental activity — thoughts are seeds now. `;
-    }
-    if (conjunctions.some(c => c.name === 'Venus')) {
-      theme += `Venus softens the energy — intentions around love, beauty, and values are favored. `;
+    // If multiple conjunctions, add a synthesis sentence
+    if (conjunctions.length >= 2) {
+      const names = conjunctions.map(c => c.name).join(' and ');
+      theme += `With ${names} together at this New Moon, their energies merge — what begins now carries all of these threads simultaneously. `;
     }
   }
   
@@ -537,6 +566,7 @@ export const getNewMoonInterpretation = (date: Date, moonLongitude: number): New
     hasStellium,
     stelliumPlanets,
     stelliumSign,
+    stelliumFeltSense: hasStellium ? (STELLIUM_FELT_SENSE[stelliumSign] || `${stelliumPlanets.length} planets concentrated in ${stelliumSign} — this cycle carries extraordinary weight.`) : '',
     rulerRetrograde,
     rulerAspects,
     mainTheme: generateMainTheme(sign, signInfo, conjunctions, aspects, rulerSign, rulerRetrograde),

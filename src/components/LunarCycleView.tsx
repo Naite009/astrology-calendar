@@ -644,15 +644,15 @@ LUNAR CYCLE CONTEXT:
 - Degree: ${interpretation.degree}°
 - Ruler: ${interpretation.ruler} in ${interpretation.rulerSign}${interpretation.rulerRetrograde ? ' (Retrograde)' : ''}
 - Sign Theme: ${interpretation.signTheme}
-${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}` : ''}
-${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => c.name).join(', ')}` : ''}
-${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType}`).join(', ')}` : ''}
+${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}\n  FELT SENSE: ${interpretation.stelliumFeltSense}` : ''}
+${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => `${c.symbol}${c.name} at ${c.degree.toFixed(1)}° ${c.sign}`).join(', ')}\n  IMPORTANT: For EACH conjunct planet, explain specifically HOW that planet's energy will be felt during this cycle. Saturn = weight, discipline, sober clarity. Neptune = dissolving boundaries, heightened intuition. Don't just say "concentrated energy" — describe the SOMATIC FELT SENSE of each planet.` : ''}
+${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType} (${a.orb.toFixed(1)}°)`).join(', ')}` : ''}
 
 ${keyPhasesInfo}
 
 Write in a professional astrologer's voice with these sections:
 ## 🌑 ${isPersonalized ? `This Lunar Cycle for ${activeChart?.name}` : 'This Lunar Cycle\'s Theme'}
-${isPersonalized ? `A 2-3 paragraph exploration of how this ${interpretation.sign} New Moon activates ${activeChart?.name}'s natal chart. Reference the house placement and any natal aspects.` : 'A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.'}
+${isPersonalized ? `A 2-3 paragraph exploration of how this ${interpretation.sign} New Moon activates ${activeChart?.name}'s natal chart. Reference the SPECIFIC HOUSE where the New Moon falls and explain what that house governs. For EACH conjunct planet, explain HOW ${activeChart?.name} will physically/emotionally FEEL that planet's energy — use somatic language (weight, buzzing, softening, dissolving, charging). If there's a stellium, name every planet in it and explain the combined effect.` : `A 2-3 paragraph exploration of what this particular New Moon is initiating. For EACH conjunct planet, explain the FELT SENSE — how does Saturn feel different from Neptune? How does their conjunction change the texture of this cycle? Name every planet, explain each one's contribution, then synthesize.`}
 
 ## ✨ ${isPersonalized ? `${activeChart?.name}'s Soul Intention` : 'Soul Intention for This Cycle'}
 ${isPersonalized ? `What ${activeChart?.name}'s soul is being asked to grow into during these 29 days, based on their natal chart activation.` : 'What the soul is being asked to grow into during these 29 days. Be specific and psychological.'}
@@ -693,17 +693,20 @@ Keep the tone deep, insightful, and practically applicable.`
       let diff = Math.abs(newMoonDegree - planetDegree);
       if (diff > 180) diff = 360 - diff;
       
-      // Check for major aspects
-      if (diff < 8) {
-        aspects.push({ planet, aspect: 'Conjunction', orb: diff });
-      } else if (Math.abs(diff - 60) < 6) {
-        aspects.push({ planet, aspect: 'Sextile', orb: Math.abs(diff - 60) });
-      } else if (Math.abs(diff - 90) < 8) {
-        aspects.push({ planet, aspect: 'Square', orb: Math.abs(diff - 90) });
-      } else if (Math.abs(diff - 120) < 8) {
-        aspects.push({ planet, aspect: 'Trine', orb: Math.abs(diff - 120) });
-      } else if (Math.abs(diff - 180) < 8) {
-        aspects.push({ planet, aspect: 'Opposition', orb: Math.abs(diff - 180) });
+      // Check for major aspects using centralized orb system
+      const aspectChecks = [
+        { name: 'Conjunction', angle: 0, key: 'conjunction' },
+        { name: 'Sextile', angle: 60, key: 'sextile' },
+        { name: 'Square', angle: 90, key: 'square' },
+        { name: 'Trine', angle: 120, key: 'trine' },
+        { name: 'Opposition', angle: 180, key: 'opposition' },
+      ];
+      for (const ac of aspectChecks) {
+        const orbVal = Math.abs(diff - ac.angle);
+        if (orbVal <= getEffectiveOrbFn('Moon', planet, ac.key)) {
+          aspects.push({ planet, aspect: ac.name, orb: orbVal });
+          break;
+        }
       }
     });
     
@@ -1255,22 +1258,31 @@ Keep the tone deep, insightful, and practically applicable.`
               </div>
               
               {interpretation.conjunctions.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-sm text-muted-foreground">Conjunct:</span>
-                  {interpretation.conjunctions.map((planet, i) => (
-                    <Badge key={i} variant="secondary">
-                      {planet.symbol} {planet.name}
-                      {planet.isRetrograde && <span className="ml-1 text-amber-500">℞</span>}
-                    </Badge>
-                  ))}
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span className="text-sm font-medium text-foreground">Planets Conjunct This New Moon:</span>
+                    {interpretation.conjunctions.map((planet, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {planet.symbol} {planet.name}
+                        {planet.isRetrograde && <span className="ml-1 text-amber-500">℞</span>}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
               
               {interpretation.hasStellium && (
-                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <p className="text-sm font-medium text-primary">⭐ {interpretation.stelliumPlanets.length}-Planet Stellium in {interpretation.stelliumSign}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Concentrated energy — this cycle carries extra weight in {interpretation.stelliumSign} themes.
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+                  <p className="text-sm font-medium text-primary">
+                    ⭐ {interpretation.stelliumPlanets.length}-Planet Stellium in {interpretation.stelliumSign}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {interpretation.stelliumPlanets.map((p, i) => (
+                      <Badge key={i} variant="outline" className="text-[10px]">{p}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {interpretation.stelliumFeltSense || `${interpretation.stelliumPlanets.length} planets concentrated in ${interpretation.stelliumSign} — this cycle carries extraordinary weight in these themes.`}
                   </p>
                 </div>
               )}
