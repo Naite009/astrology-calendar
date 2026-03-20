@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Eye, Target, Crosshair } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEffectiveOrb } from '@/lib/aspectOrbs';
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -13,14 +14,12 @@ const toAbsDeg = (pos: { sign: string; degree: number; minutes?: number } | unde
 };
 
 const ASPECT_DEFS = [
-  { name: 'conjunct', angle: 0, glyph: '☌', priority: 1 },
-  { name: 'opposite', angle: 180, glyph: '☍', priority: 2 },
-  { name: 'square', angle: 90, glyph: '□', priority: 3 },
-  { name: 'trine', angle: 120, glyph: '△', priority: 4 },
-  { name: 'sextile', angle: 60, glyph: '⚹', priority: 5 },
+  { name: 'conjunct', angle: 0, glyph: '☌', priority: 1, key: 'conjunction' },
+  { name: 'opposite', angle: 180, glyph: '☍', priority: 2, key: 'opposition' },
+  { name: 'square', angle: 90, glyph: '□', priority: 3, key: 'square' },
+  { name: 'trine', angle: 120, glyph: '△', priority: 4, key: 'trine' },
+  { name: 'sextile', angle: 60, glyph: '⚹', priority: 5, key: 'sextile' },
 ] as const;
-
-const ORB = 3;
 
 const PLANET_MEANINGS: Record<string, string> = {
   Sun: 'identity, purpose, vitality',

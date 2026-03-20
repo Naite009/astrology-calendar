@@ -912,13 +912,13 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
   const planetKeys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   
   const aspectTypes = [
-    { name: 'conjunction', angle: 0, orb: 8, symbol: '☌', color: '#9b87f5' },
-    { name: 'opposition', angle: 180, orb: 8, symbol: '☍', color: '#ea384c' },
-    { name: 'trine', angle: 120, orb: 8, symbol: '△', color: '#22c55e' },
-    { name: 'square', angle: 90, orb: 7, symbol: '□', color: '#f97316' },
-    { name: 'sextile', angle: 60, orb: 6, symbol: '⚹', color: '#0ea5e9' },
-    { name: 'quincunx', angle: 150, orb: 3, symbol: '⚻', color: '#ab47bc' },
-    { name: 'semisextile', angle: 30, orb: 2, symbol: '⚺', color: '#78909c' },
+    { name: 'conjunction', angle: 0, symbol: '☌', color: '#9b87f5' },
+    { name: 'opposition', angle: 180, symbol: '☍', color: '#ea384c' },
+    { name: 'trine', angle: 120, symbol: '△', color: '#22c55e' },
+    { name: 'square', angle: 90, symbol: '□', color: '#f97316' },
+    { name: 'sextile', angle: 60, symbol: '⚹', color: '#0ea5e9' },
+    { name: 'quincunx', angle: 150, symbol: '⚻', color: '#ab47bc' },
+    { name: 'semisextile', angle: 30, symbol: '⚺', color: '#78909c' },
   ];
   
   for (let i = 0; i < planetKeys.length; i++) {

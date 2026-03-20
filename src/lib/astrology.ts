@@ -1200,15 +1200,16 @@ export const getIngressInterpretation = (planet: string, sign: string): string =
 
 // Calculate daily aspects between planets
 export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => {
+  const { getEffectiveOrb: getOrb } = require('./aspectOrbs');
   const aspects: Aspect[] = [];
   const aspectTypes = [
-    { angle: 0, name: 'conjunction', symbol: '☌', orb: 8 },
-    { angle: 60, name: 'sextile', symbol: '⚹', orb: 6 },
-    { angle: 90, name: 'square', symbol: '□', orb: 8 },
-    { angle: 120, name: 'trine', symbol: '△', orb: 8 },
-    { angle: 150, name: 'quincunx', symbol: '⚻', orb: 3 },
-    { angle: 30, name: 'semisextile', symbol: '⚺', orb: 2 },
-    { angle: 180, name: 'opposition', symbol: '☍', orb: 8 },
+    { angle: 0, name: 'conjunction', symbol: '☌' },
+    { angle: 60, name: 'sextile', symbol: '⚹' },
+    { angle: 90, name: 'square', symbol: '□' },
+    { angle: 120, name: 'trine', symbol: '△' },
+    { angle: 150, name: 'quincunx', symbol: '⚻' },
+    { angle: 30, name: 'semisextile', symbol: '⚺' },
+    { angle: 180, name: 'opposition', symbol: '☍' },
   ];
 
   // Include ALL planets for comprehensive aspect detection
@@ -1238,11 +1239,7 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
 
       for (const aspectType of aspectTypes) {
         const orb = Math.abs(diff - aspectType.angle);
-        // Use tighter orbs for outer planet aspects (more significant when exact)
-        const effectiveOrb = (p1 === 'moon' || p2 === 'moon') ? aspectType.orb : 
-                            (['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].includes(p1) && 
-                             ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].includes(p2)) ? 3 : 
-                            aspectType.orb;
+        const effectiveOrb = getOrb(p1, p2, aspectType.name);
         
         if (orb < effectiveOrb) {
           // Calculate if applying or separating
