@@ -43,7 +43,70 @@ const PLANET_NOUNS: Record<string, string> = {
   Sun: 'purpose', Moon: 'emotional life', Mercury: 'communication', Venus: 'relationships',
   Mars: 'drive', Jupiter: 'growth', Saturn: 'discipline', Uranus: 'change',
   Neptune: 'intuition', Pluto: 'transformation',
+  Chiron: 'healing', NorthNode: 'soul direction', Ceres: 'nurturing',
+  Pallas: 'strategy', Juno: 'partnership needs', Vesta: 'devotion',
 };
+
+// What each planet actually DOES in your life — plain language
+const PLANET_PLAIN: Record<string, { does: string; examples: string }> = {
+  Sun: { does: 'how you express who you are and what gives you energy', examples: 'career choices, creative projects, how you spend your best hours' },
+  Moon: { does: 'how you process emotions and what makes you feel safe', examples: 'eating habits, sleep patterns, who you call when you\'re upset, what makes you cry' },
+  Mercury: { does: 'how you think, talk, and make decisions', examples: 'emails, conversations, study habits, how you argue, what you read' },
+  Venus: { does: 'what you value and how you connect with people you care about', examples: 'dating, friendships, spending money, decorating your space, what you find beautiful' },
+  Mars: { does: 'how you take action and what makes you angry', examples: 'exercise, competitive situations, arguments, sex drive, how you handle deadlines' },
+  Jupiter: { does: 'where you feel lucky and how you grow', examples: 'travel, education, promotions, feeling optimistic, saying yes to big opportunities' },
+  Saturn: { does: 'where you work hardest and what you\'re afraid of failing at', examples: 'career pressure, responsibilities, setting boundaries, long-term commitments' },
+  Uranus: { does: 'where you need freedom and what suddenly changes', examples: 'unexpected events, technology, breaking habits, feeling restless, sudden insights' },
+  Neptune: { does: 'where your imagination is strong and where you might be confused', examples: 'dreams, creative inspiration, spiritual experiences, things that seem too good to be true' },
+  Pluto: { does: 'where deep change is happening whether you want it or not', examples: 'power dynamics at work or in relationships, letting go of control, therapy breakthroughs, endings that lead to new beginnings' },
+  Chiron: { does: 'where your old pain becomes your ability to help others', examples: 'mentoring, therapy, teaching from experience, the thing you\'re sensitive about' },
+  NorthNode: { does: 'the direction your life is growing toward even if it feels unfamiliar', examples: 'new roles, skills you\'re developing, situations that scare you but feel important' },
+  Ceres: { does: 'how you take care of people and how you need to be taken care of', examples: 'cooking for others, physical comfort, mothering style, self-care routines' },
+  Pallas: { does: 'how you solve problems and see patterns others miss', examples: 'strategy at work, creative problem-solving, seeing connections between events' },
+  Juno: { does: 'what you need from a committed partner to feel secure', examples: 'relationship expectations, loyalty needs, deal-breakers in partnership' },
+  Vesta: { does: 'what you\'re deeply devoted to and protect as sacred', examples: 'work you do for its own sake, spiritual practices, the cause you won\'t give up on' },
+};
+
+// Aspect-type specific practical descriptions
+function buildAspectDescription(p1: string, p2: string, aspectType: string, isOpp: boolean): string {
+  const p1Info = PLANET_PLAIN[p1];
+  const p2Info = PLANET_PLAIN[p2];
+  const p1Noun = PLANET_NOUNS[p1] || p1.toLowerCase();
+  const p2Noun = PLANET_NOUNS[p2] || p2.toLowerCase();
+
+  if (!p1Info || !p2Info) {
+    // Fallback for unrecognized planets
+    return isOpp
+      ? `This year, ${p1Noun} and ${p2Noun} work together smoothly. Pay attention to where these themes overlap in your life.`
+      : `${p1Noun} and ${p2Noun} create tension this year. The friction is productive — it\'s pushing you to address something you\'ve been putting off.`;
+  }
+
+  if (isOpp) {
+    // Opportunities: trine, sextile, benefic conjunction
+    switch (aspectType) {
+      case 'Conjunction':
+        return `This year, ${p1Info.does} merges directly with ${p2Info.does}. They become the same thing — you can\'t work on one without the other responding. Practically, this shows up in: ${p1Info.examples}. Watch for moments where ${p2Info.examples} happen at the same time.`;
+      case 'Trine':
+        return `${p1Info.does} and ${p2Info.does} support each other effortlessly this year. You don\'t have to force it — when you do things related to ${p1Info.examples}, good things naturally happen around ${p2Info.examples}. The only risk is not using this ease on purpose.`;
+      case 'Sextile':
+        return `There\'s a quiet opportunity between ${p1Info.does} and ${p2Info.does} this year. It won\'t announce itself — you have to notice it. When something related to ${p1Info.examples} comes up, look for a small opening around ${p2Info.examples}. Act on it; don\'t wait.`;
+      default:
+        return `${p1Info.does} connects positively with ${p2Info.does} this year. Look for overlap between ${p1Info.examples} and ${p2Info.examples}.`;
+    }
+  } else {
+    // Challenges: square, opposition, quincunx
+    switch (aspectType) {
+      case 'Square':
+        return `${p1Info.does} and ${p2Info.does} are fighting each other this year. You\'ll feel pulled in two directions — for example, ${p1Info.examples} may clash with ${p2Info.examples}. The tension is real, but it\'s what forces you to actually make a decision instead of drifting.`;
+      case 'Opposition':
+        return `${p1Info.does} and ${p2Info.does} are on opposite ends of a seesaw. You might swing between extremes — overdoing ${p1Info.examples} while neglecting ${p2Info.examples}, or vice versa. Other people may carry one side for you. The work is finding a middle ground, not choosing one over the other.`;
+      case 'Quincunx':
+        return `${p1Info.does} and ${p2Info.does} don\'t naturally understand each other — they\'re speaking different languages. You\'ll notice awkward mismatches between ${p1Info.examples} and ${p2Info.examples}. Small, repeated adjustments are the fix — not a big dramatic overhaul.`;
+      default:
+        return `There\'s friction between ${p1Info.does} and ${p2Info.does}. You\'ll feel it around ${p1Info.examples} bumping against ${p2Info.examples}. Work with the discomfort rather than avoiding it.`;
+    }
+  }
+}
 
 function scoreAspectOpportunity(asp: SRKeyAspect): { score: number; isOpp: boolean } {
   const benefic = ['Trine', 'Sextile', 'Conjunction'];
@@ -122,9 +185,7 @@ export function generateExecutiveSummary(
     items.push({
       type: isOpp ? 'opportunity' : 'challenge',
       title: `${asp.planet1} ${asp.type} ${asp.planet2}`,
-      description: isOpp
-        ? `Your ${p1Noun} flows naturally with your natal ${p2Noun} this year — doors open when you engage with this energy.`
-        : `Your ${p1Noun} creates friction with your natal ${p2Noun} — growth comes through working with this tension, not avoiding it.`,
+      description: buildAspectDescription(asp.planet1, asp.planet2, asp.type, isOpp),
       source: `${asp.planet1} ${asp.type} natal ${asp.planet2} (${asp.orb}° orb)`,
       intensity: Math.round(score),
     });
