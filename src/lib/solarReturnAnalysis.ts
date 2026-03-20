@@ -1125,6 +1125,24 @@ export const analyzeSolarReturn = (
   const hemisphericEmphasis: SRHemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
 
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
+  function getSaturnSignStyle(sign: string): string {
+    const styles: Record<string, string> = {
+      Aries: 'frustrated impatience — you want to act fast but Saturn forces you to slow down and plan',
+      Taurus: 'stubborn persistence — the lessons are about money, comfort, and learning that security is earned',
+      Gemini: 'mental pressure — too many things to think about, contracts to review, or communication breakdowns that need patience',
+      Cancer: 'emotional weight — family obligations feel heavier, and you learn to set boundaries with people you love',
+      Leo: 'restricted self-expression — your confidence gets tested, and recognition has to be earned rather than given',
+      Virgo: 'perfectionist pressure — your standards are high and the work is relentless, but the skills you build are permanent',
+      Libra: 'relationship tests — partnerships require real honesty, and anything superficial in your relationships gets exposed',
+      Scorpio: 'confronting what you\'ve been avoiding — power dynamics, financial entanglements, or emotional patterns you can\'t keep ignoring',
+      Sagittarius: 'belief systems challenged — your assumptions about the world get reality-checked, and blind optimism doesn\'t hold up',
+      Capricorn: 'pure hard work — Saturn is at home here, which means the demands are heavy but the rewards are real and lasting',
+      Aquarius: 'social responsibility — group dynamics and future plans require serious commitment, not just good intentions',
+      Pisces: 'spiritual discipline — your intuition is strong but Saturn asks you to ground it in practice, not just feelings',
+    };
+    return styles[sign] || 'structured discipline and patience';
+  }
+
   let saturnFocus: SRSaturnFocus | null = null;
   const saturnPos = srChart.planets.Saturn;
   if (saturnPos) {
