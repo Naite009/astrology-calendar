@@ -664,37 +664,43 @@ export const LunarWorkbookSection = ({
       case 'balsamic':
         return (
           <>
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 mb-2">
+              <p className="text-xs text-muted-foreground italic leading-relaxed">
+                🕯️ <strong>Sacred Listening Window</strong> — Take things off your plate. Get quiet. 
+                Pay attention to dreams and early morning feelings. Listen for what is rising up to be worked with next.
+              </p>
+            </div>
             <JournalField
-              label="What's showing up within me?"
-              placeholder="As you slow down and go inward, what guidance are you receiving?"
+              label="What is distilling down from the last cycle?"
+              placeholder="What is rising up asking for care? What feels emotionally charged enough to work with?"
               value={journal?.balsamic_reflections}
               onChange={(v) => updateField('balsamic_reflections', v)}
               icon={<Moon className="h-4 w-4 text-muted-foreground" />}
             />
             <JournalField
-              label="What has evolved for me this cycle?"
-              placeholder="Reflect on your journey from New Moon to now..."
+              label="What am I noticing in dreams or early morning consciousness?"
+              placeholder="What intuitive nudges, exhaustion, or quiet signals are showing up?"
               value={journal?.balsamic_evolved}
               onChange={(v) => updateField('balsamic_evolved', v)}
               icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="How am I different?"
-              placeholder="Yes it can be very subtle, but our soul asks us to grow a tiny bit in each cycle..."
+              label="What wants rest instead of force?"
+              placeholder="What is ending quietly? What needs compassionate witnessing?"
               value={journal?.balsamic_different}
               onChange={(v) => updateField('balsamic_different', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="Wisdom I'm taking into the next cycle"
-              placeholder="What did you learn? What will you carry forward?"
+              label="Wisdom I'm carrying into the next cycle"
+              placeholder="What did this cycle teach? What do I know now that I didn't before?"
               value={journal?.cycle_wisdom}
               onChange={(v) => updateField('cycle_wisdom', v)}
               icon={<Target className="h-4 w-4 text-primary" />}
             />
             <JournalField
               label="What's stirring for the next cycle?"
-              placeholder="What are the inner stirrings inside of your being asking you to pay attention to?"
+              placeholder="What early signals, feelings, or themes are beginning to form?"
               value={journal?.cycle_next_stirrings}
               onChange={(v) => updateField('cycle_next_stirrings', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
