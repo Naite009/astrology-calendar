@@ -58,6 +58,36 @@ interface LunarWorkbookSectionProps {
   activationData?: SRActivationData | null;
 }
 
+const HOUSE_PROMPTS: Record<number, string[]> = {
+  1: ["How am I caring for my body and life force?", "How am I showing up in a new way?"],
+  2: ["What am I valuing differently?", "What is happening around money, self-worth, or security?"],
+  3: ["What conversations, errands, short trips, or messages are surfacing?", "How is my mind working right now?"],
+  4: ["What is shifting in home, roots, or emotional foundation?", "What kind of inner safety do I need?"],
+  5: ["What wants expression, play, creativity, or joy?", "What needs more softness and imagination?"],
+  6: ["What is happening in daily routine, work, or health?", "What needs healing, simplification, or nervous system support?"],
+  7: ["What am I learning through relationships and mirroring?", "What feels important in one-to-one connection?"],
+  8: ["What is asking for surrender, intimacy, trust, or emotional honesty?", "Where am I in a process of deeper transformation?"],
+  9: ["What belief, teaching, or perspective is shifting?", "What larger meaning is emerging?"],
+  10: ["What public role, calling, or responsibility is changing?", "What needs to be done differently?"],
+  11: ["What is moving through friendships, groups, or future goals?", "What collective dream feels alive?"],
+  12: ["What needs retreat, quiet, dream time, and spiritual care?", "What is ending, dissolving, or asking for compassionate witnessing?"],
+};
+
+const HOUSE_TOPICS: Record<number, string> = {
+  1: "identity · body · self-presentation · personal beginnings",
+  2: "money · values · security · possessions",
+  3: "communication · writing · siblings · short trips · learning",
+  4: "home · family · roots · private life",
+  5: "creativity · romance · joy · children · play",
+  6: "work · health · routines · service",
+  7: "relationships · clients · agreements · mirroring",
+  8: "shared resources · fear · intimacy · psychology",
+  9: "beliefs · teaching · publishing · travel · meaning",
+  10: "career · visibility · reputation · calling",
+  11: "friends · groups · future goals · audience",
+  12: "rest · retreat · dreams · grief · solitude · spiritual clearing",
+};
+
 const PHASE_CONFIG = {
   newMoon: {
     emoji: "🌑",
