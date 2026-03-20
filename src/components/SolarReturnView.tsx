@@ -299,6 +299,32 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
       {/* Analysis */}
       {selectedSR && analysis && (
+        <>
+        {/* Top-level Birthday Gift Export button */}
+        <div className="flex items-center gap-3 p-3 border border-border rounded-sm bg-card/60">
+          <button
+            onClick={handleBirthdayGiftExport}
+            disabled={isGeneratingForExport}
+            className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all hover:opacity-80 disabled:opacity-50"
+            style={{ backgroundColor: '#FFF8E1', color: '#5D4037', border: '1px solid #D4A574' }}
+          >
+            {isGeneratingForExport ? <Loader2 size={14} className="animate-spin" /> : <Gift size={14} />}
+            {isGeneratingForExport ? 'Generating AI + Exporting…' : 'Birthday Gift Print'}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {aiReadings.plain && aiReadings.astro
+              ? '✓ AI readings included'
+              : 'AI readings will auto-generate before download'}
+          </span>
+          <button
+            onClick={() => setShowAiReading(true)}
+            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border border-border text-muted-foreground hover:bg-secondary transition-all"
+          >
+            <Sparkles size={10} />
+            Generate AI Reading
+          </button>
+        </div>
+
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-secondary p-1">
             <TabsTrigger value="overview" className="text-[11px] uppercase tracking-widest">Overview</TabsTrigger>
@@ -314,7 +340,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
               if (tier === 'gift') {
-                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+                handleBirthdayGiftExport();
               } else {
                 setActiveTier(prev => prev === tier ? null : tier as any);
               }
