@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
 import { MetricTracker } from "./moonCycle/MetricTracker";
+import { ThemeFinderCard } from "./moonCycle/ThemeFinderCard";
 import {
   Moon, Sparkles, Save, History, Loader2, Heart, Eye, Zap, Target,
   RefreshCw, Wand2, BookOpen, ChevronDown, AlertCircle, Feather, Wind
@@ -287,6 +288,16 @@ export const LunarWorkbookSection = ({
             className="min-h-[100px] bg-background border-border/40 text-sm resize-none leading-relaxed" />
         </CardContent>
       </Card>
+
+      {/* ═══ Theme Finder ═══ */}
+      <ThemeFinderCard
+        journal={journal}
+        cycleSign={cycleSign}
+        cycleDegree={cycleDegree}
+        chartName={chartName}
+        natalHouse={natalContext?.newMoonHouse}
+        saveJournal={saveJournal}
+      />
 
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
       {(currentPhase === 'newMoon' || !simpleMode) && (
