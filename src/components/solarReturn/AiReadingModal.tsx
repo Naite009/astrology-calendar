@@ -13,7 +13,7 @@ interface Props {
   onReadingsUpdate?: (readings: { plain: string; astro: string }) => void;
 }
 
-async function fetchReading(
+export async function fetchReading(
   fullJson: Record<string, any>,
   mode: AiReadingMode,
   signal: AbortSignal,

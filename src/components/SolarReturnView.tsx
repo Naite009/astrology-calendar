@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, lazy, Suspense } from 'react';
-import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles, Zap } from 'lucide-react';
+import { useState, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
+import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles, Zap, Gift } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
@@ -43,6 +43,7 @@ import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresC
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
+import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
 
 const ZODIAC_SIGNS = [
@@ -116,11 +117,50 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
   const [showAiReading, setShowAiReading] = useState(false);
   const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
+  const [isGeneratingForExport, setIsGeneratingForExport] = useState(false);
+  const abortExportRef = useRef<AbortController | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
     return analyzeSolarReturn(selectedSR, selectedNatal);
   }, [selectedSR, selectedNatal]);
+
+  const handleBirthdayGiftExport = useCallback(async () => {
+    if (!analysis || !selectedSR || !selectedNatal) return;
+
+    // If AI readings already exist, download immediately
+    if (aiReadings.plain && aiReadings.astro) {
+      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+      return;
+    }
+
+    // Auto-generate both readings first
+    setIsGeneratingForExport(true);
+    toast.info('Generating AI readings before export… this takes about a minute.');
+    const controller = new AbortController();
+    abortExportRef.current = controller;
+
+    try {
+      const fullJson = buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+
+      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, () => {});
+      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, () => {});
+
+      const finalReadings = { plain: plainResult, astro: astroResult };
+      setAiReadings(finalReadings);
+      toast.success('AI readings generated — downloading JSON');
+      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, finalReadings);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('Auto-generate AI error:', err);
+        toast.error(err.message || 'Failed to generate AI readings');
+        // Download anyway with whatever we have
+        downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+      }
+    } finally {
+      setIsGeneratingForExport(false);
+    }
+  }, [analysis, selectedSR, selectedNatal, aiReadings]);
 
   if (!allCharts.length) {
     return (
@@ -259,6 +299,32 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
       {/* Analysis */}
       {selectedSR && analysis && (
+        <>
+        {/* Top-level Birthday Gift Export button */}
+        <div className="flex items-center gap-3 p-3 border border-border rounded-sm bg-card/60">
+          <button
+            onClick={handleBirthdayGiftExport}
+            disabled={isGeneratingForExport}
+            className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all hover:opacity-80 disabled:opacity-50"
+            style={{ backgroundColor: '#FFF8E1', color: '#5D4037', border: '1px solid #D4A574' }}
+          >
+            {isGeneratingForExport ? <Loader2 size={14} className="animate-spin" /> : <Gift size={14} />}
+            {isGeneratingForExport ? 'Generating AI + Exporting…' : 'Birthday Gift Print'}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {aiReadings.plain && aiReadings.astro
+              ? '✓ AI readings included'
+              : 'AI readings will auto-generate before download'}
+          </span>
+          <button
+            onClick={() => setShowAiReading(true)}
+            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border border-border text-muted-foreground hover:bg-secondary transition-all"
+          >
+            <Sparkles size={10} />
+            Generate AI Reading
+          </button>
+        </div>
+
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-secondary p-1">
             <TabsTrigger value="overview" className="text-[11px] uppercase tracking-widest">Overview</TabsTrigger>
@@ -274,7 +340,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
               if (tier === 'gift') {
-                downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+                handleBirthdayGiftExport();
               } else {
                 setActiveTier(prev => prev === tier ? null : tier as any);
               }
@@ -319,6 +385,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} srChartsForNatal={srChartsForNatal} />
           </TabsContent>
         </Tabs>
+        </>
       )}
     </div>
   );
