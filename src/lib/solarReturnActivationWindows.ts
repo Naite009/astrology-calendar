@@ -224,16 +224,13 @@ export function calculateActivationWindows(
       h.exactDate >= monthStart && h.exactDate <= monthEnd
     );
 
-    const themes = [...new Set(hits.map(h => {
-      const target = h.srTarget.replace('SR ', '');
-      return `${h.transitPlanet} activates ${target}`;
-    }))];
+    const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
     monthlyThemes.push({
       month: monthNum,
       monthLabel: MONTHS[monthNum],
       year: yearNum,
-      themes,
+      themes: themes.length > 0 ? themes : ['No major transits this month — a quieter period for integration'],
       transitHits: hits,
       intensity: Math.min(10, hits.length * 2 + hits.filter(h => h.significance === 'high').length * 2),
     });
@@ -273,7 +270,7 @@ export function calculateActivationWindows(
         endDate: new Date(Math.max(...ends)),
         peakDate,
         triggers: cluster,
-        theme: `${planets.join(' and ')} activate your ${targets.join(' and ')} themes`,
+        theme: synthesizeWindowTheme(cluster, planets, targets),
         intensity: Math.min(10, cluster.length * 2 + cluster.filter(c => c.significance === 'high').length * 3),
       });
     }
