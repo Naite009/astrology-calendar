@@ -611,22 +611,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up / being illuminated?"
-              placeholder="What is spirit asking you to pay attention to? What has come to fruition?"
+              label="What came to light?"
+              placeholder="What became obvious, emotional, or visible? What peaked or ripened?"
               value={journal?.full_moon_showing_up}
               onChange={(v) => updateField('full_moon_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-yellow-500" />}
             />
             <JournalField
-              label="What am I grateful for?"
-              placeholder="Express gratitude for the light and revelation..."
+              label="What result or realization became visible?"
+              placeholder="What demanded acknowledgment? What am I grateful for in this revelation?"
               value={journal?.full_moon_gratitude}
               onChange={(v) => updateField('full_moon_gratitude', v)}
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="What am I releasing?"
-              placeholder="What's not needed? What's ready to be let go?"
+              label="What needs release?"
+              placeholder="What peaked emotionally and now asks to be let go?"
               value={journal?.full_moon_releasing}
               onChange={(v) => updateField('full_moon_releasing', v)}
               icon={<RefreshCw className="h-4 w-4 text-purple-500" />}
