@@ -720,6 +720,17 @@ export const analyzeSolarReturn = (
     if (deg === null) continue;
     const sh = findSRHouse(deg, srChart);
     const nh = findNatalHouse(deg, natalChart);
+
+    // Find natal house of this planet in natal chart
+    const natalPos = natalChart.planets[planet as keyof typeof natalChart.planets];
+    let natalOrigHouse: number | null = null;
+    if (natalPos) {
+      const natalDeg = toAbsDeg(natalPos);
+      if (natalDeg !== null) natalOrigHouse = findNatalHouse(natalDeg, natalChart);
+    }
+
+    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse);
+
     houseOverlays.push({
       planet,
       srSign: pos.sign,
@@ -728,6 +739,7 @@ export const analyzeSolarReturn = (
       srHouseTheme: sh ? houseThemes[sh] : '',
       natalHouse: nh,
       houseTheme: nh ? houseThemes[nh] : '',
+      interpretation: interp,
     });
   }
 
