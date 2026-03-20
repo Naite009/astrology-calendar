@@ -439,21 +439,20 @@ export const LunarCycleView = ({
   };
   
   useEffect(() => {
-    const moons = findNewMoons(today);
+    const moons = findNewMoons(today, cycleOffset);
     setNewMoons(moons);
     
-    // Get the interpretation for the current/previous new moon
     const interp = getNewMoonInterpretation(moons.previous.date, moons.previous.longitude);
     setInterpretation(interp);
     
-    // Get days in this cycle
     const days = getLunarCycleDays(moons.previous.date, moons.next.date);
     setCycleDays(days);
     
-    // Get key phase dates
     const phases = findKeyPhaseDates(moons.previous.date);
     setKeyPhases(phases);
-  }, []);
+    
+    setAiInsight(null);
+  }, [cycleOffset]);
   
   const toggleSection = (section: string) => {
     setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }));
