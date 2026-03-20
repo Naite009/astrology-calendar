@@ -56,7 +56,9 @@ const ASPECT_RULES: Record<string, string> = {
 interface Activation {
   angleName: string;
   angleDomain: string;
+  angleHouse: number;
   natalPlanet: string;
+  natalHouse: number | null;
   planetMeaning: string;
   aspectName: string;
   aspectGlyph: string;
