@@ -26,6 +26,41 @@ const HOUSE_MEANINGS: Record<number, string> = {
   12: 'Rest, retreat, healing, spirituality',
 };
 
+// What each SR planet BRINGS when it lands in a natal house
+const PLANET_BRINGS: Record<string, string> = {
+  Sun: 'your main focus and where you put the most effort',
+  Moon: 'your emotional attention and daily mood',
+  Mercury: 'conversations, decisions, and mental energy',
+  Venus: 'pleasure, connection, and what you enjoy',
+  Mars: 'drive, action, and where you push hardest',
+  Jupiter: 'growth, luck, and expansion',
+  Saturn: 'responsibility, pressure, and hard work',
+  Uranus: 'surprises, changes, and restlessness',
+  Neptune: 'dreams, imagination, and possible confusion',
+  Pluto: 'deep change and intensity',
+  Ascendant: 'how you approach the entire year',
+};
+
+// Concrete, daily-life examples for each house
+const HOUSE_EXAMPLES: Record<number, string> = {
+  1: 'decisions about your appearance, fitness, personal direction, and "who am I now?" moments',
+  2: 'conversations about money, spending decisions, salary negotiations, and questions about what matters to you',
+  3: 'emails, phone calls, texts, learning something new, trips around town, and interactions with siblings or neighbors',
+  4: 'home renovations, family gatherings, moving decisions, cooking, and emotional processing in private',
+  5: 'dates, creative projects, time with children, hobbies, and moments of pure fun or self-expression',
+  6: 'doctor appointments, new workout routines, work projects, organizing your schedule, and health changes',
+  7: 'relationship conversations, partnership decisions, contracts, and one-on-one dynamics with important people',
+  8: 'bills, shared finances, insurance, therapy sessions, honest conversations about trust, and letting go of old baggage',
+  9: 'travel plans, taking a class, reading books that change your mind, and rethinking what you believe',
+  10: 'job interviews, promotions, public recognition, career pivots, and being seen by a wider audience',
+  11: 'group events, friendships forming or shifting, volunteer work, and thinking about your long-term future',
+  12: 'alone time, dreams, meditation, therapy, hospital visits, and quiet inner processing',
+};
+
+function getConcreteExamples(house: number): string {
+  return HOUSE_EXAMPLES[house] || 'activity in this life area';
+}
+
 const ordinal = (n: number): string => {
   const s = ['th','st','nd','rd'];
   const v = n % 100;
