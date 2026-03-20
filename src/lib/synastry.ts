@@ -468,7 +468,7 @@ export function calculateSynastryAspects(chart1: NatalChart, chart2: NatalChart)
   for (const [name1, pos1] of Object.entries(planets1)) {
     for (const [name2, pos2] of Object.entries(planets2)) {
       const angle = calculateAngle(pos1, pos2);
-      const aspectInfo = getAspectType(angle);
+      const aspectInfo = getAspectType(angle, name1, name2);
       
       if (aspectInfo) {
         const interpData = getInterpretation(name1, name2, aspectInfo.type);

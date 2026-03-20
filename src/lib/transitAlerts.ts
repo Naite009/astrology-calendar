@@ -56,13 +56,16 @@ export interface TransitAlert {
   angleAspects: AngleAspect[]; // Also hitting these angles
 }
 
-// Aspect definitions
+// Aspect definitions — alertOrb is the tighter orb used for actual notifications.
+// The wider detection orb is now computed dynamically via getTransitOrb().
+import { getTransitOrb } from './aspectOrbs';
+
 const ASPECT_DEFS = [
-  { angle: 0, name: 'conjunction', symbol: '☌', orb: 8, alertOrb: 3 },
-  { angle: 180, name: 'opposition', symbol: '☍', orb: 8, alertOrb: 3 },
-  { angle: 90, name: 'square', symbol: '□', orb: 7, alertOrb: 2 },
-  { angle: 120, name: 'trine', symbol: '△', orb: 8, alertOrb: 3 },
-  { angle: 60, name: 'sextile', symbol: '⚹', orb: 6, alertOrb: 2 },
+  { angle: 0, name: 'conjunction', symbol: '☌', alertOrb: 3 },
+  { angle: 180, name: 'opposition', symbol: '☍', alertOrb: 3 },
+  { angle: 90, name: 'square', symbol: '□', alertOrb: 2 },
+  { angle: 120, name: 'trine', symbol: '△', alertOrb: 3 },
+  { angle: 60, name: 'sextile', symbol: '⚹', alertOrb: 2 },
 ];
 
 // Transit interpretations for alerts
