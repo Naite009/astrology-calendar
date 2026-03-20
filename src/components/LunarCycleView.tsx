@@ -646,6 +646,7 @@ LUNAR CYCLE CONTEXT:
 - Sign Theme: ${interpretation.signTheme}
 ${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}\n  FELT SENSE: ${interpretation.stelliumFeltSense}` : ''}
 ${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => `${c.symbol}${c.name} at ${c.degree.toFixed(1)}° ${c.sign}`).join(', ')}\n  IMPORTANT: For EACH conjunct planet, explain specifically HOW that planet's energy will be felt during this cycle. Saturn = weight, discipline, sober clarity. Neptune = dissolving boundaries, heightened intuition. Don't just say "concentrated energy" — describe the SOMATIC FELT SENSE of each planet.` : ''}
+${interpretation.conjunctionPairSyntheses.length > 0 ? `- CONJUNCTION PAIR SYNTHESES (use these as the foundation for your interpretation of how these planets interact):\n${interpretation.conjunctionPairSyntheses.map(s => `  ${s}`).join('\n')}` : ''}
 ${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType} (${a.orb.toFixed(1)}°)`).join(', ')}` : ''}
 
 ${keyPhasesInfo}
@@ -1346,6 +1347,17 @@ Keep the tone deep, insightful, and practically applicable.`
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {interpretation.stelliumFeltSense || `${interpretation.stelliumPlanets.length} planets concentrated in ${interpretation.stelliumSign} — this cycle carries extraordinary weight in these themes.`}
                   </p>
+                </div>
+              )}
+              
+              {/* Conjunction pair syntheses */}
+              {interpretation.conjunctionPairSyntheses && interpretation.conjunctionPairSyntheses.length > 0 && (
+                <div className="space-y-3">
+                  {interpretation.conjunctionPairSyntheses.map((synthesis, i) => (
+                    <div key={i} className="p-3 bg-secondary/40 rounded-lg border border-border/50">
+                      <p className="text-sm leading-relaxed text-foreground/90">{synthesis}</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>

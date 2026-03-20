@@ -45,6 +45,91 @@ const CONJUNCTION_FELT_SENSE: Record<string, string> = {
   Chiron: '⚷Chiron joins this New Moon — old wounds may surface, not to hurt you but to be seen. This cycle is about healing through honest acknowledgment. Intentions around self-compassion, mentoring others through shared experience, or finally addressing something you\'ve avoided are deeply supported.',
 };
 
+// ── Conjunction pair synthesis ──
+// When two specific planets are BOTH conjunct the New Moon, their combined energy
+// creates something distinct from either planet alone. Keyed as "Planet1+Planet2" (alphabetical).
+const CONJUNCTION_PAIR_SYNTHESIS: Record<string, string> = {
+  // Saturn + outer planets
+  'Neptune+Saturn': '♄♆ Saturn–Neptune conjunction at this New Moon: structure meets dissolution. You may feel the tension between what\'s solid and what\'s slipping away — old frameworks crumbling while something formless tries to emerge. Practically, this shows up as confusion about commitments, institutions losing credibility, or spiritual ideals demanding real-world scaffolding. The felt-sense is heavy fog — you know something must be built, but you can\'t see the blueprint yet. Trust the process of "structured surrender": hold your boundaries loosely while staying committed to what\'s real. This is a generational conjunction (every ~36 years) — whatever seeds at this lunation will reshape your relationship to authority, reality, and faith for decades.',
+
+  'Pluto+Saturn': '♄♇ Saturn–Pluto conjunction at this New Moon: the irresistible force meets the immovable object. This is the most concentrated, heavy energy possible — you may feel compressed, pressured, or facing non-negotiable truths about power and responsibility. Old structures don\'t just change; they get demolished and rebuilt from bedrock. Career, authority figures, institutions, and your own ambition are all in the pressure cooker. The felt-sense is a vice tightening — not cruel, but relentless. What you commit to now must be absolutely authentic because anything built on false foundations will be destroyed. This conjunction (every ~33-38 years) marks civilizational turning points.',
+
+  'Saturn+Uranus': '♄♅ Saturn–Uranus conjunction at this New Moon: the old guard meets the revolutionary. You feel torn between security and freedom, tradition and innovation. Your body may alternate between rigidity (Saturn) and electric restlessness (Uranus). Systems you depend on feel outdated but replacements aren\'t ready yet. The creative tension is: how do you build something NEW without destroying everything that works? Intentions around reinventing structures — career pivots, modernizing traditions, or finding freedom WITHIN commitment — are powerfully supported.',
+
+  // Neptune + other outers
+  'Neptune+Pluto': '♆♇ Neptune–Pluto conjunction at this New Moon: the deepest collective unconscious stirs. This is the rarest major conjunction (~492 years) and operates entirely at the soul/generational level. You may feel ancestral or civilizational currents moving through you — themes of spiritual death and rebirth, the dissolution of one era\'s mythology and the birth of another. Personal intentions connect to something far larger than your individual life.',
+
+  'Neptune+Uranus': '♆♅ Neptune–Uranus conjunction at this New Moon: visionary lightning meets oceanic intuition. You may feel inspired in ways that defy logic — sudden creative downloads, spiritual breakthroughs, or revolutionary idealism. The boundary between genius and delusion is thin. Intentions around artistic innovation, humanitarian vision, or spiritual technology are electrified. Ground ecstatic ideas in at least one practical step.',
+
+  // Uranus + Pluto
+  'Pluto+Uranus': '♅♇ Uranus–Pluto conjunction at this New Moon: radical transformation meets unstoppable change. You may feel a volcanic urgency — something MUST break free, old power structures MUST fall. This is the energy of revolution, both personal and collective. Your body may feel wired, intense, almost vibrating with suppressed force. Intentions around liberation, empowerment, and destroying what\'s obsolete carry enormous momentum.',
+
+  // Jupiter combinations
+  'Jupiter+Saturn': '♃♄ Jupiter–Saturn conjunction at this New Moon: the Great Conjunction. Expansion meets contraction, optimism meets realism. This marks the beginning of a new 20-year social cycle. You may feel simultaneously ambitious and sobered — big dreams that demand serious planning. The felt-sense is "mature hope" — not naïve optimism but clear-eyed faith built on experience. Career and social role intentions are especially potent.',
+
+  'Jupiter+Neptune': '♃♆ Jupiter–Neptune conjunction at this New Moon: boundless imagination and spiritual expansion. You may feel an almost intoxicating sense of possibility — everything seems meaningful, connected, magical. Compassion overflows. The danger is inflation: promises too big, faith without reality checks, or escapism disguised as spirituality. Ground this extraordinary visionary energy in one concrete act of service or creation.',
+
+  'Jupiter+Pluto': '♃♇ Jupiter–Pluto conjunction at this New Moon: massive power amplification. You may feel an intense drive for influence, wealth, or deep truth. Ambition expands to transformative levels — this is "empire building" energy, for better or worse. The felt-sense is hunger — for meaning, power, or change that actually moves the needle. Intentions around wealth, research, psychology, or any form of deep leverage are supercharged.',
+
+  'Jupiter+Uranus': '♃♅ Jupiter–Uranus conjunction at this New Moon: breakthrough and sudden expansion. You may feel a thrilling sense of unexpected possibility — doors opening where walls used to be. Innovation, sudden luck, and paradigm shifts are all in play. The felt-sense is electric excitement mixed with "anything could happen." Intentions around technology, freedom, unconventional paths, or sudden growth leaps are amplified.',
+
+  // Mars combinations (when Mars is slow/stationing near a New Moon)
+  'Mars+Saturn': '♂♄ Mars–Saturn conjunction at this New Moon: disciplined force. Your energy may feel frustrated, compressed, or like driving with the brakes on. But this combination produces endurance — what you start now, you\'ll finish through sheer determination. The felt-sense is controlled burn rather than explosion. Intentions requiring sustained effort, physical discipline, or confronting fears through action are supported.',
+
+  'Mars+Pluto': '♂♇ Mars–Pluto conjunction at this New Moon: volcanic willpower. You may feel an almost frightening intensity of desire or anger. This is "do or die" energy — half-measures are impossible. Power struggles may surface. The felt-sense is molten — raw, primal, unstoppable. Channel this into transformation rather than destruction. Intentions around reclaiming power, sexual healing, or ending abusive patterns are catalyzed.',
+
+  'Mars+Neptune': '♂♆ Mars–Neptune conjunction at this New Moon: the spiritual warrior. Your drive may feel confusing — passionate about things you can\'t name, angry on behalf of the voiceless, or exhausted for no clear reason. Action and surrender blur together. The felt-sense is swimming through fog. Intentions around creative action, compassionate service, or fighting for the vulnerable are supported. Watch for passive aggression or martyrdom.',
+
+  'Mars+Uranus': '♂♅ Mars–Uranus conjunction at this New Moon: explosive independence. You may feel rebellious, accident-prone, or seized by sudden impulses. The need for freedom is physical — your body won\'t tolerate confinement. The felt-sense is lightning in the muscles. Intentions around breaking free, radical honesty, or starting something completely unprecedented carry electric force. Be careful with sharp objects and impulsive decisions.',
+
+  'Mars+Jupiter': '♂♃ Mars–Jupiter conjunction at this New Moon: bold expansion. You may feel unusually confident, athletic, or ready to take big risks. Energy is high and optimism fuels action. The felt-sense is "I can do anything." Intentions around adventure, competitive goals, or courageous leaps of faith are turbocharged. The only danger is overextension — pace your enthusiasm.',
+
+  // Venus combinations
+  'Saturn+Venus': '♀♄ Venus–Saturn conjunction at this New Moon: love gets serious. You may feel a sobering awareness about relationships, finances, or self-worth — what\'s real vs. what you wish were true. The felt-sense is a quiet ache for something lasting and genuine. Intentions around committed partnerships, financial discipline, or valuing quality over quantity are deeply anchored.',
+
+  'Neptune+Venus': '♀♆ Venus–Neptune conjunction at this New Moon: romantic idealism and creative transcendence. You may feel achingly tender, artistically inspired, or longing for a love that\'s almost mythical. Beauty moves you to tears. The felt-sense is bittersweet — exquisitely open. Intentions around art, spiritual love, or healing through beauty are elevated. Watch for idealizing partners or financial confusion.',
+
+  'Pluto+Venus': '♀♇ Venus–Pluto conjunction at this New Moon: desire goes to the depths. You may feel magnetically attracted or repelled, financially obsessive, or aware of power dynamics in love. The felt-sense is possessive intensity — wanting to merge completely or cut away completely. Intentions around transforming relationships, confronting jealousy, or finding beauty in darkness are potent.',
+
+  'Uranus+Venus': '♀♅ Venus–Uranus conjunction at this New Moon: love disrupted. You may feel suddenly attracted to unusual people, restless in stable partnerships, or ready to completely reinvent your aesthetic. The felt-sense is exciting instability — thrilling but unpredictable. Intentions around unconventional relationships, financial innovation, or artistic experimentation carry electric charge.',
+
+  'Jupiter+Venus': '♀♃ Venus–Jupiter conjunction at this New Moon: abundant love and pleasure. You may feel generous, romantic, socially magnetic, or drawn to luxury. The felt-sense is warmth and fullness — the heart expands. Intentions around partnership, prosperity, artistic expansion, or social connection are blessed. The only risk is overindulgence.',
+
+  'Mars+Venus': '♀♂ Venus–Mars conjunction at this New Moon: desire ignites. The masculine and feminine merge — attraction, creativity, and assertiveness in love all intensify. You may feel passionate, flirtatious, or creatively on fire. The felt-sense is magnetic pull. Intentions around romance, creative projects, or balancing giving and receiving are energized.',
+
+  // Mercury combinations
+  'Mercury+Saturn': '☿♄ Mercury–Saturn conjunction at this New Moon: serious thinking. Your mind may feel focused but heavy — drawn to practical planning, important decisions, or difficult conversations. The felt-sense is mental weight — thoughts carry consequence. Intentions around study, important agreements, or structured communication are supported.',
+
+  'Mercury+Neptune': '☿♆ Mercury–Neptune conjunction at this New Moon: intuitive mind. Your thinking may be imaginative but unfocused — inspired but confused, poetic but impractical. The felt-sense is dreamy thinking — ideas arrive as images, not logic. Intentions around creative writing, meditation, or intuitive development are supported. Don\'t sign contracts.',
+
+  'Mercury+Pluto': '☿♇ Mercury–Pluto conjunction at this New Moon: penetrating insight. Your mind cuts to the bone — no small talk, no surface thinking. You may feel obsessed with uncovering truth or having conversations that go uncomfortably deep. The felt-sense is mental X-ray vision. Intentions around research, psychological insight, or speaking difficult truths are catalyzed.',
+
+  'Mercury+Uranus': '☿♅ Mercury–Uranus conjunction at this New Moon: lightning mind. Sudden ideas, unexpected news, or genius-level insights may strike without warning. Your thinking is rapid, unconventional, and possibly scattered. The felt-sense is mental electricity — synapses firing in new patterns. Intentions around innovation, learning, or communicating revolutionary ideas carry voltage.',
+
+  'Jupiter+Mercury': '☿♃ Mercury–Jupiter conjunction at this New Moon: expansive thinking. Your mind reaches for the big picture — philosophy, publishing, education, or broadcasting your message. The felt-sense is mental abundance — ideas feel important and worth sharing. Intentions around teaching, writing, or expanding your intellectual horizons are amplified.',
+
+  'Mars+Mercury': '☿♂ Mercury–Mars conjunction at this New Moon: sharp words and decisive thinking. Your communication is direct, possibly combative. The mind moves fast and debates energize you. The felt-sense is mental adrenaline. Intentions around assertive communication, debate, or starting intellectual projects carry force.',
+
+  'Mercury+Venus': '☿♀ Mercury–Venus conjunction at this New Moon: graceful communication. Words come with charm, diplomacy, and aesthetic sensitivity. You may feel drawn to poetry, love letters, or beautiful ideas. The felt-sense is pleasant mental flow. Intentions around social connection, artistic communication, or financial planning are sweetened.',
+
+  // Chiron combinations
+  'Chiron+Saturn': '⚷♄ Chiron–Saturn conjunction at this New Moon: the wound of inadequacy surfaces with unusual clarity. You may feel confronted by your limitations, but this is medicine — Saturn gives structure to the healing process. Intentions around doing the hard work of therapy, mentorship, or building something from your pain are deeply supported.',
+
+  'Chiron+Neptune': '⚷♆ Chiron–Neptune conjunction at this New Moon: collective wounds become personal and vice versa. You may feel unusually empathic, as if absorbing others\' pain. The felt-sense is tender dissolution — your own healing connects to something universal. Intentions around compassionate service, spiritual healing, or artistic expression of pain-into-beauty are elevated.',
+
+  'Chiron+Pluto': '⚷♇ Chiron–Pluto conjunction at this New Moon: deep healing through confronting power and shadow. Old trauma around control, abuse, or survival may surface — not to retraumatize but to be finally transformed. The felt-sense is intense vulnerability meeting intense strength. Intentions around trauma work, empowerment, or breaking generational patterns are profoundly catalyzed.',
+
+  'Chiron+Uranus': '⚷♅ Chiron–Uranus conjunction at this New Moon: healing through breakthrough. You may suddenly see your wound from a completely new angle — the reframe itself is the medicine. The felt-sense is liberating insight. Intentions around alternative healing, radical self-acceptance, or helping others through innovation are sparked.',
+
+  // Node combinations
+  'NorthNode+Saturn': '☊♄ North Node–Saturn conjunction at this New Moon: karmic duty crystallizes. Your soul\'s growth direction and your earthly responsibilities align — what you MUST do and what you\'re MEANT to do converge. This is rare and heavy. Intentions around your life purpose, career calling, or stepping into authority carry fated weight.',
+
+  'NorthNode+Neptune': '☊♆ North Node–Neptune conjunction at this New Moon: spiritual destiny activates. Your soul direction points toward compassion, surrender, or creative/spiritual service. You may feel called to something you can\'t logically explain. Intentions aligned with intuitive guidance, healing work, or artistic devotion feel destined.',
+
+  'NorthNode+Pluto': '☊♇ North Node–Pluto conjunction at this New Moon: evolutionary pressure at maximum. Your soul\'s growth demands deep transformation — there\'s no comfortable path forward. The felt-sense is being pushed by invisible hands toward necessary change. Intentions around radical growth, leaving behind what\'s dead, or stepping into power are karmically supercharged.',
+
+  'Jupiter+NorthNode': '☊♃ North Node–Jupiter conjunction at this New Moon: fortunate destiny. Your soul direction receives the blessing of expansion and meaning. Opportunities aligned with your growth feel abundant and lucky. Intentions around your life purpose carry optimistic momentum.',
+};
 // Stellium felt-sense: what it means to have 4+ planets concentrated in one sign
 const STELLIUM_FELT_SENSE: Record<string, string> = {
   Aries: 'Multiple planets concentrated in Aries — your body is on high alert. Everything feels urgent, personal, and identity-defining. The temptation is to act impulsively on all fronts at once. Focus that fire on ONE bold intention.',
@@ -120,6 +205,7 @@ export interface NewMoonInterpretation {
   
   // The story/interpretation
   mainTheme: string;
+  conjunctionPairSyntheses: string[];
   whatToSet: string;
   howToWork: string;
   soulLevel: string;
@@ -246,6 +332,20 @@ const getAspectMeaning = (planet: string, aspectType: string): string => {
   }
 };
 
+// Generate conjunction pair synthesis paragraphs for all pairs among conjunct planets
+const generateConjunctionPairSyntheses = (conjunctions: PlanetPosition[]): string[] => {
+  if (conjunctions.length < 2) return [];
+  const syntheses: string[] = [];
+  for (let i = 0; i < conjunctions.length; i++) {
+    for (let j = i + 1; j < conjunctions.length; j++) {
+      const pair = [conjunctions[i].name, conjunctions[j].name].sort().join('+');
+      const synthesis = CONJUNCTION_PAIR_SYNTHESIS[pair];
+      if (synthesis) syntheses.push(synthesis);
+    }
+  }
+  return syntheses;
+};
+
 const generateMainTheme = (
   sign: string,
   signInfo: typeof SIGN_RULERS[string],
@@ -274,7 +374,7 @@ const generateMainTheme = (
       }
     }
     
-    // If multiple conjunctions, add a synthesis sentence
+    // If multiple conjunctions, add a synthesis sentence (generic fallback — specific pairs handled separately)
     if (conjunctions.length >= 2) {
       const names = conjunctions.map(c => c.name).join(' and ');
       theme += `With ${names} together at this New Moon, their energies merge — what begins now carries all of these threads simultaneously. `;
@@ -570,6 +670,7 @@ export const getNewMoonInterpretation = (date: Date, moonLongitude: number): New
     rulerRetrograde,
     rulerAspects,
     mainTheme: generateMainTheme(sign, signInfo, conjunctions, aspects, rulerSign, rulerRetrograde),
+    conjunctionPairSyntheses: generateConjunctionPairSyntheses(conjunctions),
     whatToSet: generateWhatToSet(sign, signInfo, conjunctions, degree),
     howToWork: generateHowToWork(aspects, signInfo, rulerSign, rulerAspects),
     soulLevel: generateSoulLevel(conjunctions, sign, rulerRetrograde),
