@@ -597,6 +597,64 @@ const generateStelliumInterpretation = (location: string, planets: string[], typ
   }
 };
 
+// ─── House Overlay Interpretation Engine ────────────────────────────
+
+const PLANET_OVERLAY_DRIVE: Record<string, { what: string; shift: string }> = {
+  Sun: { what: 'your core identity and sense of purpose', shift: 'where you feel most alive and visible' },
+  Moon: { what: 'your emotional needs and comfort patterns', shift: 'where you instinctively seek safety and belonging' },
+  Mercury: { what: 'your thinking, conversations, and daily logistics', shift: 'where your mind is busiest and most curious' },
+  Venus: { what: 'your love style, spending habits, and sense of beauty', shift: 'where you attract pleasure and connection' },
+  Mars: { what: 'your drive, ambition, and how you handle anger', shift: 'where you put your energy and fight for results' },
+  Jupiter: { what: 'your opportunities, optimism, and desire to grow', shift: 'where life opens doors and rewards risk' },
+  Saturn: { what: 'your responsibilities, fears, and long-term commitments', shift: 'where life demands maturity and hard work' },
+  Uranus: { what: 'your need for freedom, sudden changes, and experimentation', shift: 'where expect-the-unexpected events show up' },
+  Neptune: { what: 'your imagination, sensitivity, and tendency toward confusion', shift: 'where boundaries get foggy and intuition runs high' },
+  Pluto: { what: 'your deepest drives, control issues, and capacity for transformation', shift: 'where deep change happens whether you choose it or not' },
+  Chiron: { what: 'your old sore spots and where you help others heal', shift: 'where insecurity surfaces but also where you grow the most' },
+  NorthNode: { what: 'your growth direction — unfamiliar territory that stretches you', shift: 'the life area calling you forward this year' },
+  Juno: { what: 'your partnership needs and what you expect from commitment', shift: 'where loyalty and relationship dynamics play out' },
+  Vesta: { what: 'your devotion and what you sacrifice for', shift: 'where you pour focused, dedicated energy' },
+  Pallas: { what: 'your strategic intelligence and ability to see patterns', shift: 'where you apply creative problem-solving' },
+  Ceres: { what: 'your nurturing style and relationship with nourishment', shift: 'where you care for others and process letting go' },
+  Lilith: { what: 'your raw power and the parts of yourself others find uncomfortable', shift: 'where you reclaim autonomy and refuse to be tamed' },
+  Eris: { what: 'your willingness to disrupt and demand truth', shift: 'where you challenge the status quo' },
+};
+
+function generateOverlayInterpretation(
+  planet: string,
+  srSign: string,
+  srHouse: number | null,
+  natalLandingHouse: number | null,
+  natalOriginalHouse: number | null,
+): string {
+  const drive = PLANET_OVERLAY_DRIVE[planet] || { what: `${planet}'s themes`, shift: `where ${planet} focuses` };
+  const signFelt = getSignFeltSense(srSign);
+  const srArea = srHouse ? (SR_HOUSE_LIFE_AREA[srHouse] || `house ${srHouse}`) : 'an unknown area';
+  const natalArea = natalLandingHouse ? (SR_HOUSE_LIFE_AREA[natalLandingHouse] || `house ${natalLandingHouse}`) : null;
+
+  let interp = `${planet} in ${srSign} in your Solar Return chart focuses on ${srArea}. `;
+  interp += `${planet} represents ${drive.what}, and in ${srSign} this year, you feel it as ${signFelt}. `;
+
+  if (natalOriginalHouse && srHouse && natalOriginalHouse !== srHouse) {
+    const origArea = SR_HOUSE_LIFE_AREA[natalOriginalHouse] || `house ${natalOriginalHouse}`;
+    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house — meaning ${drive.shift} moves from ${origArea} to ${srArea}. `;
+  } else if (natalOriginalHouse && srHouse && natalOriginalHouse === srHouse) {
+    interp += `${planet} returns to its natal house this year, reinforcing its lifelong themes around ${srArea}. This is a year of deepening, not redirecting, this energy. `;
+  }
+
+  if (natalArea && natalLandingHouse !== srHouse) {
+    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events.`;
+  }
+
+  return interp.trim();
+}
+
+function ordinalSuffix(n: number): string {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 // ─── Main Analysis ──────────────────────────────────────────────────
 
 export const analyzeSolarReturn = (
