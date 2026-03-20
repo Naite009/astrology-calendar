@@ -832,7 +832,7 @@ Keep the tone deep, insightful, and practically applicable.`
     if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
-    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string; feel: string }; natalSign: string; natalDegree: number }> = [];
+    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number }> = [];
     
     Object.entries(activeChart.planets).forEach(([planet, data]) => {
       const planetData = data as { sign: string; degree: number; minutes?: number; house?: number };
@@ -855,7 +855,8 @@ Keep the tone deep, insightful, and practically applicable.`
             aspect: ac.name,
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
-            aspectInfo: ASPECT_FELT_SENSE[ac.name] || { symbol: '', what: '', feel: '' },
+            aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
+            feltSense: buildFeltSense(planet, planetData.sign, ac.name),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
           });
