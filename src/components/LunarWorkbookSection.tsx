@@ -289,6 +289,16 @@ export const LunarWorkbookSection = ({
         </CardContent>
       </Card>
 
+      {/* ═══ Theme Finder ═══ */}
+      <ThemeFinderCard
+        journal={journal}
+        cycleSign={cycleSign}
+        cycleDegree={cycleDegree}
+        chartName={chartName}
+        natalHouse={natalContext?.newMoonHouse}
+        saveJournal={saveJournal}
+      />
+
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
       {(currentPhase === 'newMoon' || !simpleMode) && (
         <Card className="border-border/30">
