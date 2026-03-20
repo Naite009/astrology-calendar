@@ -147,7 +147,7 @@ function buildNarrative(
 
   // Avoid repeating the same keyword/plain if node matches sun or asc
   if (nodeSign === sunSign && nodeSign === ascSign) {
-    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. Lean all the way in.`);
+    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House — ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. So do more of it, more often, more deliberately. In practice that means: ${sunArch.dailyLooksLike}${nodeHouse ? ` Pay special attention to how this shows up in ${HOUSE_ARENA[nodeHouse] || 'this area'} — that's the specific life domain where this work lands hardest.` : ''}`);
   } else if (nodeSign === sunSign) {
     parts.push(`Your growth edge (North Node) is in the same sign as your Sun — ${nodeSign}${nodeHouse ? `, in the ${ordinal(nodeHouse)} House` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning, specifically through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}.`);
   } else {
