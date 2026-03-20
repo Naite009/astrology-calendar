@@ -56,37 +56,26 @@ interface KeyPhaseDates {
 }
 
 function findKeyPhaseDates(newMoonDate: Date): KeyPhaseDates {
-  // First Quarter = phase 90 (quarter moon)
   const firstQuarterSearch = Astronomy.SearchMoonPhase(90, newMoonDate, 15);
-  // Full Moon = phase 180
   const fullMoonSearch = Astronomy.SearchMoonPhase(180, newMoonDate, 20);
-  // Last Quarter = phase 270
   const lastQuarterSearch = Astronomy.SearchMoonPhase(270, newMoonDate, 25);
   
-  const getSignAtDate = (date: Date): string => {
+  const getInfoAtDate = (date: Date): { sign: string; degree: number; longitude: number } => {
     try {
       const vector = Astronomy.GeoVector(Astronomy.Body.Moon, date, false);
       const ecliptic = Astronomy.Ecliptic(vector);
-      const signIndex = Math.floor(((ecliptic.elon % 360) + 360) % 360 / 30);
-      return ZODIAC_SIGNS[signIndex];
+      const lon = ((ecliptic.elon % 360) + 360) % 360;
+      const signIndex = Math.floor(lon / 30);
+      return { sign: ZODIAC_SIGNS[signIndex], degree: Math.floor(lon % 30), longitude: lon };
     } catch {
-      return 'Unknown';
+      return { sign: 'Unknown', degree: 0, longitude: 0 };
     }
   };
   
   return {
-    firstQuarter: firstQuarterSearch ? { 
-      date: firstQuarterSearch.date, 
-      sign: getSignAtDate(firstQuarterSearch.date) 
-    } : null,
-    fullMoon: fullMoonSearch ? { 
-      date: fullMoonSearch.date, 
-      sign: getSignAtDate(fullMoonSearch.date) 
-    } : null,
-    lastQuarter: lastQuarterSearch ? { 
-      date: lastQuarterSearch.date, 
-      sign: getSignAtDate(lastQuarterSearch.date) 
-    } : null,
+    firstQuarter: firstQuarterSearch ? { date: firstQuarterSearch.date, ...getInfoAtDate(firstQuarterSearch.date) } : null,
+    fullMoon: fullMoonSearch ? { date: fullMoonSearch.date, ...getInfoAtDate(fullMoonSearch.date) } : null,
+    lastQuarter: lastQuarterSearch ? { date: lastQuarterSearch.date, ...getInfoAtDate(lastQuarterSearch.date) } : null,
   };
 }
 
