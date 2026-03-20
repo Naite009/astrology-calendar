@@ -172,8 +172,21 @@ export function generateSRtoNatalInterpretation(
   orb: number
 ): { headline: string; howItFeels: string; whatItMeans: string; whatToDo: string } {
   const asp = aspectTypeMeanings[aspectType];
-  const sr = planetLifeMeanings[srPlanet] || planetLifeMeanings['Sun'];
-  const natal = planetLifeMeanings[natalPlanet] || planetLifeMeanings['Sun'];
+  const sr = planetLifeMeanings[srPlanet];
+  const natal = planetLifeMeanings[natalPlanet];
+
+  // If we don't have data for either planet, produce an honest fallback instead of generic Sun-based nonsense
+  if (!sr || !natal) {
+    const srLabel = sr?.rules || srPlanet;
+    const natalLabel = natal?.rules || natalPlanet;
+    const tightLabel = orb <= 1 ? 'very tight' : orb <= 3 ? 'notable' : 'present';
+    return {
+      headline: `${srPlanet} ${asp?.glyph || ''} Natal ${natalPlanet}`,
+      howItFeels: `This year's ${srPlanet} (${srLabel}) is connecting to your natal ${natalPlanet} (${natalLabel}) by ${aspectType}. The orb is ${tightLabel} at ${orb.toFixed(1)}°.`,
+      whatItMeans: `${srPlanet} and ${natalPlanet} themes are interacting this year. The ${aspectType} brings ${asp?.keyword || 'a connection'} between them.`,
+      whatToDo: `Pay attention to moments when ${srPlanet} and ${natalPlanet} themes overlap in your daily life.`,
+    };
+  }
 
   const isHard = ['Square', 'Opposition', 'Quincunx'].includes(aspectType);
   const isSoft = ['Trine', 'Sextile', 'Semi-sextile'].includes(aspectType);
