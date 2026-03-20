@@ -566,6 +566,7 @@ export const getNewMoonInterpretation = (date: Date, moonLongitude: number): New
     hasStellium,
     stelliumPlanets,
     stelliumSign,
+    stelliumFeltSense: hasStellium ? (STELLIUM_FELT_SENSE[stelliumSign] || `${stelliumPlanets.length} planets concentrated in ${stelliumSign} — this cycle carries extraordinary weight.`) : '',
     rulerRetrograde,
     rulerAspects,
     mainTheme: generateMainTheme(sign, signInfo, conjunctions, aspects, rulerSign, rulerRetrograde),
