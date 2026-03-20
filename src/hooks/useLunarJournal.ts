@@ -64,6 +64,24 @@ export interface LunarJournalEntry {
   oracle_card_notes?: string;
   oracle_ai_interpretation?: string;
   
+  // Tracking metrics (1-10 scale)
+  mood?: number | null;
+  energy?: number | null;
+  clarity?: number | null;
+  stress?: number | null;
+  sleep_quality?: number | null;
+  communication_quality?: number | null;
+  social_ease?: number | null;
+  intuition?: number | null;
+  productivity?: number | null;
+  conflict_level?: number | null;
+  dream_intensity?: number | null;
+  body_sensitivity?: number | null;
+  tags?: string[];
+  journal_text?: string;
+  moon_house?: number | null;
+  house_system?: string;
+  
   created_at?: string;
   updated_at?: string;
 }
