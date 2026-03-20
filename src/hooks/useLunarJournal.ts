@@ -14,6 +14,9 @@ export interface LunarJournalEntry {
   cycle_sign: string;
   cycle_degree?: number;
   
+  // ★ What Is Surfacing (first thing user sees)
+  what_is_surfacing?: string;
+  
   // New Moon phase
   new_moon_date?: string;
   new_moon_feelings?: string;
@@ -21,6 +24,9 @@ export interface LunarJournalEntry {
   new_moon_house_themes?: string;
   new_moon_intentions?: string;
   new_moon_body_sensations?: string;
+  
+  // Intention delay logic
+  intention_status?: string; // 'unclear' | 'forming' | 'ready'
   
   // First Quarter phase
   first_quarter_date?: string;
@@ -40,11 +46,30 @@ export interface LunarJournalEntry {
   last_quarter_letting_go?: string;
   last_quarter_patterns?: string;
   
-  // Balsamic phase
+  // Balsamic phase (expanded)
   balsamic_date?: string;
   balsamic_reflections?: string;
   balsamic_evolved?: string;
   balsamic_different?: string;
+  balsamic_dreams?: string;
+  balsamic_morning_thoughts?: string;
+  balsamic_fatigue?: number | null;
+  balsamic_withdrawal?: number | null;
+  balsamic_needs_to_end?: string;
+  balsamic_what_feels_complete?: string;
+  balsamic_off_plate?: string;
+  
+  // Surprise tracker
+  surprise_event?: string;
+  
+  // Real life event log
+  real_life_what_happened?: string;
+  real_life_surprises?: string;
+  real_life_body_signals?: string;
+  real_life_synchronicities?: string;
+  real_life_conversations?: string;
+  real_life_emotional_reactions?: string;
+  real_life_repeated?: string;
   
   // Cycle completion
   cycle_wisdom?: string;
@@ -64,7 +89,7 @@ export interface LunarJournalEntry {
   oracle_card_notes?: string;
   oracle_ai_interpretation?: string;
   
-  // Tracking metrics (1-10 scale)
+  // Tracking metrics
   mood?: number | null;
   energy?: number | null;
   clarity?: number | null;
@@ -81,6 +106,7 @@ export interface LunarJournalEntry {
   journal_text?: string;
   moon_house?: number | null;
   house_system?: string;
+  simple_mode?: boolean;
   
   created_at?: string;
   updated_at?: string;

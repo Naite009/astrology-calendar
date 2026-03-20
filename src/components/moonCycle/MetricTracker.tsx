@@ -28,24 +28,28 @@ const BODY_METRICS = [
 ];
 
 const WORKSHOP_TAGS = [
-  "dream",
-  "important conversation",
-  "short trip",
-  "rest day",
+  "anxiety",
+  "exhaustion",
+  "clarity",
+  "conflict",
   "breakthrough",
-  "surprise",
-  "release",
+  "withdrawal",
+  "dream",
   "intuition",
   "overwhelm",
+  "rest",
+  "surprise",
+  "release",
+  "decision pressure",
+  "alignment",
+  "misalignment",
   "grief",
   "recovery",
   "forgiveness",
   "creative flow",
   "boundary issue",
   "synchronicity",
-  "spiritual practice",
   "crying release",
-  "news",
 ];
 
 const LIFE_AREAS = [
