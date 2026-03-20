@@ -143,7 +143,7 @@ const STELLIUM_FELT_SENSE: Record<string, string> = {
   Sagittarius: 'Multiple planets concentrated in Sagittarius — the horizon expands. You may feel restless, philosophical, or hungry for adventure and meaning. Conventions feel stifling. Intentions around travel, education, publishing, or spiritual exploration have big energy behind them.',
   Capricorn: 'Multiple planets concentrated in Capricorn — ambition crystallizes. You may feel unusually focused on goals, status, or legacy. There\'s a seriousness to this cycle that demands maturity. Intentions around career, authority, or long-term building have structural support.',
   Aquarius: 'Multiple planets concentrated in Aquarius — you feel the collective pulse. Community, innovation, and "the future" dominate awareness. You may question convention or feel called to serve something larger than yourself. Intentions around group work, technology, or social change carry electricity.',
-  Pisces: 'Multiple planets concentrated in Pisces — boundaries dissolve. You may feel unusually empathic, dreamy, or spiritually open. The mundane feels thin and the mystical feels close. Intentions work through imagination and surrender rather than willpower. Ground yourself — too much dissolution leads to confusion.',
+  Pisces: 'Multiple planets concentrated in Pisces — you pick up on other people\'s moods more than usual. You might feel spacey, extra emotional, or like your imagination is running the show. Plans work better when you go with the flow instead of forcing things. Stay practical — too much daydreaming without action leads to feeling lost. Write things down, keep a routine, and check in with someone you trust.',
 };
 
 const RETROGRADE_MEANINGS: Record<string, string> = {
