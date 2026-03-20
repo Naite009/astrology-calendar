@@ -46,303 +46,241 @@ function ageContextInstructions(group: string, age: number | null): string {
   }
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+function buildContext(d: any, age: number | null): string {
+  let ctx = `PERSON: ${d.name || 'Unknown'}`;
+  if (age) ctx += `, turning ${age} this year`;
+  ctx += `\nBorn: ${d.birthDate || ''}, ${d.birthLocation || ''}\n`;
+  ctx += `Solar Return Year: ${d.solarReturnYear || ''}\n\n`;
+
+  ctx += `--- CHART BASICS ---\n`;
+  ctx += `Natal Sun: ${d.natalSun}\n`;
+  ctx += `Natal Moon: ${d.natalMoon}\n`;
+  ctx += `Natal Rising: ${d.natalRising}\n\n`;
+  ctx += `SR Sun: ${d.srSun}\n`;
+  ctx += `SR Moon: ${d.srMoon}\n`;
+  ctx += `SR Rising: ${d.srRising}\n\n`;
+
+  if (d.yearlyTheme) {
+    ctx += `--- YEAR THEME ---\n`;
+    ctx += `SR Ascendant: ${d.yearlyTheme.ascendantSign}\n`;
+    ctx += `SR Asc Ruler: ${d.yearlyTheme.ascendantRuler} in ${d.yearlyTheme.ascendantRulerSign} (house ${d.yearlyTheme.ascendantRulerHouse || '—'})\n\n`;
   }
 
-  try {
-    const { fullJson } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+  if (d.lordOfTheYear) {
+    ctx += `Lord of the Year: ${d.lordOfTheYear.planet} in ${d.lordOfTheYear.srSign} (house ${d.lordOfTheYear.srHouse || '—'}), dignity: ${d.lordOfTheYear.dignity}${d.lordOfTheYear.isRetrograde ? ' (Rx)' : ''}\n`;
+  }
 
-    const d = fullJson;
-    const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
-    const group = ageGroup(age);
-    const ageInstructions = ageContextInstructions(group, age);
+  if (d.profectionYear) {
+    ctx += `Profection: House ${d.profectionYear.houseNumber || d.profectionYear.house}, Time Lord: ${d.profectionYear.timeLord}\n`;
+  }
 
-    // Build comprehensive context from ALL available data
-    let ctx = `PERSON: ${d.name || 'Unknown'}`;
-    if (age) ctx += `, turning ${age} this year`;
-    ctx += `\nBorn: ${d.birthDate || ''}, ${d.birthLocation || ''}\n`;
-    ctx += `Solar Return Year: ${d.solarReturnYear || ''}\n\n`;
+  ctx += `\n--- PLACEMENTS ---\n`;
+  ctx += `Sun: SR house ${d.sunHouse?.house || '—'}, overlays natal house ${d.sunNatalHouse?.house || '—'}\n`;
+  ctx += `Moon: ${d.srMoon} in SR house ${d.moonHouse?.house || '—'}, phase: ${d.moonPhase?.phase || '—'}\n`;
+  if (d.moonAngularity) ctx += `Moon angularity: ${d.moonAngularity}\n`;
+  if (d.moonVOC) ctx += `Moon is void of course — emotional independence/isolation theme\n`;
 
-    // === CORE CHART DATA (translated to plain language for the AI) ===
-    ctx += `--- CHART BASICS ---\n`;
-    ctx += `Their personality type (natal Sun): ${d.natalSun}\n`;
-    ctx += `Their emotional nature (natal Moon): ${d.natalMoon}\n`;
-    ctx += `How others see them (natal Rising): ${d.natalRising}\n\n`;
+  if (d.srMoonAspects?.length > 0) {
+    ctx += `\n--- MOON ASPECTS ---\n`;
+    d.srMoonAspects.slice(0, 8).forEach((a: any) => {
+      ctx += `- Moon ${a.aspectType} ${a.targetPlanet} (${a.orb}°): ${a.interpretation || ''}\n`;
+    });
+  }
 
-    ctx += `This year's energy direction (SR Sun): ${d.srSun}\n`;
-    ctx += `This year's emotional tone (SR Moon): ${d.srMoon}\n`;
-    ctx += `How they'll come across this year (SR Rising): ${d.srRising}\n\n`;
+  if (d.angularPlanets?.length > 0) {
+    ctx += `\nAngular planets: ${d.angularPlanets.join(', ')}\n`;
+  }
 
-    // Year theme
-    if (d.yearlyTheme) {
-      ctx += `--- YEAR'S THEME ---\n`;
-      ctx += `This year's persona: ${d.yearlyTheme.ascendantSign} Rising\n`;
-      ctx += `The planet driving this year: ${d.yearlyTheme.ascendantRuler} in ${d.yearlyTheme.ascendantRulerSign} (life area ${d.yearlyTheme.ascendantRulerHouse || '—'})\n\n`;
-    }
+  if (d.stelliums?.length > 0) {
+    ctx += `Stelliums: ${d.stelliums.map((s: any) => `${s.planets.join(', ')} in ${s.location}`).join('; ')}\n`;
+  }
 
-    // Lord of the Year
-    if (d.lordOfTheYear) {
-      ctx += `The planet "in charge" this year: ${d.lordOfTheYear.planet} in ${d.lordOfTheYear.srSign} (life area ${d.lordOfTheYear.srHouse || '—'}), condition: ${d.lordOfTheYear.dignity}${d.lordOfTheYear.isRetrograde ? ' (reviewing/rethinking mode)' : ''}\n`;
-    }
+  if (d.elementBalance) ctx += `\nElement balance: Fire=${d.elementBalance.fire}, Earth=${d.elementBalance.earth}, Air=${d.elementBalance.air}, Water=${d.elementBalance.water} — Dominant: ${d.elementBalance.dominant}\n`;
 
-    // Profection
-    if (d.profectionYear) {
-      ctx += `Annual focus area: House ${d.profectionYear.houseNumber || d.profectionYear.house} topics, guided by ${d.profectionYear.timeLord}\n`;
-    }
+  if (d.saturnFocus) ctx += `\nSaturn: ${d.saturnFocus.sign} in house ${d.saturnFocus.house || '—'}${d.saturnFocus.isRetrograde ? ' (Rx)' : ''}\n`;
+  if (d.nodesFocus) ctx += `North Node: ${d.nodesFocus.sign} in house ${d.nodesFocus.house || '—'}\n`;
+  if (d.retrogrades?.count > 0) ctx += `Retrogrades: ${d.retrogrades.planets.join(', ')}\n`;
 
-    // Sun & Moon placement details
-    ctx += `\n--- WHERE ENERGY LANDS ---\n`;
-    ctx += `Sun (main focus): SR life area ${d.sunHouse?.house || '—'}\n`;
-    ctx += `Sun overlays natal life area: ${d.sunNatalHouse?.house || '—'}\n`;
-    ctx += `Moon (emotional needs): ${d.srMoon} in SR life area ${d.moonHouse?.house || '—'}\n`;
-    ctx += `Moon phase: ${d.moonPhase?.phase || '—'}\n`;
-    if (d.moonAngularity) ctx += `Moon is prominent/angular: ${d.moonAngularity}\n`;
-    if (d.moonVOC) ctx += `Moon has NO major connections to other planets — emotional isolation or independence theme\n`;
-
-    // Moon aspects
-    if (d.srMoonAspects?.length > 0) {
-      ctx += `\n--- EMOTIONAL CONNECTIONS ---\n`;
-      d.srMoonAspects.slice(0, 8).forEach((a: any) => {
-        ctx += `- Emotions connect ${a.aspectType === 'conjunction' ? 'intensely' : a.aspectType === 'trine' || a.aspectType === 'sextile' ? 'smoothly' : 'with friction'} to ${a.targetPlanet}: ${a.interpretation || ''}\n`;
+  if (d.identityShift) {
+    ctx += `\n--- IDENTITY SHIFT ---\n`;
+    ctx += `Headline: ${d.identityShift.headline || ''}\n`;
+    ctx += `Narrative: ${d.identityShift.becomingNarrative || ''}\n`;
+    if (d.identityShift.pillars?.length) {
+      d.identityShift.pillars.forEach((p: any) => {
+        ctx += `- ${p.label || p.name}: ${p.placement || ''} — ${p.keyword || ''}: ${p.description || ''}\n`;
       });
     }
+    if (d.identityShift.tensionNote) ctx += `Tension: ${d.identityShift.tensionNote}\n`;
+  }
 
-    // Angular planets
-    if (d.angularPlanets?.length > 0) {
-      ctx += `\nMost visible/active energies this year: ${d.angularPlanets.join(', ')}\n`;
+  if (d.executiveSummary) {
+    const es = d.executiveSummary;
+    if (es.opportunities?.length) {
+      ctx += `\n--- OPPORTUNITIES ---\n`;
+      es.opportunities.forEach((o: any) => { ctx += `- ${o.title || o}: ${o.description || ''}\n`; });
     }
-
-    // Stelliums
-    if (d.stelliums?.length > 0) {
-      ctx += `Energy concentrations: ${d.stelliums.map((s: any) => `${s.planets.join(', ')} clustered in ${s.location}`).join('; ')}\n`;
+    if (es.challenges?.length) {
+      ctx += `\n--- CHALLENGES ---\n`;
+      es.challenges.forEach((c: any) => { ctx += `- ${c.title || c}: ${c.description || ''}\n`; });
     }
+  }
 
-    // Elements
-    if (d.elementBalance) ctx += `\nEnergy mix: Action/fire=${d.elementBalance.fire}, Practical/earth=${d.elementBalance.earth}, Mental/air=${d.elementBalance.air}, Emotional/water=${d.elementBalance.water} — Strongest: ${d.elementBalance.dominant}\n`;
-
-    // Saturn & Nodes
-    if (d.saturnFocus) ctx += `\n--- DISCIPLINE & RESPONSIBILITY ---\nSaturn (hard work required): ${d.saturnFocus.sign} in life area ${d.saturnFocus.house || '—'}${d.saturnFocus.isRetrograde ? ' (reviewing past commitments)' : ''}\n`;
-    if (d.nodesFocus) ctx += `Growth direction (North Node): ${d.nodesFocus.sign} in life area ${d.nodesFocus.house || '—'}\n`;
-
-    // Retrogrades
-    if (d.retrogrades?.count > 0) ctx += `Planets in review/rethinking mode: ${d.retrogrades.planets.join(', ')}\n`;
-
-    // === IDENTITY SHIFT (detailed) ===
-    if (d.identityShift) {
-      ctx += `\n--- WHO THEY ARE BECOMING ---\n`;
-      ctx += `Headline: ${d.identityShift.headline || ''}\n`;
-      ctx += `Narrative: ${d.identityShift.becomingNarrative || ''}\n`;
-      if (d.identityShift.pillars?.length) {
-        d.identityShift.pillars.forEach((p: any) => {
-          ctx += `- ${p.label || p.name}: ${p.placement || ''} — ${p.keyword || ''}: ${p.description || ''}\n`;
-        });
-      }
-      if (d.identityShift.tensionNote) ctx += `Internal tension: ${d.identityShift.tensionNote}\n`;
-    }
-
-    // === EXECUTIVE SUMMARY (detailed) ===
-    if (d.executiveSummary) {
-      const es = d.executiveSummary;
-      ctx += `\n--- TOP OPPORTUNITIES ---\n`;
-      if (es.opportunities?.length) {
-        es.opportunities.forEach((o: any) => {
-          ctx += `- ${o.title || o}: ${o.description || ''}\n`;
-        });
-      }
-      ctx += `\n--- THINGS TO WATCH OUT FOR ---\n`;
-      if (es.challenges?.length) {
-        es.challenges.forEach((c: any) => {
-          ctx += `- ${c.title || c}: ${c.description || ''}\n`;
-        });
-      }
-    }
-
-    // === LIFE DOMAIN SCORES (detailed with breakdowns) ===
-    if (d.lifeDomainScores) {
-      ctx += `\n--- LIFE AREA RATINGS (out of 10) ---\n`;
-      Object.entries(d.lifeDomainScores).forEach(([k, v]: [string, any]) => {
-        if (typeof v === 'object' && v?.score !== undefined) {
-          ctx += `${k}: ${v.score}/10 — ${v.summary || ''}\n`;
-          if (v.breakdown?.length) {
-            v.breakdown.forEach((b: any) => {
-              ctx += `  • ${b.source}: ${b.points > 0 ? '+' : ''}${b.points} (${b.reason})\n`;
-            });
-          }
+  if (d.lifeDomainScores) {
+    ctx += `\n--- LIFE DOMAIN SCORES (out of 10) ---\n`;
+    Object.entries(d.lifeDomainScores).forEach(([k, v]: [string, any]) => {
+      if (typeof v === 'object' && v?.score !== undefined) {
+        ctx += `${k}: ${v.score}/10 — ${v.summary || ''}\n`;
+        if (v.breakdown?.length) {
+          v.breakdown.forEach((b: any) => { ctx += `  • ${b.source}: ${b.points > 0 ? '+' : ''}${b.points} (${b.reason})\n`; });
         }
+      }
+    });
+  }
+
+  if (d.contradictions?.length > 0) {
+    ctx += `\n--- CONTRADICTIONS ---\n`;
+    d.contradictions.forEach((c: any) => {
+      ctx += `- ${c.title || ''}: ${c.narrative || c.description || ''}\n`;
+      if (c.resolution) ctx += `  Resolution: ${c.resolution}\n`;
+    });
+  }
+
+  if (d.actionGuidance?.length > 0) {
+    ctx += `\n--- ACTION GUIDANCE ---\n`;
+    d.actionGuidance.forEach((g: any) => {
+      ctx += `${g.planetSymbol || ''} ${g.placement || ''}:\n`;
+      ctx += `  Lean into: ${g.leanInto || ''}\n`;
+      ctx += `  Avoid: ${g.avoid || ''}\n`;
+      ctx += `  Best use: ${g.bestUse || ''}\n`;
+      if (g.timing) ctx += `  Timing: ${g.timing}\n`;
+    });
+  }
+
+  if (d.activationWindows) {
+    const aw = d.activationWindows;
+    if (aw.peakPeriods?.length) {
+      ctx += `\n--- PEAK PERIODS ---\n`;
+      aw.peakPeriods.forEach((p: any) => { ctx += `- ${p.label || p.month || ''}: ${p.description || p.reason || ''}\n`; });
+    }
+    if (aw.monthlyThemes?.length) {
+      ctx += `\n--- MONTHLY THEMES ---\n`;
+      aw.monthlyThemes.forEach((m: any) => {
+        ctx += `- ${m.label || m.month}: ${m.theme || ''} (${m.transitHits?.length || 0} transits)\n`;
       });
     }
+  }
 
-    // === CONTRADICTIONS ===
-    if (d.contradictions?.length > 0) {
-      ctx += `\n--- INTERNAL CONTRADICTIONS (opposing pulls) ---\n`;
-      d.contradictions.forEach((c: any) => {
-        ctx += `- ${c.title || ''}: ${c.narrative || c.description || ''}\n`;
-        if (c.resolution) ctx += `  Resolution: ${c.resolution}\n`;
-      });
-    }
+  if (d.lunarWeatherMap?.months?.length > 0) {
+    ctx += `\n--- LUNAR WEATHER ---\n`;
+    d.lunarWeatherMap.months.slice(0, 12).forEach((m: any) => {
+      ctx += `- ${m.label || m.month}: ${m.theme || m.emotionalTone || ''}\n`;
+    });
+  }
 
-    // === ACTION GUIDANCE (detailed per planet) ===
-    if (d.actionGuidance?.length > 0) {
-      ctx += `\n--- ACTION GUIDANCE (per energy) ---\n`;
-      d.actionGuidance.forEach((g: any) => {
-        ctx += `${g.planetSymbol || ''} ${g.placement || ''}:\n`;
-        ctx += `  Lean into: ${g.leanInto || ''}\n`;
-        ctx += `  Avoid: ${g.avoid || ''}\n`;
-        ctx += `  Best use: ${g.bestUse || ''}\n`;
-        if (g.timing) ctx += `  Timing: ${g.timing}\n`;
-      });
-    }
+  if (d.quarterlyFocus?.length > 0) {
+    ctx += `\n--- QUARTERLY FOCUS ---\n`;
+    d.quarterlyFocus.forEach((q: any) => {
+      ctx += `- Q${q.quarter}: ${q.theme || q.focus || ''}${q.description ? ' — ' + q.description : ''}\n`;
+    });
+  }
 
-    // === ACTIVATION WINDOWS ===
-    if (d.activationWindows) {
-      const aw = d.activationWindows;
-      if (aw.peakPeriods?.length) {
-        ctx += `\n--- PEAK PERIODS (when things heat up) ---\n`;
-        aw.peakPeriods.forEach((p: any) => {
-          ctx += `- ${p.label || p.month || ''}: ${p.description || p.reason || ''}\n`;
+  if (d.srToNatalAspects?.length > 0) {
+    ctx += `\n--- SR-TO-NATAL ASPECTS ---\n`;
+    d.srToNatalAspects.slice(0, 12).forEach((a: any) => {
+      ctx += `- SR ${a.srPlanet || a.planet1} ${a.aspect || a.type || ''} Natal ${a.natalPlanet || a.planet2} (${a.orb}°)${a.interpretation ? ': ' + a.interpretation : ''}\n`;
+    });
+  }
+
+  if (d.dignityReport?.length > 0) {
+    ctx += `\n--- DIGNITY REPORT ---\n`;
+    d.dignityReport.slice(0, 8).forEach((dr: any) => {
+      ctx += `- ${dr.planet}: ${dr.label || ''} (score ${dr.score})\n`;
+    });
+  }
+
+  if (d.hemisphericEmphasis) {
+    ctx += `\n--- HEMISPHERIC EMPHASIS ---\n`;
+    const h = d.hemisphericEmphasis;
+    if (h.dominant) ctx += `Dominant: ${h.dominant}\n`;
+    if (h.description) ctx += `${h.description}\n`;
+  }
+
+  if (d.repeatedThemes?.length > 0) {
+    ctx += `\n--- REPEATED THEMES ---\n`;
+    d.repeatedThemes.forEach((t: any) => {
+      ctx += `- ${typeof t === 'string' ? t : t.theme || t.description || JSON.stringify(t)}\n`;
+    });
+  }
+
+  if (d.yearPriorities?.length > 0) {
+    ctx += `\n--- YEAR PRIORITIES (ranked) ---\n`;
+    d.yearPriorities.slice(0, 8).forEach((p: any, i: number) => {
+      ctx += `${i + 1}. ${p.label || p.category}: score ${p.score || ''}, confidence ${p.confidence || ''}\n`;
+      if (p.signals?.length) {
+        p.signals.slice(0, 4).forEach((s: any) => {
+          ctx += `   • ${typeof s === 'string' ? s : s.source || s.label || JSON.stringify(s)}\n`;
         });
       }
-      if (aw.monthlyThemes?.length) {
-        ctx += `\n--- MONTH-BY-MONTH THEMES ---\n`;
-        aw.monthlyThemes.forEach((m: any) => {
-          const hitCount = m.transitHits?.length || 0;
-          ctx += `- ${m.label || m.month}: ${m.theme || ''} (${hitCount} transit activations)\n`;
-        });
+    });
+  }
+
+  if (d.lunarPhaseTimeline?.length > 0) {
+    const currentPhase = d.lunarPhaseTimeline.find((e: any) => e.isCurrent);
+    if (currentPhase) {
+      ctx += `\n--- 29-YEAR EMOTIONAL CYCLE ---\n`;
+      ctx += `Phase: ${currentPhase.phase} (${currentPhase.cycleStage})\n`;
+      ctx += `Meaning: ${currentPhase.shortMeaning || ''}\n`;
+    }
+  }
+
+  if (d.houseOverlays?.length > 0) {
+    ctx += `\n--- HOUSE OVERLAYS (SR planets in natal houses) ---\n`;
+    const houseCounts: Record<number, string[]> = {};
+    d.houseOverlays.forEach((ov: any) => {
+      if (ov.natalHouse) {
+        if (!houseCounts[ov.natalHouse]) houseCounts[ov.natalHouse] = [];
+        houseCounts[ov.natalHouse].push(ov.planet);
       }
-    }
+    });
+    Object.entries(houseCounts).sort(([,a], [,b]) => b.length - a.length).forEach(([house, planets]) => {
+      const hNum = parseInt(house);
+      const meaning = d.lookups?.houseMeanings?.[hNum] || '';
+      const examples = d.lookups?.houseExamples?.[hNum] || '';
+      ctx += `House ${house} (${meaning}): ${planets.join(', ')}. Examples: ${examples}\n`;
+    });
+  }
 
-    // === LUNAR WEATHER MAP ===
-    if (d.lunarWeatherMap?.months?.length > 0) {
-      ctx += `\n--- EMOTIONAL WEATHER BY MONTH ---\n`;
-      d.lunarWeatherMap.months.slice(0, 12).forEach((m: any) => {
-        ctx += `- ${m.label || m.month}: ${m.theme || m.emotionalTone || ''}\n`;
-      });
-    }
+  if (d.srAscRulerInNatal) {
+    const r = d.srAscRulerInNatal;
+    ctx += `\nSR Asc ruler ${r.rulerPlanet} lands in natal house ${r.rulerNatalHouse || '—'} (${r.rulerNatalSign || ''})\n`;
+  }
 
-    // === QUARTERLY FOCUS ===
-    if (d.quarterlyFocus?.length > 0) {
-      ctx += `\n--- QUARTERLY RHYTHM ---\n`;
-      d.quarterlyFocus.forEach((q: any) => {
-        ctx += `- Q${q.quarter}: ${q.theme || q.focus || ''}${q.description ? ' — ' + q.description : ''}\n`;
-      });
-    }
+  if (d.executiveSummary?.patterns?.length > 0) {
+    ctx += `\n--- PATTERNS ---\n`;
+    d.executiveSummary.patterns.forEach((p: any) => {
+      ctx += `- ${p.pattern}: ${p.description} Connection: ${p.connection}\n`;
+    });
+  }
 
-    // === TOP ASPECTS (translated) ===
-    if (d.srToNatalAspects?.length > 0) {
-      ctx += `\n--- KEY CONNECTIONS BETWEEN THIS YEAR AND BIRTH CHART ---\n`;
-      d.srToNatalAspects.slice(0, 12).forEach((a: any) => {
-        const aspectWord = (a.aspect || a.type || '').toLowerCase();
-        let relationship = 'connects to';
-        if (aspectWord.includes('trine') || aspectWord.includes('sextile')) relationship = 'flows supportively with';
-        else if (aspectWord.includes('square')) relationship = 'creates tension with';
-        else if (aspectWord.includes('opposition')) relationship = 'pulls against';
-        else if (aspectWord.includes('conjunction')) relationship = 'merges intensely with';
-        ctx += `- This year's ${a.srPlanet || a.planet1} ${relationship} their birth ${a.natalPlanet || a.planet2} (${a.orb}° orb)${a.interpretation ? ': ' + a.interpretation : ''}\n`;
-      });
-    }
+  if (d.eclipseSensitivity?.length > 0) {
+    ctx += `\n--- ECLIPSE ACTIVATIONS ---\n`;
+    d.eclipseSensitivity.forEach((e: any) => {
+      ctx += `- ${e.description || e.type || JSON.stringify(e)}\n`;
+    });
+  }
 
-    // === DIGNITY REPORT ===
-    if (d.dignityReport?.length > 0) {
-      ctx += `\n--- PLANET STRENGTH/CONDITION ---\n`;
-      d.dignityReport.slice(0, 8).forEach((dr: any) => {
-        ctx += `- ${dr.planet}: ${dr.label || ''} (strength score ${dr.score})\n`;
-      });
-    }
+  if (d.mutualReceptions?.length > 0) {
+    ctx += `\n--- MUTUAL RECEPTIONS ---\n`;
+    d.mutualReceptions.forEach((mr: any) => {
+      ctx += `- ${mr.planet1 || ''} & ${mr.planet2 || ''}: ${mr.description || mr.interpretation || ''}\n`;
+    });
+  }
 
-    // === HEMISPHERIC EMPHASIS ===
-    if (d.hemisphericEmphasis) {
-      ctx += `\n--- LIFE ORIENTATION ---\n`;
-      const h = d.hemisphericEmphasis;
-      if (h.dominant) ctx += `Dominant orientation: ${h.dominant}\n`;
-      if (h.description) ctx += `${h.description}\n`;
-    }
+  return ctx;
+}
 
-    // === REPEATED THEMES ===
-    if (d.repeatedThemes?.length > 0) {
-      ctx += `\n--- REPEATED THEMES (showing up multiple ways) ---\n`;
-      d.repeatedThemes.forEach((t: any) => {
-        ctx += `- ${typeof t === 'string' ? t : t.theme || t.description || JSON.stringify(t)}\n`;
-      });
-    }
-
-    // === YEAR PRIORITIES (ranked theme scores) ===
-    if (d.yearPriorities?.length > 0) {
-      ctx += `\n--- RANKED YEAR PRIORITIES (strongest themes by data) ---\n`;
-      d.yearPriorities.slice(0, 8).forEach((p: any, i: number) => {
-        ctx += `${i + 1}. ${p.label || p.category}: score ${p.score || ''}, confidence ${p.confidence || ''}\n`;
-        if (p.signals?.length) {
-          p.signals.slice(0, 4).forEach((s: any) => {
-            ctx += `   • ${typeof s === 'string' ? s : s.source || s.label || JSON.stringify(s)}\n`;
-          });
-        }
-      });
-    }
-
-    // === LUNAR PHASE TIMELINE (19-year emotional cycle) ===
-    if (d.lunarPhaseTimeline?.length > 0) {
-      const currentPhase = d.lunarPhaseTimeline.find((e: any) => e.isCurrent);
-      if (currentPhase) {
-        ctx += `\n--- CURRENT POSITION IN 29-YEAR EMOTIONAL CYCLE ---\n`;
-        ctx += `Phase: ${currentPhase.phase} (${currentPhase.cycleStage})\n`;
-        ctx += `Meaning: ${currentPhase.shortMeaning || ''}\n`;
-        ctx += `This person is in the "${currentPhase.cycleStage}" stage of a long emotional cycle — factor this into whether the year favors starting new things, building momentum, harvesting results, or letting go.\n`;
-      }
-    }
-
-    // === HOUSE OVERLAYS (where SR planets land in natal chart) ===
-    if (d.houseOverlays?.length > 0) {
-      ctx += `\n--- WHICH LIFE AREAS GET ACTIVATED ---\n`;
-      const houseCounts: Record<number, string[]> = {};
-      d.houseOverlays.forEach((ov: any) => {
-        if (ov.natalHouse) {
-          if (!houseCounts[ov.natalHouse]) houseCounts[ov.natalHouse] = [];
-          houseCounts[ov.natalHouse].push(ov.planet);
-        }
-      });
-      const sortedHouses = Object.entries(houseCounts).sort(([,a], [,b]) => b.length - a.length);
-      sortedHouses.forEach(([house, planets]) => {
-        const hNum = parseInt(house);
-        const meaning = d.lookups?.houseMeanings?.[hNum] || '';
-        const examples = d.lookups?.houseExamples?.[hNum] || '';
-        ctx += `Life area ${house} (${meaning}): ${planets.length} planets land here (${planets.join(', ')}). In daily life: ${examples}\n`;
-      });
-    }
-
-    // === SR ASC RULER CHAIN (where the year "plays out") ===
-    if (d.srAscRulerInNatal) {
-      const r = d.srAscRulerInNatal;
-      ctx += `\nThe year's hidden motivation routes through natal life area ${r.rulerNatalHouse || '—'} (${d.lookups?.houseMeanings?.[r.rulerNatalHouse] || ''}). The year's "steering wheel" is ${r.rulerPlanet} sitting in natal ${r.rulerNatalSign || ''} in house ${r.rulerNatalHouse || '—'}.\n`;
-    }
-
-    // === PATTERN RECOGNITION from executive summary ===
-    if (d.executiveSummary?.patterns?.length > 0) {
-      ctx += `\n--- PATTERNS FROM THEIR PAST ---\n`;
-      d.executiveSummary.patterns.forEach((p: any) => {
-        ctx += `- ${p.pattern}: ${p.description} Connection: ${p.connection}\n`;
-      });
-    }
-
-    // === ECLIPSE SENSITIVITY ===
-    if (d.eclipseSensitivity?.length > 0) {
-      ctx += `\n--- ECLIPSE ACTIVATIONS (fast-forward moments) ---\n`;
-      d.eclipseSensitivity.forEach((e: any) => {
-        ctx += `- ${e.description || e.type || JSON.stringify(e)}\n`;
-      });
-    }
-
-    // === MUTUAL RECEPTIONS ===
-    if (d.mutualReceptions?.length > 0) {
-      ctx += `\n--- MUTUAL SUPPORT BETWEEN LIFE AREAS ---\n`;
-      d.mutualReceptions.forEach((mr: any) => {
-        ctx += `- ${mr.planet1 || ''} and ${mr.planet2 || ''}: ${mr.description || mr.interpretation || 'these energies support each other'}\n`;
-      });
-    }
-
-    const systemPrompt = `You write personalized yearly readings for people. You are NOT an astrologer speaking to a client — you are a wise, practical life advisor who happens to have deep knowledge of cycles and timing.
+function plainSystemPrompt(ageInstructions: string): string {
+  return `You write personalized yearly readings for people. You are NOT an astrologer speaking to a client — you are a wise, practical life advisor who happens to have deep knowledge of cycles and timing.
 
 ${ageInstructions}
 
@@ -385,8 +323,79 @@ Name the 2-3 most important months/periods and what makes them significant. Be s
 3-5 bullet points of specific, actionable advice. Each one must be something they can literally do tomorrow. Age-appropriate. Practical. No metaphors.
 
 Keep the total reading between 800-1200 words. Every word must earn its place.`;
+}
 
-    const userPrompt = `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use ALL the data below — every score, every theme, every timing window. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
+function astroSystemPrompt(ageInstructions: string): string {
+  return `You are a master astrologer writing a comprehensive Solar Return synthesis. Your reader has astrological knowledge and wants the full technical picture — placements, aspects, dignities, timing, and chart-level pattern recognition. You are writing to impress a professional astrologer with the depth and specificity of your analysis.
+
+${ageInstructions}
+
+ABSOLUTE RULES:
+1. USE full astrological terminology: planet names, sign names, house numbers, aspect names (conjunction, trine, square, opposition, sextile), orbs, dignities (domicile, exaltation, detriment, fall), retrogrades, angular/succedent/cadent, sect, mutual receptions.
+2. Reference SPECIFIC placements. "SR Mars in Libra in the 1st house square natal Pluto at 3.4°" — not "an assertive energy comes through."
+3. NEVER start with "Dear [Name]" or any greeting. Jump straight into the technical synthesis.
+4. Every claim must be grounded in the chart data provided. Cite the exact placement or aspect that drives each point.
+5. Integrate MULTIPLE data layers: cross-reference profection year + time lord + SR Asc ruler chain + dignity conditions + house overlays. Show the reader how these layers converge or conflict.
+6. Address contradictions explicitly: if the data shows opposing pulls (e.g., stellium in 12th but angular Mars), name the tension and explain how it resolves or must be held.
+7. Use the Life Domain Scores, Year Priorities, and Activation Windows data to prioritize what matters most — don't give equal weight to everything.
+8. Mention the 29-year lunar phase cycle position and Metonic echoes if the data includes them.
+9. Still be AGE-APPROPRIATE in practical suggestions even though the language is technical.
+
+STRUCTURE (use these exact headers):
+
+## Year Overview: The Chart Speaks
+3-4 sentences synthesizing the SR Ascendant, its ruler's condition and natal house placement, the profection house and Time Lord, and the dominant element/modality. This should feel like opening a chart and immediately seeing the story.
+
+## The Ruler Chain & Profection
+Deep dive into the SR Asc ruler: what planet, what sign/house in the SR, where it lands in the natal chart, its dignity condition. How does this connect to the profection year's Time Lord? Do they support or conflict with each other? What does the ruler chain tell us about WHERE the year plays out?
+
+## Identity & Becoming (SR Sun, Moon, Asc)
+The SR Sun's house placement and natal overlay. The SR Moon's sign, phase, house, aspects (especially conjunctions and squares). Moon angularity and void-of-course status. How these three pillars create the year's emotional and identity landscape.
+
+## The Aspect Web
+The most potent SR-to-natal aspects. Organize by type: hard aspects (squares, oppositions) vs. flowing (trines, sextiles) vs. fusion (conjunctions). For each major aspect: the exact orb, what it activates, and when it peaks (if activation window data is available).
+
+## Dignity Conditions & Planet Strength
+Which SR planets are dignified, debilitated, or accidentally strong/weak? How does this affect which planets can "deliver" and which ones struggle? Any mutual receptions that create hidden support channels?
+
+## Life Domain Analysis
+Reference the scored life domains (career, relationships, health, etc.). Which areas score highest and why? Which are challenged? Connect each score back to specific placements and aspects.
+
+## Timing Windows & Activation
+The peak event windows from the activation data. Month-by-month transit rhythm. When do the SR angles get hit? When does the Time Lord get activated? Eclipse sensitivity points.
+
+## Contradictions & Resolutions
+Name the chart's internal contradictions. How do opposing pulls resolve? What does the reader need to hold in tension vs. what will resolve naturally?
+
+## Practical Synthesis
+Despite being technical, end with 4-6 concrete, age-appropriate actions grounded in the chart. Each should reference the specific placement that motivates it.
+
+Aim for 1200-1800 words. Be technically dense but readable. Show mastery through specificity, not through jargon for jargon's sake.`;
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { fullJson, mode = 'plain' } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const d = fullJson;
+    const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
+    const group = ageGroup(age);
+    const ageInstructions = ageContextInstructions(group, age);
+    const ctx = buildContext(d, age);
+
+    const systemPrompt = mode === 'astro'
+      ? astroSystemPrompt(ageInstructions)
+      : plainSystemPrompt(ageInstructions);
+
+    const userPrompt = mode === 'astro'
+      ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and reference every relevant placement, aspect, and dignity condition from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
+      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use ALL the data below — every score, every theme, every timing window. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -400,7 +409,7 @@ Keep the total reading between 800-1200 words. Every word must earn its place.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.4,
+        temperature: mode === 'astro' ? 0.3 : 0.4,
         stream: true,
       }),
     });
