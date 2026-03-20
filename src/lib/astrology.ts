@@ -1240,7 +1240,7 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
 
       for (const aspectType of aspectTypes) {
         const orb = Math.abs(diff - aspectType.angle);
-        const effectiveOrb = getOrb(p1, p2, aspectType.name);
+        const effectiveOrb = getOrbForPair(p1, p2, aspectType.name);
         
         if (orb < effectiveOrb) {
           // Calculate if applying or separating

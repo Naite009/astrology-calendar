@@ -10,6 +10,7 @@ import { PLANET_ESSENCES, HOUSE_MEANINGS, ASPECT_MEANINGS } from '@/lib/detailed
 import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 import { getDeepAspectInterpretation, getFormattedAspectNarrative } from '@/lib/aspectInterpretationsDeep';
+import { getEffectiveOrb as getEffectiveOrbNarr } from '@/lib/aspectOrbs';
 
 // ============================================================================
 // HELPER FUNCTIONS
