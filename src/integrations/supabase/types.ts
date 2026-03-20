@@ -217,8 +217,15 @@ export type Database = {
           ai_suggested_intentions: string | null
           balsamic_date: string | null
           balsamic_different: string | null
+          balsamic_dreams: string | null
           balsamic_evolved: string | null
+          balsamic_fatigue: number | null
+          balsamic_morning_thoughts: string | null
+          balsamic_needs_to_end: string | null
+          balsamic_off_plate: string | null
           balsamic_reflections: string | null
+          balsamic_what_feels_complete: string | null
+          balsamic_withdrawal: number | null
           body_sensitivity: number | null
           chart_id: string
           clarity: number | null
@@ -243,6 +250,7 @@ export type Database = {
           full_moon_showing_up: string | null
           house_system: string | null
           id: string
+          intention_status: string | null
           intuition: number | null
           journal_text: string | null
           last_quarter_date: string | null
@@ -262,22 +270,39 @@ export type Database = {
           oracle_card_notes: string | null
           oracle_deck_name: string | null
           productivity: number | null
+          real_life_body_signals: string | null
+          real_life_conversations: string | null
+          real_life_emotional_reactions: string | null
+          real_life_repeated: string | null
+          real_life_surprises: string | null
+          real_life_synchronicities: string | null
+          real_life_what_happened: string | null
+          simple_mode: boolean | null
           sleep_quality: number | null
           social_ease: number | null
           stress: number | null
+          surprise_event: string | null
           tags: string[] | null
           tarot_ai_interpretation: string | null
           tarot_card_name: string | null
           tarot_card_notes: string | null
           updated_at: string
           user_id: string | null
+          what_is_surfacing: string | null
         }
         Insert: {
           ai_suggested_intentions?: string | null
           balsamic_date?: string | null
           balsamic_different?: string | null
+          balsamic_dreams?: string | null
           balsamic_evolved?: string | null
+          balsamic_fatigue?: number | null
+          balsamic_morning_thoughts?: string | null
+          balsamic_needs_to_end?: string | null
+          balsamic_off_plate?: string | null
           balsamic_reflections?: string | null
+          balsamic_what_feels_complete?: string | null
+          balsamic_withdrawal?: number | null
           body_sensitivity?: number | null
           chart_id: string
           clarity?: number | null
@@ -302,6 +327,7 @@ export type Database = {
           full_moon_showing_up?: string | null
           house_system?: string | null
           id?: string
+          intention_status?: string | null
           intuition?: number | null
           journal_text?: string | null
           last_quarter_date?: string | null
@@ -321,22 +347,39 @@ export type Database = {
           oracle_card_notes?: string | null
           oracle_deck_name?: string | null
           productivity?: number | null
+          real_life_body_signals?: string | null
+          real_life_conversations?: string | null
+          real_life_emotional_reactions?: string | null
+          real_life_repeated?: string | null
+          real_life_surprises?: string | null
+          real_life_synchronicities?: string | null
+          real_life_what_happened?: string | null
+          simple_mode?: boolean | null
           sleep_quality?: number | null
           social_ease?: number | null
           stress?: number | null
+          surprise_event?: string | null
           tags?: string[] | null
           tarot_ai_interpretation?: string | null
           tarot_card_name?: string | null
           tarot_card_notes?: string | null
           updated_at?: string
           user_id?: string | null
+          what_is_surfacing?: string | null
         }
         Update: {
           ai_suggested_intentions?: string | null
           balsamic_date?: string | null
           balsamic_different?: string | null
+          balsamic_dreams?: string | null
           balsamic_evolved?: string | null
+          balsamic_fatigue?: number | null
+          balsamic_morning_thoughts?: string | null
+          balsamic_needs_to_end?: string | null
+          balsamic_off_plate?: string | null
           balsamic_reflections?: string | null
+          balsamic_what_feels_complete?: string | null
+          balsamic_withdrawal?: number | null
           body_sensitivity?: number | null
           chart_id?: string
           clarity?: number | null
@@ -361,6 +404,7 @@ export type Database = {
           full_moon_showing_up?: string | null
           house_system?: string | null
           id?: string
+          intention_status?: string | null
           intuition?: number | null
           journal_text?: string | null
           last_quarter_date?: string | null
@@ -380,15 +424,25 @@ export type Database = {
           oracle_card_notes?: string | null
           oracle_deck_name?: string | null
           productivity?: number | null
+          real_life_body_signals?: string | null
+          real_life_conversations?: string | null
+          real_life_emotional_reactions?: string | null
+          real_life_repeated?: string | null
+          real_life_surprises?: string | null
+          real_life_synchronicities?: string | null
+          real_life_what_happened?: string | null
+          simple_mode?: boolean | null
           sleep_quality?: number | null
           social_ease?: number | null
           stress?: number | null
+          surprise_event?: string | null
           tags?: string[] | null
           tarot_ai_interpretation?: string | null
           tarot_card_name?: string | null
           tarot_card_notes?: string | null
           updated_at?: string
           user_id?: string | null
+          what_is_surfacing?: string | null
         }
         Relationships: []
       }
