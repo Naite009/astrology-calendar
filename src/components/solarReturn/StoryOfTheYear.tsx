@@ -150,14 +150,14 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         {/* 4. Aspect catalyst — skip Sun-Sun */}
         {aspectNarrative && topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') && (
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Adds Momentum</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Creates Momentum</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The tightest aspect in the chart — <strong>{aspectNarrative}</strong> — acts as a catalyst. {topAspect.type === 'Conjunction' ? 'This fusion of energies intensifies both planets, creating a concentrated force in your year.' :
-              topAspect.type === 'Opposition' ? 'This tension between opposing forces creates awareness through contrast — what you want vs. what you must accommodate.' :
-              topAspect.type === 'Square' ? 'This friction generates action — uncomfortable pressure that demands you make changes rather than coast.' :
-              topAspect.type === 'Trine' ? 'This natural flow between compatible energies creates ease and talent — things in this area come naturally this year.' :
-              topAspect.type === 'Sextile' ? 'This opportunity aspect rewards initiative — the door is open but you must walk through it.' :
-              'This aspect adds complexity and nuance to the year\'s themes.'}
+              The strongest connection in this year's chart is between <strong>{topAspect.planet1}</strong> and <strong>{topAspect.planet2}</strong> ({topAspect.type.toLowerCase()}, {topAspect.orb.toFixed(1)}° apart). {topAspect.type === 'Conjunction' ? 'These two forces blend together — when one activates, the other automatically comes along. You can\'t deal with one without dealing with the other.' :
+              topAspect.type === 'Opposition' ? 'These two forces pull in opposite directions, like a tug-of-war. You\'ll feel torn between them at times. The solution isn\'t choosing one — it\'s finding a way to honor both.' :
+              topAspect.type === 'Square' ? 'These two forces create friction — like two people who disagree but force each other to be sharper. It\'s uncomfortable but it\'s what pushes you to actually act instead of staying still.' :
+              topAspect.type === 'Trine' ? 'These two forces work together easily — things related to them come naturally this year. The only risk is taking the ease for granted and not making the most of it.' :
+              topAspect.type === 'Sextile' ? 'These two forces create a quiet opportunity — it won\'t force itself on you, but if you notice it and act, things flow smoothly.' :
+              'These two forces interact in a way that adds nuance and complexity to the year.'}
             </p>
           </div>
         )}

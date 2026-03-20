@@ -291,7 +291,7 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       patterns.push({
         pattern: theme.description,
         description: theme.significance,
-        connection: 'This pattern from your birth chart is being re-activated by your Solar Return. Pay attention — life is highlighting a core lesson.',
+        connection: 'This same pattern exists in your birth chart — meaning it\'s a lifelong theme for you, not just this year. The fact that it shows up again now means this is a year where that part of your life gets extra attention. Notice what\'s familiar.',
         category: 'natal-echo',
       });
     }

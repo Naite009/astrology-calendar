@@ -136,11 +136,21 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
         </p>
       </div>
 
+      {/* Teaching explainer */}
+      <div className="mx-5 mt-4 mb-2 bg-muted/30 border border-border rounded-sm p-3">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1">
+          <HelpCircle size={10} />
+          How This Works
+        </p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that means identity-related events — how you look, how you feel about yourself, new beginnings — will dominate your year. The more planets that cluster in one house, the louder that life area gets.
+        </p>
+      </div>
+
       {/* Two-column cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
         {/* LEFT: Where the Year Lands */}
         <div className="border border-border rounded-lg overflow-hidden">
-          {/* Card header */}
           <div className="bg-muted/40 px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -148,16 +158,14 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where the Year Lands</p>
-                <p className="text-[10px] text-muted-foreground">Natal House Overlay technique</p>
+                <p className="text-[10px] text-muted-foreground">Which life area gets the most traffic</p>
               </div>
             </div>
           </div>
 
-          {/* Card body */}
           <div className="p-4 space-y-3">
             {landsHouse ? (
               <>
-                {/* House highlight box */}
                 <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
                   <p className="text-xl font-serif text-foreground">
                     Natal {ordinal(landsHouse)} House
@@ -165,34 +173,41 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                   <p className="text-xs text-muted-foreground mt-0.5">{HOUSE_MEANINGS[landsHouse]}</p>
                 </div>
 
-                {/* Step-style breakdown to mirror the right card */}
-                <div className="space-y-1.5">
+                {/* Planet list with what each one brings */}
+                <div className="space-y-2">
                   <div className="flex items-center gap-2 text-[11px]">
                     <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Layers size={10} className="text-primary" />
                     </span>
-                    <span className="text-foreground font-medium">{landsCount} SR points</span>
-                    <span className="text-muted-foreground">land in this house</span>
+                    <span className="text-foreground font-medium">{landsCount} birthday-chart points</span>
+                    <span className="text-muted-foreground">land here</span>
                   </div>
                   {landsPlanets.map((label, i) => {
                     const planet = extractPlanetFromLabel(label);
                     const symbol = planet ? PLANET_SYMBOLS[planet] : '';
+                    const brings = planet ? PLANET_BRINGS[planet] : '';
                     return (
-                      <div key={i} className="flex items-center gap-2 text-[11px] pl-7">
-                        {symbol && <span className="text-base leading-none">{symbol}</span>}
-                        <span className="text-muted-foreground">{label}</span>
+                      <div key={i} className="pl-7 space-y-0.5">
+                        <div className="flex items-center gap-2 text-[11px]">
+                          {symbol && <span className="text-base leading-none">{symbol}</span>}
+                          <span className="text-foreground font-medium">{label}</span>
+                        </div>
+                        {brings && (
+                          <p className="text-[10px] text-muted-foreground leading-relaxed pl-6">
+                            → Brings {brings}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Answer */}
                 <div className="pt-2 border-t border-border space-y-1">
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
                     <span className="italic">"What area of life gets the most activity this year?"</span>
                   </p>
                   <p className="text-xs text-foreground leading-relaxed">
-                    Your {ordinal(landsHouse)} house — {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} Solar Return points landing here, this is where life gets loud. Expect events, decisions, and energy to cluster around {HOUSE_MEANINGS[landsHouse]?.split(',')[0]?.toLowerCase()} themes throughout the year.
+                    Your {ordinal(landsHouse)} house — {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} birthday-chart planets landing here, this is the area of life where you'll notice the most action. Concretely, expect more {getConcreteExamples(landsHouse)} than in a typical year.
                   </p>
                 </div>
               </>
@@ -204,7 +219,6 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
 
         {/* RIGHT: Where It Plays Out */}
         <div className="border border-border rounded-lg overflow-hidden">
-          {/* Card header */}
           <div className="bg-muted/40 px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -212,16 +226,14 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where It Plays Out</p>
-                <p className="text-[10px] text-muted-foreground">SR Ascendant Ruler technique</p>
+                <p className="text-[10px] text-muted-foreground">What secretly motivates everything</p>
               </div>
             </div>
           </div>
 
-          {/* Card body */}
           <div className="p-4 space-y-3">
             {playsOut && playsOutHouse ? (
               <>
-                {/* House highlight box — matching left */}
                 <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
                   <p className="text-xl font-serif text-foreground">
                     Natal {ordinal(playsOutHouse)} House
@@ -229,37 +241,51 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                   <p className="text-xs text-muted-foreground mt-0.5">{HOUSE_MEANINGS[playsOutHouse]}</p>
                 </div>
 
-                {/* Step-by-step with consistent icon treatment */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
-                    <span className="text-muted-foreground">SR Ascendant =</span>
-                    <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.srAscSign] || ''}</span>
-                    <span className="text-foreground font-medium">{playsOut.srAscSign}</span>
+                {/* Step-by-step with plain language */}
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5">1</span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">Your birthday chart's rising sign =</span>
+                        <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.srAscSign] || ''}</span>
+                        <span className="text-foreground font-medium">{playsOut.srAscSign}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">This is the "lens" you see the year through</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
-                    <span className="text-muted-foreground">Ruled by</span>
-                    <span className="text-base leading-none">{PLANET_SYMBOLS[playsOut.rulerPlanet] || ''}</span>
-                    <span className="text-foreground font-medium">{playsOut.rulerPlanet}</span>
+                  <div className="flex items-start gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5">2</span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">{playsOut.srAscSign} is ruled by</span>
+                        <span className="text-base leading-none">{PLANET_SYMBOLS[playsOut.rulerPlanet] || ''}</span>
+                        <span className="text-foreground font-medium">{playsOut.rulerPlanet}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Every sign has a "boss" planet — this one steers your year</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
-                    <span className="text-muted-foreground">Natal {playsOut.rulerPlanet} →</span>
-                    {playsOut.rulerNatalSign && <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.rulerNatalSign]}</span>}
-                    <span className="text-foreground font-medium">
-                      {playsOut.rulerNatalSign || '—'}, {ordinal(playsOutHouse)} house
-                    </span>
+                  <div className="flex items-start gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5">3</span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">In your birth chart, {playsOut.rulerPlanet} sits in →</span>
+                        {playsOut.rulerNatalSign && <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.rulerNatalSign]}</span>}
+                        <span className="text-foreground font-medium">
+                          {playsOut.rulerNatalSign || '—'}, {ordinal(playsOutHouse)} house
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">So the year's "engine" drives toward {HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase() || 'this area'}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Answer */}
                 <div className="pt-2 border-t border-border space-y-1">
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    <span className="italic">"Where does the year's engine actually drive you?"</span>
+                    <span className="italic">"What's the hidden motivation behind everything this year?"</span>
                   </p>
                   <p className="text-xs text-foreground leading-relaxed">
-                    The SR Ascendant in {playsOut.srAscSign} is ruled by {playsOut.rulerPlanet}, which sits in your natal {ordinal(playsOutHouse)} house ({HOUSE_MEANINGS[playsOutHouse]?.toLowerCase()}). This means the year's underlying motivation — what quietly steers your choices — routes through {HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase()} concerns, even when surface-level events point elsewhere.
+                    Even when you're busy with other things, you'll keep circling back to {HOUSE_MEANINGS[playsOutHouse]?.toLowerCase() || 'this area'}. That's because your year's "steering wheel" ({playsOut.rulerPlanet}) lives in your birth chart's {ordinal(playsOutHouse)} house. It's the quiet "why" behind your decisions — the thing that actually matters to you underneath the surface.
                   </p>
                 </div>
               </>
@@ -278,7 +304,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
               <ArrowRight size={10} className="text-primary" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">How These Connect</p>
+              <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Putting It Together</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {getSynthesis(landsHouse, playsOutHouse)}
               </p>
@@ -292,8 +318,8 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
         <div className="flex items-start gap-1.5">
           <HelpCircle size={10} className="text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            <strong>"Lands"</strong> counts where SR planets physically fall in your natal houses (volume of activity).{' '}
-            <strong>"Plays Out"</strong> traces the SR Ascendant ruler back to its natal position (underlying motivation). Neither replaces the other — together they tell a complete story.
+            <strong>"Lands"</strong> = where the birthday-chart planets physically fall in your birth chart (which life areas get busy).{' '}
+            <strong>"Plays Out"</strong> = we trace the birthday chart's rising sign to its ruling planet in your birth chart (what secretly motivates you). Both are true at the same time.
           </p>
         </div>
       </div>
