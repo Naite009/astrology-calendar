@@ -451,6 +451,11 @@ export function downloadBirthdayJSONStandalone(
       saturnFocus: analysis.saturnFocus,
       nodesFocus: analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
+      srAscRulerInNatal: analysis.srAscRulerInNatal,
+      srAscInNatalHouse: analysis.srAscInNatalHouse,
+      natalDegreeConduits: analysis.natalDegreeConduits,
+      repeatedThemes: analysis.repeatedThemes,
+      planetSRHouses: analysis.planetSRHouses,
       vertex: analysis.vertex,
       // Tier 4
       mutualReceptions: analysis.mutualReceptions,
