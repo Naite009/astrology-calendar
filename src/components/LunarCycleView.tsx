@@ -693,17 +693,20 @@ Keep the tone deep, insightful, and practically applicable.`
       let diff = Math.abs(newMoonDegree - planetDegree);
       if (diff > 180) diff = 360 - diff;
       
-      // Check for major aspects
-      if (diff < 8) {
-        aspects.push({ planet, aspect: 'Conjunction', orb: diff });
-      } else if (Math.abs(diff - 60) < 6) {
-        aspects.push({ planet, aspect: 'Sextile', orb: Math.abs(diff - 60) });
-      } else if (Math.abs(diff - 90) < 8) {
-        aspects.push({ planet, aspect: 'Square', orb: Math.abs(diff - 90) });
-      } else if (Math.abs(diff - 120) < 8) {
-        aspects.push({ planet, aspect: 'Trine', orb: Math.abs(diff - 120) });
-      } else if (Math.abs(diff - 180) < 8) {
-        aspects.push({ planet, aspect: 'Opposition', orb: Math.abs(diff - 180) });
+      // Check for major aspects using centralized orb system
+      const aspectChecks = [
+        { name: 'Conjunction', angle: 0, key: 'conjunction' },
+        { name: 'Sextile', angle: 60, key: 'sextile' },
+        { name: 'Square', angle: 90, key: 'square' },
+        { name: 'Trine', angle: 120, key: 'trine' },
+        { name: 'Opposition', angle: 180, key: 'opposition' },
+      ];
+      for (const ac of aspectChecks) {
+        const orbVal = Math.abs(diff - ac.angle);
+        if (orbVal <= getEffectiveOrbFn('Moon', planet, ac.key)) {
+          aspects.push({ planet, aspect: ac.name, orb: orbVal });
+          break;
+        }
       }
     });
     
