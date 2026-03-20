@@ -14,6 +14,8 @@ import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
+import { computeYearPriorities } from '@/lib/yearPriorityScoring';
+import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -678,6 +680,73 @@ export function buildFullJsonStandalone(
     lifeDomainScores: calculateLifeDomainScores(analysis),
     contradictions: detectContradictions(analysis, srChart),
     lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+
+    // Year priorities (ranked themes with scores and confidence levels)
+    yearPriorities: computeYearPriorities(analysis, natalChart, srChart),
+
+    // Lunar phase timeline (29-year SR Moon phase cycle)
+    lunarPhaseTimeline: (() => {
+      const sun = natalChart.planets?.Sun;
+      if (!sun) return [];
+      return computeLunarPhaseTimeline(sun.sign, sun.degree, sun.minutes, natalChart.birthDate, srChart.solarReturnYear);
+    })(),
+
+    // Natal house cusps (for rendering wheels)
+    natalHouseCusps: natalChart.houseCusps,
+
+    // SR house cusps
+    srHouseCusps: srChart.houseCusps,
+
+    // Full natal planet data (raw)
+    natalPlanetsRaw: natalChart.planets,
+
+    // Full SR planet data (raw)
+    srPlanetsRaw: srChart.planets,
+
+    // Lookup data for rendering plain-language explanations
+    lookups: {
+      planetBrings: {
+        Sun: 'your main focus and where you put the most effort',
+        Moon: 'your emotional attention and daily mood',
+        Mercury: 'conversations, decisions, and mental energy',
+        Venus: 'pleasure, connection, and what you enjoy',
+        Mars: 'drive, action, and where you push hardest',
+        Jupiter: 'growth, luck, and expansion',
+        Saturn: 'responsibility, pressure, and hard work',
+        Uranus: 'surprises, changes, and restlessness',
+        Neptune: 'dreams, imagination, and possible confusion',
+        Pluto: 'deep change and intensity',
+        Ascendant: 'how you approach the entire year',
+      },
+      houseExamples: {
+        1: 'decisions about your appearance, fitness, personal direction, and "who am I now?" moments',
+        2: 'conversations about money, spending decisions, salary negotiations, and questions about what matters to you',
+        3: 'emails, phone calls, texts, learning something new, trips around town, and interactions with siblings or neighbors',
+        4: 'home renovations, family gatherings, moving decisions, cooking, and emotional processing in private',
+        5: 'dates, creative projects, time with children, hobbies, and moments of pure fun or self-expression',
+        6: 'doctor appointments, new workout routines, work projects, organizing your schedule, and health changes',
+        7: 'relationship conversations, partnership decisions, contracts, and one-on-one dynamics with important people',
+        8: 'bills, shared finances, insurance, therapy sessions, honest conversations about trust, and letting go of old baggage',
+        9: 'travel plans, taking a class, reading books that change your mind, and rethinking what you believe',
+        10: 'job interviews, promotions, public recognition, career pivots, and being seen by a wider audience',
+        11: 'group events, friendships forming or shifting, volunteer work, and thinking about your long-term future',
+        12: 'alone time, dreams, meditation, therapy, hospital visits, and quiet inner processing',
+      },
+      houseMeanings: {
+        1: 'Identity, body, self-definition',
+        2: 'Money, resources, self-worth',
+        3: 'Communication, learning, siblings',
+        4: 'Home, family, roots, private life',
+        5: 'Creativity, romance, children, pleasure',
+        6: 'Work, routines, health, daily systems',
+        7: 'Relationships, partnership, agreements',
+        8: 'Shared resources, intimacy, transformation',
+        9: 'Beliefs, travel, higher learning, meaning',
+        10: 'Career, calling, status, reputation',
+        11: 'Friends, networks, communities, future goals',
+        12: 'Rest, retreat, healing, spirituality',
+      },
+    },
   };
 }
 
