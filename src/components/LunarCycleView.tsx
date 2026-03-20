@@ -299,6 +299,20 @@ const PHASE_HOUSE_INTERP: Record<string, Record<number, string>> = {
     11: "Release a group affiliation or future plan that no longer aligns.",
     12: "Deep release. Something unconscious is completing. Trust the dissolving process.",
   },
+  balsamic: {
+    1: "Your sense of self is composting. Identity questions may feel heavy — let them dissolve rather than solving them.",
+    2: "Financial or value patterns are distilling. What you thought mattered may be quietly shifting beneath the surface.",
+    3: "Old stories and mental patterns are dissolving. Your mind may feel foggy — that's the clearing, not a problem.",
+    4: "Home and emotional foundations are in deep release. Dreams about family or the past may surface. Rest here.",
+    5: "Creative energy is at its lowest ebb. Joy and play need quiet — don't force expression right now.",
+    6: "Health and routines are asking for rest, not optimization. Your body is processing. Listen to fatigue signals.",
+    7: "Relationship patterns are composting. Don't try to fix anything right now — let things settle on their own.",
+    8: "Deep psychic clearing. Old fears, grief, or control patterns are dissolving in the dark. This is sacred work.",
+    9: "Beliefs and meaning-making are in retreat. You may feel lost or directionless — that's the old map dissolving.",
+    10: "Career ambitions are at low tide. Professional identity is resetting in the dark. Don't push for visibility yet.",
+    11: "Social energy is at its lowest. The desire to withdraw from groups or collective demands is valid and wise.",
+    12: "The most natural balsamic placement. You are deep in the unconscious. Dreams, intuition, and spiritual impressions are vivid. Surrender.",
+  },
 };
 
 // Get days in the current lunar cycle
