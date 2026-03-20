@@ -224,16 +224,13 @@ export function calculateActivationWindows(
       h.exactDate >= monthStart && h.exactDate <= monthEnd
     );
 
-    const themes = [...new Set(hits.map(h => {
-      const target = h.srTarget.replace('SR ', '');
-      return `${h.transitPlanet} activates ${target}`;
-    }))];
+    const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
     monthlyThemes.push({
       month: monthNum,
       monthLabel: MONTHS[monthNum],
       year: yearNum,
-      themes,
+      themes: themes.length > 0 ? themes : ['No major transits this month — a quieter period for integration'],
       transitHits: hits,
       intensity: Math.min(10, hits.length * 2 + hits.filter(h => h.significance === 'high').length * 2),
     });
@@ -273,7 +270,7 @@ export function calculateActivationWindows(
         endDate: new Date(Math.max(...ends)),
         peakDate,
         triggers: cluster,
-        theme: `${planets.join(' and ')} activate your ${targets.join(' and ')} themes`,
+        theme: synthesizeWindowTheme(cluster, planets, targets),
         intensity: Math.min(10, cluster.length * 2 + cluster.filter(c => c.significance === 'high').length * 3),
       });
     }
@@ -294,4 +291,55 @@ export function calculateActivationWindows(
 
 function formatShortDate(d: Date): string {
   return `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}`;
+}
+
+// ── Synthesize a real theme description for activation windows ──
+
+const PLANET_THEME_ACTION: Record<string, string> = {
+  Sun: 'brings visibility and clarity to',
+  Mars: 'pushes you to take action on',
+  Jupiter: 'opens doors and expands',
+  Saturn: 'demands accountability and hard work around',
+  Mercury: 'accelerates communication about',
+  Venus: 'brings warmth and connection to',
+};
+
+const TARGET_AREA: Record<string, string> = {
+  Sun: 'your core identity and purpose for the year',
+  Moon: 'your emotional needs and inner security',
+  Ascendant: 'how people see you and your personal presence',
+  MC: 'your career direction and public reputation',
+  Mars: 'your drive, motivation, and how you assert yourself',
+  Venus: 'your relationships, values, and what brings you joy',
+  Jupiter: 'your growth opportunities and where life expands',
+  Saturn: 'your responsibilities and where you face the hardest lessons',
+  Mercury: 'your thinking, conversations, and daily decisions',
+  Neptune: 'your intuition, creativity, and what feels unclear',
+  Pluto: 'the deep changes happening beneath the surface',
+  Uranus: 'where sudden shifts and unexpected events land',
+  Chiron: 'your sensitive spots and where healing is available',
+};
+
+function synthesizeWindowTheme(cluster: TransitHit[], planets: string[], targets: string[]): string {
+  // Use the highest-significance hit's interpretation as basis
+  const highHit = cluster.find(c => c.significance === 'high') || cluster[0];
+
+  if (cluster.length === 1) {
+    return highHit.interpretation;
+  }
+
+  // Multiple hits — synthesize
+  const planetActions = planets.map(p => PLANET_THEME_ACTION[p] || `activates`);
+  const targetAreas = targets.map(t => TARGET_AREA[t] || `your ${t} themes`);
+
+  if (planets.length === 1 && targets.length > 1) {
+    return `${planets[0]} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
+  }
+
+  if (planets.length > 1 && targets.length === 1) {
+    return `Multiple planets (${planets.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
+  }
+
+  // General multi-hit
+  return `${planets.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
 }

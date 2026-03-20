@@ -125,18 +125,18 @@ const getDignity = (planet: string, sign: string): string => {
 
 // ─── Lord of Year house interpretations (Step 2) ────────────────────
 const lordHouseInterps: Record<number, string> = {
-  1: "Your core self and natal ruler are in the same place this year — identity, physical presence, and personal reinvention are the central story. How you show up and how others see you is under renovation. You are the project.",
-  2: "Your natal ruler is focused on money, self-worth, and material security this year. Income, values, and what you own or build are where your fundamental life force is directed. This is a year to stabilize and increase resources.",
-  3: "Your natal ruler is in the house of communication, learning, writing, and local movement. Your mind and your voice are your primary tools this year. Siblings, neighbors, and short travel may play a significant role.",
-  4: "Your natal ruler has gone inward — home, family, roots, and the private self are the year's foundation. Real estate, a parent, or your living situation may be central. This is a year of building from the inside out.",
-  5: "Your natal ruler is in the house of creativity, romance, pleasure, and children. Joy, self-expression, and love affairs become central to how you experience yourself this year. Create, play, and take risks on your heart.",
-  6: "Your natal ruler is focused on work, health, routines, and service. The daily grind becomes meaningful this year — how you show up for work, your physical body, and how you help others defines the year's arc.",
-  7: "Your natal ruler has moved into the house of partnership, contracts, and significant others. Relationships — romantic, business, or legal — are where your energy lives this year. Others reflect you back to yourself.",
-  8: "Your natal ruler is in the house of transformation, shared resources, and the hidden. This is a year of depth, not surface. Finances tied to others, intimacy, psychological excavation, and major change are in play.",
-  9: "Your natal ruler is in the house of expansion, philosophy, higher education, travel, and belief. Your worldview is expanding this year. A long journey — physical or intellectual — is likely the defining experience.",
-  10: "Your natal ruler has risen to the most public point in the chart. Career, reputation, authority, and legacy are the year's primary arena. You are visible and your professional identity is actively being shaped.",
-  11: "Your natal ruler is in the house of community, future visions, and collective purpose. Friendships, groups, networks, and your hopes for the future define this year. What you want to build for tomorrow matters most.",
-  12: "Your natal ruler has withdrawn into the hidden house. This is a year of retreat, spiritual deepening, and processing what is behind the scenes. Rest is not laziness — it is the work. What you release this year matters as much as what you pursue.",
+  1: "Your life direction is pointing straight at you this year. How you look, how you carry yourself, and how you introduce yourself to new people — that's the work. In daily life: updating your style, starting a fitness routine, getting comfortable saying 'this is who I am' without apologizing.",
+  2: "Your life direction is pointing at your wallet and your self-worth this year. How you earn, what you spend on, and how you value your own time are the central questions. In daily life: negotiating a raise, starting a savings plan, or finally dealing with that money situation you've been avoiding.",
+  3: "Your life direction is pointing at how you communicate, learn, and connect locally. Your voice matters more than usual this year. In daily life: writing projects, important conversations, a class or workshop, more time with siblings or neighbors, short trips that turn out to be significant.",
+  4: "Your life direction turns inward — toward home, family, and your emotional foundation. In daily life: moving, renovating, a parent needing attention, making your living space feel right, or dealing with old family patterns that need resolution.",
+  5: "Your life direction points toward joy, creativity, and what makes your heart race. In daily life: a creative project that matters to you, a romance that feels important, more time playing and less time grinding. If you have kids, they're a central part of the story.",
+  6: "Your life direction is focused on daily routines, health, and the quality of your work. In daily life: changing your diet, starting a new exercise routine, reorganizing how you work, or getting serious about a health concern. The small daily choices are the big story.",
+  7: "Your life direction lives in your closest relationships this year. In daily life: a partner (romantic or business) becomes the main character in your story. Negotiations, compromises, and learning how to truly share space with someone else.",
+  8: "Your life direction points to the deep end — shared money, emotional intimacy, and things you don't talk about at dinner. In daily life: dealing with debt, insurance, inheritance, or tax issues. Emotionally, you're going beneath the surface in your closest relationships.",
+  9: "Your life direction points outward and upward — travel, education, and rethinking what you believe. In daily life: a meaningful trip, going back to school, exploring a philosophy or practice that reshapes how you see the world.",
+  10: "Your life direction is the most visible it can be — career, reputation, and what you're building in the world. In daily life: job changes, promotions, public recognition, or taking on a role that defines you for years to come.",
+  11: "Your life direction is aimed at your community, friendships, and future goals. In daily life: joining a group, deepening friendships that matter, letting go of social connections that don't fit anymore, or getting clear about what you actually want for the future.",
+  12: "Your life direction has gone behind the scenes. This isn't a year for loud moves — it's a year for rest, reflection, and processing. In daily life: more time alone, therapy or journaling, dealing with something from the past, or supporting someone without recognition.",
 };
 
 // ─── Profection house themes (used for synthesis with Time Lord) ──────
@@ -1125,6 +1125,24 @@ export const analyzeSolarReturn = (
   const hemisphericEmphasis: SRHemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
 
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
+  function getSaturnSignStyle(sign: string): string {
+    const styles: Record<string, string> = {
+      Aries: 'frustrated impatience — you want to act fast but Saturn forces you to slow down and plan',
+      Taurus: 'stubborn persistence — the lessons are about money, comfort, and learning that security is earned',
+      Gemini: 'mental pressure — too many things to think about, contracts to review, or communication breakdowns that need patience',
+      Cancer: 'emotional weight — family obligations feel heavier, and you learn to set boundaries with people you love',
+      Leo: 'restricted self-expression — your confidence gets tested, and recognition has to be earned rather than given',
+      Virgo: 'perfectionist pressure — your standards are high and the work is relentless, but the skills you build are permanent',
+      Libra: 'relationship tests — partnerships require real honesty, and anything superficial in your relationships gets exposed',
+      Scorpio: 'confronting what you\'ve been avoiding — power dynamics, financial entanglements, or emotional patterns you can\'t keep ignoring',
+      Sagittarius: 'belief systems challenged — your assumptions about the world get reality-checked, and blind optimism doesn\'t hold up',
+      Capricorn: 'pure hard work — Saturn is at home here, which means the demands are heavy but the rewards are real and lasting',
+      Aquarius: 'social responsibility — group dynamics and future plans require serious commitment, not just good intentions',
+      Pisces: 'spiritual discipline — your intuition is strong but Saturn asks you to ground it in practice, not just feelings',
+    };
+    return styles[sign] || 'structured discipline and patience';
+  }
+
   let saturnFocus: SRSaturnFocus | null = null;
   const saturnPos = srChart.planets.Saturn;
   if (saturnPos) {
@@ -1132,25 +1150,30 @@ export const analyzeSolarReturn = (
     const satSRHouse = satDeg !== null ? findSRHouse(satDeg, srChart) : null;
     const satNatalHouse = satDeg !== null ? findNatalHouse(satDeg, natalChart) : null;
     const saturnHouseInterps: Record<number, string> = {
-      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year.',
-      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable.',
-      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project.',
-      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. Emotional maturity is tested.',
-      5: 'Saturn restricts or matures creative expression and romance. Children may be a source of responsibility. Joy must be earned this year.',
-      6: 'Saturn emphasizes health, work discipline, and daily routines. A year to build better habits and take physical well-being seriously.',
-      7: 'Saturn tests partnerships. Relationships face reality checks — commitment is demanded or unsustainable connections end.',
-      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. Psychological maturity deepens.',
-      9: 'Saturn structures higher learning, travel, or philosophical beliefs. Formal education or publishing may require extra effort.',
-      10: 'Saturn at the career peak — professional responsibilities increase significantly. Authority figures are prominent. Reputation is being forged.',
-      11: 'Saturn asks you to get serious about your social circle and future goals. Friendships may be tested or reduced to the most meaningful.',
-      12: 'Saturn in the hidden house — solitude, spiritual discipline, or institutional involvement. Facing karma and unconscious patterns.',
+      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year. In daily life: you\'ll be more serious about how you present yourself, possibly changing your appearance, taking on a leadership role you didn\'t ask for, or feeling like people expect more from you.',
+      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable. In daily life: budgeting becomes essential, you may take on a second job or reduce spending, and you\'ll think hard about what\'s truly worth your money and time.',
+      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project. In daily life: important documents, contracts, or difficult conversations that can\'t be avoided. You may enroll in a course that requires real effort.',
+      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. In daily life: repairs, a parent needing help, feeling the weight of family expectations, or making hard decisions about where you live.',
+      5: 'Saturn restricts or matures creative expression and romance. In daily life: creative projects require discipline rather than inspiration. Dating feels serious or dry. If you have children, their needs demand more structure from you this year.',
+      6: 'Saturn emphasizes health, work discipline, and daily routines. In daily life: you\'ll need to commit to better habits — doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
+      7: 'Saturn tests partnerships — commitment is demanded or unsustainable connections end. In daily life: hard conversations with a partner about what\'s working and what isn\'t. Couples may formalize (marriage, moving in) or separate. Business partnerships face similar reality checks. You learn exactly where the boundaries are.',
+      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. In daily life: insurance claims, debt restructuring, estate matters, or a period where you confront something you\'ve been avoiding about power dynamics in close relationships.',
+      9: 'Saturn structures higher learning, travel, or philosophical beliefs. In daily life: a degree program that demands real work, travel that\'s more obligation than vacation, or a period where your beliefs are tested by reality.',
+      10: 'Saturn at the career peak — professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or a promotion that comes with real pressure. What you build professionally this year has staying power.',
+      11: 'Saturn asks you to get serious about your social circle and future goals. In daily life: you may drift away from friends who don\'t share your values, join a structured group or board, or realize some friendships require actual work to maintain.',
+      12: 'Saturn in the hidden house — facing old patterns, needing more alone time, or dealing with institutions (hospitals, courts, large organizations). In daily life: therapy, meditation practice, a need to withdraw and process, or caring for someone behind the scenes.',
     };
+    const isRetro = !!(saturnPos as any).isRetrograde;
+    const retroNote = isRetro
+      ? ` Saturn is retrograde in your Solar Return, which turns its lessons inward — instead of external pressure, the hard work is psychological. You\'re re-examining old commitments, past responsibilities, and whether the structures you built still hold. Progress feels slow because the work is internal, but what you resolve now prevents repeating the same patterns.`
+      : '';
+    const signNote = saturnPos.sign ? ` In ${saturnPos.sign}, Saturn expresses its demands through ${getSaturnSignStyle(saturnPos.sign)}.` : '';
     saturnFocus = {
       sign: saturnPos.sign,
       house: satSRHouse,
       natalHouse: satNatalHouse,
-      isRetrograde: !!(saturnPos as any).isRetrograde,
-      interpretation: satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.',
+      isRetrograde: isRetro,
+      interpretation: (satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.') + signNote + retroNote,
     };
   }
 
