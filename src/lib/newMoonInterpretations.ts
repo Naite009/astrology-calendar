@@ -205,6 +205,7 @@ export interface NewMoonInterpretation {
   
   // The story/interpretation
   mainTheme: string;
+  conjunctionPairSyntheses: string[];
   whatToSet: string;
   howToWork: string;
   soulLevel: string;
