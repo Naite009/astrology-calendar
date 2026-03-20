@@ -154,9 +154,10 @@ export function computeYearPriorities(
 
   // ──── Natal house overlays (SR planets landing in natal houses) ────
   for (const ov of analysis.houseOverlays || []) {
-    if (ov.natalHouse) {
-      const cat = HOUSE_TO_CATEGORY[ov.natalHouse];
-      if (cat) add(cat, 8, `SR ${ov.planet} falls in your natal ${ov.natalHouse}${ordSuffix(ov.natalHouse)} house`);
+    const overlayH = (ov as any).srInNatalHouse ?? ov.natalHouse;
+    if (overlayH) {
+      const cat = HOUSE_TO_CATEGORY[overlayH];
+      if (cat) add(cat, 8, `SR ${ov.planet} falls in your natal ${overlayH}${ordSuffix(overlayH)} house`);
     }
   }
 
