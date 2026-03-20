@@ -89,19 +89,19 @@ export function generateIdentityShift(
       label: 'Purpose Direction',
       placement: `${srSunSign}${srSunHouse ? ` in the ${ordinal(srSunHouse)} House` : ''}`,
       keyword: sunArch.keyword,
-      description: `Your vital energy this year is channeled through ${sunArch.mode}${srSunHouse ? ` in the arena of ${HOUSE_ARENA[srSunHouse] || 'life'}` : ''}. You are learning to embody ${sunArch.becoming}.`,
+      description: `Your main job this year: ${sunArch.plain}${srSunHouse ? `, especially in the area of ${HOUSE_ARENA[srSunHouse] || 'life'}` : ''}. In daily life this looks like: ${sunArch.dailyLooksLike}`,
     },
     {
       label: 'Outer Presentation',
       placement: `${srAscSign} Rising`,
       keyword: ascArch.keyword,
-      description: `The world meets you this year as ${ascArch.becoming}. Your instinctive approach to new situations is colored by ${ascArch.mode} — this is the mask that becomes the face.`,
+      description: `People will experience you this year as someone who is ${ascArch.plain}. In daily life this looks like: ${ascArch.dailyLooksLike}`,
     },
     {
       label: 'Soul Growth Edge',
       placement: `North Node in ${nodeSign}${nodeHouse ? `, ${ordinal(nodeHouse)} House` : ''}`,
       keyword: nodeArch.keyword,
-      description: `Your evolutionary direction pulls you toward ${nodeArch.keyword} and ${nodeArch.mode}${nodeHouse ? ` through ${HOUSE_ARENA[nodeHouse] || 'this life area'}` : ''}. This is unfamiliar territory — and exactly where growth lives.`,
+      description: `The uncomfortable-but-necessary stretch: ${nodeArch.plain}${nodeHouse ? `, specifically through ${HOUSE_ARENA[nodeHouse] || 'this life area'}` : ''}. This won't feel natural — that's the point. In daily life this looks like: ${nodeArch.dailyLooksLike}`,
     },
   ];
 
