@@ -505,7 +505,7 @@ export const LunarWorkbookSection = ({
               <div className="flex items-center gap-2">
                 <Moon className="h-4 w-4 text-primary" />
                 <h4 className="font-medium text-sm">
-                  {ordinal(houseNum)} House Reflection
+                  {houseNum}{houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} House Reflection
                 </h4>
                 <Badge variant="outline" className="ml-auto text-xs">{topics}</Badge>
               </div>
