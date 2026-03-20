@@ -404,10 +404,11 @@ function calculateAngle(pos1: NatalPlanetPosition, pos2: NatalPlanetPosition): n
 /**
  * Determine aspect type from angle
  */
-function getAspectType(angle: number): { type: string; orb: number } | null {
+function getAspectType(angle: number, planet1?: string, planet2?: string): { type: string; orb: number } | null {
   for (const [type, def] of Object.entries(ASPECT_DEFINITIONS)) {
     const orb = Math.abs(angle - def.angle);
-    if (orb <= def.orb) {
+    const effectiveOrb = (planet1 && planet2) ? getEffectiveOrb(planet1, planet2, type) : def.orb;
+    if (orb <= effectiveOrb) {
       return { type, orb };
     }
   }
