@@ -286,7 +286,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             open={showAiReading}
             onClose={() => setShowAiReading(false)}
             personName={selectedNatal.name || 'Chart'}
-            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal)}
+            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings)}
             onReadingsUpdate={(r) => setAiReadings(r)}
           />
 
