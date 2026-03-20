@@ -58,6 +58,36 @@ interface LunarWorkbookSectionProps {
   activationData?: SRActivationData | null;
 }
 
+const HOUSE_PROMPTS: Record<number, string[]> = {
+  1: ["How am I caring for my body and life force?", "How am I showing up in a new way?"],
+  2: ["What am I valuing differently?", "What is happening around money, self-worth, or security?"],
+  3: ["What conversations, errands, short trips, or messages are surfacing?", "How is my mind working right now?"],
+  4: ["What is shifting in home, roots, or emotional foundation?", "What kind of inner safety do I need?"],
+  5: ["What wants expression, play, creativity, or joy?", "What needs more softness and imagination?"],
+  6: ["What is happening in daily routine, work, or health?", "What needs healing, simplification, or nervous system support?"],
+  7: ["What am I learning through relationships and mirroring?", "What feels important in one-to-one connection?"],
+  8: ["What is asking for surrender, intimacy, trust, or emotional honesty?", "Where am I in a process of deeper transformation?"],
+  9: ["What belief, teaching, or perspective is shifting?", "What larger meaning is emerging?"],
+  10: ["What public role, calling, or responsibility is changing?", "What needs to be done differently?"],
+  11: ["What is moving through friendships, groups, or future goals?", "What collective dream feels alive?"],
+  12: ["What needs retreat, quiet, dream time, and spiritual care?", "What is ending, dissolving, or asking for compassionate witnessing?"],
+};
+
+const HOUSE_TOPICS: Record<number, string> = {
+  1: "identity · body · self-presentation · personal beginnings",
+  2: "money · values · security · possessions",
+  3: "communication · writing · siblings · short trips · learning",
+  4: "home · family · roots · private life",
+  5: "creativity · romance · joy · children · play",
+  6: "work · health · routines · service",
+  7: "relationships · clients · agreements · mirroring",
+  8: "shared resources · fear · intimacy · psychology",
+  9: "beliefs · teaching · publishing · travel · meaning",
+  10: "career · visibility · reputation · calling",
+  11: "friends · groups · future goals · audience",
+  12: "rest · retreat · dreams · grief · solitude · spiritual clearing",
+};
+
 const PHASE_CONFIG = {
   newMoon: {
     emoji: "🌑",
@@ -464,6 +494,32 @@ export const LunarWorkbookSection = ({
         <p className="text-sm text-foreground/80 italic border-l-2 border-primary/30 pl-3 mb-4">
           {config.description}
         </p>
+
+        {(() => {
+          const houseNum = natalContext?.newMoonHouse ? parseInt(natalContext.newMoonHouse, 10) : null;
+          const prompts = houseNum ? HOUSE_PROMPTS[houseNum] : null;
+          const topics = houseNum ? HOUSE_TOPICS[houseNum] : null;
+          if (!houseNum || !prompts) return null;
+          return (
+            <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Moon className="h-4 w-4 text-primary" />
+                <h4 className="font-medium text-sm">
+                  {houseNum}{houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} House Reflection
+                </h4>
+                <Badge variant="outline" className="ml-auto text-xs">{topics}</Badge>
+              </div>
+              <ul className="space-y-2">
+                {prompts.map((p, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                    <span className="text-primary mt-0.5">›</span>
+                    <span className="italic">{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
         {renderPhaseFields(phase)}
       </div>
