@@ -57,7 +57,7 @@ const HOUSE_ARENA: Record<number, string> = {
 };
 
 function getSignArch(sign: string) {
-  return SIGN_ARCHETYPE[sign] || { becoming: 'an evolving self', keyword: 'growth', mode: 'transforming', plain: 'growing into a new version of yourself', dailyLooksLike: 'Paying attention to what feels different. Trying new approaches. Being honest about what no longer fits.' };
+  return SIGN_ARCHETYPE[sign] || { becoming: 'an evolving self', keyword: 'growth', mode: 'transforming', headline_verb: 'transforms', plain: 'growing into a new version of yourself', dailyLooksLike: 'Paying attention to what feels different. Trying new approaches. Being honest about what no longer fits.' };
 }
 
 export function generateIdentityShift(
