@@ -867,7 +867,7 @@ Keep the tone deep, insightful, and practically applicable.`
         </Collapsible>
       )}
 
-      {/* Lunation Cycle Dates */}
+      {/* Lunation Cycle Dates — with cycle navigation, exact times, house + aspects */}
       {keyPhases && (
         <Collapsible open={sectionsOpen.cycleDates} onOpenChange={() => toggleSection('cycleDates')}>
           <Card className="bg-background border">
@@ -884,100 +884,136 @@ Keep the tone deep, insightful, and practically applicable.`
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent>
-                <div className="space-y-3">
-                  {/* New Moon */}
-                  <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                    <span className="text-2xl">🌑</span>
-                    <div className="flex-1">
-                      <p className="font-medium">New Moon</p>
-                      <p className="text-sm text-muted-foreground">
-                        {newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                    <Badge>{interpretation.degree}° {interpretation.sign}</Badge>
-                  </div>
-                  
-                  {/* First Quarter */}
-                  {keyPhases.firstQuarter && (
-                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <span className="text-2xl">🌓</span>
-                      <div className="flex-1">
-                        <p className="font-medium">First Quarter Moon</p>
-                        <p className="text-sm text-muted-foreground">
-                          {keyPhases.firstQuarter.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">{keyPhases.firstQuarter.sign}</Badge>
-                    </div>
+                {/* Cycle Navigation */}
+                <div className="flex items-center justify-between mb-4 p-2 bg-muted/30 rounded-lg">
+                  <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o - 1)} className="text-xs">
+                    ← Previous Cycle
+                  </Button>
+                  {cycleOffset !== 0 && (
+                    <Button variant="outline" size="sm" onClick={() => setCycleOffset(0)} className="text-xs">
+                      Current Cycle
+                    </Button>
                   )}
-                  
-                  {/* Full Moon */}
-                  {keyPhases.fullMoon && (
-                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <span className="text-2xl">🌕</span>
-                      <div className="flex-1">
-                        <p className="font-medium">Full Moon</p>
-                        <p className="text-sm text-muted-foreground">
-                          {keyPhases.fullMoon.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">{keyPhases.fullMoon.sign}</Badge>
-                    </div>
-                  )}
-                  
-                  {/* Last Quarter */}
-                  {keyPhases.lastQuarter && (
-                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <span className="text-2xl">🌗</span>
-                      <div className="flex-1">
-                        <p className="font-medium">Last Quarter Moon</p>
-                        <p className="text-sm text-muted-foreground">
-                          {keyPhases.lastQuarter.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">{keyPhases.lastQuarter.sign}</Badge>
-                    </div>
-                  )}
-                  
-                  {/* Balsamic Moon */}
-                  {newMoons?.next && (
-                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
-                      <span className="text-2xl">🌘</span>
-                      <div className="flex-1">
-                        <p className="font-medium">Balsamic ☽</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(() => {
-                            // Balsamic phase is approximately 3-4 days before the new moon
-                            const balsamicStart = new Date(newMoons.next.date);
-                            balsamicStart.setDate(balsamicStart.getDate() - 4);
-                            const balsamicEnd = new Date(newMoons.next.date);
-                            balsamicEnd.setDate(balsamicEnd.getDate() - 1);
-                            return `${balsamicStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} – ${balsamicEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                          })()}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">Rest & Release</Badge>
-                    </div>
-                  )}
-                  
-                  {/* Next New Moon */}
-                  {newMoons?.next && (
-                    <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                      <span className="text-2xl">🌑</span>
-                      <div className="flex-1">
-                        <p className="font-medium">Next New Moon</p>
-                        <p className="text-sm text-muted-foreground">
-                          {newMoons.next.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <Badge variant="outline">{ZODIAC_SIGNS[Math.floor(((newMoons.next.longitude % 360) + 360) % 360 / 30)]}</Badge>
-                    </div>
-                  )}
+                  <Button variant="ghost" size="sm" onClick={() => setCycleOffset(o => o + 1)} className="text-xs">
+                    Next Cycle →
+                  </Button>
                 </div>
-                
-                <p className="text-xs text-muted-foreground mt-4">
-                  Look to see which house contains {interpretation.degree}° {interpretation.sign} in your chart. This house shows where these themes surface for you.
-                </p>
+
+                {(() => {
+                  const formatDateTime = (d: Date) => {
+                    const date = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+                    return { date, time };
+                  };
+                  
+                  const newMoonLon = ((newMoons?.previous.longitude || 0) % 360 + 360) % 360;
+                  const newMoonHouse = activeChart ? calculateNatalHouse(newMoonLon, activeChart.houseCusps) : null;
+                  
+                  // Build phase entries with house + aspects
+                  const phaseEntries: Array<{
+                    emoji: string; label: string; date: Date; sign: string; degree: number;
+                    longitude: number; phaseKey: string; isRange?: boolean; rangeEnd?: Date;
+                  }> = [
+                    { emoji: '🌑', label: 'New Moon', date: newMoons!.previous.date, sign: interpretation.sign, degree: interpretation.degree, longitude: newMoonLon, phaseKey: 'newMoon' },
+                  ];
+                  if (keyPhases.firstQuarter) phaseEntries.push({ emoji: '🌓', label: 'First Quarter', date: keyPhases.firstQuarter.date, sign: keyPhases.firstQuarter.sign, degree: keyPhases.firstQuarter.degree, longitude: keyPhases.firstQuarter.longitude, phaseKey: 'firstQuarter' });
+                  if (keyPhases.fullMoon) phaseEntries.push({ emoji: '🌕', label: 'Full Moon', date: keyPhases.fullMoon.date, sign: keyPhases.fullMoon.sign, degree: keyPhases.fullMoon.degree, longitude: keyPhases.fullMoon.longitude, phaseKey: 'fullMoon' });
+                  if (keyPhases.lastQuarter) phaseEntries.push({ emoji: '🌗', label: 'Last Quarter', date: keyPhases.lastQuarter.date, sign: keyPhases.lastQuarter.sign, degree: keyPhases.lastQuarter.degree, longitude: keyPhases.lastQuarter.longitude, phaseKey: 'lastQuarter' });
+                  // Balsamic
+                  if (newMoons?.next) {
+                    const balStart = new Date(newMoons.next.date); balStart.setDate(balStart.getDate() - 4);
+                    const balEnd = new Date(newMoons.next.date); balEnd.setDate(balEnd.getDate() - 1);
+                    phaseEntries.push({ emoji: '🌘', label: 'Balsamic Moon', date: balStart, sign: '', degree: 0, longitude: 0, phaseKey: 'balsamic', isRange: true, rangeEnd: balEnd });
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      {phaseEntries.map((pe, idx) => {
+                        const dt = formatDateTime(pe.date);
+                        const house = pe.longitude && activeChart ? calculateNatalHouse(pe.longitude, activeChart.houseCusps) : null;
+                        const natalAsp = pe.longitude && activeChart ? findPhaseNatalAspects(pe.longitude, activeChart) : [];
+                        const transitAsp = activeChart ? findTransitAspectsAtDate(pe.date, activeChart) : [];
+                        const houseInterp = house && PHASE_HOUSE_INTERP[pe.phaseKey]?.[house] ? PHASE_HOUSE_INTERP[pe.phaseKey][house] : null;
+
+                        return (
+                          <div key={idx} className="p-4 bg-secondary/20 rounded-xl border border-border/40 space-y-2.5">
+                            <div className="flex items-start gap-3">
+                              <span className="text-2xl mt-0.5">{pe.emoji}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                  <p className="font-medium text-foreground">{pe.label}</p>
+                                  {pe.sign && <Badge variant="outline" className="text-xs">{pe.degree}° {ZODIAC_SYMBOLS[pe.sign]} {pe.sign}</Badge>}
+                                  {pe.isRange && <Badge variant="secondary" className="text-xs">Rest & Release</Badge>}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-0.5">{dt.date}</p>
+                                {!pe.isRange && <p className="text-xs text-primary font-medium">{dt.time}</p>}
+                                {pe.isRange && pe.rangeEnd && (
+                                  <p className="text-xs text-muted-foreground">through {pe.rangeEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* House placement + interpretation */}
+                            {house && (
+                              <div className="ml-9 p-3 bg-background/60 rounded-lg border border-border/30 space-y-1.5">
+                                <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                                  <Moon className="h-3 w-3" /> {ordinalLCV(house)} House — {HOUSE_TOPICS_LCV[house]}
+                                </p>
+                                {houseInterp && (
+                                  <p className="text-xs text-foreground/75 leading-relaxed">{houseInterp}</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Natal aspects */}
+                            {natalAsp.length > 0 && (
+                              <div className="ml-9 space-y-1">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Natal Aspects</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {natalAsp.map((a, ai) => (
+                                    <Badge key={ai} variant={a.aspect === 'Conjunction' || a.aspect === 'Trine' || a.aspect === 'Sextile' ? 'default' : 'secondary'} className="text-[10px]">
+                                      {a.symbol} {a.aspect} natal {a.planet} ({a.orb.toFixed(1)}°)
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Active outer planet transits */}
+                            {transitAsp.length > 0 && (
+                              <div className="ml-9 space-y-1">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Active Transits</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {transitAsp.slice(0, 5).map((t, ti) => (
+                                    <Badge key={ti} variant="outline" className="text-[10px] border-primary/30">
+                                      {t.symbol} ♅♆♇♄♃.includes(t.transit[0]) ? '' : ''}{t.transit} {t.aspect} natal {t.natal} ({t.orb.toFixed(1)}°)
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Next New Moon teaser */}
+                      {newMoons?.next && (
+                        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors"
+                          onClick={() => setCycleOffset(o => o + 1)}>
+                          <span className="text-xl">🌑</span>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">Next New Moon →</p>
+                            <p className="text-xs text-muted-foreground">
+                              {newMoons.next.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at{' '}
+                              {newMoons.next.date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}
+                            </p>
+                          </div>
+                          <Badge variant="outline">{ZODIAC_SYMBOLS[ZODIAC_SIGNS[Math.floor(((newMoons.next.longitude % 360) + 360) % 360 / 30)]]} {ZODIAC_SIGNS[Math.floor(((newMoons.next.longitude % 360) + 360) % 360 / 30)]}</Badge>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </CollapsibleContent>
           </Card>
