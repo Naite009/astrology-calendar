@@ -523,6 +523,9 @@ export function downloadBirthdayJSONStandalone(
       lifeDomainScores: calculateLifeDomainScores(analysis),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+      // AI-generated readings (both modes, if available)
+      aiReadingPlain: aiReadings?.plain || null,
+      aiReadingAstro: aiReadings?.astro || null,
     }
   };
 
