@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SRActivationData } from "@/lib/solarReturnActivationWindows";
 import { MetricTracker } from "./moonCycle/MetricTracker";
 import { ThemeFinderCard } from "./moonCycle/ThemeFinderCard";
@@ -118,6 +118,30 @@ export const LunarWorkbookSection = ({
   const houseNum = natalContext?.newMoonHouse ? parseInt(natalContext.newMoonHouse, 10) : null;
   const signPractice = getSignPractice(cycleSign);
   const sameSignJournals = pastJournals.filter(pj => pj.cycle_sign === cycleSign);
+
+  // ── Seed example data for first-time Pisces cycle ──
+  const [seeded, setSeeded] = useState(false);
+  useEffect(() => {
+    if (seeded || !journal || journal.id || journal.what_is_surfacing) return;
+    if (cycleSign !== 'Pisces') return;
+
+    const seedData: Partial<LunarJournalEntry> = {
+      what_is_surfacing: "Uneasy, heightened anxiety, focused on breathing. Slightly improved after doctor reassurance. Body feels tense — restricted breathing, stomach angst, right-side back tension. But warmer weather improved mood and coding feels inspiring. Increased dream recall.",
+      intention_status: 'forming',
+      new_moon_feelings: "Inspiration — wanting to build something meaningful, move my body more, start heavy lifting, eat healthier. Kids' sports and mental toughness feels important. But I'm not ready to commit to a clear direction yet.",
+      balsamic_dreams: "1. Someone telling Lauren Ward she is very wealthy and her calmly agreeing.\n2. Forgetting to take care of a dog and not knowing how to feed another dog.",
+      balsamic_morning_thoughts: "Breathing feels restricted first thing. Mind goes to body worries but also to what I want to build. The anxiety eases once I start moving or working on the app.",
+      balsamic_fatigue: 6,
+      balsamic_withdrawal: 4,
+      real_life_body_signals: "Restricted breathing, stomach angst, right-side back tension",
+      real_life_what_happened: "Doctor visit brought reassurance. Warmer weather shifted mood. Started getting inspired by coding and building this app.",
+      real_life_emotional_reactions: "Anxiety heightened around body sensations, but eased after reassurance. Frustration around wanting to be tougher but also wanting to be gentler.",
+      surprise_event: "Dream recall increased significantly. Warmer weather brought unexpected emotional relief.",
+    };
+
+    saveJournal(seedData);
+    setSeeded(true);
+  }, [journal, seeded, cycleSign, saveJournal]);
 
   const currentPhase = useMemo((): PhaseKey => {
     const now = new Date();
@@ -297,6 +321,7 @@ export const LunarWorkbookSection = ({
         chartName={chartName}
         natalHouse={natalContext?.newMoonHouse}
         saveJournal={saveJournal}
+        seedPisces={cycleSign === 'Pisces' && !journal?.id}
       />
 
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
