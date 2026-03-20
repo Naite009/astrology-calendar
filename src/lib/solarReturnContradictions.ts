@@ -71,6 +71,7 @@ export function detectContradictions(
         title,
         tension: `You may feel pulled between ${HOUSE_THEME[h1]} and ${HOUSE_THEME[h2]} because ${p1.planet} occupies your ${ordinal(h1)} House while ${p2.planet} sits in the ${ordinal(h2)} House. ${tensionBase} are both activated simultaneously.`,
         synthesis: buildAxisSynthesis(p1, p2, h1, h2),
+        resolution: `Try sequencing instead of choosing. Dedicate mornings to ${HOUSE_THEME[h1]} activities (${p1.planet} in the ${ordinal(h1)} House), then bring what you learn about yourself into ${HOUSE_THEME[h2]} in the evenings. Give each side specific, scheduled time rather than letting them compete all day.`,
         placement1: `${p1.planet} in ${ordinal(h1)} House (${p1.sign})`,
         placement2: `${p2.planet} in ${ordinal(h2)} House (${p2.sign})`,
         category: 'house-axis',
