@@ -584,22 +584,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up in my life?"
-              placeholder="What feedback are you receiving? What obstacles are you facing?"
+              label="What action am I taking?"
+              placeholder="What is moving? What effort or decision is shaping this cycle?"
               value={journal?.first_quarter_showing_up}
               onChange={(v) => updateField('first_quarter_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-amber-500" />}
             />
             <JournalField
-              label="Obstacles & Challenges"
-              placeholder="What's pushing back? What resistance are you feeling?"
+              label="What tension or challenge is present?"
+              placeholder="Where do I need courage or adjustment? What's pushing back?"
               value={journal?.first_quarter_obstacles}
               onChange={(v) => updateField('first_quarter_obstacles', v)}
               icon={<Target className="h-4 w-4 text-red-500" />}
             />
             <JournalField
-              label="Adjustments I'm Making"
-              placeholder="How are you adapting? What decisions are you making?"
+              label="What action actually moved the story?"
+              placeholder="What decision did I make? How am I adapting?"
               value={journal?.first_quarter_adjustments}
               onChange={(v) => updateField('first_quarter_adjustments', v)}
               icon={<RefreshCw className="h-4 w-4 text-primary" />}
