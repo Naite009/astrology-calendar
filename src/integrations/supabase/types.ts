@@ -219,7 +219,11 @@ export type Database = {
           balsamic_different: string | null
           balsamic_evolved: string | null
           balsamic_reflections: string | null
+          body_sensitivity: number | null
           chart_id: string
+          clarity: number | null
+          communication_quality: number | null
+          conflict_level: number | null
           created_at: string
           cycle_degree: number | null
           cycle_next_stirrings: string | null
@@ -227,6 +231,8 @@ export type Database = {
           cycle_start_date: string
           cycle_wisdom: string | null
           device_id: string
+          dream_intensity: number | null
+          energy: number | null
           first_quarter_adjustments: string | null
           first_quarter_date: string | null
           first_quarter_obstacles: string | null
@@ -235,11 +241,16 @@ export type Database = {
           full_moon_gratitude: string | null
           full_moon_releasing: string | null
           full_moon_showing_up: string | null
+          house_system: string | null
           id: string
+          intuition: number | null
+          journal_text: string | null
           last_quarter_date: string | null
           last_quarter_letting_go: string | null
           last_quarter_patterns: string | null
           last_quarter_showing_up: string | null
+          mood: number | null
+          moon_house: number | null
           new_moon_body_sensations: string | null
           new_moon_date: string | null
           new_moon_feelings: string | null
@@ -250,6 +261,11 @@ export type Database = {
           oracle_card_name: string | null
           oracle_card_notes: string | null
           oracle_deck_name: string | null
+          productivity: number | null
+          sleep_quality: number | null
+          social_ease: number | null
+          stress: number | null
+          tags: string[] | null
           tarot_ai_interpretation: string | null
           tarot_card_name: string | null
           tarot_card_notes: string | null
@@ -262,7 +278,11 @@ export type Database = {
           balsamic_different?: string | null
           balsamic_evolved?: string | null
           balsamic_reflections?: string | null
+          body_sensitivity?: number | null
           chart_id: string
+          clarity?: number | null
+          communication_quality?: number | null
+          conflict_level?: number | null
           created_at?: string
           cycle_degree?: number | null
           cycle_next_stirrings?: string | null
@@ -270,6 +290,8 @@ export type Database = {
           cycle_start_date: string
           cycle_wisdom?: string | null
           device_id: string
+          dream_intensity?: number | null
+          energy?: number | null
           first_quarter_adjustments?: string | null
           first_quarter_date?: string | null
           first_quarter_obstacles?: string | null
@@ -278,11 +300,16 @@ export type Database = {
           full_moon_gratitude?: string | null
           full_moon_releasing?: string | null
           full_moon_showing_up?: string | null
+          house_system?: string | null
           id?: string
+          intuition?: number | null
+          journal_text?: string | null
           last_quarter_date?: string | null
           last_quarter_letting_go?: string | null
           last_quarter_patterns?: string | null
           last_quarter_showing_up?: string | null
+          mood?: number | null
+          moon_house?: number | null
           new_moon_body_sensations?: string | null
           new_moon_date?: string | null
           new_moon_feelings?: string | null
@@ -293,6 +320,11 @@ export type Database = {
           oracle_card_name?: string | null
           oracle_card_notes?: string | null
           oracle_deck_name?: string | null
+          productivity?: number | null
+          sleep_quality?: number | null
+          social_ease?: number | null
+          stress?: number | null
+          tags?: string[] | null
           tarot_ai_interpretation?: string | null
           tarot_card_name?: string | null
           tarot_card_notes?: string | null
@@ -305,7 +337,11 @@ export type Database = {
           balsamic_different?: string | null
           balsamic_evolved?: string | null
           balsamic_reflections?: string | null
+          body_sensitivity?: number | null
           chart_id?: string
+          clarity?: number | null
+          communication_quality?: number | null
+          conflict_level?: number | null
           created_at?: string
           cycle_degree?: number | null
           cycle_next_stirrings?: string | null
@@ -313,6 +349,8 @@ export type Database = {
           cycle_start_date?: string
           cycle_wisdom?: string | null
           device_id?: string
+          dream_intensity?: number | null
+          energy?: number | null
           first_quarter_adjustments?: string | null
           first_quarter_date?: string | null
           first_quarter_obstacles?: string | null
@@ -321,11 +359,16 @@ export type Database = {
           full_moon_gratitude?: string | null
           full_moon_releasing?: string | null
           full_moon_showing_up?: string | null
+          house_system?: string | null
           id?: string
+          intuition?: number | null
+          journal_text?: string | null
           last_quarter_date?: string | null
           last_quarter_letting_go?: string | null
           last_quarter_patterns?: string | null
           last_quarter_showing_up?: string | null
+          mood?: number | null
+          moon_house?: number | null
           new_moon_body_sensations?: string | null
           new_moon_date?: string | null
           new_moon_feelings?: string | null
@@ -336,6 +379,11 @@ export type Database = {
           oracle_card_name?: string | null
           oracle_card_notes?: string | null
           oracle_deck_name?: string | null
+          productivity?: number | null
+          sleep_quality?: number | null
+          social_ease?: number | null
+          stress?: number | null
+          tags?: string[] | null
           tarot_ai_interpretation?: string | null
           tarot_card_name?: string | null
           tarot_card_notes?: string | null
