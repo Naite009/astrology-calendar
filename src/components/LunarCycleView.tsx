@@ -1586,7 +1586,7 @@ Keep the tone deep, insightful, and practically applicable.`
                           What does {aspect.aspectInfo.symbol} {aspect.aspect.toLowerCase()} mean? <span className="font-normal text-muted-foreground">{aspect.aspectInfo.what}</span>
                         </p>
                         <p className="text-sm italic text-foreground/80 bg-background/50 p-2 rounded">
-                          🫀 How you'll feel it: {aspect.aspectInfo.feel}
+                          How you'll feel it: {aspect.feltSense}
                         </p>
                       </div>
                     );
