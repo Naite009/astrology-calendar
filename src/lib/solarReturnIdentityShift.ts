@@ -106,7 +106,8 @@ export function generateIdentityShift(
   ];
 
   // Headline — proper sentence with full title case
-  const titleCase = (s: string) => s.replace(/\b\w/g, c => c.toUpperCase());
+  const titleCase = (s: string) => s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  // ascArch.becoming = e.g. "the healer", headline_verb = e.g. "heals through practice"
   const headline = `${titleCase(ascArch.becoming)} Who ${titleCase(sunArch.headline_verb)}`;
 
   // Main narrative
