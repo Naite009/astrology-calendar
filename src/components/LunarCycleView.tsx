@@ -373,6 +373,7 @@ export const LunarCycleView = ({
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [keyPhases, setKeyPhases] = useState<KeyPhaseDates | null>(null);
   const [localSelectedChart, setLocalSelectedChart] = useState(selectedChartId);
+  const [cycleOffset, setCycleOffset] = useState(0);
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
     expressions: true,
