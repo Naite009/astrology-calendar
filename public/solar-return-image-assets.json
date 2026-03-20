@@ -20,7 +20,8 @@
     "pallas": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/pallas.png",
     "juno": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/juno.png",
     "vesta": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/vesta.png",
-    "lilith": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/lilith.png"
+    "lilith": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/lilith.png",
+    "southnode": "https://ccdjecgztodkgifzjttc.supabase.co/storage/v1/object/public/planet-images/southnode.png"
   },
 
   "cakeImages": {

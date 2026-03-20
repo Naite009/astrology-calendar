@@ -47,11 +47,19 @@ import planetNeptune from '@/assets/planets/neptune.png';
 import planetPluto from '@/assets/planets/pluto.png';
 import planetChiron from '@/assets/planets/chiron.png';
 import planetNorthNode from '@/assets/planets/northnode.png';
+import planetSouthNode from '@/assets/planet-southnode.png';
+import planetCeres from '@/assets/planet-ceres.png';
+import planetPallas from '@/assets/planet-pallas.png';
+import planetJuno from '@/assets/planet-juno.png';
+import planetVesta from '@/assets/planet-vesta.png';
+import planetLilith from '@/assets/planet-lilith.png';
 
 export const PLANET_IMAGES: Record<string, string> = {
   sun: planetSun, moon: planetMoon, mercury: planetMercury, venus: planetVenus,
   mars: planetMars, jupiter: planetJupiter, saturn: planetSaturn, uranus: planetUranus,
   neptune: planetNeptune, pluto: planetPluto, chiron: planetChiron, northnode: planetNorthNode,
+  southnode: planetSouthNode, ceres: planetCeres, pallas: planetPallas,
+  juno: planetJuno, vesta: planetVesta, lilith: planetLilith,
 };
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
@@ -443,6 +451,11 @@ export function downloadBirthdayJSONStandalone(
       saturnFocus: analysis.saturnFocus,
       nodesFocus: analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
+      srAscRulerInNatal: analysis.srAscRulerInNatal,
+      srAscInNatalHouse: analysis.srAscInNatalHouse,
+      natalDegreeConduits: analysis.natalDegreeConduits,
+      repeatedThemes: analysis.repeatedThemes,
+      planetSRHouses: analysis.planetSRHouses,
       vertex: analysis.vertex,
       // Tier 4
       mutualReceptions: analysis.mutualReceptions,
@@ -601,6 +614,11 @@ export function buildFullJsonStandalone(
     nodesFocus: analysis.nodesFocus,
     retrogrades: analysis.retrogrades,
     vertex: analysis.vertex,
+    srAscRulerInNatal: analysis.srAscRulerInNatal,
+    srAscInNatalHouse: analysis.srAscInNatalHouse,
+    natalDegreeConduits: analysis.natalDegreeConduits,
+    repeatedThemes: analysis.repeatedThemes,
+    planetSRHouses: analysis.planetSRHouses,
     mutualReceptions: analysis.mutualReceptions,
     dignityReport: analysis.dignityReport,
     healthOverlay: analysis.healthOverlay,
