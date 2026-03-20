@@ -231,7 +231,7 @@ export function computeOverlayData(analysis: SolarReturnAnalysis) {
   addPt('Sun', 'Sun', analysis.sunNatalHouse?.house ?? null);
   addPt('Moon', 'Moon', analysis.moonNatalHouse?.house ?? null);
   for (const ov of analysis.houseOverlays || []) {
-    addPt(ov.planet, ov.planet, ov.natalHouse);
+    addPt(ov.planet, ov.planet, (ov as any).srInNatalHouse ?? ov.natalHouse);
   }
 
   let dominant: { house: number; count: number; labels: string[] } | null = null;

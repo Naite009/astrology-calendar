@@ -237,9 +237,10 @@ function buildContext(d: any, age: number | null): string {
     ctx += `\n--- HOUSE OVERLAYS (SR planets in natal houses) ---\n`;
     const houseCounts: Record<number, string[]> = {};
     d.houseOverlays.forEach((ov: any) => {
-      if (ov.natalHouse) {
-        if (!houseCounts[ov.natalHouse]) houseCounts[ov.natalHouse] = [];
-        houseCounts[ov.natalHouse].push(ov.planet);
+      const overlayH = ov.srInNatalHouse ?? ov.natalHouse;
+      if (overlayH) {
+        if (!houseCounts[overlayH]) houseCounts[overlayH] = [];
+        houseCounts[overlayH].push(ov.planet);
       }
     });
     Object.entries(houseCounts).sort(([,a], [,b]) => b.length - a.length).forEach(([house, planets]) => {
