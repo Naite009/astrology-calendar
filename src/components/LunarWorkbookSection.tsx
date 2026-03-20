@@ -638,22 +638,22 @@ export const LunarWorkbookSection = ({
         return (
           <>
             <JournalField
-              label="What's showing up in my life?"
-              placeholder="What loose ends need tying? What's finishing?"
+              label="What no longer fits?"
+              placeholder="What is no longer worth carrying forward? What has run its course?"
               value={journal?.last_quarter_showing_up}
               onChange={(v) => updateField('last_quarter_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-purple-500" />}
             />
             <JournalField
-              label="What am I letting go of?"
-              placeholder="What needs to be surrendered? What doesn't serve anymore?"
+              label="What lesson did this cycle teach me?"
+              placeholder="What did I learn about myself, my patterns, or my needs?"
               value={journal?.last_quarter_letting_go}
               onChange={(v) => updateField('last_quarter_letting_go', v)}
               icon={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
             />
             <JournalField
-              label="Patterns I'm Releasing"
-              placeholder="What negative patterns are you breaking?"
+              label="What do I need to edit, forgive, or reframe?"
+              placeholder="What patterns am I releasing? What perspective is shifting?"
               value={journal?.last_quarter_patterns}
               onChange={(v) => updateField('last_quarter_patterns', v)}
               icon={<Zap className="h-4 w-4 text-amber-500" />}
