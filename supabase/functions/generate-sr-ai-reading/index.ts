@@ -269,6 +269,79 @@ serve(async (req) => {
       });
     }
 
+    // === YEAR PRIORITIES (ranked theme scores) ===
+    if (d.yearPriorities?.length > 0) {
+      ctx += `\n--- RANKED YEAR PRIORITIES (strongest themes by data) ---\n`;
+      d.yearPriorities.slice(0, 8).forEach((p: any, i: number) => {
+        ctx += `${i + 1}. ${p.label || p.category}: score ${p.score || ''}, confidence ${p.confidence || ''}\n`;
+        if (p.signals?.length) {
+          p.signals.slice(0, 4).forEach((s: any) => {
+            ctx += `   • ${typeof s === 'string' ? s : s.source || s.label || JSON.stringify(s)}\n`;
+          });
+        }
+      });
+    }
+
+    // === LUNAR PHASE TIMELINE (19-year emotional cycle) ===
+    if (d.lunarPhaseTimeline?.length > 0) {
+      const currentPhase = d.lunarPhaseTimeline.find((e: any) => e.isCurrent);
+      if (currentPhase) {
+        ctx += `\n--- CURRENT POSITION IN 29-YEAR EMOTIONAL CYCLE ---\n`;
+        ctx += `Phase: ${currentPhase.phase} (${currentPhase.cycleStage})\n`;
+        ctx += `Meaning: ${currentPhase.shortMeaning || ''}\n`;
+        ctx += `This person is in the "${currentPhase.cycleStage}" stage of a long emotional cycle — factor this into whether the year favors starting new things, building momentum, harvesting results, or letting go.\n`;
+      }
+    }
+
+    // === HOUSE OVERLAYS (where SR planets land in natal chart) ===
+    if (d.houseOverlays?.length > 0) {
+      ctx += `\n--- WHICH LIFE AREAS GET ACTIVATED ---\n`;
+      const houseCounts: Record<number, string[]> = {};
+      d.houseOverlays.forEach((ov: any) => {
+        if (ov.natalHouse) {
+          if (!houseCounts[ov.natalHouse]) houseCounts[ov.natalHouse] = [];
+          houseCounts[ov.natalHouse].push(ov.planet);
+        }
+      });
+      const sortedHouses = Object.entries(houseCounts).sort(([,a], [,b]) => b.length - a.length);
+      sortedHouses.forEach(([house, planets]) => {
+        const hNum = parseInt(house);
+        const meaning = d.lookups?.houseMeanings?.[hNum] || '';
+        const examples = d.lookups?.houseExamples?.[hNum] || '';
+        ctx += `Life area ${house} (${meaning}): ${planets.length} planets land here (${planets.join(', ')}). In daily life: ${examples}\n`;
+      });
+    }
+
+    // === SR ASC RULER CHAIN (where the year "plays out") ===
+    if (d.srAscRulerInNatal) {
+      const r = d.srAscRulerInNatal;
+      ctx += `\nThe year's hidden motivation routes through natal life area ${r.rulerNatalHouse || '—'} (${d.lookups?.houseMeanings?.[r.rulerNatalHouse] || ''}). The year's "steering wheel" is ${r.rulerPlanet} sitting in natal ${r.rulerNatalSign || ''} in house ${r.rulerNatalHouse || '—'}.\n`;
+    }
+
+    // === PATTERN RECOGNITION from executive summary ===
+    if (d.executiveSummary?.patterns?.length > 0) {
+      ctx += `\n--- PATTERNS FROM THEIR PAST ---\n`;
+      d.executiveSummary.patterns.forEach((p: any) => {
+        ctx += `- ${p.pattern}: ${p.description} Connection: ${p.connection}\n`;
+      });
+    }
+
+    // === ECLIPSE SENSITIVITY ===
+    if (d.eclipseSensitivity?.length > 0) {
+      ctx += `\n--- ECLIPSE ACTIVATIONS (fast-forward moments) ---\n`;
+      d.eclipseSensitivity.forEach((e: any) => {
+        ctx += `- ${e.description || e.type || JSON.stringify(e)}\n`;
+      });
+    }
+
+    // === MUTUAL RECEPTIONS ===
+    if (d.mutualReceptions?.length > 0) {
+      ctx += `\n--- MUTUAL SUPPORT BETWEEN LIFE AREAS ---\n`;
+      d.mutualReceptions.forEach((mr: any) => {
+        ctx += `- ${mr.planet1 || ''} and ${mr.planet2 || ''}: ${mr.description || mr.interpretation || 'these energies support each other'}\n`;
+      });
+    }
+
     const systemPrompt = `You write personalized yearly readings for people. You are NOT an astrologer speaking to a client — you are a wise, practical life advisor who happens to have deep knowledge of cycles and timing.
 
 ${ageInstructions}
