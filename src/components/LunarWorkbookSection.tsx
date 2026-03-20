@@ -533,6 +533,13 @@ export const LunarWorkbookSection = ({
         </Card>
       )}
 
+      {/* ═══ 9 · Patterns + Insights ═══ */}
+      <PatternsInsightsSection
+        pastJournals={pastJournals}
+        currentJournal={journal}
+        cycleSign={cycleSign}
+      />
+
       {/* ═══ 11 · Sign-as-Practice / Learn Your Chart ═══ */}
       {signPractice && (
         <Collapsible>
