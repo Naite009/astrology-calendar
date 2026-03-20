@@ -90,6 +90,7 @@ export function detectContradictions(
         title: `${sunEl} Purpose vs ${moonEl} Emotions`,
         tension: `You may feel pulled between your ${sunEl} Sun's drive for ${elementDrive(sunEl)} and your ${moonEl} Moon's need for ${elementDrive(moonEl)}. Your conscious goals and emotional instincts speak different languages this year.`,
         synthesis: `The resolution lives in alternation rather than choice. Give your ${sunEl} Sun time to lead during active hours and your ${moonEl} Moon space to process in quieter moments. Neither is wrong — they are two instruments playing different parts of the same composition.`,
+        resolution: `In practice: when you feel the ${sunEl} push to act, check in with your body first — is your ${moonEl} Moon overwhelmed? If so, take 10 minutes to sit quietly before deciding. Use ${sunEl} energy for work and outward goals; use ${moonEl} energy for journaling, cooking, or being with people who feel safe.`,
         placement1: `Sun in ${sunPlace.sign}`,
         placement2: `Moon in ${moonPlace.sign}`,
         category: 'element-clash',
