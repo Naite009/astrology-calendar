@@ -173,7 +173,7 @@ function findPhaseNatalAspects(longitude: number, chart: NatalChart) {
     
     for (const ad of aspectDefs) {
       // Moon is the transiting body here; use planet-specific orbs
-      const effectiveOrb = getEffectiveOrb('Moon', planet, ad.key);
+      const effectiveOrb = getEffectiveOrbFn('Moon', planet, ad.key);
       if (Math.abs(diff - ad.angle) <= effectiveOrb) {
         aspects.push({ planet, aspect: ad.name, orb: Math.abs(diff - ad.angle), symbol: ad.symbol });
         break;
