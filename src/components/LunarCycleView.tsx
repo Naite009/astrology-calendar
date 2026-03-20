@@ -50,9 +50,9 @@ interface LunarCycleViewProps {
 
 // Find key phase dates in a lunar cycle
 interface KeyPhaseDates {
-  firstQuarter: { date: Date; sign: string } | null;
-  fullMoon: { date: Date; sign: string } | null;
-  lastQuarter: { date: Date; sign: string } | null;
+  firstQuarter: { date: Date; sign: string; degree: number; longitude: number } | null;
+  fullMoon: { date: Date; sign: string; degree: number; longitude: number } | null;
+  lastQuarter: { date: Date; sign: string; degree: number; longitude: number } | null;
 }
 
 function findKeyPhaseDates(newMoonDate: Date): KeyPhaseDates {
