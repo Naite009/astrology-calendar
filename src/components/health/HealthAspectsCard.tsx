@@ -78,7 +78,7 @@ export const HealthAspectsCard = ({ natalChart }: HealthAspectsCardProps) => {
         const deg2 = getAbsoluteDegree(p2);
         if (deg1 === null || deg2 === null) continue;
 
-        const aspect = detectAspect(deg1, deg2);
+        const aspect = detectAspect(deg1, deg2, planetList[i], planetList[j]);
         if (!aspect) continue;
 
         const pairKey = `${planetList[i]}-${planetList[j]}`;
