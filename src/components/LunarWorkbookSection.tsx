@@ -897,33 +897,91 @@ export const LunarWorkbookSection = ({
 
         {/* Same-Sign Recall */}
         {sameSignJournals.length > 0 && (
-          <div className="p-3 bg-secondary/20 rounded-lg border border-border/50 space-y-2">
-            <h4 className="text-xs font-medium flex items-center gap-2">
-              <History className="h-3 w-3" />
-              Same-Sign Recall — Past {cycleSign} Cycles
-            </h4>
-            {sameSignJournals.slice(0, 3).map((pj) => (
-              <div key={pj.id} className="p-2 bg-background rounded border border-border/30 text-xs space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">
-                    🌑 {new Date(pj.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </span>
-                  <button onClick={() => setSelectedPastJournal(pj)} className="text-primary underline text-[10px]">
-                    View
-                  </button>
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2 pt-4 px-4">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <History className="h-4 w-4 text-primary" />
+                Same-Sign Recall — Past {cycleSign} New Moons
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground italic">
+                What emotional themes keep returning when the New Moon lands in {cycleSign}?
+              </p>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 space-y-3">
+              {sameSignJournals.slice(0, 5).map((pj) => {
+                const hasTheme = pj.what_is_surfacing || pj.new_moon_feelings;
+                const hasIntention = pj.new_moon_intentions;
+                const hasOutcome = pj.full_moon_showing_up || pj.real_life_what_happened || pj.cycle_wisdom;
+                const hasSurprise = pj.surprise_event;
+                return (
+                  <div key={pj.id} className="p-3 bg-background rounded-lg border border-border/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold flex items-center gap-1.5">
+                        🌑 {new Date(pj.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        {pj.moon_house && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                            {pj.moon_house}{pj.moon_house === 1 ? 'st' : pj.moon_house === 2 ? 'nd' : pj.moon_house === 3 ? 'rd' : 'th'} house
+                          </Badge>
+                        )}
+                      </span>
+                      <button onClick={() => setSelectedPastJournal(pj)} className="text-primary text-[10px] hover:underline">
+                        Open →
+                      </button>
+                    </div>
+
+                    {hasTheme && (
+                      <div className="text-xs space-y-0.5">
+                        <span className="text-muted-foreground font-medium">Theme:</span>
+                        <p className="text-foreground/80 italic line-clamp-2">
+                          {pj.what_is_surfacing || pj.new_moon_feelings}
+                        </p>
+                      </div>
+                    )}
+
+                    {hasIntention && (
+                      <div className="text-xs space-y-0.5">
+                        <span className="text-muted-foreground font-medium">Intention:</span>
+                        <p className="text-foreground/80 italic line-clamp-2">"{pj.new_moon_intentions}"</p>
+                      </div>
+                    )}
+
+                    {hasOutcome && (
+                      <div className="text-xs space-y-0.5">
+                        <span className="text-muted-foreground font-medium">What happened:</span>
+                        <p className="text-foreground/80 line-clamp-2">
+                          {pj.full_moon_showing_up || pj.real_life_what_happened || pj.cycle_wisdom}
+                        </p>
+                      </div>
+                    )}
+
+                    {hasSurprise && (
+                      <div className="text-xs space-y-0.5">
+                        <span className="text-muted-foreground font-medium">⚡ Surprise:</span>
+                        <p className="text-foreground/80 line-clamp-1">{pj.surprise_event}</p>
+                      </div>
+                    )}
+
+                    {!hasTheme && !hasIntention && !hasOutcome && (
+                      <p className="text-[10px] text-muted-foreground italic">No journal entries recorded for this cycle.</p>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Pattern summary when 3+ cycles exist */}
+              {sameSignJournals.length >= 3 && (
+                <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-[11px] font-medium text-primary flex items-center gap-1.5 mb-1">
+                    <RefreshCw className="h-3 w-3" />
+                    Pattern across {sameSignJournals.length} {cycleSign} cycles
+                  </p>
+                  <p className="text-[11px] text-foreground/70 italic">
+                    Look across these entries: what emotions, life areas, or surprises keep showing up? That's your {cycleSign} signature.
+                  </p>
                 </div>
-                {pj.new_moon_intentions && (
-                  <p className="text-muted-foreground italic line-clamp-2">"{pj.new_moon_intentions}"</p>
-                )}
-                {pj.what_is_surfacing && (
-                  <p className="text-muted-foreground line-clamp-1">Surfacing: {pj.what_is_surfacing}</p>
-                )}
-              </div>
-            ))}
-            <p className="text-[10px] text-muted-foreground italic">
-              Notice repeating emotional themes across these {cycleSign} cycles.
-            </p>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Mode toggle (only in full mode) */}
