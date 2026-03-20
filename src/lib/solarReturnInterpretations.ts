@@ -81,11 +81,11 @@ export const srSunInHouse: Record<number, { title: string; overview: string; exp
     caution: 'The risk is losing your individuality in group dynamics or spreading yourself too thin across too many social obligations. Not every invitation deserves a yes.',
   },
   12: {
-    title: 'A Year of Rest, Surrender & Spiritual Deepening',
-    overview: 'The Sun in the 12th house is the most internalized placement. This is a year of endings, rest, solitude, and spiritual deepening. The outer world may feel less important — or events may force you inward through illness, loss, or the need for retreat. This is not a failure; it is preparation.',
-    experience: 'You may feel invisible, exhausted, or drawn to solitude. Hidden matters — things you have been ignoring or suppressing — surface for resolution. Dreams are more vivid, intuition is heightened, and spiritual practices feel essential rather than optional. Hospital visits, institutions, or behind-the-scenes work may feature.',
-    focus: 'Surrender to the process. This is a "cocoon year" — you are dissolving old structures so something new can emerge next year when the Sun moves to your 1st house. Rest deeply. Journal. Meditate. Process grief, resentment, or regret. Clean out closets, both physical and emotional. What you release now creates space for the next cycle.',
-    caution: 'The 12th house can bring martyrdom, escapism, or self-undoing through avoidance. Face what surfaces rather than numbing it with substances, overwork, or denial. Ask for help — this is not a year to be stoic alone.',
+    title: 'A Year of Rest, Recharging & Behind-the-Scenes Work',
+    overview: 'This is a quiet year. You need more alone time than usual, and that is completely normal. Think of it as a recharging year — like winter before spring. The spotlight is not on you, and that is actually the point.',
+    experience: 'You might feel tired, need more sleep, or want to cancel plans more often. Old feelings you have been ignoring tend to come up — unresolved stuff with family, regrets, things you have been putting off dealing with. Your gut feelings are sharper than usual. You may spend more time in hospitals, therapy, or doing work that nobody sees.',
+    focus: 'Let yourself rest without guilt. This is a "cocoon year" — you are clearing out the old so next year can start fresh. Journal, clean out closets (literally and emotionally), finish old projects, forgive old grudges. What you let go of now makes room for what comes next.',
+    caution: 'The risk is checking out — numbing with alcohol, Netflix binges, overworking to avoid feelings, or playing the martyr. When hard stuff comes up, face it. Talk to someone. This is not a year to tough it out alone.',
   },
 };
 
