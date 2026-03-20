@@ -21,9 +21,17 @@ const PLANETS_CORE = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','
 const PLANETS_EXTENDED = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
 const ALL_PLANETS = [...PLANETS_CORE, ...PLANETS_EXTENDED] as const;
 
+const SIGN_GLYPH_MAP: Record<string, string> = {
+  '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+  '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+  '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces',
+};
+
+const normalizeSign = (sign: string): string => SIGN_GLYPH_MAP[sign] || sign;
+
 const toAbsDeg = (pos: NatalPlanetPosition | HouseCusp | undefined): number | null => {
   if (!pos) return null;
-  const idx = SIGNS.indexOf(pos.sign);
+  const idx = SIGNS.indexOf(normalizeSign(pos.sign));
   if (idx < 0) return null;
   return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
 };
