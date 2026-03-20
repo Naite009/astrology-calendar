@@ -1255,22 +1255,31 @@ Keep the tone deep, insightful, and practically applicable.`
               </div>
               
               {interpretation.conjunctions.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-sm text-muted-foreground">Conjunct:</span>
-                  {interpretation.conjunctions.map((planet, i) => (
-                    <Badge key={i} variant="secondary">
-                      {planet.symbol} {planet.name}
-                      {planet.isRetrograde && <span className="ml-1 text-amber-500">℞</span>}
-                    </Badge>
-                  ))}
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span className="text-sm font-medium text-foreground">Planets Conjunct This New Moon:</span>
+                    {interpretation.conjunctions.map((planet, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {planet.symbol} {planet.name}
+                        {planet.isRetrograde && <span className="ml-1 text-amber-500">℞</span>}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
               
               {interpretation.hasStellium && (
-                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <p className="text-sm font-medium text-primary">⭐ {interpretation.stelliumPlanets.length}-Planet Stellium in {interpretation.stelliumSign}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Concentrated energy — this cycle carries extra weight in {interpretation.stelliumSign} themes.
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+                  <p className="text-sm font-medium text-primary">
+                    ⭐ {interpretation.stelliumPlanets.length}-Planet Stellium in {interpretation.stelliumSign}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {interpretation.stelliumPlanets.map((p, i) => (
+                      <Badge key={i} variant="outline" className="text-[10px]">{p}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {interpretation.stelliumFeltSense || `${interpretation.stelliumPlanets.length} planets concentrated in ${interpretation.stelliumSign} — this cycle carries extraordinary weight in these themes.`}
                   </p>
                 </div>
               )}
