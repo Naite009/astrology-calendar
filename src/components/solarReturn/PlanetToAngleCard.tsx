@@ -80,7 +80,7 @@ export function PlanetToAngleCard({ natalChart, srChart }: Props) {
         Visible Activations — SR Planets on Natal Angles
       </h3>
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-        SR Planets → Natal ASC / DSC / MC / IC (within {ORB}° orb)
+        SR Planets → Natal ASC / DSC / MC / IC (planet-specific orbs)
       </p>
 
       <div className="space-y-3">
