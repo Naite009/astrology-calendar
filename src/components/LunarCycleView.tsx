@@ -709,39 +709,130 @@ Keep the tone deep, insightful, and practically applicable.`
   };
 
   // Aspect type explanations — what does this geometric relationship DO?
-  const ASPECT_FELT_SENSE: Record<string, { symbol: string; what: string; feel: string }> = {
+  const ASPECT_WHAT: Record<string, { symbol: string; what: string }> = {
     Conjunction: {
       symbol: '☌',
       what: 'Same degree — the New Moon lands directly ON this point, fusing its energy with the lunar seed moment.',
-      feel: 'This is the loudest hit. You\'ll feel this area of life activated immediately, like a spotlight turning on. The themes of this planet are inseparable from your intentions this cycle.'
     },
     Sextile: {
       symbol: '⚹',
       what: '60° apart — a gentle opening, like a door left ajar. Opportunity knocks but you have to walk through it.',
-      feel: 'Subtle but real. You\'ll notice easy openings, helpful conversations, or small synchronicities related to this planet\'s themes. It won\'t hit you over the head — you have to reach for it.'
     },
     Square: {
       symbol: '□',
       what: '90° apart — friction and tension. The New Moon energy pushes against this part of your chart, creating pressure to act.',
-      feel: 'You\'ll feel this as restlessness, irritation, or a sense that something HAS to change. It\'s uncomfortable but productive — the tension is what creates momentum. Don\'t avoid the discomfort; it\'s pointing you toward growth.'
     },
     Trine: {
       symbol: '△',
       what: '120° apart — natural flow and ease. The New Moon energy harmonizes with this part of your chart effortlessly.',
-      feel: 'This feels like support arriving without asking. Talents flow, things click into place, and this planet\'s gifts are available to you. The risk is taking it for granted — consciously use this ease.'
     },
     Opposition: {
       symbol: '☍',
       what: '180° apart — full polarity. The New Moon illuminates what\'s OPPOSITE this point, creating an awareness axis.',
-      feel: 'You\'ll feel pulled between two poles — your needs vs. others\', inner world vs. outer demands. Other people may embody this planet\'s energy FOR you. The lesson is integration, not choosing sides.'
     },
+  };
+
+  // Planet-in-sign somatic keywords — how does this planet express through this sign?
+  const PLANET_SIGN_FEEL: Record<string, Record<string, string>> = {
+    Sun: { Aries: 'assertive identity, physical courage', Taurus: 'steady self-worth, sensory grounding', Gemini: 'curious self-expression, mental agility', Cancer: 'protective instincts, emotional self-definition', Leo: 'radiant confidence, creative self-expression', Virgo: 'purposeful refinement, service-oriented identity', Libra: 'relational identity, aesthetic sensitivity', Scorpio: 'intense self-possession, psychological depth', Sagittarius: 'expansive vision, philosophical identity', Capricorn: 'disciplined ambition, structural authority', Aquarius: 'independent thinking, humanitarian identity', Pisces: 'empathic absorption, spiritual identity' },
+    Moon: { Aries: 'emotional impulsiveness, need for independence', Taurus: 'emotional security through comfort and routine', Gemini: 'emotional processing through talking and thinking', Cancer: 'deep emotional sensitivity, nurturing needs', Leo: 'emotional warmth, need to be seen and appreciated', Virgo: 'emotional order, comfort through being useful', Libra: 'emotional harmony-seeking, need for partnership', Scorpio: 'emotional intensity, need for deep trust', Sagittarius: 'emotional freedom, need for meaning', Capricorn: 'emotional restraint, need for structure', Aquarius: 'emotional detachment, need for space', Pisces: 'emotional porousness, need for spiritual connection' },
+    Mercury: { Aries: 'direct speech, fast thinking', Taurus: 'deliberate thinking, practical communication', Gemini: 'quick wit, verbal dexterity', Cancer: 'intuitive thinking, memory-driven communication', Leo: 'dramatic expression, authoritative speech', Virgo: 'analytical precision, detail-oriented mind', Libra: 'diplomatic communication, balanced thinking', Scorpio: 'penetrating insight, strategic speech', Sagittarius: 'big-picture thinking, philosophical communication', Capricorn: 'structured thinking, careful speech', Aquarius: 'innovative ideas, unconventional thinking', Pisces: 'imaginative thinking, poetic communication' },
+    Venus: { Aries: 'passionate pursuit, bold attraction', Taurus: 'sensual pleasure, material comfort, loyalty', Gemini: 'intellectual attraction, flirtatious communication', Cancer: 'nurturing love, domestic comfort', Leo: 'generous affection, dramatic romance', Virgo: 'devoted service, practical care', Libra: 'harmonious partnership, aesthetic refinement', Scorpio: 'possessive depth, transformative love', Sagittarius: 'adventurous love, freedom in relationship', Capricorn: 'committed love, traditional values', Aquarius: 'unconventional attraction, friendship-based love', Pisces: 'romantic idealism, compassionate love' },
+    Mars: { Aries: 'raw initiative, physical assertion', Taurus: 'slow-burn determination, stubborn endurance', Gemini: 'mental sparring, scattered energy', Cancer: 'protective fighting, indirect anger', Leo: 'proud action, dramatic assertion', Virgo: 'precise effort, critical energy', Libra: 'passive assertion, fighting for fairness', Scorpio: 'strategic intensity, controlled power', Sagittarius: 'bold risk-taking, restless action', Capricorn: 'disciplined effort, ambitious drive', Aquarius: 'rebellious action, unconventional methods', Pisces: 'compassionate action, diffuse energy' },
+    Jupiter: { Aries: 'bold expansion, pioneering faith', Taurus: 'material abundance, sensory generosity', Gemini: 'intellectual growth, diverse exploration', Cancer: 'emotional generosity, family expansion', Leo: 'creative abundance, joyful expansion', Virgo: 'growth through service, practical wisdom', Libra: 'social expansion, relational abundance', Scorpio: 'transformative growth, deep research', Sagittarius: 'philosophical expansion, travel and teaching', Capricorn: 'structured growth, institutional authority', Aquarius: 'humanitarian expansion, innovative growth', Pisces: 'spiritual expansion, boundless compassion' },
+    Saturn: { Aries: 'lessons in patience, disciplined courage', Taurus: 'material discipline, earning through persistence', Gemini: 'focused thinking, communication responsibilities', Cancer: 'emotional boundaries, family obligations', Leo: 'creative discipline, humble authority', Virgo: 'perfectionist standards, health discipline', Libra: 'relationship commitments, fairness obligations', Scorpio: 'power discipline, facing fears', Sagittarius: 'belief testing, structured faith', Capricorn: 'peak ambition, structural mastery', Aquarius: 'social responsibility, systemic reform', Pisces: 'spiritual discipline, surrendering control' },
+    Uranus: { Aries: 'radical independence, identity disruption', Taurus: 'financial revolution, value upheaval', Gemini: 'mental breakthroughs, communication disruption', Cancer: 'family disruption, emotional liberation', Leo: 'creative revolution, ego disruption', Virgo: 'health innovation, routine disruption', Libra: 'relationship revolution, partnership disruption', Scorpio: 'power disruption, psychological breakthrough', Sagittarius: 'belief disruption, philosophical revolution', Capricorn: 'institutional disruption, structural revolution', Aquarius: 'social revolution, collective awakening', Pisces: 'spiritual disruption, collective awakening' },
+    Neptune: { Aries: 'spiritual warrior, identity dissolution', Taurus: 'sensory transcendence, material confusion', Gemini: 'inspired communication, mental fog', Cancer: 'psychic sensitivity, emotional merging', Leo: 'creative inspiration, ego dissolution', Virgo: 'healing service, perfectionism dissolution', Libra: 'romantic idealism, relationship confusion', Scorpio: 'psychic depth, power dissolution', Sagittarius: 'spiritual seeking, belief confusion', Capricorn: 'institutional dissolution, structural confusion', Aquarius: 'collective dreaming, social idealism', Pisces: 'pure transcendence, boundless empathy' },
+    Pluto: { Aries: 'identity transformation, power through courage', Taurus: 'material transformation, value crisis', Gemini: 'mental transformation, communication power', Cancer: 'family transformation, emotional power', Leo: 'creative transformation, ego death and rebirth', Virgo: 'health transformation, service power', Libra: 'relationship transformation, partnership power', Scorpio: 'total transformation, absolute power', Sagittarius: 'belief transformation, philosophical power', Capricorn: 'institutional transformation, structural power', Aquarius: 'social transformation, collective power', Pisces: 'spiritual transformation, transcendent power' },
+    NorthNode: { Aries: 'growing into independence and initiative', Taurus: 'growing into self-worth and stability', Gemini: 'growing into curiosity and communication', Cancer: 'growing into emotional vulnerability', Leo: 'growing into creative self-expression', Virgo: 'growing into practical service', Libra: 'growing into partnership and compromise', Scorpio: 'growing into intimacy and transformation', Sagittarius: 'growing into faith and exploration', Capricorn: 'growing into authority and responsibility', Aquarius: 'growing into community and innovation', Pisces: 'growing into surrender and compassion' },
+    Chiron: { Aries: 'wound around identity and self-assertion', Taurus: 'wound around self-worth and material security', Gemini: 'wound around communication and being heard', Cancer: 'wound around belonging and emotional safety', Leo: 'wound around being seen and creative expression', Virgo: 'wound around adequacy and perfectionism', Libra: 'wound around relationships and fairness', Scorpio: 'wound around trust, power, and vulnerability', Sagittarius: 'wound around meaning and belief', Capricorn: 'wound around achievement and recognition', Aquarius: 'wound around belonging and individuality', Pisces: 'wound around boundaries and spiritual connection' },
+    Ceres: { Aries: 'nurturing through independence and encouragement', Taurus: 'nurturing through physical comfort, food, touch, and sensory care', Gemini: 'nurturing through conversation and mental stimulation', Cancer: 'nurturing through emotional holding and home-making', Leo: 'nurturing through praise, play, and creative encouragement', Virgo: 'nurturing through practical help and health care', Libra: 'nurturing through beauty, harmony, and companionship', Scorpio: 'nurturing through deep emotional presence and crisis support', Sagittarius: 'nurturing through adventure, teaching, and philosophical guidance', Capricorn: 'nurturing through structure, discipline, and providing security', Aquarius: 'nurturing through freedom, acceptance of differences, and community', Pisces: 'nurturing through spiritual care, compassion, and artistic expression' },
+    Vesta: { Aries: 'sacred focus on personal mission and courage', Taurus: 'sacred focus on sustaining beauty and material devotion', Gemini: 'sacred focus on learning and teaching', Cancer: 'sacred focus on home and emotional rituals', Leo: 'sacred focus on creative flame and self-expression', Virgo: 'sacred focus on craft, healing, and daily ritual', Libra: 'sacred focus on relationship tending and justice', Scorpio: 'sacred focus on transformation and emotional alchemy', Sagittarius: 'sacred focus on truth-seeking and spiritual practice', Capricorn: 'sacred focus on career calling and mastery', Aquarius: 'sacred focus on humanitarian service and innovation', Pisces: 'sacred focus on spiritual devotion and compassionate service' },
+    Juno: { Aries: 'partnership need for autonomy and directness', Taurus: 'partnership need for stability and sensual loyalty', Gemini: 'partnership need for intellectual connection', Cancer: 'partnership need for emotional security and family', Leo: 'partnership need for admiration and romance', Virgo: 'partnership need for practical reliability', Libra: 'partnership need for equality and beauty', Scorpio: 'partnership need for deep trust and intensity', Sagittarius: 'partnership need for adventure and growth', Capricorn: 'partnership need for commitment and ambition', Aquarius: 'partnership need for freedom and originality', Pisces: 'partnership need for spiritual connection and empathy' },
+    Pallas: { Aries: 'strategic intelligence through bold action', Taurus: 'pattern recognition through sensory data', Gemini: 'strategic intelligence through information synthesis', Cancer: 'pattern recognition through emotional intelligence', Leo: 'strategic intelligence through creative vision', Virgo: 'pattern recognition through analytical detail', Libra: 'strategic intelligence through social dynamics', Scorpio: 'pattern recognition through psychological depth', Sagittarius: 'strategic intelligence through philosophical frameworks', Capricorn: 'pattern recognition through structural analysis', Aquarius: 'strategic intelligence through systems thinking', Pisces: 'pattern recognition through intuitive knowing' },
+    Lilith: { Aries: 'wild autonomy, rage at being controlled', Taurus: 'sensual power, rage at being devalued', Gemini: 'forbidden knowledge, rage at being silenced', Cancer: 'fierce mothering, rage at emotional manipulation', Leo: 'untamed creativity, rage at being diminished', Virgo: 'body wisdom, rage at being shamed', Libra: 'relational power, rage at injustice', Scorpio: 'raw sexual/psychic power, rage at betrayal', Sagittarius: 'wild freedom, rage at confinement', Capricorn: 'structural power, rage at patriarchal systems', Aquarius: 'revolutionary power, rage at conformity', Pisces: 'mystical power, rage at spiritual abuse' },
+  };
+
+  // Aspect-type verb phrases for building specific sentences
+  const ASPECT_VERB: Record<string, { active: string; passive: string }> = {
+    Conjunction: { active: 'is fused with', passive: 'merges directly into' },
+    Sextile: { active: 'opens a gentle doorway to', passive: 'receives a quiet invitation from' },
+    Square: { active: 'is pressured by', passive: 'creates friction with' },
+    Trine: { active: 'flows naturally into', passive: 'receives effortless support from' },
+    Opposition: { active: 'is pulled into awareness by', passive: 'mirrors against' },
+  };
+
+  // House topic shorthand
+  const HOUSE_LIFE_AREA: Record<number, string> = {
+    1: 'your identity, body, and how you show up',
+    2: 'your money, self-worth, and material security',
+    3: 'your daily communication, siblings, and local environment',
+    4: 'your home, family roots, and emotional foundation',
+    5: 'your creativity, romance, children, and joy',
+    6: 'your daily work, health routines, and service',
+    7: 'your committed partnerships and one-on-one relationships',
+    8: 'your shared resources, intimacy, and psychological depths',
+    9: 'your beliefs, higher education, travel, and meaning-making',
+    10: 'your career, public role, and life direction',
+    11: 'your friendships, community, and future aspirations',
+    12: 'your solitude, dreams, hidden life, and spiritual practice',
+  };
+
+  // Calculate New Moon house in natal chart
+  const getNewMoonHouse = (): number | null => {
+    if (!activeChart?.houseCusps || !interpretation) return null;
+    const nmDeg = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
+    const cusps: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      const cusp = activeChart.houseCusps[`house${i}` as keyof typeof activeChart.houseCusps];
+      if (cusp) {
+        const c = cusp as { sign: string; degree: number; minutes?: number };
+        cusps.push(ZODIAC_SIGNS.indexOf(c.sign) * 30 + c.degree + (c.minutes || 0) / 60);
+      } else return null;
+    }
+    for (let i = 0; i < 12; i++) {
+      const cur = cusps[i];
+      const next = cusps[(i + 1) % 12];
+      if (next < cur) {
+        if (nmDeg >= cur || nmDeg < next) return i + 1;
+      } else {
+        if (nmDeg >= cur && nmDeg < next) return i + 1;
+      }
+    }
+    return 1;
+  };
+
+  const newMoonHouse = getNewMoonHouse();
+
+  // Build a specific, somatic felt-sense sentence for this exact planet+sign+aspect+house combo
+  const buildFeltSense = (planet: string, natalSign: string, aspectType: string): string => {
+    const signFeel = PLANET_SIGN_FEEL[planet]?.[natalSign];
+    const verb = ASPECT_VERB[aspectType];
+    const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
+
+    // Somatic response varies by aspect type
+    const somaticByAspect: Record<string, string> = {
+      Conjunction: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) is directly activated — you'll feel its themes as if someone turned up the volume on this part of your life. It's not background noise this cycle; it IS the cycle.`,
+      Sextile: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'receives a quiet invitation from'} this New Moon. You'll notice subtle openings — a conversation that leads somewhere, a small opportunity that feels easy to say yes to. It won't push you; you have to notice it and reach for it. Think of it as a door slightly ajar in the area of ${houseArea || 'this New Moon\'s themes'}.`,
+      Square: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'creates friction with'} this New Moon. You'll feel this as tension in your body — restlessness, irritation, or a nagging sense that something needs to change around ${houseArea || 'this cycle\'s themes'}. The discomfort is the point. It's pushing you to act on what you've been avoiding.`,
+      Trine: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.active || 'flows naturally into'} this New Moon. You'll feel this as ease — things related to ${houseArea || 'this cycle\'s themes'} click into place without force. Your ${planet} gifts are available to you effortlessly. The only risk is coasting — consciously use this flow.`,
+      Opposition: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'mirrors against'} this New Moon. You may feel pulled between your ${planet} needs and the demands of ${houseArea || 'this cycle\'s themes'}. Other people may embody your ${planet} energy for you — watch what triggers you in others, because it's your own unintegrated ${planet} qualities reflected back.`,
+    };
+
+    let felt = somaticByAspect[aspectType] || `Your natal ${planet} in ${natalSign} is activated by this New Moon.`;
+
+    if (houseArea && aspectType === 'Conjunction') {
+      felt += ` This lands in ${houseArea} — that's the life domain where ${planet}'s energy becomes your seed intention.`;
+    }
+
+    return felt;
   };
 
   const getNatalAspects = () => {
     if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
-    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string; feel: string }; natalSign: string; natalDegree: number }> = [];
+    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number }> = [];
     
     Object.entries(activeChart.planets).forEach(([planet, data]) => {
       const planetData = data as { sign: string; degree: number; minutes?: number; house?: number };
@@ -764,7 +855,8 @@ Keep the tone deep, insightful, and practically applicable.`
             aspect: ac.name,
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
-            aspectInfo: ASPECT_FELT_SENSE[ac.name] || { symbol: '', what: '', feel: '' },
+            aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
+            feltSense: buildFeltSense(planet, planetData.sign, ac.name),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
           });
@@ -1494,7 +1586,7 @@ Keep the tone deep, insightful, and practically applicable.`
                           What does {aspect.aspectInfo.symbol} {aspect.aspect.toLowerCase()} mean? <span className="font-normal text-muted-foreground">{aspect.aspectInfo.what}</span>
                         </p>
                         <p className="text-sm italic text-foreground/80 bg-background/50 p-2 rounded">
-                          🫀 How you'll feel it: {aspect.aspectInfo.feel}
+                          How you'll feel it: {aspect.feltSense}
                         </p>
                       </div>
                     );
