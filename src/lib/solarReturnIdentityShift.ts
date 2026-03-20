@@ -26,19 +26,19 @@ export interface IdentityPillar {
   description: string;
 }
 
-const SIGN_ARCHETYPE: Record<string, { becoming: string; keyword: string; mode: string }> = {
-  Aries:       { becoming: 'the initiator', keyword: 'courage', mode: 'asserting' },
-  Taurus:      { becoming: 'the builder', keyword: 'stability', mode: 'grounding' },
-  Gemini:      { becoming: 'the communicator', keyword: 'curiosity', mode: 'connecting' },
-  Cancer:      { becoming: 'the nurturer', keyword: 'belonging', mode: 'protecting' },
-  Leo:         { becoming: 'the creator', keyword: 'self-expression', mode: 'shining' },
-  Virgo:       { becoming: 'the healer', keyword: 'refinement', mode: 'serving' },
-  Libra:       { becoming: 'the harmonizer', keyword: 'balance', mode: 'relating' },
-  Scorpio:     { becoming: 'the transformer', keyword: 'depth', mode: 'excavating' },
-  Sagittarius: { becoming: 'the explorer', keyword: 'expansion', mode: 'seeking' },
-  Capricorn:   { becoming: 'the architect', keyword: 'mastery', mode: 'building' },
-  Aquarius:    { becoming: 'the visionary', keyword: 'innovation', mode: 'liberating' },
-  Pisces:      { becoming: 'the mystic', keyword: 'transcendence', mode: 'dissolving' },
+const SIGN_ARCHETYPE: Record<string, { becoming: string; keyword: string; mode: string; plain: string; dailyLooksLike: string }> = {
+  Aries:       { becoming: 'the initiator', keyword: 'courage', mode: 'asserting', plain: 'starting things on your own even when nobody gives you permission', dailyLooksLike: 'Speaking up first. Volunteering. Making the decision instead of waiting. Feeling impatient with people who hesitate.' },
+  Taurus:      { becoming: 'the builder', keyword: 'stability', mode: 'grounding', plain: 'creating something solid and real that you can touch, keep, and rely on', dailyLooksLike: 'Investing in quality over speed. Cooking real meals. Saving money. Finishing what you started before starting something new.' },
+  Gemini:      { becoming: 'the communicator', keyword: 'curiosity', mode: 'connecting', plain: 'learning new things, talking to new people, and staying mentally flexible', dailyLooksLike: 'Reading more. Taking a class. Starting conversations with strangers. Writing things down. Saying yes to invitations.' },
+  Cancer:      { becoming: 'the nurturer', keyword: 'belonging', mode: 'protecting', plain: 'creating emotional safety for yourself and the people who matter most', dailyLooksLike: 'Making your home feel like a sanctuary. Calling family. Cooking for people. Letting yourself cry when you need to. Setting boundaries around who gets access to your inner world.' },
+  Leo:         { becoming: 'the creator', keyword: 'self-expression', mode: 'shining', plain: 'letting people see the real you — your talents, your joy, your creative fire', dailyLooksLike: 'Making art, even if it\'s imperfect. Accepting compliments. Taking the stage. Posting the thing. Playing with children or your inner child.' },
+  Virgo:       { becoming: 'the healer', keyword: 'refinement', mode: 'serving', plain: 'getting practical about what actually works in your daily life and health', dailyLooksLike: 'Fixing the broken thing. Meal prepping. Making the doctor\'s appointment. Organizing your space. Helping someone with a specific, useful skill.' },
+  Libra:       { becoming: 'the harmonizer', keyword: 'balance', mode: 'relating', plain: 'learning how to be fair, graceful, and honest in your closest relationships', dailyLooksLike: 'Having the hard conversation with kindness. Compromising without losing yourself. Making your environment beautiful. Asking "what do YOU want?" and meaning it.' },
+  Scorpio:     { becoming: 'the transformer', keyword: 'depth', mode: 'excavating', plain: 'going beneath the surface to deal with what you\'ve been avoiding', dailyLooksLike: 'Therapy. Honest conversations about money, sex, or power. Cutting off what\'s draining you. Sitting with uncomfortable emotions instead of numbing them.' },
+  Sagittarius: { becoming: 'the explorer', keyword: 'expansion', mode: 'seeking', plain: 'broadening your worldview through travel, education, or new philosophies', dailyLooksLike: 'Planning a trip. Signing up for a course. Reading about something outside your comfort zone. Saying "I don\'t know" and being excited about it.' },
+  Capricorn:   { becoming: 'the architect', keyword: 'mastery', mode: 'building', plain: 'getting serious about your long-term goals and doing the hard work to earn your place', dailyLooksLike: 'Making a 5-year plan. Showing up consistently even when nobody\'s watching. Taking on more responsibility. Saying no to shortcuts.' },
+  Aquarius:    { becoming: 'the visionary', keyword: 'innovation', mode: 'liberating', plain: 'finding your people and contributing something original to the group', dailyLooksLike: 'Joining a community. Questioning rules that don\'t make sense. Trying a completely different approach. Standing up for someone even when it\'s unpopular.' },
+  Pisces:      { becoming: 'the mystic', keyword: 'intuition', mode: 'dissolving', plain: 'trusting your inner knowing and letting go of the need to control everything', dailyLooksLike: 'Meditating, even for 5 minutes. Paying attention to dreams. Creating art without a plan. Saying "I just have a feeling about this." Resting without guilt. Spending time near water.' },
 };
 
 const HOUSE_ARENA: Record<number, string> = {
@@ -57,7 +57,7 @@ const HOUSE_ARENA: Record<number, string> = {
 };
 
 function getSignArch(sign: string) {
-  return SIGN_ARCHETYPE[sign] || { becoming: 'an evolving self', keyword: 'growth', mode: 'transforming' };
+  return SIGN_ARCHETYPE[sign] || { becoming: 'an evolving self', keyword: 'growth', mode: 'transforming', plain: 'growing into a new version of yourself', dailyLooksLike: 'Paying attention to what feels different. Trying new approaches. Being honest about what no longer fits.' };
 }
 
 export function generateIdentityShift(
@@ -89,19 +89,19 @@ export function generateIdentityShift(
       label: 'Purpose Direction',
       placement: `${srSunSign}${srSunHouse ? ` in the ${ordinal(srSunHouse)} House` : ''}`,
       keyword: sunArch.keyword,
-      description: `Your vital energy this year is channeled through ${sunArch.mode}${srSunHouse ? ` in the arena of ${HOUSE_ARENA[srSunHouse] || 'life'}` : ''}. You are learning to embody ${sunArch.becoming}.`,
+      description: `Your main job this year: ${sunArch.plain}${srSunHouse ? `, especially in the area of ${HOUSE_ARENA[srSunHouse] || 'life'}` : ''}. In daily life this looks like: ${sunArch.dailyLooksLike}`,
     },
     {
       label: 'Outer Presentation',
       placement: `${srAscSign} Rising`,
       keyword: ascArch.keyword,
-      description: `The world meets you this year as ${ascArch.becoming}. Your instinctive approach to new situations is colored by ${ascArch.mode} — this is the mask that becomes the face.`,
+      description: `People will experience you this year as someone who is ${ascArch.plain}. In daily life this looks like: ${ascArch.dailyLooksLike}`,
     },
     {
       label: 'Soul Growth Edge',
       placement: `North Node in ${nodeSign}${nodeHouse ? `, ${ordinal(nodeHouse)} House` : ''}`,
       keyword: nodeArch.keyword,
-      description: `Your evolutionary direction pulls you toward ${nodeArch.keyword} and ${nodeArch.mode}${nodeHouse ? ` through ${HOUSE_ARENA[nodeHouse] || 'this life area'}` : ''}. This is unfamiliar territory — and exactly where growth lives.`,
+      description: `The uncomfortable-but-necessary stretch: ${nodeArch.plain}${nodeHouse ? `, specifically through ${HOUSE_ARENA[nodeHouse] || 'this life area'}` : ''}. This won't feel natural — that's the point. In daily life this looks like: ${nodeArch.dailyLooksLike}`,
     },
   ];
 
@@ -137,15 +137,22 @@ function buildNarrative(
 ): string {
   const parts: string[] = [];
 
-  parts.push(`This year, your identity is being reshaped. The Solar Return Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} House)` : ''} directs your vital energy toward ${sunArch.keyword} — you are learning what it means to live as ${sunArch.becoming}.`);
+  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what the Sun in ${sunSign} is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
 
   if (ascSign !== sunSign) {
-    parts.push(`Meanwhile, ${ascSign} Rising gives you a new social skin: people encounter your ${ascArch.keyword} first. The way you walk into rooms, start conversations, and handle first impressions is shifting toward ${ascArch.mode}.`);
+    parts.push(`At the same time, people will experience you differently this year. ${ascSign} Rising means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
   } else {
-    parts.push(`With both your Sun and Ascendant in ${sunSign}, there is no gap between who you are becoming and how the world sees you — an unusually integrated year where inner purpose and outer presentation align.`);
+    parts.push(`With both your Sun and Rising in ${sunSign}, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
   }
 
-  parts.push(`The North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''} marks the growth edge: ${nodeArch.keyword}. This is where the universe is asking you to stretch beyond comfort. The integration of ${sunArch.keyword}, ${ascArch.keyword}, and ${nodeArch.keyword} defines who you are becoming this year.`);
+  // Avoid repeating the same keyword/plain if node matches sun or asc
+  if (nodeSign === sunSign && nodeSign === ascSign) {
+    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. Lean all the way in.`);
+  } else if (nodeSign === sunSign) {
+    parts.push(`Your growth edge (North Node) is in the same sign as your Sun — ${nodeSign}${nodeHouse ? `, in the ${ordinal(nodeHouse)} House` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning, specifically through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}.`);
+  } else {
+    parts.push(`The stretch this year comes from your North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
+  }
 
   return parts.join(' ');
 }
