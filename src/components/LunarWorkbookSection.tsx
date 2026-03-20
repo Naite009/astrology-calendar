@@ -60,32 +60,32 @@ const PHASE_CONFIG = {
   newMoon: {
     emoji: "🌑",
     title: "New Moon",
-    subtitle: "Planting Seeds",
-    description: "At the New Moon you are planting seeds in the dark, fertile soil. Your soul wants something to grow. It's a quiet, inward time when the sun (our divine masculine) and the moon (our divine feminine) come together to create new life.",
+    subtitle: "Seed + New Beginning",
+    description: "Name the next emotional piece and begin working with it. Allow the intention to develop over a day or two if needed. Honor the darkness and not-knowing. Work with what is feeling important to the heart right now.",
   },
   firstQuarter: {
     emoji: "🌓",
     title: "First Quarter",
-    subtitle: "Taking Action",
-    description: "At the First Quarter Moon plans are underway. We feel the waxing/rising/yang energy. It's a busy time. We're feeling an internal PUSH to grow. You're getting feedback from the world and overcoming obstacles.",
+    subtitle: "Action + Friction",
+    description: "Notice choices, effort, resistance, and movement. Something is pushing this cycle forward. Where do you need courage, effort, or adjustment?",
   },
   fullMoon: {
     emoji: "🌕",
     title: "Full Moon",
-    subtitle: "Illumination",
-    description: "At the Full Moon, the fruit is ripe. There's lots of LIGHT in the sky to see what's going on. The energy is moving quickly and things will naturally come to a head. It's the time for gratitude and releasing what's not needed.",
+    subtitle: "Culmination + Visibility",
+    description: "Notice what becomes clear, emotional, visible, or complete. The fruit is ripe. What peaked, ripened, or demanded acknowledgment?",
   },
   lastQuarter: {
     emoji: "🌗",
     title: "Last Quarter",
-    subtitle: "Letting Go",
-    description: "At the Last Quarter Moon you're tying up loose ends, finishing things, cleaning up 'energy leaks'. You're reflecting on the cycle and what was learned. It's a good time for letting go and breaking negative patterns.",
+    subtitle: "Integration + Release",
+    description: "Reflect on what is no longer working and what is ready to be let go. Tie up loose ends. What lesson did this cycle teach?",
   },
   balsamic: {
     emoji: "🌘",
     title: "Balsamic Moon",
-    subtitle: "Rest & Renewal",
-    description: "The Dark Moon/Balsamic Moon is a time for quiet, rest and contemplation. Empty your mind, slow down and open to guidance. Your energy is lower. Honor this dark time. We're moving back towards the regenerative dark.",
+    subtitle: "Sacred Listening Window",
+    description: "Take things off your plate. Get quiet. Pay attention to dreams and early morning feelings. Do not overload yourself. Listen for the next emotional piece asking to be held.",
   }
 };
 
