@@ -366,11 +366,11 @@ export const LunarWorkbookSection = ({
 
   // Guided mode steps for New Moon phase
   const newMoonSteps = [
-    { field: 'new_moon_feelings', label: "What FEELS important right now?", placeholder: "What is my soul telling me is 'up' right now?", icon: <Heart className="h-4 w-4 text-rose-500" /> },
-    { field: 'new_moon_showing_up', label: "What's SHOWING UP in your life?", placeholder: "What issues have been at the forefront of your mind?", icon: <Eye className="h-4 w-4 text-amber-500" /> },
-    { field: 'new_moon_house_themes', label: "House Themes", placeholder: "What area of life is being illuminated?", icon: <Target className="h-4 w-4 text-primary" /> },
-    { field: 'new_moon_intentions', label: "My Intention(s) for this cycle", placeholder: "Write your intentions as a prayer, affirmation, or wish...", icon: <Sparkles className="h-4 w-4 text-primary" /> },
-    { field: 'new_moon_body_sensations', label: "How would I FEEL with this present?", placeholder: "Focus on sensations in your body...", icon: <Zap className="h-4 w-4 text-purple-500" /> },
+    { field: 'new_moon_feelings', label: "What wants to be worked with this cycle?", placeholder: "What is surfacing from within? What emotional theme feels alive now?", icon: <Heart className="h-4 w-4 text-rose-500" /> },
+    { field: 'new_moon_showing_up', label: "What is showing up in your life?", placeholder: "What is the world reflecting back to you?", icon: <Eye className="h-4 w-4 text-amber-500" /> },
+    { field: 'new_moon_house_themes', label: "House Themes", placeholder: "What area of life is being illuminated? What would it mean to nurture this gently?", icon: <Target className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_intentions', label: "Intention(s) for this cycle", placeholder: "Write when emotionally clear. Allow the words to develop over a day or two if needed...", icon: <Sparkles className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_body_sensations', label: "How would I feel with this present?", placeholder: "Focus on sensations in your body. What does it feel like to hold this intention?", icon: <Zap className="h-4 w-4 text-purple-500" /> },
   ];
 
   const handleGenerateIntentions = async () => {
