@@ -385,6 +385,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} srChartsForNatal={srChartsForNatal} />
           </TabsContent>
         </Tabs>
+        </>
       )}
     </div>
   );
