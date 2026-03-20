@@ -317,8 +317,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     if (eclipseCount > 0) {
       patterns.push({
         pattern: 'Eclipse activation in your chart',
-        description: `Eclipses are touching sensitive points in your chart — these are accelerators of fate. Events around eclipse dates carry more weight and longer consequences.`,
-        connection: 'Eclipse cycles repeat every 18.6 years (Saros) — check if similar themes appeared that many years ago.',
+        description: `Eclipses this year touch sensitive points in your chart. Think of eclipses as "fast-forward" buttons — events around eclipse dates tend to happen faster, feel more significant, and have longer-lasting effects than normal. Mark the eclipse dates on your calendar and pay attention to what happens within two weeks of each one.`,
+        connection: 'Eclipse cycles repeat every 18.6 years. Think back to what was happening in your life that many years ago — similar themes may reappear now in a new form.',
         category: 'eclipse',
       });
     }
