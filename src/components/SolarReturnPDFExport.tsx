@@ -692,6 +692,12 @@ export function buildFullJsonStandalone(
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
     domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+    psychologicalProfile: (() => {
+      const natal = computePsychProfile(natalChart, 'natal');
+      const sr = computePsychProfile(srChart as any, 'sr');
+      const blended = computeBlendedProfile(natal, sr);
+      return { natal, sr, blended };
+    })(),
     contradictions: detectContradictions(analysis, srChart),
     lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
 
