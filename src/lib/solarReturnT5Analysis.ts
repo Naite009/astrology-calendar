@@ -270,11 +270,17 @@ export function calculateArabicParts(
 
   if (ascDeg === null || sunDeg === null || moonDeg === null) return results;
 
+  // Determine day vs night chart: Sun above horizon (houses 7-12) = day chart
+  const sunHouse = findSRHouse(sunDeg);
+  const isDayChart = sunHouse !== null && sunHouse >= 7;
+
   const PARTS: { name: string; formula: string; calc: () => number | null; interp: string }[] = [
     {
       name: 'Part of Fortune (Fortuna)',
-      formula: 'ASC + Moon − Sun',
-      calc: () => ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360,
+      formula: isDayChart ? 'ASC + Moon − Sun (day)' : 'ASC + Sun − Moon (night)',
+      calc: () => isDayChart
+        ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
+        : ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360,
       interp: 'Where prosperity, luck, and material well-being flow most naturally this year. The Part of Fortune marks the point where your emotional needs (Moon) and life purpose (Sun) align with your visible self (ASC). Planets aspecting this point amplify or challenge your access to fortune.',
     },
     {
