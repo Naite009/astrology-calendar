@@ -54,30 +54,35 @@ function formatScore(score: number, left: string, right: string): string {
 }
 
 /* ── Driver Breakdown Row ── */
-function DriverRow({ driver, left, right, maxContrib }: {
+function DriverRow({ driver, left, right, maxContrib, mode }: {
   driver: DimensionDriver;
   left: string;
   right: string;
   maxContrib: number;
+  mode: ViewMode;
 }) {
   const pushesLeft = driver.contribution > 0;
-  const pushesRight = driver.contribution < 0;
-  const barPct = maxContrib > 0 ? (Math.abs(driver.contribution) / maxContrib) * 45 : 0; // max 45% of half
+  const barPct = maxContrib > 0 ? (Math.abs(driver.contribution) / maxContrib) * 45 : 0;
+  const sourceTag = mode === 'blended' && driver.source ? driver.source : null;
 
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <span className="text-[10px] text-muted-foreground w-20 text-right font-medium">{driver.planet}</span>
+      <div className="w-28 text-right flex items-center justify-end gap-1">
+        {sourceTag && (
+          <span className={`text-[8px] px-1 py-px rounded ${
+            sourceTag === 'Natal' ? 'bg-muted-foreground/20 text-muted-foreground' : 'bg-primary/20 text-primary'
+          }`}>{sourceTag === 'Natal' ? 'N' : 'SR'}</span>
+        )}
+        <span className="text-[10px] text-muted-foreground font-medium">{driver.planet}</span>
+      </div>
       <div className="flex-1 relative h-2 bg-muted/30 rounded-full">
-        {/* Center line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/60" />
-        {/* Bar extending from center */}
-        {pushesLeft && (
+        {pushesLeft ? (
           <div
             className="absolute top-0 bottom-0 rounded-l-full bg-primary/50"
             style={{ right: '50%', width: `${barPct}%` }}
           />
-        )}
-        {pushesRight && (
+        ) : (
           <div
             className="absolute top-0 bottom-0 rounded-r-full bg-destructive/40"
             style={{ left: '50%', width: `${barPct}%` }}
@@ -85,8 +90,19 @@ function DriverRow({ driver, left, right, maxContrib }: {
         )}
       </div>
       <span className={`text-[9px] w-20 ${pushesLeft ? 'text-primary' : 'text-destructive'}`}>
-        ← {pushesLeft ? left : right}
+        → {pushesLeft ? left : right}
       </span>
+    </div>
+  );
+}
+
+/* ── Reason tooltip under driver row ── */
+function DriverReasonRow({ driver }: { driver: DimensionDriver }) {
+  if (!driver.reason) return null;
+  return (
+    <div className="flex items-center gap-2 pb-0.5">
+      <span className="w-28" />
+      <span className="text-[8px] text-muted-foreground/70 italic">{driver.reason}</span>
     </div>
   );
 }
