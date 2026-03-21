@@ -236,29 +236,41 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             {/* Grid lines */}
             {view === 'world' ? (
               <>
-                {/* World grid */}
                 {[-60, -30, 0, 30, 60].map(lat => {
-                  const { y } = project(lat, 0);
+                  const { y } = projectCity(lat, 0);
                   return <line key={`lat${lat}`} x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
                 {[-120, -60, 0, 60, 120].map(lng => {
-                  const { x } = project(0, lng);
+                  const { x } = projectCity(0, lng);
                   return <line key={`lng${lng}`} x1={x} y1={0} x2={x} y2={mapH} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
-                {/* Equator */}
-                {(() => { const { y } = project(0, 0); return <line x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={1} opacity={0.3} />; })()}
+                {(() => { const { y } = projectCity(0, 0); return <line x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={1} opacity={0.3} />; })()}
               </>
             ) : (
               <>
-                {/* US grid */}
-                {[25, 30, 35, 40, 45, 50, 55, 60, 65].map(lat => {
-                  const { y } = project(lat, -120);
+                {/* Continental US grid */}
+                {[25, 30, 35, 40, 45, 50].map(lat => {
+                  const { y } = projectUS(lat, -100, mapW, mapH);
                   return <line key={`lat${lat}`} x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
-                {[-160, -150, -140, -130, -120, -110, -100, -90, -80, -70].map(lng => {
-                  const { x } = project(40, lng);
+                {[-120, -110, -100, -90, -80, -70].map(lng => {
+                  const { x } = projectUS(40, lng, mapW, mapH);
                   return <line key={`lng${lng}`} x1={x} y1={0} x2={x} y2={mapH} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
+                {/* Hawaii inset box */}
+                {(() => {
+                  const tl = projectHawaii(23, -161, mapW, mapH);
+                  const br = projectHawaii(18, -154, mapW, mapH);
+                  return <rect x={tl.x - 4} y={tl.y - 4} width={br.x - tl.x + 8} height={br.y - tl.y + 8} fill="none" stroke="currentColor" className="text-border" strokeWidth={1} strokeDasharray="3 3" rx={2} />;
+                })()}
+                <text x={mapW * 0.05} y={mapH * 0.71} className="fill-muted-foreground" fontSize={8} opacity={0.5}>HAWAII</text>
+                {/* Alaska inset box */}
+                {(() => {
+                  const tl = projectAlaska(72, -170, mapW, mapH);
+                  const br = projectAlaska(55, -140, mapW, mapH);
+                  return <rect x={tl.x - 4} y={tl.y - 4} width={br.x - tl.x + 8} height={br.y - tl.y + 8} fill="none" stroke="currentColor" className="text-border" strokeWidth={1} strokeDasharray="3 3" rx={2} />;
+                })()}
+                <text x={mapW * 0.01} y={mapH * 0.47} className="fill-muted-foreground" fontSize={8} opacity={0.5}>ALASKA</text>
               </>
             )}
 
@@ -266,15 +278,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             <defs>
               {visibleCities.map(city => (
                 <radialGradient key={`grad-${city.city}`} id={`glow-${city.city.replace(/\s/g, '')}`}>
-                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.35} />
+                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.3} />
                   <stop offset="100%" stopColor={ratingColor(city.rating)} stopOpacity={0} />
                 </radialGradient>
               ))}
             </defs>
 
             {visibleCities.map(city => {
-              const { x, y } = project(city.latitude, city.longitude);
-              const r = view === 'us' ? 35 : 25;
+              const { x, y } = projectCity(city.latitude, city.longitude);
+              const r = view === 'us' ? 30 : 25;
               return (
                 <circle
                   key={`glow-c-${city.city}`}
@@ -284,18 +296,18 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               );
             })}
 
-            {/* City dots */}
+            {/* City dots + labels */}
             {visibleCities.map(city => {
-              const { x, y } = project(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude);
               const isSelected = selectedCity?.city === city.city;
-              const dotR = view === 'us' ? 6 : 4.5;
+              const dotR = view === 'us' ? 5 : 4;
+              const lp = labelPositions[city.city] || { dx: 0, dy: -10, anchor: 'middle' };
               return (
                 <g
                   key={city.city}
                   className="cursor-pointer"
                   onClick={() => setSelectedCity(isSelected ? null : city)}
                 >
-                  {/* Outer ring for selected */}
                   {isSelected && (
                     <circle cx={x} cy={y} r={dotR + 4} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5} opacity={0.7}>
                       <animate attributeName="r" values={`${dotR + 3};${dotR + 6};${dotR + 3}`} dur="2s" repeatCount="indefinite" />
@@ -309,14 +321,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                     strokeWidth={isSelected ? 2 : 1}
                     opacity={0.9}
                   />
-                  {/* Label */}
                   <text
-                    x={x} y={y - (view === 'us' ? 10 : 8)}
-                    textAnchor="middle"
+                    x={x + lp.dx} y={y + lp.dy}
+                    textAnchor={lp.anchor}
                     className="fill-foreground"
-                    fontSize={view === 'us' ? 10 : 8}
+                    fontSize={view === 'us' ? 9 : 7}
                     fontWeight={isSelected ? 600 : 400}
-                    opacity={isSelected ? 1 : 0.7}
+                    opacity={isSelected ? 1 : 0.65}
                   >
                     {city.city}
                   </text>
