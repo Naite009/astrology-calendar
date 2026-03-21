@@ -235,11 +235,15 @@ export function calculateActivationWindows(
 
     const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
-    const themeList = themes.length > 0 ? themes : ['No major transits this month -- a quieter period for integration'];
+    const themeList = themes.length > 0 ? themes : ['No major activation this month — a quieter period for integration'];
+    const TRANSIT_PLAIN: Record<string, string> = {
+      Sun: 'Purpose', Mars: 'Drive', Jupiter: 'Growth', Saturn: 'Responsibility',
+      Mercury: 'Communication', Venus: 'Connection',
+    };
     const themeSummary = hits.length === 0
       ? 'A quieter month for integration and reflection'
       : [...new Set(hits.map(h => {
-          const p = h.transitPlanet;
+          const p = TRANSIT_PLAIN[h.transitPlanet] || h.transitPlanet;
           const t = h.srTarget.replace('SR ', '');
           return `${p} activates ${t}`;
         }))].slice(0, 3).join(', ');
