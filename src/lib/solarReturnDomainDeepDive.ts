@@ -263,20 +263,20 @@ function buildCareer(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
   const activity = Math.min(10, h6.planets.length * 2 + h10.planets.length * 3 + (sunHouse === 10 ? 3 : sunHouse === 6 ? 2 : 0));
 
   const advice: string[] = [];
-  if (sunHouse === 10) advice.push('Sun in the 10th — this is YOUR year for recognition. Put yourself out there.');
-  if (h10.planets.includes('Saturn')) advice.push('Saturn in the 10th means career growth through hard work and patience — promotions come slowly but stick.');
-  if (h10.planets.includes('Uranus')) advice.push('Uranus in the 10th can bring sudden career changes — stay flexible and open to unexpected directions.');
-  if (h6.planets.includes('Mars')) advice.push('Mars in the 6th drives you to work harder — watch for burnout and make rest part of your productivity plan.');
-  if (advice.length === 0) advice.push('Focus on the area where the most planets cluster — that is where your career energy naturally flows this year.');
+  if (sunHouse === 10) advice.push('Your core focus and vitality are directed at your public role — this is YOUR year for recognition. Put yourself out there.');
+  if (h10.planets.includes('Saturn')) advice.push('Your career area asks for hard work and patience — promotions come slowly but stick.');
+  if (h10.planets.includes('Uranus')) advice.push('Your career area may bring sudden changes — stay flexible and open to unexpected directions.');
+  if (h6.planets.includes('Mars')) advice.push('Your daily work area is pushing you to work harder — watch for burnout and make rest part of your productivity plan.');
+  if (advice.length === 0) advice.push('Focus on the area where the most energy clusters — that is where your career naturally wants to grow this year.');
 
   const headline = t === 'supportive' ? 'Career Growth Is Well-Supported'
     : t === 'challenging' ? 'A Year of Professional Testing'
     : t === 'transformative' ? 'Major Career Shifts Ahead'
     : 'Work Is Active on Multiple Fronts';
 
-  const para = `Your daily work zone (6th house) ${h6.planets.length > 0 ? 'has ' + h6.planets.join(', ') : 'is quiet'}. ` +
-    `Your public reputation (10th house) ${h10.planets.length > 0 ? 'is activated by ' + h10.planets.join(', ') : 'runs on autopilot'}. ` +
-    `Saturn in ${satPos?.sign || '?'} (${satHouse || '?'}${ordSuffix(satHouse || 0)} house) shows where you are building something that lasts.`;
+  const para = `Your daily work area ${h6.planets.length > 0 ? 'is active — routines and responsibilities are demanding attention' : 'is quiet'}. ` +
+    `Your public reputation and career ${h10.planets.length > 0 ? 'are activated — visibility and professional identity are in focus' : 'run on autopilot'}. ` +
+    `The area where you are building something lasting is ${HOUSE_LABELS[satHouse || 0] || 'still taking shape'}.`;
 
   return { id: 'career', title: 'Career & Work', emoji: '💼', houses: [h2, h6, h10], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
