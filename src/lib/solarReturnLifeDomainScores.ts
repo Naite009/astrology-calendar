@@ -156,10 +156,10 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Sun: 2, Saturn: 2, Jupiter: 1.5, Mars: 1.5, MC: 2, Venus: 1, Mercury: 1, Pluto: 1, Uranus: 1 },
     advice: {
-      challenging: 'Career is active but demanding — expect restructuring, harder lessons, and the need to prove yourself. Growth comes through persistence, not luck.',
-      transformative: 'Your career is undergoing deep shifts — old roles or ambitions may need to die so new ones can emerge.',
-      supportive: 'Professional momentum is real this year — benefic planets support your work houses, making this a time to advance.',
-      quiet: 'Career houses are quiet — focus on skill-building and preparation rather than big launches.',
+      challenging: 'Your career is getting your full attention this year — expect a growth area where you refine your direction, prove what you\'re capable of, and build toward something that lasts.',
+      transformative: 'Your career path is evolving — old roles or ambitions are making room for something that fits the real you better.',
+      supportive: 'Professional momentum is real this year — doors are opening, and this is a great time to step up and advance.',
+      quiet: 'Career is on a slow simmer — focus on skill-building and preparation rather than big launches.',
       mixed: 'Some career energy is present — stay engaged and responsive without forcing big moves.',
     },
   },
@@ -172,11 +172,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
     advice: {
-      challenging: 'Relationships are under intense pressure — expect hard conversations, boundary-setting, and restructuring. This is Saturn\'s testing ground, not Venus\'s garden.',
-      transformative: 'Love and intimacy are being transformed at a deep level — old patterns are breaking down.',
-      supportive: 'Relationship houses are lit up by benefic planets — genuine warmth, connection, and romantic opportunity.',
-      quiet: 'Relationship houses are quiet — invest in self-knowledge and let partnerships breathe.',
-      mixed: 'Relationship energy is present but mixed — both support and challenge are in play.',
+      challenging: 'Relationships are in the spotlight this year — expect meaningful conversations, honest boundary-setting, and a chance to build something more real. The connections that matter most get stronger.',
+      transformative: 'Love and intimacy are evolving at a deep level — old patterns are making room for something more authentic.',
+      supportive: 'Genuine warmth, connection, and romantic opportunity are flowing this year — say yes to love.',
+      quiet: 'Relationships are quieter — invest in self-knowledge and let partnerships breathe naturally.',
+      mixed: 'Relationship energy is present but nuanced — both support and growth areas are in play.',
     },
   },
   health: {
@@ -188,11 +188,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Mars: 1.5, Saturn: 1.5, Moon: 1, Sun: 1, Neptune: 1, Chiron: 1, Pluto: 1 },
     advice: {
-      challenging: 'Health requires active attention — stress, overwork, or ignored signals may surface. Prevention is essential.',
-      transformative: 'Your body and wellness routines want a complete overhaul — listen to unfamiliar signals.',
-      supportive: 'Supportive energy in your health houses — a good year to establish new wellness habits that stick.',
-      quiet: 'Health houses are quiet — steady maintenance is your best strategy.',
-      mixed: 'Health is moderately active — maintain routines and listen when your body sends signals.',
+      challenging: 'Your body is asking for more attention this year — it\'s a great time to start new routines, listen to what your body needs, and make wellness a priority.',
+      transformative: 'Your body and wellness routines are ready for an upgrade — try new approaches, listen to what feels right, and trust the signals your body sends.',
+      supportive: 'Great energy for building new wellness habits that stick — your body is on your side this year.',
+      quiet: 'Health is steady — gentle maintenance and consistency are your best strategy.',
+      mixed: 'Health is moderately active — maintain your routines and respond when your body asks for attention.',
     },
   },
   growth: {
@@ -236,11 +236,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Moon: 2, Saturn: 1.5, Ceres: 1.5, Pluto: 1, Sun: 1, Venus: 1, Mars: 1, Neptune: 1, Uranus: 1.5 },
     advice: {
-      challenging: 'Home and family are under pressure — expect conflicts, moves, or difficult conversations with parents/family.',
-      transformative: 'Your living situation or family dynamics are being fundamentally restructured.',
-      supportive: 'Home life is supported — good time for moves, renovations, or deepening family bonds.',
-      quiet: 'Home sector is quiet — stable foundations let you focus elsewhere.',
-      mixed: 'Mixed energy at home — some comfort and some disruption. Stay flexible about living arrangements.',
+      challenging: 'Home and family are getting your full attention — big conversations, potential moves, or honest moments with loved ones can lead to a stronger foundation.',
+      transformative: 'Your living situation or family dynamics are evolving into something that fits who you are now.',
+      supportive: 'Home life feels nourishing — a great year for moves, renovations, or deepening family bonds.',
+      quiet: 'Home life is stable and steady — that foundation lets you focus on other priorities.',
+      mixed: 'Mixed energy at home — some comfort and some adjustments. Stay flexible about living arrangements.',
     },
   },
   friendships: {
@@ -268,11 +268,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2, Sun: 1.5, Neptune: 1.5, Mercury: 1, Moon: 1, Mars: 1, Uranus: 1.5, Jupiter: 1 },
     advice: {
-      challenging: 'Creative blocks or frustration — the muse demands you push through resistance to find authentic expression.',
-      transformative: 'Your creative voice is being completely reinvented — old styles die, new ones emerge.',
-      supportive: 'Creative energy is flowing — this is a genuinely good year to make, write, perform, or create.',
-      quiet: 'Creative houses are quiet — consume inspiration now and create later.',
-      mixed: 'Creative energy is present but inconsistent — follow the bursts when they come.',
+      challenging: 'Creative expression may feel like it\'s pushing you — the effort is building something new and more authentically yours.',
+      transformative: 'Your creative voice is evolving — old styles are making room for fresh, exciting new forms of expression.',
+      supportive: 'Creative energy is flowing beautifully — this is a genuinely wonderful year to make, write, perform, or create.',
+      quiet: 'Creative energy is building quietly — consume inspiration now and create when it feels ready.',
+      mixed: 'Creative energy comes in waves — follow the bursts of inspiration when they arrive.',
     },
   },
   spirituality: {
@@ -284,27 +284,27 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Neptune: 2, Jupiter: 1.5, Pluto: 1.5, NorthNode: 1.5, Chiron: 1.5, Moon: 1, Vesta: 1.5, Saturn: 1, Sun: 0.5 },
     advice: {
-      challenging: 'Spiritual life is intense — confronting illusions, crisis of faith, or feeling lost. The dismantling is necessary.',
-      transformative: 'Deep spiritual transformation — your relationship with the unseen is being completely rebuilt.',
-      supportive: 'Spiritual growth flows naturally — meditation, retreats, and inner work feel supported and meaningful.',
-      quiet: 'Inner life is quiet — grounding in the physical world takes priority this year.',
-      mixed: 'Spiritual path is mixed — moments of clarity alternate with confusion. Trust the process.',
+      challenging: 'Your inner life is going through a meaningful clearing — old beliefs that no longer fit are making room for deeper understanding and peace.',
+      transformative: 'A profound inner shift is happening — your sense of meaning, purpose, and connection to something larger is being renewed.',
+      supportive: 'Inner growth flows naturally — meditation, quiet reflection, and spiritual exploration feel especially rewarding.',
+      quiet: 'Inner life is gentle this year — grounding in everyday life takes priority, and that\'s perfectly right.',
+      mixed: 'Your inner path has moments of clarity and moments of searching — trust the process and be patient with yourself.',
     },
   },
   power: {
     label: 'Power & Transformation',
     houses: [8, 1],
     houseReasons: {
-      8: 'deep transformation, crisis, shared power, and rebirth',
-      1: 'personal power, identity, and how you project yourself',
+      8: 'deep change, shared resources, and personal transformation',
+      1: 'personal power, confidence, and how you show up in the world',
     },
     activityWeights: { Pluto: 2.5, Mars: 1.5, Saturn: 1.5, Sun: 1, Uranus: 1.5, Chiron: 1, NorthNode: 1 },
     advice: {
-      challenging: 'Power dynamics are intense — control issues, power struggles, or feeling overwhelmed by forces bigger than you.',
-      transformative: 'This is a death-and-rebirth year — something fundamental about you or your life is being permanently changed.',
-      supportive: 'You\'re stepping into genuine personal power — confidence and authority feel natural.',
-      quiet: 'Transformation sector is quiet — stability and maintenance rather than upheaval.',
-      mixed: 'Power dynamics are in play — some areas of control, some of surrender. Learn to read which is which.',
+      challenging: 'You\'re in a growth area around personal power — learning to set stronger boundaries, speak up, and trust your own authority.',
+      transformative: 'Something fundamental about how you move through the world is changing — this is you stepping into a new chapter.',
+      supportive: 'You\'re stepping into genuine personal confidence — owning your strengths feels natural this year.',
+      quiet: 'Personal power is steady and stable — a year for maintaining what\'s working rather than big shifts.',
+      mixed: 'Some areas feel empowering while others ask you to let go of control — learn to read which is which.',
     },
   },
 };
@@ -359,19 +359,19 @@ function activityLabel(level: number, tone: DomainTone): string {
   if (level < 2) return 'Quiet Background';
   if (level < 4) {
     if (tone === 'supportive') return 'Gently Supportive';
-    if (tone === 'challenging') return 'Lightly Pressured';
-    return 'Lightly Active';
+    if (tone === 'challenging') return 'Getting Real';
+    return 'Gently Active';
   }
   if (level < 7) {
     if (tone === 'supportive') return 'Steadily Building';
-    if (tone === 'challenging') return 'Actively Demanding';
-    if (tone === 'transformative') return 'Steadily Transforming';
-    return 'Active — Complex';
+    if (tone === 'challenging') return 'Deeply Engaged';
+    if (tone === 'transformative') return 'Evolving';
+    return 'In Motion';
   }
   if (tone === 'supportive') return 'Flourishing';
-  if (tone === 'challenging') return 'Under Intense Pressure';
-  if (tone === 'transformative') return 'Deep Transformation';
-  return 'Highly Active — Complex';
+  if (tone === 'challenging') return 'In the Spotlight';
+  if (tone === 'transformative') return 'Major Evolution';
+  return 'Highly Active';
 }
 
 /* ── Main Scoring Engine ── */

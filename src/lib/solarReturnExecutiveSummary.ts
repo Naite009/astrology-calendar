@@ -53,12 +53,12 @@ const PLANET_PLAIN: Record<string, { does: string; examples: string }> = {
   Moon: { does: 'how you process emotions and what makes you feel safe', examples: 'eating habits, sleep patterns, who you call when you\'re upset, what makes you cry' },
   Mercury: { does: 'how you think, talk, and make decisions', examples: 'emails, conversations, study habits, how you argue, what you read' },
   Venus: { does: 'what you value and how you connect with people you care about', examples: 'dating, friendships, spending money, decorating your space, what you find beautiful' },
-  Mars: { does: 'how you take action and what makes you angry', examples: 'exercise, competitive situations, arguments, sex drive, how you handle deadlines' },
+  Mars: { does: 'how you take action and what motivates you', examples: 'exercise, competitive situations, how you handle deadlines and challenges' },
   Jupiter: { does: 'where you feel lucky and how you grow', examples: 'travel, education, promotions, feeling optimistic, saying yes to big opportunities' },
-  Saturn: { does: 'where you work hardest and what you\'re afraid of failing at', examples: 'career pressure, responsibilities, setting boundaries, long-term commitments' },
-  Uranus: { does: 'where you need freedom and what suddenly changes', examples: 'unexpected events, technology, breaking habits, feeling restless, sudden insights' },
-  Neptune: { does: 'where your imagination is strong and where you might be confused', examples: 'dreams, creative inspiration, spiritual experiences, things that seem too good to be true' },
-  Pluto: { does: 'where deep change is happening whether you want it or not', examples: 'power dynamics at work or in relationships, letting go of control, therapy breakthroughs, endings that lead to new beginnings' },
+  Saturn: { does: 'where you work hardest and what you\'re building long-term', examples: 'career responsibilities, setting boundaries, long-term commitments' },
+  Uranus: { does: 'where you need freedom and where exciting changes happen', examples: 'unexpected events, technology, breaking old habits, sudden insights' },
+  Neptune: { does: 'where your imagination and intuition are strongest', examples: 'dreams, creative inspiration, spiritual experiences, moments of deep knowing' },
+  Pluto: { does: 'where deep change is happening in your life', examples: 'personal breakthroughs, letting go of old patterns, discovering hidden strengths' },
   Chiron: { does: 'where your old pain becomes your ability to help others', examples: 'mentoring, therapy, teaching from experience, the thing you\'re sensitive about' },
   NorthNode: { does: 'the direction your life is growing toward even if it feels unfamiliar', examples: 'new roles, skills you\'re developing, situations that scare you but feel important' },
   Ceres: { does: 'how you take care of people and how you need to be taken care of', examples: 'cooking for others, physical comfort, mothering style, self-care routines' },
@@ -67,60 +67,55 @@ const PLANET_PLAIN: Record<string, { does: string; examples: string }> = {
   Vesta: { does: 'what you\'re deeply devoted to and protect as sacred', examples: 'work you do for its own sake, spiritual practices, the cause you won\'t give up on' },
 };
 
-// Build meaningful titles instead of just "Planet Aspect Planet"
+// Build meaningful titles — warm, jargon-free
 function buildAspectTitle(p1: string, p2: string, aspectType: string, tightLabel: string): string {
   const p1Noun = PLANET_NOUNS[p1] || p1.toLowerCase();
   const p2Noun = PLANET_NOUNS[p2] || p2.toLowerCase();
   const ASPECT_VERB: Record<string, string> = {
-    Conjunction: 'fuses with',
+    Conjunction: 'aligns with',
     Trine: 'supports',
     Sextile: 'opens doors for',
-    Square: 'challenges',
-    Opposition: 'pulls against',
-    Quincunx: 'awkwardly adjusts',
+    Square: 'stretches',
+    Opposition: 'balances',
+    Quincunx: 'fine-tunes',
   };
   const verb = ASPECT_VERB[aspectType] || 'connects to';
   const tightTag = tightLabel === 'exact' || tightLabel === 'very tight' ? ' (strong)' : '';
-  return `${p1} ${verb} your ${p2Noun}${tightTag}`;
+  return `Your ${p1Noun} ${verb} your ${p2Noun}${tightTag}`;
 }
 
-// Aspect-type specific practical descriptions
+// Natural prose descriptions — warm, opportunity-focused, no mad-libs
 function buildAspectDescription(p1: string, p2: string, aspectType: string, isOpp: boolean): string {
   const p1Info = PLANET_PLAIN[p1];
   const p2Info = PLANET_PLAIN[p2];
-  const p1Noun = PLANET_NOUNS[p1] || p1.toLowerCase();
-  const p2Noun = PLANET_NOUNS[p2] || p2.toLowerCase();
 
   if (!p1Info || !p2Info) {
-    // Fallback for unrecognized planets
     return isOpp
-      ? `This year, ${p1Noun} and ${p2Noun} work together smoothly. Pay attention to where these themes overlap in your life.`
-      : `${p1Noun} and ${p2Noun} create tension this year. The friction is productive — it\'s pushing you to address something you\'ve been putting off.`;
+      ? `Two important parts of your life are working together beautifully this year. Pay attention to where things flow naturally.`
+      : `Two important parts of your life are asking you to grow this year. The stretch is worthwhile — it's building something stronger.`;
   }
 
   if (isOpp) {
-    // Opportunities: trine, sextile, benefic conjunction
     switch (aspectType) {
       case 'Conjunction':
-        return `This year, ${p1Info.does} merges directly with ${p2Info.does}. They become the same thing — you can\'t work on one without the other responding. Practically, this shows up in: ${p1Info.examples}. Watch for moments where ${p2Info.examples} happen at the same time.`;
+        return `This year, ${p1Info.does} and ${p2Info.does} merge into one story. They strengthen each other — when you invest in one, the other responds. You'll notice this in moments where ${p1Info.examples} and ${p2Info.examples} happen at the same time.`;
       case 'Trine':
-        return `${p1Info.does} and ${p2Info.does} support each other effortlessly this year. You don\'t have to force it — when you do things related to ${p1Info.examples}, good things naturally happen around ${p2Info.examples}. The only risk is not using this ease on purpose.`;
+        return `${p1Info.does} and ${p2Info.does} are beautifully aligned this year. When you follow your instincts around ${p1Info.examples}, good things naturally happen around ${p2Info.examples}. This is one of the easier, more rewarding connections in your year.`;
       case 'Sextile':
-        return `There\'s a quiet opportunity between ${p1Info.does} and ${p2Info.does} this year. It won\'t announce itself — you have to notice it. When something related to ${p1Info.examples} comes up, look for a small opening around ${p2Info.examples}. Act on it; don\'t wait.`;
+        return `There's a lovely opportunity where ${p1Info.does} and ${p2Info.does} can work together this year. It's subtle — look for small openings where ${p1Info.examples} connects to ${p2Info.examples}. When you spot it, say yes.`;
       default:
-        return `${p1Info.does} connects positively with ${p2Info.does} this year. Look for overlap between ${p1Info.examples} and ${p2Info.examples}.`;
+        return `${p1Info.does} and ${p2Info.does} are supporting each other this year — let them work together naturally.`;
     }
   } else {
-    // Challenges: square, opposition, quincunx
     switch (aspectType) {
       case 'Square':
-        return `${p1Info.does} and ${p2Info.does} are fighting each other this year. You\'ll feel pulled in two directions — for example, ${p1Info.examples} may clash with ${p2Info.examples}. The tension is real, but it\'s what forces you to actually make a decision instead of drifting.`;
+        return `${p1Info.does} and ${p2Info.does} are pulling you in two directions this year — think of it as a creative stretch. For example, ${p1Info.examples} may compete with ${p2Info.examples} for your attention. The opportunity is learning to honor both without choosing one over the other.`;
       case 'Opposition':
-        return `${p1Info.does} and ${p2Info.does} are on opposite ends of a seesaw. You might swing between extremes — overdoing ${p1Info.examples} while neglecting ${p2Info.examples}, or vice versa. Other people may carry one side for you. The work is finding a middle ground, not choosing one over the other.`;
+        return `You may feel a balancing act between ${p1Info.does} and ${p2Info.does}. Sometimes ${p1Info.examples} gets all your attention, other times ${p2Info.examples} takes over. The opportunity is finding a middle ground where both parts of your life feel honored.`;
       case 'Quincunx':
-        return `${p1Info.does} and ${p2Info.does} don\'t naturally understand each other — they\'re speaking different languages. You\'ll notice awkward mismatches between ${p1Info.examples} and ${p2Info.examples}. Small, repeated adjustments are the fix — not a big dramatic overhaul.`;
+        return `${p1Info.does} and ${p2Info.does} don't naturally speak the same language this year — you'll notice small adjustments needed between ${p1Info.examples} and ${p2Info.examples}. Small, flexible tweaks work better than big dramatic changes.`;
       default:
-        return `There\'s friction between ${p1Info.does} and ${p2Info.does}. You\'ll feel it around ${p1Info.examples} bumping against ${p2Info.examples}. Work with the discomfort rather than avoiding it.`;
+        return `There's a growth area between ${p1Info.does} and ${p2Info.does}. You'll feel it around ${p1Info.examples} and ${p2Info.examples}. Working with this stretch rather than avoiding it leads to real progress.`;
     }
   }
 }
@@ -165,15 +160,15 @@ function getYearArchetype(analysis: SolarReturnAnalysis): { name: string; descri
   };
   if (moonPhase.includes('Balsamic')) return {
     name: 'A Year of Completion',
-    description: 'Finish, release, and prepare. This is the quiet before a new cycle. Honor endings as sacred.',
+    description: 'Finish, release, and prepare. This is the quiet before a new cycle begins. Honor what\'s ending with grace.',
   };
   if (moonPhase.includes('First Quarter')) return {
     name: 'A Year of Decision',
-    description: 'The fence is uncomfortable — pick a side. This year forces action through productive friction.',
+    description: 'You\'re ready to commit to a direction. This year encourages action through clarity about what matters most.',
   };
   if (moonPhase.includes('Last Quarter')) return {
     name: 'A Year of Release',
-    description: 'Old structures that served you no longer fit. The discomfort is evolution, not punishment.',
+    description: 'Old structures that served you are making room for something new. The changes happening are evolution, not loss.',
   };
 
   // Sun house archetypes
@@ -181,8 +176,8 @@ function getYearArchetype(analysis: SolarReturnAnalysis): { name: string; descri
   if (sunH === 10) return { name: 'A Builder\'s Year', description: 'Career, reputation, and visible achievement define this chapter. Build something lasting.' };
   if (sunH === 7) return { name: 'A Year of Partnership', description: 'Growth happens through others. Relationships are the classroom and the gift.' };
   if (sunH === 4) return { name: 'A Year of Roots', description: 'Home, family, and emotional foundation are the priority. Build from the inside out.' };
-  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something old must die for something real to live. Deep psychological work and financial restructuring.' };
-  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'The most private, introspective year possible. Rest is the work. Dreams carry messages.' };
+  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something meaningful is shifting at a deep level. Personal breakthroughs and new beginnings emerge from honest self-reflection.' };
+  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'The most private, introspective year possible. Rest and reflection are the real work.' };
 
   return { name: 'A Year of Growth', description: 'Multiple areas of your life are activated — focus on what matters most, not what\'s loudest.' };
 }
@@ -239,26 +234,26 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Saturn placement = challenge
+  // Saturn placement = growth area
   if (analysis.saturnFocus) {
     const sH = analysis.saturnFocus.house;
     items.push({
       type: 'challenge',
-      title: `Saturn tests ${HOUSE_KEYWORDS[sH!] || 'life area'}`,
-      description: analysis.saturnFocus.interpretation.slice(0, 200),
+      title: `Building something real in your ${HOUSE_KEYWORDS[sH!] || 'life'} area`,
+      description: `Your ${HOUSE_KEYWORDS[sH!] || 'personal'} life is a major growth area this year. Expect to do real, meaningful work here — the effort builds something that lasts.`,
       source: `Saturn in SR House ${sH}`,
       house: sH,
       intensity: 8,
     });
   }
 
-  // Pluto placement = challenge/transformation
+  // Pluto placement = transformation
   const plutoH = analysis.planetSRHouses?.Pluto;
   if (plutoH) {
     items.push({
       type: 'challenge',
-      title: `Pluto transforms ${HOUSE_KEYWORDS[plutoH] || 'life area'}`,
-      description: `Deep, unavoidable change in ${HOUSE_KEYWORDS[plutoH] || 'this area'}. What isn't real will be stripped away.`,
+      title: `Deep evolution in your ${HOUSE_KEYWORDS[plutoH] || 'life'} area`,
+      description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more authentic and powerful.`,
       source: `Pluto in SR House ${plutoH}`,
       house: plutoH,
       intensity: 7,
