@@ -146,10 +146,11 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   // Saturn on angles → freeze
   const saturnH = srHouses['Saturn'];
   if (saturnH === 1 || saturnH === 10) {
+    const satArea = saturnH === 1 ? 'your identity' : 'your career';
     leaks.push({
       pattern: 'Freezing',
-      trigger: `Saturn in your ${saturnH === 1 ? '1st house' : '10th house'} -- self-doubt and imposter syndrome can paralyze you`,
-      antidote: 'Take the smallest possible action every day. Saturn rewards consistent small steps, not big leaps.',
+      trigger: `Responsibility is concentrated in ${satArea} -- self-doubt and imposter syndrome can paralyze you`,
+      antidote: 'Take the smallest possible action every day. Consistent small steps always beat waiting for the perfect moment.',
     });
   }
 
