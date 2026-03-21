@@ -44,6 +44,7 @@ import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
 import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
+import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
