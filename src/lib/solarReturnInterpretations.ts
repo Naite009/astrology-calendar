@@ -125,24 +125,39 @@ export const srMoonInSign: Record<string, string> = {
 
 // ─── House Overlay Narratives (SR house → natal house meaning) ──────
 
+const PLANET_PLAIN_LABEL: Record<string, string> = {
+  Sun: 'your core energy and purpose',
+  Moon: 'your emotional needs',
+  Mercury: 'your thinking and communication',
+  Venus: 'your love and beauty energy',
+  Mars: 'your drive and motivation',
+  Jupiter: 'your growth and expansion energy',
+  Saturn: 'your commitment and responsibility focus',
+  Uranus: 'your need for change and freedom',
+  Neptune: 'your imagination and intuition',
+  Pluto: 'your transformation energy',
+  Chiron: 'your healing journey',
+  NorthNode: 'your soul growth direction',
+  Ceres: 'your nurturing instincts',
+  Pallas: 'your pattern-recognition ability',
+  Juno: 'your partnership needs',
+  Vesta: 'your devotion and sacred focus',
+};
+
 export const srOverlayNarrative = (planet: string, srHouse: number | null, natalHouse: number | null): string => {
   if (!srHouse || !natalHouse) return '';
+  const plainLabel = PLANET_PLAIN_LABEL[planet] || `the energy of ${planet.toLowerCase()}`;
   if (srHouse === natalHouse) {
-    return `${planet} lands in House ${srHouse} in both your Solar Return and natal chart — a double activation. The events that unfold in your ${shortHouseTheme[srHouse] || 'life'} this year hit you personally and directly. There's no buffer between what happens externally and how it registers internally; you live these themes from the inside out.`;
+    return `This year, ${plainLabel} lands in the same area as your birth chart — your ${shortHouseTheme[srHouse] || 'life'}. That's a double activation. The events that unfold here hit you personally and directly. There's no buffer between what happens externally and how it registers internally; you live these themes from the inside out.`;
   }
 
-  const srTheme = shortHouseTheme[srHouse] || `House ${srHouse}`;
-  const natTheme = shortHouseTheme[natalHouse] || `House ${natalHouse}`;
+  const srTheme = shortHouseTheme[srHouse] || `your life`;
+  const natTheme = shortHouseTheme[natalHouse] || `your life`;
 
-  const overlayFelt: Record<string, string> = {
-    // How the SR house "delivers" to the natal house — felt-sense bridging
-  };
-
-  // Build a specific narrative using their actual houses
   const srVerb = getHouseActionVerb(srHouse);
   const natFeeling = getHouseImpactFeeling(natalHouse);
 
-  return `${planet} drives activity in your ${srTheme} (SR House ${srHouse}) this year — that's where the visible events, decisions, and turning points show up. But those experiences land in your natal House ${natalHouse}, which means the real impact registers in your ${natTheme} life. Concretely: ${srVerb} in ${srTheme} contexts, and you ${natFeeling} in your ${natTheme} world as a result. The situation and the emotional hit are in two different rooms of your life — and that gap is where the growth happens.`;
+  return `This year, ${plainLabel} drives activity in your ${srTheme} — that's where the visible events, decisions, and turning points show up. But those experiences land in your ${natTheme} area, which means the real impact registers there. Concretely: ${srVerb} in ${srTheme} contexts, and you ${natFeeling} in your ${natTheme} world as a result. The situation and the emotional hit are in two different rooms of your life — and that gap is where the growth happens.`;
 };
 
 function getHouseActionVerb(house: number): string {
