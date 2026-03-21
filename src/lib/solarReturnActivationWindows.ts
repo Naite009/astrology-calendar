@@ -46,6 +46,8 @@ export interface ActivationWindow {
   triggers: TransitHit[];
   theme: string;
   intensity: number; // 1-10
+  type: 'career' | 'relationship' | 'emotional' | 'health' | 'identity' | 'money' | 'mixed';
+  advice: string;
 }
 
 export interface MonthlyTheme {
@@ -275,6 +277,9 @@ export function calculateActivationWindows(
       const targets = [...new Set(cluster.map(c => c.srTarget.replace('SR ', '')))];
       const planets = [...new Set(cluster.map(c => c.transitPlanet))];
 
+      const windowType = classifyWindowType(targets, planets);
+      const windowAdvice = generateWindowAdvice(windowType, planets, targets);
+
       activationWindows.push({
         label: `${planets.join(' + ')} → ${targets.join(', ')}`,
         startDate: new Date(Math.min(...starts)),
@@ -283,6 +288,8 @@ export function calculateActivationWindows(
         triggers: cluster,
         theme: synthesizeWindowTheme(cluster, planets, targets),
         intensity: Math.min(10, cluster.length * 2 + cluster.filter(c => c.significance === 'high').length * 3),
+        type: windowType,
+        advice: windowAdvice,
       });
     }
   }
@@ -302,6 +309,37 @@ export function calculateActivationWindows(
 
 function formatShortDate(d: Date): string {
   return `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}`;
+}
+
+// ── Classify activation window type ──
+
+const TARGET_TYPE_MAP: Record<string, ActivationWindow['type']> = {
+  Sun: 'identity', Moon: 'emotional', Ascendant: 'identity', MC: 'career',
+  Venus: 'relationship', Mars: 'health', Jupiter: 'money', Saturn: 'career',
+  Mercury: 'career', Neptune: 'emotional', Pluto: 'identity', Uranus: 'identity',
+  Chiron: 'health',
+};
+
+function classifyWindowType(targets: string[], planets: string[]): ActivationWindow['type'] {
+  const types = targets.map(t => TARGET_TYPE_MAP[t] || 'mixed');
+  const unique = [...new Set(types)];
+  if (unique.length === 1) return unique[0];
+  if (planets.includes('Saturn')) return 'career';
+  if (planets.includes('Venus') || targets.includes('Venus')) return 'relationship';
+  return 'mixed';
+}
+
+function generateWindowAdvice(type: ActivationWindow['type'], _planets: string[], _targets: string[]): string {
+  const adviceMap: Record<string, string> = {
+    career: 'Schedule important meetings, launches, or negotiations during this window.',
+    relationship: 'Ideal for deepening connections or having important conversations.',
+    emotional: 'Honor your feelings — journaling or creative expression helps process what surfaces.',
+    health: 'Pay attention to body signals. Good time for starting new health routines.',
+    identity: 'Who you are is shifting. Embrace the evolution instead of clinging to old patterns.',
+    money: 'Financial opportunities or pressures peak. Review budgets and be strategic.',
+    mixed: 'Multiple life areas activate simultaneously. Prioritize what feels most urgent.',
+  };
+  return adviceMap[type] || adviceMap.mixed;
 }
 
 // ── Synthesize a real theme description for activation windows ──

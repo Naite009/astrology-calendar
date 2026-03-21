@@ -24,6 +24,11 @@ import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { calculateAstrocartography } from '@/lib/solarReturnAstrocartography';
 import { calculatePlanetaryHours, getDayRuler, PLANETARY_HOUR_MEANINGS } from '@/lib/planetaryHours';
 import { parseLatitudeFromLocation } from '@/lib/solarReturnVertex';
+import { buildYearSummary } from '@/lib/solarReturnYearSummary';
+import { scoreAspects } from '@/lib/solarReturnAspectScoring';
+import { buildHouseEmphasis } from '@/lib/solarReturnHouseEmphasis';
+import { buildLunarFlow } from '@/lib/solarReturnLunarFlow';
+import { buildPatternTracking } from '@/lib/solarReturnPatternTracking';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -2494,6 +2499,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+      // New structured summary objects
+      yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      scoredAspects: scoreAspects(analysis.srToNatalAspects || []),
+      houseEmphasis: buildHouseEmphasis(analysis),
+      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
     };
   };
 
