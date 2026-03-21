@@ -14,6 +14,7 @@ import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
+import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
