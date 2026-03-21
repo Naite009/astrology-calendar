@@ -522,6 +522,7 @@ export function downloadBirthdayJSONStandalone(
       })(),
       identityShift: generateIdentityShift(analysis, srChart, natalChart),
       lifeDomainScores: calculateLifeDomainScores(analysis),
+      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // AI-generated readings (both modes, if available)
