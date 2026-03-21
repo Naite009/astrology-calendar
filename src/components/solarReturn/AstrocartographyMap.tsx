@@ -19,11 +19,48 @@ function projectWorld(lat: number, lng: number, w: number, h: number) {
 }
 
 function projectUS(lat: number, lng: number, w: number, h: number) {
-  // US bounds: lat 18–72, lng -170–-65
-  const minLat = 18, maxLat = 72, minLng = -170, maxLng = -65;
+  // Continental US focus: lat 24–50, lng -125–-66
+  // Hawaii/Alaska get separate insets
+  const minLat = 24, maxLat = 50, minLng = -125, maxLng = -66;
   const x = ((lng - minLng) / (maxLng - minLng)) * w;
   const y = ((maxLat - lat) / (maxLat - minLat)) * h;
   return { x, y };
+}
+
+// Hawaii inset projection
+function projectHawaii(lat: number, lng: number, w: number, h: number) {
+  const minLat = 18, maxLat = 23, minLng = -161, maxLng = -154;
+  const insetW = w * 0.15;
+  const insetH = h * 0.2;
+  const insetX = w * 0.05;
+  const insetY = h * 0.72;
+  const x = insetX + ((lng - minLng) / (maxLng - minLng)) * insetW;
+  const y = insetY + ((maxLat - lat) / (maxLat - minLat)) * insetH;
+  return { x, y };
+}
+
+// Alaska inset projection
+function projectAlaska(lat: number, lng: number, w: number, h: number) {
+  const minLat = 55, maxLat = 72, minLng = -170, maxLng = -140;
+  const insetW = w * 0.15;
+  const insetH = h * 0.2;
+  const insetX = w * 0.01;
+  const insetY = h * 0.48;
+  const x = insetX + ((lng - minLng) / (maxLng - minLng)) * insetW;
+  const y = insetY + ((maxLat - lat) / (maxLat - minLat)) * insetH;
+  return { x, y };
+}
+
+function isHawaii(lat: number, lng: number) {
+  return lat >= 18 && lat <= 23 && lng >= -161 && lng <= -154;
+}
+
+function isAlaska(lat: number, lng: number) {
+  return lat >= 55 && lat <= 72 && lng >= -170 && lng <= -140;
+}
+
+function isContinentalUS(lat: number, lng: number) {
+  return lat >= 24 && lat <= 50 && lng >= -125 && lng <= -66;
 }
 
 function isInUS(lat: number, lng: number) {
