@@ -217,7 +217,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
   Mercury: {
     1: 'Your thinking and communication style is front and center. Others notice how you think and speak. Writing, teaching, or negotiating on your own behalf is highlighted.',
     2: 'Financial planning, income-related conversations, and money decisions dominate your mental landscape. You may earn through communication skills.',
-    3: 'Mercury is at home here — communication, writing, learning, teaching, and local connections are supercharged. A mentally busy year.',
+    3: 'Communication, writing, learning, teaching, and local connections are supercharged. A mentally busy year.',
     4: 'Home decisions, family conversations, and thinking about your roots or living situation. Real estate negotiations or family discussions are likely.',
     5: 'Creative writing, playful communication, and intellectual romance. You may teach children or express ideas through art and performance.',
     6: 'Work communication intensifies — emails, meetings, task management. Health research and medical consultations are also highlighted.',
