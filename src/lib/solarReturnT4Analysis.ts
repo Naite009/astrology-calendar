@@ -376,10 +376,6 @@ export function calculateHealthOverlay(
         (a.planet1 === planet || a.planet2 === planet) && HARD_ASPECTS.includes(a.type)
       );
 
-    const signBody = SIGN_BODY[pos.sign] || '';
-    const houseNote = house === 6 ? ' Landing in the 6th house of health amplifies this planet\'s body-related themes.' :
-                      house === 12 ? ' In the 12th house, health matters may be hidden or manifest as psychosomatic patterns.' :
-                      house === 1 ? ' In the 1st house, physical vitality and appearance are directly affected.' : '';
 
     const BODY_PLAIN: Record<string, string> = {
       Sun: 'your overall vitality and energy levels',
