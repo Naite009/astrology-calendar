@@ -1331,12 +1331,19 @@ export const analyzeSolarReturn = (
       9: 'Growth comes through expanding your worldview, travel, and higher learning. Adventure and meaning-making are calling.',
       10: 'Growth comes through career achievement and public responsibility. Step into your authority and be visible.',
       11: 'Growth comes through community involvement and pursuing your ideals. Collective purpose matters more than individual glory.',
-      12: 'Growth comes through spiritual surrender, solitude, and letting go of control. Trust the unseen and release the old.',
+      12: 'Growth comes through quiet reflection, solitude, and letting go of control. Trust the process and release the old.',
+    };
+    const NODE_HOUSE_THEME: Record<number, string> = {
+      1: 'Self-Leadership', 2: 'Building Self-Worth', 3: 'Finding Your Voice',
+      4: 'Emotional Foundations', 5: 'Creative Courage', 6: 'Daily Mastery',
+      7: 'Partnership Growth', 8: 'Depth & Vulnerability', 9: 'Expanding Horizons',
+      10: 'Stepping Into Authority', 11: 'Community Purpose', 12: 'Spiritual Surrender',
     };
     nodesFocus = {
       sign: nnPos.sign,
       house: nnHouse,
-      interpretation: nnHouse ? (nodeHouseInterps[nnHouse] || '') : 'The North Node in your SR chart points to your growth edge this year.',
+      theme: nnHouse ? (NODE_HOUSE_THEME[nnHouse] || 'Growth Edge') : 'Growth Edge',
+      interpretation: nnHouse ? (nodeHouseInterps[nnHouse] || '') : 'Your growth edge this year points toward what feels unfamiliar but true — lean into the discomfort.',
     };
   }
 
