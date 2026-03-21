@@ -145,7 +145,6 @@ export function buildYearSummary(
       const monthHint = getMonthHintForDomain(d.domainKey, analysis);
       if (monthHint && !mostIntenseMonths.includes(monthHint)) mostIntenseMonths.push(monthHint);
     }
-    }
   }
 
   // Fallback: use lunar peaks
