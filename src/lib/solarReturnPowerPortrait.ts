@@ -138,7 +138,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (analysis.retrogrades?.planets?.includes('Mars')) {
     leaks.push({
       pattern: 'Forcing',
-      trigger: 'Mars is retrograde this year -- pushing harder does not get results faster',
+      trigger: 'Your drive and motivation energy is in review mode this year — pushing harder does not get results faster',
       antidote: 'Slow down, revisit old plans, and let frustrated energy redirect itself before acting',
     });
   }
