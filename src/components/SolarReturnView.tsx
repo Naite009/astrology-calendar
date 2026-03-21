@@ -49,7 +49,7 @@ import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
-import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
+// RelocationComparisonTool removed — too much friction for users
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
 
 const ZODIAC_SIGNS = [
@@ -72,6 +72,10 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
 };
+
+/** Capitalize each word in a location string (e.g. "washington, DC" → "Washington, DC") */
+const capitalizeLocation = (loc: string): string =>
+  loc.replace(/\b[a-z]/g, c => c.toUpperCase());
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -2675,27 +2679,19 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
       {srChart.solarReturnLocation && srChart.solarReturnLocation !== natalChart.birthLocation && (
         <div className="border border-border rounded-sm p-4 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-            📍 This SR chart was relocated
+            📍 This SR Chart Was Relocated
           </h4>
           <p className="text-sm text-muted-foreground">
-            Birth location: <strong>{natalChart.birthLocation}</strong> → SR location: <strong>{srChart.solarReturnLocation}</strong>
+            Birth location: <strong>{capitalizeLocation(natalChart.birthLocation || '')}</strong> → SR location: <strong>{capitalizeLocation(srChart.solarReturnLocation)}</strong>
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            To compare, add another SR chart for the same year using your birth location.
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            The planets are identical — only the house cusps and angles shift based on where you were for your Solar Return.
           </p>
         </div>
       )}
 
       {/* Astrocartography Heat Map */}
       <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
-
-      {/* Interactive comparison tool */}
-      <RelocationComparisonTool
-        srCharts={srChartsForNatal}
-        natalChart={natalChart}
-        currentSR={srChart}
-        currentAnalysis={analysis}
-      />
     </div>
   );
 };

@@ -111,7 +111,18 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const bestCity = cities[0];
   const worstCity = cities[cities.length - 1];
 
+  // Limit displayed cities to reduce clutter
   const visibleCities = useMemo(() => {
+    let filtered = cities;
+    if (view === 'us') {
+      filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
+    }
+    // On map: show only top 15 to prevent label overlap
+    return filtered.slice(0, 15);
+  }, [cities, view]);
+
+  // Full list for the scrollable table below
+  const allVisibleCities = useMemo(() => {
     if (view === 'us') {
       return cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
@@ -371,10 +382,10 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
             {view === 'us' ? 'US' : 'All'} Cities by Rating
           </span>
-          <span className="text-[10px] text-muted-foreground">{visibleCities.length} locations</span>
+          <span className="text-[10px] text-muted-foreground">{allVisibleCities.length} locations</span>
         </div>
         <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-          {visibleCities.map(city => (
+          {allVisibleCities.map(city => (
             <button
               key={city.city}
               onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
