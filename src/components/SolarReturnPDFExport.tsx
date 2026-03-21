@@ -2519,6 +2519,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       antisciaContacts: analysis.antisciaContacts,
       solarArcs: analysis.solarArcs,
       synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
+      midpointHits: analysis.midpointHits,
+      prenatalEclipse: analysis.prenatalEclipse,
+      planetarySpeeds: analysis.planetarySpeeds,
+      heliacalRising: analysis.heliacalRising,
       // Strategy & Timing
       cakeImageUrl: (() => {
         const natalSun = natalChart.planets?.Sun?.sign || '';
