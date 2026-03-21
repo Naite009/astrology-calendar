@@ -111,7 +111,18 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const bestCity = cities[0];
   const worstCity = cities[cities.length - 1];
 
+  // Limit displayed cities to reduce clutter
   const visibleCities = useMemo(() => {
+    let filtered = cities;
+    if (view === 'us') {
+      filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
+    }
+    // On map: show only top 15 to prevent label overlap
+    return filtered.slice(0, 15);
+  }, [cities, view]);
+
+  // Full list for the scrollable table below
+  const allVisibleCities = useMemo(() => {
     if (view === 'us') {
       return cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
