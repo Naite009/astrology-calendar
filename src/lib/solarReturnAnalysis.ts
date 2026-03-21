@@ -339,6 +339,7 @@ export interface SolarReturnAnalysis {
   srToNatalAspects: SRKeyAspect[];
   srInternalAspects: SRKeyAspect[];
   angularPlanets: string[];
+  angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[];
   relocationTip: string;
   lordOfTheYear: {
     planet: string;
@@ -870,12 +871,18 @@ export const analyzeSolarReturn = (
   }
   srInternalAspects.sort((a, b) => a.orb - b.orb);
 
-  // 7. Angular planets (within 8° of SR 1st/10th cusp)
+  // 7. Angular planets (within 8° of SR ASC, MC, DSC, IC)
   const angularPlanets: string[] = [];
-  const angles = [srChart.houseCusps?.house1, srChart.houseCusps?.house10];
-  for (const angle of angles) {
-    if (!angle) continue;
-    const angleDeg = toAbsDeg(angle);
+  const angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[] = [];
+  const ANGLE_DEFS: { cusp: any; name: string; house: number }[] = [
+    { cusp: srChart.houseCusps?.house1, name: 'Ascendant', house: 1 },
+    { cusp: srChart.houseCusps?.house4, name: 'IC', house: 4 },
+    { cusp: srChart.houseCusps?.house7, name: 'Descendant', house: 7 },
+    { cusp: srChart.houseCusps?.house10, name: 'MC', house: 10 },
+  ];
+  for (const angleDef of ANGLE_DEFS) {
+    if (!angleDef.cusp) continue;
+    const angleDeg = toAbsDeg(angleDef.cusp);
     if (angleDeg === null) continue;
     for (const planet of ALL_PLANETS) {
       const pos = srChart.planets[planet as keyof typeof srChart.planets];
@@ -885,7 +892,14 @@ export const analyzeSolarReturn = (
       let diff = Math.abs(pDeg - angleDeg);
       if (diff > 180) diff = 360 - diff;
       if (diff <= 8) {
-        angularPlanets.push(planet);
+        if (!angularPlanets.includes(planet)) angularPlanets.push(planet);
+        angularPlanetsDetailed.push({
+          planet,
+          angle: angleDef.name,
+          sign: pos.sign,
+          house: angleDef.house,
+          orb: Math.round(diff * 10) / 10,
+        });
       }
     }
   }
@@ -1363,13 +1377,40 @@ export const analyzeSolarReturn = (
       let diff = Math.abs(srDeg - natDeg);
       if (diff > 180) diff = 360 - diff;
       if (diff <= CONDUIT_ORB) {
+        const CONDUIT_INTERPS: Record<string, Record<string, string>> = {
+          Sun: { Ascendant: 'Your identity and vitality land directly on your rising degree -- this year you ARE your Sun sign in a way people can see. Expect a confidence boost and stronger sense of self.',
+            Moon: 'Your conscious will sits on your emotional core -- head and heart align this year. Decisions feel clearer because what you want and what you need are the same thing.',
+            NorthNode: 'Your purpose activates your growth direction -- this is a year where doing what comes naturally IS the growth path.',
+            default: 'Your core identity reawakens the themes of your natal placement -- expect those life areas to feel more vivid and personally important.' },
+          Moon: { Sun: 'Your emotional needs sit on your identity degree -- everything this year filters through how you feel. Mood drives decisions more than logic.',
+            Ascendant: 'Your emotional self is visible on the surface -- others sense your feelings immediately. Vulnerability becomes a strength.',
+            default: 'Your emotional radar locks onto this natal point -- expect heightened sensitivity around these life themes.' },
+          Saturn: { Sun: 'Saturn lands on your identity degree -- a serious year of maturation. You feel older, more responsible, and less tolerant of anything that wastes your time.',
+            Moon: 'Saturn sits on your emotional core -- feelings are heavy but honest. Emotional maturity comes through accepting what you cannot change.',
+            Venus: 'Saturn presses on your love and values -- relationships face a reality check. What is real survives; what is not, ends.',
+            default: 'Saturn reactivates this natal point -- expect a test or restructuring around these themes.' },
+          Chiron: { Ascendant: 'The wounded healer sits on your rising degree -- old insecurities surface publicly, but so does your ability to help others through similar pain.',
+            Moon: 'Chiron on your emotional core -- old wounds resurface for healing. This is tender but ultimately freeing.',
+            Sun: 'Chiron on your identity degree -- a year of healing your relationship with yourself. The wound becomes the gift.',
+            default: 'Chiron reactivates this natal point -- expect old sensitivities to surface, creating opportunities for genuine healing.' },
+          Venus: { Mars: 'Venus lands on your Mars degree -- desire and attraction merge. Relationships feel magnetic and decisive.',
+            default: 'Venus activates this natal point -- expect more pleasure, beauty, and ease around these life themes.' },
+          Mars: { Venus: 'Mars lands on your Venus degree -- passion and pursuit merge. You go after what you want in love and money with unusual directness.',
+            default: 'Mars reactivates this natal point -- expect increased energy, drive, or conflict around these themes.' },
+          Jupiter: { default: 'Jupiter expands this natal point -- growth, opportunity, and optimism flow into these life themes.' },
+          Pluto: { default: 'Pluto intensifies this natal point -- deep transformation and power shifts activate around these themes.' },
+          Neptune: { default: 'Neptune dissolves boundaries around this natal point -- expect heightened intuition but also potential confusion.' },
+          Uranus: { default: 'Uranus electrifies this natal point -- sudden changes, breakthroughs, or disruptions activate these themes.' },
+        };
+        const interpMap = CONDUIT_INTERPS[srPlanet] || {};
+        const specificInterp = interpMap[natPlanet] || interpMap['default'] || `SR ${srPlanet} sits on the degree of your natal ${natPlanet}, reawakening those birth chart themes through ${srPlanet}'s current expression.`;
         natalDegreeConduits.push({
           srPlanet,
           natalPlanet: natPlanet,
           srSign: srPos.sign,
-          degree: `${srPos.degree}°${(srPos as any).minutes || 0}'`,
+          degree: `${srPos.degree}\u00B0${(srPos as any).minutes || 0}'`,
           orb: Math.round(diff * 10) / 10,
-          interpretation: `SR ${srPlanet} sits on the degree of your natal ${natPlanet} — it becomes a conduit for that natal energy this year. The themes of ${natPlanet} in your birth chart are reawakened and channeled through ${srPlanet}'s expression.`,
+          interpretation: specificInterp,
         });
       }
     }
@@ -1607,6 +1648,7 @@ export const analyzeSolarReturn = (
     srToNatalAspects,
     srInternalAspects,
     angularPlanets,
+    angularPlanetsDetailed,
     relocationTip,
     lordOfTheYear,
     profectionYear,

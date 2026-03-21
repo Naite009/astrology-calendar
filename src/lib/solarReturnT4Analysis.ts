@@ -112,6 +112,7 @@ export interface SREclipseSensitivity {
 
 export interface SREnhancedRetrograde {
   planet: string;
+  retrograde: boolean;
   sign: string;
   house: number | null;
   stationRetroDate: string;
@@ -500,6 +501,7 @@ export function calculateEnhancedRetrogrades(
 
     results.push({
       planet,
+      retrograde: true,
       sign: pos.sign,
       house,
       stationRetroDate: period?.stationRx || '',
