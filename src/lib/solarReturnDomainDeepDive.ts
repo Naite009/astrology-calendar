@@ -17,7 +17,8 @@ export interface DomainHouseSnapshot {
   houseNumber: number;
   label: string;         // "Earning Power (2nd)"
   sign: string | null;
-  planets: string[];
+  planets: string[];        // major planets only (Sun–Pluto)
+  minorBodies: string[];    // asteroids, points (Juno, Ceres, etc.)
   interpretation: string;
 }
 
