@@ -221,14 +221,14 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Jupiter placement = opportunity
+  // Growth energy placement = opportunity
   const jupH = analysis.planetSRHouses?.Jupiter;
   if (jupH) {
     items.push({
       type: 'opportunity',
-      title: `Jupiter expands ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
-      description: `Jupiter in your ${jupH}${getOrd(jupH)} house opens doors in ${HOUSE_KEYWORDS[jupH] || 'this area'}. Growth is available — reach for it.`,
-      source: `Jupiter in SR House ${jupH}`,
+      title: `Growth energy expands your ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
+      description: `Your growth and expansion energy this year is focused on ${HOUSE_KEYWORDS[jupH] || 'this area'} — doors are opening here. Reach for the opportunities.`,
+      source: `Growth energy in ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
       house: jupH,
       intensity: 8,
     });
