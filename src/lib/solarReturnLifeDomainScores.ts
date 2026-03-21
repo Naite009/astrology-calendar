@@ -445,22 +445,29 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
             nature,
           });
         } else {
-          const w = 0.2;
+          // Minor bodies / asteroids that aren't in the domain's activityWeights
+          // get near-zero activity to prevent score inflation.
+          const MAJOR_PLANETS = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
+          const isMajor = MAJOR_PLANETS.has(overlay.planet);
+          const w = isMajor ? 0.15 : 0.02;  // asteroids/points get almost nothing
           activity += w;
           const nature = getNature(overlay.planet);
-          let rawTone = getToneWeight(overlay.planet, domain) * 0.3;
+          let rawTone = getToneWeight(overlay.planet, domain) * (isMajor ? 0.3 : 0.1);
           const rxMult = retrogradeMultiplier(overlay.planet, retrogradeSet.has(overlay.planet));
           const finalTone = rawTone * rxMult;
           toneTotal += finalTone;
 
-          allDrivers.push({ planet: overlay.planet, house: h, effect: getEffect(overlay.planet), nature, points: w, tonePoints: Math.round(finalTone * 10) / 10 });
-          breakdown.push({
-            source: `${overlay.planet} in ${ordinal(h)} House`,
-            points: w,
-            tonePoints: Math.round(finalTone * 10) / 10,
-            reason: `${overlay.planet} is present but not a key planet for ${config.label} — minor activation`,
-            nature,
-          });
+          if (isMajor) {
+            allDrivers.push({ planet: overlay.planet, house: h, effect: getEffect(overlay.planet), nature, points: w, tonePoints: Math.round(finalTone * 10) / 10 });
+            breakdown.push({
+              source: `${overlay.planet} in ${ordinal(h)} House`,
+              points: w,
+              tonePoints: Math.round(finalTone * 10) / 10,
+              reason: `${overlay.planet} is present but not a key planet for ${config.label} — minor activation`,
+              nature,
+            });
+          }
+          // Asteroids/points silently contribute near-zero and don't appear as drivers
         }
       }
     }
