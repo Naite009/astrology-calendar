@@ -295,7 +295,7 @@ export function generatePowerPortrait(
     realignSources.push({
       planet: 'North Node',
       sign: nnSign,
-      house: nn.house || null,
+      house: null,
       reason: `Your growth direction: ${getNNDirection(nnSign)}`,
     });
   }
