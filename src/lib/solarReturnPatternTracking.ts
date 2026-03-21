@@ -45,16 +45,16 @@ export function buildPatternTracking(
 
   let saturnCycleNote = '';
   if (natalSaturnSign === srSaturnSign) {
-    saturnCycleNote = `Saturn is in ${srSaturnSign} — the same sign as your natal Saturn. Saturn cycle themes (responsibility, maturity, structure) are echoing loudly this year.`;
+    saturnCycleNote = 'The part of your chart focused on commitment and responsibility is echoing a familiar pattern — themes around maturity, structure, and hard-earned growth are especially resonant this year.';
   } else {
     const nIdx = SIGNS.indexOf(natalSaturnSign);
     const sIdx = SIGNS.indexOf(srSaturnSign);
     if (nIdx >= 0 && sIdx >= 0) {
       const dist = ((sIdx - nIdx) + 12) % 12;
       if (dist === 3 || dist === 9) {
-        saturnCycleNote = `Saturn squares your natal Saturn — a quarter-cycle pressure point. Expect structural tests.`;
+        saturnCycleNote = 'You\'re at a quarter-cycle pressure point for responsibility and commitment — expect structures in your life to be tested.';
       } else if (dist === 6) {
-        saturnCycleNote = `Saturn opposes your natal Saturn — a half-cycle reckoning. What you built is being tested.`;
+        saturnCycleNote = 'You\'re at a half-cycle reckoning for responsibility and commitment — what you\'ve built is being evaluated. What holds up stays; what doesn\'t gets rebuilt.';
       }
     }
   }
@@ -64,7 +64,7 @@ export function buildPatternTracking(
   const srJupiterSign = srChart.planets?.Jupiter?.sign || '';
   const jupiterCycleConnection = natalJupiterSign === srJupiterSign;
   const jupiterCycleNote = jupiterCycleConnection
-    ? `Jupiter returns to ${srJupiterSign} — your natal Jupiter sign. A 12-year growth cycle completes and restarts. Opportunities echo themes from ~12 years ago.`
+    ? 'Your growth and expansion cycle is completing and restarting — a 12-year loop comes full circle. Opportunities this year may echo themes from roughly 12 years ago.'
     : '';
 
   // Metonic return (19-year Moon cycle)
@@ -98,10 +98,10 @@ export function buildPatternTracking(
   }
 
   const notes = [
-    eclipseConnections.length > 0 ? `${eclipseConnections.length} eclipse connection(s) this year.` : '',
-    saturnCycleConnection ? 'Saturn cycle is active.' : '',
-    jupiterCycleConnection ? 'Jupiter return year.' : '',
-    metonicReturn ? '19-year Moon cycle echo active.' : '',
+    eclipseConnections.length > 0 ? `${eclipseConnections.length} eclipse connection(s) this year — significant turning points.` : '',
+    saturnCycleConnection ? 'Responsibility cycle is active.' : '',
+    jupiterCycleConnection ? 'Growth cycle return year.' : '',
+    metonicReturn ? '19-year emotional cycle echo active.' : '',
   ].filter(Boolean).join(' ') || 'No major cycle connections detected this year — a relatively independent chapter.';
 
   return {

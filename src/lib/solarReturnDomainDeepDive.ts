@@ -42,6 +42,12 @@ export interface DomainDeepDive {
 // ─── Helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
+const SIGN_ELEMENT: Record<string, string> = {
+  Aries: 'Fire', Taurus: 'Earth', Gemini: 'Air', Cancer: 'Water',
+  Leo: 'Fire', Virgo: 'Earth', Libra: 'Air', Scorpio: 'Water',
+  Sagittarius: 'Fire', Capricorn: 'Earth', Aquarius: 'Air', Pisces: 'Water',
+};
+
 const MAJOR_PLANETS = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
 
 const PLANET_TONE: Record<string, 'supportive' | 'challenging' | 'neutral' | 'transformative'> = {
@@ -154,10 +160,11 @@ function buildAbundance(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
   const activity = Math.min(10, h2.planets.length * 2.5 + h8.planets.length * 2.5 + (jupHouse === 2 || jupHouse === 8 ? 3 : 1));
 
   const advice: string[] = [];
-  if (jupPos) advice.push(`Jupiter in ${jupPos.sign} says growth comes through ${jupPos.sign === 'Taurus' || jupPos.sign === 'Virgo' || jupPos.sign === 'Capricorn' ? 'slow, practical steps' : jupPos.sign === 'Aries' || jupPos.sign === 'Leo' || jupPos.sign === 'Sagittarius' ? 'bold moves and risk-taking' : jupPos.sign === 'Gemini' || jupPos.sign === 'Libra' || jupPos.sign === 'Aquarius' ? 'networking and ideas' : 'intuition and creative flow'}.`);
-  if (h2.planets.includes('Saturn')) advice.push('Saturn in the 2nd means money comes through discipline and patience — no shortcuts this year.');
-  else if (h2.planets.includes('Mars')) advice.push('Mars in the 2nd pushes you to earn actively — freelancing, side hustles, or asking for raises.');
-  if (h8.planets.length > 0) advice.push('Activity in the 8th suggests shared finances, inheritances, or insurance matters need attention.');
+  const jupElement = jupPos ? (SIGN_ELEMENT[jupPos.sign] || '') : '';
+  if (jupPos) advice.push(`Financial growth this year comes through ${jupElement === 'Earth' ? 'slow, practical steps' : jupElement === 'Fire' ? 'bold moves and risk-taking' : jupElement === 'Air' ? 'networking and ideas' : 'intuition and creative flow'}.`);
+  if (h2.planets.includes('Saturn')) advice.push('Your earning area is asking for discipline and patience — no shortcuts this year, but what you build financially is durable.');
+  else if (h2.planets.includes('Mars')) advice.push('Your earning area is energized — freelancing, side hustles, or asking for raises are favored.');
+  if (h8.planets.length > 0) advice.push('Shared finances, inheritances, or insurance matters need attention this year.');
   if (advice.length === 0) advice.push('Track your spending weekly and notice where money flows easily versus where it sticks.');
 
   const headline = t === 'supportive' ? 'Money Flows More Easily This Year'
@@ -165,9 +172,9 @@ function buildAbundance(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
     : t === 'transformative' ? 'Deep Financial Shifts Ahead'
     : 'A Complex Money Year';
 
-  const para = `Your earning zone (2nd house) has ${h2.planets.length > 0 ? h2.planets.join(' and ') + ' bringing direct energy' : 'no planets — a steadier backdrop'}. ` +
-    `The shared resources zone (8th house) ${h8.planets.length > 0 ? 'is active with ' + h8.planets.join(', ') : 'is quiet'}. ` +
-    `Jupiter in your ${jupHouse || '?'}${ordSuffix(jupHouse || 0)} house suggests your biggest growth opportunity lives in ${HOUSE_LABELS[jupHouse || 0] || 'that area'}.`;
+  const para = `Your earning area has ${h2.planets.length > 0 ? 'active energy bringing direct attention to income' : 'a steadier backdrop — income isn\'t the main storyline'}. ` +
+    `The shared resources area ${h8.planets.length > 0 ? 'is also active — joint finances or debts may need attention' : 'is quiet'}. ` +
+    `Your biggest growth opportunity this year lives in ${HOUSE_LABELS[jupHouse || 0] || 'an area waiting for your attention'}.`;
 
   return { id: 'abundance', title: 'Money & Abundance', emoji: '💰', houses: [h2, h8], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
@@ -209,10 +216,11 @@ function buildLove(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
   const activity = Math.min(10, h5.planets.length * 2.5 + h7.planets.length * 2.5 + (venHouse === 5 || venHouse === 7 ? 3 : 1));
 
   const advice: string[] = [];
-  if (venPos) advice.push(`Venus in ${venPos.sign} means you feel most loved through ${venPos.sign === 'Taurus' || venPos.sign === 'Cancer' ? 'physical comfort and security' : venPos.sign === 'Leo' || venPos.sign === 'Aries' ? 'attention and excitement' : venPos.sign === 'Libra' || venPos.sign === 'Gemini' ? 'conversation and fairness' : venPos.sign === 'Scorpio' || venPos.sign === 'Pisces' ? 'deep emotional honesty' : 'practical acts of service'}.`);
-  if (h7.planets.includes('Saturn')) advice.push('Saturn in the 7th is a relationship reality check — what is real survives, what is not may end.');
-  if (h7.planets.includes('Neptune')) advice.push('Neptune in the 7th can blur boundaries — be careful about seeing people as you wish they were instead of how they actually are.');
-  if (h5.planets.includes('Jupiter')) advice.push('Jupiter in the 5th is great for dating, creative projects, and anything that brings you joy.');
+  const venElement = venPos ? (SIGN_ELEMENT[venPos.sign] || '') : '';
+  if (venPos) advice.push(`This year you feel most loved through ${venElement === 'Earth' || venPos?.sign === 'Cancer' ? 'physical comfort and security' : venElement === 'Fire' ? 'attention and excitement' : venElement === 'Air' ? 'conversation and fairness' : 'deep emotional honesty'}.`);
+  if (h7.planets.includes('Saturn')) advice.push('Your partnership area is getting a reality check — what is real survives, what is not may need rebuilding.');
+  if (h7.planets.includes('Neptune')) advice.push('Your partnership area may blur boundaries — be careful about seeing people as you wish they were instead of how they actually are.');
+  if (h5.planets.includes('Jupiter')) advice.push('Your romance and joy area is beautifully expanded — great for dating, creative projects, and anything that brings you alive.');
   if (advice.length === 0) advice.push('Pay attention to how your body feels around people — your nervous system knows before your mind does.');
 
   const headline = t === 'supportive' ? 'A Year of Warmth and Connection'
@@ -220,9 +228,9 @@ function buildLove(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
     : t === 'transformative' ? 'Deep Relationship Shifts Ahead'
     : 'Love Is Active and Complex';
 
-  const para = `Your romance zone (5th house) ${h5.planets.length > 0 ? 'has ' + h5.planets.join(', ') + ' bringing energy to dating, play, and creative expression' : 'is quiet — not a primary dating year'}. ` +
-    `Your partnership zone (7th house) ${h7.planets.length > 0 ? 'is active with ' + h7.planets.join(', ') + ' — committed relationships are in focus' : 'has a steadier energy'}. ` +
-    `Venus in ${venPos?.sign || '?'} in your ${venHouse || '?'}${ordSuffix(venHouse || 0)} house shapes how you give and receive love.`;
+  const para = `Your romance and joy area ${h5.planets.length > 0 ? 'has active energy bringing attention to dating, play, and creative expression' : 'is quiet — not a primary dating year'}. ` +
+    `Your partnership area ${h7.planets.length > 0 ? 'is active — committed relationships are in focus' : 'has a steadier energy'}. ` +
+    `How you give and receive love is shaped by your connection style this year — ${venElement === 'Fire' ? 'bold and expressive' : venElement === 'Earth' ? 'steady and sensual' : venElement === 'Air' ? 'intellectual and social' : 'deep and intuitive'}.`;
 
   return { id: 'love', title: 'Love & Relationships', emoji: '💕', houses: [h5, h7], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
@@ -261,20 +269,20 @@ function buildCareer(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
   const activity = Math.min(10, h6.planets.length * 2 + h10.planets.length * 3 + (sunHouse === 10 ? 3 : sunHouse === 6 ? 2 : 0));
 
   const advice: string[] = [];
-  if (sunHouse === 10) advice.push('Sun in the 10th — this is YOUR year for recognition. Put yourself out there.');
-  if (h10.planets.includes('Saturn')) advice.push('Saturn in the 10th means career growth through hard work and patience — promotions come slowly but stick.');
-  if (h10.planets.includes('Uranus')) advice.push('Uranus in the 10th can bring sudden career changes — stay flexible and open to unexpected directions.');
-  if (h6.planets.includes('Mars')) advice.push('Mars in the 6th drives you to work harder — watch for burnout and make rest part of your productivity plan.');
-  if (advice.length === 0) advice.push('Focus on the area where the most planets cluster — that is where your career energy naturally flows this year.');
+  if (sunHouse === 10) advice.push('Your core focus and vitality are directed at your public role — this is YOUR year for recognition. Put yourself out there.');
+  if (h10.planets.includes('Saturn')) advice.push('Your career area asks for hard work and patience — promotions come slowly but stick.');
+  if (h10.planets.includes('Uranus')) advice.push('Your career area may bring sudden changes — stay flexible and open to unexpected directions.');
+  if (h6.planets.includes('Mars')) advice.push('Your daily work area is pushing you to work harder — watch for burnout and make rest part of your productivity plan.');
+  if (advice.length === 0) advice.push('Focus on the area where the most energy clusters — that is where your career naturally wants to grow this year.');
 
   const headline = t === 'supportive' ? 'Career Growth Is Well-Supported'
     : t === 'challenging' ? 'A Year of Professional Testing'
     : t === 'transformative' ? 'Major Career Shifts Ahead'
     : 'Work Is Active on Multiple Fronts';
 
-  const para = `Your daily work zone (6th house) ${h6.planets.length > 0 ? 'has ' + h6.planets.join(', ') : 'is quiet'}. ` +
-    `Your public reputation (10th house) ${h10.planets.length > 0 ? 'is activated by ' + h10.planets.join(', ') : 'runs on autopilot'}. ` +
-    `Saturn in ${satPos?.sign || '?'} (${satHouse || '?'}${ordSuffix(satHouse || 0)} house) shows where you are building something that lasts.`;
+  const para = `Your daily work area ${h6.planets.length > 0 ? 'is active — routines and responsibilities are demanding attention' : 'is quiet'}. ` +
+    `Your public reputation and career ${h10.planets.length > 0 ? 'are activated — visibility and professional identity are in focus' : 'run on autopilot'}. ` +
+    `The area where you are building something lasting is ${HOUSE_LABELS[satHouse || 0] || 'still taking shape'}.`;
 
   return { id: 'career', title: 'Career & Work', emoji: '💼', houses: [h2, h6, h10], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
@@ -305,9 +313,10 @@ function buildHome(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
   const activity = Math.min(10, h4.planets.length * 3 + (moonHouse === 4 ? 3 : 1));
 
   const advice: string[] = [];
-  if (moonPos) advice.push(`Moon in ${moonPos.sign} means you recharge through ${moonPos.sign === 'Cancer' || moonPos.sign === 'Taurus' ? 'cozy, familiar spaces' : moonPos.sign === 'Aries' || moonPos.sign === 'Sagittarius' ? 'physical activity and freedom' : moonPos.sign === 'Gemini' || moonPos.sign === 'Aquarius' ? 'social connection and stimulation' : 'quiet alone time and reflection'}.`);
-  if (h4.planets.includes('Saturn')) advice.push('Saturn in the 4th can mean home repairs, family responsibilities, or feeling weighed down by obligations at home.');
-  if (h4.planets.includes('Uranus')) advice.push('Uranus in the 4th can bring a move, renovation, or sudden changes in living situation.');
+  const moonElement = moonPos ? (SIGN_ELEMENT[moonPos.sign] || '') : '';
+  if (moonPos) advice.push(`You recharge this year through ${moonElement === 'Earth' || moonPos?.sign === 'Cancer' ? 'cozy, familiar spaces' : moonElement === 'Fire' ? 'physical activity and freedom' : moonElement === 'Air' ? 'social connection and stimulation' : 'quiet alone time and reflection'}.`);
+  if (h4.planets.includes('Saturn')) advice.push('Your home area may involve repairs, family responsibilities, or feeling weighed down by obligations — tackle them one at a time.');
+  if (h4.planets.includes('Uranus')) advice.push('Your home area may bring a move, renovation, or sudden changes in living situation.');
   if (advice.length === 0) advice.push('Your home life is a quieter zone this year — use it as a stable base while other areas demand attention.');
 
   const headline = t === 'supportive' ? 'Home Life Feels Nourishing'
@@ -315,8 +324,8 @@ function buildHome(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
     : t === 'transformative' ? 'Expect Changes on the Home Front'
     : 'Home Is Evolving This Year';
 
-  const para = `Your home zone (4th house) ${h4.planets.length > 0 ? 'has ' + h4.planets.join(', ') + ' — family and living situation are active' : 'is quiet — home serves as a stable backdrop'}. ` +
-    `The Moon in ${moonPos?.sign || '?'} in your ${moonHouse || '?'}${ordSuffix(moonHouse || 0)} house shows where your emotional comfort lives.`;
+  const para = `Your home and family area ${h4.planets.length > 0 ? 'is active — family and living situation are getting your attention' : 'is quiet — home serves as a stable backdrop'}. ` +
+    `Your emotional comfort this year comes from ${moonElement === 'Fire' ? 'staying active and pursuing what excites you' : moonElement === 'Earth' ? 'creating physical comfort and routine' : moonElement === 'Air' ? 'good conversation and mental variety' : 'quiet reflection and emotional processing'}.`;
 
   return { id: 'home', title: 'Home & Family', emoji: '🏠', houses: [h4], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
@@ -350,9 +359,10 @@ function buildHealth(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
   const activity = Math.min(10, h1.planets.length * 2 + h6.planets.length * 3 + (marsHouse === 1 || marsHouse === 6 ? 2 : 0));
 
   const advice: string[] = [];
-  if (marsPos) advice.push(`Mars in ${marsPos.sign} — your energy runs ${marsPos.sign === 'Aries' || marsPos.sign === 'Leo' || marsPos.sign === 'Sagittarius' ? 'hot and fast — you need intense exercise but also real rest' : marsPos.sign === 'Taurus' || marsPos.sign === 'Virgo' || marsPos.sign === 'Capricorn' ? 'steady and grounded — consistency beats intensity' : 'in bursts — listen to your body about when to push and when to stop'}.`);
-  if (h6.planets.includes('Neptune')) advice.push('Neptune in the 6th can make health symptoms confusing — get clear medical advice instead of guessing.');
-  if (h6.planets.includes('Saturn')) advice.push('Saturn in the 6th demands a disciplined health routine — the boring basics (sleep, water, vegetables) matter most.');
+  const marsElement = marsPos ? (SIGN_ELEMENT[marsPos.sign] || '') : '';
+  if (marsPos) advice.push(`Your physical energy this year runs ${marsElement === 'Fire' ? 'hot and fast — you need intense exercise but also real rest' : marsElement === 'Earth' ? 'steady and grounded — consistency beats intensity' : 'in bursts — listen to your body about when to push and when to stop'}.`);
+  if (h6.planets.includes('Neptune')) advice.push('Your health area may make symptoms confusing — get clear medical advice instead of guessing.');
+  if (h6.planets.includes('Saturn')) advice.push('Your health area is asking for a disciplined routine — the boring basics (sleep, water, vegetables) matter most.');
   if (advice.length === 0) advice.push('Build one small daily habit this year — the compound effect matters more than dramatic overhauls.');
 
   const headline = t === 'supportive' ? 'Your Body Is Well-Supported'
@@ -360,9 +370,9 @@ function buildHealth(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
     : t === 'transformative' ? 'Body and Habits Are Transforming'
     : 'Health Is Active and Worth Watching';
 
-  const para = `Your body zone (1st house) ${h1.planets.length > 0 ? 'has ' + h1.planets.join(', ') : 'is quiet'}. ` +
-    `Your health routines (6th house) ${h6.planets.length > 0 ? 'are activated by ' + h6.planets.join(', ') : 'run steadily'}. ` +
-    `Mars in ${marsPos?.sign || '?'} shapes your physical energy and how you burn through it.`;
+  const para = `Your body and vitality area ${h1.planets.length > 0 ? 'is active — physical appearance and energy levels are in focus' : 'is quiet'}. ` +
+    `Your health routines area ${h6.planets.length > 0 ? 'is activated — daily habits and wellness need attention' : 'runs steadily'}. ` +
+    `Your physical energy style this year is ${marsElement === 'Fire' ? 'intense and action-oriented' : marsElement === 'Earth' ? 'steady and enduring' : marsElement === 'Air' ? 'variable and mentally driven' : 'emotionally influenced and intuitive'}.`;
 
   return { id: 'health', title: 'Health & Vitality', emoji: '🌿', houses: [h1, h6], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
@@ -394,9 +404,10 @@ function buildSpiritual(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
   const activity = Math.min(10, h9.planets.length * 2.5 + h12.planets.length * 2.5 + (nepHouse === 9 || nepHouse === 12 ? 2 : 0));
 
   const advice: string[] = [];
-  if (nnPos) advice.push(`Your North Node in ${nnPos.sign} points toward growth through ${nnPos.sign === 'Aries' || nnPos.sign === 'Leo' ? 'trusting yourself and taking the lead' : nnPos.sign === 'Taurus' || nnPos.sign === 'Virgo' || nnPos.sign === 'Capricorn' ? 'building something real and tangible' : nnPos.sign === 'Gemini' || nnPos.sign === 'Libra' || nnPos.sign === 'Aquarius' ? 'connecting with others and sharing ideas' : 'going inward and trusting your feelings'}.`);
-  if (h12.planets.length >= 2) advice.push('Multiple planets in the 12th suggest you need more alone time than usual — rest is productive this year.');
-  if (h9.planets.includes('Jupiter')) advice.push('Jupiter in the 9th is excellent for travel, education, and expanding your worldview.');
+  const nnElement = nnPos ? (SIGN_ELEMENT[nnPos.sign] || '') : '';
+  if (nnPos) advice.push(`Your growth direction this year points toward ${nnElement === 'Fire' ? 'trusting yourself and taking the lead' : nnElement === 'Earth' ? 'building something real and tangible' : nnElement === 'Air' ? 'connecting with others and sharing ideas' : 'going inward and trusting your feelings'}.`);
+  if (h12.planets.length >= 2) advice.push('Your inner life area is very active — you need more alone time than usual. Rest is productive this year.');
+  if (h9.planets.includes('Jupiter')) advice.push('Your beliefs and growth area is beautifully expanded — excellent for travel, education, and widening your worldview.');
   if (advice.length === 0) advice.push('Set aside 10 minutes daily for stillness — meditation, journaling, or simply sitting with no input.');
 
   const headline = t === 'supportive' ? 'Inner Growth Feels Natural'
@@ -404,9 +415,9 @@ function buildSpiritual(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
     : t === 'transformative' ? 'Deep Spiritual Shifts Underway'
     : 'A Year of Quiet Expansion';
 
-  const para = `Your beliefs zone (9th house) ${h9.planets.length > 0 ? 'has ' + h9.planets.join(', ') + ' — your worldview is actively evolving' : 'is quiet'}. ` +
-    `Your inner life (12th house) ${h12.planets.length > 0 ? 'is activated by ' + h12.planets.join(', ') + ' — solitude and reflection are important' : 'runs in the background'}. ` +
-    `Neptune in ${nepPos?.sign || '?'} colors how you connect to meaning beyond the everyday.`;
+  const para = `Your beliefs and big-picture area ${h9.planets.length > 0 ? 'is active — your worldview is evolving' : 'is quiet'}. ` +
+    `Your inner life and rest area ${h12.planets.length > 0 ? 'is activated — solitude and reflection are important' : 'runs in the background'}. ` +
+    `Your connection to meaning beyond the everyday is especially ${t === 'transformative' ? 'vivid and active' : t === 'supportive' ? 'fluid and natural' : 'complex and evolving'} this year.`;
 
   return { id: 'spiritual', title: 'Spiritual Growth & Inner Life', emoji: '🔮', houses: [h9, h12], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
