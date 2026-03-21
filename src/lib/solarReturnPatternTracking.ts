@@ -98,10 +98,10 @@ export function buildPatternTracking(
   }
 
   const notes = [
-    eclipseConnections.length > 0 ? `${eclipseConnections.length} eclipse connection(s) this year.` : '',
-    saturnCycleConnection ? 'Saturn cycle is active.' : '',
-    jupiterCycleConnection ? 'Jupiter return year.' : '',
-    metonicReturn ? '19-year Moon cycle echo active.' : '',
+    eclipseConnections.length > 0 ? `${eclipseConnections.length} eclipse connection(s) this year — significant turning points.` : '',
+    saturnCycleConnection ? 'Responsibility cycle is active.' : '',
+    jupiterCycleConnection ? 'Growth cycle return year.' : '',
+    metonicReturn ? '19-year emotional cycle echo active.' : '',
   ].filter(Boolean).join(' ') || 'No major cycle connections detected this year — a relatively independent chapter.';
 
   return {

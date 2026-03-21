@@ -265,7 +265,7 @@ export function generatePowerPortrait(
       planet: 'Saturn (natal)',
       sign: saturn.sign,
       house: null,
-      reason: 'Saturn natally -- this is your lifelong pressure point',
+      reason: 'Your lifelong pressure point — the area where you naturally overwork and under-rest',
     });
   }
   if (saturnSRHouse) {
