@@ -268,11 +268,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2, Sun: 1.5, Neptune: 1.5, Mercury: 1, Moon: 1, Mars: 1, Uranus: 1.5, Jupiter: 1 },
     advice: {
-      challenging: 'Creative blocks or frustration — the muse demands you push through resistance to find authentic expression.',
-      transformative: 'Your creative voice is being completely reinvented — old styles die, new ones emerge.',
-      supportive: 'Creative energy is flowing — this is a genuinely good year to make, write, perform, or create.',
-      quiet: 'Creative houses are quiet — consume inspiration now and create later.',
-      mixed: 'Creative energy is present but inconsistent — follow the bursts when they come.',
+      challenging: 'Creative expression may feel like it\'s pushing you — the effort is building something new and more authentically yours.',
+      transformative: 'Your creative voice is evolving — old styles are making room for fresh, exciting new forms of expression.',
+      supportive: 'Creative energy is flowing beautifully — this is a genuinely wonderful year to make, write, perform, or create.',
+      quiet: 'Creative energy is building quietly — consume inspiration now and create when it feels ready.',
+      mixed: 'Creative energy comes in waves — follow the bursts of inspiration when they arrive.',
     },
   },
   spirituality: {
