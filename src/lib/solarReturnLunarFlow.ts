@@ -55,11 +55,12 @@ export function buildLunarFlow(
   srChart: SolarReturnChart,
   natalChart: NatalChart,
 ): LunarFlow {
-  const moonPhase = analysis.moonPhase || 'New Moon';
+  const moonPhaseRaw = analysis.moonPhase;
+  const moonPhaseStr = typeof moonPhaseRaw === 'string' ? moonPhaseRaw : (moonPhaseRaw?.phase || 'New Moon');
   const moonSign = analysis.moonSign || srChart.planets?.Moon?.sign || '';
   const moonHouse = analysis.moonHouse?.house ?? null;
 
-  const phaseData = MOON_PHASE_THEMES[moonPhase] || MOON_PHASE_THEMES['New Moon'];
+  const phaseData = MOON_PHASE_THEMES[moonPhaseStr] || MOON_PHASE_THEMES['New Moon'];
   const signFlavor = SIGN_EMOTIONAL_FLAVOR[moonSign] || '';
   const emotionalTheme = `${phaseData.theme} ${signFlavor ? `This year: ${signFlavor}.` : ''}`;
 
