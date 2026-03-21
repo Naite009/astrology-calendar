@@ -861,6 +861,12 @@ export function buildFullJsonStandalone(
     // Astrocartography — where to spend your birthday
     astrocartography: calculateAstrocartography(srChart, natalChart),
 
+    // Chart wheel rendering data (positions in absolute degrees for SVG rendering)
+    chartWheelData: buildChartWheelData(srChart, natalChart, analysis),
+
+    // Planetary hours at the SR moment
+    planetaryHoursAtSR: buildPlanetaryHoursAtSR(srChart),
+
     // AI-generated readings (both modes)
     aiReadingPlain: aiReadings?.plain || null,
     aiReadingAstro: aiReadings?.astro || null,
