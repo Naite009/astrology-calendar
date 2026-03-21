@@ -29,6 +29,7 @@ import { scoreAspects, generateTopThemes } from '@/lib/solarReturnAspectScoring'
 import { buildHouseEmphasis } from '@/lib/solarReturnHouseEmphasis';
 import { buildLunarFlow } from '@/lib/solarReturnLunarFlow';
 import { buildPatternTracking } from '@/lib/solarReturnPatternTracking';
+import { buildFinalAdvice } from '@/lib/solarReturnFinalAdvice';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -2514,6 +2515,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
       patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
       reportStructureOrder: [
         'yearSummary', 'topThemes', 'identityDirection', 'relationships',
         'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
