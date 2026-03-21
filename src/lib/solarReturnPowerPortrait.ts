@@ -220,7 +220,7 @@ export function generatePowerPortrait(
       planet: 'Mars (this year)',
       sign: srMars.sign || marsSign,
       house: marsSRHouse,
-      reason: `This year your drive is channeled into house ${marsSRHouse} -- that is where you'll feel the most urgency to act`,
+      reason: `This year your drive is channeled into ${HOUSE_PLAIN[marsSRHouse] || 'a specific life area'} -- that is where you'll feel the most urgency to act`,
     });
   }
   if (sun) {
