@@ -283,7 +283,7 @@ export function generatePowerPortrait(
       planet: overlay.planet,
       sign: '',
       house: 6,
-      reason: `${overlay.planet} in your 6th house this year -- adds load to your daily routine and health habits`,
+      reason: `${overlay.planet} is in your health and daily routine area this year -- adds load to your schedule and body`,
     });
   }
 
