@@ -227,11 +227,21 @@ export function calculateActivationWindows(
 
     const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
+    const themeList = themes.length > 0 ? themes : ['No major transits this month -- a quieter period for integration'];
+    const themeSummary = hits.length === 0
+      ? 'A quieter month for integration and reflection'
+      : [...new Set(hits.map(h => {
+          const p = h.transitPlanet;
+          const t = h.srTarget.replace('SR ', '');
+          return `${p} activates ${t}`;
+        }))].slice(0, 3).join(', ');
+
     monthlyThemes.push({
       month: monthNum,
       monthLabel: MONTHS[monthNum],
       year: yearNum,
-      themes: themes.length > 0 ? themes : ['No major transits this month — a quieter period for integration'],
+      themes: themeList,
+      theme: themeSummary,
       transitHits: hits,
       intensity: Math.min(10, hits.length * 2 + hits.filter(h => h.significance === 'high').length * 2),
     });

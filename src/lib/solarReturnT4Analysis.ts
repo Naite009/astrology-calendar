@@ -501,6 +501,7 @@ export function calculateEnhancedRetrogrades(
 
     results.push({
       planet,
+      retrograde: true,
       sign: pos.sign,
       house,
       stationRetroDate: period?.stationRx || '',
