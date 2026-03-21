@@ -1095,11 +1095,8 @@ export function calculatePlanetarySpeeds(
       pct = 100;
     }
 
-    // Cast to access interp map
-    const cat: 'stationed' | 'slow' | 'fast' = speedCategory === 'slow' ? 'slow' : speedCategory === 'stationed' ? 'stationed' : 'fast';
-
+    const interpKey: 'stationed' | 'slow' | 'fast' = isRetro ? 'slow' : 'fast';
     const interps = SPEED_INTERPS[planet];
-    const interpKey = speedCategory === 'stationed' ? 'stationed' as const : speedCategory === 'slow' ? 'slow' as const : 'fast' as const;
     const interp = interps
       ? interps[interpKey]
       : `${planet} is moving at ${speedCategory} speed this year.`;
