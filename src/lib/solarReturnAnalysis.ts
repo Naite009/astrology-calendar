@@ -434,6 +434,11 @@ export interface SolarReturnAnalysis {
   antisciaContacts: SRAntisciaContact[];
   solarArcs: SRSolarArc[];
   synthesisSections: SRSynthesisSection[];
+  // ─── Tier 5b (new techniques) ───
+  midpointHits: SRMidpointHit[];
+  prenatalEclipse: SRPrenatalEclipse | null;
+  planetarySpeeds: SRPlanetSpeed[];
+  heliacalRising: SRHeliacalRising | null;
 }
 
 // ─── House life-area map & sign felt-sense ──────────────────────────
