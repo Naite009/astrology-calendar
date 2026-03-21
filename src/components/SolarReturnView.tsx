@@ -2686,6 +2686,9 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
         </div>
       )}
 
+      {/* Astrocartography Heat Map */}
+      <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
+
       {/* Interactive comparison tool */}
       <RelocationComparisonTool
         srCharts={srChartsForNatal}
