@@ -886,6 +886,10 @@ export function buildFullJsonStandalone(
     antisciaContacts: analysis.antisciaContacts,
     solarArcs: analysis.solarArcs,
     synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
+    midpointHits: analysis.midpointHits,
+    prenatalEclipse: analysis.prenatalEclipse,
+    planetarySpeeds: analysis.planetarySpeeds,
+    heliacalRising: analysis.heliacalRising,
     executiveSummary: generateExecutiveSummary(analysis, natalChart),
     actionGuidance: (() => {
       const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
