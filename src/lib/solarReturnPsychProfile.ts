@@ -514,7 +514,10 @@ export function computeBlendedProfile(
       score: Math.round(blendedScore * 10) / 10,
       position: Math.round(blendedPosition * 100) / 100,
       topDrivers: [...new Set([...nd.topDrivers.slice(0, 2), ...sd.topDrivers.slice(0, 2)])],
-      drivers: [...nd.drivers, ...sd.drivers].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)),
+      drivers: [
+        ...nd.drivers.map(d => ({ ...d, source: 'Natal' as const })),
+        ...sd.drivers.map(d => ({ ...d, source: 'SR' as const })),
+      ].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)),
       natalScore: nd.score,
       natalPosition: nd.position,
       srScore: sd.score,
