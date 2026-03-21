@@ -148,11 +148,11 @@ function buildNarrative(
 
   // Avoid repeating the same keyword/plain if node matches sun or asc
   if (nodeSign === sunSign && nodeSign === ascSign) {
-    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House — ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. So do more of it, more often, more deliberately. In practice that means: ${sunArch.dailyLooksLike}${nodeHouse ? ` Pay special attention to how this shows up in ${HOUSE_ARENA[nodeHouse] || 'this area'} — that's the specific life domain where this work lands hardest.` : ''}`);
+    parts.push(`Your growth edge is also pointing in the same direction${nodeHouse ? ` (through ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}, which means everything this year points toward one thing. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. So do more of it, more often, more deliberately. In practice that means: ${sunArch.dailyLooksLike}${nodeHouse ? ` Pay special attention to how this shows up in ${HOUSE_ARENA[nodeHouse] || 'this area'} — that's the specific life domain where this work lands hardest.` : ''}`);
   } else if (nodeSign === sunSign) {
-    parts.push(`Your growth edge (North Node) is in the same sign as your Sun — ${nodeSign}${nodeHouse ? `, in the ${ordinal(nodeHouse)} House` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning, specifically through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}.`);
+    parts.push(`Your growth edge is aligned with your purpose this year${nodeHouse ? `, focused through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning.`);
   } else {
-    parts.push(`The stretch this year comes from your North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
+    parts.push(`The stretch this year comes from your growth edge${nodeHouse ? ` (through ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
   }
 
   return parts.join(' ');
