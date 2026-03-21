@@ -46,70 +46,70 @@ const SIGN_MODALITY: Record<string, string> = {
 };
 
 const DRIVE_BY_SIGN: Record<string, string> = {
-  Aries: 'You start fast and lead through action — your drive comes from being first and doing it yourself',
-  Taurus: 'You're driven by building something lasting — steady effort toward tangible results keeps you going',
-  Gemini: 'Curiosity and variety fuel your engine — you need mental stimulation and multiple projects',
-  Cancer: 'Protecting what matters drives you — your ambition is strongest when it serves people you love',
-  Leo: 'Recognition and creative pride power your drive — you need to feel your work matters and is seen',
-  Virgo: 'Improvement drives you — you stay motivated when there's a problem to solve or a process to refine',
-  Libra: 'Partnership and fairness fuel your action — you fight hardest when something feels unjust',
-  Scorpio: 'Intensity and depth drive you — you're unstoppable when emotionally invested, but won't bother with surface-level goals',
-  Sagittarius: 'Meaning and freedom power your engine — you need to believe in what you're chasing',
-  Capricorn: 'Long-term ambition drives you — you're built for sustained effort toward measurable achievement',
-  Aquarius: 'Innovation and independence fuel you — you push hardest against systems that feel outdated',
-  Pisces: 'Inspiration and compassion drive your action — you're most powerful when channeling something bigger than yourself',
+  Aries: 'You start fast and lead through action -- your drive comes from being first and doing it yourself',
+  Taurus: 'You are driven by building something lasting -- steady effort toward tangible results keeps you going',
+  Gemini: 'Curiosity and variety fuel your engine -- you need mental stimulation and multiple projects',
+  Cancer: 'Protecting what matters drives you -- your ambition is strongest when it serves people you love',
+  Leo: 'Recognition and creative pride power your drive -- you need to feel your work matters and is seen',
+  Virgo: 'Improvement drives you -- you stay motivated when there is a problem to solve or a process to refine',
+  Libra: 'Partnership and fairness fuel your action -- you fight hardest when something feels unjust',
+  Scorpio: 'Intensity and depth drive you -- you are unstoppable when emotionally invested, but will not bother with surface-level goals',
+  Sagittarius: 'Meaning and freedom power your engine -- you need to believe in what you are chasing',
+  Capricorn: 'Long-term ambition drives you -- you are built for sustained effort toward measurable achievement',
+  Aquarius: 'Innovation and independence fuel you -- you push hardest against systems that feel outdated',
+  Pisces: 'Inspiration and compassion drive your action -- you are most powerful when channeling something bigger than yourself',
 };
 
 const SUSTAIN_BY_MODALITY: Record<string, string> = {
-  Cardinal: 'You're a starter — you ignite projects with energy but may lose steam once the novelty fades. Your staying power comes from having someone or something to initiate for.',
-  Fixed: 'You're built to endure — once committed, you don't quit. Your risk isn't burnout from effort, it's burnout from refusing to let go of something that's no longer working.',
-  Mutable: 'You sustain through adaptation — you shift strategies instead of grinding. Your strength is flexibility, but you can scatter energy across too many pivots.',
+  Cardinal: 'You are a starter -- you ignite projects with energy but may lose steam once the novelty fades. Your staying power comes from having someone or something to initiate for.',
+  Fixed: 'You are built to endure -- once committed, you do not quit. Your risk is not burnout from effort, it is burnout from refusing to let go of something that is no longer working.',
+  Mutable: 'You sustain through adaptation -- you shift strategies instead of grinding. Your strength is flexibility, but you can scatter energy across too many pivots.',
 };
 
 const getSaturnBurnout = (house: number | null, sign: string): string => {
   const houseTheme: Record<number, string> = {
-    1: 'overworking your identity — trying to be everything to everyone until you collapse',
-    2: 'financial anxiety — overworking for security that never feels like enough',
-    3: 'mental overload — saying yes to every conversation, errand, and obligation',
-    4: 'family duty exhaustion — carrying the emotional weight of your household',
-    5: 'performance pressure — turning every creative act into a test of your worth',
-    6: 'health neglect through overwork — grinding through routines until your body forces you to stop',
-    7: 'relationship sacrifice — giving up your needs to keep partnerships stable',
-    8: 'control and trust issues — exhausting yourself managing other people's crises or money',
-    9: 'meaning burnout — constantly searching for purpose without pausing to live',
-    10: 'career obsession — defining your worth entirely through professional achievement',
-    11: 'social exhaustion — overcommitting to groups, causes, and friends at your own expense',
-    12: 'invisible burnout — silently carrying burdens nobody sees until you shut down completely',
+    1: 'overworking your identity -- trying to be everything to everyone until you collapse',
+    2: 'financial anxiety -- overworking for security that never feels like enough',
+    3: 'mental overload -- saying yes to every conversation, errand, and obligation',
+    4: 'family duty exhaustion -- carrying the emotional weight of your household',
+    5: 'performance pressure -- turning every creative act into a test of your worth',
+    6: 'health neglect through overwork -- grinding through routines until your body forces you to stop',
+    7: 'relationship sacrifice -- giving up your needs to keep partnerships stable',
+    8: 'control and trust issues -- exhausting yourself managing other people's crises or money',
+    9: 'meaning burnout -- constantly searching for purpose without pausing to live',
+    10: 'career obsession -- defining your worth entirely through professional achievement',
+    11: 'social exhaustion -- overcommitting to groups, causes, and friends at your own expense',
+    12: 'invisible burnout -- silently carrying burdens nobody sees until you shut down completely',
   };
-  return house ? (houseTheme[house] || 'overextending yourself in ways you don't notice until it's too late') : 'overextending yourself in ways you don't notice until it's too late';
+  return house ? (houseTheme[house] || 'overextending yourself in ways you do not notice until it is too late') : 'overextending yourself in ways you do not notice until it is too late';
 };
 
 const getMoonRealignment = (sign: string): string => {
   const moonRecharge: Record<string, string> = {
-    Aries: 'Physical movement — a hard workout, a solo walk, or doing something competitive resets your nervous system',
-    Taurus: 'Sensory comfort — good food, a bath, soft music, or time in nature brings you back to yourself',
-    Gemini: 'Talking it out — a good conversation, journaling, or reading something interesting clears your head',
-    Cancer: 'Home and nurture — cooking, being with family, or curling up somewhere safe restores your center',
-    Leo: 'Creative expression — making something, performing, or receiving genuine appreciation refills your tank',
-    Virgo: 'Organizing and fixing — cleaning a closet, making a list, or solving a practical problem calms you down',
-    Libra: 'Beauty and connection — time with someone you love, a beautiful environment, or art brings you peace',
-    Scorpio: 'Solitude and depth — time alone to process, intense music, or a brutally honest conversation with yourself',
-    Sagittarius: 'Adventure and perspective — a drive with no destination, learning something new, or laughing resets everything',
-    Capricorn: 'Accomplishment — completing even a small task, making a plan, or seeing measurable progress calms your system',
-    Aquarius: 'Space and freedom — time alone with no obligations, weird hobbies, or thinking about big ideas recharges you',
-    Pisces: 'Surrender and escape — sleep, water, music, meditation, or letting yourself cry clears the emotional backlog',
+    Aries: 'Physical movement -- a hard workout, a solo walk, or doing something competitive resets your nervous system',
+    Taurus: 'Sensory comfort -- good food, a bath, soft music, or time in nature brings you back to yourself',
+    Gemini: 'Talking it out -- a good conversation, journaling, or reading something interesting clears your head',
+    Cancer: 'Home and nurture -- cooking, being with family, or curling up somewhere safe restores your center',
+    Leo: 'Creative expression -- making something, performing, or receiving genuine appreciation refills your tank',
+    Virgo: 'Organizing and fixing -- cleaning a closet, making a list, or solving a practical problem calms you down',
+    Libra: 'Beauty and connection -- time with someone you love, a beautiful environment, or art brings you peace',
+    Scorpio: 'Solitude and depth -- time alone to process, intense music, or a brutally honest conversation with yourself',
+    Sagittarius: 'Adventure and perspective -- a drive with no destination, learning something new, or laughing resets everything',
+    Capricorn: 'Accomplishment -- completing even a small task, making a plan, or seeing measurable progress calms your system',
+    Aquarius: 'Space and freedom -- time alone with no obligations, weird hobbies, or thinking about big ideas recharges you',
+    Pisces: 'Surrender and escape -- sleep, water, music, meditation, or letting yourself cry clears the emotional backlog',
   };
   return moonRecharge[sign] || 'Finding whatever makes your body relax and your mind go quiet';
 };
 
 const getNNDirection = (sign: string): string => {
   const nnPath: Record<string, string> = {
-    Aries: 'trusting your own instincts instead of waiting for permission — act first, adjust later',
-    Taurus: 'choosing stability over drama — building something real instead of chasing intensity',
+    Aries: 'trusting your own instincts instead of waiting for permission -- act first, adjust later',
+    Taurus: 'choosing stability over drama -- building something real instead of chasing intensity',
     Gemini: 'staying curious and flexible instead of clinging to one rigid truth',
     Cancer: 'letting yourself need people instead of pretending you can handle everything alone',
     Leo: 'putting yourself out there creatively instead of hiding in the crowd',
-    Virgo: 'focusing on what's practical and useful instead of getting lost in idealism',
+    Virgo: 'focusing on what is practical and useful instead of getting lost in idealism',
     Libra: 'learning to collaborate and compromise instead of insisting on doing it your way',
     Scorpio: 'going deep and committed instead of staying on the surface where it feels safe',
     Sagittarius: 'choosing meaning and big-picture truth over comfortable routines',
@@ -131,7 +131,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (analysis.retrogrades?.retroPlanets?.some(r => r.planet === 'Mars')) {
     leaks.push({
       pattern: 'Forcing',
-      trigger: 'Mars is retrograde this year — pushing harder doesn't get results faster',
+      trigger: 'Mars is retrograde this year -- pushing harder does not get results faster',
       antidote: 'Slow down, revisit old plans, and let frustrated energy redirect itself before acting',
     });
   }
@@ -141,7 +141,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (saturnH === 1 || saturnH === 10) {
     leaks.push({
       pattern: 'Freezing',
-      trigger: `Saturn in your ${saturnH === 1 ? '1st house' : '10th house'} — self-doubt and imposter syndrome can paralyze you`,
+      trigger: `Saturn in your ${saturnH === 1 ? '1st house' : '10th house'} -- self-doubt and imposter syndrome can paralyze you`,
       antidote: 'Take the smallest possible action every day. Saturn rewards consistent small steps, not big leaps.',
     });
   }
@@ -151,7 +151,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (neptuneH === 1 || neptuneH === 7 || neptuneH === 10) {
     leaks.push({
       pattern: 'Escapism',
-      trigger: `Neptune in your ${neptuneH}${neptuneH === 1 ? 'st' : neptuneH === 7 ? 'th' : 'th'} house — confusion, avoidance, or numbing instead of dealing with reality`,
+      trigger: `Neptune in your ${neptuneH}${neptuneH === 1 ? 'st' : neptuneH === 7 ? 'th' : 'th'} house -- confusion, avoidance, or numbing instead of dealing with reality`,
       antidote: 'Schedule daily grounding: 5 minutes of body awareness, a walk, or writing down one true thing.',
     });
   }
@@ -164,7 +164,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (plutoAspects.length > 0) {
     leaks.push({
       pattern: 'Overcorrecting',
-      trigger: 'Pluto pressure this year — the urge to blow everything up and start over when what's needed is targeted change',
+      trigger: 'Pluto pressure this year -- the urge to blow everything up and start over when what is needed is targeted change',
       antidote: 'Before making big decisions, wait 72 hours. Transform one thing at a time instead of everything at once.',
     });
   }
@@ -174,7 +174,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (uranusH === 1 || uranusH === 10) {
     leaks.push({
       pattern: 'Restlessness',
-      trigger: `Uranus in your ${uranusH === 1 ? '1st' : '10th'} house — sudden urges to change everything can destabilize what's working`,
+      trigger: `Uranus in your ${uranusH === 1 ? '1st' : '10th'} house -- sudden urges to change everything can destabilize what is working`,
       antidote: 'Experiment in low-stakes areas first. Not every impulse needs to become a life decision.',
     });
   }
@@ -213,7 +213,7 @@ export function generatePowerPortrait(
       planet: 'Mars (this year)',
       sign: srMars.sign || marsSign,
       house: marsSRHouse,
-      reason: `This year your drive is channeled into house ${marsSRHouse} — that's where you'll feel the most urgency to act`,
+      reason: `This year your drive is channeled into house ${marsSRHouse} -- that is where you'll feel the most urgency to act`,
     });
   }
   if (sun) {
@@ -239,7 +239,7 @@ export function generatePowerPortrait(
           planet: pName,
           sign: p.sign,
           house: p.house || null,
-          reason: `${pName} in ${p.sign} (${mod}) — ${mod === 'Cardinal' ? 'initiates' : mod === 'Fixed' ? 'sustains' : 'adapts'}`,
+          reason: `${pName} in ${p.sign} (${mod}) -- ${mod === 'Cardinal' ? 'initiates' : mod === 'Fixed' ? 'sustains' : 'adapts'}`,
         });
       }
     }
@@ -255,7 +255,7 @@ export function generatePowerPortrait(
       planet: 'Saturn (natal)',
       sign: saturn.sign,
       house: saturn.house || null,
-      reason: `Saturn in your ${saturn.house ? `${saturn.house}th` : ''} house natally — this is your lifelong pressure point`,
+      reason: `Saturn in your ${saturn.house ? `${saturn.house}th` : ''} house natally -- this is your lifelong pressure point`,
     });
   }
   if (saturnSRHouse) {
@@ -273,7 +273,7 @@ export function generatePowerPortrait(
       planet: overlay.planet,
       sign: '',
       house: 6,
-      reason: `${overlay.planet} in your 6th house this year — adds load to your daily routine and health habits`,
+      reason: `${overlay.planet} in your 6th house this year -- adds load to your daily routine and health habits`,
     });
   }
 
@@ -317,7 +317,7 @@ export function generatePowerPortrait(
   const mantras: Record<string, string> = {
     Fire: 'I move fast, but I choose where. My power is direction, not just speed.',
     Earth: 'I build slowly and it lasts. My power is patience that becomes unstoppable.',
-    Air: 'I see all angles. My power is knowing which idea to commit to — and committing.',
+    Air: 'I see all angles. My power is knowing which idea to commit to -- and committing.',
     Water: 'I feel everything. My power is using that depth as fuel, not drowning in it.',
   };
 
