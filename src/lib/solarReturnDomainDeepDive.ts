@@ -90,7 +90,7 @@ function buildHouseSnapshot(
   houseNum: number, contextLabel: string,
 ): DomainHouseSnapshot {
   const sign = getHouseSign(srChart, houseNum);
-  const planets = getPlanetsInHouse(analysis, houseNum);
+  const { major: planets, minor: minorBodies } = getAllBodiesInHouse(analysis, houseNum);
   const label = `${contextLabel} (${houseNum}${ordSuffix(houseNum)} House)`;
   
   let interp = '';
@@ -98,13 +98,18 @@ function buildHouseSnapshot(
     interp = sign
       ? `No planets here this year — the ${sign} energy on the cusp sets a quiet, steady backdrop.`
       : 'This house is quiet this year — not a primary focus.';
+    if (minorBodies.length > 0) {
+      interp += ` (${minorBodies.join(', ')} ${minorBodies.length === 1 ? 'is' : 'are'} also present as minor influences.)`;
+    }
   } else if (planets.length === 1) {
     interp = `${planets[0]} in ${sign || 'this house'} brings focused attention to this area.`;
+    if (minorBodies.length > 0) interp += ` ${minorBodies.join(', ')} add${minorBodies.length === 1 ? 's' : ''} subtle nuance.`;
   } else {
     interp = `${planets.join(', ')} all occupy this space — this is a busy, active zone this year.`;
+    if (minorBodies.length > 0) interp += ` ${minorBodies.join(', ')} add${minorBodies.length === 1 ? 's' : ''} additional texture.`;
   }
   
-  return { houseNumber: houseNum, label, sign, planets, interpretation: interp };
+  return { houseNumber: houseNum, label, sign, planets, minorBodies, interpretation: interp };
 }
 
 function ordSuffix(n: number): string {
