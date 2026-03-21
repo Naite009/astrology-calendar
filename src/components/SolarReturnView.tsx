@@ -2675,27 +2675,19 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
       {srChart.solarReturnLocation && srChart.solarReturnLocation !== natalChart.birthLocation && (
         <div className="border border-border rounded-sm p-4 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-            📍 This SR chart was relocated
+            📍 This SR Chart Was Relocated
           </h4>
           <p className="text-sm text-muted-foreground">
-            Birth location: <strong>{natalChart.birthLocation}</strong> → SR location: <strong>{srChart.solarReturnLocation}</strong>
+            Birth location: <strong>{capitalizeLocation(natalChart.birthLocation || '')}</strong> → SR location: <strong>{capitalizeLocation(srChart.solarReturnLocation)}</strong>
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            To compare, add another SR chart for the same year using your birth location.
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            The planets are identical — only the house cusps and angles shift based on where you were for your Solar Return.
           </p>
         </div>
       )}
 
       {/* Astrocartography Heat Map */}
       <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
-
-      {/* Interactive comparison tool */}
-      <RelocationComparisonTool
-        srCharts={srChartsForNatal}
-        natalChart={natalChart}
-        currentSR={srChart}
-        currentAnalysis={analysis}
-      />
     </div>
   );
 };
