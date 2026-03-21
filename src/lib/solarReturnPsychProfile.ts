@@ -275,7 +275,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = ANGLE_WEIGHT * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: 'Ascendant', contrib: Math.abs(w) });
+          dimScores[dimId].drivers.push({ planet: 'Ascendant', contrib: Math.abs(w), raw: w });
         }
       }
     }
