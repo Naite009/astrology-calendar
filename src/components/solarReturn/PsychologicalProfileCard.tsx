@@ -5,10 +5,8 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import {
   computePsychProfile,
   computeBlendedProfile,
-  PsychProfile,
-  BlendedProfile,
-  DimensionScore,
   BlendedDimension,
+  DimensionScore,
   DimensionDriver,
 } from '@/lib/solarReturnPsychProfile';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
@@ -38,11 +36,21 @@ const BLEND_LABELS: Record<string, string> = {
   shift: 'Gentle Shift',
 };
 
-/** Convert raw score (-10 to +10) to a display number 0-100 on either side */
-function scoreToDisplay(score: number): { value: number; side: 'left' | 'right' | 'center' } {
+/**
+ * Convert a score (-10 to +10) to a CSS left% value.
+ * Score +10 (full left pole) → 0% (left edge of bar)
+ * Score 0 (balanced) → 50% (center)
+ * Score -10 (full right pole) → 100% (right edge of bar)
+ */
+function scoreToLeftPct(score: number): number {
+  return 50 - (score / 10) * 50;
+}
+
+/** Display score as "LeftLabel 30" or "RightLabel 45" */
+function formatScore(score: number, left: string, right: string): string {
   const pct = Math.round(Math.abs(score) * 10);
-  if (pct <= 2) return { value: pct, side: 'center' };
-  return { value: pct, side: score > 0 ? 'left' : 'right' };
+  if (pct <= 2) return 'Balanced';
+  return score > 0 ? `${left} ${pct}` : `${right} ${pct}`;
 }
 
 /* ── Driver Breakdown Row ── */
@@ -52,27 +60,32 @@ function DriverRow({ driver, left, right, maxContrib }: {
   right: string;
   maxContrib: number;
 }) {
-  const { value, side } = scoreToDisplay(driver.contribution / 5); // scale to match
-  const barWidth = maxContrib > 0 ? (Math.abs(driver.contribution) / maxContrib) * 100 : 0;
   const pushesLeft = driver.contribution > 0;
+  const pushesRight = driver.contribution < 0;
+  const barPct = maxContrib > 0 ? (Math.abs(driver.contribution) / maxContrib) * 45 : 0; // max 45% of half
 
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <span className="text-[10px] text-muted-foreground w-16 text-right font-medium">{driver.planet}</span>
-      <div className="flex-1 relative h-1.5 bg-muted/50 rounded-full">
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
-        <div
-          className={`absolute top-0 bottom-0 rounded-full ${pushesLeft ? 'bg-primary/40' : 'bg-destructive/30'}`}
-          style={{
-            left: pushesLeft ? undefined : '50%',
-            right: pushesLeft ? '50%' : undefined,
-            width: `${Math.min(barWidth, 50)}%`,
-            ...(pushesLeft ? { marginRight: 0 } : {}),
-          }}
-        />
+      <span className="text-[10px] text-muted-foreground w-20 text-right font-medium">{driver.planet}</span>
+      <div className="flex-1 relative h-2 bg-muted/30 rounded-full">
+        {/* Center line */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/60" />
+        {/* Bar extending from center */}
+        {pushesLeft && (
+          <div
+            className="absolute top-0 bottom-0 rounded-l-full bg-primary/50"
+            style={{ right: '50%', width: `${barPct}%` }}
+          />
+        )}
+        {pushesRight && (
+          <div
+            className="absolute top-0 bottom-0 rounded-r-full bg-destructive/40"
+            style={{ left: '50%', width: `${barPct}%` }}
+          />
+        )}
       </div>
-      <span className="text-[9px] text-muted-foreground w-16">
-        → {pushesLeft ? left : right}
+      <span className={`text-[9px] w-20 ${pushesLeft ? 'text-primary' : 'text-destructive'}`}>
+        ← {pushesLeft ? left : right}
       </span>
     </div>
   );
@@ -81,27 +94,25 @@ function DriverRow({ driver, left, right, maxContrib }: {
 /* ── Spectrum Bar (clickable/expandable) ── */
 function SpectrumBar({
   dim,
-  natalPos,
-  srPos,
   natalScore,
   srScore,
   mode,
 }: {
   dim: DimensionScore | BlendedDimension;
-  natalPos?: number;
-  srPos?: number;
   natalScore?: number;
   srScore?: number;
   mode: ViewMode;
 }) {
   const [open, setOpen] = useState(false);
-  const isBlended = mode === 'blended' && natalPos !== undefined && srPos !== undefined;
+  const isBlended = mode === 'blended' && natalScore !== undefined && srScore !== undefined;
   const bd = dim as BlendedDimension;
 
-  const display = scoreToDisplay(dim.score);
-  const displayLabel = display.side === 'center' ? 'Balanced'
-    : display.side === 'left' ? `${dim.left} ${display.value}`
-    : `${dim.right} ${display.value}`;
+  // CSS positions (left%)
+  const dotLeft = scoreToLeftPct(dim.score);
+  const natalLeft = isBlended ? scoreToLeftPct(natalScore!) : 50;
+  const srLeft = isBlended ? scoreToLeftPct(srScore!) : 50;
+
+  const displayLabel = formatScore(dim.score, dim.left, dim.right);
 
   const maxContrib = dim.drivers.length > 0
     ? Math.max(...dim.drivers.map(d => Math.abs(d.contribution)))
@@ -110,96 +121,91 @@ function SpectrumBar({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
-        <button className="w-full py-2.5 text-left hover:bg-muted/30 transition-colors rounded-sm px-1 -mx-1">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-medium text-foreground w-24 text-right pr-2 flex items-center justify-end gap-1">
-              {isBlended && <span className="text-[8px] text-muted-foreground">0</span>}
-              {dim.left}
-              {!isBlended && <span className="text-[9px] text-muted-foreground ml-0.5">100</span>}
-            </span>
-            <div className="flex-1 relative h-3 bg-muted rounded-full overflow-visible">
+        <button className="w-full py-3 text-left hover:bg-muted/30 transition-colors rounded-sm px-1 -mx-1">
+          {/* Labels + bar */}
+          <div className="flex items-center gap-0 mb-1">
+            <div className="w-28 text-right pr-3 flex flex-col items-end">
+              <span className="text-[11px] font-medium text-foreground">{dim.left}</span>
+              <span className="text-[8px] text-muted-foreground">100</span>
+            </div>
+
+            <div className="flex-1 relative h-4 bg-muted rounded-full overflow-visible">
               {/* Scale marks */}
               <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border z-10" />
               <div className="absolute left-1/4 top-1 bottom-1 w-px bg-border/30" />
               <div className="absolute left-3/4 top-1 bottom-1 w-px bg-border/30" />
+              {/* Center "0" label */}
+              <span className="absolute left-1/2 -translate-x-1/2 -bottom-3 text-[7px] text-muted-foreground">0</span>
 
-              {/* Natal marker (labeled) */}
-              {isBlended && (
-                <div
-                  className="absolute top-[-6px] z-20 flex flex-col items-center"
-                  style={{ left: `${(natalPos ?? 0.5) * 100}%`, transform: 'translateX(-50%)' }}
-                  title={`Natal: ${natalScore?.toFixed(1)}`}
-                >
-                  <span className="text-[7px] text-muted-foreground font-medium leading-none">N</span>
-                  <div className="w-0 h-0" style={{
-                    borderLeft: '3px solid transparent',
-                    borderRight: '3px solid transparent',
-                    borderTop: '4px solid hsl(var(--muted-foreground))',
-                  }} />
-                </div>
-              )}
-
-              {/* SR marker (labeled) */}
-              {isBlended && (
-                <div
-                  className="absolute bottom-[-6px] z-20 flex flex-col items-center"
-                  style={{ left: `${(srPos ?? 0.5) * 100}%`, transform: 'translateX(-50%)' }}
-                  title={`This Year: ${srScore?.toFixed(1)}`}
-                >
-                  <div className="w-0 h-0" style={{
-                    borderLeft: '3px solid transparent',
-                    borderRight: '3px solid transparent',
-                    borderBottom: '4px solid hsl(var(--primary))',
-                  }} />
-                  <span className="text-[7px] text-primary font-medium leading-none">SR</span>
-                </div>
-              )}
-
-              {/* Main dot = current view's position (or blended) */}
+              {/* Fill bar from center to dot */}
               <div
-                className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full z-30 border border-background ${
-                  mode === 'natal' ? 'bg-muted-foreground' :
-                  mode === 'sr' ? 'bg-primary' :
-                  bd.blendType === 'tension' ? 'bg-destructive' :
-                  bd.blendType === 'reinforced' ? 'bg-primary' :
-                  'bg-accent-foreground'
-                }`}
-                style={{ left: `${dim.position * 100}%`, transform: 'translate(-50%, -50%)' }}
-                title={isBlended ? `Blended: ${dim.score.toFixed(1)}` : undefined}
-              />
-
-              {/* Fill bar from center */}
-              <div
-                className={`absolute top-0 bottom-0 rounded-full opacity-25 ${
+                className={`absolute top-0.5 bottom-0.5 rounded-full opacity-30 ${
                   mode === 'natal' ? 'bg-muted-foreground' :
                   mode === 'sr' ? 'bg-primary' :
                   bd.blendType === 'tension' ? 'bg-destructive' :
                   'bg-primary'
                 }`}
                 style={{
-                  left: dim.position > 0.5 ? '50%' : `${dim.position * 100}%`,
-                  width: `${Math.abs(dim.position - 0.5) * 100}%`,
+                  left: dotLeft < 50 ? `${dotLeft}%` : '50%',
+                  width: `${Math.abs(dotLeft - 50)}%`,
                 }}
               />
+
+              {/* Natal marker (down-pointing triangle with "N" label) */}
+              {isBlended && (
+                <div
+                  className="absolute -top-2 z-20 flex flex-col items-center pointer-events-none"
+                  style={{ left: `${natalLeft}%`, transform: 'translateX(-50%)' }}
+                >
+                  <span className="text-[8px] font-bold text-muted-foreground leading-none mb-px">N</span>
+                  <div className="w-0 h-0" style={{
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderTop: '5px solid hsl(var(--muted-foreground))',
+                  }} />
+                </div>
+              )}
+
+              {/* SR marker (up-pointing triangle with "SR" label) */}
+              {isBlended && (
+                <div
+                  className="absolute -bottom-2 z-20 flex flex-col items-center pointer-events-none"
+                  style={{ left: `${srLeft}%`, transform: 'translateX(-50%)' }}
+                >
+                  <div className="w-0 h-0" style={{
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderBottom: '5px solid hsl(var(--primary))',
+                  }} />
+                  <span className="text-[8px] font-bold text-primary leading-none mt-px">SR</span>
+                </div>
+              )}
+
+              {/* Main blended dot */}
+              <div
+                className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full z-30 border-2 border-background shadow-sm ${
+                  mode === 'natal' ? 'bg-muted-foreground' :
+                  mode === 'sr' ? 'bg-primary' :
+                  bd.blendType === 'tension' ? 'bg-destructive' :
+                  bd.blendType === 'reinforced' ? 'bg-primary' :
+                  'bg-accent-foreground'
+                }`}
+                style={{ left: `${dotLeft}%`, transform: 'translate(-50%, -50%)' }}
+              />
             </div>
-            <span className="text-[11px] font-medium text-foreground w-24 pl-2 flex items-center gap-1">
-              {!isBlended && <span className="text-[9px] text-muted-foreground mr-0.5">100</span>}
-              {dim.right}
-              {isBlended && <span className="text-[8px] text-muted-foreground">0</span>}
-            </span>
+
+            <div className="w-28 pl-3 flex flex-col items-start">
+              <span className="text-[11px] font-medium text-foreground">{dim.right}</span>
+              <span className="text-[8px] text-muted-foreground">100</span>
+            </div>
           </div>
 
-          {/* Score label + expand hint */}
-          <div className="flex items-center justify-between ml-24 mr-24 mt-0.5">
-            <span className={`text-[10px] font-semibold ${
-              display.side === 'center' ? 'text-muted-foreground' :
-              display.side === 'left' ? 'text-foreground' : 'text-foreground'
-            }`}>
-              {displayLabel}
-            </span>
-            <div className="flex items-center gap-1">
+          {/* Score + badge */}
+          <div className="flex items-center justify-between mt-2 ml-28 mr-28">
+            <span className="text-[11px] font-semibold text-foreground">{displayLabel}</span>
+            <div className="flex items-center gap-1.5">
               {isBlended && bd.blendType && (
-                <span className={`text-[8px] px-1 py-0.5 rounded-sm border ${BLEND_COLORS[bd.blendType]}`}>
+                <span className={`text-[8px] px-1.5 py-0.5 rounded-sm border ${BLEND_COLORS[bd.blendType]}`}>
                   {BLEND_LABELS[bd.blendType]}
                 </span>
               )}
@@ -210,50 +216,38 @@ function SpectrumBar({
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="ml-1 mr-1 mb-2 mt-1 p-3 bg-muted/20 rounded-sm border border-border/50">
+        <div className="mx-1 mb-2 mt-1 p-3 bg-muted/20 rounded-sm border border-border/50">
           <p className="text-[10px] text-muted-foreground mb-2 italic">{dim.description}</p>
 
-          {/* Blended legend */}
+          {/* Blended explanation */}
           {isBlended && (
-            <div className="flex items-center gap-3 mb-2 text-[9px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-0 h-0" style={{
-                  borderLeft: '3px solid transparent', borderRight: '3px solid transparent',
-                  borderTop: '4px solid hsl(var(--muted-foreground))',
-                }} /> <strong>N</strong> = Natal ({natalScore?.toFixed(1)})
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-0 h-0" style={{
-                  borderLeft: '3px solid transparent', borderRight: '3px solid transparent',
-                  borderBottom: '4px solid hsl(var(--primary))',
-                }} /> <strong>SR</strong> = This Year ({srScore?.toFixed(1)})
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-primary border border-background" />
-                = Blended ({dim.score.toFixed(1)})
-              </span>
+            <div className="mb-3 space-y-1">
+              <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                <span><strong className="text-muted-foreground">N</strong> (Natal) = {formatScore(natalScore!, dim.left, dim.right)}</span>
+                <span><strong className="text-primary">SR</strong> (This Year) = {formatScore(srScore!, dim.left, dim.right)}</span>
+                <span><strong>●</strong> Blended = {displayLabel}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                The blended score is 60% your natal baseline + 40% this year's energy.
+                {bd.blendType === 'tension' && ' These energies pull in opposite directions — expect inner friction.'}
+                {bd.blendType === 'reinforced' && ' Both charts agree — this quality is amplified this year.'}
+                {bd.blendType === 'shift' && ' This year gently nudges you from your baseline.'}
+              </p>
+              {bd.blendDescription && (
+                <p className="text-[10px] text-muted-foreground leading-relaxed">{bd.blendDescription}</p>
+              )}
             </div>
           )}
 
-          {/* Score summary */}
-          {isBlended && (
-            <p className="text-[10px] text-muted-foreground mb-2">
-              Natal pulls toward <strong>{(natalScore ?? 0) >= 0 ? dim.left : dim.right}</strong> ({Math.round(Math.abs(natalScore ?? 0) * 10)}).
-              This year pulls toward <strong>{(srScore ?? 0) >= 0 ? dim.left : dim.right}</strong> ({Math.round(Math.abs(srScore ?? 0) * 10)}).
-              Blended result: <strong>{displayLabel}</strong>.
-            </p>
-          )}
-
-          {isBlended && bd.blendDescription && (
-            <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">{bd.blendDescription}</p>
-          )}
-
           {/* Planet breakdown */}
-          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium mb-1">
-            Planet Contributions
+          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium mb-1.5">
+            What's Driving This Score
           </p>
-          <div className="space-y-0">
-            {dim.drivers.slice(0, 8).map((d, i) => (
+          <p className="text-[9px] text-muted-foreground mb-2">
+            Bars show each planet's push — <span className="text-primary">left = {dim.left}</span>, <span className="text-destructive">right = {dim.right}</span>
+          </p>
+          <div className="space-y-0.5">
+            {dim.drivers.filter(d => Math.abs(d.contribution) > 0.1).slice(0, 10).map((d, i) => (
               <DriverRow key={`${d.planet}-${i}`} driver={d} left={dim.left} right={dim.right} maxContrib={maxContrib} />
             ))}
           </div>
@@ -320,11 +314,10 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
         </div>
 
         {showInfo && (
-          <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-sm">
-            <p className="mb-1"><strong>Scores:</strong> Each spectrum runs 0 (center/balanced) to 100 (extreme). E.g. "Active 30" means you lean 30% toward Active from center.</p>
-            <p className="mb-1"><strong>Click any bar</strong> to see which planets are pushing the score in each direction.</p>
-            <p className="mb-1"><strong>Blended view markers:</strong> <strong>N▼</strong> = your natal baseline. <strong>SR▲</strong> = this year's energy. <strong>●</strong> = the blended result (60% natal + 40% SR).</p>
-            <p><strong>The blended dot sits between N and SR</strong> — closer to natal because your baseline personality has more weight than a single year.</p>
+          <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-sm space-y-1">
+            <p><strong>How to read:</strong> Each bar is a spectrum between two poles. The dot shows where you land — closer to one side means you lean that way. The number (0-100) shows how strong the lean is.</p>
+            <p><strong>Click any bar</strong> to see which planets push the score left or right.</p>
+            <p><strong>Blended view:</strong> <strong>N▼</strong> = your natal position. <strong>SR▲</strong> = this year. <strong>● dot</strong> = blended (60% natal + 40% SR) — it always sits between N and SR, closer to N.</p>
           </div>
         )}
       </div>
@@ -347,24 +340,24 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
         ))}
       </div>
 
-      {/* Blended legend bar */}
+      {/* Blended legend */}
       {mode === 'blended' && (
         <div className="px-5 py-2 bg-muted/20 border-b border-border flex items-center gap-4 text-[9px] text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="inline-block w-0 h-0" style={{
               borderLeft: '3px solid transparent', borderRight: '3px solid transparent',
               borderTop: '5px solid hsl(var(--muted-foreground))',
-            }} /> <strong>N</strong> = Natal
+            }} /> <strong>N</strong> = Your natal baseline
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block w-0 h-0" style={{
               borderLeft: '3px solid transparent', borderRight: '3px solid transparent',
               borderBottom: '5px solid hsl(var(--primary))',
-            }} /> <strong>SR</strong> = This Year
+            }} /> <strong>SR</strong> = This year's energy
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-primary border border-background" />
-            <strong>●</strong> = Blended (60/40)
+            <span className="inline-block w-3 h-3 rounded-full bg-primary border-2 border-background" />
+            = Blended result
           </span>
         </div>
       )}
@@ -376,8 +369,6 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
             key={dim.id}
             dim={dim}
             mode={mode}
-            natalPos={mode === 'blended' ? (dim as BlendedDimension).natalPosition : undefined}
-            srPos={mode === 'blended' ? (dim as BlendedDimension).srPosition : undefined}
             natalScore={mode === 'blended' ? (dim as BlendedDimension).natalScore : undefined}
             srScore={mode === 'blended' ? (dim as BlendedDimension).srScore : undefined}
           />
@@ -427,9 +418,6 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
             Dominant: <span className="font-medium text-foreground">
               {mode === 'natal' ? modNatal.dominant : mode === 'sr' ? modSR.dominant : modNatal.dominant + ' → ' + modSR.dominant}
             </span>
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            {mode === 'natal' ? modNatal.description : mode === 'sr' ? modSR.description : modSR.description}
           </p>
         </div>
       </div>
