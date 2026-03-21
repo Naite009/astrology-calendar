@@ -338,7 +338,7 @@ export interface SolarReturnAnalysis {
   houseOverlays: SRHouseOverlay[];
   srToNatalAspects: SRKeyAspect[];
   srInternalAspects: SRKeyAspect[];
-  angularPlanets: string[];
+  angularPlanets: { planet: string; angle: string; sign: string; house: number; orb: number }[];
   relocationTip: string;
   lordOfTheYear: {
     planet: string;
