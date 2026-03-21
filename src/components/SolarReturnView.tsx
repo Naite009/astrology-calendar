@@ -37,6 +37,7 @@ import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
 import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
