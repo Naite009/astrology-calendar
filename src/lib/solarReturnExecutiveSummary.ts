@@ -234,14 +234,14 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Saturn placement = growth area
+  // Commitment placement = growth area
   if (analysis.saturnFocus) {
     const sH = analysis.saturnFocus.house;
     items.push({
       type: 'challenge',
       title: `Building something real in your ${HOUSE_KEYWORDS[sH!] || 'life'} area`,
       description: `Your ${HOUSE_KEYWORDS[sH!] || 'personal'} life is a major growth area this year. Expect to do real, meaningful work here — the effort builds something that lasts.`,
-      source: `Saturn in SR House ${sH}`,
+      source: `Commitment focus in ${HOUSE_KEYWORDS[sH!] || 'life area'}`,
       house: sH,
       intensity: 8,
     });
