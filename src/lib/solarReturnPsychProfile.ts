@@ -320,7 +320,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = weight * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: pName, contrib: Math.abs(w), raw: w });
+          dimScores[dimId].drivers.push({ planet: pName, contrib: Math.abs(w), raw: w, sign: pos.sign });
         }
       }
     }
