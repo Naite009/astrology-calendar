@@ -7,7 +7,7 @@ import { SolarReturnAnalysis } from './solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { generateExecutiveSummary } from './solarReturnExecutiveSummary';
-import { calculateLifeDomainScores } from './solarReturnLifeDomainScores';
+import { calculateLifeDomainScores, LifeDomainScores, LifeDomainScore } from './solarReturnLifeDomainScores';
 import { generateIdentityShift } from './solarReturnIdentityShift';
 import { generateLunarWeatherMap } from './solarReturnLunarWeather';
 
