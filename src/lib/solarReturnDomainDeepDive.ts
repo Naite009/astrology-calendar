@@ -42,6 +42,12 @@ export interface DomainDeepDive {
 // ─── Helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
+const SIGN_ELEMENT: Record<string, string> = {
+  Aries: 'Fire', Taurus: 'Earth', Gemini: 'Air', Cancer: 'Water',
+  Leo: 'Fire', Virgo: 'Earth', Libra: 'Air', Scorpio: 'Water',
+  Sagittarius: 'Fire', Capricorn: 'Earth', Aquarius: 'Air', Pisces: 'Water',
+};
+
 const MAJOR_PLANETS = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
 
 const PLANET_TONE: Record<string, 'supportive' | 'challenging' | 'neutral' | 'transformative'> = {
