@@ -396,7 +396,7 @@ export const srMCInHouse: Record<number, string> = {
   7: 'Partnership is central to career — business partners, clients, or a spouse influence your professional path. Your reputation is shaped by your relationships and your ability to collaborate. Legal matters affect public standing.',
   8: 'Career involves transformation, research, finance, psychology, or dealing with crisis. Your professional reputation involves depth and intensity. Power dynamics in the workplace are significant. Joint ventures define the year.',
   9: 'International career expansion, higher education, publishing, or philosophy shapes your public life. Your reputation extends beyond local boundaries. Teaching, traveling, or advocating for beliefs defines your professional year.',
-  10: 'The MC is at home — career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
+  10: 'Career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
   11: 'Career is linked to community, networks, technology, or social causes. Your professional reputation grows through group affiliations and forward-thinking vision. Innovation and collaboration define your public identity.',
   12: 'Career operates behind the scenes — institutional work, retreat, research, or spiritual service. Your public reputation may be quiet or sacrificial. What you accomplish in private has more lasting impact than public performance.',
 };
