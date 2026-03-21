@@ -779,15 +779,17 @@ export function buildFullJsonStandalone(
     })(),
   }));
 
-  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => ({
-    srPlanet: a.planet1 || a.srPlanet || '',
-    natalPlanet: a.planet2 || a.natalPlanet || '',
-    aspect: a.type || a.aspect || '',
-    aspectType: a.type || a.aspectType || '',
-    orb: a.orb ?? null,
-    interpretation: a.interpretation || '',
-    exactDate: a.exactDate || '',
-  }));
+  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => {
+    const base: Record<string, any> = {
+      srPlanet: a.planet1 || a.srPlanet || '',
+      natalPlanet: a.planet2 || a.natalPlanet || '',
+      aspectType: a.type || a.aspect || a.aspectType || '',
+      orb: a.orb ?? null,
+      interpretation: a.interpretation || '',
+    };
+    if (a.exactDate) base.exactDate = a.exactDate;
+    return base;
+  });
 
   const profYear = analysis.profectionYear;
   const mappedProfectionYear = profYear ? {
