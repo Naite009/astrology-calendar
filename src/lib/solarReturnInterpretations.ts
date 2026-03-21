@@ -265,7 +265,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     6: 'Work opportunities expand. Health improvements. Finding joy in service. Beware of overcommitting at work — more is not always better.',
     7: 'Partnership growth and benefit. Meeting generous or influential partners. Legal victories. Marriage or significant commitment.',
     8: 'Financial benefits through others — inheritance, loans, insurance payouts. Psychological breakthroughs. Transformative spiritual experiences.',
-    9: 'Jupiter is at home here — long-distance travel, higher education, publishing success, and spiritual expansion. The quintessential growth year.',
+    9: 'This is the quintessential growth year — long-distance travel, higher education, publishing success, and expanding your worldview are all strongly favored.',
     10: 'Career expansion and professional recognition. Promotions, raises, and increased authority. Public generosity or philanthropy.',
     11: 'Social network expansion. Influential friends. Group success. Your vision for the future attracts support and resources.',
     12: 'Spiritual growth and inner expansion. Retreat and solitude are beneficial. Charitable work. Protection from hidden enemies. Dreams are prophetic.',
