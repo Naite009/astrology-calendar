@@ -284,11 +284,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Neptune: 2, Jupiter: 1.5, Pluto: 1.5, NorthNode: 1.5, Chiron: 1.5, Moon: 1, Vesta: 1.5, Saturn: 1, Sun: 0.5 },
     advice: {
-      challenging: 'Spiritual life is intense — confronting illusions, crisis of faith, or feeling lost. The dismantling is necessary.',
-      transformative: 'Deep spiritual transformation — your relationship with the unseen is being completely rebuilt.',
-      supportive: 'Spiritual growth flows naturally — meditation, retreats, and inner work feel supported and meaningful.',
-      quiet: 'Inner life is quiet — grounding in the physical world takes priority this year.',
-      mixed: 'Spiritual path is mixed — moments of clarity alternate with confusion. Trust the process.',
+      challenging: 'Your inner life is going through a meaningful clearing — old beliefs that no longer fit are making room for deeper understanding and peace.',
+      transformative: 'A profound inner shift is happening — your sense of meaning, purpose, and connection to something larger is being renewed.',
+      supportive: 'Inner growth flows naturally — meditation, quiet reflection, and spiritual exploration feel especially rewarding.',
+      quiet: 'Inner life is gentle this year — grounding in everyday life takes priority, and that\'s perfectly right.',
+      mixed: 'Your inner path has moments of clarity and moments of searching — trust the process and be patient with yourself.',
     },
   },
   power: {
