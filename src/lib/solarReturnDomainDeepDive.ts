@@ -42,6 +42,8 @@ export interface DomainDeepDive {
 // ─── Helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
+const MAJOR_PLANETS = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
+
 const PLANET_TONE: Record<string, 'supportive' | 'challenging' | 'neutral' | 'transformative'> = {
   Sun: 'supportive', Moon: 'supportive', Venus: 'supportive', Jupiter: 'supportive',
   Mercury: 'neutral', NorthNode: 'supportive', Juno: 'supportive', Ceres: 'supportive',
@@ -55,10 +57,14 @@ function getHouseSign(srChart: SolarReturnChart, h: number): string | null {
   return cusp?.sign || null;
 }
 
-function getPlanetsInHouse(analysis: SolarReturnAnalysis, house: number): string[] {
-  return (analysis.houseOverlays || [])
+function getAllBodiesInHouse(analysis: SolarReturnAnalysis, house: number): { major: string[]; minor: string[] } {
+  const all = (analysis.houseOverlays || [])
     .filter(o => o.srHouse === house)
     .map(o => o.planet);
+  return {
+    major: all.filter(p => MAJOR_PLANETS.has(p)),
+    minor: all.filter(p => !MAJOR_PLANETS.has(p)),
+  };
 }
 
 function overallTone(hits: DomainPlanetHit[]): 'supportive' | 'challenging' | 'mixed' | 'transformative' {
