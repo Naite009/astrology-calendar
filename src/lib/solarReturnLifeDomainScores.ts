@@ -325,7 +325,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     }
   }
   // Also check retrogrades array if present
-  if ((analysis as any).retrogrades) {
+  if (Array.isArray((analysis as any).retrogrades)) {
     for (const r of (analysis as any).retrogrades) {
       if (typeof r === 'string') retrogradeSet.add(r);
       else if (r?.planet) retrogradeSet.add(r.planet);
