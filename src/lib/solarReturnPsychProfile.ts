@@ -361,13 +361,25 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
     const score = Math.max(-10, Math.min(10, (raw / maxRaw) * 10));
     const position = (score + 10) / 20; // 0=full right, 1=full left
     
-    // Aggregate drivers by planet (sum raw contributions)
-    const driverMap = new Map<string, number>();
+    // Aggregate drivers by planet (sum raw contributions), keep sign for reason
+    const driverMap = new Map<string, { total: number; sign: string }>();
     for (const d of dimScores[dim.id].drivers) {
-      driverMap.set(d.planet, (driverMap.get(d.planet) || 0) + d.raw);
+      const existing = driverMap.get(d.planet);
+      if (existing) {
+        existing.total += d.raw;
+      } else {
+        driverMap.set(d.planet, { total: d.raw, sign: d.sign || '' });
+      }
     }
     const allDrivers: DimensionDriver[] = Array.from(driverMap.entries())
-      .map(([planet, contribution]) => ({ planet, contribution }))
+      .map(([planet, { total, sign }]) => {
+        const direction = total > 0 ? dim.left : dim.right;
+        const element = sign ? SIGN_ELEMENT[sign] : null;
+        const reason = sign
+          ? `${planet} in ${sign}${element ? ` (${element})` : ''} → pushes ${direction}`
+          : `${planet} → pushes ${direction}`;
+        return { planet, contribution: total, reason };
+      })
       .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
     
     const sorted = allDrivers.slice(0, 3);
