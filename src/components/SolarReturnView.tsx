@@ -50,6 +50,7 @@ import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCard
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
+import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -2684,6 +2685,9 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
           </p>
         </div>
       )}
+
+      {/* Astrocartography Heat Map */}
+      <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
 
       {/* Interactive comparison tool */}
       <RelocationComparisonTool
