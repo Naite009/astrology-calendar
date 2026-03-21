@@ -46,6 +46,8 @@ export interface ActivationWindow {
   triggers: TransitHit[];
   theme: string;
   intensity: number; // 1-10
+  type: 'career' | 'relationship' | 'emotional' | 'health' | 'identity' | 'money' | 'mixed';
+  advice: string;
 }
 
 export interface MonthlyTheme {
