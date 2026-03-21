@@ -295,16 +295,16 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     label: 'Power & Transformation',
     houses: [8, 1],
     houseReasons: {
-      8: 'deep transformation, crisis, shared power, and rebirth',
-      1: 'personal power, identity, and how you project yourself',
+      8: 'deep change, shared resources, and personal transformation',
+      1: 'personal power, confidence, and how you show up in the world',
     },
     activityWeights: { Pluto: 2.5, Mars: 1.5, Saturn: 1.5, Sun: 1, Uranus: 1.5, Chiron: 1, NorthNode: 1 },
     advice: {
-      challenging: 'Power dynamics are intense — control issues, power struggles, or feeling overwhelmed by forces bigger than you.',
-      transformative: 'This is a death-and-rebirth year — something fundamental about you or your life is being permanently changed.',
-      supportive: 'You\'re stepping into genuine personal power — confidence and authority feel natural.',
-      quiet: 'Transformation sector is quiet — stability and maintenance rather than upheaval.',
-      mixed: 'Power dynamics are in play — some areas of control, some of surrender. Learn to read which is which.',
+      challenging: 'You\'re in a growth area around personal power — learning to set stronger boundaries, speak up, and trust your own authority.',
+      transformative: 'Something fundamental about how you move through the world is changing — this is you stepping into a new chapter.',
+      supportive: 'You\'re stepping into genuine personal confidence — owning your strengths feels natural this year.',
+      quiet: 'Personal power is steady and stable — a year for maintaining what\'s working rather than big shifts.',
+      mixed: 'Some areas feel empowering while others ask you to let go of control — learn to read which is which.',
     },
   },
 };
