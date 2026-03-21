@@ -158,8 +158,8 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
 
   // Pluto square/opposition to Sun or Moon → overcorrecting
   const plutoAspects = analysis.srToNatalAspects?.filter(a =>
-    (a.srPlanet === 'Pluto' || a.natalPlanet === 'Pluto') &&
-    (a.aspectType === 'Square' || a.aspectType === 'Opposition')
+    (a.planet1 === 'Pluto' || a.planet2 === 'Pluto') &&
+    (a.type === 'Square' || a.type === 'Opposition')
   ) || [];
   if (plutoAspects.length > 0) {
     leaks.push({
