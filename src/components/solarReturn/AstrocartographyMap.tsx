@@ -113,16 +113,63 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
 
   const visibleCities = useMemo(() => {
     if (view === 'us') {
-      return cities.filter(c => isInUS(c.latitude, c.longitude));
+      return cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
     return cities;
   }, [cities, view]);
 
   const mapW = 800;
-  const mapH = view === 'us' ? 380 : 400;
-  const project = view === 'us'
-    ? (lat: number, lng: number) => projectUS(lat, lng, mapW, mapH)
-    : (lat: number, lng: number) => projectWorld(lat, lng, mapW, mapH);
+  const mapH = view === 'us' ? 500 : 400;
+  
+  // Smart projection for US view: continental + insets
+  const projectCity = (lat: number, lng: number) => {
+    if (view === 'us') {
+      if (isHawaii(lat, lng)) return projectHawaii(lat, lng, mapW, mapH);
+      if (isAlaska(lat, lng)) return projectAlaska(lat, lng, mapW, mapH);
+      return projectUS(lat, lng, mapW, mapH);
+    }
+    return projectWorld(lat, lng, mapW, mapH);
+  };
+
+  // Label collision avoidance
+  const labelPositions = useMemo(() => {
+    const positions: Record<string, { dx: number; dy: number; anchor: string }> = {};
+    const placed: { x: number; y: number; w: number }[] = [];
+    const estimateWidth = (name: string) => name.length * (view === 'us' ? 5.5 : 4.5);
+    
+    for (const city of visibleCities) {
+      const { x, y } = view === 'us'
+        ? (isHawaii(city.latitude, city.longitude) ? projectHawaii(city.latitude, city.longitude, mapW, mapH)
+          : isAlaska(city.latitude, city.longitude) ? projectAlaska(city.latitude, city.longitude, mapW, mapH)
+          : projectUS(city.latitude, city.longitude, mapW, mapH))
+        : projectWorld(city.latitude, city.longitude, mapW, mapH);
+      
+      const w = estimateWidth(city.city);
+      
+      // Try positions: above, below, right, left
+      const candidates = [
+        { dx: 0, dy: -(view === 'us' ? 11 : 9), anchor: 'middle' },
+        { dx: 0, dy: (view === 'us' ? 16 : 13), anchor: 'middle' },
+        { dx: (view === 'us' ? 10 : 8), dy: 2, anchor: 'start' },
+        { dx: -(view === 'us' ? 10 : 8), dy: 2, anchor: 'end' },
+      ];
+      
+      let best = candidates[0];
+      for (const c of candidates) {
+        const lx = x + c.dx - (c.anchor === 'middle' ? w / 2 : c.anchor === 'end' ? w : 0);
+        const ly = y + c.dy;
+        const collision = placed.some(p => 
+          Math.abs(p.x - lx) < (p.w + w) / 2 + 4 && Math.abs(p.y - ly) < 10
+        );
+        if (!collision) { best = c; break; }
+      }
+      
+      const lx = x + best.dx - (best.anchor === 'middle' ? w / 2 : best.anchor === 'end' ? w : 0);
+      placed.push({ x: lx + w / 2, y: y + best.dy, w });
+      positions[city.city] = best;
+    }
+    return positions;
+  }, [visibleCities, view, mapW, mapH]);
 
   return (
     <div className="space-y-4">
