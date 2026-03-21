@@ -2515,6 +2515,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
       patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
       reportStructureOrder: [
         'yearSummary', 'topThemes', 'identityDirection', 'relationships',
         'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
