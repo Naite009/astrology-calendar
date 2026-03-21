@@ -871,12 +871,18 @@ export const analyzeSolarReturn = (
   }
   srInternalAspects.sort((a, b) => a.orb - b.orb);
 
-  // 7. Angular planets (within 8° of SR 1st/10th cusp)
+  // 7. Angular planets (within 8° of SR ASC, MC, DSC, IC)
   const angularPlanets: string[] = [];
-  const angles = [srChart.houseCusps?.house1, srChart.houseCusps?.house10];
-  for (const angle of angles) {
-    if (!angle) continue;
-    const angleDeg = toAbsDeg(angle);
+  const angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[] = [];
+  const ANGLE_DEFS: { cusp: any; name: string; house: number }[] = [
+    { cusp: srChart.houseCusps?.house1, name: 'Ascendant', house: 1 },
+    { cusp: srChart.houseCusps?.house4, name: 'IC', house: 4 },
+    { cusp: srChart.houseCusps?.house7, name: 'Descendant', house: 7 },
+    { cusp: srChart.houseCusps?.house10, name: 'MC', house: 10 },
+  ];
+  for (const angleDef of ANGLE_DEFS) {
+    if (!angleDef.cusp) continue;
+    const angleDeg = toAbsDeg(angleDef.cusp);
     if (angleDeg === null) continue;
     for (const planet of ALL_PLANETS) {
       const pos = srChart.planets[planet as keyof typeof srChart.planets];
@@ -886,7 +892,14 @@ export const analyzeSolarReturn = (
       let diff = Math.abs(pDeg - angleDeg);
       if (diff > 180) diff = 360 - diff;
       if (diff <= 8) {
-        angularPlanets.push(planet);
+        if (!angularPlanets.includes(planet)) angularPlanets.push(planet);
+        angularPlanetsDetailed.push({
+          planet,
+          angle: angleDef.name,
+          sign: pos.sign,
+          house: angleDef.house,
+          orb: Math.round(diff * 10) / 10,
+        });
       }
     }
   }
