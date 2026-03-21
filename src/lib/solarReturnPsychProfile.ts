@@ -178,6 +178,8 @@ export interface HemisphereBalance {
 export interface DimensionDriver {
   planet: string;
   contribution: number; // positive = left, negative = right
+  source?: 'Natal' | 'SR';
+  reason?: string; // e.g. "Venus in Aries — fire sign pushes Active"
 }
 
 export interface DimensionScore {
