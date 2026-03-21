@@ -301,8 +301,12 @@ export function calculateArabicParts(
       name: 'Part of Necessity (Ananke)',
       formula: 'ASC + Fortune − Spirit',
       calc: () => {
-        const fortune = ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360;
-        const spirit = ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360;
+        const fortune = isDayChart
+          ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
+          : ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360;
+        const spirit = isDayChart
+          ? ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360
+          : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360;
         return ((ascDeg + fortune - spirit) % 360 + 360) % 360;
       },
       interp: 'Where fate and unavoidable circumstance exert the strongest pull this year. The Part of Necessity shows what you must deal with whether you choose to or not — the non-negotiable themes of the year.',
