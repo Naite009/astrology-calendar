@@ -109,11 +109,17 @@ function getTransitInterpretation(transitPlanet: string, srTarget: string, aspec
   const aspectFeel: Record<string, string> = {
     Conjunction: 'directly activates',
     Opposition: 'creates tension and awareness around',
-    Square: 'forces action and decisions regarding',
+    Square: 'encourages action and decisions regarding',
     Trine: 'supports and eases',
     Sextile: 'opens opportunities related to',
   };
-  return `Transiting ${transitPlanet} ${aspectFeel[aspect] || 'aspects'} your ${srTarget} placement — this is an activation point for those themes.`;
+  const transitPlain: Record<string, string> = {
+    Sun: 'Your core purpose energy', Mars: 'Your drive and motivation',
+    Jupiter: 'Your growth and expansion energy', Saturn: 'Your commitment and responsibility focus',
+    Mercury: 'Your communication energy', Venus: 'Your love and connection energy',
+  };
+  const tpLabel = transitPlain[transitPlanet] || 'This energy';
+  return `${tpLabel} ${aspectFeel[aspect] || 'connects with'} your ${srTarget.replace('SR ', '')} placement — this is an activation point for those themes.`;
 }
 
 /**
