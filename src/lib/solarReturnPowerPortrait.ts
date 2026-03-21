@@ -270,7 +270,7 @@ export function generatePowerPortrait(
   }
   if (saturnSRHouse) {
     burnoutSources.push({
-      planet: 'Saturn (this year)',
+      planet: 'Commitment & responsibility (this year)',
       sign: srPlanets['Saturn']?.sign || saturn?.sign || '',
       house: saturnSRHouse,
       reason: getSaturnBurnout(saturnSRHouse, srPlanets['Saturn']?.sign || ''),
