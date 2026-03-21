@@ -27,7 +27,7 @@ import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
-import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
+// YearPriorityEngine removed — replaced by expanded 10-domain Life Domain Scores
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
 import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
