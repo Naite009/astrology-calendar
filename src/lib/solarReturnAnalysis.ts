@@ -1621,6 +1621,7 @@ export const analyzeSolarReturn = (
     srToNatalAspects,
     srInternalAspects,
     angularPlanets,
+    angularPlanetsDetailed,
     relocationTip,
     lordOfTheYear,
     profectionYear,
