@@ -1,14 +1,9 @@
 /**
  * Life Domain Scores — nature-weighted, tone-aware scoring
  *
- * Core principle: the NUMBER of planets tells you how ACTIVE an area is.
- * The NATURE of those planets tells you whether that activity is supportive,
- * challenging, or transformative. Saturn in the 7th doesn't mean "Exceptional Love" —
- * it means love is under maximum pressure.
- *
- * Two separate axes:
+ * 10 life domains scored on two axes:
  *   1. Activity Level (0–10): How much cosmic energy touches this domain
- *   2. Tone Score (negative = challenging, positive = supportive): What KIND of energy
+ *   2. Tone Score (signed float): What KIND of energy (positive = supportive, negative = challenging)
  */
 
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
@@ -18,53 +13,38 @@ import { SolarReturnAnalysis } from './solarReturnAnalysis';
 type PlanetNature = 'benefic' | 'malefic' | 'outer' | 'wound-healer' | 'neutral' | 'luminary';
 
 const PLANET_NATURE: Record<string, PlanetNature> = {
-  Sun: 'luminary',
-  Moon: 'luminary',
-  Mercury: 'neutral',
-  Venus: 'benefic',
-  Jupiter: 'benefic',
-  Mars: 'malefic',
-  Saturn: 'malefic',
-  Uranus: 'outer',
-  Neptune: 'outer',
-  Pluto: 'outer',
-  Chiron: 'wound-healer',
-  NorthNode: 'neutral',
-  Juno: 'neutral',
-  Ceres: 'neutral',
-  Pallas: 'neutral',
-  Vesta: 'neutral',
-  MC: 'neutral',
+  Sun: 'luminary', Moon: 'luminary', Mercury: 'neutral', Venus: 'benefic',
+  Jupiter: 'benefic', Mars: 'malefic', Saturn: 'malefic', Uranus: 'outer',
+  Neptune: 'outer', Pluto: 'outer', Chiron: 'wound-healer', NorthNode: 'neutral',
+  Juno: 'neutral', Ceres: 'neutral', Pallas: 'neutral', Vesta: 'neutral', MC: 'neutral',
 };
 
-/* ── Tone Weights per planet (signed: positive = supportive, negative = challenging) ── */
-/* These are DOMAIN-SPECIFIC for love; other domains use the default column */
+/* ── Tone Weights per planet (domain-specific overrides) ── */
 
 interface PlanetWeightEntry {
   default: number;
-  love?: number;
-  career?: number;
-  health?: number;
-  growth?: number;
+  love?: number; career?: number; health?: number; growth?: number;
+  money?: number; home?: number; friendships?: number; creativity?: number;
+  spirituality?: number; power?: number;
 }
 
 const PLANET_TONE_WEIGHTS: Record<string, PlanetWeightEntry> = {
-  Venus:     { default: 2,    love: 3,    career: 1 },
-  Jupiter:   { default: 2,    love: 2,    career: 2 },
-  Sun:       { default: 1.5 },
-  Moon:      { default: 1.5 },
-  Mercury:   { default: 1 },
-  Mars:      { default: -0.5, health: -1 },
-  Saturn:    { default: -2,   love: -2,   career: -1.5 },
-  Uranus:    { default: -1 },
-  Neptune:   { default: -1.5, love: -1.5 },
-  Pluto:     { default: -1 },
-  Chiron:    { default: -0.5 },
-  NorthNode: { default: 0.5 },
+  Venus:     { default: 2,    love: 3,    career: 1,  creativity: 2.5, friendships: 2, money: 1.5 },
+  Jupiter:   { default: 2,    love: 2,    career: 2,  money: 2.5, friendships: 2, spirituality: 2 },
+  Sun:       { default: 1.5,  creativity: 2 },
+  Moon:      { default: 1.5,  home: 2.5,  health: 1 },
+  Mercury:   { default: 1,    growth: 1.5 },
+  Mars:      { default: -0.5, health: -1, power: 0.5 },
+  Saturn:    { default: -2,   love: -2,   career: -1.5, home: -1.5, power: -1 },
+  Uranus:    { default: -1,   creativity: 0.5 },
+  Neptune:   { default: -1.5, love: -1.5, spirituality: 2, creativity: 1 },
+  Pluto:     { default: -1,   power: 1.5, spirituality: 0.5 },
+  Chiron:    { default: -0.5, spirituality: 1, health: -1 },
+  NorthNode: { default: 0.5,  growth: 1.5, spirituality: 1 },
   Juno:      { default: 1,    love: 1.5 },
-  Ceres:     { default: 0.5 },
-  Pallas:    { default: 0 },
-  Vesta:     { default: 0 },
+  Ceres:     { default: 0.5,  home: 1.5 },
+  Pallas:    { default: 0,    career: 0.5 },
+  Vesta:     { default: 0,    spirituality: 1 },
   MC:        { default: 0,    career: 1.5 },
 };
 
@@ -74,52 +54,38 @@ function getToneWeight(planet: string, domain: string): number {
   return (entry as any)[domain] ?? entry.default;
 }
 
-/* ── Retrograde modifier: malefic qualities intensify when Rx ── */
+/* ── Retrograde & Dignity modifiers ── */
+
 function retrogradeMultiplier(planet: string, isRetrograde: boolean): number {
   if (!isRetrograde) return 1;
   const nature = PLANET_NATURE[planet] || 'neutral';
-  if (nature === 'malefic') return 1.5;   // Saturn Rx = even more restrictive
-  if (nature === 'outer') return 1.3;      // outer Rx = more internalized disruption
+  if (nature === 'malefic') return 1.5;
+  if (nature === 'outer') return 1.3;
   return 1;
 }
 
-/* ── Dignity modifier ── */
 type Dignity = 'domicile' | 'exaltation' | 'detriment' | 'fall' | 'peregrine' | 'none';
 
 function dignityMultiplier(planet: string, dignity: Dignity): number {
-  if (dignity === 'domicile' || dignity === 'exaltation') {
-    const nature = PLANET_NATURE[planet] || 'neutral';
-    // Benefics in dignity = stronger positive; malefics in dignity = stronger negative
-    return 1.3;
-  }
+  if (dignity === 'domicile' || dignity === 'exaltation') return 1.3;
   if (dignity === 'detriment' || dignity === 'fall') {
     const nature = PLANET_NATURE[planet] || 'neutral';
-    // Benefics weakened; malefics more problematic
     if (nature === 'benefic' || nature === 'luminary') return 0.7;
     if (nature === 'malefic') return 1.3;
-    return 1;
   }
   return 1;
 }
 
-const PLANET_EFFECT: Record<string, Record<string, string>> = {
-  Venus: { default: 'attraction & harmony' },
-  Jupiter: { default: 'expansion & opportunity' },
-  Saturn: { default: 'restriction & hard lessons' },
-  Mars: { default: 'conflict & drive' },
-  Uranus: { default: 'sudden change & disruption' },
-  Neptune: { default: 'confusion & dissolving boundaries' },
-  Pluto: { default: 'power struggles & transformation' },
-  Chiron: { default: 'surfacing old wounds' },
-  Sun: { default: 'core focus & identity' },
-  Moon: { default: 'emotional needs' },
-  Mercury: { default: 'communication & analysis' },
-  NorthNode: { default: 'growth direction' },
-  Juno: { default: 'partnership commitment' },
-  Ceres: { default: 'nurturing & loss/return' },
-  Pallas: { default: 'strategic pattern recognition' },
-  Vesta: { default: 'sacred devotion & focus' },
-  MC: { default: 'public direction' },
+const PLANET_EFFECT: Record<string, string> = {
+  Venus: 'attraction & harmony', Jupiter: 'expansion & opportunity',
+  Saturn: 'restriction & hard lessons', Mars: 'conflict & drive',
+  Uranus: 'sudden change & disruption', Neptune: 'confusion & dissolving boundaries',
+  Pluto: 'power struggles & transformation', Chiron: 'surfacing old wounds',
+  Sun: 'core focus & identity', Moon: 'emotional needs',
+  Mercury: 'communication & analysis', NorthNode: 'growth direction',
+  Juno: 'partnership commitment', Ceres: 'nurturing & loss/return',
+  Pallas: 'strategic pattern recognition', Vesta: 'sacred devotion & focus',
+  MC: 'public direction',
 };
 
 /* ── Types ── */
@@ -129,8 +95,8 @@ export interface DriverDetail {
   house: number;
   effect: string;
   nature: PlanetNature;
-  points: number;       // activity points (always positive)
-  tonePoints: number;   // signed: + = supportive, - = challenging
+  points: number;
+  tonePoints: number;
 }
 
 export interface ScoreContribution {
@@ -145,9 +111,10 @@ export type DomainTone = 'supportive' | 'challenging' | 'transformative' | 'mixe
 
 export interface LifeDomainScore {
   domain: string;
-  activityLevel: number;   // 0-10 raw activation (how BUSY this area is)
-  toneScore: number;        // signed sum of nature weights (+ = good, - = hard)
-  score: number;            // backward compat (= activityLevel)
+  domainKey: string;
+  activityLevel: number;
+  toneScore: number;
+  score: number;
   tone: DomainTone;
   label: string;
   drivers: DriverDetail[];
@@ -156,71 +123,202 @@ export interface LifeDomainScore {
   breakdown: ScoreContribution[];
 }
 
+export type DomainKey = 'career' | 'love' | 'health' | 'growth' | 'money' | 'home' | 'friendships' | 'creativity' | 'spirituality' | 'power';
+
 export interface LifeDomainScores {
   career: LifeDomainScore;
   love: LifeDomainScore;
   health: LifeDomainScore;
   growth: LifeDomainScore;
+  money: LifeDomainScore;
+  home: LifeDomainScore;
+  friendships: LifeDomainScore;
+  creativity: LifeDomainScore;
+  spirituality: LifeDomainScore;
+  power: LifeDomainScore;
 }
 
-/* ── Domain Configuration ── */
+/* ── Domain Configuration — 10 domains ── */
 
-const DOMAIN_HOUSES: Record<string, number[]> = {
-  career: [2, 6, 10],
-  love: [5, 7, 8],
-  health: [1, 6, 12],
-  growth: [3, 9, 12],
-};
-
-const HOUSE_REASONS: Record<string, Record<number, string>> = {
+const DOMAIN_CONFIG: Record<DomainKey, {
+  label: string;
+  houses: number[];
+  houseReasons: Record<number, string>;
+  activityWeights: Record<string, number>;
+  advice: Record<string, string>;
+}> = {
   career: {
-    2: 'income and earning power',
-    6: 'daily work routines and job duties',
-    10: 'public reputation and career direction',
+    label: 'Career & Public Role',
+    houses: [6, 10],
+    houseReasons: {
+      6: 'daily work routines and job duties',
+      10: 'public reputation and career direction',
+    },
+    activityWeights: { Sun: 2, Saturn: 2, Jupiter: 1.5, Mars: 1.5, MC: 2, Venus: 1, Mercury: 1, Pluto: 1, Uranus: 1 },
+    advice: {
+      challenging: 'Career is active but demanding — expect restructuring, harder lessons, and the need to prove yourself. Growth comes through persistence, not luck.',
+      transformative: 'Your career is undergoing deep shifts — old roles or ambitions may need to die so new ones can emerge.',
+      supportive: 'Professional momentum is real this year — benefic planets support your work houses, making this a time to advance.',
+      quiet: 'Career houses are quiet — focus on skill-building and preparation rather than big launches.',
+      mixed: 'Some career energy is present — stay engaged and responsive without forcing big moves.',
+    },
   },
   love: {
-    5: 'romance, dating, and creative self-expression',
-    7: 'committed partnerships and one-on-one relationships',
-    8: 'deep intimacy, shared resources, and emotional merging',
+    label: 'Love & Relationships',
+    houses: [5, 7],
+    houseReasons: {
+      5: 'romance, dating, and creative self-expression',
+      7: 'committed partnerships and one-on-one relationships',
+    },
+    activityWeights: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
+    advice: {
+      challenging: 'Relationships are under intense pressure — expect hard conversations, boundary-setting, and restructuring. This is Saturn\'s testing ground, not Venus\'s garden.',
+      transformative: 'Love and intimacy are being transformed at a deep level — old patterns are breaking down.',
+      supportive: 'Relationship houses are lit up by benefic planets — genuine warmth, connection, and romantic opportunity.',
+      quiet: 'Relationship houses are quiet — invest in self-knowledge and let partnerships breathe.',
+      mixed: 'Relationship energy is present but mixed — both support and challenge are in play.',
+    },
   },
   health: {
-    1: 'your physical body and vitality',
-    6: 'daily health habits and wellness routines',
-    12: 'rest, recovery, and things you might ignore',
+    label: 'Health & Vitality',
+    houses: [1, 6],
+    houseReasons: {
+      1: 'your physical body and vitality',
+      6: 'daily health habits and wellness routines',
+    },
+    activityWeights: { Mars: 1.5, Saturn: 1.5, Moon: 1, Sun: 1, Neptune: 1, Chiron: 1, Pluto: 1 },
+    advice: {
+      challenging: 'Health requires active attention — stress, overwork, or ignored signals may surface. Prevention is essential.',
+      transformative: 'Your body and wellness routines want a complete overhaul — listen to unfamiliar signals.',
+      supportive: 'Supportive energy in your health houses — a good year to establish new wellness habits that stick.',
+      quiet: 'Health houses are quiet — steady maintenance is your best strategy.',
+      mixed: 'Health is moderately active — maintain routines and listen when your body sends signals.',
+    },
   },
   growth: {
-    3: 'learning, curiosity, and new skills',
-    9: 'big-picture beliefs, travel, and higher education',
-    12: 'spiritual development and inner wisdom',
+    label: 'Learning & Expansion',
+    houses: [3, 9],
+    houseReasons: {
+      3: 'learning, curiosity, communication, and new skills',
+      9: 'big-picture beliefs, travel, and higher education',
+    },
+    activityWeights: { Jupiter: 2, Neptune: 1.5, Pluto: 1.5, NorthNode: 2, Uranus: 1, Chiron: 1, Mercury: 1.5 },
+    advice: {
+      challenging: 'Growth comes through difficulty — the lessons are real but uncomfortable.',
+      transformative: 'Expect real shifts in how you see the world — your worldview is being rebuilt.',
+      supportive: 'Expansion and learning flow naturally — education, travel, or spiritual deepening are available.',
+      quiet: 'Inner growth is subtle this year — seeds planted now become visible in future cycles.',
+      mixed: 'Growth is happening through steady learning and gradually expanding your perspective.',
+    },
+  },
+  money: {
+    label: 'Money & Resources',
+    houses: [2, 8],
+    houseReasons: {
+      2: 'your income, earning power, and personal values',
+      8: 'shared resources, debts, investments, and other people\'s money',
+    },
+    activityWeights: { Venus: 1.5, Jupiter: 2, Saturn: 1.5, Pluto: 1.5, Mars: 1, Sun: 1, Mercury: 1, Uranus: 1 },
+    advice: {
+      challenging: 'Financial pressure is real — debts, restructuring, or losses may require hard decisions. Budget carefully.',
+      transformative: 'Your relationship with money is being fundamentally rebuilt — old financial patterns are dying.',
+      supportive: 'Financial opportunity is present — benefic planets support your money houses. Time to invest in yourself.',
+      quiet: 'Money houses are quiet — maintain existing financial habits and avoid big risks.',
+      mixed: 'Mixed financial energy — some gains, some setbacks. Stay flexible and avoid overcommitting.',
+    },
+  },
+  home: {
+    label: 'Home & Family',
+    houses: [4, 10],
+    houseReasons: {
+      4: 'home, family roots, emotional foundations, and living situation',
+      10: 'parental role, family legacy, and authority figures',
+    },
+    activityWeights: { Moon: 2, Saturn: 1.5, Ceres: 1.5, Pluto: 1, Sun: 1, Venus: 1, Mars: 1, Neptune: 1, Uranus: 1.5 },
+    advice: {
+      challenging: 'Home and family are under pressure — expect conflicts, moves, or difficult conversations with parents/family.',
+      transformative: 'Your living situation or family dynamics are being fundamentally restructured.',
+      supportive: 'Home life is supported — good time for moves, renovations, or deepening family bonds.',
+      quiet: 'Home sector is quiet — stable foundations let you focus elsewhere.',
+      mixed: 'Mixed energy at home — some comfort and some disruption. Stay flexible about living arrangements.',
+    },
+  },
+  friendships: {
+    label: 'Friendships & Community',
+    houses: [11, 3],
+    houseReasons: {
+      11: 'friendships, social circles, hopes, and group involvement',
+      3: 'neighbors, siblings, and your immediate social environment',
+    },
+    activityWeights: { Venus: 1.5, Jupiter: 1.5, Mercury: 1.5, Sun: 1, Uranus: 1.5, Mars: 1, Saturn: 1, Neptune: 1 },
+    advice: {
+      challenging: 'Social life is demanding — friendships may be tested, or you may outgrow certain groups.',
+      transformative: 'Your social world is shifting — expect to leave old circles and find new ones that fit who you\'re becoming.',
+      supportive: 'Social life is thriving — new connections, community involvement, and supportive friendships.',
+      quiet: 'Social sector is quiet — a few deep connections matter more than a wide network.',
+      mixed: 'Mixed social energy — some friendships deepen while others fade. Quality over quantity.',
+    },
+  },
+  creativity: {
+    label: 'Creativity & Self-Expression',
+    houses: [5, 3],
+    houseReasons: {
+      5: 'creative projects, artistic expression, play, and joy',
+      3: 'writing, communication, and intellectual creativity',
+    },
+    activityWeights: { Venus: 2, Sun: 1.5, Neptune: 1.5, Mercury: 1, Moon: 1, Mars: 1, Uranus: 1.5, Jupiter: 1 },
+    advice: {
+      challenging: 'Creative blocks or frustration — the muse demands you push through resistance to find authentic expression.',
+      transformative: 'Your creative voice is being completely reinvented — old styles die, new ones emerge.',
+      supportive: 'Creative energy is flowing — this is a genuinely good year to make, write, perform, or create.',
+      quiet: 'Creative houses are quiet — consume inspiration now and create later.',
+      mixed: 'Creative energy is present but inconsistent — follow the bursts when they come.',
+    },
+  },
+  spirituality: {
+    label: 'Spirituality & Inner Life',
+    houses: [12, 9],
+    houseReasons: {
+      12: 'the unconscious, spiritual practice, retreat, and surrender',
+      9: 'higher meaning, philosophy, and faith',
+    },
+    activityWeights: { Neptune: 2, Jupiter: 1.5, Pluto: 1.5, NorthNode: 1.5, Chiron: 1.5, Moon: 1, Vesta: 1.5, Saturn: 1, Sun: 0.5 },
+    advice: {
+      challenging: 'Spiritual life is intense — confronting illusions, crisis of faith, or feeling lost. The dismantling is necessary.',
+      transformative: 'Deep spiritual transformation — your relationship with the unseen is being completely rebuilt.',
+      supportive: 'Spiritual growth flows naturally — meditation, retreats, and inner work feel supported and meaningful.',
+      quiet: 'Inner life is quiet — grounding in the physical world takes priority this year.',
+      mixed: 'Spiritual path is mixed — moments of clarity alternate with confusion. Trust the process.',
+    },
+  },
+  power: {
+    label: 'Power & Transformation',
+    houses: [8, 1],
+    houseReasons: {
+      8: 'deep transformation, crisis, shared power, and rebirth',
+      1: 'personal power, identity, and how you project yourself',
+    },
+    activityWeights: { Pluto: 2.5, Mars: 1.5, Saturn: 1.5, Sun: 1, Uranus: 1.5, Chiron: 1, NorthNode: 1 },
+    advice: {
+      challenging: 'Power dynamics are intense — control issues, power struggles, or feeling overwhelmed by forces bigger than you.',
+      transformative: 'This is a death-and-rebirth year — something fundamental about you or your life is being permanently changed.',
+      supportive: 'You\'re stepping into genuine personal power — confidence and authority feel natural.',
+      quiet: 'Transformation sector is quiet — stability and maintenance rather than upheaval.',
+      mixed: 'Power dynamics are in play — some areas of control, some of surrender. Learn to read which is which.',
+    },
   },
 };
 
 const PLANET_PLAIN: Record<string, string> = {
-  Sun: 'your identity and sense of self',
-  Moon: 'your emotions and daily feelings',
-  Mercury: 'how you think and communicate',
-  Venus: 'what you love and value',
-  Mars: 'your drive, energy, and desire',
-  Jupiter: 'where you get lucky and expand',
-  Saturn: 'where you work hardest and face tests',
-  Uranus: 'where sudden changes happen',
-  Neptune: 'your intuition, illusions, and confusion',
-  Pluto: 'deep transformation and power shifts',
-  NorthNode: 'your growth direction this lifetime',
-  Juno: 'what you need in committed partnership',
+  Sun: 'your identity and sense of self', Moon: 'your emotions and daily feelings',
+  Mercury: 'how you think and communicate', Venus: 'what you love and value',
+  Mars: 'your drive, energy, and desire', Jupiter: 'where you get lucky and expand',
+  Saturn: 'where you work hardest and face tests', Uranus: 'where sudden changes happen',
+  Neptune: 'your intuition, illusions, and confusion', Pluto: 'deep transformation and power shifts',
+  NorthNode: 'your growth direction this lifetime', Juno: 'what you need in committed partnership',
   Chiron: 'where your deepest wound becomes your greatest healing',
-  Ceres: 'nurturing and cycles of loss and return',
-  Pallas: 'strategic intelligence and pattern recognition',
-  Vesta: 'sacred focus and devotion',
-  MC: 'your career direction and public role',
-};
-
-// Activity weight — how much each planet activates a domain (always positive)
-const PLANET_ACTIVITY_WEIGHT: Record<string, Record<string, number>> = {
-  career: { Sun: 2, Saturn: 2, Jupiter: 1.5, Mars: 1.5, MC: 2, Venus: 1, Mercury: 1, Pluto: 1, Uranus: 1 },
-  love: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
-  health: { Mars: 1.5, Saturn: 1.5, Moon: 1, Sun: 1, Neptune: 1, Chiron: 1, Pluto: 1 },
-  growth: { Jupiter: 2, Neptune: 1.5, Pluto: 1.5, NorthNode: 2, Uranus: 1, Chiron: 1, Mercury: 1 },
+  Ceres: 'nurturing and cycles of loss and return', Pallas: 'strategic intelligence',
+  Vesta: 'sacred focus and devotion', MC: 'your career direction and public role',
 };
 
 const BENEFIC_ASPECTS = ['Trine', 'Sextile'];
@@ -233,6 +331,7 @@ function clamp(v: number, min: number, max: number): number {
 }
 
 function ordinal(n: number): string {
+  if (n === 0) return '';
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
@@ -243,23 +342,20 @@ function getNature(planet: string): PlanetNature {
 }
 
 function getEffect(planet: string): string {
-  return PLANET_EFFECT[planet]?.default || 'activation';
+  return PLANET_EFFECT[planet] || 'activation';
 }
 
-/* ── Tone Calculation from weighted toneScore ── */
+/* ── Tone → Label ── */
 
 function calculateTone(toneScore: number, activityLevel: number): DomainTone {
   if (activityLevel < 2) return 'quiet';
-  // Use ratio of tone to activity to determine overall character
   if (toneScore >= 2) return 'supportive';
   if (toneScore <= -2) return 'challenging';
-  if (toneScore <= -0.5) return 'transformative';  // slightly negative = transformative
+  if (toneScore <= -0.5) return 'transformative';
   return 'mixed';
 }
 
-/* ── Label Generation — tone-aware, no false positives ── */
-
-function activityLabel(level: number, tone: DomainTone, toneScore: number): string {
+function activityLabel(level: number, tone: DomainTone): string {
   if (level < 2) return 'Quiet Background';
   if (level < 4) {
     if (tone === 'supportive') return 'Gently Supportive';
@@ -272,59 +368,26 @@ function activityLabel(level: number, tone: DomainTone, toneScore: number): stri
     if (tone === 'transformative') return 'Steadily Transforming';
     return 'Active — Complex';
   }
-  // 7+
   if (tone === 'supportive') return 'Flourishing';
   if (tone === 'challenging') return 'Under Intense Pressure';
   if (tone === 'transformative') return 'Deep Transformation';
   return 'Highly Active — Complex';
 }
 
-/* ── Advice Generation ── */
-
-function generateAdvice(domain: string, level: number, tone: DomainTone, toneScore: number): string {
-  if (domain === 'career') {
-    if (tone === 'challenging') return 'Career is active but demanding — expect restructuring, harder lessons, and the need to prove yourself. Growth comes through persistence, not luck.';
-    if (tone === 'transformative') return 'Your career is undergoing deep shifts — old roles or ambitions may need to die so new ones can emerge. Stay open to radical redirection.';
-    if (tone === 'supportive' && level >= 6) return 'Professional momentum is real this year — benefic planets are supporting your work houses, making this a time to advance and expand.';
-    if (level < 3) return 'Your career houses are quiet this year — focus on skill-building and preparation rather than big launches.';
-    return 'Some career energy is present — stay engaged and responsive to what emerges without forcing big moves.';
-  }
-  if (domain === 'love') {
-    if (tone === 'challenging') return 'Relationships are under intense pressure — expect hard conversations, boundary-setting, and restructuring of how you partner. This is Saturn\'s testing ground, not Venus\'s garden. Partnerships are being rebuilt from the foundations.';
-    if (tone === 'transformative') return 'Love and intimacy are being transformed at a deep level — old patterns are breaking down. What emerges will be more authentic but the process is intense.';
-    if (tone === 'supportive' && level >= 6) return 'Relationship houses are lit up by benefic planets — genuine warmth, connection, and romantic opportunity are available this year.';
-    if (level < 3) return 'Relationship houses are quiet — invest in self-knowledge and let partnerships breathe.';
-    return 'Relationship energy is present but mixed — both support and challenge are in play. Stay honest about what you need.';
-  }
-  if (domain === 'health') {
-    if (tone === 'challenging') return 'Health requires active attention — stress, overwork, or ignored signals may surface. Prevention and boundaries around energy are essential.';
-    if (tone === 'transformative') return 'Your body and wellness routines want a complete overhaul — what worked before may not work now. Listen to unfamiliar signals.';
-    if (tone === 'supportive' && level >= 6) return 'Supportive energy in your health houses — a good year to establish new wellness habits that actually stick.';
-    if (level < 3) return 'Health houses are quiet — steady maintenance is your best strategy.';
-    return 'Health is moderately active — maintain routines and listen when your body sends signals.';
-  }
-  // growth
-  if (tone === 'challenging') return 'Growth comes through difficulty this year — the lessons are real but uncomfortable. What you learn under pressure will last.';
-  if (tone === 'transformative') return 'Expect real shifts in how you see the world — through travel, study, crisis, or inner work. Your worldview is being rebuilt.';
-  if (tone === 'supportive' && level >= 6) return 'Expansion and learning flow naturally — opportunities for education, travel, or spiritual deepening are genuinely available.';
-  if (level < 3) return 'Inner growth is subtle this year — seeds planted now will become visible in future cycles.';
-  return 'Growth is happening through steady learning and gradually expanding your perspective.';
-}
-
 /* ── Main Scoring Engine ── */
 
+const ALL_DOMAIN_KEYS: DomainKey[] = ['career', 'love', 'health', 'growth', 'money', 'home', 'friendships', 'creativity', 'spirituality', 'power'];
+
 export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDomainScores {
-  const domainKeys = ['career', 'love', 'health', 'growth'] as const;
   const results: Record<string, LifeDomainScore> = {};
 
-  // Build retrograde lookup from analysis data
+  // Build retrograde lookup
   const retrogradeSet = new Set<string>();
   for (const ov of (analysis.houseOverlays || [])) {
     if ((ov as any).retrograde || (ov as any).isRetrograde) {
       retrogradeSet.add(ov.planet);
     }
   }
-  // Also check retrogrades array if present
   if (Array.isArray((analysis as any).retrogrades)) {
     for (const r of (analysis as any).retrogrades) {
       if (typeof r === 'string') retrogradeSet.add(r);
@@ -340,14 +403,13 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     }
   }
 
-  for (const domain of domainKeys) {
+  for (const domain of ALL_DOMAIN_KEYS) {
+    const config = DOMAIN_CONFIG[domain];
     let activity = 0;
     let toneTotal = 0;
     const allDrivers: DriverDetail[] = [];
     const breakdown: ScoreContribution[] = [];
-    const houses = DOMAIN_HOUSES[domain];
-    const activityWeights = PLANET_ACTIVITY_WEIGHT[domain];
-    const houseReasons = HOUSE_REASONS[domain];
+    const { houses, activityWeights, houseReasons } = config;
 
     // 1. House occupancy
     let houseOccupantCount = 0;
@@ -365,7 +427,6 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
           const houseDesc = houseReasons[h] || `house ${h}`;
           const planetDesc = PLANET_PLAIN[overlay.planet] || overlay.planet;
 
-          // Tone calculation: apply nature weight + retrograde + dignity modifiers
           let rawTone = getToneWeight(overlay.planet, domain);
           const rxMult = retrogradeMultiplier(overlay.planet, retrogradeSet.has(overlay.planet));
           const digMult = dignityMultiplier(overlay.planet, dignityMap[overlay.planet] || 'none');
@@ -387,7 +448,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
           const w = 0.2;
           activity += w;
           const nature = getNature(overlay.planet);
-          let rawTone = getToneWeight(overlay.planet, domain) * 0.3; // minor presence = minor tone impact
+          let rawTone = getToneWeight(overlay.planet, domain) * 0.3;
           const rxMult = retrogradeMultiplier(overlay.planet, retrogradeSet.has(overlay.planet));
           const finalTone = rawTone * rxMult;
           toneTotal += finalTone;
@@ -397,7 +458,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
             source: `${overlay.planet} in ${ordinal(h)} House`,
             points: w,
             tonePoints: Math.round(finalTone * 10) / 10,
-            reason: `${overlay.planet} is present but not a key planet for ${domain} — minor activation`,
+            reason: `${overlay.planet} is present but not a key planet for ${config.label} — minor activation`,
             nature,
           });
         }
@@ -409,33 +470,19 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     if (sunH && houses.includes(sunH) && !allDrivers.some(d => d.planet === 'Sun')) {
       const w = 1.0;
       activity += w;
-      const nature = getNature('Sun');
       const tp = getToneWeight('Sun', domain);
       toneTotal += tp;
-      allDrivers.push({ planet: 'Sun', house: sunH, effect: getEffect('Sun'), nature, points: w, tonePoints: tp });
-      breakdown.push({
-        source: `Sun in ${ordinal(sunH)} House`,
-        points: w,
-        tonePoints: tp,
-        reason: `Your Sun (core identity) lands in ${ordinal(sunH)} House — ${houseReasons[sunH] || ''}. This makes ${domain} a central theme.`,
-        nature,
-      });
+      allDrivers.push({ planet: 'Sun', house: sunH, effect: getEffect('Sun'), nature: 'luminary', points: w, tonePoints: tp });
+      breakdown.push({ source: `Sun in ${ordinal(sunH)} House`, points: w, tonePoints: tp, reason: `Sun (core identity) in ${ordinal(sunH)} House — makes ${config.label} a central theme.`, nature: 'luminary' });
     }
     const moonH = analysis.moonHouse.house;
     if (moonH && houses.includes(moonH) && !allDrivers.some(d => d.planet === 'Moon')) {
       const w = 0.7;
       activity += w;
-      const nature = getNature('Moon');
       const tp = getToneWeight('Moon', domain);
       toneTotal += tp;
-      allDrivers.push({ planet: 'Moon', house: moonH, effect: getEffect('Moon'), nature, points: w, tonePoints: tp });
-      breakdown.push({
-        source: `Moon in ${ordinal(moonH)} House`,
-        points: w,
-        tonePoints: tp,
-        reason: `Your Moon (emotional needs) is in ${ordinal(moonH)} House — your feelings are drawn here.`,
-        nature,
-      });
+      allDrivers.push({ planet: 'Moon', house: moonH, effect: getEffect('Moon'), nature: 'luminary', points: w, tonePoints: tp });
+      breakdown.push({ source: `Moon in ${ordinal(moonH)} House`, points: w, tonePoints: tp, reason: `Moon (emotional needs) in ${ordinal(moonH)} House — feelings are drawn here.`, nature: 'luminary' });
     }
 
     // 3. Stelliums
@@ -444,44 +491,28 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         const hNum = parseInt(st.location, 10);
         if (!isNaN(hNum) && houses.includes(hNum)) {
           activity += 1.0;
-          breakdown.push({
-            source: `Stellium in ${ordinal(hNum)} House`,
-            points: 1.0,
-            reason: `3+ planets clustered in ${ordinal(hNum)} House (${houseReasons[hNum] || ''}) — concentrated energy`,
-          });
+          breakdown.push({ source: `Stellium in ${ordinal(hNum)} House`, points: 1.0, reason: `3+ planets clustered in ${ordinal(hNum)} House (${houseReasons[hNum] || ''}) — concentrated energy` });
         }
       }
     }
 
-    // 4. Aspects — capped at 2 pts activity, but tone ALSO flows through
+    // 4. Aspects (capped at 2 pts activity)
     const allAspects = [...analysis.srToNatalAspects, ...analysis.srInternalAspects];
     let aspectBoost = 0;
     let aspectToneBoost = 0;
     const aspectDetails: string[] = [];
-    const MAX_ASPECT_CONTRIBUTION = 2.0;
+    const MAX_ASPECT = 2.0;
     for (const asp of allAspects) {
-      if (aspectBoost >= MAX_ASPECT_CONTRIBUTION) break;
+      if (aspectBoost >= MAX_ASPECT) break;
       const p1w = activityWeights[asp.planet1] || 0;
       const p2w = activityWeights[asp.planet2] || 0;
       if (p1w > 0 || p2w > 0) {
-        let weight: number;
-        if (BENEFIC_ASPECTS.includes(asp.type)) {
-          weight = 0.15;
-        } else if (MALEFIC_ASPECTS.includes(asp.type)) {
-          weight = 0.1;
-        } else {
-          weight = 0.05;
-        }
-        const remaining = MAX_ASPECT_CONTRIBUTION - aspectBoost;
-        weight = Math.min(weight, remaining);
+        let weight = BENEFIC_ASPECTS.includes(asp.type) ? 0.15 : MALEFIC_ASPECTS.includes(asp.type) ? 0.1 : 0.05;
+        weight = Math.min(weight, MAX_ASPECT - aspectBoost);
         activity += weight;
         aspectBoost += weight;
-
-        // Aspect tone: benefic aspects between planets = slightly positive, hard aspects = slightly negative
-        const isBeneficAspect = BENEFIC_ASPECTS.includes(asp.type);
-        const aspectTone = isBeneficAspect ? 0.2 : -0.2;
+        const aspectTone = BENEFIC_ASPECTS.includes(asp.type) ? 0.2 : -0.2;
         aspectToneBoost += aspectTone;
-
         aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type}`);
       }
     }
@@ -491,7 +522,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         source: `Aspects (${aspectDetails.length} relevant)`,
         points: Math.round(aspectBoost * 10) / 10,
         tonePoints: Math.round(aspectToneBoost * 10) / 10,
-        reason: `Relevant aspects: ${aspectDetails.slice(0, 4).join('; ')}${aspectDetails.length > 4 ? ` + ${aspectDetails.length - 4} more` : ''}. Capped at ${MAX_ASPECT_CONTRIBUTION}.`,
+        reason: `Relevant aspects: ${aspectDetails.slice(0, 4).join('; ')}${aspectDetails.length > 4 ? ` + ${aspectDetails.length - 4} more` : ''}`,
       });
     }
 
@@ -501,16 +532,10 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         const w = 0.4;
         activity += w;
         const nature = getNature(ap);
-        const tp = getToneWeight(ap, domain) * 0.3; // angular = minor tone influence
+        const tp = getToneWeight(ap, domain) * 0.3;
         toneTotal += tp;
         allDrivers.push({ planet: ap, house: 0, effect: 'angular emphasis', nature, points: w, tonePoints: Math.round(tp * 10) / 10 });
-        breakdown.push({
-          source: `${ap} angular`,
-          points: w,
-          tonePoints: Math.round(tp * 10) / 10,
-          reason: `${ap} (${PLANET_PLAIN[ap] || ap}) is on a chart angle — angular planets are louder in your year`,
-          nature,
-        });
+        breakdown.push({ source: `${ap} angular`, points: w, tonePoints: Math.round(tp * 10) / 10, reason: `${ap} on a chart angle — louder in your year`, nature });
       }
     }
 
@@ -521,30 +546,27 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         const tp = getToneWeight('Saturn', domain) * 0.5;
         toneTotal += tp;
         allDrivers.push({ planet: 'Saturn', house: analysis.saturnFocus.house, effect: getEffect('Saturn'), nature: 'malefic', points: 0.3, tonePoints: Math.round(tp * 10) / 10 });
-        breakdown.push({
-          source: `Saturn focus in ${ordinal(analysis.saturnFocus.house)} House`,
-          points: 0.3,
-          tonePoints: Math.round(tp * 10) / 10,
-          reason: `Saturn brings serious work — it activates this area through demand, not ease`,
-          nature: 'malefic',
-        });
+        breakdown.push({ source: `Saturn focus in ${ordinal(analysis.saturnFocus.house)} House`, points: 0.3, tonePoints: Math.round(tp * 10) / 10, reason: `Saturn activates through demand, not ease`, nature: 'malefic' });
       }
     }
 
     const finalActivity = clamp(Math.round(activity * 10) / 10, 0, 10);
     const finalTone = Math.round(toneTotal * 10) / 10;
     const tone = calculateTone(finalTone, finalActivity);
+    const adviceMap = config.advice;
+    const adviceKey = tone === 'quiet' ? 'quiet' : tone;
 
     results[domain] = {
-      domain: domain.charAt(0).toUpperCase() + domain.slice(1),
+      domain: config.label,
+      domainKey: domain,
       activityLevel: finalActivity,
       toneScore: finalTone,
       score: finalActivity,
       tone,
-      label: activityLabel(finalActivity, tone, finalTone),
+      label: activityLabel(finalActivity, tone),
       drivers: allDrivers,
       driverSummaries: allDrivers.slice(0, 6).map(d => `${d.planet} in ${ordinal(d.house)} House`),
-      advice: generateAdvice(domain, finalActivity, tone, finalTone),
+      advice: adviceMap[adviceKey] || adviceMap.mixed || '',
       breakdown,
     };
   }

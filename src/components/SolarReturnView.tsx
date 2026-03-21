@@ -27,7 +27,7 @@ import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
-import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
+// YearPriorityEngine removed — replaced by expanded 10-domain Life Domain Scores
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
 import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
@@ -895,7 +895,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* Identity Shift — Who you are becoming */}
       <IdentityShiftCard shift={identityShift} />
 
-      {/* Life Domain Scores — Career, Love, Health, Growth */}
+      {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
 
       {/* 1. Story of the Year — top-level narrative synthesis */}
@@ -916,8 +916,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 6. Psychological Profile — bipolar spectrums: natal, SR, blended */}
       <PsychologicalProfileCard natalChart={natalChart} srChart={srChart} />
 
-      {/* 6b. Year Priority Engine — weighted theme ranking */}
-      <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
+      {/* Year Priority Engine removed — now covered by 10-domain Life Domain Scores above */}
 
       {/* 7. Your Year's Playbook — Action Guidance */}
       <ActionGuidanceCard guidance={actionGuidance} />
