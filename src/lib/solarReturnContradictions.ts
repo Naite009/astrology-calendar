@@ -112,10 +112,10 @@ export function detectContradictions(
       );
       if (hasTension) {
         results.push({
-          title: 'Expansion vs Restriction',
-          tension: `You may feel pulled between Jupiter's desire to expand in ${HOUSE_THEME[jupH] || 'this area'} and Saturn's demand for discipline in ${HOUSE_THEME[satH] || 'that area'}. One foot on the gas, one on the brake.`,
-          synthesis: `Saturn is not blocking Jupiter — it's providing the container. Growth without structure collapses. Use Saturn's ${ordinal(satH)} House discipline as the scaffolding for Jupiter's ${ordinal(jupH)} House expansion. Build slowly and the growth will be lasting.`,
-          resolution: `In daily life: write down one Jupiter-size dream for ${HOUSE_THEME[jupH] || 'this area'}, then break it into Saturn-size weekly steps for ${HOUSE_THEME[satH] || 'that area'}. Do not try to leap ahead — build one brick at a time. The tension eases when you stop seeing Saturn as the enemy and start using it as your project manager.`,
+          title: 'Expansion vs Responsibility',
+          tension: `You may feel pulled between your desire to expand in ${HOUSE_THEME[jupH] || 'this area'} and the demand for discipline in ${HOUSE_THEME[satH] || 'that area'}. One foot on the gas, one on the brake.`,
+          synthesis: `Responsibility is not blocking growth — it's providing the container. Growth without structure collapses. Use your sense of discipline as the scaffolding for your desire to expand. Build slowly and the growth will be lasting.`,
+          resolution: `In daily life: write down one big dream for ${HOUSE_THEME[jupH] || 'this area'}, then break it into weekly steps for ${HOUSE_THEME[satH] || 'that area'}. Don't try to leap ahead — build one brick at a time. The tension eases when you stop seeing responsibility as the enemy and start using it as your project manager.`,
           placement1: `Jupiter in ${ordinal(jupH)} House (${jupiterPlace.sign})`,
           placement2: `Saturn in ${ordinal(satH)} House (${saturnPlace.sign})`,
           category: 'planet-tension',
