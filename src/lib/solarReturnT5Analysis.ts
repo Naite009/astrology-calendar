@@ -270,17 +270,25 @@ export function calculateArabicParts(
 
   if (ascDeg === null || sunDeg === null || moonDeg === null) return results;
 
+  // Determine day vs night chart: Sun above horizon (houses 7-12) = day chart
+  const sunHouse = findSRHouse(sunDeg);
+  const isDayChart = sunHouse !== null && sunHouse >= 7;
+
   const PARTS: { name: string; formula: string; calc: () => number | null; interp: string }[] = [
     {
       name: 'Part of Fortune (Fortuna)',
-      formula: 'ASC + Moon − Sun',
-      calc: () => ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360,
+      formula: isDayChart ? 'ASC + Moon − Sun (day)' : 'ASC + Sun − Moon (night)',
+      calc: () => isDayChart
+        ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
+        : ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360,
       interp: 'Where prosperity, luck, and material well-being flow most naturally this year. The Part of Fortune marks the point where your emotional needs (Moon) and life purpose (Sun) align with your visible self (ASC). Planets aspecting this point amplify or challenge your access to fortune.',
     },
     {
       name: 'Part of Spirit (Daimon)',
-      formula: 'ASC + Sun − Moon',
-      calc: () => ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360,
+      formula: isDayChart ? 'ASC + Sun − Moon (day)' : 'ASC + Moon − Sun (night)',
+      calc: () => isDayChart
+        ? ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360
+        : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360,
       interp: 'Where your conscious will and spiritual agency are strongest this year. The Part of Spirit represents where you can most effectively direct your intentions. While Fortune shows what comes to you, Spirit shows what you can actively create.',
     },
     {
@@ -293,8 +301,12 @@ export function calculateArabicParts(
       name: 'Part of Necessity (Ananke)',
       formula: 'ASC + Fortune − Spirit',
       calc: () => {
-        const fortune = ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360;
-        const spirit = ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360;
+        const fortune = isDayChart
+          ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
+          : ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360;
+        const spirit = isDayChart
+          ? ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360
+          : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360;
         return ((ascDeg + fortune - spirit) % 360 + 360) % 360;
       },
       interp: 'Where fate and unavoidable circumstance exert the strongest pull this year. The Part of Necessity shows what you must deal with whether you choose to or not — the non-negotiable themes of the year.',
