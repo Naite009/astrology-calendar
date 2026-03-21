@@ -433,15 +433,15 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
           const finalTone = rawTone * rxMult * digMult;
           toneTotal += finalTone;
 
-          const rxNote = retrogradeSet.has(overlay.planet) ? ' (Rx — intensified)' : '';
-          const digNote = dignityMap[overlay.planet] ? ` [${dignityMap[overlay.planet]}]` : '';
+          const rxNote = retrogradeSet.has(overlay.planet) ? ' (in review mode — intensified)' : '';
+          const digNote = '';  // suppress technical dignity labels in user-facing text
 
           allDrivers.push({ planet: overlay.planet, house: h, effect, nature, points: Math.round(w * 10) / 10, tonePoints: Math.round(finalTone * 10) / 10 });
           breakdown.push({
-            source: `${overlay.planet}${rxNote} in ${ordinal(h)} House`,
+            source: `${overlay.planet}${rxNote} in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'}`,
             points: Math.round(w * 10) / 10,
             tonePoints: Math.round(finalTone * 10) / 10,
-            reason: `${overlay.planet} (${planetDesc}) in ${ordinal(h)} House — ${houseDesc}. Nature: ${nature}${rxNote}${digNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
+            reason: `${overlay.planet} (${planetDesc}) in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'} — ${houseDesc}. Nature: ${nature}${rxNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
             nature,
           });
         } else {
