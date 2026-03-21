@@ -236,11 +236,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Moon: 2, Saturn: 1.5, Ceres: 1.5, Pluto: 1, Sun: 1, Venus: 1, Mars: 1, Neptune: 1, Uranus: 1.5 },
     advice: {
-      challenging: 'Home and family are under pressure — expect conflicts, moves, or difficult conversations with parents/family.',
-      transformative: 'Your living situation or family dynamics are being fundamentally restructured.',
-      supportive: 'Home life is supported — good time for moves, renovations, or deepening family bonds.',
-      quiet: 'Home sector is quiet — stable foundations let you focus elsewhere.',
-      mixed: 'Mixed energy at home — some comfort and some disruption. Stay flexible about living arrangements.',
+      challenging: 'Home and family are getting your full attention — big conversations, potential moves, or honest moments with loved ones can lead to a stronger foundation.',
+      transformative: 'Your living situation or family dynamics are evolving into something that fits who you are now.',
+      supportive: 'Home life feels nourishing — a great year for moves, renovations, or deepening family bonds.',
+      quiet: 'Home life is stable and steady — that foundation lets you focus on other priorities.',
+      mixed: 'Mixed energy at home — some comfort and some adjustments. Stay flexible about living arrangements.',
     },
   },
   friendships: {
