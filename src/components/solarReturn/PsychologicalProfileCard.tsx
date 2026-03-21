@@ -216,9 +216,12 @@ function SpectrumBar({
             </div>
           </div>
 
-          {/* Score + badge */}
+          {/* Score + description + badge */}
           <div className="flex items-center justify-between mt-2 ml-28 mr-28">
-            <span className="text-[11px] font-semibold text-foreground">{displayLabel}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-semibold text-foreground">{displayLabel}</span>
+              <span className="text-[9px] text-muted-foreground/70 italic hidden sm:inline">{dim.description}</span>
+            </div>
             <div className="flex items-center gap-1.5">
               {isBlended && bd.blendType && (
                 <span className={`text-[8px] px-1.5 py-0.5 rounded-sm border ${BLEND_COLORS[bd.blendType]}`}>
