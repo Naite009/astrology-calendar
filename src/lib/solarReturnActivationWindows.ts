@@ -53,6 +53,7 @@ export interface MonthlyTheme {
   monthLabel: string;
   year: number;
   themes: string[];
+  theme: string;       // one-line summary of themes
   transitHits: TransitHit[];
   intensity: number;
 }
