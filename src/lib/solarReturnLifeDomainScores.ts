@@ -8,6 +8,13 @@
 
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
 
+const HOUSE_PLAIN_LDS: Record<number, string> = {
+  1: 'identity and self-image', 2: 'finances and self-worth', 3: 'communication and learning',
+  4: 'home and family', 5: 'creativity and romance', 6: 'health and daily routines',
+  7: 'partnerships and relationships', 8: 'shared resources and deep change', 9: 'travel and big-picture goals',
+  10: 'career and public role', 11: 'friendships and community', 12: 'inner work and quiet reflection',
+};
+
 /* ── Planet Nature Classification ── */
 
 type PlanetNature = 'benefic' | 'malefic' | 'outer' | 'wound-healer' | 'neutral' | 'luminary';
@@ -433,15 +440,15 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
           const finalTone = rawTone * rxMult * digMult;
           toneTotal += finalTone;
 
-          const rxNote = retrogradeSet.has(overlay.planet) ? ' (Rx — intensified)' : '';
-          const digNote = dignityMap[overlay.planet] ? ` [${dignityMap[overlay.planet]}]` : '';
+          const rxNote = retrogradeSet.has(overlay.planet) ? ' (in review mode — intensified)' : '';
+          const digNote = '';  // suppress technical dignity labels in user-facing text
 
           allDrivers.push({ planet: overlay.planet, house: h, effect, nature, points: Math.round(w * 10) / 10, tonePoints: Math.round(finalTone * 10) / 10 });
           breakdown.push({
-            source: `${overlay.planet}${rxNote} in ${ordinal(h)} House`,
+            source: `${overlay.planet}${rxNote} in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'}`,
             points: Math.round(w * 10) / 10,
             tonePoints: Math.round(finalTone * 10) / 10,
-            reason: `${overlay.planet} (${planetDesc}) in ${ordinal(h)} House — ${houseDesc}. Nature: ${nature}${rxNote}${digNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
+            reason: `${overlay.planet} (${planetDesc}) in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'} — ${houseDesc}. Nature: ${nature}${rxNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
             nature,
           });
         } else {

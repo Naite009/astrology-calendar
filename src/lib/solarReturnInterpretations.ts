@@ -125,24 +125,39 @@ export const srMoonInSign: Record<string, string> = {
 
 // ─── House Overlay Narratives (SR house → natal house meaning) ──────
 
+const PLANET_PLAIN_LABEL: Record<string, string> = {
+  Sun: 'your core energy and purpose',
+  Moon: 'your emotional needs',
+  Mercury: 'your thinking and communication',
+  Venus: 'your love and beauty energy',
+  Mars: 'your drive and motivation',
+  Jupiter: 'your growth and expansion energy',
+  Saturn: 'your commitment and responsibility focus',
+  Uranus: 'your need for change and freedom',
+  Neptune: 'your imagination and intuition',
+  Pluto: 'your transformation energy',
+  Chiron: 'your healing journey',
+  NorthNode: 'your soul growth direction',
+  Ceres: 'your nurturing instincts',
+  Pallas: 'your pattern-recognition ability',
+  Juno: 'your partnership needs',
+  Vesta: 'your devotion and sacred focus',
+};
+
 export const srOverlayNarrative = (planet: string, srHouse: number | null, natalHouse: number | null): string => {
   if (!srHouse || !natalHouse) return '';
+  const plainLabel = PLANET_PLAIN_LABEL[planet] || `the energy of ${planet.toLowerCase()}`;
   if (srHouse === natalHouse) {
-    return `${planet} lands in House ${srHouse} in both your Solar Return and natal chart — a double activation. The events that unfold in your ${shortHouseTheme[srHouse] || 'life'} this year hit you personally and directly. There's no buffer between what happens externally and how it registers internally; you live these themes from the inside out.`;
+    return `This year, ${plainLabel} lands in the same area as your birth chart — your ${shortHouseTheme[srHouse] || 'life'}. That's a double activation. The events that unfold here hit you personally and directly. There's no buffer between what happens externally and how it registers internally; you live these themes from the inside out.`;
   }
 
-  const srTheme = shortHouseTheme[srHouse] || `House ${srHouse}`;
-  const natTheme = shortHouseTheme[natalHouse] || `House ${natalHouse}`;
+  const srTheme = shortHouseTheme[srHouse] || `your life`;
+  const natTheme = shortHouseTheme[natalHouse] || `your life`;
 
-  const overlayFelt: Record<string, string> = {
-    // How the SR house "delivers" to the natal house — felt-sense bridging
-  };
-
-  // Build a specific narrative using their actual houses
   const srVerb = getHouseActionVerb(srHouse);
   const natFeeling = getHouseImpactFeeling(natalHouse);
 
-  return `${planet} drives activity in your ${srTheme} (SR House ${srHouse}) this year — that's where the visible events, decisions, and turning points show up. But those experiences land in your natal House ${natalHouse}, which means the real impact registers in your ${natTheme} life. Concretely: ${srVerb} in ${srTheme} contexts, and you ${natFeeling} in your ${natTheme} world as a result. The situation and the emotional hit are in two different rooms of your life — and that gap is where the growth happens.`;
+  return `This year, ${plainLabel} drives activity in your ${srTheme} — that's where the visible events, decisions, and turning points show up. But those experiences land in your ${natTheme} area, which means the real impact registers there. Concretely: ${srVerb} in ${srTheme} contexts, and you ${natFeeling} in your ${natTheme} world as a result. The situation and the emotional hit are in two different rooms of your life — and that gap is where the growth happens.`;
 };
 
 function getHouseActionVerb(house: number): string {
@@ -202,7 +217,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
   Mercury: {
     1: 'Your thinking and communication style is front and center. Others notice how you think and speak. Writing, teaching, or negotiating on your own behalf is highlighted.',
     2: 'Financial planning, income-related conversations, and money decisions dominate your mental landscape. You may earn through communication skills.',
-    3: 'Mercury is at home here — communication, writing, learning, teaching, and local connections are supercharged. A mentally busy year.',
+    3: 'Communication, writing, learning, teaching, and local connections are supercharged. A mentally busy year.',
     4: 'Home decisions, family conversations, and thinking about your roots or living situation. Real estate negotiations or family discussions are likely.',
     5: 'Creative writing, playful communication, and intellectual romance. You may teach children or express ideas through art and performance.',
     6: 'Work communication intensifies — emails, meetings, task management. Health research and medical consultations are also highlighted.',
@@ -250,7 +265,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     6: 'Work opportunities expand. Health improvements. Finding joy in service. Beware of overcommitting at work — more is not always better.',
     7: 'Partnership growth and benefit. Meeting generous or influential partners. Legal victories. Marriage or significant commitment.',
     8: 'Financial benefits through others — inheritance, loans, insurance payouts. Psychological breakthroughs. Transformative spiritual experiences.',
-    9: 'Jupiter is at home here — long-distance travel, higher education, publishing success, and spiritual expansion. The quintessential growth year.',
+    9: 'This is the quintessential growth year — long-distance travel, higher education, publishing success, and expanding your worldview are all strongly favored.',
     10: 'Career expansion and professional recognition. Promotions, raises, and increased authority. Public generosity or philanthropy.',
     11: 'Social network expansion. Influential friends. Group success. Your vision for the future attracts support and resources.',
     12: 'Spiritual growth and inner expansion. Retreat and solitude are beneficial. Charitable work. Protection from hidden enemies. Dreams are prophetic.',
@@ -305,8 +320,8 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     5: 'Intense creative power, obsessive romance, or transformative experiences through children. Your creative output has unusual depth and impact. Love affairs involve power, jealousy, or profound bonding.',
     6: 'Work involves power dynamics — office politics, control struggles, or a complete transformation of your daily routine. Health crises that force lifestyle change. Healing through crisis.',
     7: 'A partnership undergoes deep transformation — or ends through power struggles. You attract intense, powerful people. Manipulation and control issues in relationships demand awareness. Deep bonding or deep conflict.',
-    8: 'Pluto is at home here — expect major transformation, financial shifts involving others, and psychological rebirth. Death (literal or metaphorical) is a theme. You emerge permanently changed. No going back.',
-    9: 'Your worldview dies and is reborn. Travel to transformative places. Legal battles involving power. Education that changes everything you believe. Fanaticism is the shadow; wisdom is the gift.',
+    8: 'Expect major transformation, financial shifts involving others, and deep personal change. Something old is making room for something completely new. You emerge permanently changed. No going back.',
+    9: 'Your worldview is evolving at a fundamental level. Travel to transformative places. Education that changes everything you believe. The risk is rigidity; the gift is wisdom.',
     10: 'Career transformation — you may gain or lose power professionally. Public reputation undergoes a major shift. Authority figures are either allies or adversaries. You climb or fall — nothing stays the same.',
     11: 'Group dynamics involve power struggles. You may become a powerful leader in an organization or be pushed out. Friendships are tested by intensity. Your vision for the future becomes obsessive and transformative.',
     12: 'Deep inner changes happening below the surface. You may not be able to explain what is shifting, but you feel it. Old fears, old anger, or old secrets come up to be dealt with. Therapy or serious journaling helps. You come out the other side feeling like a different person.',
@@ -333,22 +348,22 @@ export const rulerConditionNarrative = (dignity: string, isRetrograde: boolean):
   let base = '';
   switch (dignity) {
     case 'Domicile':
-      base = 'Your chart ruler is in its own sign — it has full power and agency. The year\'s ruler is operating at peak capacity, meaning the themes it touches are likely to go well with minimal resistance. This is an empowered year.';
+      base = 'The energy guiding your year is operating at peak capacity — it has full power and agency. The themes it touches are likely to go well with minimal resistance. This is an empowered year.';
       break;
     case 'Exaltation':
-      base = 'Your chart ruler is exalted — it is operating in an elevated, honored position. The year carries a quality of recognition, achievement, or "things working in your favor" in the areas this planet touches.';
+      base = 'The energy guiding your year is operating from a place of strength and honor. The year carries a quality of recognition, achievement, or "things working in your favor" in the areas it touches.';
       break;
     case 'Detriment':
-      base = 'Your chart ruler is in detriment — operating in uncomfortable territory. The year\'s themes require extra effort, adaptation, and working against your natural grain. Challenges are learning opportunities, but they require conscious effort.';
+      base = 'The energy guiding your year is operating in uncomfortable territory. The year\'s themes require extra effort, adaptation, and working against your natural grain. Challenges are learning opportunities, but they require conscious effort.';
       break;
     case 'Fall':
-      base = 'Your chart ruler is in fall — the most challenged dignity position. This year may feel like an uphill battle in the areas ruled by this planet. Humility, patience, and accepting help from others are essential strategies.';
+      base = 'The energy guiding your year is in its most challenging position. This year may feel like an uphill climb in certain areas. Humility, patience, and accepting help from others are essential strategies.';
       break;
     default:
-      base = 'Your chart ruler is peregrine — operating without special advantage or disadvantage. The year\'s themes require your own effort and initiative to shape outcomes; nothing is handed to you, but nothing blocks you either.';
+      base = 'The energy guiding your year is operating without special advantage or disadvantage. The year\'s themes require your own effort and initiative to shape outcomes; nothing is handed to you, but nothing blocks you either.';
   }
   if (isRetrograde) {
-    base += ' Additionally, this planet is retrograde in your Solar Return — indicating a year of revision, re-evaluation, and internal processing in this planet\'s domain. Progress may feel slower or more indirect, but the inner work is essential.';
+    base += ' Additionally, this guiding energy is in a review phase — indicating a year of revision, re-evaluation, and internal processing. Progress may feel slower or more indirect, but the inner work is essential.';
   }
   return base;
 };
@@ -381,7 +396,7 @@ export const srMCInHouse: Record<number, string> = {
   7: 'Partnership is central to career — business partners, clients, or a spouse influence your professional path. Your reputation is shaped by your relationships and your ability to collaborate. Legal matters affect public standing.',
   8: 'Career involves transformation, research, finance, psychology, or dealing with crisis. Your professional reputation involves depth and intensity. Power dynamics in the workplace are significant. Joint ventures define the year.',
   9: 'International career expansion, higher education, publishing, or philosophy shapes your public life. Your reputation extends beyond local boundaries. Teaching, traveling, or advocating for beliefs defines your professional year.',
-  10: 'The MC is at home — career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
+  10: 'Career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
   11: 'Career is linked to community, networks, technology, or social causes. Your professional reputation grows through group affiliations and forward-thinking vision. Innovation and collaboration define your public identity.',
   12: 'Career operates behind the scenes — institutional work, retreat, research, or spiritual service. Your public reputation may be quiet or sacrificial. What you accomplish in private has more lasting impact than public performance.',
 };

@@ -109,11 +109,17 @@ function getTransitInterpretation(transitPlanet: string, srTarget: string, aspec
   const aspectFeel: Record<string, string> = {
     Conjunction: 'directly activates',
     Opposition: 'creates tension and awareness around',
-    Square: 'forces action and decisions regarding',
+    Square: 'encourages action and decisions regarding',
     Trine: 'supports and eases',
     Sextile: 'opens opportunities related to',
   };
-  return `Transiting ${transitPlanet} ${aspectFeel[aspect] || 'aspects'} your ${srTarget} placement — this is an activation point for those themes.`;
+  const transitPlain: Record<string, string> = {
+    Sun: 'Your core purpose energy', Mars: 'Your drive and motivation',
+    Jupiter: 'Your growth and expansion energy', Saturn: 'Your commitment and responsibility focus',
+    Mercury: 'Your communication energy', Venus: 'Your love and connection energy',
+  };
+  const tpLabel = transitPlain[transitPlanet] || 'This energy';
+  return `${tpLabel} ${aspectFeel[aspect] || 'connects with'} your ${srTarget.replace('SR ', '')} placement — this is an activation point for those themes.`;
 }
 
 /**
@@ -229,11 +235,15 @@ export function calculateActivationWindows(
 
     const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
-    const themeList = themes.length > 0 ? themes : ['No major transits this month -- a quieter period for integration'];
+    const themeList = themes.length > 0 ? themes : ['No major activation this month — a quieter period for integration'];
+    const TRANSIT_PLAIN: Record<string, string> = {
+      Sun: 'Purpose', Mars: 'Drive', Jupiter: 'Growth', Saturn: 'Responsibility',
+      Mercury: 'Communication', Venus: 'Connection',
+    };
     const themeSummary = hits.length === 0
       ? 'A quieter month for integration and reflection'
       : [...new Set(hits.map(h => {
-          const p = h.transitPlanet;
+          const p = TRANSIT_PLAIN[h.transitPlanet] || h.transitPlanet;
           const t = h.srTarget.replace('SR ', '');
           return `${p} activates ${t}`;
         }))].slice(0, 3).join(', ');
@@ -277,11 +287,17 @@ export function calculateActivationWindows(
       const targets = [...new Set(cluster.map(c => c.srTarget.replace('SR ', '')))];
       const planets = [...new Set(cluster.map(c => c.transitPlanet))];
 
+      const LABEL_PLAIN: Record<string, string> = {
+        Sun: 'Purpose', Mars: 'Drive', Jupiter: 'Growth', Saturn: 'Responsibility',
+        Mercury: 'Communication', Venus: 'Connection',
+      };
+      const plainPlanets = planets.map(p => LABEL_PLAIN[p] || p);
+
       const windowType = classifyWindowType(targets, planets);
       const windowAdvice = generateWindowAdvice(windowType, planets, targets);
 
       activationWindows.push({
-        label: `${planets.join(' + ')} → ${targets.join(', ')}`,
+        label: `${plainPlanets.join(' + ')} → ${targets.join(', ')}`,
         startDate: new Date(Math.min(...starts)),
         endDate: new Date(Math.max(...ends)),
         peakDate,
@@ -348,7 +364,7 @@ const PLANET_THEME_ACTION: Record<string, string> = {
   Sun: 'brings visibility and clarity to',
   Mars: 'pushes you to take action on',
   Jupiter: 'opens doors and expands',
-  Saturn: 'demands accountability and hard work around',
+  Saturn: 'invites accountability and hard work around',
   Mercury: 'accelerates communication about',
   Venus: 'brings warmth and connection to',
 };
@@ -381,14 +397,22 @@ function synthesizeWindowTheme(cluster: TransitHit[], planets: string[], targets
   const planetActions = planets.map(p => PLANET_THEME_ACTION[p] || `activates`);
   const targetAreas = targets.map(t => TARGET_AREA[t] || `your ${t} themes`);
 
+  const SYNTH_PLAIN: Record<string, string> = {
+    Sun: 'Your purpose energy', Mars: 'Your drive', Jupiter: 'Your growth energy',
+    Saturn: 'Your responsibility focus', Mercury: 'Your communication', Venus: 'Your connection energy',
+  };
+
   if (planets.length === 1 && targets.length > 1) {
-    return `${planets[0]} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
+    const pLabel = SYNTH_PLAIN[planets[0]] || 'This energy';
+    return `${pLabel} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
   }
 
   if (planets.length > 1 && targets.length === 1) {
-    return `Multiple planets (${planets.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
+    const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
+    return `Multiple energies (${pLabels.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
   }
 
   // General multi-hit
-  return `${planets.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
+  const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
+  return `${pLabels.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
 }

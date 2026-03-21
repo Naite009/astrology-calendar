@@ -138,21 +138,21 @@ function buildNarrative(
 ): string {
   const parts: string[] = [];
 
-  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what the Sun in ${sunSign} is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
+  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what this year's purpose energy is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
 
   if (ascSign !== sunSign) {
-    parts.push(`At the same time, people will experience you differently this year. ${ascSign} Rising means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
+    parts.push(`At the same time, people will experience you differently this year. Your Rising sign energy means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
   } else {
-    parts.push(`With both your Sun and Rising in ${sunSign}, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
+    parts.push(`With both your purpose and your outer presentation pointing in the same direction, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
   }
 
   // Avoid repeating the same keyword/plain if node matches sun or asc
   if (nodeSign === sunSign && nodeSign === ascSign) {
-    parts.push(`Your North Node is also in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House — ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}, which means everything this year points in the same direction. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. So do more of it, more often, more deliberately. In practice that means: ${sunArch.dailyLooksLike}${nodeHouse ? ` Pay special attention to how this shows up in ${HOUSE_ARENA[nodeHouse] || 'this area'} — that's the specific life domain where this work lands hardest.` : ''}`);
+    parts.push(`Your growth edge is also pointing in the same direction${nodeHouse ? ` (through ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}, which means everything this year points toward one thing. There's no split energy — your purpose, your presentation, and your growth edge are all asking the same thing of you. So do more of it, more often, more deliberately. In practice that means: ${sunArch.dailyLooksLike}${nodeHouse ? ` Pay special attention to how this shows up in ${HOUSE_ARENA[nodeHouse] || 'this area'} — that's the specific life domain where this work lands hardest.` : ''}`);
   } else if (nodeSign === sunSign) {
-    parts.push(`Your growth edge (North Node) is in the same sign as your Sun — ${nodeSign}${nodeHouse ? `, in the ${ordinal(nodeHouse)} House` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning, specifically through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}.`);
+    parts.push(`Your growth edge is aligned with your purpose this year${nodeHouse ? `, focused through ${HOUSE_ARENA[nodeHouse || 0] || 'this area of life'}` : ''}. The stretch isn't about doing something completely different; it's about going deeper into what you're already learning.`);
   } else {
-    parts.push(`The stretch this year comes from your North Node in ${nodeSign}${nodeHouse ? ` (${ordinal(nodeHouse)} House)` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
+    parts.push(`The stretch this year comes from your growth edge${nodeHouse ? ` (through ${HOUSE_ARENA[nodeHouse] || 'life'})` : ''}: ${nodeArch.plain}. This won't feel natural — and that's exactly why it matters. In daily life: ${nodeArch.dailyLooksLike}`);
   }
 
   return parts.join(' ');
@@ -168,10 +168,10 @@ function detectTension(sunSign: string, nodeSign: string): string | null {
   const normalized = diff > 6 ? 12 - diff : diff;
 
   if (normalized === 3) {
-    return `There is creative tension between your ${sunSign} Sun purpose and your ${nodeSign} North Node growth direction. You may feel pulled between what energizes you and what your soul is asking you to learn. This friction is productive — it forces integration rather than choosing one over the other.`;
+    return `There is creative tension between your purpose direction and your growth edge this year. You may feel pulled between what energizes you and what your soul is asking you to learn. This friction is productive — it forces integration rather than choosing one over the other.`;
   }
   if (normalized === 6) {
-    return `Your ${sunSign} Sun sits opposite your ${nodeSign} North Node — a powerful polarity axis. You are being asked to balance self-expression with soul growth, finding ways to honor both without sacrificing either.`;
+    return `Your purpose and your growth edge sit on opposite ends of a spectrum — a powerful balancing act. You are being asked to honor both self-expression and soul growth, finding ways to balance both without sacrificing either.`;
   }
   return null;
 }

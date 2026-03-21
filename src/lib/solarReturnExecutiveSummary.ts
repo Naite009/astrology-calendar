@@ -221,40 +221,40 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Jupiter placement = opportunity
+  // Growth energy placement = opportunity
   const jupH = analysis.planetSRHouses?.Jupiter;
   if (jupH) {
     items.push({
       type: 'opportunity',
-      title: `Jupiter expands ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
-      description: `Jupiter in your ${jupH}${getOrd(jupH)} house opens doors in ${HOUSE_KEYWORDS[jupH] || 'this area'}. Growth is available — reach for it.`,
-      source: `Jupiter in SR House ${jupH}`,
+      title: `Growth energy expands your ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
+      description: `Your growth and expansion energy this year is focused on ${HOUSE_KEYWORDS[jupH] || 'this area'} — doors are opening here. Reach for the opportunities.`,
+      source: `Growth energy in ${HOUSE_KEYWORDS[jupH] || 'life area'}`,
       house: jupH,
       intensity: 8,
     });
   }
 
-  // Saturn placement = growth area
+  // Commitment placement = growth area
   if (analysis.saturnFocus) {
     const sH = analysis.saturnFocus.house;
     items.push({
       type: 'challenge',
       title: `Building something real in your ${HOUSE_KEYWORDS[sH!] || 'life'} area`,
       description: `Your ${HOUSE_KEYWORDS[sH!] || 'personal'} life is a major growth area this year. Expect to do real, meaningful work here — the effort builds something that lasts.`,
-      source: `Saturn in SR House ${sH}`,
+      source: `Commitment focus in ${HOUSE_KEYWORDS[sH!] || 'life area'}`,
       house: sH,
       intensity: 8,
     });
   }
 
-  // Pluto placement = transformation
+  // Deep change placement = transformation
   const plutoH = analysis.planetSRHouses?.Pluto;
   if (plutoH) {
     items.push({
       type: 'challenge',
       title: `Deep evolution in your ${HOUSE_KEYWORDS[plutoH] || 'life'} area`,
       description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more authentic and powerful.`,
-      source: `Pluto in SR House ${plutoH}`,
+      source: `Transformation focus in ${HOUSE_KEYWORDS[plutoH] || 'life area'}`,
       house: plutoH,
       intensity: 7,
     });
@@ -322,9 +322,9 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     const satH = analysis.saturnFocus.house;
     if (profH === satH) {
       patterns.push({
-        pattern: `Profection year and Saturn converge on House ${profH}`,
-        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this isn't random. Two different timing systems are pointing at the same area of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
-        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will demand your attention. This alignment happens roughly every 12 years.',
+        pattern: `Two timing cycles converge on your ${HOUSE_KEYWORDS[profH] || ''} area`,
+        description: `Both your annual cycle AND your commitment/responsibility focus land in your ${HOUSE_KEYWORDS[profH] || ''} area — this isn't random. Two different timing systems are pointing at the same part of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
+        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will get your full attention. This alignment happens roughly every 12 years.',
         category: 'cycle',
       });
     }
@@ -358,8 +358,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       const mostRecentYear = birthYearNum ? ` (${birthYearNum + mostRecent})` : '';
       patterns.push({
         pattern: `Emotional echo from age ${mostRecent}${mostRecentYear}`,
-        description: `Your SR Moon was in the same sign at: ${echoLines.join(' → ')}. The emotional themes from those years are reverberating now — not repeating exactly, but rhyming. The most recent echo was age ${mostRecent}${mostRecentYear}.`,
-        connection: `The Metonic cycle returns the Moon to the same sign every ~19 years. Think back to what was happening emotionally at each of those ages — the pattern is deepening.`,
+        description: `Your emotional cycle was in the same sign at: ${echoLines.join(' → ')}. The emotional themes from those years are reverberating now — not repeating exactly, but rhyming. The most recent echo was age ${mostRecent}${mostRecentYear}.`,
+        connection: `This emotional cycle returns every ~19 years. Think back to what was happening emotionally at each of those ages — the pattern is deepening.`,
         category: 'recurring',
       });
     }
@@ -380,8 +380,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       if (natalPlanetsInSign.length > 0) {
         patterns.push({
           pattern: `${st.location} activation mirrors natal placement`,
-          description: `Your SR stellium in ${st.location} lands where you already have natal ${natalPlanetsInSign.join(', ')} — this amplifies a lifelong pattern, not creating a new one.`,
-          connection: `You've always had ${natalPlanetsInSign.join(' and ')} energy in ${st.location}. This year turns the volume up.`,
+          description: `Your concentration of energy in ${st.location} lands where you already have strong natal themes — this amplifies a lifelong pattern, not creating a new one.`,
+          connection: `You've always had strong energy in ${st.location}. This year turns the volume up.`,
           category: 'natal-echo',
         });
       }
