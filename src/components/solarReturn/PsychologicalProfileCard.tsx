@@ -262,9 +262,12 @@ function SpectrumBar({
           <p className="text-[9px] text-muted-foreground mb-2">
             Bars show each planet's push — <span className="text-primary">left = {dim.left}</span>, <span className="text-destructive">right = {dim.right}</span>
           </p>
-          <div className="space-y-0.5">
+          <div className="space-y-0">
             {dim.drivers.filter(d => Math.abs(d.contribution) > 0.1).slice(0, 10).map((d, i) => (
-              <DriverRow key={`${d.planet}-${i}`} driver={d} left={dim.left} right={dim.right} maxContrib={maxContrib} />
+              <div key={`${d.planet}-${d.source || ''}-${i}`}>
+                <DriverRow driver={d} left={dim.left} right={dim.right} maxContrib={maxContrib} mode={mode} />
+                <DriverReasonRow driver={d} />
+              </div>
             ))}
           </div>
         </div>
