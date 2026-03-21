@@ -1277,19 +1277,28 @@ export const analyzeSolarReturn = (
     const satSRHouse = satDeg !== null ? findSRHouse(satDeg, srChart) : null;
     const satNatalHouse = satDeg !== null ? findNatalHouse(satDeg, natalChart) : null;
     const saturnHouseInterps: Record<number, string> = {
-      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year. In daily life: you\'ll be more serious about how you present yourself, possibly changing your appearance, taking on a leadership role you didn\'t ask for, or feeling like people expect more from you.',
-      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable. In daily life: budgeting becomes essential, you may take on a second job or reduce spending, and you\'ll think hard about what\'s truly worth your money and time.',
-      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project. In daily life: important documents, contracts, or difficult conversations that can\'t be avoided. You may enroll in a course that requires real effort.',
-      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. In daily life: repairs, a parent needing help, feeling the weight of family expectations, or making hard decisions about where you live.',
-      5: 'Saturn restricts or matures creative expression and romance. In daily life: creative projects require discipline rather than inspiration. Dating feels serious or dry. If you have children, their needs demand more structure from you this year.',
-      6: 'Saturn emphasizes health, work discipline, and daily routines. In daily life: you\'ll need to commit to better habits — doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
-      7: 'Saturn tests partnerships — commitment is demanded or unsustainable connections end. In daily life: hard conversations with a partner about what\'s working and what isn\'t. Couples may formalize (marriage, moving in) or separate. Business partnerships face similar reality checks. You learn exactly where the boundaries are.',
-      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. In daily life: insurance claims, debt restructuring, estate matters, or a period where you confront something you\'ve been avoiding about power dynamics in close relationships.',
-      9: 'Saturn structures higher learning, travel, or philosophical beliefs. In daily life: a degree program that demands real work, travel that\'s more obligation than vacation, or a period where your beliefs are tested by reality.',
-      10: 'Saturn at the career peak — professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or a promotion that comes with real pressure. What you build professionally this year has staying power.',
-      11: 'Saturn asks you to get serious about your social circle and future goals. In daily life: you may drift away from friends who don\'t share your values, join a structured group or board, or realize some friendships require actual work to maintain.',
-      12: 'Saturn in the hidden house — facing old patterns, needing more alone time, or dealing with institutions (hospitals, courts, large organizations). In daily life: therapy, meditation practice, a need to withdraw and process, or caring for someone behind the scenes.',
+      1: 'This year asks for maturity in how you present yourself. You may feel more serious, take on a leadership role, or face challenges that reshape your identity. In daily life: being more intentional about how you show up, possibly changing your appearance or taking on responsibilities you didn\'t expect.',
+      2: 'Your finances and values are getting a reality check this year. Earnings may require harder work — but what you build financially is durable. In daily life: budgeting becomes essential, and you\'ll think hard about what\'s truly worth your money and time.',
+      3: 'Communication and learning take center stage with a serious tone. In daily life: important documents, contracts, or difficult conversations that can\'t be avoided. You may start studying something that demands real effort.',
+      4: 'Home and family responsibilities need your full attention this year. In daily life: repairs, a parent needing help, feeling the weight of family expectations, or making hard decisions about where you live.',
+      5: 'Creative expression and romance become more serious. In daily life: creative projects require discipline rather than inspiration. Dating feels mature, not casual. If you have children, their needs ask more structure from you.',
+      6: 'Your health, work habits, and daily routines are getting your full attention. In daily life: committing to better habits — doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
+      7: 'This year asks you to get real about partnerships. Solid relationships get stronger; anything built on sand gets rebuilt. In daily life: honest conversations with a partner about what\'s working. Couples may formalize or separate. You learn exactly where the boundaries are.',
+      8: 'Deep change and shared resources are in focus — facing fears, dealing with finances tied to others, or letting go of old baggage. In daily life: insurance claims, debt restructuring, or a period where you confront something you\'ve been avoiding about trust in close relationships.',
+      9: 'Your beliefs and big-picture vision are getting a reality check. In daily life: a learning commitment that demands real work, travel that\'s more purpose than vacation, or a period where your assumptions are tested by experience.',
+      10: 'Your career and public role are getting your full attention — professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or stepping into a role that comes with real accountability. What you build professionally this year lasts.',
+      11: 'Your friendships and future vision need honest assessment. In daily life: you may drift away from connections that don\'t share your values, join a structured group, or realize some friendships require actual work to maintain.',
+      12: 'Inner work and quiet processing take priority — you need more alone time this year. In daily life: therapy, meditation practice, a need to withdraw and recharge, or caring for someone behind the scenes.',
     };
+
+    const SATURN_HOUSE_THEME: Record<number, string> = {
+      1: 'Maturity in Identity', 2: 'Financial Discipline', 3: 'Serious Communication',
+      4: 'Family Responsibility', 5: 'Disciplined Creativity', 6: 'Health & Work Mastery',
+      7: 'Partnership Reality Check', 8: 'Deep Financial & Emotional Restructuring',
+      9: 'Beliefs Tested by Reality', 10: 'Career Accountability',
+      11: 'Friendship & Vision Audit', 12: 'Inner Work & Quiet Processing',
+    };
+
     const isRetro = !!(saturnPos as any).isRetrograde;
     const retroNote = isRetro
       ? ' This year, the lessons here are turned inward — instead of external pressure, the real work is psychological. You\'re re-examining old commitments and whether the structures you\'ve built still hold. Progress feels slow because the growth is internal, but what you resolve now prevents repeating the same patterns.'
@@ -1299,6 +1308,7 @@ export const analyzeSolarReturn = (
       house: satSRHouse,
       natalHouse: satNatalHouse,
       isRetrograde: isRetro,
+      theme: satSRHouse ? (SATURN_HOUSE_THEME[satSRHouse] || 'Commitment & Responsibility') : 'Commitment & Responsibility',
       interpretation: (satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'This year asks you to get real about your commitments and responsibilities. Solid foundations get stronger; anything built on shaky ground gets rebuilt.') + retroNote,
     };
   }
