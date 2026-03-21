@@ -57,7 +57,7 @@ export interface SRAstrocartography {
 interface CityData { city: string; country: string; lat: number; lng: number; }
 
 const WORLD_CITIES: CityData[] = [
-  // ── USA (expanded) ──
+  // ── USA (comprehensive) ──
   { city: 'New York', country: 'USA', lat: 40.71, lng: -74.01 },
   { city: 'Los Angeles', country: 'USA', lat: 33.94, lng: -118.24 },
   { city: 'Chicago', country: 'USA', lat: 41.88, lng: -87.63 },
@@ -88,6 +88,33 @@ const WORLD_CITIES: CityData[] = [
   { city: 'Asheville', country: 'USA', lat: 35.60, lng: -82.55 },
   { city: 'Maui', country: 'USA', lat: 20.80, lng: -156.32 },
   { city: 'Anchorage', country: 'USA', lat: 61.22, lng: -149.90 },
+  { city: 'Philadelphia', country: 'USA', lat: 39.95, lng: -75.17 },
+  { city: 'Portland ME', country: 'USA', lat: 43.66, lng: -70.26 },
+  { city: 'Washington DC', country: 'USA', lat: 38.91, lng: -77.04 },
+  { city: 'Richmond', country: 'USA', lat: 37.54, lng: -77.43 },
+  { city: 'Pittsburgh', country: 'USA', lat: 40.44, lng: -79.99 },
+  { city: 'Cleveland', country: 'USA', lat: 41.50, lng: -81.69 },
+  { city: 'Columbus', country: 'USA', lat: 39.96, lng: -82.99 },
+  { city: 'Cincinnati', country: 'USA', lat: 39.10, lng: -84.51 },
+  { city: 'St. Louis', country: 'USA', lat: 38.63, lng: -90.20 },
+  { city: 'Kansas City', country: 'USA', lat: 39.10, lng: -94.58 },
+  { city: 'Raleigh', country: 'USA', lat: 35.78, lng: -78.64 },
+  { city: 'Tampa', country: 'USA', lat: 27.95, lng: -82.46 },
+  { city: 'Orlando', country: 'USA', lat: 28.54, lng: -81.38 },
+  { city: 'Jacksonville', country: 'USA', lat: 30.33, lng: -81.66 },
+  { city: 'Charleston', country: 'USA', lat: 32.78, lng: -79.93 },
+  { city: 'Memphis', country: 'USA', lat: 35.15, lng: -90.05 },
+  { city: 'Albuquerque', country: 'USA', lat: 35.08, lng: -106.65 },
+  { city: 'Tucson', country: 'USA', lat: 32.22, lng: -110.97 },
+  { city: 'Milwaukee', country: 'USA', lat: 43.04, lng: -87.91 },
+  { city: 'Boise', country: 'USA', lat: 43.62, lng: -116.21 },
+  { city: 'Burlington VT', country: 'USA', lat: 44.48, lng: -73.21 },
+  { city: 'Santa Fe', country: 'USA', lat: 35.69, lng: -105.94 },
+  { city: 'San Antonio', country: 'USA', lat: 29.42, lng: -98.49 },
+  // ── Canada ──
+  { city: 'Toronto', country: 'Canada', lat: 43.65, lng: -79.38 },
+  { city: 'Vancouver', country: 'Canada', lat: 49.28, lng: -123.12 },
+  { city: 'Montreal', country: 'Canada', lat: 45.50, lng: -73.57 },
   // ── International ──
   { city: 'London', country: 'UK', lat: 51.51, lng: -0.13 },
   { city: 'Paris', country: 'France', lat: 48.86, lng: 2.35 },
@@ -110,8 +137,6 @@ const WORLD_CITIES: CityData[] = [
   { city: 'Cape Town', country: 'South Africa', lat: -33.93, lng: 18.42 },
   { city: 'Marrakech', country: 'Morocco', lat: 31.63, lng: -8.01 },
   { city: 'Reykjavik', country: 'Iceland', lat: 64.15, lng: -21.94 },
-  { city: 'Toronto', country: 'Canada', lat: 43.65, lng: -79.38 },
-  { city: 'Vancouver', country: 'Canada', lat: 49.28, lng: -123.12 },
   { city: 'Cancún', country: 'Mexico', lat: 21.16, lng: -86.85 },
   { city: 'Tulum', country: 'Mexico', lat: 20.21, lng: -87.46 },
 ];
@@ -470,7 +495,7 @@ export function calculateAstrocartography(
     }
   }
 
-  const topCities = cityResults.slice(0, 25);
+  const topCities = cityResults.slice(0, 50);
 
   const interpretation = topCities.length > 0
     ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`

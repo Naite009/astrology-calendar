@@ -19,15 +19,52 @@ function projectWorld(lat: number, lng: number, w: number, h: number) {
 }
 
 function projectUS(lat: number, lng: number, w: number, h: number) {
-  // US bounds: lat 18–72, lng -170–-65
-  const minLat = 18, maxLat = 72, minLng = -170, maxLng = -65;
+  // Continental US focus: lat 24–50, lng -125–-66
+  // Hawaii/Alaska get separate insets
+  const minLat = 24, maxLat = 50, minLng = -125, maxLng = -66;
   const x = ((lng - minLng) / (maxLng - minLng)) * w;
   const y = ((maxLat - lat) / (maxLat - minLat)) * h;
   return { x, y };
 }
 
-function isInUS(lat: number, lng: number) {
-  return lat >= 18 && lat <= 72 && lng >= -170 && lng <= -65;
+// Hawaii inset projection
+function projectHawaii(lat: number, lng: number, w: number, h: number) {
+  const minLat = 18, maxLat = 23, minLng = -161, maxLng = -154;
+  const insetW = w * 0.15;
+  const insetH = h * 0.2;
+  const insetX = w * 0.05;
+  const insetY = h * 0.72;
+  const x = insetX + ((lng - minLng) / (maxLng - minLng)) * insetW;
+  const y = insetY + ((maxLat - lat) / (maxLat - minLat)) * insetH;
+  return { x, y };
+}
+
+// Alaska inset projection
+function projectAlaska(lat: number, lng: number, w: number, h: number) {
+  const minLat = 55, maxLat = 72, minLng = -170, maxLng = -140;
+  const insetW = w * 0.15;
+  const insetH = h * 0.2;
+  const insetX = w * 0.01;
+  const insetY = h * 0.48;
+  const x = insetX + ((lng - minLng) / (maxLng - minLng)) * insetW;
+  const y = insetY + ((maxLat - lat) / (maxLat - minLat)) * insetH;
+  return { x, y };
+}
+
+function isHawaii(lat: number, lng: number) {
+  return lat >= 18 && lat <= 23 && lng >= -161 && lng <= -154;
+}
+
+function isAlaska(lat: number, lng: number) {
+  return lat >= 55 && lat <= 72 && lng >= -170 && lng <= -140;
+}
+
+function isContinentalUS(lat: number, lng: number) {
+  return lat >= 24 && lat <= 50 && lng >= -125 && lng <= -66;
+}
+
+function isInUSRegion(lat: number, lng: number) {
+  return isContinentalUS(lat, lng) || isHawaii(lat, lng) || isAlaska(lat, lng);
 }
 
 // Rating → color
@@ -76,16 +113,63 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
 
   const visibleCities = useMemo(() => {
     if (view === 'us') {
-      return cities.filter(c => isInUS(c.latitude, c.longitude));
+      return cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
     return cities;
   }, [cities, view]);
 
   const mapW = 800;
-  const mapH = view === 'us' ? 380 : 400;
-  const project = view === 'us'
-    ? (lat: number, lng: number) => projectUS(lat, lng, mapW, mapH)
-    : (lat: number, lng: number) => projectWorld(lat, lng, mapW, mapH);
+  const mapH = view === 'us' ? 500 : 400;
+  
+  // Smart projection for US view: continental + insets
+  const projectCity = (lat: number, lng: number) => {
+    if (view === 'us') {
+      if (isHawaii(lat, lng)) return projectHawaii(lat, lng, mapW, mapH);
+      if (isAlaska(lat, lng)) return projectAlaska(lat, lng, mapW, mapH);
+      return projectUS(lat, lng, mapW, mapH);
+    }
+    return projectWorld(lat, lng, mapW, mapH);
+  };
+
+  // Label collision avoidance
+  const labelPositions = useMemo(() => {
+    const positions: Record<string, { dx: number; dy: number; anchor: string }> = {};
+    const placed: { x: number; y: number; w: number }[] = [];
+    const estimateWidth = (name: string) => name.length * (view === 'us' ? 5.5 : 4.5);
+    
+    for (const city of visibleCities) {
+      const { x, y } = view === 'us'
+        ? (isHawaii(city.latitude, city.longitude) ? projectHawaii(city.latitude, city.longitude, mapW, mapH)
+          : isAlaska(city.latitude, city.longitude) ? projectAlaska(city.latitude, city.longitude, mapW, mapH)
+          : projectUS(city.latitude, city.longitude, mapW, mapH))
+        : projectWorld(city.latitude, city.longitude, mapW, mapH);
+      
+      const w = estimateWidth(city.city);
+      
+      // Try positions: above, below, right, left
+      const candidates = [
+        { dx: 0, dy: -(view === 'us' ? 11 : 9), anchor: 'middle' },
+        { dx: 0, dy: (view === 'us' ? 16 : 13), anchor: 'middle' },
+        { dx: (view === 'us' ? 10 : 8), dy: 2, anchor: 'start' },
+        { dx: -(view === 'us' ? 10 : 8), dy: 2, anchor: 'end' },
+      ];
+      
+      let best = candidates[0];
+      for (const c of candidates) {
+        const lx = x + c.dx - (c.anchor === 'middle' ? w / 2 : c.anchor === 'end' ? w : 0);
+        const ly = y + c.dy;
+        const collision = placed.some(p => 
+          Math.abs(p.x - lx) < (p.w + w) / 2 + 4 && Math.abs(p.y - ly) < 10
+        );
+        if (!collision) { best = c; break; }
+      }
+      
+      const lx = x + best.dx - (best.anchor === 'middle' ? w / 2 : best.anchor === 'end' ? w : 0);
+      placed.push({ x: lx + w / 2, y: y + best.dy, w });
+      positions[city.city] = best;
+    }
+    return positions;
+  }, [visibleCities, view, mapW, mapH]);
 
   return (
     <div className="space-y-4">
@@ -152,29 +236,41 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             {/* Grid lines */}
             {view === 'world' ? (
               <>
-                {/* World grid */}
                 {[-60, -30, 0, 30, 60].map(lat => {
-                  const { y } = project(lat, 0);
+                  const { y } = projectCity(lat, 0);
                   return <line key={`lat${lat}`} x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
                 {[-120, -60, 0, 60, 120].map(lng => {
-                  const { x } = project(0, lng);
+                  const { x } = projectCity(0, lng);
                   return <line key={`lng${lng}`} x1={x} y1={0} x2={x} y2={mapH} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
-                {/* Equator */}
-                {(() => { const { y } = project(0, 0); return <line x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={1} opacity={0.3} />; })()}
+                {(() => { const { y } = projectCity(0, 0); return <line x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={1} opacity={0.3} />; })()}
               </>
             ) : (
               <>
-                {/* US grid */}
-                {[25, 30, 35, 40, 45, 50, 55, 60, 65].map(lat => {
-                  const { y } = project(lat, -120);
+                {/* Continental US grid */}
+                {[25, 30, 35, 40, 45, 50].map(lat => {
+                  const { y } = projectUS(lat, -100, mapW, mapH);
                   return <line key={`lat${lat}`} x1={0} y1={y} x2={mapW} y2={y} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
-                {[-160, -150, -140, -130, -120, -110, -100, -90, -80, -70].map(lng => {
-                  const { x } = project(40, lng);
+                {[-120, -110, -100, -90, -80, -70].map(lng => {
+                  const { x } = projectUS(40, lng, mapW, mapH);
                   return <line key={`lng${lng}`} x1={x} y1={0} x2={x} y2={mapH} stroke="currentColor" className="text-border" strokeWidth={0.5} strokeDasharray="4 4" />;
                 })}
+                {/* Hawaii inset box */}
+                {(() => {
+                  const tl = projectHawaii(23, -161, mapW, mapH);
+                  const br = projectHawaii(18, -154, mapW, mapH);
+                  return <rect x={tl.x - 4} y={tl.y - 4} width={br.x - tl.x + 8} height={br.y - tl.y + 8} fill="none" stroke="currentColor" className="text-border" strokeWidth={1} strokeDasharray="3 3" rx={2} />;
+                })()}
+                <text x={mapW * 0.05} y={mapH * 0.71} className="fill-muted-foreground" fontSize={8} opacity={0.5}>HAWAII</text>
+                {/* Alaska inset box */}
+                {(() => {
+                  const tl = projectAlaska(72, -170, mapW, mapH);
+                  const br = projectAlaska(55, -140, mapW, mapH);
+                  return <rect x={tl.x - 4} y={tl.y - 4} width={br.x - tl.x + 8} height={br.y - tl.y + 8} fill="none" stroke="currentColor" className="text-border" strokeWidth={1} strokeDasharray="3 3" rx={2} />;
+                })()}
+                <text x={mapW * 0.01} y={mapH * 0.47} className="fill-muted-foreground" fontSize={8} opacity={0.5}>ALASKA</text>
               </>
             )}
 
@@ -182,15 +278,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             <defs>
               {visibleCities.map(city => (
                 <radialGradient key={`grad-${city.city}`} id={`glow-${city.city.replace(/\s/g, '')}`}>
-                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.35} />
+                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.3} />
                   <stop offset="100%" stopColor={ratingColor(city.rating)} stopOpacity={0} />
                 </radialGradient>
               ))}
             </defs>
 
             {visibleCities.map(city => {
-              const { x, y } = project(city.latitude, city.longitude);
-              const r = view === 'us' ? 35 : 25;
+              const { x, y } = projectCity(city.latitude, city.longitude);
+              const r = view === 'us' ? 30 : 25;
               return (
                 <circle
                   key={`glow-c-${city.city}`}
@@ -200,18 +296,18 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               );
             })}
 
-            {/* City dots */}
+            {/* City dots + labels */}
             {visibleCities.map(city => {
-              const { x, y } = project(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude);
               const isSelected = selectedCity?.city === city.city;
-              const dotR = view === 'us' ? 6 : 4.5;
+              const dotR = view === 'us' ? 5 : 4;
+              const lp = labelPositions[city.city] || { dx: 0, dy: -10, anchor: 'middle' };
               return (
                 <g
                   key={city.city}
                   className="cursor-pointer"
                   onClick={() => setSelectedCity(isSelected ? null : city)}
                 >
-                  {/* Outer ring for selected */}
                   {isSelected && (
                     <circle cx={x} cy={y} r={dotR + 4} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5} opacity={0.7}>
                       <animate attributeName="r" values={`${dotR + 3};${dotR + 6};${dotR + 3}`} dur="2s" repeatCount="indefinite" />
@@ -225,14 +321,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                     strokeWidth={isSelected ? 2 : 1}
                     opacity={0.9}
                   />
-                  {/* Label */}
                   <text
-                    x={x} y={y - (view === 'us' ? 10 : 8)}
-                    textAnchor="middle"
+                    x={x + lp.dx} y={y + lp.dy}
+                    textAnchor={lp.anchor}
                     className="fill-foreground"
-                    fontSize={view === 'us' ? 10 : 8}
+                    fontSize={view === 'us' ? 9 : 7}
                     fontWeight={isSelected ? 600 : 400}
-                    opacity={isSelected ? 1 : 0.7}
+                    opacity={isSelected ? 1 : 0.65}
                   >
                     {city.city}
                   </text>
