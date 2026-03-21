@@ -1734,6 +1734,12 @@ export const analyzeSolarReturn = (
   const solarArcs = calculateSolarArcs(srChart, natalChart, t5Age);
   const synthesisSections = calculateSynthesisSections(srChart, natalChart, planetSRHouses, srToNatalAspects, houseOverlays);
 
+  // ─── Tier 5b: New Techniques ──────────────────────────────────────
+  const midpointHits = calculateMidpoints(srChart, natalChart);
+  const prenatalEclipse = calculatePrenatalEclipse(natalChart, srChart);
+  const planetarySpeeds = calculatePlanetarySpeeds(srChart);
+  const heliacalRising = calculateHeliacalRising(srChart);
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
