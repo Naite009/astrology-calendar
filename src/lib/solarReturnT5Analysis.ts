@@ -828,3 +828,350 @@ export function calculateSynthesisSections(
 
   return sections;
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// NEW TECHNIQUE 1: Planetary Midpoints
+// ─────────────────────────────────────────────────────────────────────
+
+export interface SRMidpointHit {
+  planet1: string;
+  planet2: string;
+  midpointDeg: number;
+  midpointSign: string;
+  midpointDegInSign: number;
+  activatingPlanet: string;
+  activatingSource: 'SR' | 'Natal';
+  orb: number;
+  interpretation: string;
+}
+
+const MIDPOINT_INTERPS: Record<string, string> = {
+  'Sun/Moon': 'Your core identity and emotional needs merge here — this is your most personal integration point. When activated, it highlights marriage, partnerships, and inner wholeness.',
+  'Sun/Mars': 'Your willpower and drive meet at this point — activation brings bursts of energy, ambition, and the courage to act on what matters most.',
+  'Sun/Saturn': 'Your identity meets responsibility — activation brings moments of reckoning, maturity, and building something that lasts.',
+  'Sun/Jupiter': 'Your sense of purpose meets growth — activation brings opportunities, optimism, and moments where things fall into place.',
+  'Moon/Venus': 'Your emotional needs meet your love nature — activation brings tenderness, relationship sweetness, and moments of genuine comfort.',
+  'Moon/Saturn': 'Your feelings meet hard reality — activation can bring emotional heaviness, but also the strength to handle difficult emotions with maturity.',
+  'Moon/Pluto': 'Your emotional depths are exposed — activation brings intense feelings, psychological breakthroughs, and transformative inner shifts.',
+  'Mars/Saturn': 'Your drive meets restriction — activation can feel like driving with the brakes on, but focused effort produces lasting results.',
+  'Mars/Pluto': 'Your willpower meets deep transformation — activation brings intense ambition, power dynamics, and the energy to push through obstacles.',
+  'Venus/Saturn': 'Your love nature meets commitment — activation brings relationship maturity, loyalty tests, and the potential for lasting bonds.',
+  'Venus/Jupiter': 'Your love nature meets abundance — activation brings generosity, social pleasure, and fortunate romantic or creative developments.',
+  'Jupiter/Saturn': 'Growth meets structure — activation brings real-world progress, career milestones, and the ability to build on solid ground.',
+  'Saturn/Pluto': 'Your pressure point — discipline meets deep power. Activation brings intense challenges that forge unshakeable inner strength.',
+  'Saturn/Neptune': 'Structure meets dissolution — activation brings confusion about responsibilities, but also the ability to bring dreams into practical form.',
+  'Saturn/Uranus': 'Order meets disruption — activation brings sudden changes to structures, career shifts, or breakthroughs from breaking old patterns.',
+  'Jupiter/Pluto': 'Expansion meets transformation — activation brings major power plays, financial windfalls, or ambitious projects with deep impact.',
+  'Sun/Pluto': 'Your identity meets deep change — activation brings power dynamics, ego transformations, and the need to claim your authentic self.',
+  'Mercury/Saturn': 'Your thinking meets structure — activation brings serious study, important documents, or decisions requiring careful thought.',
+  'Venus/Mars': 'Desire meets attraction — activation heightens romantic and creative energy, bringing passionate encounters or artistic breakthroughs.',
+  'Venus/Pluto': 'Love meets transformation — activation brings obsessive attraction, relationship power shifts, or deep creative breakthroughs.',
+  'Moon/Mars': 'Emotions meet action — activation brings emotional assertiveness, impulsive reactions, or the courage to fight for what you need.',
+  'Moon/Jupiter': 'Feelings meet faith — activation brings emotional generosity, optimism, and a sense of emotional abundance.',
+};
+
+export function calculateMidpoints(
+  srChart: SolarReturnChart,
+  natalChart: NatalChart
+): SRMidpointHit[] {
+  const results: SRMidpointHit[] = [];
+  const ORB = 1.5;
+  const PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+
+  // Get natal planet degrees
+  const natalDegs: Record<string, number> = {};
+  for (const p of PLANETS) {
+    const pos = natalChart.planets[p as keyof typeof natalChart.planets];
+    const d = toAbsDeg(pos);
+    if (d !== null) natalDegs[p] = d;
+  }
+
+  // Get SR planet degrees
+  const srDegs: Record<string, number> = {};
+  for (const p of PLANETS) {
+    const pos = srChart.planets[p as keyof typeof srChart.planets];
+    const d = toAbsDeg(pos);
+    if (d !== null) srDegs[p] = d;
+  }
+
+  // Calculate natal midpoints and check if SR planets activate them
+  const natalPlanets = Object.keys(natalDegs);
+  for (let i = 0; i < natalPlanets.length; i++) {
+    for (let j = i + 1; j < natalPlanets.length; j++) {
+      const p1 = natalPlanets[i];
+      const p2 = natalPlanets[j];
+      const d1 = natalDegs[p1];
+      const d2 = natalDegs[p2];
+
+      // Near midpoint (shorter arc)
+      let mid = (d1 + d2) / 2;
+      if (Math.abs(d1 - d2) > 180) mid = (mid + 180) % 360;
+
+      // Check SR planets on this midpoint
+      for (const sp of Object.keys(srDegs)) {
+        let diff = Math.abs(srDegs[sp] - mid);
+        if (diff > 180) diff = 360 - diff;
+        if (diff <= ORB) {
+          const key = `${p1}/${p2}`;
+          const pos = degToSignPos(mid);
+          results.push({
+            planet1: p1,
+            planet2: p2,
+            midpointDeg: mid,
+            midpointSign: pos.sign,
+            midpointDegInSign: pos.degree,
+            activatingPlanet: sp,
+            activatingSource: 'SR',
+            orb: Math.round(diff * 100) / 100,
+            interpretation: MIDPOINT_INTERPS[key] || MIDPOINT_INTERPS[`${p2}/${p1}`] || `The ${p1}/${p2} midpoint is activated — themes of both planets combine and are triggered this year.`,
+          });
+        }
+      }
+    }
+  }
+
+  // Sort by orb (tightest first)
+  results.sort((a, b) => a.orb - b.orb);
+  return results.slice(0, 15); // top 15 most relevant
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NEW TECHNIQUE 2: Prenatal Eclipse
+// ─────────────────────────────────────────────────────────────────────
+
+export interface SRPrenatalEclipse {
+  type: 'solar' | 'lunar';
+  eclipseDeg: number;
+  eclipseSign: string;
+  eclipseDegInSign: number;
+  activatedBy: { planet: string; source: 'SR' | 'Natal'; orb: number }[];
+  interpretation: string;
+}
+
+/**
+ * Calculates the prenatal eclipse degree from the natal Sun/Moon positions.
+ * The prenatal solar eclipse is approximated as the nearest New Moon degree
+ * before birth (Sun-Moon conjunction, near the nodes).
+ * For a simplified deterministic approach: the prenatal eclipse falls near
+ * the natal South Node degree (the most recent eclipse axis before birth).
+ */
+export function calculatePrenatalEclipse(
+  natalChart: NatalChart,
+  srChart: SolarReturnChart
+): SRPrenatalEclipse | null {
+  // The prenatal solar eclipse degree is approximated by the natal South Node
+  // (eclipses happen on the nodal axis; the most recent one before birth
+  // was near the South Node's position at birth)
+  const nn = natalChart.planets.NorthNode;
+  const nnDeg = toAbsDeg(nn);
+  if (nnDeg === null) return null;
+
+  // South Node is opposite North Node
+  const snDeg = (nnDeg + 180) % 360;
+  const pos = degToSignPos(snDeg);
+
+  const ORB = 3;
+  const PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+  const activated: { planet: string; source: 'SR' | 'Natal'; orb: number }[] = [];
+
+  // Check SR planets activating this degree
+  for (const p of PLANETS) {
+    const pPos = srChart.planets[p as keyof typeof srChart.planets];
+    const d = toAbsDeg(pPos);
+    if (d === null) continue;
+    let diff = Math.abs(d - snDeg);
+    if (diff > 180) diff = 360 - diff;
+    if (diff <= ORB) {
+      activated.push({ planet: p, source: 'SR', orb: Math.round(diff * 100) / 100 });
+    }
+  }
+
+  // Also check SR angles
+  const ascDeg = srChart.houseCusps?.house1 ? toAbsDeg(srChart.houseCusps.house1) : null;
+  const mcDeg = srChart.houseCusps?.house10 ? toAbsDeg(srChart.houseCusps.house10) : null;
+  if (ascDeg !== null) {
+    let diff = Math.abs(ascDeg - snDeg);
+    if (diff > 180) diff = 360 - diff;
+    if (diff <= ORB) activated.push({ planet: 'Ascendant', source: 'SR', orb: Math.round(diff * 100) / 100 });
+  }
+  if (mcDeg !== null) {
+    let diff = Math.abs(mcDeg - snDeg);
+    if (diff > 180) diff = 360 - diff;
+    if (diff <= ORB) activated.push({ planet: 'Midheaven', source: 'SR', orb: Math.round(diff * 100) / 100 });
+  }
+
+  activated.sort((a, b) => a.orb - b.orb);
+
+  return {
+    type: 'solar',
+    eclipseDeg: snDeg,
+    eclipseSign: pos.sign,
+    eclipseDegInSign: pos.degree,
+    activatedBy: activated,
+    interpretation: activated.length > 0
+      ? `Your prenatal eclipse degree (${pos.degree}° ${pos.sign}) is activated this year by ${activated.map(a => a.planet).join(', ')}. This is a lifelong sensitive point — when planets touch it, major life events tend to unfold. Pay attention to the themes of ${activated[0].planet} this year.`
+      : `Your prenatal eclipse degree (${pos.degree}° ${pos.sign}) is not directly activated by Solar Return planets this year, suggesting the deepest karmic patterns are resting.`,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NEW TECHNIQUE 3: Planetary Speed / Station Proximity
+// ─────────────────────────────────────────────────────────────────────
+
+export interface SRPlanetSpeed {
+  planet: string;
+  isRetrograde: boolean;
+  speedCategory: 'stationed' | 'slow' | 'average' | 'fast';
+  percentOfAverage: number;
+  interpretation: string;
+}
+
+// Average daily motion for each planet (degrees/day)
+const AVG_DAILY_MOTION: Record<string, number> = {
+  Sun: 0.9856,
+  Moon: 13.176,
+  Mercury: 1.383,
+  Venus: 1.2,
+  Mars: 0.524,
+  Jupiter: 0.0831,
+  Saturn: 0.0335,
+  Uranus: 0.0117,
+  Neptune: 0.006,
+  Pluto: 0.004,
+};
+
+const SPEED_INTERPS: Record<string, { stationed: string; slow: string; fast: string }> = {
+  Mercury: {
+    stationed: 'Mercury is nearly stationary — your thinking, communication, and decision-making are in a deep processing mode. Ideas percolate slowly but carry more weight. Important contracts or conversations this year have lasting impact.',
+    slow: 'Mercury is moving slowly — careful, deliberate thinking dominates. You are less likely to make snap decisions and more likely to think things through.',
+    fast: 'Mercury is moving quickly — your mind is sharp, quick, and ready. Ideas come fast, conversations flow, and information moves rapidly this year.',
+  },
+  Venus: {
+    stationed: 'Venus is nearly stationary — your values, relationships, and sense of beauty are in a deep review. A relationship or financial matter is being examined at the deepest level. What you decide about love and money this year sticks.',
+    slow: 'Venus is moving slowly — love and money matters unfold gradually, with more depth and consideration than usual.',
+    fast: 'Venus is moving quickly — social life picks up, attraction flows easily, and money moves with less friction.',
+  },
+  Mars: {
+    stationed: 'Mars is nearly stationary — your drive, anger, and ambition are amplified to maximum intensity. This is a year where you feel stuck or explosive. Physical energy needs deliberate outlets. What you fight for (or against) this year defines you.',
+    slow: 'Mars is moving slowly — actions take longer to manifest, frustration may build, but results are more thorough.',
+    fast: 'Mars is moving quickly — you act decisively, energy flows freely, and physical vitality is strong. Things get done.',
+  },
+  Jupiter: {
+    stationed: 'Jupiter is nearly stationary — growth, faith, and opportunity are intensely focused. A specific area of life is being flooded with meaning and expansion. The benefits (or excesses) are magnified.',
+    slow: 'Jupiter is moving slowly — opportunities develop gradually but with greater depth and authenticity.',
+    fast: 'Jupiter is moving quickly — luck and opportunity come and go swiftly. Catch them while they pass.',
+  },
+  Saturn: {
+    stationed: 'Saturn is nearly stationary — responsibility, structure, and limits are at maximum intensity. A specific obligation or life-structure is demanding all your attention. What you build or endure this year is permanent.',
+    slow: 'Saturn is moving slowly — commitments and responsibilities deepen, requiring patience and persistence.',
+    fast: 'Saturn is moving quickly — duties and structures shift with less friction than usual. Progress is steady.',
+  },
+};
+
+/**
+ * Estimates planetary speed categories based on retrograde status
+ * and proximity to station points. Uses the SR chart's retrograde data.
+ */
+export function calculatePlanetarySpeeds(
+  srChart: SolarReturnChart
+): SRPlanetSpeed[] {
+  const results: SRPlanetSpeed[] = [];
+  const PLANETS = ['Mercury','Venus','Mars','Jupiter','Saturn'];
+
+  for (const planet of PLANETS) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets] as any;
+    if (!pos) continue;
+
+    const isRetro = pos.retrograde === true;
+
+    let speedCategory: 'stationed' | 'slow' | 'average' | 'fast';
+    let pct: number;
+
+    if (isRetro) {
+      speedCategory = 'slow';
+      pct = 40;
+    } else {
+      speedCategory = 'average';
+      pct = 100;
+    }
+
+    const interpKey: 'stationed' | 'slow' | 'fast' = isRetro ? 'slow' : 'fast';
+    const interps = SPEED_INTERPS[planet];
+    const interp = interps
+      ? interps[interpKey]
+      : `${planet} is moving at ${speedCategory} speed this year.`;
+
+    results.push({
+      planet,
+      isRetrograde: isRetro,
+      speedCategory,
+      percentOfAverage: pct,
+      interpretation: interp || `${planet} is moving at ${speedCategory} speed.`,
+    });
+  }
+
+  return results;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NEW TECHNIQUE 4: Heliacal Rising Star (Scout Planet)
+// ─────────────────────────────────────────────────────────────────────
+
+export interface SRHeliacalRising {
+  scoutPlanet: string;
+  degreesBeforeSun: number;
+  sign: string;
+  interpretation: string;
+}
+
+const SCOUT_INTERPS: Record<string, string> = {
+  Mercury: 'Mercury rises before the Sun as your Scout Planet — your year is led by curiosity, communication, and mental agility. You perceive what others miss. Information, conversations, and learning open doors first.',
+  Venus: 'Venus rises before the Sun as your Scout Planet — your year is led by relationships, beauty, and values. Charm and diplomacy open doors before anything else. Follow what attracts you.',
+  Mars: 'Mars rises before the Sun as your Scout Planet — your year is led by action, courage, and initiative. You charge forward before thinking twice. Physical energy and competitive drive set the tone.',
+  Jupiter: 'Jupiter rises before the Sun as your Scout Planet — your year is led by faith, expansion, and opportunity. Optimism and big-picture thinking open doors. Trust your instincts about growth.',
+  Saturn: 'Saturn rises before the Sun as your Scout Planet — your year is led by discipline, structure, and responsibility. Maturity and hard work open doors. Patience is your superpower this year.',
+};
+
+/**
+ * The Scout Planet (or "Oriental" planet) is the planet that rises
+ * just before the Sun — it "scouts ahead" and sets the tone for the year.
+ * We find the planet with the smallest positive ecliptic longitude
+ * ahead of (greater than) the Sun's longitude in the zodiac direction.
+ */
+export function calculateHeliacalRising(
+  srChart: SolarReturnChart
+): SRHeliacalRising | null {
+  const sunDeg = toAbsDeg(srChart.planets.Sun);
+  if (sunDeg === null) return null;
+
+  const CANDIDATES = ['Mercury','Venus','Mars','Jupiter','Saturn'];
+  let bestPlanet: string | null = null;
+  let bestDiff = 360;
+
+  for (const p of CANDIDATES) {
+    const pos = srChart.planets[p as keyof typeof srChart.planets];
+    const d = toAbsDeg(pos);
+    if (d === null) continue;
+
+    // Planet must be BEHIND the Sun in ecliptic longitude
+    // (rises before the Sun = lower degree, moving clockwise)
+    let diff = (sunDeg - d + 360) % 360;
+    if (diff > 0 && diff < bestDiff && diff < 45) {
+      // Within 45° behind the Sun = visible before sunrise
+      bestDiff = diff;
+      bestPlanet = p;
+    }
+  }
+
+  if (!bestPlanet) return null;
+
+  const pos = srChart.planets[bestPlanet as keyof typeof srChart.planets];
+  const pPos = pos ? degToSignPos(toAbsDeg(pos)!) : { sign: 'Aries', degree: 0, minutes: 0 };
+
+  return {
+    scoutPlanet: bestPlanet,
+    degreesBeforeSun: Math.round(bestDiff * 10) / 10,
+    sign: pPos.sign,
+    interpretation: SCOUT_INTERPS[bestPlanet] || `${bestPlanet} rises before the Sun, scouting ahead for the year's themes.`,
+  };
+}

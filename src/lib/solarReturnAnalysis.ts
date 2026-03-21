@@ -11,8 +11,10 @@ import {
 import {
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
   calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
+  calculateMidpoints, calculatePrenatalEclipse, calculatePlanetarySpeeds, calculateHeliacalRising,
   type SRFixedStar, type SRArabicPart, type SRFirdariaReport,
   type SRAntisciaContact, type SRSolarArc, type SRSynthesisSection,
+  type SRMidpointHit, type SRPrenatalEclipse, type SRPlanetSpeed, type SRHeliacalRising,
 } from './solarReturnT5Analysis';
 
 // ─── helpers ────────────────────────────────────────────────────────
@@ -432,6 +434,11 @@ export interface SolarReturnAnalysis {
   antisciaContacts: SRAntisciaContact[];
   solarArcs: SRSolarArc[];
   synthesisSections: SRSynthesisSection[];
+  // ─── Tier 5b (new techniques) ───
+  midpointHits: SRMidpointHit[];
+  prenatalEclipse: SRPrenatalEclipse | null;
+  planetarySpeeds: SRPlanetSpeed[];
+  heliacalRising: SRHeliacalRising | null;
 }
 
 // ─── House life-area map & sign felt-sense ──────────────────────────
@@ -1727,6 +1734,12 @@ export const analyzeSolarReturn = (
   const solarArcs = calculateSolarArcs(srChart, natalChart, t5Age);
   const synthesisSections = calculateSynthesisSections(srChart, natalChart, planetSRHouses, srToNatalAspects, houseOverlays);
 
+  // ─── Tier 5b: New Techniques ──────────────────────────────────────
+  const midpointHits = calculateMidpoints(srChart, natalChart);
+  const prenatalEclipse = calculatePrenatalEclipse(natalChart, srChart);
+  const planetarySpeeds = calculatePlanetarySpeeds(srChart);
+  const heliacalRising = calculateHeliacalRising(srChart);
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
@@ -1776,5 +1789,10 @@ export const analyzeSolarReturn = (
     antisciaContacts,
     solarArcs,
     synthesisSections,
+    // Tier 5b
+    midpointHits,
+    prenatalEclipse,
+    planetarySpeeds,
+    heliacalRising,
   };
 };
