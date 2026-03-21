@@ -137,10 +137,10 @@ export function detectContradictions(
       );
       if (hasTension) {
         results.push({
-          title: 'Desire vs Assertion',
-          tension: `You may feel pulled between Venus's ${venusMode} approach to pleasure and connection (${venusPlace.sign}) and Mars's ${marsMode} drive for action (${marsPlace.sign}). What you want and how you go after it are operating on different rhythms.`,
-          synthesis: `Let Venus lead in matters of the heart and aesthetic choices. Let Mars take charge of ambition and physical energy. The friction between them creates heat — and that heat can be channeled into creative or romantic intensity if you don't force alignment.`,
-          resolution: `When making relationship decisions, pause and ask: "Am I acting from desire (Venus) or impatience (Mars)?" Let Venus pick the direction; let Mars provide the energy to get there. In practice: slow down romantic conversations, speed up gym sessions and work deadlines. The two rhythms do not need to match.`,
+          title: 'Desire vs Drive',
+          tension: `What you want and how you go after it are operating on different rhythms this year. Your approach to pleasure and connection (${venusPlace.sign}) and your drive for action (${marsPlace.sign}) don't naturally sync up.`,
+          synthesis: `Let your desire nature lead in matters of the heart and aesthetic choices. Let your action nature take charge of ambition and physical energy. The friction between them creates heat — and that heat can be channeled into creative or romantic intensity if you don't force alignment.`,
+          resolution: `When making relationship decisions, pause and ask: "Am I acting from desire or impatience?" Let what you love pick the direction; let your drive provide the energy to get there. In practice: slow down romantic conversations, speed up workouts and work deadlines. The two rhythms don't need to match.`,
           placement1: `Venus in ${venusPlace.sign} (${ordinal(venusPlace.house)} House)`,
           placement2: `Mars in ${marsPlace.sign} (${ordinal(marsPlace.house)} House)`,
           category: 'mode-conflict',
