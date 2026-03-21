@@ -175,6 +175,11 @@ export interface HemisphereBalance {
 
 /* ── Profile Result ── */
 
+export interface DimensionDriver {
+  planet: string;
+  contribution: number; // positive = left, negative = right
+}
+
 export interface DimensionScore {
   id: string;
   left: string;
@@ -186,6 +191,8 @@ export interface DimensionScore {
   position: number;
   /** Which planet(s) drive this most */
   topDrivers: string[];
+  /** Full breakdown of all contributing planets */
+  drivers: DimensionDriver[];
 }
 
 export interface PsychProfile {
