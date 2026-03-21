@@ -167,7 +167,7 @@ function gatherPlacements(analysis: SolarReturnAnalysis, srChart: SolarReturnCha
 }
 
 function buildAxisSynthesis(p1: PlacementInfo, p2: PlacementInfo, h1: number, h2: number): string {
-  return `The resolution is not choosing ${HOUSE_THEME[h1]} over ${HOUSE_THEME[h2]} — it's finding the rhythm between both. ${p1.planet} in ${p1.sign} asks you to honor ${HOUSE_THEME[h1]}, while ${p2.planet} in ${p2.sign} ensures ${HOUSE_THEME[h2]} stays in the conversation. Integrate by giving each sphere its own dedicated time rather than trying to do both simultaneously.`;
+  return `The resolution is not choosing ${HOUSE_THEME[h1]} over ${HOUSE_THEME[h2]} — it's finding the rhythm between both. Your chart asks you to honor ${HOUSE_THEME[h1]} while also keeping ${HOUSE_THEME[h2]} in the conversation. Integrate by giving each sphere its own dedicated time rather than trying to do both simultaneously.`;
 }
 
 function areClashingElements(e1: string, e2: string): boolean {
