@@ -63,8 +63,8 @@ function isContinentalUS(lat: number, lng: number) {
   return lat >= 24 && lat <= 50 && lng >= -125 && lng <= -66;
 }
 
-function isInUS(lat: number, lng: number) {
-  return lat >= 18 && lat <= 72 && lng >= -170 && lng <= -65;
+function isInUSRegion(lat: number, lng: number) {
+  return isContinentalUS(lat, lng) || isHawaii(lat, lng) || isAlaska(lat, lng);
 }
 
 // Rating → color
