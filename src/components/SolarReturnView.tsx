@@ -895,7 +895,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* Identity Shift — Who you are becoming */}
       <IdentityShiftCard shift={identityShift} />
 
-      {/* Life Domain Scores — Career, Love, Health, Growth */}
+      {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
 
       {/* 1. Story of the Year — top-level narrative synthesis */}
