@@ -1008,7 +1008,48 @@ export function buildFullJsonStandalone(
     // AI-generated readings (both modes)
     aiReadingPlain: aiReadings?.plain || null,
     aiReadingAstro: aiReadings?.astro || null,
+
+    // ─── Structured summary objects ───
+    yearSummary: buildYearSummary(analysis, natalChart, srChart),
+    scoredAspects: (() => {
+      const bd = natalChart.birthDate || '';
+      const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+      return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+    })(),
+    topThemes: (() => {
+      const bd = natalChart.birthDate || '';
+      const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+    })(),
+    houseEmphasis: buildHouseEmphasis(analysis),
+    lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+    patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+    finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
+    reportStructureOrder: [
+      'yearSummary', 'topThemes', 'identityDirection', 'relationships',
+      'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
+      'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
+      'advancedTechniques', 'patternTracking', 'finalAdvice',
+    ],
   };
+}
+
+// ── Strip empty/null fields from JSON export ──
+function stripEmpty(obj: any): any {
+  if (Array.isArray(obj)) {
+    const cleaned = obj.map(stripEmpty).filter(v => v !== undefined);
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+  if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
+    const result: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const cleaned = stripEmpty(v);
+      if (cleaned !== undefined) result[k] = cleaned;
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
+  }
+  if (obj === '' || obj === null) return undefined;
+  return obj;
 }
 
 // ── Birthday Gift Print PDF (comprehensive, no AI narrative required) ──
