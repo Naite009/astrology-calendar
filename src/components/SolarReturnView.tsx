@@ -38,6 +38,7 @@ import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
 import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
+import { generateDomainDeepDives } from '@/lib/solarReturnDomainDeepDive';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
 import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
@@ -45,6 +46,7 @@ import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresC
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
+import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
@@ -889,6 +891,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   // Compute power portrait
   const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
+  // Compute domain deep dives (6 life areas)
+  const domainDeepDives = useMemo(() => generateDomainDeepDives(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
+
   // Compute lunar weather map
   const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
 
@@ -905,6 +910,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
+
+      {/* Domain Deep Dives — multi-house synthesis per life area */}
+      <DomainDeepDiveCards domains={domainDeepDives} />
 
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
