@@ -287,7 +287,7 @@ export function generatePowerPortrait(
     realignSources.push({
       planet: 'Moon',
       sign: moon.sign,
-      house: moon.house || null,
+      house: null,
       reason: getMoonRealignment(moon.sign),
     });
   }
