@@ -587,14 +587,32 @@ export function calculateSynthesisSections(
     return !!(pos as any)?.isRetrograde;
   };
 
-  const planetDesc = (planet: string): string => {
-    const pos = srChart.planets[planet as keyof typeof srChart.planets];
-    if (!pos) return planet;
-    const h = planetSRHouses[planet];
-    const d = getDignity(planet);
-    const r = isRetro(planet) ? ' retrograde' : '';
-    const dStr = d ? ` (${d})` : '';
-    return `${planet}${r} in ${pos.sign}${dStr}${h ? ` in the ${h}${ordSuf(h)} house` : ''}`;
+  // Plain-language planet description for birthday gift (no jargon)
+  const PLANET_PLAIN_ROLE: Record<string, string> = {
+    Sun: 'your core energy and sense of purpose', Moon: 'your emotional needs and inner comfort',
+    Mercury: 'how you think and communicate', Venus: 'your natural charm, social grace, and what you love',
+    Mars: 'your drive, motivation, and physical energy', Jupiter: 'where you feel lucky and where doors open',
+    Saturn: 'where you\'re building something lasting through commitment', Uranus: 'where exciting, unexpected changes happen',
+    Neptune: 'your imagination, intuition, and creative vision', Pluto: 'where deep personal evolution is happening',
+    Chiron: 'where your sensitive spots become your greatest strengths', NorthNode: 'the direction your life is naturally growing toward',
+  };
+
+  const HOUSE_PLAIN: Record<number, string> = {
+    1: 'your personal identity and how you show up', 2: 'your money, income, and self-worth',
+    3: 'your communication, learning, and daily connections', 4: 'your home, family, and emotional roots',
+    5: 'your creativity, romance, and self-expression', 6: 'your daily routines, work habits, and health',
+    7: 'your partnerships and closest relationships', 8: 'your shared finances, intimacy, and personal transformation',
+    9: 'your travel, education, and big-picture beliefs', 10: 'your career, public reputation, and life direction',
+    11: 'your friendships, community, and future goals', 12: 'your inner life, rest, and personal reflection',
+  };
+
+  const planetPlain = (planet: string): string => {
+    return PLANET_PLAIN_ROLE[planet] || planet.toLowerCase();
+  };
+
+  const housePlain = (house: number | null): string => {
+    if (!house) return '';
+    return HOUSE_PLAIN[house] || `house ${house}`;
   };
 
   const ordSuf = (n: number): string => {
