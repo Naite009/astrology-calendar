@@ -18,6 +18,7 @@ import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { generateDomainDeepDives } from '@/lib/solarReturnDomainDeepDive';
 import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
+import { computePsychProfile, computeBlendedProfile } from '@/lib/solarReturnPsychProfile';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -526,6 +527,12 @@ export function downloadBirthdayJSONStandalone(
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+      psychologicalProfile: (() => {
+        const natal = computePsychProfile(natalChart as any);
+        const sr = computePsychProfile(srChart as any);
+        const blended = computeBlendedProfile(natalChart as any, srChart as any);
+        return { natal, sr, blended };
+      })(),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // AI-generated readings (both modes, if available)
@@ -691,6 +698,12 @@ export function buildFullJsonStandalone(
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
     domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+    psychologicalProfile: (() => {
+      const natal = computePsychProfile(natalChart as any);
+      const sr = computePsychProfile(srChart as any);
+      const blended = computeBlendedProfile(natalChart as any, srChart as any);
+      return { natal, sr, blended };
+    })(),
     contradictions: detectContradictions(analysis, srChart),
     lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
 
@@ -2256,6 +2269,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+      psychologicalProfile: (() => {
+        const natal = computePsychProfile(natalChart as any);
+        const sr = computePsychProfile(srChart as any);
+        const blended = computeBlendedProfile(natalChart as any, srChart as any);
+        return { natal, sr, blended };
+      })(),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
