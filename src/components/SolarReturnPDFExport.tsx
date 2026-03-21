@@ -467,7 +467,7 @@ function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
     const dayRuler = getDayRuler(srDate);
 
     // Find which planetary hour the SR moment falls in
-    const srHour = hours.find(h => srDate >= h.startTime && srDate < h.endTime);
+    const srHour = hours.find(h => srDate >= h.start && srDate < h.end);
 
     return {
       dayRuler: { planet: dayRuler.planet, symbol: dayRuler.symbol, dayName: dayRuler.dayName },
