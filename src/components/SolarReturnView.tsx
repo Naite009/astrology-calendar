@@ -913,7 +913,10 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 5. Planet-to-Angle — SR planets contacting natal angles */}
       <PlanetToAngleCard natalChart={natalChart} srChart={srChart} />
 
-      {/* 6. Year Priority Engine — weighted theme ranking */}
+      {/* 6. Psychological Profile — bipolar spectrums: natal, SR, blended */}
+      <PsychologicalProfileCard natalChart={natalChart} srChart={srChart} />
+
+      {/* 6b. Year Priority Engine — weighted theme ranking */}
       <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
       {/* 7. Your Year's Playbook — Action Guidance */}
