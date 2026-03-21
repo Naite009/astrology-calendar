@@ -57,6 +57,7 @@ export interface SRAstrocartography {
 interface CityData { city: string; country: string; lat: number; lng: number; }
 
 const WORLD_CITIES: CityData[] = [
+  // ── USA (expanded) ──
   { city: 'New York', country: 'USA', lat: 40.71, lng: -74.01 },
   { city: 'Los Angeles', country: 'USA', lat: 33.94, lng: -118.24 },
   { city: 'Chicago', country: 'USA', lat: 41.88, lng: -87.63 },
@@ -67,6 +68,27 @@ const WORLD_CITIES: CityData[] = [
   { city: 'Seattle', country: 'USA', lat: 47.61, lng: -122.33 },
   { city: 'Nashville', country: 'USA', lat: 36.16, lng: -86.78 },
   { city: 'Honolulu', country: 'USA', lat: 21.31, lng: -157.86 },
+  { city: 'Sedona', country: 'USA', lat: 34.87, lng: -111.76 },
+  { city: 'Indianapolis', country: 'USA', lat: 39.77, lng: -86.16 },
+  { city: 'Ann Arbor', country: 'USA', lat: 42.28, lng: -83.74 },
+  { city: 'Detroit', country: 'USA', lat: 42.33, lng: -83.05 },
+  { city: 'Portland', country: 'USA', lat: 45.52, lng: -122.68 },
+  { city: 'Phoenix', country: 'USA', lat: 33.45, lng: -112.07 },
+  { city: 'Atlanta', country: 'USA', lat: 33.75, lng: -84.39 },
+  { city: 'Boston', country: 'USA', lat: 42.36, lng: -71.06 },
+  { city: 'Dallas', country: 'USA', lat: 32.78, lng: -96.80 },
+  { city: 'Houston', country: 'USA', lat: 29.76, lng: -95.37 },
+  { city: 'New Orleans', country: 'USA', lat: 29.95, lng: -90.07 },
+  { city: 'Las Vegas', country: 'USA', lat: 36.17, lng: -115.14 },
+  { city: 'San Diego', country: 'USA', lat: 32.72, lng: -117.16 },
+  { city: 'Minneapolis', country: 'USA', lat: 44.98, lng: -93.27 },
+  { city: 'Charlotte', country: 'USA', lat: 35.23, lng: -80.84 },
+  { city: 'Salt Lake City', country: 'USA', lat: 40.76, lng: -111.89 },
+  { city: 'Savannah', country: 'USA', lat: 32.08, lng: -81.09 },
+  { city: 'Asheville', country: 'USA', lat: 35.60, lng: -82.55 },
+  { city: 'Maui', country: 'USA', lat: 20.80, lng: -156.32 },
+  { city: 'Anchorage', country: 'USA', lat: 61.22, lng: -149.90 },
+  // ── International ──
   { city: 'London', country: 'UK', lat: 51.51, lng: -0.13 },
   { city: 'Paris', country: 'France', lat: 48.86, lng: 2.35 },
   { city: 'Rome', country: 'Italy', lat: 41.90, lng: 12.50 },
@@ -92,7 +114,6 @@ const WORLD_CITIES: CityData[] = [
   { city: 'Vancouver', country: 'Canada', lat: 49.28, lng: -123.12 },
   { city: 'Cancún', country: 'Mexico', lat: 21.16, lng: -86.85 },
   { city: 'Tulum', country: 'Mexico', lat: 20.21, lng: -87.46 },
-  { city: 'Sedona', country: 'USA', lat: 34.87, lng: -111.76 },
 ];
 
 // ─── Planet Benefic/Malefic Ratings ─────────────────────────────────
