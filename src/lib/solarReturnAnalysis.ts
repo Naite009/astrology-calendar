@@ -310,12 +310,14 @@ export interface SRSaturnFocus {
   house: number | null;
   natalHouse: number | null;
   isRetrograde: boolean;
+  theme: string;
   interpretation: string;
 }
 
 export interface SRNodesFocus {
   sign: string;
   house: number | null;
+  theme: string;
   interpretation: string;
 }
 
