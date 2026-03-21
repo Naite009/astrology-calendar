@@ -337,7 +337,7 @@ export function generatePowerPortrait(
     burnoutPattern: {
       title: 'Your Burnout Pattern',
       emoji: '🔋',
-      summary: getSaturnBurnout(saturnSRHouse || saturn?.house || null, saturn?.sign || ''),
+      summary: getSaturnBurnout(saturnSRHouse || null, saturn?.sign || ''),
       sources: burnoutSources,
     },
     realignmentTool: {
