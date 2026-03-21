@@ -380,8 +380,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       if (natalPlanetsInSign.length > 0) {
         patterns.push({
           pattern: `${st.location} activation mirrors natal placement`,
-          description: `Your SR stellium in ${st.location} lands where you already have natal ${natalPlanetsInSign.join(', ')} — this amplifies a lifelong pattern, not creating a new one.`,
-          connection: `You've always had ${natalPlanetsInSign.join(' and ')} energy in ${st.location}. This year turns the volume up.`,
+          description: `Your concentration of energy in ${st.location} lands where you already have strong natal themes — this amplifies a lifelong pattern, not creating a new one.`,
+          connection: `You've always had strong energy in ${st.location}. This year turns the volume up.`,
           category: 'natal-echo',
         });
       }

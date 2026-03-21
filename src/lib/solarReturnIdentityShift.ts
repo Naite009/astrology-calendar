@@ -168,10 +168,10 @@ function detectTension(sunSign: string, nodeSign: string): string | null {
   const normalized = diff > 6 ? 12 - diff : diff;
 
   if (normalized === 3) {
-    return `There is creative tension between your ${sunSign} Sun purpose and your ${nodeSign} North Node growth direction. You may feel pulled between what energizes you and what your soul is asking you to learn. This friction is productive — it forces integration rather than choosing one over the other.`;
+    return `There is creative tension between your purpose direction and your growth edge this year. You may feel pulled between what energizes you and what your soul is asking you to learn. This friction is productive — it forces integration rather than choosing one over the other.`;
   }
   if (normalized === 6) {
-    return `Your ${sunSign} Sun sits opposite your ${nodeSign} North Node — a powerful polarity axis. You are being asked to balance self-expression with soul growth, finding ways to honor both without sacrificing either.`;
+    return `Your purpose and your growth edge sit on opposite ends of a spectrum — a powerful balancing act. You are being asked to honor both self-expression and soul growth, finding ways to balance both without sacrificing either.`;
   }
   return null;
 }
