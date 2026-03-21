@@ -2501,10 +2501,25 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // New structured summary objects
       yearSummary: buildYearSummary(analysis, natalChart, srChart),
-      scoredAspects: scoreAspects(analysis.srToNatalAspects || []),
+      scoredAspects: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+      })(),
+      topThemes: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+      })(),
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
       patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+      reportStructureOrder: [
+        'yearSummary', 'topThemes', 'identityDirection', 'relationships',
+        'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
+        'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
+        'advancedTechniques', 'patternTracking', 'finalAdvice',
+      ],
     };
   };
 
