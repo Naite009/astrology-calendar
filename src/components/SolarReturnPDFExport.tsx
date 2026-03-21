@@ -22,6 +22,8 @@ import { computePsychProfile, computeBlendedProfile } from '@/lib/solarReturnPsy
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects } from '@/lib/secondaryProgressions';
 import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { calculateAstrocartography } from '@/lib/solarReturnAstrocartography';
+import { calculatePlanetaryHours, getDayRuler, PLANETARY_HOUR_MEANINGS } from '@/lib/planetaryHours';
+import { parseLatitudeFromLocation } from '@/lib/solarReturnVertex';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
