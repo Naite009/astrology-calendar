@@ -287,11 +287,17 @@ export function calculateActivationWindows(
       const targets = [...new Set(cluster.map(c => c.srTarget.replace('SR ', '')))];
       const planets = [...new Set(cluster.map(c => c.transitPlanet))];
 
+      const LABEL_PLAIN: Record<string, string> = {
+        Sun: 'Purpose', Mars: 'Drive', Jupiter: 'Growth', Saturn: 'Responsibility',
+        Mercury: 'Communication', Venus: 'Connection',
+      };
+      const plainPlanets = planets.map(p => LABEL_PLAIN[p] || p);
+
       const windowType = classifyWindowType(targets, planets);
       const windowAdvice = generateWindowAdvice(windowType, planets, targets);
 
       activationWindows.push({
-        label: `${planets.join(' + ')} → ${targets.join(', ')}`,
+        label: `${plainPlanets.join(' + ')} → ${targets.join(', ')}`,
         startDate: new Date(Math.min(...starts)),
         endDate: new Date(Math.max(...ends)),
         peakDate,
