@@ -358,7 +358,7 @@ const PLANET_THEME_ACTION: Record<string, string> = {
   Sun: 'brings visibility and clarity to',
   Mars: 'pushes you to take action on',
   Jupiter: 'opens doors and expands',
-  Saturn: 'demands accountability and hard work around',
+  Saturn: 'invites accountability and hard work around',
   Mercury: 'accelerates communication about',
   Venus: 'brings warmth and connection to',
 };

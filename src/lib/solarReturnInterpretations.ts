@@ -348,22 +348,22 @@ export const rulerConditionNarrative = (dignity: string, isRetrograde: boolean):
   let base = '';
   switch (dignity) {
     case 'Domicile':
-      base = 'Your chart ruler is in its own sign — it has full power and agency. The year\'s ruler is operating at peak capacity, meaning the themes it touches are likely to go well with minimal resistance. This is an empowered year.';
+      base = 'The energy guiding your year is operating at peak capacity — it has full power and agency. The themes it touches are likely to go well with minimal resistance. This is an empowered year.';
       break;
     case 'Exaltation':
-      base = 'Your chart ruler is exalted — it is operating in an elevated, honored position. The year carries a quality of recognition, achievement, or "things working in your favor" in the areas this planet touches.';
+      base = 'The energy guiding your year is operating from a place of strength and honor. The year carries a quality of recognition, achievement, or "things working in your favor" in the areas it touches.';
       break;
     case 'Detriment':
-      base = 'Your chart ruler is in detriment — operating in uncomfortable territory. The year\'s themes require extra effort, adaptation, and working against your natural grain. Challenges are learning opportunities, but they require conscious effort.';
+      base = 'The energy guiding your year is operating in uncomfortable territory. The year\'s themes require extra effort, adaptation, and working against your natural grain. Challenges are learning opportunities, but they require conscious effort.';
       break;
     case 'Fall':
-      base = 'Your chart ruler is in fall — the most challenged dignity position. This year may feel like an uphill battle in the areas ruled by this planet. Humility, patience, and accepting help from others are essential strategies.';
+      base = 'The energy guiding your year is in its most challenging position. This year may feel like an uphill climb in certain areas. Humility, patience, and accepting help from others are essential strategies.';
       break;
     default:
-      base = 'Your chart ruler is peregrine — operating without special advantage or disadvantage. The year\'s themes require your own effort and initiative to shape outcomes; nothing is handed to you, but nothing blocks you either.';
+      base = 'The energy guiding your year is operating without special advantage or disadvantage. The year\'s themes require your own effort and initiative to shape outcomes; nothing is handed to you, but nothing blocks you either.';
   }
   if (isRetrograde) {
-    base += ' Additionally, this planet is retrograde in your Solar Return — indicating a year of revision, re-evaluation, and internal processing in this planet\'s domain. Progress may feel slower or more indirect, but the inner work is essential.';
+    base += ' Additionally, this guiding energy is in a review phase — indicating a year of revision, re-evaluation, and internal processing. Progress may feel slower or more indirect, but the inner work is essential.';
   }
   return base;
 };
