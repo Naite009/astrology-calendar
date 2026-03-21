@@ -14,6 +14,7 @@ import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
+import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
@@ -521,6 +522,7 @@ export function downloadBirthdayJSONStandalone(
       })(),
       identityShift: generateIdentityShift(analysis, srChart, natalChart),
       lifeDomainScores: calculateLifeDomainScores(analysis),
+      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // AI-generated readings (both modes, if available)
@@ -683,6 +685,7 @@ export function buildFullJsonStandalone(
     })(),
     identityShift: generateIdentityShift(analysis, srChart, natalChart),
     lifeDomainScores: calculateLifeDomainScores(analysis),
+    powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
     contradictions: detectContradictions(analysis, srChart),
     lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
 
@@ -2245,6 +2248,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       })(),
       identityShift: generateIdentityShift(analysis, srChart, natalChart),
       lifeDomainScores: calculateLifeDomainScores(analysis),
+      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };

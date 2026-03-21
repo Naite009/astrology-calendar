@@ -37,12 +37,14 @@ import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
 import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
 import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresCard';
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
+import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
@@ -884,6 +886,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   // Compute contradiction resolutions
   const contradictions = useMemo(() => detectContradictions(analysis, srChart), [analysis, srChart]);
 
+  // Compute power portrait
+  const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
+
   // Compute lunar weather map
   const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
 
@@ -894,6 +899,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Identity Shift — Who you are becoming */}
       <IdentityShiftCard shift={identityShift} />
+
+      {/* Power Portrait — drive, sustain, burnout, realignment */}
+      <PowerPortraitCard portrait={powerPortrait} />
 
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
