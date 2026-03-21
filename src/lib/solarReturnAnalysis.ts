@@ -1290,15 +1290,14 @@ export const analyzeSolarReturn = (
     };
     const isRetro = !!(saturnPos as any).isRetrograde;
     const retroNote = isRetro
-      ? ` Saturn is retrograde in your Solar Return, which turns its lessons inward — instead of external pressure, the hard work is psychological. You\'re re-examining old commitments, past responsibilities, and whether the structures you built still hold. Progress feels slow because the work is internal, but what you resolve now prevents repeating the same patterns.`
+      ? ' This year, the lessons here are turned inward — instead of external pressure, the real work is psychological. You\'re re-examining old commitments and whether the structures you\'ve built still hold. Progress feels slow because the growth is internal, but what you resolve now prevents repeating the same patterns.'
       : '';
-    const signNote = saturnPos.sign ? ` In ${saturnPos.sign}, Saturn expresses its demands through ${getSaturnSignStyle(saturnPos.sign)}.` : '';
     saturnFocus = {
       sign: saturnPos.sign,
       house: satSRHouse,
       natalHouse: satNatalHouse,
       isRetrograde: isRetro,
-      interpretation: (satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.') + signNote + retroNote,
+      interpretation: (satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'This year asks you to get real about your commitments and responsibilities. Solid foundations get stronger; anything built on shaky ground gets rebuilt.') + retroNote,
     };
   }
 

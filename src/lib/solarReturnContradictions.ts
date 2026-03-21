@@ -185,5 +185,6 @@ function elementDrive(el: string): string {
 function ordinal(n: number): string {
   const s = ['th','st','nd','rd'];
   const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  if (v >= 11 && v <= 13) return n + 'th';
+  return n + (s[v % 10] || s[0]);
 }
