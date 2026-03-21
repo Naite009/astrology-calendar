@@ -138,7 +138,7 @@ function buildNarrative(
 ): string {
   const parts: string[] = [];
 
-  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what the Sun in ${sunSign} is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
+  parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what this year's purpose energy is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
 
   if (ascSign !== sunSign) {
     parts.push(`At the same time, people will experience you differently this year. ${ascSign} Rising means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
