@@ -50,6 +50,16 @@ const HouseCard = ({ house }: { house: DomainHouseSnapshot }) => (
         {house.planets.map(p => (
           <span key={p} className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-sm">{p}</span>
         ))}
+        {house.minorBodies?.map(p => (
+          <span key={p} className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-sm italic">{p}</span>
+        ))}
+      </div>
+    ) : house.minorBodies && house.minorBodies.length > 0 ? (
+      <div className="flex gap-1.5 flex-wrap">
+        <span className="text-[10px] text-muted-foreground italic">No major planets — </span>
+        {house.minorBodies.map(p => (
+          <span key={p} className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-sm italic">{p}</span>
+        ))}
       </div>
     ) : (
       <p className="text-[10px] text-muted-foreground italic">No planets — quiet zone</p>
