@@ -667,6 +667,10 @@ export function downloadBirthdayJSONStandalone(
       antisciaContacts: analysis.antisciaContacts,
       solarArcs: analysis.solarArcs,
       synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
+      midpointHits: analysis.midpointHits,
+      prenatalEclipse: analysis.prenatalEclipse,
+      planetarySpeeds: analysis.planetarySpeeds,
+      heliacalRising: analysis.heliacalRising,
       // New: Executive Summary, Action Guidance, Activation Windows
       executiveSummary: generateExecutiveSummary(analysis, natalChart),
       actionGuidance: (() => {
