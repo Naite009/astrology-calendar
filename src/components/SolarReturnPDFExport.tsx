@@ -2499,6 +2499,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
+      // New structured summary objects
+      yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      scoredAspects: scoreAspects(analysis.srToNatalAspects || []),
+      houseEmphasis: buildHouseEmphasis(analysis),
+      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
     };
   };
 
