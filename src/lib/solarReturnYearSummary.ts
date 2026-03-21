@@ -136,14 +136,15 @@ export function buildYearSummary(
   const mostIntenseMonths: string[] = [];
 
   // Use domain scores to figure out which domains have benefic tone
-  for (const d of domains) {
-    if (d.tone > 2 && d.activity >= 4) {
-      const monthHint = getMonthHintForDomain(d.domain, analysis);
+  for (const d of domainValues) {
+    if (d.toneScore > 2 && d.activityLevel >= 4) {
+      const monthHint = getMonthHintForDomain(d.domainKey, analysis);
       if (monthHint && !bestMonths.includes(monthHint)) bestMonths.push(monthHint);
     }
-    if (d.tone < -1 && d.activity >= 5) {
-      const monthHint = getMonthHintForDomain(d.domain, analysis);
+    if (d.toneScore < -1 && d.activityLevel >= 5) {
+      const monthHint = getMonthHintForDomain(d.domainKey, analysis);
       if (monthHint && !mostIntenseMonths.includes(monthHint)) mostIntenseMonths.push(monthHint);
+    }
     }
   }
 
