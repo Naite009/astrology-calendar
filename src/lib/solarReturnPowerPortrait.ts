@@ -262,7 +262,7 @@ export function generatePowerPortrait(
   const burnoutSources: PowerSource[] = [];
   if (saturn) {
     burnoutSources.push({
-      planet: 'Saturn (natal)',
+      planet: 'Commitment & responsibility (lifelong)',
       sign: saturn.sign,
       house: null,
       reason: 'Your lifelong pressure point — the area where you naturally overwork and under-rest',
