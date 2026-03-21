@@ -418,15 +418,36 @@ export function calculateHealthOverlay(
 export function calculateEclipseSensitivity(
   srChart: SolarReturnChart,
   natalChart: NatalChart,
-  srYear: number
+  srYear: number,
+  solarReturnDateTime?: string,
+  birthDate?: string,
 ): SREclipseSensitivity[] {
   const results: SREclipseSensitivity[] = [];
   const ORB = 3; // degrees
 
-  // Filter eclipses relevant to the SR year (birthday to birthday)
+  const startDate = (() => {
+    if (solarReturnDateTime) {
+      const parsed = new Date(solarReturnDateTime);
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+
+    if (birthDate) {
+      const [_, month, day] = birthDate.split('-').map(Number);
+      if (month && day) {
+        return new Date(Date.UTC(srYear, month - 1, day, 12, 0, 0));
+      }
+    }
+
+    return new Date(Date.UTC(srYear, 0, 1, 0, 0, 0));
+  })();
+
+  const endDate = new Date(startDate);
+  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
+
+  // Filter eclipses relevant to the Solar Return year window (birthday to birthday)
   const relevantEclipses = ECLIPSES_2025_2027.filter(e => {
-    const eYear = parseInt(e.date.slice(0, 4));
-    return eYear === srYear || eYear === srYear - 1;
+    const eclipseDate = new Date(`${e.date}T00:00:00Z`);
+    return eclipseDate >= startDate && eclipseDate < endDate;
   });
 
   for (const eclipse of relevantEclipses) {
