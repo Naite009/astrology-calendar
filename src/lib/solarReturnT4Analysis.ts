@@ -376,10 +376,24 @@ export function calculateHealthOverlay(
         (a.planet1 === planet || a.planet2 === planet) && HARD_ASPECTS.includes(a.type)
       );
 
-    const signBody = SIGN_BODY[pos.sign] || '';
-    const houseNote = house === 6 ? ' Landing in the 6th house of health amplifies this planet\'s body-related themes.' :
-                      house === 12 ? ' In the 12th house, health matters may be hidden or manifest as psychosomatic patterns.' :
-                      house === 1 ? ' In the 1st house, physical vitality and appearance are directly affected.' : '';
+
+    const BODY_PLAIN: Record<string, string> = {
+      Sun: 'your overall vitality and energy levels',
+      Moon: 'your emotional wellbeing and digestion',
+      Mercury: 'your nervous system and mental clarity',
+      Venus: 'your throat, skin, and hormonal balance',
+      Mars: 'your physical energy, muscles, and inflammation',
+      Jupiter: 'your liver, weight management, and circulation',
+      Saturn: 'your bones, joints, teeth, and long-term stamina',
+      Uranus: 'your nervous system and stress responses',
+      Neptune: 'your immune system and sensitivity to substances',
+      Pluto: 'your reproductive system and deep-body processes',
+    };
+
+    const plainPlanet = BODY_PLAIN[planet] || `your ${body.area.toLowerCase()}`;
+    const houseNote = house === 6 ? ' Because this falls in your health and daily routine area, pay extra attention to wellness habits.' :
+                      house === 12 ? ' This is in a quieter area of your chart, so health matters here may show up subtly — listen to what your body is telling you.' :
+                      house === 1 ? ' This directly affects your physical vitality and how energized you feel day to day.' : '';
 
     overlays.push({
       planet,
@@ -388,21 +402,23 @@ export function calculateHealthOverlay(
       bodyArea: body.area,
       vulnerability: body.vulnerability,
       isStressed,
-      interpretation: `${planet} in ${pos.sign} connects to ${body.area}. The sign rules ${signBody}.${houseNote}${isStressed ? ` This planet is under stress (${dignity}${srInternalAspects.some((a: any) => (a.planet1 === planet || a.planet2 === planet) && HARD_ASPECTS.includes(a.type)) ? ' + hard aspects' : ''}) — pay attention to ${body.vulnerability.toLowerCase()}.` : ` ${planet} is ${dignity === 'Domicile' || dignity === 'Exaltation' ? 'well-placed, supporting' : 'neutral regarding'} physical well-being in this area.`}`,
+      interpretation: isStressed
+        ? `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} may need extra attention this year. Your body could be signaling through ${body.vulnerability.toLowerCase()} — treat these as invitations to take better care of yourself.${houseNote}`
+        : `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} ${dignity === 'Domicile' || dignity === 'Exaltation' ? 'are well-supported this year — a great time to build healthy habits in this area' : 'are in a neutral zone — maintain your regular wellness routines'}.${houseNote}`,
     });
 
     if (isStressed) {
-      primaryConcerns.push(`${planet} stressed in ${pos.sign}: watch for ${body.vulnerability.toLowerCase()}`);
+      primaryConcerns.push(`Your ${body.area.toLowerCase()} may need extra care — watch for ${body.vulnerability.toLowerCase()}`);
     }
     if (dignity === 'Domicile' || dignity === 'Exaltation') {
-      supportiveFactors.push(`${planet} strong in ${pos.sign}: supports ${body.area.toLowerCase()}`);
+      supportiveFactors.push(`Your ${body.area.toLowerCase()} is well-supported — a great year to invest in ${body.area.toLowerCase()} wellness`);
     }
   }
 
   // Check 6th house emphasis
   const sixthHousePlanets = PLANETS_CORE.filter(p => planetSRHouses[p] === 6);
   if (sixthHousePlanets.length >= 2) {
-    primaryConcerns.push(`Multiple planets in 6th house (${sixthHousePlanets.join(', ')}): health and daily routines need active management`);
+    primaryConcerns.push('Your health and daily routine area is very active this year — make wellness habits a priority');
   }
 
   return {
@@ -410,8 +426,8 @@ export function calculateHealthOverlay(
     primaryConcerns,
     supportiveFactors,
     interpretation: primaryConcerns.length === 0
-      ? 'No significant health stress patterns detected in this Solar Return. Maintain normal wellness routines and listen to your body\'s signals.'
-      : `${primaryConcerns.length} area${primaryConcerns.length > 1 ? 's' : ''} of potential health focus this year. These are not predictions — they are areas where the body may need extra attention or where stress could manifest physically.`,
+      ? 'No major health flags in your chart this year — maintain your regular wellness routines and listen to your body\'s signals.'
+      : `${primaryConcerns.length} area${primaryConcerns.length > 1 ? 's' : ''} of your health may benefit from extra attention this year. These aren\'t predictions — they\'re gentle nudges to take care of yourself in specific ways.`,
   };
 }
 

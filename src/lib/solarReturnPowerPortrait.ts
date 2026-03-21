@@ -33,6 +33,13 @@ export interface PowerPortrait {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
+const HOUSE_PLAIN: Record<number, string> = {
+  1: 'your identity and self-image', 2: 'your finances and self-worth', 3: 'communication and learning',
+  4: 'home and family', 5: 'creativity and romance', 6: 'health and daily routines',
+  7: 'partnerships and relationships', 8: 'shared resources and deep change', 9: 'travel and big-picture goals',
+  10: 'career and public role', 11: 'friendships and community', 12: 'inner work and quiet reflection',
+};
+
 const SIGN_ELEMENT: Record<string, string> = {
   Aries: 'Fire', Taurus: 'Earth', Gemini: 'Air', Cancer: 'Water',
   Leo: 'Fire', Virgo: 'Earth', Libra: 'Air', Scorpio: 'Water',
@@ -139,19 +146,21 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   // Saturn on angles → freeze
   const saturnH = srHouses['Saturn'];
   if (saturnH === 1 || saturnH === 10) {
+    const satArea = saturnH === 1 ? 'your identity' : 'your career';
     leaks.push({
       pattern: 'Freezing',
-      trigger: `Saturn in your ${saturnH === 1 ? '1st house' : '10th house'} -- self-doubt and imposter syndrome can paralyze you`,
-      antidote: 'Take the smallest possible action every day. Saturn rewards consistent small steps, not big leaps.',
+      trigger: `Responsibility is concentrated in ${satArea} -- self-doubt and imposter syndrome can paralyze you`,
+      antidote: 'Take the smallest possible action every day. Consistent small steps always beat waiting for the perfect moment.',
     });
   }
 
   // Neptune prominent → escapism
   const neptuneH = srHouses['Neptune'];
   if (neptuneH === 1 || neptuneH === 7 || neptuneH === 10) {
+    const nepArea = HOUSE_PLAIN[neptuneH] || 'a key area';
     leaks.push({
       pattern: 'Escapism',
-      trigger: `Neptune in your ${neptuneH}${neptuneH === 1 ? 'st' : neptuneH === 7 ? 'th' : 'th'} house -- confusion, avoidance, or numbing instead of dealing with reality`,
+      trigger: `Your imagination is extra active in ${nepArea} -- confusion, avoidance, or numbing instead of dealing with reality`,
       antidote: 'Schedule daily grounding: 5 minutes of body awareness, a walk, or writing down one true thing.',
     });
   }
@@ -164,7 +173,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (plutoAspects.length > 0) {
     leaks.push({
       pattern: 'Overcorrecting',
-      trigger: 'Pluto pressure this year -- the urge to blow everything up and start over when what is needed is targeted change',
+      trigger: 'Deep change energy is strong this year -- the urge to blow everything up and start over when what is needed is targeted change',
       antidote: 'Before making big decisions, wait 72 hours. Transform one thing at a time instead of everything at once.',
     });
   }
@@ -172,9 +181,10 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   // Uranus on MC/ASC → restlessness
   const uranusH = srHouses['Uranus'];
   if (uranusH === 1 || uranusH === 10) {
+    const uArea = uranusH === 1 ? 'your identity' : 'your career';
     leaks.push({
       pattern: 'Restlessness',
-      trigger: `Uranus in your ${uranusH === 1 ? '1st' : '10th'} house -- sudden urges to change everything can destabilize what is working`,
+      trigger: `Sudden urges to change ${uArea} can destabilize what is working`,
       antidote: 'Experiment in low-stakes areas first. Not every impulse needs to become a life decision.',
     });
   }
@@ -213,7 +223,7 @@ export function generatePowerPortrait(
       planet: 'Mars (this year)',
       sign: srMars.sign || marsSign,
       house: marsSRHouse,
-      reason: `This year your drive is channeled into house ${marsSRHouse} -- that is where you'll feel the most urgency to act`,
+      reason: `This year your drive is channeled into ${HOUSE_PLAIN[marsSRHouse] || 'a specific life area'} -- that is where you'll feel the most urgency to act`,
     });
   }
   if (sun) {
@@ -273,7 +283,7 @@ export function generatePowerPortrait(
       planet: overlay.planet,
       sign: '',
       house: 6,
-      reason: `${overlay.planet} in your 6th house this year -- adds load to your daily routine and health habits`,
+      reason: `${overlay.planet} is in your health and daily routine area this year -- adds load to your schedule and body`,
     });
   }
 
