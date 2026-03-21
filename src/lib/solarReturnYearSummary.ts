@@ -174,10 +174,10 @@ export function buildYearSummary(
   };
 }
 
-function buildDomainTheme(domains: any[], domainId: string, analysis: SolarReturnAnalysis): string {
-  const d = domains.find((x: any) => x.domain === domainId || x.id === domainId);
+function buildDomainTheme(domains: LifeDomainScore[], domainId: string, analysis: SolarReturnAnalysis): string {
+  const d = domains.find((x) => x.domainKey === domainId || x.domain === domainId);
   if (!d) return '';
-  const toneLabel = d.tone > 2 ? 'Supportive energy' : d.tone < -1 ? 'Challenging pressure' : 'Mixed energy';
+  const toneLabel = d.toneScore > 2 ? 'Supportive energy' : d.toneScore < -1 ? 'Challenging pressure' : 'Mixed energy';
   const drivers = (d.drivers || []).slice(0, 2).map((dr: any) => dr.planet || dr.source || '').filter(Boolean).join(' and ');
   return `${toneLabel}${drivers ? ` driven by ${drivers}` : ''}.`;
 }
