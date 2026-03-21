@@ -93,10 +93,11 @@ export function buildYearSummary(
     ? `${identity.headline}. ${identity.becomingNarrative?.split('.').slice(0, 2).join('.') || ''}.`
     : 'Subtle identity evolution — the changes are internal this year.';
 
-  // Domain themes
-  const relationshipTheme = buildDomainTheme(domains, 'love', analysis);
-  const careerMoneyTheme = buildDomainTheme(domains, 'career', analysis) + ' ' + buildDomainTheme(domains, 'money', analysis);
-  const emotionalTheme = lunar?.yearPattern || buildDomainTheme(domains, 'home', analysis);
+  // Domain themes — domains is an object keyed by domain name
+  const domainValues = Object.values(domains) as LifeDomainScore[];
+  const relationshipTheme = buildDomainTheme(domainValues, 'love', analysis);
+  const careerMoneyTheme = buildDomainTheme(domainValues, 'career', analysis) + ' ' + buildDomainTheme(domainValues, 'money', analysis);
+  const emotionalTheme = lunar?.yearPattern || buildDomainTheme(domainValues, 'home', analysis);
 
   // Advice
   const leanInto: string[] = [];
