@@ -744,10 +744,33 @@ export function downloadBirthdayJSONStandalone(
       // AI-generated readings (both modes, if available)
       aiReadingPlain: aiReadings?.plain || null,
       aiReadingAstro: aiReadings?.astro || null,
+      // ─── Structured summary objects ───
+      yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      scoredAspects: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+      })(),
+      topThemes: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+      })(),
+      houseEmphasis: buildHouseEmphasis(analysis),
+      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
+      reportStructureOrder: [
+        'yearSummary', 'topThemes', 'identityDirection', 'relationships',
+        'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
+        'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
+        'advancedTechniques', 'patternTracking', 'finalAdvice',
+      ],
     }
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const cleaned = stripEmpty(payload) || payload;
+  const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
