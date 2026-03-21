@@ -121,8 +121,8 @@ export function buildYearSummary(
   }
 
   // Retrogrades → careful
-  for (const retro of (analysis.retrogrades || [])) {
-    const planet = typeof retro === 'string' ? retro : (retro as any).planet;
+  const retroPlanets = analysis.retrogrades?.planets || [];
+  for (const planet of retroPlanets) {
     if (PLANET_CAREFUL[planet] && !beCarefulOf.includes(PLANET_CAREFUL[planet])) {
       beCarefulOf.push(PLANET_CAREFUL[planet]);
     }
