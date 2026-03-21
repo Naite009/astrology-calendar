@@ -377,6 +377,123 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
   return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
 }
 
+// ─── Chart Wheel Data Builder (for SVG rendering by external tools) ──
+const SIGNS_LIST = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const WHEEL_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
+
+function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, analysis: SolarReturnAnalysis) {
+  const toAbs = (pos: any): number | null => {
+    if (!pos?.sign) return null;
+    const idx = SIGNS_LIST.indexOf(pos.sign);
+    if (idx < 0) return null;
+    return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+  };
+
+  // SR planet positions in absolute degrees
+  const srPlanets: Record<string, { absDeg: number; sign: string; degree: number; minutes: number; retrograde: boolean }> = {};
+  for (const p of WHEEL_PLANETS) {
+    const pos = srChart.planets?.[p as keyof typeof srChart.planets];
+    if (!pos) continue;
+    const abs = toAbs(pos);
+    if (abs === null) continue;
+    srPlanets[p] = { absDeg: Math.round(abs * 100) / 100, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0, retrograde: !!(pos as any).isRetrograde };
+  }
+
+  // Natal planet positions
+  const natalPlanets: Record<string, { absDeg: number; sign: string; degree: number; minutes: number }> = {};
+  for (const p of WHEEL_PLANETS) {
+    const pos = natalChart.planets?.[p as keyof typeof natalChart.planets];
+    if (!pos) continue;
+    const abs = toAbs(pos);
+    if (abs === null) continue;
+    natalPlanets[p] = { absDeg: Math.round(abs * 100) / 100, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0 };
+  }
+
+  // SR house cusps in absolute degrees
+  const srCusps: Record<string, { absDeg: number; sign: string; degree: number }> = {};
+  for (let i = 1; i <= 12; i++) {
+    const key = `house${i}` as keyof typeof srChart.houseCusps;
+    const cusp = srChart.houseCusps?.[key];
+    if (cusp) {
+      const abs = toAbs(cusp);
+      if (abs !== null) srCusps[`house${i}`] = { absDeg: Math.round(abs * 100) / 100, sign: cusp.sign, degree: Math.floor(cusp.degree) };
+    }
+  }
+
+  // Natal house cusps
+  const natalCusps: Record<string, { absDeg: number; sign: string; degree: number }> = {};
+  for (let i = 1; i <= 12; i++) {
+    const key = `house${i}` as keyof typeof natalChart.houseCusps;
+    const cusp = natalChart.houseCusps?.[key];
+    if (cusp) {
+      const abs = toAbs(cusp);
+      if (abs !== null) natalCusps[`house${i}`] = { absDeg: Math.round(abs * 100) / 100, sign: cusp.sign, degree: Math.floor(cusp.degree) };
+    }
+  }
+
+  return {
+    srPlanets,
+    natalPlanets,
+    srCusps,
+    natalCusps,
+    srAspects: (analysis.srInternalAspects || []).map((a: any) => ({
+      planet1: a.planet1, planet2: a.planet2, type: a.type, orb: a.orb,
+    })),
+    srToNatalAspects: (analysis.srToNatalAspects || []).slice(0, 30).map((a: any) => ({
+      planet1: a.planet1, planet2: a.planet2, type: a.type, orb: a.orb,
+    })),
+  };
+}
+
+// ─── Planetary Hours at SR Moment ───────────────────────────────────
+function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
+  const locationStr = srChart.solarReturnLocation || srChart.birthLocation || '';
+  const lat = parseLatitudeFromLocation(locationStr);
+  if (!lat) return null;
+
+  // Estimate longitude from location (rough)
+  let lng = 0;
+  const coordMatch = locationStr.match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
+  if (coordMatch) lng = parseFloat(coordMatch[2]);
+
+  const srDateTime = srChart.solarReturnDateTime || srChart.birthDate;
+  if (!srDateTime) return null;
+
+  const srDate = new Date(srDateTime);
+  if (isNaN(srDate.getTime())) return null;
+
+  try {
+    const hours = calculatePlanetaryHours(srDate, lat, lng);
+    const dayRuler = getDayRuler(srDate);
+
+    // Find which planetary hour the SR moment falls in
+    const srHour = hours.find(h => srDate >= h.startTime && srDate < h.endTime);
+
+    return {
+      dayRuler: { planet: dayRuler.planet, symbol: dayRuler.symbol, dayName: dayRuler.dayName },
+      srMomentHour: srHour ? {
+        planet: srHour.planet,
+        symbol: srHour.symbol,
+        meaning: PLANETARY_HOUR_MEANINGS[srHour.planet as keyof typeof PLANETARY_HOUR_MEANINGS]?.bestFor || [],
+        isDay: srHour.isDay,
+      } : null,
+      allHours: hours.map(h => ({
+        planet: h.planet,
+        symbol: h.symbol,
+        isDay: h.isDay,
+        start: h.startTime.toISOString(),
+        end: h.endTime.toISOString(),
+        bestFor: PLANETARY_HOUR_MEANINGS[h.planet as keyof typeof PLANETARY_HOUR_MEANINGS]?.bestFor || [],
+      })),
+      interpretation: srHour
+        ? `Your Solar Return occurs during a ${srHour.planet} hour on a ${dayRuler.planet} day. ${srHour.planet === dayRuler.planet ? `Double ${srHour.planet} energy — this planet's themes are strongly amplified for the entire year.` : `The ${dayRuler.planet} day-ruler combines with the ${srHour.planet} hour-ruler, blending ${dayRuler.planet}'s themes with ${srHour.planet}'s influence at the moment of your Sun's return.`}`
+        : 'Planetary hour could not be determined for the Solar Return moment.',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Standalone Birthday Gift JSON export (no AI, no component state needed) ──
 export function downloadBirthdayJSONStandalone(
   analysis: SolarReturnAnalysis,
