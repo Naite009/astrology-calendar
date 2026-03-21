@@ -204,7 +204,7 @@ export function generatePowerPortrait(
     driveSources.push({
       planet: 'Mars',
       sign: mars.sign,
-      house: mars.house || null,
+      house: null,
       reason: DRIVE_BY_SIGN[mars.sign] || 'Your Mars drives action in its own unique way',
     });
   }
