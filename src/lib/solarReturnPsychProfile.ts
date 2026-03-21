@@ -175,6 +175,11 @@ export interface HemisphereBalance {
 
 /* ── Profile Result ── */
 
+export interface DimensionDriver {
+  planet: string;
+  contribution: number; // positive = left, negative = right
+}
+
 export interface DimensionScore {
   id: string;
   left: string;
@@ -186,6 +191,8 @@ export interface DimensionScore {
   position: number;
   /** Which planet(s) drive this most */
   topDrivers: string[];
+  /** Full breakdown of all contributing planets */
+  drivers: DimensionDriver[];
 }
 
 export interface PsychProfile {
@@ -252,7 +259,7 @@ function getHouseForPlanet(planet: string, chart: ChartInput): number | null {
 /* ── Core Calculation ── */
 
 export function computePsychProfile(chart: ChartInput): PsychProfile {
-  const dimScores: Record<string, { total: number; drivers: { planet: string; contrib: number }[] }> = {};
+  const dimScores: Record<string, { total: number; drivers: { planet: string; contrib: number; raw: number }[] }> = {};
   DIMENSIONS.forEach(d => { dimScores[d.id] = { total: 0, drivers: [] }; });
   
   const elementCounts = { fire: 0, earth: 0, air: 0, water: 0 };
@@ -268,7 +275,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = ANGLE_WEIGHT * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: 'Ascendant', contrib: Math.abs(w) });
+          dimScores[dimId].drivers.push({ planet: 'Ascendant', contrib: Math.abs(w), raw: w });
         }
       }
     }
@@ -287,7 +294,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = 5 * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: 'MC', contrib: Math.abs(w) });
+          dimScores[dimId].drivers.push({ planet: 'MC', contrib: Math.abs(w), raw: w });
         }
       }
     }
@@ -311,7 +318,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = weight * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: pName, contrib: Math.abs(w) });
+          dimScores[dimId].drivers.push({ planet: pName, contrib: Math.abs(w), raw: w });
         }
       }
     }
@@ -352,10 +359,16 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
     const score = Math.max(-10, Math.min(10, (raw / maxRaw) * 10));
     const position = (score + 10) / 20; // 0=full right, 1=full left
     
-    // Top drivers
-    const sorted = dimScores[dim.id].drivers
-      .sort((a, b) => b.contrib - a.contrib)
-      .slice(0, 3);
+    // Aggregate drivers by planet (sum raw contributions)
+    const driverMap = new Map<string, number>();
+    for (const d of dimScores[dim.id].drivers) {
+      driverMap.set(d.planet, (driverMap.get(d.planet) || 0) + d.raw);
+    }
+    const allDrivers: DimensionDriver[] = Array.from(driverMap.entries())
+      .map(([planet, contribution]) => ({ planet, contribution }))
+      .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+    
+    const sorted = allDrivers.slice(0, 3);
     
     return {
       id: dim.id,
@@ -365,6 +378,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
       score: Math.round(score * 10) / 10,
       position: Math.round(position * 100) / 100,
       topDrivers: sorted.map(d => d.planet),
+      drivers: allDrivers,
     };
   });
 
@@ -486,6 +500,7 @@ export function computeBlendedProfile(
       score: Math.round(blendedScore * 10) / 10,
       position: Math.round(blendedPosition * 100) / 100,
       topDrivers: [...new Set([...nd.topDrivers.slice(0, 2), ...sd.topDrivers.slice(0, 2)])],
+      drivers: [...nd.drivers, ...sd.drivers].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)),
       natalScore: nd.score,
       natalPosition: nd.position,
       srScore: sd.score,
