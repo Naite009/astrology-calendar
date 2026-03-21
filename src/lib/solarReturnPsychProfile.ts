@@ -359,10 +359,16 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
     const score = Math.max(-10, Math.min(10, (raw / maxRaw) * 10));
     const position = (score + 10) / 20; // 0=full right, 1=full left
     
-    // Top drivers
-    const sorted = dimScores[dim.id].drivers
-      .sort((a, b) => b.contrib - a.contrib)
-      .slice(0, 3);
+    // Aggregate drivers by planet (sum raw contributions)
+    const driverMap = new Map<string, number>();
+    for (const d of dimScores[dim.id].drivers) {
+      driverMap.set(d.planet, (driverMap.get(d.planet) || 0) + d.raw);
+    }
+    const allDrivers: DimensionDriver[] = Array.from(driverMap.entries())
+      .map(([planet, contribution]) => ({ planet, contribution }))
+      .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+    
+    const sorted = allDrivers.slice(0, 3);
     
     return {
       id: dim.id,
@@ -372,6 +378,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
       score: Math.round(score * 10) / 10,
       position: Math.round(position * 100) / 100,
       topDrivers: sorted.map(d => d.planet),
+      drivers: allDrivers,
     };
   });
 
