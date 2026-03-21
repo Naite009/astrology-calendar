@@ -28,6 +28,7 @@ import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCar
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
 import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
+import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
 import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
 import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryCard';
