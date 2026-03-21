@@ -470,7 +470,7 @@ export function calculateAstrocartography(
     }
   }
 
-  const topCities = cityResults.slice(0, 15);
+  const topCities = cityResults.slice(0, 25);
 
   const interpretation = topCities.length > 0
     ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`
