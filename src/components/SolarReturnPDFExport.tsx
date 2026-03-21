@@ -481,8 +481,8 @@ function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
         planet: h.planet,
         symbol: h.symbol,
         isDay: h.isDay,
-        start: h.startTime.toISOString(),
-        end: h.endTime.toISOString(),
+        start: h.start.toISOString(),
+        end: h.end.toISOString(),
         bestFor: PLANETARY_HOUR_MEANINGS[h.planet as keyof typeof PLANETARY_HOUR_MEANINGS]?.bestFor || [],
       })),
       interpretation: srHour
