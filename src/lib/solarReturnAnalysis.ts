@@ -1356,23 +1356,23 @@ export const analyzeSolarReturn = (
       if (nh) {
         const theme = houseThemes[nh] || '';
         const srAscNatalHouseInterps: Record<number, string> = {
-          1: 'The SR Ascendant falls in your natal 1st house — the year\'s themes land directly on your identity. This is personal. You are the protagonist, and the events of the year shape how you see yourself.',
-          2: 'The SR Ascendant falls in your natal 2nd house — the year\'s energy flows into money, possessions, and self-worth. Financial matters and questions of value are where the year\'s story plays out.',
-          3: 'The SR Ascendant falls in your natal 3rd house — communication, learning, siblings, and your immediate environment absorb the year\'s energy. Words, ideas, and local connections matter more than usual.',
-          4: 'The SR Ascendant falls in your natal 4th house — home, family, roots, and emotional foundations are the stage for the year\'s themes. Domestic life and inner security are central.',
-          5: 'The SR Ascendant falls in your natal 5th house — creativity, romance, children, and joy are where the year\'s energy lands. Self-expression and what brings you alive are front and center.',
-          6: 'The SR Ascendant falls in your natal 6th house — daily routines, health, and work absorb the year\'s themes. How you show up day-to-day and care for your body defines the year.',
-          7: 'The SR Ascendant falls in your natal 7th house — partnerships and significant others are the primary arena. Another person plays a defining role in your year.',
-          8: 'The SR Ascendant falls in your natal 8th house — transformation, shared resources, intimacy, and psychological depth are activated. Something needs to change at a fundamental level.',
-          9: 'The SR Ascendant falls in your natal 9th house — travel, higher learning, philosophy, and expansion of your worldview absorb the year\'s themes. A quest for meaning drives the year.',
-          10: 'The SR Ascendant falls in your natal 10th house — career, public reputation, and your legacy are where the year\'s energy concentrates. You are visible and your professional identity is in focus.',
-          11: 'The SR Ascendant falls in your natal 11th house — community, friendships, and your vision for the future absorb the year\'s themes. Groups and collective purpose define the year.',
-          12: 'The SR Ascendant falls in your natal 12th house — the year\'s energy is directed inward, toward solitude, spirituality, and hidden processes. What happens behind the scenes matters most.',
+          1: 'This year\'s energy lands directly on your identity. This is personal. You are the main character, and the events of the year shape how you see yourself.',
+          2: 'This year\'s energy flows into money, possessions, and self-worth. Financial matters and questions of value are where the year\'s story plays out.',
+          3: 'Communication, learning, and your immediate environment absorb this year\'s energy. Words, ideas, and local connections matter more than usual.',
+          4: 'Home, family, roots, and emotional foundations are the stage for this year. Domestic life and inner security are central.',
+          5: 'Creativity, romance, and joy are where this year\'s energy lands. Self-expression and what brings you alive are front and center.',
+          6: 'Daily routines, health, and work absorb this year\'s themes. How you show up day-to-day and care for your body defines the year.',
+          7: 'Partnerships and significant others are the primary arena this year. Another person plays a defining role.',
+          8: 'Deep change, shared resources, and intimacy are activated. Something important is ready to transform.',
+          9: 'Travel, higher learning, and expansion of your worldview absorb this year\'s themes. A quest for meaning drives the year.',
+          10: 'Career, public reputation, and your legacy are where this year\'s energy concentrates. You are visible and your professional identity is in focus.',
+          11: 'Community, friendships, and your vision for the future absorb this year\'s themes. Groups and collective purpose define the year.',
+          12: 'This year\'s energy is directed inward, toward solitude, reflection, and quiet inner processes. What happens behind the scenes matters most.',
         };
         srAscInNatalHouse = {
           natalHouse: nh,
           natalHouseTheme: theme,
-          interpretation: srAscNatalHouseInterps[nh] || `The SR Ascendant falls in your natal ${nh}th house — ${theme.toLowerCase()}.`,
+          interpretation: srAscNatalHouseInterps[nh] || `This year\'s energy focuses on ${theme.toLowerCase()}.`,
         };
       }
     }
