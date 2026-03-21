@@ -320,7 +320,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     5: 'Intense creative power, obsessive romance, or transformative experiences through children. Your creative output has unusual depth and impact. Love affairs involve power, jealousy, or profound bonding.',
     6: 'Work involves power dynamics — office politics, control struggles, or a complete transformation of your daily routine. Health crises that force lifestyle change. Healing through crisis.',
     7: 'A partnership undergoes deep transformation — or ends through power struggles. You attract intense, powerful people. Manipulation and control issues in relationships demand awareness. Deep bonding or deep conflict.',
-    8: 'Pluto is at home here — expect major transformation, financial shifts involving others, and psychological rebirth. Death (literal or metaphorical) is a theme. You emerge permanently changed. No going back.',
+    8: 'Expect major transformation, financial shifts involving others, and deep personal change. Something old is making room for something completely new. You emerge permanently changed. No going back.',
     9: 'Your worldview dies and is reborn. Travel to transformative places. Legal battles involving power. Education that changes everything you believe. Fanaticism is the shadow; wisdom is the gift.',
     10: 'Career transformation — you may gain or lose power professionally. Public reputation undergoes a major shift. Authority figures are either allies or adversaries. You climb or fall — nothing stays the same.',
     11: 'Group dynamics involve power struggles. You may become a powerful leader in an organization or be pushed out. Friendships are tested by intensity. Your vision for the future becomes obsessive and transformative.',
