@@ -535,6 +535,44 @@ export function downloadBirthdayJSONStandalone(
         const blended = computeBlendedProfile(natalChart as any, srChart as any);
         return { natal, sr, blended };
       })(),
+      secondaryProgressions: (() => {
+        const now = new Date();
+        const progressions = calculateSecondaryProgressions(natalChart, now);
+        if (!progressions) return null;
+        const moonInfo = getProgressedMoonInfo(progressions, natalChart);
+        const aspects = findProgressedAspects(progressions, natalChart);
+        return {
+          planets: progressions.planets,
+          moonInfo: moonInfo ? {
+            sign: moonInfo.sign, degree: moonInfo.degree, house: moonInfo.house,
+            phase: moonInfo.phase, detailedPhase: moonInfo.detailedPhase,
+            monthsUntilSignChange: moonInfo.monthsUntilSignChange,
+            signChangeDate: moonInfo.signChangeDate?.toISOString(),
+            nextSign: moonInfo.nextSign,
+            currentExperience: moonInfo.currentExperience,
+            upcomingShift: moonInfo.upcomingShift,
+          } : null,
+          aspects: aspects.slice(0, 10),
+        };
+      })(),
+      sabianSymbols: (() => {
+        const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
+        const targets = [
+          { key: 'srSun', pos: srChart.planets?.Sun },
+          { key: 'srMoon', pos: srChart.planets?.Moon },
+          { key: 'srAscendant', pos: srChart.houseCusps?.house1 },
+          { key: 'natalSun', pos: natalChart.planets?.Sun },
+          { key: 'natalMoon', pos: natalChart.planets?.Moon },
+          { key: 'natalAscendant', pos: natalChart.houseCusps?.house1 },
+        ];
+        for (const { key, pos } of targets) {
+          if (pos?.sign && pos?.degree != null) {
+            const sabian = getSabianSymbol(pos.degree, pos.sign);
+            results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian };
+          }
+        }
+        return results;
+      })(),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // AI-generated readings (both modes, if available)
