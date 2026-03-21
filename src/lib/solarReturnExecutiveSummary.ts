@@ -358,8 +358,8 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
       const mostRecentYear = birthYearNum ? ` (${birthYearNum + mostRecent})` : '';
       patterns.push({
         pattern: `Emotional echo from age ${mostRecent}${mostRecentYear}`,
-        description: `Your SR Moon was in the same sign at: ${echoLines.join(' → ')}. The emotional themes from those years are reverberating now — not repeating exactly, but rhyming. The most recent echo was age ${mostRecent}${mostRecentYear}.`,
-        connection: `The Metonic cycle returns the Moon to the same sign every ~19 years. Think back to what was happening emotionally at each of those ages — the pattern is deepening.`,
+        description: `Your emotional cycle was in the same sign at: ${echoLines.join(' → ')}. The emotional themes from those years are reverberating now — not repeating exactly, but rhyming. The most recent echo was age ${mostRecent}${mostRecentYear}.`,
+        connection: `This emotional cycle returns every ~19 years. Think back to what was happening emotionally at each of those ages — the pattern is deepening.`,
         category: 'recurring',
       });
     }
