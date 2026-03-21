@@ -19,6 +19,8 @@ import { generateDomainDeepDives } from '@/lib/solarReturnDomainDeepDive';
 import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
 import { computePsychProfile, computeBlendedProfile } from '@/lib/solarReturnPsychProfile';
+import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects } from '@/lib/secondaryProgressions';
+import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
