@@ -854,6 +854,9 @@ export function buildFullJsonStandalone(
       },
     },
 
+    // Astrocartography — where to spend your birthday
+    astrocartography: calculateAstrocartography(srChart, natalChart),
+
     // AI-generated readings (both modes)
     aiReadingPlain: aiReadings?.plain || null,
     aiReadingAstro: aiReadings?.astro || null,
