@@ -886,8 +886,8 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   // Compute contradiction resolutions
   const contradictions = useMemo(() => detectContradictions(analysis, srChart), [analysis, srChart]);
 
-  // Compute lunar weather map
-  const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+  // Compute power portrait
+  const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
   return (
     <div className="space-y-4 mt-4">
@@ -896,6 +896,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Identity Shift — Who you are becoming */}
       <IdentityShiftCard shift={identityShift} />
+
+      {/* Power Portrait — drive, sustain, burnout, realignment */}
+      <PowerPortraitCard portrait={powerPortrait} />
 
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
