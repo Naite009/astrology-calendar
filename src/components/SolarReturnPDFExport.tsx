@@ -690,6 +690,7 @@ export function buildFullJsonStandalone(
     identityShift: generateIdentityShift(analysis, srChart, natalChart),
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
+    domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
     contradictions: detectContradictions(analysis, srChart),
     lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
 
