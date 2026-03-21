@@ -73,6 +73,10 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
 };
 
+/** Capitalize each word in a location string (e.g. "washington, DC" → "Washington, DC") */
+const capitalizeLocation = (loc: string): string =>
+  loc.replace(/\b[a-z]/g, c => c.toUpperCase());
+
 interface Props {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
