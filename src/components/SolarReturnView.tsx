@@ -891,6 +891,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   // Compute power portrait
   const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
+  // Compute domain deep dives (6 life areas)
+  const domainDeepDives = useMemo(() => generateDomainDeepDives(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
+
   // Compute lunar weather map
   const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
 
