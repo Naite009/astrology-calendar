@@ -1084,22 +1084,19 @@ export function calculatePlanetarySpeeds(
 
     const isRetro = pos.retrograde === true;
 
-    // Estimate speed category:
-    // Retrograde planets near stations are 'stationed'
-    // For a deterministic approximation, retrograde = slow, otherwise check
-    // if the planet has just turned or is about to turn
     let speedCategory: 'stationed' | 'slow' | 'average' | 'fast';
     let pct: number;
 
     if (isRetro) {
-      // Retrograde planets move slower; at station = effectively 0 speed
       speedCategory = 'slow';
-      pct = 40; // ~40% of average speed is typical during retro
+      pct = 40;
     } else {
-      // Direct planets: default to average. We can refine later with actual ephemeris speed.
       speedCategory = 'average';
       pct = 100;
     }
+
+    // Cast to access interp map
+    const cat: 'stationed' | 'slow' | 'fast' = speedCategory === 'slow' ? 'slow' : speedCategory === 'stationed' ? 'stationed' : 'fast';
 
     const interps = SPEED_INTERPS[planet];
     const interpKey = speedCategory === 'stationed' ? 'stationed' as const : speedCategory === 'slow' ? 'slow' as const : 'fast' as const;
