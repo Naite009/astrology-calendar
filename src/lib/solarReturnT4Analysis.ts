@@ -423,7 +423,7 @@ export function calculateEclipseSensitivity(
   birthDate?: string,
 ): SREclipseSensitivity[] {
   const results: SREclipseSensitivity[] = [];
-  const ORB = 3; // degrees
+  const ORB = 5; // degrees
 
   const startDate = (() => {
     if (solarReturnDateTime) {
@@ -475,6 +475,29 @@ export function calculateEclipseSensitivity(
       }
     }
 
+    // Check SR angles
+    for (const angle of [
+      { name: 'Ascendant', pos: srChart.houseCusps?.house1 },
+      { name: 'Midheaven', pos: srChart.houseCusps?.house10 },
+    ]) {
+      const aDeg = toAbsDeg(angle.pos);
+      if (aDeg === null) continue;
+      let diff = Math.abs(aDeg - eclipseAbsDeg);
+      if (diff > 180) diff = 360 - diff;
+      if (diff <= ORB) {
+        results.push({
+          eclipseType: eclipse.type,
+          eclipseSign: eclipse.sign,
+          eclipseDegree: eclipse.degree,
+          eclipseDate: eclipse.date,
+          sensitizedPlanet: angle.name,
+          sensitizedPlanetSource: 'SR',
+          orb: Math.round(diff * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls near your Solar Return ${angle.name}. This makes the eclipse highly visible in lived experience — identity shifts, directional pivots, and outer-life changes are more likely to show up around this eclipse window.`,
+        });
+      }
+    }
+
     // Check natal planets
     for (const planet of PLANETS_CORE) {
       const pos = natalChart.planets[planet as keyof typeof natalChart.planets];
@@ -493,6 +516,29 @@ export function calculateEclipseSensitivity(
           sensitizedPlanetSource: 'Natal',
           orb: Math.round(diff * 10) / 10,
           interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${planet}. This triggers a deeper, more personal response — natal planets activated by eclipses mark turning points that connect to your lifelong patterns around ${planet}'s themes.`,
+        });
+      }
+    }
+
+    // Check natal angles
+    for (const angle of [
+      { name: 'Ascendant', pos: natalChart.houseCusps?.house1 },
+      { name: 'Midheaven', pos: natalChart.houseCusps?.house10 },
+    ]) {
+      const aDeg = toAbsDeg(angle.pos);
+      if (aDeg === null) continue;
+      let diff = Math.abs(aDeg - eclipseAbsDeg);
+      if (diff > 180) diff = 360 - diff;
+      if (diff <= ORB) {
+        results.push({
+          eclipseType: eclipse.type,
+          eclipseSign: eclipse.sign,
+          eclipseDegree: eclipse.degree,
+          eclipseDate: eclipse.date,
+          sensitizedPlanet: angle.name,
+          sensitizedPlanetSource: 'Natal',
+          orb: Math.round(diff * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${angle.name}. This points to an especially personal turning point, often showing up through relationship dynamics, life direction, visibility, home base, or identity redefinition.`,
         });
       }
     }
