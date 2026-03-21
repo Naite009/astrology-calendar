@@ -128,7 +128,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
 
   // Mars retrograde → forcing
   const mars = Object.entries(analysis.houseOverlays).find(([_, o]) => o);
-  if (analysis.retrogrades?.retroPlanets?.some(r => r.planet === 'Mars')) {
+  if (analysis.retrogrades?.planets?.includes('Mars')) {
     leaks.push({
       pattern: 'Forcing',
       trigger: 'Mars is retrograde this year -- pushing harder does not get results faster',
