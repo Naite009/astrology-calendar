@@ -911,6 +911,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
 
+      {/* Domain Deep Dives — multi-house synthesis per life area */}
+      <DomainDeepDiveCards domains={domainDeepDives} />
+
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
