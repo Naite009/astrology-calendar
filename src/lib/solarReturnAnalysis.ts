@@ -11,8 +11,10 @@ import {
 import {
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
   calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
+  calculateMidpoints, calculatePrenatalEclipse, calculatePlanetarySpeeds, calculateHeliacalRising,
   type SRFixedStar, type SRArabicPart, type SRFirdariaReport,
   type SRAntisciaContact, type SRSolarArc, type SRSynthesisSection,
+  type SRMidpointHit, type SRPrenatalEclipse, type SRPlanetSpeed, type SRHeliacalRising,
 } from './solarReturnT5Analysis';
 
 // ─── helpers ────────────────────────────────────────────────────────
