@@ -259,6 +259,8 @@ export interface ProgressedAspect {
   aspectSymbol: string;
   orb: number;
   interpretation: string;
+  progressedLongitude?: number;
+  natalLongitude?: number;
 }
 
 export interface SecondaryProgressions {
@@ -689,25 +691,36 @@ export const getProgressedMoonInfo = (
 // Find Progressed to Natal aspects
 export const findProgressedAspects = (
   progressions: SecondaryProgressions,
-  natalChart: NatalChart
+  natalChart: NatalChart,
+  maxOrb = 1,
 ): ProgressedAspect[] => {
   const aspects: ProgressedAspect[] = [];
   
   const aspectTypes = [
-    { name: 'conjunction', angle: 0, orb: 1 },
-    { name: 'opposition', angle: 180, orb: 1 },
-    { name: 'square', angle: 90, orb: 1 },
-    { name: 'trine', angle: 120, orb: 1 },
+    { name: 'conjunction', angle: 0, orb: maxOrb },
+    { name: 'opposition', angle: 180, orb: maxOrb },
+    { name: 'square', angle: 90, orb: maxOrb },
+    { name: 'trine', angle: 120, orb: maxOrb },
   ];
   
   for (const [progPlanetName, progData] of Object.entries(progressions.planets)) {
     for (const natalPlanetName of ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant']) {
       if (progPlanetName === natalPlanetName) continue;
       
-      const natalPosition = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
-      if (!natalPosition) continue;
-      
-      const natalLongitude = natalPositionToLongitude(natalPosition);
+      const natalLongitude = natalPlanetName === 'Ascendant'
+        ? (() => {
+            const asc = natalChart.houseCusps?.house1;
+            if (!asc) return null;
+            const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
+            if (signIndex === -1) return null;
+            return signIndex * 30 + asc.degree + asc.minutes / 60;
+          })()
+        : (() => {
+            const natalPosition = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
+            return natalPosition ? natalPositionToLongitude(natalPosition) : null;
+          })();
+
+      if (natalLongitude === null) continue;
       
       let diff = Math.abs(progData.longitude - natalLongitude);
       if (diff > 180) diff = 360 - diff;
@@ -722,6 +735,8 @@ export const findProgressedAspects = (
             aspectSymbol: ASPECT_SYMBOLS[aspectType.name],
             orb: parseFloat(angleDiff.toFixed(2)),
             interpretation: getProgressedInterpretation(progPlanetName, natalPlanetName, aspectType.name),
+            progressedLongitude: parseFloat(progData.longitude.toFixed(4)),
+            natalLongitude: parseFloat(natalLongitude.toFixed(4)),
           });
         }
       }

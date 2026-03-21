@@ -494,6 +494,65 @@ function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
   }
 }
 
+function getSolarReturnReferenceDate(srChart: SolarReturnChart, natalChart: NatalChart) {
+  if (srChart.solarReturnDateTime) {
+    const parsed = new Date(srChart.solarReturnDateTime);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  if (natalChart.birthDate) {
+    const [, month, day] = natalChart.birthDate.split('-').map(Number);
+    if (month && day) {
+      return new Date(Date.UTC(srChart.solarReturnYear, month - 1, day, 12, 0, 0));
+    }
+  }
+
+  return new Date();
+}
+
+function buildPsychologicalProfileExport(natalChart: NatalChart, srChart: SolarReturnChart) {
+  const natal = computePsychProfile(natalChart as any);
+  const solarReturn = computePsychProfile(srChart as any);
+  const blended = computeBlendedProfile(natalChart as any, srChart as any);
+  return { natal, solarReturn, sr: solarReturn, blended };
+}
+
+function buildSecondaryProgressionsExport(natalChart: NatalChart, srChart: SolarReturnChart) {
+  const referenceDate = getSolarReturnReferenceDate(srChart, natalChart);
+  const progressions = calculateSecondaryProgressions(natalChart, referenceDate);
+  if (!progressions) return null;
+
+  const moonInfo = getProgressedMoonInfo(progressions, natalChart);
+  const aspects = findProgressedAspects(progressions, natalChart, 2);
+
+  return {
+    referenceDate: referenceDate.toISOString(),
+    progressedDate: progressions.progressedDate.toISOString(),
+    ageInYears: Number(progressions.ageInYears.toFixed(4)),
+    planets: progressions.planets,
+    moonInfo: moonInfo ? {
+      sign: moonInfo.sign,
+      degree: moonInfo.degree,
+      house: moonInfo.house,
+      phase: moonInfo.phase,
+      detailedPhase: moonInfo.detailedPhase,
+      monthsUntilSignChange: moonInfo.monthsUntilSignChange,
+      signChangeDate: moonInfo.signChangeDate?.toISOString(),
+      nextSign: moonInfo.nextSign,
+      currentExperience: moonInfo.currentExperience,
+      upcomingShift: moonInfo.upcomingShift,
+    } : null,
+    aspects: aspects.slice(0, 10),
+  };
+}
+
+function buildSynthesisSectionsExport(sections: SolarReturnAnalysis['synthesisSections']) {
+  return (sections || []).map((section) => ({
+    ...section,
+    content: (section as any).content || section.narrative || section.interpretation || '',
+  }));
+}
+
 // ── Standalone Birthday Gift JSON export (no AI, no component state needed) ──
 export function downloadBirthdayJSONStandalone(
   analysis: SolarReturnAnalysis,
@@ -599,7 +658,7 @@ export function downloadBirthdayJSONStandalone(
       firdaria: analysis.firdaria,
       antisciaContacts: analysis.antisciaContacts,
       solarArcs: analysis.solarArcs,
-      synthesisSections: analysis.synthesisSections,
+      synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
       // New: Executive Summary, Action Guidance, Activation Windows
       executiveSummary: generateExecutiveSummary(analysis, natalChart),
       actionGuidance: (() => {
@@ -649,32 +708,8 @@ export function downloadBirthdayJSONStandalone(
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
-      psychologicalProfile: (() => {
-        const natal = computePsychProfile(natalChart as any);
-        const sr = computePsychProfile(srChart as any);
-        const blended = computeBlendedProfile(natalChart as any, srChart as any);
-        return { natal, sr, blended };
-      })(),
-      secondaryProgressions: (() => {
-        const now = new Date();
-        const progressions = calculateSecondaryProgressions(natalChart, now);
-        if (!progressions) return null;
-        const moonInfo = getProgressedMoonInfo(progressions, natalChart);
-        const aspects = findProgressedAspects(progressions, natalChart);
-        return {
-          planets: progressions.planets,
-          moonInfo: moonInfo ? {
-            sign: moonInfo.sign, degree: moonInfo.degree, house: moonInfo.house,
-            phase: moonInfo.phase, detailedPhase: moonInfo.detailedPhase,
-            monthsUntilSignChange: moonInfo.monthsUntilSignChange,
-            signChangeDate: moonInfo.signChangeDate?.toISOString(),
-            nextSign: moonInfo.nextSign,
-            currentExperience: moonInfo.currentExperience,
-            upcomingShift: moonInfo.upcomingShift,
-          } : null,
-          aspects: aspects.slice(0, 10),
-        };
-      })(),
+      psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
+      secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
       sabianSymbols: (() => {
         const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
         const targets = [
@@ -813,7 +848,7 @@ export function buildFullJsonStandalone(
     firdaria: analysis.firdaria,
     antisciaContacts: analysis.antisciaContacts,
     solarArcs: analysis.solarArcs,
-    synthesisSections: analysis.synthesisSections,
+    synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
     executiveSummary: generateExecutiveSummary(analysis, natalChart),
     actionGuidance: (() => {
       const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
@@ -861,32 +896,8 @@ export function buildFullJsonStandalone(
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
     domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
-    psychologicalProfile: (() => {
-      const natal = computePsychProfile(natalChart as any);
-      const sr = computePsychProfile(srChart as any);
-      const blended = computeBlendedProfile(natalChart as any, srChart as any);
-      return { natal, sr, blended };
-    })(),
-    secondaryProgressions: (() => {
-      const now = new Date();
-      const progressions = calculateSecondaryProgressions(natalChart, now);
-      if (!progressions) return null;
-      const moonInfo = getProgressedMoonInfo(progressions, natalChart);
-      const aspects = findProgressedAspects(progressions, natalChart);
-      return {
-        planets: progressions.planets,
-        moonInfo: moonInfo ? {
-          sign: moonInfo.sign, degree: moonInfo.degree, house: moonInfo.house,
-          phase: moonInfo.phase, detailedPhase: moonInfo.detailedPhase,
-          monthsUntilSignChange: moonInfo.monthsUntilSignChange,
-          signChangeDate: moonInfo.signChangeDate?.toISOString(),
-          nextSign: moonInfo.nextSign,
-          currentExperience: moonInfo.currentExperience,
-          upcomingShift: moonInfo.upcomingShift,
-        } : null,
-        aspects: aspects.slice(0, 10),
-      };
-    })(),
+    psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
+    secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
     sabianSymbols: (() => {
       const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
       const targets = [
@@ -2425,7 +2436,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       firdaria: analysis.firdaria,
       antisciaContacts: analysis.antisciaContacts,
       solarArcs: analysis.solarArcs,
-      synthesisSections: analysis.synthesisSections,
+      synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
       // Strategy & Timing
       cakeImageUrl: (() => {
         const natalSun = natalChart.planets?.Sun?.sign || '';
@@ -2479,12 +2490,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
-      psychologicalProfile: (() => {
-        const natal = computePsychProfile(natalChart as any);
-        const sr = computePsychProfile(srChart as any);
-        const blended = computeBlendedProfile(natalChart as any, srChart as any);
-        return { natal, sr, blended };
-      })(),
+      psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
+      secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
