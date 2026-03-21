@@ -49,7 +49,7 @@ import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
-import { RelocationComparisonTool } from '@/components/solarReturn/RelocationComparisonTool';
+// RelocationComparisonTool removed — too much friction for users
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
 
 const ZODIAC_SIGNS = [
