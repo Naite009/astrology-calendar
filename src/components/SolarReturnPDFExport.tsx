@@ -2269,6 +2269,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+      psychologicalProfile: (() => {
+        const natal = computePsychProfile(natalChart as any);
+        const sr = computePsychProfile(srChart as any);
+        const blended = computeBlendedProfile(natalChart as any, srChart as any);
+        return { natal, sr, blended };
+      })(),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
