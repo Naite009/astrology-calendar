@@ -188,11 +188,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Mars: 1.5, Saturn: 1.5, Moon: 1, Sun: 1, Neptune: 1, Chiron: 1, Pluto: 1 },
     advice: {
-      challenging: 'Health requires active attention — stress, overwork, or ignored signals may surface. Prevention is essential.',
-      transformative: 'Your body and wellness routines want a complete overhaul — listen to unfamiliar signals.',
-      supportive: 'Supportive energy in your health houses — a good year to establish new wellness habits that stick.',
-      quiet: 'Health houses are quiet — steady maintenance is your best strategy.',
-      mixed: 'Health is moderately active — maintain routines and listen when your body sends signals.',
+      challenging: 'Your body is asking for more attention this year — it\'s a great time to start new routines, listen to what your body needs, and make wellness a priority.',
+      transformative: 'Your body and wellness routines are ready for an upgrade — try new approaches, listen to what feels right, and trust the signals your body sends.',
+      supportive: 'Great energy for building new wellness habits that stick — your body is on your side this year.',
+      quiet: 'Health is steady — gentle maintenance and consistency are your best strategy.',
+      mixed: 'Health is moderately active — maintain your routines and respond when your body asks for attention.',
     },
   },
   growth: {
