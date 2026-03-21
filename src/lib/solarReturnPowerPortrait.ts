@@ -75,7 +75,7 @@ const getSaturnBurnout = (house: number | null, sign: string): string => {
     5: 'performance pressure -- turning every creative act into a test of your worth',
     6: 'health neglect through overwork -- grinding through routines until your body forces you to stop',
     7: 'relationship sacrifice -- giving up your needs to keep partnerships stable',
-    8: 'control and trust issues -- exhausting yourself managing other people's crises or money',
+    8: 'control and trust issues -- exhausting yourself managing other peoples crises or money',
     9: 'meaning burnout -- constantly searching for purpose without pausing to live',
     10: 'career obsession -- defining your worth entirely through professional achievement',
     11: 'social exhaustion -- overcommitting to groups, causes, and friends at your own expense',
