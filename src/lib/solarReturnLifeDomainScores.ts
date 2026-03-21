@@ -8,6 +8,13 @@
 
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
 
+const HOUSE_PLAIN_LDS: Record<number, string> = {
+  1: 'identity and self-image', 2: 'finances and self-worth', 3: 'communication and learning',
+  4: 'home and family', 5: 'creativity and romance', 6: 'health and daily routines',
+  7: 'partnerships and relationships', 8: 'shared resources and deep change', 9: 'travel and big-picture goals',
+  10: 'career and public role', 11: 'friendships and community', 12: 'inner work and quiet reflection',
+};
+
 /* ── Planet Nature Classification ── */
 
 type PlanetNature = 'benefic' | 'malefic' | 'outer' | 'wound-healer' | 'neutral' | 'luminary';
