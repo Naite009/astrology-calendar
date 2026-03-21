@@ -64,8 +64,8 @@ const LeakCard = ({ leak }: { leak: PowerLeak }) => (
     </div>
     <p className="text-[11px] text-muted-foreground">{leak.trigger}</p>
     <div className="flex items-center gap-1.5 mt-1">
-      <Shield size={10} className="text-emerald-600" />
-      <p className="text-[11px] text-emerald-700 dark:text-emerald-400">{leak.antidote}</p>
+      <Shield size={10} className="text-primary" />
+      <p className="text-[11px] text-primary">{leak.antidote}</p>
     </div>
   </div>
 );
