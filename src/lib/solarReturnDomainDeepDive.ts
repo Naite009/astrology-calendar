@@ -154,10 +154,11 @@ function buildAbundance(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
   const activity = Math.min(10, h2.planets.length * 2.5 + h8.planets.length * 2.5 + (jupHouse === 2 || jupHouse === 8 ? 3 : 1));
 
   const advice: string[] = [];
-  if (jupPos) advice.push(`Jupiter in ${jupPos.sign} says growth comes through ${jupPos.sign === 'Taurus' || jupPos.sign === 'Virgo' || jupPos.sign === 'Capricorn' ? 'slow, practical steps' : jupPos.sign === 'Aries' || jupPos.sign === 'Leo' || jupPos.sign === 'Sagittarius' ? 'bold moves and risk-taking' : jupPos.sign === 'Gemini' || jupPos.sign === 'Libra' || jupPos.sign === 'Aquarius' ? 'networking and ideas' : 'intuition and creative flow'}.`);
-  if (h2.planets.includes('Saturn')) advice.push('Saturn in the 2nd means money comes through discipline and patience — no shortcuts this year.');
-  else if (h2.planets.includes('Mars')) advice.push('Mars in the 2nd pushes you to earn actively — freelancing, side hustles, or asking for raises.');
-  if (h8.planets.length > 0) advice.push('Activity in the 8th suggests shared finances, inheritances, or insurance matters need attention.');
+  const jupElement = jupPos ? (SIGN_ELEMENT[jupPos.sign] || '') : '';
+  if (jupPos) advice.push(`Financial growth this year comes through ${jupElement === 'Earth' ? 'slow, practical steps' : jupElement === 'Fire' ? 'bold moves and risk-taking' : jupElement === 'Air' ? 'networking and ideas' : 'intuition and creative flow'}.`);
+  if (h2.planets.includes('Saturn')) advice.push('Your earning area is asking for discipline and patience — no shortcuts this year, but what you build financially is durable.');
+  else if (h2.planets.includes('Mars')) advice.push('Your earning area is energized — freelancing, side hustles, or asking for raises are favored.');
+  if (h8.planets.length > 0) advice.push('Shared finances, inheritances, or insurance matters need attention this year.');
   if (advice.length === 0) advice.push('Track your spending weekly and notice where money flows easily versus where it sticks.');
 
   const headline = t === 'supportive' ? 'Money Flows More Easily This Year'
@@ -165,9 +166,9 @@ function buildAbundance(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
     : t === 'transformative' ? 'Deep Financial Shifts Ahead'
     : 'A Complex Money Year';
 
-  const para = `Your earning zone (2nd house) has ${h2.planets.length > 0 ? h2.planets.join(' and ') + ' bringing direct energy' : 'no planets — a steadier backdrop'}. ` +
-    `The shared resources zone (8th house) ${h8.planets.length > 0 ? 'is active with ' + h8.planets.join(', ') : 'is quiet'}. ` +
-    `Jupiter in your ${jupHouse || '?'}${ordSuffix(jupHouse || 0)} house suggests your biggest growth opportunity lives in ${HOUSE_LABELS[jupHouse || 0] || 'that area'}.`;
+  const para = `Your earning area has ${h2.planets.length > 0 ? 'active energy bringing direct attention to income' : 'a steadier backdrop — income isn\'t the main storyline'}. ` +
+    `The shared resources area ${h8.planets.length > 0 ? 'is also active — joint finances or debts may need attention' : 'is quiet'}. ` +
+    `Your biggest growth opportunity this year lives in ${HOUSE_LABELS[jupHouse || 0] || 'an area waiting for your attention'}.`;
 
   return { id: 'abundance', title: 'Money & Abundance', emoji: '💰', houses: [h2, h8], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
