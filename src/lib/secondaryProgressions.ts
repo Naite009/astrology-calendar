@@ -259,6 +259,8 @@ export interface ProgressedAspect {
   aspectSymbol: string;
   orb: number;
   interpretation: string;
+  progressedLongitude?: number;
+  natalLongitude?: number;
 }
 
 export interface SecondaryProgressions {
@@ -722,6 +724,8 @@ export const findProgressedAspects = (
             aspectSymbol: ASPECT_SYMBOLS[aspectType.name],
             orb: parseFloat(angleDiff.toFixed(2)),
             interpretation: getProgressedInterpretation(progPlanetName, natalPlanetName, aspectType.name),
+            progressedLongitude: parseFloat(progData.longitude.toFixed(4)),
+            natalLongitude: parseFloat(natalLongitude.toFixed(4)),
           });
         }
       }

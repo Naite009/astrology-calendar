@@ -1678,7 +1678,13 @@ export const analyzeSolarReturn = (
   const mutualReceptions = calculateMutualReceptions(srChart);
   const dignityReport = calculateDignityReport(srChart, planetSRHouses);
   const healthOverlay = calculateHealthOverlay(srChart, natalChart, planetSRHouses, srInternalAspects);
-  const eclipseSensitivity = calculateEclipseSensitivity(srChart, natalChart, srChart.solarReturnYear);
+  const eclipseSensitivity = calculateEclipseSensitivity(
+    srChart,
+    natalChart,
+    srChart.solarReturnYear,
+    srChart.solarReturnDateTime,
+    natalChart.birthDate,
+  );
   const enhancedRetrogrades = calculateEnhancedRetrogrades(srChart, srChart.solarReturnYear);
   // Fill in house numbers for enhanced retrogrades
   for (const r of enhancedRetrogrades) {
