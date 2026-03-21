@@ -172,11 +172,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
     advice: {
-      challenging: 'Relationships are under intense pressure — expect hard conversations, boundary-setting, and restructuring. This is Saturn\'s testing ground, not Venus\'s garden.',
-      transformative: 'Love and intimacy are being transformed at a deep level — old patterns are breaking down.',
-      supportive: 'Relationship houses are lit up by benefic planets — genuine warmth, connection, and romantic opportunity.',
-      quiet: 'Relationship houses are quiet — invest in self-knowledge and let partnerships breathe.',
-      mixed: 'Relationship energy is present but mixed — both support and challenge are in play.',
+      challenging: 'Relationships are in the spotlight this year — expect meaningful conversations, honest boundary-setting, and a chance to build something more real. The connections that matter most get stronger.',
+      transformative: 'Love and intimacy are evolving at a deep level — old patterns are making room for something more authentic.',
+      supportive: 'Genuine warmth, connection, and romantic opportunity are flowing this year — say yes to love.',
+      quiet: 'Relationships are quieter — invest in self-knowledge and let partnerships breathe naturally.',
+      mixed: 'Relationship energy is present but nuanced — both support and growth areas are in play.',
     },
   },
   health: {
