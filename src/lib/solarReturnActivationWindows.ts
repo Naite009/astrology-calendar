@@ -277,6 +277,9 @@ export function calculateActivationWindows(
       const targets = [...new Set(cluster.map(c => c.srTarget.replace('SR ', '')))];
       const planets = [...new Set(cluster.map(c => c.transitPlanet))];
 
+      const windowType = classifyWindowType(targets, planets);
+      const windowAdvice = generateWindowAdvice(windowType, planets, targets);
+
       activationWindows.push({
         label: `${planets.join(' + ')} → ${targets.join(', ')}`,
         startDate: new Date(Math.min(...starts)),
@@ -285,6 +288,8 @@ export function calculateActivationWindows(
         triggers: cluster,
         theme: synthesizeWindowTheme(cluster, planets, targets),
         intensity: Math.min(10, cluster.length * 2 + cluster.filter(c => c.significance === 'high').length * 3),
+        type: windowType,
+        advice: windowAdvice,
       });
     }
   }
