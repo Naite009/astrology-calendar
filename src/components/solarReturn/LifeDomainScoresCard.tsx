@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { LifeDomainScores, LifeDomainScore, DomainTone } from '@/lib/solarReturnLifeDomainScores';
-import { Briefcase, Heart, Activity, TrendingUp, ChevronDown, ChevronUp, Shield, Flame, Sparkles, Shuffle } from 'lucide-react';
+import {
+  Briefcase, Heart, Activity, TrendingUp, ChevronDown, ChevronUp,
+  Shield, Flame, Sparkles, Shuffle, DollarSign, Home, Users,
+  Palette, Compass, Zap,
+} from 'lucide-react';
 
 interface Props {
   scores: LifeDomainScores;
 }
 
 const DOMAIN_ICONS: Record<string, typeof Briefcase> = {
-  Career: Briefcase,
-  Love: Heart,
-  Health: Activity,
-  Growth: TrendingUp,
+  'Career & Public Role': Briefcase,
+  'Love & Relationships': Heart,
+  'Health & Vitality': Activity,
+  'Learning & Expansion': TrendingUp,
+  'Money & Resources': DollarSign,
+  'Home & Family': Home,
+  'Friendships & Community': Users,
+  'Creativity & Self-Expression': Palette,
+  'Spirituality & Inner Life': Compass,
+  'Power & Transformation': Zap,
 };
 
 const TONE_CONFIG: Record<DomainTone, { color: string; barColor: string; icon: typeof Shield; label: string }> = {
@@ -42,7 +52,7 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
   const Icon = DOMAIN_ICONS[d.domain] || TrendingUp;
   const toneConfig = TONE_CONFIG[d.tone] || TONE_CONFIG.quiet;
   const ToneIcon = toneConfig.icon;
-  const toneScore = (d as any).toneScore ?? 0;
+  const toneScore = d.toneScore ?? 0;
 
   return (
     <div className="p-4 space-y-2">
@@ -53,12 +63,11 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
         </div>
       </div>
 
-      {/* Label is the star — replaces numeric score as primary indicator */}
       <div className={`text-base font-serif font-bold ${toneConfig.color}`}>
         {d.label}
       </div>
 
-      {/* Activity bar — still useful for relative comparison */}
+      {/* Activity bar */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
           <div
@@ -71,7 +80,7 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
         </span>
       </div>
 
-      {/* Tone indicator */}
+      {/* Tone */}
       <div className="flex items-center gap-1.5">
         <ToneIcon size={10} className={toneConfig.color} />
         <span className={`text-[10px] uppercase tracking-wider font-medium ${toneConfig.color}`}>
@@ -79,15 +88,15 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
         </span>
       </div>
 
-      {/* Drivers with nature tags */}
+      {/* Drivers */}
       {d.drivers.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1">
           {d.drivers.slice(0, 5).map((dr, i) => (
             <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-sm bg-muted ${NATURE_COLORS[dr.nature] || 'text-muted-foreground'}`}>
               {dr.planet}{dr.house > 0 ? ` ${ordinal(dr.house)}H` : ''} · {dr.effect}
-              {(dr as any).tonePoints !== undefined && (
+              {dr.tonePoints !== undefined && (
                 <span className="ml-0.5 opacity-70">
-                  ({(dr as any).tonePoints >= 0 ? '+' : ''}{(dr as any).tonePoints})
+                  ({dr.tonePoints >= 0 ? '+' : ''}{dr.tonePoints})
                 </span>
               )}
             </span>
@@ -95,7 +104,6 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
         </div>
       )}
 
-      {/* Advice */}
       <p className="text-[11px] text-muted-foreground leading-relaxed">{d.advice}</p>
 
       {/* Breakdown toggle */}
@@ -116,9 +124,9 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
             <div key={i} className="flex gap-2 text-[11px]">
               <div className="flex-shrink-0 w-16 text-right font-mono">
                 <span className="text-foreground">+{b.points.toFixed(1)}</span>
-                {(b as any).tonePoints !== undefined && (
-                  <span className={`block text-[9px] ${(b as any).tonePoints >= 0 ? 'text-emerald-600' : 'text-red-700'}`}>
-                    tone {(b as any).tonePoints >= 0 ? '+' : ''}{(b as any).tonePoints.toFixed(1)}
+                {b.tonePoints !== undefined && (
+                  <span className={`block text-[9px] ${b.tonePoints >= 0 ? 'text-emerald-600' : 'text-red-700'}`}>
+                    tone {b.tonePoints >= 0 ? '+' : ''}{b.tonePoints.toFixed(1)}
                   </span>
                 )}
               </div>
@@ -151,12 +159,22 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
 };
 
 export const LifeDomainScoresCard = ({ scores }: Props) => {
-  const domains = [scores.career, scores.love, scores.health, scores.growth];
+  const domains: LifeDomainScore[] = [
+    scores.career, scores.love, scores.money, scores.home,
+    scores.health, scores.creativity, scores.friendships, scores.growth,
+    scores.spirituality, scores.power,
+  ];
+
+  // Sort: most active first
+  const sorted = [...domains].sort((a, b) => {
+    if (b.activityLevel !== a.activityLevel) return b.activityLevel - a.activityLevel;
+    return Math.abs(b.toneScore) - Math.abs(a.toneScore);
+  });
 
   return (
     <div className="border border-primary/20 rounded-sm bg-card overflow-hidden">
       <div className="p-5 border-b border-border">
-        <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Life Domain Activity</div>
+        <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Life Domain Activity — 10 Areas</div>
         <p className="text-[11px] text-muted-foreground">
           How much energy each area of life is getting this year — and whether that energy is supportive, demanding, or transformative.
           High activity doesn't mean "good" — it means that area won't be ignored. The tone tells you what kind of year it is.
@@ -164,7 +182,7 @@ export const LifeDomainScoresCard = ({ scores }: Props) => {
       </div>
 
       <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 divide-border">
-        {domains.map((d) => (
+        {sorted.map((d) => (
           <DomainCard key={d.domain} d={d} />
         ))}
       </div>
