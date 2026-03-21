@@ -397,14 +397,22 @@ function synthesizeWindowTheme(cluster: TransitHit[], planets: string[], targets
   const planetActions = planets.map(p => PLANET_THEME_ACTION[p] || `activates`);
   const targetAreas = targets.map(t => TARGET_AREA[t] || `your ${t} themes`);
 
+  const SYNTH_PLAIN: Record<string, string> = {
+    Sun: 'Your purpose energy', Mars: 'Your drive', Jupiter: 'Your growth energy',
+    Saturn: 'Your responsibility focus', Mercury: 'Your communication', Venus: 'Your connection energy',
+  };
+
   if (planets.length === 1 && targets.length > 1) {
-    return `${planets[0]} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
+    const pLabel = SYNTH_PLAIN[planets[0]] || 'This energy';
+    return `${pLabel} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
   }
 
   if (planets.length > 1 && targets.length === 1) {
-    return `Multiple planets (${planets.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
+    const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
+    return `Multiple energies (${pLabels.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
   }
 
   // General multi-hit
-  return `${planets.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
+  const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
+  return `${pLabels.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
 }

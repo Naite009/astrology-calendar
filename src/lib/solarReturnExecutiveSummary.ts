@@ -247,14 +247,14 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Pluto placement = transformation
+  // Deep change placement = transformation
   const plutoH = analysis.planetSRHouses?.Pluto;
   if (plutoH) {
     items.push({
       type: 'challenge',
       title: `Deep evolution in your ${HOUSE_KEYWORDS[plutoH] || 'life'} area`,
       description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more authentic and powerful.`,
-      source: `Pluto in SR House ${plutoH}`,
+      source: `Transformation focus in ${HOUSE_KEYWORDS[plutoH] || 'life area'}`,
       house: plutoH,
       intensity: 7,
     });
