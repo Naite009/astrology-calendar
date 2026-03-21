@@ -398,9 +398,10 @@ function buildSpiritual(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
   const activity = Math.min(10, h9.planets.length * 2.5 + h12.planets.length * 2.5 + (nepHouse === 9 || nepHouse === 12 ? 2 : 0));
 
   const advice: string[] = [];
-  if (nnPos) advice.push(`Your North Node in ${nnPos.sign} points toward growth through ${nnPos.sign === 'Aries' || nnPos.sign === 'Leo' ? 'trusting yourself and taking the lead' : nnPos.sign === 'Taurus' || nnPos.sign === 'Virgo' || nnPos.sign === 'Capricorn' ? 'building something real and tangible' : nnPos.sign === 'Gemini' || nnPos.sign === 'Libra' || nnPos.sign === 'Aquarius' ? 'connecting with others and sharing ideas' : 'going inward and trusting your feelings'}.`);
-  if (h12.planets.length >= 2) advice.push('Multiple planets in the 12th suggest you need more alone time than usual — rest is productive this year.');
-  if (h9.planets.includes('Jupiter')) advice.push('Jupiter in the 9th is excellent for travel, education, and expanding your worldview.');
+  const nnElement = nnPos ? (SIGN_ELEMENT[nnPos.sign] || '') : '';
+  if (nnPos) advice.push(`Your growth direction this year points toward ${nnElement === 'Fire' ? 'trusting yourself and taking the lead' : nnElement === 'Earth' ? 'building something real and tangible' : nnElement === 'Air' ? 'connecting with others and sharing ideas' : 'going inward and trusting your feelings'}.`);
+  if (h12.planets.length >= 2) advice.push('Your inner life area is very active — you need more alone time than usual. Rest is productive this year.');
+  if (h9.planets.includes('Jupiter')) advice.push('Your beliefs and growth area is beautifully expanded — excellent for travel, education, and widening your worldview.');
   if (advice.length === 0) advice.push('Set aside 10 minutes daily for stillness — meditation, journaling, or simply sitting with no input.');
 
   const headline = t === 'supportive' ? 'Inner Growth Feels Natural'
@@ -408,9 +409,9 @@ function buildSpiritual(analysis: SolarReturnAnalysis, natalChart: NatalChart, s
     : t === 'transformative' ? 'Deep Spiritual Shifts Underway'
     : 'A Year of Quiet Expansion';
 
-  const para = `Your beliefs zone (9th house) ${h9.planets.length > 0 ? 'has ' + h9.planets.join(', ') + ' — your worldview is actively evolving' : 'is quiet'}. ` +
-    `Your inner life (12th house) ${h12.planets.length > 0 ? 'is activated by ' + h12.planets.join(', ') + ' — solitude and reflection are important' : 'runs in the background'}. ` +
-    `Neptune in ${nepPos?.sign || '?'} colors how you connect to meaning beyond the everyday.`;
+  const para = `Your beliefs and big-picture area ${h9.planets.length > 0 ? 'is active — your worldview is evolving' : 'is quiet'}. ` +
+    `Your inner life and rest area ${h12.planets.length > 0 ? 'is activated — solitude and reflection are important' : 'runs in the background'}. ` +
+    `Your connection to meaning beyond the everyday is especially ${t === 'transformative' ? 'vivid and active' : t === 'supportive' ? 'fluid and natural' : 'complex and evolving'} this year.`;
 
   return { id: 'spiritual', title: 'Spiritual Growth & Inner Life', emoji: '🔮', houses: [h9, h12], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
