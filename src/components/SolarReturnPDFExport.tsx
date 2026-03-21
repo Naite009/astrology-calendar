@@ -25,7 +25,7 @@ import { calculateAstrocartography } from '@/lib/solarReturnAstrocartography';
 import { calculatePlanetaryHours, getDayRuler, PLANETARY_HOUR_MEANINGS } from '@/lib/planetaryHours';
 import { parseLatitudeFromLocation } from '@/lib/solarReturnVertex';
 import { buildYearSummary } from '@/lib/solarReturnYearSummary';
-import { scoreAspects } from '@/lib/solarReturnAspectScoring';
+import { scoreAspects, generateTopThemes } from '@/lib/solarReturnAspectScoring';
 import { buildHouseEmphasis } from '@/lib/solarReturnHouseEmphasis';
 import { buildLunarFlow } from '@/lib/solarReturnLunarFlow';
 import { buildPatternTracking } from '@/lib/solarReturnPatternTracking';
