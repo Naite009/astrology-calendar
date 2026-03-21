@@ -234,26 +234,26 @@ export function generateExecutiveSummary(
     });
   }
 
-  // Saturn placement = challenge
+  // Saturn placement = growth area
   if (analysis.saturnFocus) {
     const sH = analysis.saturnFocus.house;
     items.push({
       type: 'challenge',
-      title: `Saturn tests ${HOUSE_KEYWORDS[sH!] || 'life area'}`,
-      description: analysis.saturnFocus.interpretation.slice(0, 200),
+      title: `Building something real in your ${HOUSE_KEYWORDS[sH!] || 'life'} area`,
+      description: `Your ${HOUSE_KEYWORDS[sH!] || 'personal'} life is a major growth area this year. Expect to do real, meaningful work here — the effort builds something that lasts.`,
       source: `Saturn in SR House ${sH}`,
       house: sH,
       intensity: 8,
     });
   }
 
-  // Pluto placement = challenge/transformation
+  // Pluto placement = transformation
   const plutoH = analysis.planetSRHouses?.Pluto;
   if (plutoH) {
     items.push({
       type: 'challenge',
-      title: `Pluto transforms ${HOUSE_KEYWORDS[plutoH] || 'life area'}`,
-      description: `Deep, unavoidable change in ${HOUSE_KEYWORDS[plutoH] || 'this area'}. What isn't real will be stripped away.`,
+      title: `Deep evolution in your ${HOUSE_KEYWORDS[plutoH] || 'life'} area`,
+      description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more authentic and powerful.`,
       source: `Pluto in SR House ${plutoH}`,
       house: plutoH,
       intensity: 7,
