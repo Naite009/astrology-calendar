@@ -359,19 +359,19 @@ function activityLabel(level: number, tone: DomainTone): string {
   if (level < 2) return 'Quiet Background';
   if (level < 4) {
     if (tone === 'supportive') return 'Gently Supportive';
-    if (tone === 'challenging') return 'Lightly Pressured';
-    return 'Lightly Active';
+    if (tone === 'challenging') return 'Getting Real';
+    return 'Gently Active';
   }
   if (level < 7) {
     if (tone === 'supportive') return 'Steadily Building';
-    if (tone === 'challenging') return 'Actively Demanding';
-    if (tone === 'transformative') return 'Steadily Transforming';
-    return 'Active — Complex';
+    if (tone === 'challenging') return 'Deeply Engaged';
+    if (tone === 'transformative') return 'Evolving';
+    return 'In Motion';
   }
   if (tone === 'supportive') return 'Flourishing';
-  if (tone === 'challenging') return 'Under Intense Pressure';
-  if (tone === 'transformative') return 'Deep Transformation';
-  return 'Highly Active — Complex';
+  if (tone === 'challenging') return 'In the Spotlight';
+  if (tone === 'transformative') return 'Major Evolution';
+  return 'Highly Active';
 }
 
 /* ── Main Scoring Engine ── */
