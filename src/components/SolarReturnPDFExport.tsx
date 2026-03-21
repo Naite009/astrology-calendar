@@ -2248,6 +2248,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       })(),
       identityShift: generateIdentityShift(analysis, srChart, natalChart),
       lifeDomainScores: calculateLifeDomainScores(analysis),
+      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
       contradictions: detectContradictions(analysis, srChart),
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
     };
