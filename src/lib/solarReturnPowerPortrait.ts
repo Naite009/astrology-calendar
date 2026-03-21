@@ -238,7 +238,7 @@ export function generatePowerPortrait(
         sustainSources.push({
           planet: pName,
           sign: p.sign,
-          house: p.house || null,
+          house: null,
           reason: `${pName} in ${p.sign} (${mod}) -- ${mod === 'Cardinal' ? 'initiates' : mod === 'Fixed' ? 'sustains' : 'adapts'}`,
         });
       }
