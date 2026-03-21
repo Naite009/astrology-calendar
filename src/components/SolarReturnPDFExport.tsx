@@ -615,6 +615,7 @@ export function buildFullJsonStandalone(
     srToNatalAspects: mappedSrToNatalAspects,
     srInternalAspects: analysis.srInternalAspects,
     angularPlanets: analysis.angularPlanets,
+    angularPlanetsDetailed: analysis.angularPlanetsDetailed,
     planetPositions: mappedPlanetPositions,
     houseOverlays: analysis.houseOverlays,
     elementBalance: analysis.elementBalance,
