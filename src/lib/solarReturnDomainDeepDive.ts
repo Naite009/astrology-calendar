@@ -17,7 +17,8 @@ export interface DomainHouseSnapshot {
   houseNumber: number;
   label: string;         // "Earning Power (2nd)"
   sign: string | null;
-  planets: string[];
+  planets: string[];        // major planets only (Sun–Pluto)
+  minorBodies: string[];    // asteroids, points (Juno, Ceres, etc.)
   interpretation: string;
 }
 
@@ -41,6 +42,8 @@ export interface DomainDeepDive {
 // ─── Helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
+const MAJOR_PLANETS = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
+
 const PLANET_TONE: Record<string, 'supportive' | 'challenging' | 'neutral' | 'transformative'> = {
   Sun: 'supportive', Moon: 'supportive', Venus: 'supportive', Jupiter: 'supportive',
   Mercury: 'neutral', NorthNode: 'supportive', Juno: 'supportive', Ceres: 'supportive',
@@ -54,10 +57,14 @@ function getHouseSign(srChart: SolarReturnChart, h: number): string | null {
   return cusp?.sign || null;
 }
 
-function getPlanetsInHouse(analysis: SolarReturnAnalysis, house: number): string[] {
-  return (analysis.houseOverlays || [])
+function getAllBodiesInHouse(analysis: SolarReturnAnalysis, house: number): { major: string[]; minor: string[] } {
+  const all = (analysis.houseOverlays || [])
     .filter(o => o.srHouse === house)
     .map(o => o.planet);
+  return {
+    major: all.filter(p => MAJOR_PLANETS.has(p)),
+    minor: all.filter(p => !MAJOR_PLANETS.has(p)),
+  };
 }
 
 function overallTone(hits: DomainPlanetHit[]): 'supportive' | 'challenging' | 'mixed' | 'transformative' {
@@ -83,7 +90,7 @@ function buildHouseSnapshot(
   houseNum: number, contextLabel: string,
 ): DomainHouseSnapshot {
   const sign = getHouseSign(srChart, houseNum);
-  const planets = getPlanetsInHouse(analysis, houseNum);
+  const { major: planets, minor: minorBodies } = getAllBodiesInHouse(analysis, houseNum);
   const label = `${contextLabel} (${houseNum}${ordSuffix(houseNum)} House)`;
   
   let interp = '';
@@ -91,13 +98,18 @@ function buildHouseSnapshot(
     interp = sign
       ? `No planets here this year — the ${sign} energy on the cusp sets a quiet, steady backdrop.`
       : 'This house is quiet this year — not a primary focus.';
+    if (minorBodies.length > 0) {
+      interp += ` (${minorBodies.join(', ')} ${minorBodies.length === 1 ? 'is' : 'are'} also present as minor influences.)`;
+    }
   } else if (planets.length === 1) {
     interp = `${planets[0]} in ${sign || 'this house'} brings focused attention to this area.`;
+    if (minorBodies.length > 0) interp += ` ${minorBodies.join(', ')} add${minorBodies.length === 1 ? 's' : ''} subtle nuance.`;
   } else {
     interp = `${planets.join(', ')} all occupy this space — this is a busy, active zone this year.`;
+    if (minorBodies.length > 0) interp += ` ${minorBodies.join(', ')} add${minorBodies.length === 1 ? 's' : ''} additional texture.`;
   }
   
-  return { houseNumber: houseNum, label, sign, planets, interpretation: interp };
+  return { houseNumber: houseNum, label, sign, planets, minorBodies, interpretation: interp };
 }
 
 function ordSuffix(n: number): string {
