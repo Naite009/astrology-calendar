@@ -322,9 +322,9 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
     const satH = analysis.saturnFocus.house;
     if (profH === satH) {
       patterns.push({
-        pattern: `Profection year and Saturn converge on House ${profH}`,
-        description: `Both your annual profection AND Saturn land in your ${HOUSE_KEYWORDS[profH] || ''} house — this isn't random. Two different timing systems are pointing at the same area of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
-        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will demand your attention. This alignment happens roughly every 12 years.',
+        pattern: `Two timing cycles converge on your ${HOUSE_KEYWORDS[profH] || ''} area`,
+        description: `Both your annual cycle AND your commitment/responsibility focus land in your ${HOUSE_KEYWORDS[profH] || ''} area — this isn't random. Two different timing systems are pointing at the same part of your life, which means ${HOUSE_KEYWORDS[profH] || 'this area'} requires serious attention, hard work, and honesty this year.`,
+        connection: 'When two independent timing cycles converge on the same life area, it amplifies that theme — things you\'ve been putting off will get your full attention. This alignment happens roughly every 12 years.',
         category: 'cycle',
       });
     }
