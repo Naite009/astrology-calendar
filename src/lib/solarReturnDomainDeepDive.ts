@@ -353,9 +353,10 @@ function buildHealth(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
   const activity = Math.min(10, h1.planets.length * 2 + h6.planets.length * 3 + (marsHouse === 1 || marsHouse === 6 ? 2 : 0));
 
   const advice: string[] = [];
-  if (marsPos) advice.push(`Mars in ${marsPos.sign} — your energy runs ${marsPos.sign === 'Aries' || marsPos.sign === 'Leo' || marsPos.sign === 'Sagittarius' ? 'hot and fast — you need intense exercise but also real rest' : marsPos.sign === 'Taurus' || marsPos.sign === 'Virgo' || marsPos.sign === 'Capricorn' ? 'steady and grounded — consistency beats intensity' : 'in bursts — listen to your body about when to push and when to stop'}.`);
-  if (h6.planets.includes('Neptune')) advice.push('Neptune in the 6th can make health symptoms confusing — get clear medical advice instead of guessing.');
-  if (h6.planets.includes('Saturn')) advice.push('Saturn in the 6th demands a disciplined health routine — the boring basics (sleep, water, vegetables) matter most.');
+  const marsElement = marsPos ? (SIGN_ELEMENT[marsPos.sign] || '') : '';
+  if (marsPos) advice.push(`Your physical energy this year runs ${marsElement === 'Fire' ? 'hot and fast — you need intense exercise but also real rest' : marsElement === 'Earth' ? 'steady and grounded — consistency beats intensity' : 'in bursts — listen to your body about when to push and when to stop'}.`);
+  if (h6.planets.includes('Neptune')) advice.push('Your health area may make symptoms confusing — get clear medical advice instead of guessing.');
+  if (h6.planets.includes('Saturn')) advice.push('Your health area is asking for a disciplined routine — the boring basics (sleep, water, vegetables) matter most.');
   if (advice.length === 0) advice.push('Build one small daily habit this year — the compound effect matters more than dramatic overhauls.');
 
   const headline = t === 'supportive' ? 'Your Body Is Well-Supported'
@@ -363,9 +364,9 @@ function buildHealth(analysis: SolarReturnAnalysis, natalChart: NatalChart, srCh
     : t === 'transformative' ? 'Body and Habits Are Transforming'
     : 'Health Is Active and Worth Watching';
 
-  const para = `Your body zone (1st house) ${h1.planets.length > 0 ? 'has ' + h1.planets.join(', ') : 'is quiet'}. ` +
-    `Your health routines (6th house) ${h6.planets.length > 0 ? 'are activated by ' + h6.planets.join(', ') : 'run steadily'}. ` +
-    `Mars in ${marsPos?.sign || '?'} shapes your physical energy and how you burn through it.`;
+  const para = `Your body and vitality area ${h1.planets.length > 0 ? 'is active — physical appearance and energy levels are in focus' : 'is quiet'}. ` +
+    `Your health routines area ${h6.planets.length > 0 ? 'is activated — daily habits and wellness need attention' : 'runs steadily'}. ` +
+    `Your physical energy style this year is ${marsElement === 'Fire' ? 'intense and action-oriented' : marsElement === 'Earth' ? 'steady and enduring' : marsElement === 'Air' ? 'variable and mentally driven' : 'emotionally influenced and intuitive'}.`;
 
   return { id: 'health', title: 'Health & Vitality', emoji: '🌿', houses: [h1, h6], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
