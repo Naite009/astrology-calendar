@@ -261,7 +261,7 @@ function getHouseForPlanet(planet: string, chart: ChartInput): number | null {
 /* ── Core Calculation ── */
 
 export function computePsychProfile(chart: ChartInput): PsychProfile {
-  const dimScores: Record<string, { total: number; drivers: { planet: string; contrib: number; raw: number }[] }> = {};
+  const dimScores: Record<string, { total: number; drivers: { planet: string; contrib: number; raw: number; sign?: string }[] }> = {};
   DIMENSIONS.forEach(d => { dimScores[d.id] = { total: 0, drivers: [] }; });
   
   const elementCounts = { fire: 0, earth: 0, air: 0, water: 0 };
