@@ -1789,5 +1789,10 @@ export const analyzeSolarReturn = (
     antisciaContacts,
     solarArcs,
     synthesisSections,
+    // Tier 5b
+    midpointHits,
+    prenatalEclipse,
+    planetarySpeeds,
+    heliacalRising,
   };
 };
