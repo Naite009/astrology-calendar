@@ -143,7 +143,7 @@ function buildNarrative(
   if (ascSign !== sunSign) {
     parts.push(`At the same time, people will experience you differently this year. Your Rising sign energy means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
   } else {
-    parts.push(`With both your Sun and Rising in ${sunSign}, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
+    parts.push(`With both your purpose and your outer presentation pointing in the same direction, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
   }
 
   // Avoid repeating the same keyword/plain if node matches sun or asc
