@@ -916,8 +916,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 6. Psychological Profile — bipolar spectrums: natal, SR, blended */}
       <PsychologicalProfileCard natalChart={natalChart} srChart={srChart} />
 
-      {/* 6b. Year Priority Engine — weighted theme ranking */}
-      <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
+      {/* Year Priority Engine removed — now covered by 10-domain Life Domain Scores above */}
 
       {/* 7. Your Year's Playbook — Action Guidance */}
       <ActionGuidanceCard guidance={actionGuidance} />
