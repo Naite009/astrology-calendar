@@ -121,7 +121,7 @@ export function buildLunarFlow(
   }
 
   return {
-    srMoonPhase: moonPhase,
+    srMoonPhase: moonPhaseStr,
     srMoonSign: moonSign,
     srMoonHouse: moonHouse,
     emotionalTheme,

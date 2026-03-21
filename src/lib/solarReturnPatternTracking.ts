@@ -39,11 +39,9 @@ export function buildPatternTracking(
   // Saturn cycle — does SR Saturn return to natal Saturn's sign or house?
   const natalSaturnSign = natalChart.planets?.Saturn?.sign || '';
   const srSaturnSign = srChart.planets?.Saturn?.sign || '';
-  const natalSaturnHouse = natalChart.planets?.Saturn?.house;
   const srSaturnHouse = analysis.planetSRHouses?.Saturn;
 
-  const saturnCycleConnection = natalSaturnSign === srSaturnSign ||
-    (natalSaturnHouse && srSaturnHouse && String(natalSaturnHouse) === String(srSaturnHouse));
+  const saturnCycleConnection = natalSaturnSign === srSaturnSign;
 
   let saturnCycleNote = '';
   if (natalSaturnSign === srSaturnSign) {
