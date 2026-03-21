@@ -160,15 +160,15 @@ function getYearArchetype(analysis: SolarReturnAnalysis): { name: string; descri
   };
   if (moonPhase.includes('Balsamic')) return {
     name: 'A Year of Completion',
-    description: 'Finish, release, and prepare. This is the quiet before a new cycle. Honor endings as sacred.',
+    description: 'Finish, release, and prepare. This is the quiet before a new cycle begins. Honor what\'s ending with grace.',
   };
   if (moonPhase.includes('First Quarter')) return {
     name: 'A Year of Decision',
-    description: 'The fence is uncomfortable — pick a side. This year forces action through productive friction.',
+    description: 'You\'re ready to commit to a direction. This year encourages action through clarity about what matters most.',
   };
   if (moonPhase.includes('Last Quarter')) return {
     name: 'A Year of Release',
-    description: 'Old structures that served you no longer fit. The discomfort is evolution, not punishment.',
+    description: 'Old structures that served you are making room for something new. The changes happening are evolution, not loss.',
   };
 
   // Sun house archetypes
@@ -176,8 +176,8 @@ function getYearArchetype(analysis: SolarReturnAnalysis): { name: string; descri
   if (sunH === 10) return { name: 'A Builder\'s Year', description: 'Career, reputation, and visible achievement define this chapter. Build something lasting.' };
   if (sunH === 7) return { name: 'A Year of Partnership', description: 'Growth happens through others. Relationships are the classroom and the gift.' };
   if (sunH === 4) return { name: 'A Year of Roots', description: 'Home, family, and emotional foundation are the priority. Build from the inside out.' };
-  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something old must die for something real to live. Deep psychological work and financial restructuring.' };
-  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'The most private, introspective year possible. Rest is the work. Dreams carry messages.' };
+  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something meaningful is shifting at a deep level. Personal breakthroughs and new beginnings emerge from honest self-reflection.' };
+  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'The most private, introspective year possible. Rest and reflection are the real work.' };
 
   return { name: 'A Year of Growth', description: 'Multiple areas of your life are activated — focus on what matters most, not what\'s loudest.' };
 }
