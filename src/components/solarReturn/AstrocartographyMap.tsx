@@ -382,10 +382,10 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
             {view === 'us' ? 'US' : 'All'} Cities by Rating
           </span>
-          <span className="text-[10px] text-muted-foreground">{visibleCities.length} locations</span>
+          <span className="text-[10px] text-muted-foreground">{allVisibleCities.length} locations</span>
         </div>
         <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-          {visibleCities.map(city => (
+          {allVisibleCities.map(city => (
             <button
               key={city.city}
               onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
