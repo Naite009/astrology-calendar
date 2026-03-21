@@ -307,9 +307,10 @@ function buildHome(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
   const activity = Math.min(10, h4.planets.length * 3 + (moonHouse === 4 ? 3 : 1));
 
   const advice: string[] = [];
-  if (moonPos) advice.push(`Moon in ${moonPos.sign} means you recharge through ${moonPos.sign === 'Cancer' || moonPos.sign === 'Taurus' ? 'cozy, familiar spaces' : moonPos.sign === 'Aries' || moonPos.sign === 'Sagittarius' ? 'physical activity and freedom' : moonPos.sign === 'Gemini' || moonPos.sign === 'Aquarius' ? 'social connection and stimulation' : 'quiet alone time and reflection'}.`);
-  if (h4.planets.includes('Saturn')) advice.push('Saturn in the 4th can mean home repairs, family responsibilities, or feeling weighed down by obligations at home.');
-  if (h4.planets.includes('Uranus')) advice.push('Uranus in the 4th can bring a move, renovation, or sudden changes in living situation.');
+  const moonElement = moonPos ? (SIGN_ELEMENT[moonPos.sign] || '') : '';
+  if (moonPos) advice.push(`You recharge this year through ${moonElement === 'Earth' || moonPos?.sign === 'Cancer' ? 'cozy, familiar spaces' : moonElement === 'Fire' ? 'physical activity and freedom' : moonElement === 'Air' ? 'social connection and stimulation' : 'quiet alone time and reflection'}.`);
+  if (h4.planets.includes('Saturn')) advice.push('Your home area may involve repairs, family responsibilities, or feeling weighed down by obligations — tackle them one at a time.');
+  if (h4.planets.includes('Uranus')) advice.push('Your home area may bring a move, renovation, or sudden changes in living situation.');
   if (advice.length === 0) advice.push('Your home life is a quieter zone this year — use it as a stable base while other areas demand attention.');
 
   const headline = t === 'supportive' ? 'Home Life Feels Nourishing'
@@ -317,8 +318,8 @@ function buildHome(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
     : t === 'transformative' ? 'Expect Changes on the Home Front'
     : 'Home Is Evolving This Year';
 
-  const para = `Your home zone (4th house) ${h4.planets.length > 0 ? 'has ' + h4.planets.join(', ') + ' — family and living situation are active' : 'is quiet — home serves as a stable backdrop'}. ` +
-    `The Moon in ${moonPos?.sign || '?'} in your ${moonHouse || '?'}${ordSuffix(moonHouse || 0)} house shows where your emotional comfort lives.`;
+  const para = `Your home and family area ${h4.planets.length > 0 ? 'is active — family and living situation are getting your attention' : 'is quiet — home serves as a stable backdrop'}. ` +
+    `Your emotional comfort this year comes from ${moonElement === 'Fire' ? 'staying active and pursuing what excites you' : moonElement === 'Earth' ? 'creating physical comfort and routine' : moonElement === 'Air' ? 'good conversation and mental variety' : 'quiet reflection and emotional processing'}.`;
 
   return { id: 'home', title: 'Home & Family', emoji: '🏠', houses: [h4], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
