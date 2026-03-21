@@ -889,6 +889,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   // Compute power portrait
   const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
+  // Compute lunar weather map
+  const lunarWeather = useMemo(() => generateLunarWeatherMap(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
+
   return (
     <div className="space-y-4 mt-4">
       {/* Executive Summary — Top Opportunities, Challenges, Core Focus */}
