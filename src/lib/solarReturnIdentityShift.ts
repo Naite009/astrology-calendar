@@ -141,7 +141,7 @@ function buildNarrative(
   parts.push(`This year, your main job is ${sunArch.plain}${sunHouse ? ` — especially in the area of ${HOUSE_ARENA[sunHouse] || 'life'}` : ''}. That's what this year's purpose energy is asking you to practice. In daily life, this looks like: ${sunArch.dailyLooksLike}`);
 
   if (ascSign !== sunSign) {
-    parts.push(`At the same time, people will experience you differently this year. ${ascSign} Rising means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
+    parts.push(`At the same time, people will experience you differently this year. Your Rising sign energy means you're learning to be someone who is ${ascArch.plain}. In practice: ${ascArch.dailyLooksLike}`);
   } else {
     parts.push(`With both your Sun and Rising in ${sunSign}, there's no gap between who you're becoming and how people see you — what you feel inside matches what others experience. That's rare and powerful.`);
   }
