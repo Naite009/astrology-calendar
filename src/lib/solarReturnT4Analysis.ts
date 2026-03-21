@@ -112,6 +112,7 @@ export interface SREclipseSensitivity {
 
 export interface SREnhancedRetrograde {
   planet: string;
+  retrograde: boolean;
   sign: string;
   house: number | null;
   stationRetroDate: string;
