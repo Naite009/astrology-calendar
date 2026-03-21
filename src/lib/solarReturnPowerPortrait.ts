@@ -254,8 +254,8 @@ export function generatePowerPortrait(
     burnoutSources.push({
       planet: 'Saturn (natal)',
       sign: saturn.sign,
-      house: saturn.house || null,
-      reason: `Saturn in your ${saturn.house ? `${saturn.house}th` : ''} house natally -- this is your lifelong pressure point`,
+      house: null,
+      reason: 'Saturn natally -- this is your lifelong pressure point',
     });
   }
   if (saturnSRHouse) {
