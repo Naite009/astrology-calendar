@@ -447,6 +447,7 @@ export function downloadBirthdayJSONStandalone(
       srToNatalAspects: mappedSrToNatalAspects,
       srInternalAspects: analysis.srInternalAspects,
       angularPlanets: analysis.angularPlanets,
+      angularPlanetsDetailed: analysis.angularPlanetsDetailed,
       planetPositions: mappedPlanetPositions,
       houseOverlays: analysis.houseOverlays,
       elementBalance: analysis.elementBalance,
