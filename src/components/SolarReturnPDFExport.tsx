@@ -582,15 +582,17 @@ export function downloadBirthdayJSONStandalone(
     })(),
   }));
 
-  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => ({
-    srPlanet: a.planet1 || a.srPlanet || '',
-    natalPlanet: a.planet2 || a.natalPlanet || '',
-    aspect: a.type || a.aspect || '',
-    aspectType: a.type || a.aspectType || '',
-    orb: a.orb ?? null,
-    interpretation: a.interpretation || '',
-    exactDate: a.exactDate || '',
-  }));
+  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => {
+    const base: Record<string, any> = {
+      srPlanet: a.planet1 || a.srPlanet || '',
+      natalPlanet: a.planet2 || a.natalPlanet || '',
+      aspectType: a.type || a.aspect || a.aspectType || '',
+      orb: a.orb ?? null,
+      interpretation: a.interpretation || '',
+    };
+    if (a.exactDate) base.exactDate = a.exactDate;
+    return base;
+  });
 
   const profYear = analysis.profectionYear;
   const mappedProfectionYear = profYear ? {
@@ -742,10 +744,33 @@ export function downloadBirthdayJSONStandalone(
       // AI-generated readings (both modes, if available)
       aiReadingPlain: aiReadings?.plain || null,
       aiReadingAstro: aiReadings?.astro || null,
+      // ─── Structured summary objects ───
+      yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      scoredAspects: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+      })(),
+      topThemes: (() => {
+        const bd = natalChart.birthDate || '';
+        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+      })(),
+      houseEmphasis: buildHouseEmphasis(analysis),
+      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
+      reportStructureOrder: [
+        'yearSummary', 'topThemes', 'identityDirection', 'relationships',
+        'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
+        'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
+        'advancedTechniques', 'patternTracking', 'finalAdvice',
+      ],
     }
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const cleaned = stripEmpty(payload) || payload;
+  const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -777,15 +802,17 @@ export function buildFullJsonStandalone(
     })(),
   }));
 
-  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => ({
-    srPlanet: a.planet1 || a.srPlanet || '',
-    natalPlanet: a.planet2 || a.natalPlanet || '',
-    aspect: a.type || a.aspect || '',
-    aspectType: a.type || a.aspectType || '',
-    orb: a.orb ?? null,
-    interpretation: a.interpretation || '',
-    exactDate: a.exactDate || '',
-  }));
+  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => {
+    const base: Record<string, any> = {
+      srPlanet: a.planet1 || a.srPlanet || '',
+      natalPlanet: a.planet2 || a.natalPlanet || '',
+      aspectType: a.type || a.aspect || a.aspectType || '',
+      orb: a.orb ?? null,
+      interpretation: a.interpretation || '',
+    };
+    if (a.exactDate) base.exactDate = a.exactDate;
+    return base;
+  });
 
   const profYear = analysis.profectionYear;
   const mappedProfectionYear = profYear ? {
@@ -1004,7 +1031,48 @@ export function buildFullJsonStandalone(
     // AI-generated readings (both modes)
     aiReadingPlain: aiReadings?.plain || null,
     aiReadingAstro: aiReadings?.astro || null,
+
+    // ─── Structured summary objects ───
+    yearSummary: buildYearSummary(analysis, natalChart, srChart),
+    scoredAspects: (() => {
+      const bd = natalChart.birthDate || '';
+      const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+      return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+    })(),
+    topThemes: (() => {
+      const bd = natalChart.birthDate || '';
+      const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
+      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+    })(),
+    houseEmphasis: buildHouseEmphasis(analysis),
+    lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
+    patternTracking: buildPatternTracking(analysis, natalChart, srChart),
+    finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
+    reportStructureOrder: [
+      'yearSummary', 'topThemes', 'identityDirection', 'relationships',
+      'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
+      'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
+      'advancedTechniques', 'patternTracking', 'finalAdvice',
+    ],
   };
+}
+
+// ── Strip empty/null fields from JSON export ──
+function stripEmpty(obj: any): any {
+  if (Array.isArray(obj)) {
+    const cleaned = obj.map(stripEmpty).filter(v => v !== undefined);
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+  if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
+    const result: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const cleaned = stripEmpty(v);
+      if (cleaned !== undefined) result[k] = cleaned;
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
+  }
+  if (obj === '' || obj === null) return undefined;
+  return obj;
 }
 
 // ── Birthday Gift Print PDF (comprehensive, no AI narrative required) ──

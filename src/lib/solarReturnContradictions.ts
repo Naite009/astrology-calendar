@@ -69,9 +69,9 @@ export function detectContradictions(
       const p2 = inH2[0];
       results.push({
         title,
-        tension: `You may feel pulled between ${HOUSE_THEME[h1]} and ${HOUSE_THEME[h2]} because ${p1.planet} occupies your ${ordinal(h1)} House while ${p2.planet} sits in the ${ordinal(h2)} House. ${tensionBase} are both activated simultaneously.`,
+        tension: `You may feel pulled between ${HOUSE_THEME[h1]} and ${HOUSE_THEME[h2]} this year. ${tensionBase} are both activated simultaneously — and that can feel like two competing priorities.`,
         synthesis: buildAxisSynthesis(p1, p2, h1, h2),
-        resolution: `Try sequencing instead of choosing. Dedicate mornings to ${HOUSE_THEME[h1]} activities (${p1.planet} in the ${ordinal(h1)} House), then bring what you learn about yourself into ${HOUSE_THEME[h2]} in the evenings. Give each side specific, scheduled time rather than letting them compete all day.`,
+        resolution: `Try sequencing instead of choosing. Dedicate mornings to ${HOUSE_THEME[h1]} activities, then bring what you learn about yourself into ${HOUSE_THEME[h2]} in the evenings. Give each side specific, scheduled time rather than letting them compete all day.`,
         placement1: `${p1.planet} in ${ordinal(h1)} House (${p1.sign})`,
         placement2: `${p2.planet} in ${ordinal(h2)} House (${p2.sign})`,
         category: 'house-axis',
@@ -88,9 +88,9 @@ export function detectContradictions(
     if (sunEl && moonEl && sunEl !== moonEl && areClashingElements(sunEl, moonEl)) {
       results.push({
         title: `${sunEl} Purpose vs ${moonEl} Emotions`,
-        tension: `You may feel pulled between your ${sunEl} Sun's drive for ${elementDrive(sunEl)} and your ${moonEl} Moon's need for ${elementDrive(moonEl)}. Your conscious goals and emotional instincts speak different languages this year.`,
-        synthesis: `The resolution lives in alternation rather than choice. Give your ${sunEl} Sun time to lead during active hours and your ${moonEl} Moon space to process in quieter moments. Neither is wrong — they are two instruments playing different parts of the same composition.`,
-        resolution: `In practice: when you feel the ${sunEl} push to act, check in with your body first — is your ${moonEl} Moon overwhelmed? If so, take 10 minutes to sit quietly before deciding. Use ${sunEl} energy for work and outward goals; use ${moonEl} energy for journaling, cooking, or being with people who feel safe.`,
+        tension: `Your conscious goals want ${elementDrive(sunEl)}, while your emotional instincts crave ${elementDrive(moonEl)}. Your head and heart speak different languages this year.`,
+        synthesis: `The resolution lives in alternation rather than choice. Give your goal-oriented side time to lead during active hours and your emotional side space to process in quieter moments. Neither is wrong — they are two instruments playing different parts of the same composition.`,
+        resolution: `In practice: when you feel the push to act, check in with your body first — are your emotions overwhelmed? If so, take 10 minutes to sit quietly before deciding. Use ${sunEl.toLowerCase()} energy for work and outward goals; use ${moonEl.toLowerCase()} energy for journaling, cooking, or being with people who feel safe.`,
         placement1: `Sun in ${sunPlace.sign}`,
         placement2: `Moon in ${moonPlace.sign}`,
         category: 'element-clash',
@@ -112,10 +112,10 @@ export function detectContradictions(
       );
       if (hasTension) {
         results.push({
-          title: 'Expansion vs Restriction',
-          tension: `You may feel pulled between Jupiter's desire to expand in ${HOUSE_THEME[jupH] || 'this area'} and Saturn's demand for discipline in ${HOUSE_THEME[satH] || 'that area'}. One foot on the gas, one on the brake.`,
-          synthesis: `Saturn is not blocking Jupiter — it's providing the container. Growth without structure collapses. Use Saturn's ${ordinal(satH)} House discipline as the scaffolding for Jupiter's ${ordinal(jupH)} House expansion. Build slowly and the growth will be lasting.`,
-          resolution: `In daily life: write down one Jupiter-size dream for ${HOUSE_THEME[jupH] || 'this area'}, then break it into Saturn-size weekly steps for ${HOUSE_THEME[satH] || 'that area'}. Do not try to leap ahead — build one brick at a time. The tension eases when you stop seeing Saturn as the enemy and start using it as your project manager.`,
+          title: 'Expansion vs Responsibility',
+          tension: `You may feel pulled between your desire to expand in ${HOUSE_THEME[jupH] || 'this area'} and the demand for discipline in ${HOUSE_THEME[satH] || 'that area'}. One foot on the gas, one on the brake.`,
+          synthesis: `Responsibility is not blocking growth — it's providing the container. Growth without structure collapses. Use your sense of discipline as the scaffolding for your desire to expand. Build slowly and the growth will be lasting.`,
+          resolution: `In daily life: write down one big dream for ${HOUSE_THEME[jupH] || 'this area'}, then break it into weekly steps for ${HOUSE_THEME[satH] || 'that area'}. Don't try to leap ahead — build one brick at a time. The tension eases when you stop seeing responsibility as the enemy and start using it as your project manager.`,
           placement1: `Jupiter in ${ordinal(jupH)} House (${jupiterPlace.sign})`,
           placement2: `Saturn in ${ordinal(satH)} House (${saturnPlace.sign})`,
           category: 'planet-tension',
@@ -137,10 +137,10 @@ export function detectContradictions(
       );
       if (hasTension) {
         results.push({
-          title: 'Desire vs Assertion',
-          tension: `You may feel pulled between Venus's ${venusMode} approach to pleasure and connection (${venusPlace.sign}) and Mars's ${marsMode} drive for action (${marsPlace.sign}). What you want and how you go after it are operating on different rhythms.`,
-          synthesis: `Let Venus lead in matters of the heart and aesthetic choices. Let Mars take charge of ambition and physical energy. The friction between them creates heat — and that heat can be channeled into creative or romantic intensity if you don't force alignment.`,
-          resolution: `When making relationship decisions, pause and ask: "Am I acting from desire (Venus) or impatience (Mars)?" Let Venus pick the direction; let Mars provide the energy to get there. In practice: slow down romantic conversations, speed up gym sessions and work deadlines. The two rhythms do not need to match.`,
+          title: 'Desire vs Drive',
+          tension: `What you want and how you go after it are operating on different rhythms this year. Your approach to pleasure and connection (${venusPlace.sign}) and your drive for action (${marsPlace.sign}) don't naturally sync up.`,
+          synthesis: `Let your desire nature lead in matters of the heart and aesthetic choices. Let your action nature take charge of ambition and physical energy. The friction between them creates heat — and that heat can be channeled into creative or romantic intensity if you don't force alignment.`,
+          resolution: `When making relationship decisions, pause and ask: "Am I acting from desire or impatience?" Let what you love pick the direction; let your drive provide the energy to get there. In practice: slow down romantic conversations, speed up workouts and work deadlines. The two rhythms don't need to match.`,
           placement1: `Venus in ${venusPlace.sign} (${ordinal(venusPlace.house)} House)`,
           placement2: `Mars in ${marsPlace.sign} (${ordinal(marsPlace.house)} House)`,
           category: 'mode-conflict',
@@ -167,7 +167,7 @@ function gatherPlacements(analysis: SolarReturnAnalysis, srChart: SolarReturnCha
 }
 
 function buildAxisSynthesis(p1: PlacementInfo, p2: PlacementInfo, h1: number, h2: number): string {
-  return `The resolution is not choosing ${HOUSE_THEME[h1]} over ${HOUSE_THEME[h2]} — it's finding the rhythm between both. ${p1.planet} in ${p1.sign} asks you to honor ${HOUSE_THEME[h1]}, while ${p2.planet} in ${p2.sign} ensures ${HOUSE_THEME[h2]} stays in the conversation. Integrate by giving each sphere its own dedicated time rather than trying to do both simultaneously.`;
+  return `The resolution is not choosing ${HOUSE_THEME[h1]} over ${HOUSE_THEME[h2]} — it's finding the rhythm between both. Your chart asks you to honor ${HOUSE_THEME[h1]} while also keeping ${HOUSE_THEME[h2]} in the conversation. Integrate by giving each sphere its own dedicated time rather than trying to do both simultaneously.`;
 }
 
 function areClashingElements(e1: string, e2: string): boolean {
@@ -185,5 +185,6 @@ function elementDrive(el: string): string {
 function ordinal(n: number): string {
   const s = ['th','st','nd','rd'];
   const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  if (v >= 11 && v <= 13) return n + 'th';
+  return n + (s[v % 10] || s[0]);
 }
