@@ -285,8 +285,10 @@ export function calculateArabicParts(
     },
     {
       name: 'Part of Spirit (Daimon)',
-      formula: 'ASC + Sun − Moon',
-      calc: () => ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360,
+      formula: isDayChart ? 'ASC + Sun − Moon (day)' : 'ASC + Moon − Sun (night)',
+      calc: () => isDayChart
+        ? ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360
+        : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360,
       interp: 'Where your conscious will and spiritual agency are strongest this year. The Part of Spirit represents where you can most effectively direct your intentions. While Fortune shows what comes to you, Spirit shows what you can actively create.',
     },
     {
