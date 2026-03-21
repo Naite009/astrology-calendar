@@ -210,10 +210,11 @@ function buildLove(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
   const activity = Math.min(10, h5.planets.length * 2.5 + h7.planets.length * 2.5 + (venHouse === 5 || venHouse === 7 ? 3 : 1));
 
   const advice: string[] = [];
-  if (venPos) advice.push(`Venus in ${venPos.sign} means you feel most loved through ${venPos.sign === 'Taurus' || venPos.sign === 'Cancer' ? 'physical comfort and security' : venPos.sign === 'Leo' || venPos.sign === 'Aries' ? 'attention and excitement' : venPos.sign === 'Libra' || venPos.sign === 'Gemini' ? 'conversation and fairness' : venPos.sign === 'Scorpio' || venPos.sign === 'Pisces' ? 'deep emotional honesty' : 'practical acts of service'}.`);
-  if (h7.planets.includes('Saturn')) advice.push('Saturn in the 7th is a relationship reality check — what is real survives, what is not may end.');
-  if (h7.planets.includes('Neptune')) advice.push('Neptune in the 7th can blur boundaries — be careful about seeing people as you wish they were instead of how they actually are.');
-  if (h5.planets.includes('Jupiter')) advice.push('Jupiter in the 5th is great for dating, creative projects, and anything that brings you joy.');
+  const venElement = venPos ? (SIGN_ELEMENT[venPos.sign] || '') : '';
+  if (venPos) advice.push(`This year you feel most loved through ${venElement === 'Earth' || venPos?.sign === 'Cancer' ? 'physical comfort and security' : venElement === 'Fire' ? 'attention and excitement' : venElement === 'Air' ? 'conversation and fairness' : 'deep emotional honesty'}.`);
+  if (h7.planets.includes('Saturn')) advice.push('Your partnership area is getting a reality check — what is real survives, what is not may need rebuilding.');
+  if (h7.planets.includes('Neptune')) advice.push('Your partnership area may blur boundaries — be careful about seeing people as you wish they were instead of how they actually are.');
+  if (h5.planets.includes('Jupiter')) advice.push('Your romance and joy area is beautifully expanded — great for dating, creative projects, and anything that brings you alive.');
   if (advice.length === 0) advice.push('Pay attention to how your body feels around people — your nervous system knows before your mind does.');
 
   const headline = t === 'supportive' ? 'A Year of Warmth and Connection'
@@ -221,9 +222,9 @@ function buildLove(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
     : t === 'transformative' ? 'Deep Relationship Shifts Ahead'
     : 'Love Is Active and Complex';
 
-  const para = `Your romance zone (5th house) ${h5.planets.length > 0 ? 'has ' + h5.planets.join(', ') + ' bringing energy to dating, play, and creative expression' : 'is quiet — not a primary dating year'}. ` +
-    `Your partnership zone (7th house) ${h7.planets.length > 0 ? 'is active with ' + h7.planets.join(', ') + ' — committed relationships are in focus' : 'has a steadier energy'}. ` +
-    `Venus in ${venPos?.sign || '?'} in your ${venHouse || '?'}${ordSuffix(venHouse || 0)} house shapes how you give and receive love.`;
+  const para = `Your romance and joy area ${h5.planets.length > 0 ? 'has active energy bringing attention to dating, play, and creative expression' : 'is quiet — not a primary dating year'}. ` +
+    `Your partnership area ${h7.planets.length > 0 ? 'is active — committed relationships are in focus' : 'has a steadier energy'}. ` +
+    `How you give and receive love is shaped by your connection style this year — ${venElement === 'Fire' ? 'bold and expressive' : venElement === 'Earth' ? 'steady and sensual' : venElement === 'Air' ? 'intellectual and social' : 'deep and intuitive'}.`;
 
   return { id: 'love', title: 'Love & Relationships', emoji: '💕', houses: [h5, h7], keyPlanets: hits, synthesis: { headline, paragraph: para, practicalAdvice: advice }, activityLevel: Math.round(activity), tone: t };
 }
