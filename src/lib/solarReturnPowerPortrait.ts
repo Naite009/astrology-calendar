@@ -220,7 +220,7 @@ export function generatePowerPortrait(
     driveSources.push({
       planet: 'Sun',
       sign: sun.sign,
-      house: sun.house || null,
+      house: null,
       reason: `Your core identity in ${sun.sign} shapes what you consider worth fighting for`,
     });
   }
