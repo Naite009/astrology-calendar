@@ -693,9 +693,9 @@ export function buildFullJsonStandalone(
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
     domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
     psychologicalProfile: (() => {
-      const natal = computePsychProfile(natalChart, 'natal');
-      const sr = computePsychProfile(srChart as any, 'sr');
-      const blended = computeBlendedProfile(natal, sr);
+      const natal = computePsychProfile(natalChart as any);
+      const sr = computePsychProfile(srChart as any);
+      const blended = computeBlendedProfile(natalChart as any, srChart as any);
       return { natal, sr, blended };
     })(),
     contradictions: detectContradictions(analysis, srChart),
