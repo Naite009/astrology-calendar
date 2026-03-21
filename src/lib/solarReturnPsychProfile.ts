@@ -294,7 +294,7 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
         if (dimScores[dimId]) {
           const w = 5 * value;
           dimScores[dimId].total += w;
-          dimScores[dimId].drivers.push({ planet: 'MC', contrib: Math.abs(w) });
+          dimScores[dimId].drivers.push({ planet: 'MC', contrib: Math.abs(w), raw: w });
         }
       }
     }
