@@ -131,6 +131,7 @@ export interface SRQuarterlyFocus {
   dominantThemes: string[];
   activePlanets: string[];
   interpretation: string;
+  focus: string;
 }
 
 // ─── Planet body associations ───────────────────────────────────────
