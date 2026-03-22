@@ -78,6 +78,7 @@ type ViewMode = 'world' | 'us';
 export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const [view, setView] = useState<ViewMode>('world');
   const [selectedCity, setSelectedCity] = useState<AstrocartoCity | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
