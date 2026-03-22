@@ -417,50 +417,60 @@ export const LunarWorkbookSection = ({
               <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Tarot Card</h4>
             </div>
             <div className="space-y-2">
-              <select
-                value={journal?.tarot_card_name || ''}
-                onChange={e => saveJournal({ tarot_card_name: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
-              >
-                <option value="">Select a card...</option>
-                <optgroup label="Major Arcana">
-                  {["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"].map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-                <optgroup label="Wands">
-                  {["Ace of Wands","Two of Wands","Three of Wands","Four of Wands","Five of Wands","Six of Wands","Seven of Wands","Eight of Wands","Nine of Wands","Ten of Wands","Page of Wands","Knight of Wands","Queen of Wands","King of Wands"].map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-                <optgroup label="Cups">
-                  {["Ace of Cups","Two of Cups","Three of Cups","Four of Cups","Five of Cups","Six of Cups","Seven of Cups","Eight of Cups","Nine of Cups","Ten of Cups","Page of Cups","Knight of Cups","Queen of Cups","King of Cups"].map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-                <optgroup label="Swords">
-                  {["Ace of Swords","Two of Swords","Three of Swords","Four of Swords","Five of Swords","Six of Swords","Seven of Swords","Eight of Swords","Nine of Swords","Ten of Swords","Page of Swords","Knight of Swords","Queen of Swords","King of Swords"].map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-                <optgroup label="Pentacles">
-                  {["Ace of Pentacles","Two of Pentacles","Three of Pentacles","Four of Pentacles","Five of Pentacles","Six of Pentacles","Seven of Pentacles","Eight of Pentacles","Nine of Pentacles","Ten of Pentacles","Page of Pentacles","Knight of Pentacles","Queen of Pentacles","King of Pentacles"].map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-              </select>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = journal?.tarot_card_name || '';
-                    if (!current) return;
-                    const base = current.replace(' (Reversed)', '');
-                    const isRev = current.includes('(Reversed)');
-                    saveJournal({ tarot_card_name: isRev ? base : `${base} (Reversed)` });
-                  }}
-                  className={`relative w-10 h-5 rounded-full transition-colors ${
-                    journal?.tarot_card_name?.includes('(Reversed)') ? 'bg-primary' : 'bg-border'
-                  }`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-background shadow transition-transform ${
-                    journal?.tarot_card_name?.includes('(Reversed)') ? 'translate-x-5' : ''
-                  }`} />
-                </button>
-                <span className={`text-xs ${journal?.tarot_card_name?.includes('(Reversed)') ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                  Reversed {journal?.tarot_card_name?.includes('(Reversed)') ? '🔄' : ''}
-                </span>
-              </label>
+              {(() => {
+                const raw = journal?.tarot_card_name || '';
+                const isReversed = raw.includes('(Reversed)');
+                const baseName = raw.replace(' (Reversed)', '');
+                return (
+                  <>
+                    <select
+                      value={baseName}
+                      onChange={e => {
+                        const val = e.target.value;
+                        saveJournal({ tarot_card_name: val ? (isReversed ? `${val} (Reversed)` : val) : '' });
+                      }}
+                      className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                    >
+                      <option value="">Select a card...</option>
+                      <optgroup label="Major Arcana">
+                        {["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"].map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                      <optgroup label="Wands">
+                        {["Ace of Wands","Two of Wands","Three of Wands","Four of Wands","Five of Wands","Six of Wands","Seven of Wands","Eight of Wands","Nine of Wands","Ten of Wands","Page of Wands","Knight of Wands","Queen of Wands","King of Wands"].map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                      <optgroup label="Cups">
+                        {["Ace of Cups","Two of Cups","Three of Cups","Four of Cups","Five of Cups","Six of Cups","Seven of Cups","Eight of Cups","Nine of Cups","Ten of Cups","Page of Cups","Knight of Cups","Queen of Cups","King of Cups"].map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                      <optgroup label="Swords">
+                        {["Ace of Swords","Two of Swords","Three of Swords","Four of Swords","Five of Swords","Six of Swords","Seven of Swords","Eight of Swords","Nine of Swords","Ten of Swords","Page of Swords","Knight of Swords","Queen of Swords","King of Swords"].map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                      <optgroup label="Pentacles">
+                        {["Ace of Pentacles","Two of Pentacles","Three of Pentacles","Four of Pentacles","Five of Pentacles","Six of Pentacles","Seven of Pentacles","Eight of Pentacles","Nine of Pentacles","Ten of Pentacles","Page of Pentacles","Knight of Pentacles","Queen of Pentacles","King of Pentacles"].map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                    </select>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!baseName) return;
+                          saveJournal({ tarot_card_name: isReversed ? baseName : `${baseName} (Reversed)` });
+                        }}
+                        disabled={!baseName}
+                        className={`relative w-10 h-5 rounded-full transition-colors ${
+                          isReversed ? 'bg-primary' : 'bg-border'
+                        } ${!baseName ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-background shadow transition-transform ${
+                          isReversed ? 'translate-x-5' : ''
+                        }`} />
+                      </button>
+                      <span className={`text-xs ${isReversed ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                        Reversed {isReversed ? '🔄' : ''}
+                      </span>
+                    </label>
+                  </>
+                );
+              })()}
               <Textarea
                 placeholder="Your own notes about this card — what struck you, what you felt when you saw it..."
                 value={journal?.tarot_card_notes || ''}
