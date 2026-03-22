@@ -79,10 +79,17 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const [view, setView] = useState<ViewMode>('world');
   const [selectedCity, setSelectedCity] = useState<AstrocartoCity | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [intention, setIntention] = useState<AstrocartoIntention>('overall');
 
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
-  const cities = astrocarto.topCities;
+  // Helper to get the active rating for a city based on selected intention
+  const cityRating = (c: AstrocartoCity) => c.intentionRatings?.[intention] ?? c.rating;
+
+  // Sort cities by the active intention rating
+  const cities = useMemo(() => {
+    return [...astrocarto.topCities].sort((a, b) => cityRating(b) - cityRating(a));
+  }, [astrocarto.topCities, intention]);
 
   // Use the stable best/worst from the calculation engine (not array position)
   const bestCity = useMemo(() => {
