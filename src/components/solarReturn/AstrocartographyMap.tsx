@@ -277,7 +277,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             >
               <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">Most Challenging</p>
               <p className="text-lg font-medium text-foreground">{worstCity.city}, {worstCity.country}</p>
-              <p className="text-xs text-muted-foreground mt-1">Rating: {worstCity.rating}/10</p>
+              <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(worstCity)}/10</p>
             </div>
           </div>
         )}
