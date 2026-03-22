@@ -92,21 +92,23 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   }, [astrocarto.topCities, intention]);
 
   // Use the stable best/worst from the calculation engine (not array position)
+  // Best/worst cities based on current intention filter
   const bestCity = useMemo(() => {
-    if (astrocarto.bestBeneficCity) {
+    if (intention === 'overall' && astrocarto.bestBeneficCity) {
       const name = astrocarto.bestBeneficCity.split(',')[0].trim();
       return cities.find(c => c.city === name) || cities[0];
     }
+    // For intention filters, best = highest intention rating
     return cities[0];
-  }, [cities, astrocarto.bestBeneficCity]);
+  }, [cities, astrocarto.bestBeneficCity, intention]);
 
   const worstCity = useMemo(() => {
-    if (astrocarto.worstMaleficCity) {
+    if (intention === 'overall' && astrocarto.worstMaleficCity) {
       const name = astrocarto.worstMaleficCity.split(',')[0].trim();
       return cities.find(c => c.city === name) || cities[cities.length - 1];
     }
     return cities[cities.length - 1];
-  }, [cities, astrocarto.worstMaleficCity]);
+  }, [cities, astrocarto.worstMaleficCity, intention]);
 
   // Cities that MUST appear on the map when present
   const MUST_SHOW = new Set([
