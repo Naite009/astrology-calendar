@@ -610,6 +610,7 @@ export const LunarWorkbookSection = ({
       </Collapsible>
 
       {/* ═══ Body State + Metrics ═══ */}
+      <div id="metrics-section">
       <MetricTracker energy={journal?.energy ?? null} stress={journal?.stress ?? null}
         sleepQuality={journal?.sleep_quality ?? null} sensitivity={journal?.body_sensitivity ?? null}
         dreamIntensity={journal?.dream_intensity ?? null} tags={(journal?.tags as string[]) ?? []}
