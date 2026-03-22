@@ -1671,53 +1671,6 @@ Keep the tone professional, insightful, and practically applicable.`,
 
                     {!isLoading && weekDayLoading === null && !error && displayInsight && (
                       <>
-                      {/* Listen Controls */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 p-3 rounded-lg bg-secondary/50">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={playTtsInsights}
-                          className="flex items-center gap-2"
-                        >
-                          {ttsState === 'playing' ? (
-                            <><Square className="h-3.5 w-3.5 fill-current" /> Stop</>
-                          ) : ttsState === 'paused' ? (
-                            <><Volume2 className="h-4 w-4" /> Resume</>
-                          ) : (
-                            <><Volume2 className="h-4 w-4" /> Listen</>
-                          )}
-                        </Button>
-                        {ttsState === 'playing' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { speechSynthesis.pause(); setTtsState('paused'); }}
-                          >
-                            Pause
-                          </Button>
-                        )}
-                        {availableVoices.length > 0 && (
-                          <Select
-                            value={ttsVoiceName || availableVoices[0]?.name || ''}
-                            onValueChange={(v) => {
-                              setTtsVoiceName(v);
-                              localStorage.setItem('cosmic-tts-voice-name', v);
-                              stopTtsAudio();
-                            }}
-                          >
-                            <SelectTrigger className="w-[200px] bg-background h-9">
-                              <SelectValue placeholder="Choose voice" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border z-[100] max-h-[300px]">
-                              {availableVoices.map(v => (
-                                <SelectItem key={v.name} value={v.name}>
-                                  {v.name.replace(/Google\s*/i, '')}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <ReactMarkdown
                           components={{
