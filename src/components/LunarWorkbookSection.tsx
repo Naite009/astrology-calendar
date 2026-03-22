@@ -402,7 +402,7 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 5b · New Moon Card Pulls ═══ */}
-      <Card className="border-border/30">
+      <Card id="card-pulls-section" className="border-border/30">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">🃏</span> New Moon Card Pulls
