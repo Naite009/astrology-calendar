@@ -118,10 +118,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
     const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
 
+    // Prioritize green-rated cities (>=7.5) so travel-worthy spots appear
+    const greenCities = rest.filter(c => c.rating >= 7.5);
+    const otherCities = rest.filter(c => c.rating < 7.5);
+    const prioritizedRest = [...greenCities, ...otherCities];
+
     const selected: AstrocartoCity[] = [...mustShow];
-    const minDist = view === 'us' ? 2.0 : 8;
+    const minDist = view === 'us' ? 1.5 : 6;
     
-    for (const city of rest) {
+    for (const city of prioritizedRest) {
       const tooClose = selected.some(s => {
         const dlat = Math.abs(s.latitude - city.latitude);
         const dlng = Math.abs(s.longitude - city.longitude);
@@ -130,7 +135,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 18 : 14)) break;
+      if (selected.length >= (view === 'us' ? 22 : 20)) break;
     }
     return selected;
   }, [cities, view]);
@@ -154,21 +159,31 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     return projectWorld(lat, lng, mapW, mapH);
   };
 
-  // Label collision avoidance
+  // Label collision avoidance — try more positions, prefer side labels for dense areas
   const labelPositions = useMemo(() => {
     const positions: Record<string, { dx: number; dy: number; anchor: string }> = {};
-    const placed: { x: number; y: number; w: number }[] = [];
-    const estimateWidth = (name: string) => name.length * (view === 'us' ? 5.5 : 4.5);
+    const placed: { x: number; y: number; w: number; h: number }[] = [];
+    const estimateWidth = (name: string) => name.length * (view === 'us' ? 5.2 : 4.2);
     
-    for (const city of visibleCities) {
+    // Sort must-show cities first so they get priority label positions
+    const sortedCities = [...visibleCities].sort((a, b) => {
+      const aM = MUST_SHOW.has(a.city) ? 0 : 1;
+      const bM = MUST_SHOW.has(b.city) ? 0 : 1;
+      return aM - bM;
+    });
+    
+    for (const city of sortedCities) {
       const { x, y } = projectCity(city.latitude, city.longitude);
       const w = estimateWidth(city.city);
       
+      // 6 candidate positions: right, left, above, below, upper-right, lower-left
       const candidates = [
-        { dx: 0, dy: -(view === 'us' ? 11 : 9), anchor: 'middle' },
-        { dx: 0, dy: (view === 'us' ? 16 : 13), anchor: 'middle' },
-        { dx: (view === 'us' ? 10 : 8), dy: 2, anchor: 'start' },
-        { dx: -(view === 'us' ? 10 : 8), dy: 2, anchor: 'end' },
+        { dx: (view === 'us' ? 8 : 7), dy: 0, anchor: 'start' },
+        { dx: -(view === 'us' ? 8 : 7), dy: 0, anchor: 'end' },
+        { dx: 0, dy: -(view === 'us' ? 10 : 8), anchor: 'middle' },
+        { dx: 0, dy: (view === 'us' ? 14 : 11), anchor: 'middle' },
+        { dx: (view === 'us' ? 8 : 7), dy: -(view === 'us' ? 8 : 6), anchor: 'start' },
+        { dx: -(view === 'us' ? 8 : 7), dy: (view === 'us' ? 8 : 6), anchor: 'end' },
       ];
       
       let best = candidates[0];
@@ -176,13 +191,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         const lx = x + c.dx - (c.anchor === 'middle' ? w / 2 : c.anchor === 'end' ? w : 0);
         const ly = y + c.dy;
         const collision = placed.some(p => 
-          Math.abs(p.x - lx) < (p.w + w) / 2 + 4 && Math.abs(p.y - ly) < 10
+          Math.abs(p.x - lx) < (p.w + w) / 2 + 3 && Math.abs(p.y - ly) < 9
         );
         if (!collision) { best = c; break; }
       }
       
       const lx = x + best.dx - (best.anchor === 'middle' ? w / 2 : best.anchor === 'end' ? w : 0);
-      placed.push({ x: lx + w / 2, y: y + best.dy, w });
+      placed.push({ x: lx + w / 2, y: y + best.dy, w, h: 9 });
       positions[city.city] = best;
     }
     return positions;
