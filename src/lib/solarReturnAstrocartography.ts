@@ -236,6 +236,10 @@ const PLANET_ANGLE_RATING: Record<string, Record<string, number>> = {
   Pluto:   { ASC: 3, MC: 4, DSC: 2, IC: 3 },
 };
 
+const NEUTRAL_RATING = 5;
+const roundRating = (value: number) => Math.round(value * 10) / 10;
+const clampRating = (value: number) => Math.min(10, Math.max(0, roundRating(value)));
+
 const PLANET_LINE_INTERPS: Record<string, Record<string, string>> = {
   Sun: {
     ASC: 'The Sun on the Ascendant gives maximum visibility, confidence, and personal vitality. You shine brightly and attract attention effortlessly. Excellent for self-reinvention.',
@@ -520,7 +524,7 @@ export function calculateAstrocartography(
     ]);
     if (angularPlanets.length === 0 && !ALWAYS_INCLUDE.has(cityData.city)) continue;
 
-    const avgRating = ratingCount > 0 ? Math.min(10, Math.round((totalRating / ratingCount) * 10) / 10) : 5;
+    const avgRating = ratingCount > 0 ? clampRating(totalRating / ratingCount) : NEUTRAL_RATING;
 
     // Calculate per-intention ratings
     const intentionRatings = {} as Record<AstrocartoIntention, number>;
@@ -530,23 +534,31 @@ export function calculateAstrocartography(
         intentionRatings[intention] = avgRating;
         continue;
       }
-      let iTotal = 0;
-      let iCount = 0;
+      let weightedTotal = 0;
+      let weightSum = 0;
       for (const ap of angularPlanets) {
         const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0;
         const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
         const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
-        const orbMultiplier = 1 - (ap.orb / 12);
-        // Scale the base rating by how relevant this planet+angle is to the intention
-        // planetW ranges 0-3, so divide by 2 to center at 1x for "normal" relevance
-        // This means Venus(3) for Love = 1.5x boost, Saturn(0.2) for Love = 0.1x
-        const relevance = (planetW / 2) * angleW;
-        iTotal += baseRating * orbMultiplier * relevance;
-        iCount++;
+        const orbMultiplier = Math.max(0.25, 1 - (ap.orb / 10));
+        const relevance = planetW * angleW * orbMultiplier;
+        if (relevance <= 0.12) continue;
+        weightedTotal += baseRating * relevance;
+        weightSum += relevance;
       }
-      intentionRatings[intention] = iCount > 0
-        ? Math.min(10, Math.max(0, Math.round((iTotal / iCount) * 10) / 10))
-        : avgRating;
+      if (weightSum === 0) {
+        intentionRatings[intention] = avgRating;
+        continue;
+      }
+
+      const weightedScore = weightedTotal / weightSum;
+      const confidence = Math.min(1, weightSum / 4.5);
+      const blend = 0.3 + (confidence * 0.25);
+      const stabilizedScore = (avgRating * (1 - blend)) + (weightedScore * blend);
+
+      intentionRatings[intention] = clampRating(
+        stabilizedScore + ((weightedScore - NEUTRAL_RATING) * 0.12 * confidence)
+      );
     }
 
     // Build summary
