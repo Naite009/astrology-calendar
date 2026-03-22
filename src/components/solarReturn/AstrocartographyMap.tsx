@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { Globe, MapPin, ChevronRight, Star, X, Maximize2, Minimize2 } from 'lucide-react';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -77,6 +78,7 @@ type ViewMode = 'world' | 'us';
 export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const [view, setView] = useState<ViewMode>('world');
   const [selectedCity, setSelectedCity] = useState<AstrocartoCity | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
@@ -322,8 +324,20 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           </span>
           <span className="text-[10px] text-muted-foreground">{allVisibleCities.length} locations</span>
         </div>
+        <div className="px-3 py-2 border-b border-border">
+          <div className="relative">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search cities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-sm bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+            />
+          </div>
+        </div>
         <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-          {allVisibleCities.map(city => (
+          {allVisibleCities.filter(c => !searchQuery || c.city.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())).map(city => (
             <button
               key={city.city}
               onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
