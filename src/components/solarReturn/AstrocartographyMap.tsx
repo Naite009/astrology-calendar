@@ -410,13 +410,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                 selectedCity?.city === city.city ? 'bg-primary/5' : ''
               }`}
             >
-              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ratingColor(city.rating) }} />
+              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ratingColor(cityRating(city)) }} />
               <span className="flex-1 min-w-0">
                 <span className="text-sm font-medium text-foreground">{city.city}</span>
                 <span className="text-xs text-muted-foreground ml-1">{city.country}</span>
               </span>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(city.rating)}`}>
-                {city.rating}
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(cityRating(city))}`}>
+                {cityRating(city)}
               </span>
               <ChevronRight size={14} className="text-muted-foreground/40 flex-shrink-0" />
             </button>
