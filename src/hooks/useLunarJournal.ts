@@ -191,15 +191,20 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     loadPastJournals();
   }, [loadJournal, loadPastJournals]);
   
-  // Save/update journal
+  // Use a ref to always have the latest journal for saves
+  const journalRef = React.useRef(journal);
+  useEffect(() => { journalRef.current = journal; }, [journal]);
+
+  // Save/update journal using upsert to avoid race conditions
   const saveJournal = useCallback(async (updates: Partial<LunarJournalEntry>) => {
-    if (!journal) return;
+    const currentJournal = journalRef.current;
+    if (!currentJournal) return;
     
     setIsSaving(true);
     try {
-      const updatedJournal = { ...journal, ...updates };
+      const updatedJournal = { ...currentJournal, ...updates };
       
-      if (journal.id) {
+      if (currentJournal.id) {
         // Update existing
         const { error } = await supabase
           .from('lunar_cycle_journals')
@@ -207,37 +212,56 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
             ...updates,
             user_id: user?.id || null,
           })
-          .eq('id', journal.id);
+          .eq('id', currentJournal.id);
         
         if (error) throw error;
       } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('lunar_cycle_journals')
-          .insert({
-            device_id: deviceId,
-            chart_id: chartId,
-            cycle_start_date: cycleKey,
-            cycle_sign: cycleSign,
-            user_id: user?.id || null,
-            ...updates,
-          })
-          .select()
-          .single();
+        // Upsert: try insert, on conflict update
+        const payload = {
+          device_id: deviceId,
+          chart_id: chartId,
+          cycle_start_date: cycleKey,
+          cycle_sign: cycleSign,
+          user_id: user?.id || null,
+          ...updates,
+        };
         
-        if (error) throw error;
-        if (data) {
-          updatedJournal.id = data.id;
+        // First try to find if one was created by a concurrent save
+        const { data: existing } = await supabase
+          .from('lunar_cycle_journals')
+          .select('id')
+          .eq('device_id', deviceId)
+          .eq('chart_id', chartId)
+          .eq('cycle_start_date', cycleKey)
+          .maybeSingle();
+        
+        if (existing) {
+          // Row exists now, update it
+          const { error } = await supabase
+            .from('lunar_cycle_journals')
+            .update({ ...updates, user_id: user?.id || null })
+            .eq('id', existing.id);
+          if (error) throw error;
+          updatedJournal.id = existing.id;
+        } else {
+          const { data, error } = await supabase
+            .from('lunar_cycle_journals')
+            .insert(payload)
+            .select()
+            .single();
+          if (error) throw error;
+          if (data) updatedJournal.id = data.id;
         }
       }
       
       setJournal(updatedJournal);
+      journalRef.current = updatedJournal;
     } catch (err) {
       console.error('Failed to save lunar journal:', err);
     } finally {
       setIsSaving(false);
     }
-  }, [journal, deviceId, chartId, cycleKey, cycleSign, user?.id]);
+  }, [deviceId, chartId, cycleKey, cycleSign, user?.id]);
   
   // Update a single field
   const updateField = useCallback((field: keyof LunarJournalEntry, value: string) => {
