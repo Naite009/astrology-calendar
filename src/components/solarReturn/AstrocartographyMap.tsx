@@ -174,8 +174,20 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const mapW = 800;
   const mapH = view === 'us' ? 500 : 400;
   
-  const projectCity = (lat: number, lng: number) => {
+  const projectCity = (lat: number, lng: number, cityName?: string) => {
     if (view === 'us') {
+      const manualUSPositions: Record<string, { x: number; y: number }> = {
+        'San Francisco': { x: 78, y: 175 },
+        'Boulder': { x: 365, y: 166 },
+        'Ann Arbor': { x: 402, y: 142 },
+        'Montreal': { x: 470, y: 148 },
+        'Philadelphia': { x: 455, y: 184 },
+        'Washington DC': { x: 438, y: 166 },
+        'Charlotte': { x: 412, y: 196 },
+        'Miami': { x: 415, y: 290 },
+        'San Juan': { x: 535, y: 330 },
+      };
+      if (cityName && manualUSPositions[cityName]) return manualUSPositions[cityName];
       if (isHawaii(lat, lng)) return projectHawaii(lat, lng, mapW, mapH);
       if (isAlaska(lat, lng)) return projectAlaska(lat, lng, mapW, mapH);
       return projectUS(lat, lng, mapW, mapH);
