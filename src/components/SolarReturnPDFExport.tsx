@@ -963,19 +963,22 @@ export function buildFullJsonStandalone(
     psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
     secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
     sabianSymbols: (() => {
-      const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
+      const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string; interpretation: string }> = {};
       const targets = [
-        { key: 'srSun', pos: srChart.planets?.Sun },
-        { key: 'srMoon', pos: srChart.planets?.Moon },
-        { key: 'srAscendant', pos: srChart.houseCusps?.house1 },
-        { key: 'natalSun', pos: natalChart.planets?.Sun },
-        { key: 'natalMoon', pos: natalChart.planets?.Moon },
-        { key: 'natalAscendant', pos: natalChart.houseCusps?.house1 },
+        { key: 'srSun', pos: srChart.planets?.Sun, label: 'Solar Return Sun' },
+        { key: 'srMoon', pos: srChart.planets?.Moon, label: 'Solar Return Moon' },
+        { key: 'srAscendant', pos: srChart.houseCusps?.house1, label: 'Solar Return Ascendant' },
+        { key: 'natalSun', pos: natalChart.planets?.Sun, label: 'Natal Sun' },
+        { key: 'natalMoon', pos: natalChart.planets?.Moon, label: 'Natal Moon' },
+        { key: 'natalAscendant', pos: natalChart.houseCusps?.house1, label: 'Natal Ascendant' },
       ];
-      for (const { key, pos } of targets) {
+      for (const { key, pos, label } of targets) {
         if (pos?.sign && pos?.degree != null) {
           const sabian = getSabianSymbol(pos.degree, pos.sign);
-          results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian };
+          const interpText = sabian.meaning
+            ? `Your ${label} at ${Math.floor(pos.degree)}° ${pos.sign} carries this symbol's energy. ${sabian.meaning}`
+            : `This degree activates subtle ${pos.sign} themes through your ${label}.`;
+          results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian, interpretation: interpText };
         }
       }
       return results;
