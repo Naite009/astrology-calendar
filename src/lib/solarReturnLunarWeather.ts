@@ -31,6 +31,7 @@ export interface LunarWeatherMonth {
   checkpoints: MoonTransitCheckpoint[];
   overallTone: string;
   peakDay: number;         // day offset of highest intensity
+  interpretation: string;  // narrative of what this month feels like emotionally
 }
 
 export interface LunarWeatherMap {
@@ -104,6 +105,7 @@ export function generateLunarWeatherMap(
     const peakDay = Math.round(i * 30.4 + 14); // approximately mid-month
 
     const overallTone = getMonthTone(i, natalMoonSign, analysis);
+    const interpretation = getMonthInterpretation(i, natalMoonSign, monthIntensity, monthName);
 
     months.push({
       month: monthName,
@@ -112,6 +114,7 @@ export function generateLunarWeatherMap(
       checkpoints,
       overallTone,
       peakDay,
+      interpretation,
     });
 
     if (lunarReturn.intensity >= 4) emotionalPeaks.push(monthName);
@@ -187,9 +190,24 @@ function getMonthTone(monthOffset: number, natalMoonSign: string, analysis: Sola
   return `A month of ${base} — your ${natalMoonSign} Moon brings ${moonData?.tone || 'emotional processing'} to this period.`;
 }
 
+function getMonthInterpretation(monthOffset: number, natalMoonSign: string, intensity: number, monthName: string): string {
+  const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+  const phase = monthOffset <= 2 ? 'early' : monthOffset <= 5 ? 'building' : monthOffset <= 8 ? 'mid-year' : 'closing';
+  const intensityDesc = intensity >= 4 ? 'emotionally charged' : intensity >= 3 ? 'moderately active' : 'relatively calm';
+
+  const phaseNarrative: Record<string, string> = {
+    early: `${monthName} falls in the opening months of your birthday year. Your emotional radar is resetting, adjusting to the new annual themes.`,
+    building: `${monthName} is a building phase. The emotional patterns of the year are becoming clearer and more established.`,
+    'mid-year': `${monthName} sits at the year's midpoint. Emotional themes that started earlier are now at their peak or require conscious attention.`,
+    closing: `${monthName} is in the closing stretch of the birthday year. Emotional integration and reflection on what this year has taught you.`,
+  };
+
+  return `${phaseNarrative[phase]} This is a ${intensityDesc} month for your ${natalMoonSign} Moon, which processes through ${moonData.tone}. When the Moon returns to ${natalMoonSign} this month, take time to check in with your core emotional needs.`;
+}
+
 function buildYearPattern(natalMoonSign: string, analysis: SolarReturnAnalysis, peaks: string[]): string {
   const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign];
   const peakStr = peaks.length > 0 ? peaks.join(', ') : 'no particular month';
 
-  return `With your natal Moon in ${natalMoonSign}, your emotional baseline this year runs on ${moonData?.tone || 'steady processing'}. Each month when the Moon returns to ${natalMoonSign}, you experience an emotional reset — a chance to reconnect with your core needs. Emotional peaks cluster around ${peakStr}. Between these resets, the Moon's journey through all twelve signs creates a 2.5-day rhythm of shifting moods and emotional textures.`;
+  return `With your natal Moon in ${natalMoonSign}, your emotional baseline this year runs on ${moonData?.tone || 'steady processing'}. Each month when the Moon returns to ${natalMoonSign}, you experience an emotional reset, a chance to reconnect with your core needs. Emotional peaks cluster around ${peakStr}. Between these resets, the Moon's journey through all twelve signs creates a 2.5-day rhythm of shifting moods and emotional textures.`;
 }

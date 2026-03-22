@@ -131,6 +131,7 @@ export interface SRQuarterlyFocus {
   dominantThemes: string[];
   activePlanets: string[];
   interpretation: string;
+  focus: string;
 }
 
 // ─── Planet body associations ───────────────────────────────────────
@@ -583,14 +584,14 @@ export function calculateEnhancedRetrogrades(
     const house = null; // will be filled by caller from planetSRHouses
 
     const RETRO_PLAIN: Record<string, string> = {
-      Mercury: 'This is a period for slowing down communication, double-checking plans, and revisiting old ideas rather than launching new ones. Expect travel hiccups and contract delays — use them as invitations to refine.',
+      Mercury: 'This is a period for slowing down communication, double-checking plans, and revisiting old ideas rather than launching new ones. Expect travel hiccups and contract delays. Use them as invitations to refine.',
       Venus: 'Your relationship and financial patterns are up for review. Old connections may reappear, giving you a chance to find closure or reconnect. Take your time with big purchases and romantic decisions.',
       Mars: 'Your drive and ambition are turned inward right now. You may feel frustrated that things aren\'t moving faster, but this is a powerful time for revising goals and redirecting energy toward what truly matters.',
       Jupiter: 'Growth is happening on the inside this year. Outer opportunities may slow down, but your inner wisdom and philosophical understanding are expanding in important ways.',
-      Saturn: 'The structures and responsibilities in your life need internal reorganization. Progress feels slow because the real work is psychological — reassessing what commitments still serve you.',
-      Uranus: 'You\'re quietly questioning where you\'ve been playing it safe or being inauthentic. The changes brewing inside will become visible later — for now, trust the inner restlessness.',
+      Saturn: 'The structures and responsibilities in your life need internal reorganization. Progress feels slow because the real work is psychological. Reassess what commitments still serve you.',
+      Uranus: 'You\'re quietly questioning where you\'ve been playing it safe or being inauthentic. The changes brewing inside will become visible later. For now, trust the inner restlessness.',
       Neptune: 'Your imagination, dreams, and intuition are especially vivid. Creative inspiration comes more easily, and your inner spiritual life deepens. Pay attention to what surfaces in quiet moments.',
-      Pluto: 'Deep personal transformation is happening beneath the surface. Power dynamics in your relationships are shifting internally — you\'re processing changes that will become clear over time.',
+      Pluto: 'Deep personal transformation is happening beneath the surface. Power dynamics in your relationships are shifting internally. You\'re processing changes that will become clear over time.',
     };
 
     const keyDates = period ? ` Key dates to watch: the review period begins around ${period.shadowPre}, the most intense reflection runs from ${period.stationRx} to ${period.stationDirect}, and things clear up by ${period.shadowPost}.` : '';
@@ -606,7 +607,7 @@ export function calculateEnhancedRetrogrades(
       directDegree: period?.directDegree || '',
       shadowPreStart: period?.shadowPre || '',
       shadowPostEnd: period?.shadowPost || '',
-      interpretation: (RETRO_PLAIN[planet] || 'This area of your life is in a review and revision phase — take your time before making big moves.') + keyDates,
+      interpretation: (RETRO_PLAIN[planet] || 'This area of your life is in a review and revision phase. Take your time before making big moves.') + keyDates,
     });
   }
 
@@ -663,6 +664,12 @@ export function calculateQuarterlyFocus(
 
     const intensity = activePlanets.length >= 3 ? 'high' : activePlanets.length >= 1 ? 'moderate' : 'quiet';
 
+    const focusSummary = intensity === 'high'
+      ? `High-energy focus on ${themes.slice(0, 2).join(' and ').toLowerCase()}`
+      : intensity === 'moderate'
+      ? `Steady progress in ${themes.slice(0, 2).join(' and ').toLowerCase()}`
+      : `Quieter period for reflection on ${themes.slice(0, 2).join(' and ').toLowerCase()}`;
+
     quarters.push({
       quarter: (q + 1) as 1 | 2 | 3 | 4,
       label: `Q${q + 1}`,
@@ -674,10 +681,11 @@ export function calculateQuarterlyFocus(
         intensity === 'moderate' ? `${activePlanets.join(', ')} activate${activePlanets.length === 1 ? 's' : ''}` :
         'A quieter quarter with focus on'
       } ${themes.slice(0, 2).join(' and ').toLowerCase()}. ${
-        intensity === 'high' ? 'Multiple planetary energies converge — expect significant developments.' :
+        intensity === 'high' ? 'Multiple planetary energies converge. Expect significant developments.' :
         intensity === 'moderate' ? 'Steady progress in these life areas.' :
         'Use this time for reflection and preparation.'
       }`,
+      focus: focusSummary,
     });
   }
 

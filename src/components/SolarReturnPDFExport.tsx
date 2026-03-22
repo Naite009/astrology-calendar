@@ -729,23 +729,30 @@ export function downloadBirthdayJSONStandalone(
       identityShift: generateIdentityShift(analysis, srChart, natalChart),
       lifeDomainScores: calculateLifeDomainScores(analysis),
       powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
-      domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+      domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart).map(d => ({
+        ...d,
+        narrative: d.synthesis.paragraph,
+        drivers: d.keyPlanets.map(p => ({ planet: p.planet, sign: p.sign, house: p.house, role: p.role, tone: p.tone })),
+      })),
       psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
       secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
       sabianSymbols: (() => {
-        const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
+        const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string; interpretation: string }> = {};
         const targets = [
-          { key: 'srSun', pos: srChart.planets?.Sun },
-          { key: 'srMoon', pos: srChart.planets?.Moon },
-          { key: 'srAscendant', pos: srChart.houseCusps?.house1 },
-          { key: 'natalSun', pos: natalChart.planets?.Sun },
-          { key: 'natalMoon', pos: natalChart.planets?.Moon },
-          { key: 'natalAscendant', pos: natalChart.houseCusps?.house1 },
+          { key: 'srSun', pos: srChart.planets?.Sun, label: 'Solar Return Sun' },
+          { key: 'srMoon', pos: srChart.planets?.Moon, label: 'Solar Return Moon' },
+          { key: 'srAscendant', pos: srChart.houseCusps?.house1, label: 'Solar Return Ascendant' },
+          { key: 'natalSun', pos: natalChart.planets?.Sun, label: 'Natal Sun' },
+          { key: 'natalMoon', pos: natalChart.planets?.Moon, label: 'Natal Moon' },
+          { key: 'natalAscendant', pos: natalChart.houseCusps?.house1, label: 'Natal Ascendant' },
         ];
-        for (const { key, pos } of targets) {
+        for (const { key, pos, label } of targets) {
           if (pos?.sign && pos?.degree != null) {
             const sabian = getSabianSymbol(pos.degree, pos.sign);
-            results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian };
+            const interpText = sabian.meaning
+              ? `Your ${label} at ${Math.floor(pos.degree)}° ${pos.sign} carries this symbol's energy. ${sabian.meaning}`
+              : `This degree activates subtle ${pos.sign} themes through your ${label}.`;
+            results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian, interpretation: interpText };
           }
         }
         return results;
@@ -783,7 +790,7 @@ export function downloadBirthdayJSONStandalone(
     }
   };
 
-  const cleaned = stripEmpty(payload) || payload;
+  const cleaned = stripDashesDeep(stripEmpty(payload) || payload);
   const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -956,23 +963,30 @@ export function buildFullJsonStandalone(
     identityShift: generateIdentityShift(analysis, srChart, natalChart),
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
-    domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+    domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart).map(d => ({
+      ...d,
+      narrative: d.synthesis.paragraph,
+      drivers: d.keyPlanets.map(p => ({ planet: p.planet, sign: p.sign, house: p.house, role: p.role, tone: p.tone })),
+    })),
     psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
     secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
     sabianSymbols: (() => {
-      const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string }> = {};
+      const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string; interpretation: string }> = {};
       const targets = [
-        { key: 'srSun', pos: srChart.planets?.Sun },
-        { key: 'srMoon', pos: srChart.planets?.Moon },
-        { key: 'srAscendant', pos: srChart.houseCusps?.house1 },
-        { key: 'natalSun', pos: natalChart.planets?.Sun },
-        { key: 'natalMoon', pos: natalChart.planets?.Moon },
-        { key: 'natalAscendant', pos: natalChart.houseCusps?.house1 },
+        { key: 'srSun', pos: srChart.planets?.Sun, label: 'Solar Return Sun' },
+        { key: 'srMoon', pos: srChart.planets?.Moon, label: 'Solar Return Moon' },
+        { key: 'srAscendant', pos: srChart.houseCusps?.house1, label: 'Solar Return Ascendant' },
+        { key: 'natalSun', pos: natalChart.planets?.Sun, label: 'Natal Sun' },
+        { key: 'natalMoon', pos: natalChart.planets?.Moon, label: 'Natal Moon' },
+        { key: 'natalAscendant', pos: natalChart.houseCusps?.house1, label: 'Natal Ascendant' },
       ];
-      for (const { key, pos } of targets) {
+      for (const { key, pos, label } of targets) {
         if (pos?.sign && pos?.degree != null) {
           const sabian = getSabianSymbol(pos.degree, pos.sign);
-          results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian };
+          const interpText = sabian.meaning
+            ? `Your ${label} at ${Math.floor(pos.degree)}° ${pos.sign} carries this symbol's energy. ${sabian.meaning}`
+            : `This degree activates subtle ${pos.sign} themes through your ${label}.`;
+          results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian, interpretation: interpText };
         }
       }
       return results;
@@ -1083,6 +1097,35 @@ export function buildFullJsonStandalone(
       'advancedTechniques', 'patternTracking', 'finalAdvice',
     ],
   };
+}
+
+// ── Replace em-dashes and en-dashes with proper punctuation ──
+function stripDashes(text: string): string {
+  if (typeof text !== 'string') return text;
+  // Replace " — " (em-dash with spaces) with ". " or ", "
+  let result = text
+    .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
+    .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
+    .replace(/\.\s*\./g, '.')            // clean up double periods
+    .replace(/,\s*\./g, '.')             // clean up comma-period
+    .replace(/\.\s*,/g, '.')             // clean up period-comma
+    .replace(/\s{2,}/g, ' ')             // collapse multiple spaces
+    .trim();
+  return result;
+}
+
+// ── Recursively strip dashes from all string values in an object ──
+function stripDashesDeep(obj: any): any {
+  if (typeof obj === 'string') return stripDashes(obj);
+  if (Array.isArray(obj)) return obj.map(stripDashesDeep);
+  if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
+    const result: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      result[k] = stripDashesDeep(v);
+    }
+    return result;
+  }
+  return obj;
 }
 
 // ── Strip empty/null fields from JSON export ──
