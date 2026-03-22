@@ -303,64 +303,6 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   // Document excerpts for AI enrichment
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
-  // Load browser voices
-  useEffect(() => {
-    const loadVoices = () => {
-      const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
-      if (voices.length > 0) setAvailableVoices(voices);
-    };
-    loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
-    return () => { speechSynthesis.onvoiceschanged = null; };
-  }, []);
-
-  const stopTtsAudio = useCallback(() => {
-    speechSynthesis.cancel();
-    utteranceRef.current = null;
-    setTtsState('idle');
-  }, []);
-
-  const playTtsInsights = useCallback(() => {
-    const textToRead = selectedWeekDay === 0 ? cosmicData?.insight : weekDayInsights[selectedWeekDay];
-    if (!textToRead) return;
-
-    if (ttsState === 'playing') { stopTtsAudio(); return; }
-    if (ttsState === 'paused') { speechSynthesis.resume(); setTtsState('playing'); return; }
-
-    const cleanText = textToRead
-      .replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')
-      .replace(/##\s*/g, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/- /g, '')
-      .replace(/\[.*?\]\(.*?\)/g, '')
-      .replace(/\n+/g, ' ')
-      .replace(/[☉☽☿♀♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓☊☋△□⚹☌]/g, '')
-      .trim();
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    // Apply selected voice
-    if (ttsVoiceName && availableVoices.length > 0) {
-      const match = availableVoices.find(v => v.name === ttsVoiceName);
-      if (match) utterance.voice = match;
-    } else if (availableVoices.length > 0) {
-      // Default: pick a nice voice
-      const preferred = availableVoices.find(v => v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Female'));
-      if (preferred) utterance.voice = preferred;
-    }
-
-    utterance.onend = () => setTtsState('idle');
-    utterance.onerror = () => setTtsState('idle');
-    utteranceRef.current = utterance;
-
-    speechSynthesis.speak(utterance);
-    setTtsState('playing');
-  }, [ttsState, stopTtsAudio, cosmicData, weekDayInsights, selectedWeekDay, ttsVoiceName, availableVoices]);
-
-  // Cleanup TTS on unmount
-  useEffect(() => { return () => { stopTtsAudio(); }; }, [stopTtsAudio]);
   
   // Get saved charts - prefer props, fall back to hook
   const hookData = useNatalChart();
