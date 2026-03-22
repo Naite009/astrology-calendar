@@ -229,13 +229,15 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
         };
         
         // First try to find if one was created by a concurrent save
-        const { data: existing } = await supabase
+        const { data: existingRows } = await supabase
           .from('lunar_cycle_journals')
           .select('id')
           .eq('device_id', deviceId)
           .eq('chart_id', chartId)
           .eq('cycle_start_date', cycleKey)
-          .maybeSingle();
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
         
         if (existing) {
           // Row exists now, update it
