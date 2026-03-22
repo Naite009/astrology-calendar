@@ -155,7 +155,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 22 : 20)) break;
+      if (selected.length >= (view === 'us' ? 22 : 25)) break;
     }
     return selected;
   }, [cities, view]);
