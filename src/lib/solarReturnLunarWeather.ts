@@ -105,6 +105,7 @@ export function generateLunarWeatherMap(
     const peakDay = Math.round(i * 30.4 + 14); // approximately mid-month
 
     const overallTone = getMonthTone(i, natalMoonSign, analysis);
+    const interpretation = getMonthInterpretation(i, natalMoonSign, monthIntensity, monthName);
 
     months.push({
       month: monthName,
@@ -113,6 +114,7 @@ export function generateLunarWeatherMap(
       checkpoints,
       overallTone,
       peakDay,
+      interpretation,
     });
 
     if (lunarReturn.intensity >= 4) emotionalPeaks.push(monthName);
