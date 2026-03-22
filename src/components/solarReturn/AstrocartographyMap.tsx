@@ -209,7 +209,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     });
     
     for (const city of sortedCities) {
-      const { x, y } = projectCity(city.latitude, city.longitude);
+      const { x, y } = projectCity(city.latitude, city.longitude, city.city);
       const w = estimateWidth(city.city);
       
       // Use fixed position if defined for this city
