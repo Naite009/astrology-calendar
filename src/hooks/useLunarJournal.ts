@@ -123,7 +123,7 @@ function getDeviceId(): string {
 }
 
 export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign: string) => {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [journal, setJournal] = useState<LunarJournalEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -131,9 +131,15 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
   
   const deviceId = getDeviceId();
   const cycleKey = formatLocalDateKey(cycleStartDate);
+  const journalRef = React.useRef<LunarJournalEntry | null>(null);
+  const activeJournalLoadRef = React.useRef(0);
+  const activePastJournalsLoadRef = React.useRef(0);
   
   // Load journal for current cycle
   const loadJournal = useCallback(async () => {
+    if (isAuthLoading) return;
+
+    const requestId = ++activeJournalLoadRef.current;
     setIsLoading(true);
     try {
       const query = supabase
@@ -147,6 +153,8 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
       const { data: rows, error } = user?.id
         ? await query.eq('user_id', user.id)
         : await query.eq('device_id', deviceId).is('user_id', null);
+
+      if (requestId !== activeJournalLoadRef.current) return;
 
       const data = rows && rows.length > 0 ? rows[0] : null;
 
@@ -164,14 +172,20 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
         });
       }
     } catch (err) {
+      if (requestId !== activeJournalLoadRef.current) return;
       console.error('Failed to load lunar journal:', err);
     } finally {
-      setIsLoading(false);
+      if (requestId === activeJournalLoadRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [deviceId, chartId, cycleKey, cycleSign, user?.id]);
+  }, [deviceId, chartId, cycleKey, cycleSign, user?.id, isAuthLoading]);
 
   // Load past journals for this chart
   const loadPastJournals = useCallback(async () => {
+    if (isAuthLoading) return;
+
+    const requestId = ++activePastJournalsLoadRef.current;
     try {
       const query = supabase
         .from('lunar_cycle_journals')
@@ -185,23 +199,30 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
         ? await query.eq('user_id', user.id)
         : await query.eq('device_id', deviceId).is('user_id', null);
 
+      if (requestId !== activePastJournalsLoadRef.current) return;
+
       if (error) {
         console.error('Error loading past journals:', error);
-      } else if (data) {
-        setPastJournals(data as LunarJournalEntry[]);
+      } else {
+        setPastJournals((data as LunarJournalEntry[]) || []);
       }
     } catch (err) {
+      if (requestId !== activePastJournalsLoadRef.current) return;
       console.error('Failed to load past journals:', err);
     }
-  }, [deviceId, chartId, cycleKey, user?.id]);
+  }, [deviceId, chartId, cycleKey, user?.id, isAuthLoading]);
   
   useEffect(() => {
+    if (isAuthLoading) {
+      setIsLoading(true);
+      return;
+    }
+
     loadJournal();
     loadPastJournals();
-  }, [loadJournal, loadPastJournals]);
+  }, [isAuthLoading, loadJournal, loadPastJournals]);
   
   // Use a ref to always have the latest journal for saves
-  const journalRef = React.useRef(journal);
   useEffect(() => { journalRef.current = journal; }, [journal]);
 
   // Save/update journal using upsert to avoid race conditions

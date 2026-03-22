@@ -415,18 +415,18 @@ export const LunarWorkbookSection = ({
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">🃏</span> New Moon Card Pulls
-            <Badge variant="secondary" className="ml-auto text-[10px] font-normal">
-              {chartName}
-            </Badge>
           </CardTitle>
           <p className="text-[10px] text-muted-foreground">Pull a tarot and/or oracle card for this cycle. Enter the card name and get an AI interpretation tied to the {cycleSign} New Moon.</p>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Tarot Card */}
           <div className="space-y-3 p-4 rounded-lg bg-secondary/20 border border-border/30">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-base">🎴</span>
               <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Tarot Card</h4>
+              <Badge variant="secondary" className="text-sm font-semibold px-3 py-1">
+                {chartName}
+              </Badge>
             </div>
             <div className="space-y-2">
               {(() => {
