@@ -247,7 +247,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       }
       
       // 6 candidate positions: right, left, above, below, upper-right, lower-left
-      const candidates = [
+      const candidates: LabelPlacement[] = [
         { dx: (view === 'us' ? 8 : 7), dy: 0, anchor: 'start' },
         { dx: -(view === 'us' ? 8 : 7), dy: 0, anchor: 'end' },
         { dx: 0, dy: -(view === 'us' ? 10 : 8), anchor: 'middle' },
