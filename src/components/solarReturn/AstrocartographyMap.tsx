@@ -352,7 +352,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                       <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite" />
                     </circle>
                   )}
-                  <circle cx={x} cy={y} r={dotR} fill={ratingColor(city.rating)} stroke={isSelected ? 'hsl(var(--primary))' : 'hsl(var(--background))'} strokeWidth={isSelected ? 2 : 1} opacity={0.9} />
+                  <circle cx={x} cy={y} r={dotR} fill={ratingColor(cityRating(city))} stroke={isSelected ? 'hsl(var(--primary))' : 'hsl(var(--background))'} strokeWidth={isSelected ? 2 : 1} opacity={0.9} />
                   <text x={x + lp.dx} y={y + lp.dy} textAnchor={lp.anchor} className="fill-foreground" fontSize={view === 'us' ? 9 : 7} fontWeight={isSelected ? 600 : 400} opacity={isSelected ? 1 : 0.65}>
                     {city.city}
                   </text>
