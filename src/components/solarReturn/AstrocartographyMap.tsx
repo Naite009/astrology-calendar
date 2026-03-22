@@ -111,10 +111,20 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   }, [cities, astrocarto.worstMaleficCity, intention]);
 
   // Cities that MUST appear on the map when present
-  const MUST_SHOW = new Set([
+  const MUST_SHOW_US = new Set([
     'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor',
     'Bloomington', 'Miami', 'Charlotte',
   ]);
+  const MUST_SHOW_WORLD = new Set([
+    'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
+  ]);
+  const MUST_SHOW = new Set([...MUST_SHOW_US, ...MUST_SHOW_WORLD]);
+
+  // Fixed label positions for specific cities to avoid collisions
+  const FIXED_LABEL_POSITIONS: Record<string, { dx: number; dy: number; anchor: string }> = {
+    'Washington DC': { dx: 10, dy: 4, anchor: 'start' },   // always to the right
+    'Philadelphia': { dx: 0, dy: -10, anchor: 'middle' },    // always above
+  };
 
   // Geographic diversity filter — prevent overlapping labels
   const visibleCities = useMemo(() => {
