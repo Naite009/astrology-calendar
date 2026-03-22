@@ -397,6 +397,10 @@ export interface SolarReturnAnalysis {
     aspectType: string;
     orb: number;
     targetSRHouse: number | null;
+    targetSRSign: string;
+    sourceSRHouse: number | null;
+    sourceHouseTheme: string;
+    targetHouseTheme: string;
     interpretation: string;
   }[];
   /** Moon timing: key aspects the SR Moon will perfect during the year (1°/month) — DEPRECATED, kept for compat */
