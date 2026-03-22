@@ -240,6 +240,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             >
               USA Close-Up
             </button>
+          </div>
         </div>
 
         {/* Intention filter */}
