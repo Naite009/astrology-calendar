@@ -112,6 +112,7 @@ export const LunarWorkbookSection = ({
 }: LunarWorkbookSectionProps) => {
   const [simpleMode, setSimpleMode] = useState(true);
   const [isGeneratingIntentions, setIsGeneratingIntentions] = useState(false);
+  const [interpretingCard, setInterpretingCard] = useState<'tarot' | 'oracle' | null>(null);
 
   const { journal, isLoading, isSaving, pastJournals, updateField, saveJournal } =
     useLunarJournal(chartId, cycleStartDate, cycleSign);
