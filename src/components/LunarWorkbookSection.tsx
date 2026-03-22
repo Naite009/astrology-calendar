@@ -368,7 +368,7 @@ export const LunarWorkbookSection = ({
 
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
       {(currentPhase === 'newMoon' || !simpleMode) && (
-        <Card className="border-border/30">
+        <Card id="intentions-section" className="border-border/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" /> New Moon Seed
