@@ -133,9 +133,10 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
 
-    // Always include must-show cities first
-    const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
-    const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
+    // Always include must-show cities first (view-specific)
+    const viewMustShow = view === 'us' ? MUST_SHOW_US : MUST_SHOW;
+    const mustShow = filtered.filter(c => viewMustShow.has(c.city));
+    const rest = filtered.filter(c => !viewMustShow.has(c.city));
 
     // Prioritize green-rated cities (>=7.5) for current intention so travel-worthy spots appear
     const greenCities = rest.filter(c => cityRating(c) >= 7.5);
