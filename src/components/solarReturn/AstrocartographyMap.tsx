@@ -240,7 +240,23 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             >
               USA Close-Up
             </button>
-          </div>
+        </div>
+
+        {/* Intention filter */}
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).map(key => (
+            <button
+              key={key}
+              onClick={() => setIntention(key)}
+              className={`px-2.5 py-1 text-[10px] uppercase tracking-widest rounded-sm border transition-colors ${
+                intention === key
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-muted-foreground border-border hover:border-primary/40'
+              }`}
+            >
+              {INTENTION_EMOJIS[key]} {INTENTION_LABELS[key]}
+            </button>
+          ))}
         </div>
 
         {/* Best / Most Challenging summary */}
