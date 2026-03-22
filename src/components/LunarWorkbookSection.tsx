@@ -549,7 +549,7 @@ export const LunarWorkbookSection = ({
         </CardContent>
       </Card>
 
-      <Card className="border-border/30">
+      <Card id="phase-checkins-section" className="border-border/30">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" /> Phase Check-ins
