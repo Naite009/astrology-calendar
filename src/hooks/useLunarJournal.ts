@@ -230,7 +230,6 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
         
         if (error) throw error;
       } else {
-        // Upsert: try insert, on conflict update
         const payload = {
           device_id: deviceId,
           chart_id: chartId,
@@ -239,23 +238,24 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
           user_id: user?.id || null,
           ...updates,
         };
-        
-        // First try to find if one was created by a concurrent save
-        const { data: existingRows } = await supabase
+
+        const existingQuery = supabase
           .from('lunar_cycle_journals')
           .select('id')
-          .eq('device_id', deviceId)
           .eq('chart_id', chartId)
           .eq('cycle_start_date', cycleKey)
           .order('updated_at', { ascending: false })
           .limit(1);
+
+        const { data: existingRows } = user?.id
+          ? await existingQuery.eq('user_id', user.id)
+          : await existingQuery.eq('device_id', deviceId).is('user_id', null);
         const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
-        
+
         if (existing) {
-          // Row exists now, update it
           const { error } = await supabase
             .from('lunar_cycle_journals')
-            .update({ ...updates, user_id: user?.id || null })
+            .update({ ...updates, user_id: user?.id || null, device_id: deviceId })
             .eq('id', existing.id);
           if (error) throw error;
           updatedJournal.id = existing.id;
