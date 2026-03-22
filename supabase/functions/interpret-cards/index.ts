@@ -26,9 +26,22 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    const isReversed = cardName.includes('(Reversed)');
+    const cleanCardName = cardName.replace(' (Reversed)', '').trim();
+
     const cardContext = cardType === 'tarot' 
-      ? `The user drew the Tarot card: "${cardName}"`
-      : `The user drew the Oracle card: "${cardName}" from the "${deckName || 'unknown'}" deck`;
+      ? `The user drew the Tarot card: "${cleanCardName}"${isReversed ? ' in the REVERSED position' : ' UPRIGHT'}`
+      : `The user drew the Oracle card: "${cleanCardName}" from the "${deckName || 'unknown'}" deck`;
+
+    const reversalGuidance = isReversed ? `
+
+IMPORTANT: This card appeared REVERSED. A reversed card does NOT simply mean the opposite of the upright meaning. Reversals indicate:
+- The energy is internalized, blocked, delayed, or being resisted
+- A shadow expression of the card's archetype
+- An invitation to look inward rather than outward
+- Sometimes: the energy is just beginning to emerge or is fading out
+
+Weave the reversal meaning throughout your interpretation. Be specific about what the reversal changes about the card's usual message.` : '';
 
     const systemPrompt = `You are a wise and compassionate spiritual guide who interprets cards in the context of lunar cycles and personal growth. You blend traditional card meanings with intuitive, soul-centered guidance.
 
@@ -37,7 +50,7 @@ Your interpretations should:
 - Offer practical, actionable guidance
 - Be warm and encouraging without being superficial
 - Reference the user's stated intentions if provided
-- Keep the interpretation focused (2-3 paragraphs)`;
+- Keep the interpretation focused (2-3 paragraphs)${reversalGuidance}`;
 
     const userPrompt = `${cardContext}
 
