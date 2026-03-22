@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { Globe, MapPin, ChevronRight, Star, X, Maximize2, Minimize2 } from 'lucide-react';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
