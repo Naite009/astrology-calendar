@@ -2454,18 +2454,28 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
   // Shared base data builder (no AI fields)
   const buildBaseData = () => {
-    const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
+    // Correct Ascendant — houseCusps.house1 is definitive
+    const cNatal = { ...natalChart.planets };
+    if (natalChart.houseCusps?.house1?.sign && cNatal.Ascendant) {
+      cNatal.Ascendant = { ...cNatal.Ascendant, sign: natalChart.houseCusps.house1.sign, degree: natalChart.houseCusps.house1.degree, minutes: natalChart.houseCusps.house1.minutes || 0 };
+    }
+    const cSr = { ...srChart.planets };
+    if (srChart.houseCusps?.house1?.sign && (cSr as any).Ascendant) {
+      (cSr as any).Ascendant = { ...(cSr as any).Ascendant, sign: srChart.houseCusps.house1.sign, degree: srChart.houseCusps.house1.degree, minutes: srChart.houseCusps.house1.minutes || 0 };
+    }
+
+    const mappedPlanetPositions = Object.entries(cNatal || {}).map(([planet, data]) => ({
       planet,
       natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
       natalHouse:    String((data as any).house || '').replace(/^H/, ''),
       srPosition:    (() => {
-        const srPlanet = srChart.planets?.[planet];
+        const srPlanet = (cSr as any)?.[planet];
         return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
       })(),
       srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
       shift: (() => {
         const natal = (data as any).sign;
-        const sr    = srChart.planets?.[planet]?.sign;
+        const sr    = (cSr as any)?.[planet]?.sign;
         return (!sr || natal === sr) ? 'Same sign' : `${natal} → ${sr}`;
       })(),
     }));
