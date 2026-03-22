@@ -170,6 +170,33 @@ export const LunarWorkbookSection = ({
     finally { setIsGeneratingIntentions(false); }
   };
 
+  const handleInterpretCard = async (cardType: 'tarot' | 'oracle') => {
+    const cardName = cardType === 'tarot' ? journal?.tarot_card_name : journal?.oracle_card_name;
+    if (!cardName?.trim()) { toast.error(`Enter a ${cardType} card name first`); return; }
+    setInterpretingCard(cardType);
+    try {
+      const phaseName = currentPhase === 'newMoon' ? 'New Moon' : currentPhase === 'firstQuarter' ? 'First Quarter' : currentPhase === 'fullMoon' ? 'Full Moon' : currentPhase === 'lastQuarter' ? 'Last Quarter' : 'Balsamic';
+      const { data, error } = await supabase.functions.invoke('interpret-cards', {
+        body: {
+          cardType,
+          cardName: cardName.trim(),
+          deckName: cardType === 'oracle' ? journal?.oracle_deck_name : undefined,
+          cycleSign,
+          phaseName,
+          chartName,
+          intentions: journal?.new_moon_intentions,
+        }
+      });
+      if (error) throw error;
+      if (data?.interpretation) {
+        const field = cardType === 'tarot' ? 'tarot_ai_interpretation' : 'oracle_ai_interpretation';
+        saveJournal({ [field]: data.interpretation });
+        toast.success(`${cardType === 'tarot' ? 'Tarot' : 'Oracle'} card interpreted`);
+      }
+    } catch { toast.error("Failed to interpret card"); }
+    finally { setInterpretingCard(null); }
+  };
+
   if (isLoading) return (
     <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary/50" /></div>
   );
