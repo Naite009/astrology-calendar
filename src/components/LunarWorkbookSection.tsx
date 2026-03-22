@@ -715,6 +715,7 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 9 · Patterns + Insights ═══ */}
+      <div id="patterns-section">
       <PatternsInsightsSection
         pastJournals={pastJournals}
         currentJournal={journal}
