@@ -340,7 +340,7 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 4 · What Is Surfacing ═══ */}
-      <Card className="border-2 border-primary/25 bg-primary/5">
+      <Card id="surfacing-section" className="border-2 border-primary/25 bg-primary/5">
         <CardContent className="p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔴</span>
