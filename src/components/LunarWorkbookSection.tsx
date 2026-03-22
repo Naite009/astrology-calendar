@@ -112,6 +112,7 @@ export const LunarWorkbookSection = ({
 }: LunarWorkbookSectionProps) => {
   const [simpleMode, setSimpleMode] = useState(true);
   const [isGeneratingIntentions, setIsGeneratingIntentions] = useState(false);
+  const [interpretingCard, setInterpretingCard] = useState<'tarot' | 'oracle' | null>(null);
 
   const { journal, isLoading, isSaving, pastJournals, updateField, saveJournal } =
     useLunarJournal(chartId, cycleStartDate, cycleSign);
@@ -167,6 +168,33 @@ export const LunarWorkbookSection = ({
       if (data?.suggestions) { saveJournal({ ai_suggested_intentions: data.suggestions }); toast.success("Intentions generated"); }
     } catch { toast.error("Failed to generate intentions"); }
     finally { setIsGeneratingIntentions(false); }
+  };
+
+  const handleInterpretCard = async (cardType: 'tarot' | 'oracle') => {
+    const cardName = cardType === 'tarot' ? journal?.tarot_card_name : journal?.oracle_card_name;
+    if (!cardName?.trim()) { toast.error(`Enter a ${cardType} card name first`); return; }
+    setInterpretingCard(cardType);
+    try {
+      const phaseName = currentPhase === 'newMoon' ? 'New Moon' : currentPhase === 'firstQuarter' ? 'First Quarter' : currentPhase === 'fullMoon' ? 'Full Moon' : currentPhase === 'lastQuarter' ? 'Last Quarter' : 'Balsamic';
+      const { data, error } = await supabase.functions.invoke('interpret-cards', {
+        body: {
+          cardType,
+          cardName: cardName.trim(),
+          deckName: cardType === 'oracle' ? journal?.oracle_deck_name : undefined,
+          cycleSign,
+          phaseName,
+          chartName,
+          intentions: journal?.new_moon_intentions,
+        }
+      });
+      if (error) throw error;
+      if (data?.interpretation) {
+        const field = cardType === 'tarot' ? 'tarot_ai_interpretation' : 'oracle_ai_interpretation';
+        saveJournal({ [field]: data.interpretation });
+        toast.success(`${cardType === 'tarot' ? 'Tarot' : 'Oracle'} card interpreted`);
+      }
+    } catch { toast.error("Failed to interpret card"); }
+    finally { setInterpretingCard(null); }
   };
 
   if (isLoading) return (
@@ -369,7 +397,98 @@ export const LunarWorkbookSection = ({
         </Card>
       )}
 
-      {/* ═══ 6 · Phase Tracker ═══ */}
+      {/* ═══ 5b · New Moon Card Pulls ═══ */}
+      <Card className="border-border/30">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <span className="text-lg">🃏</span> New Moon Card Pulls
+          </CardTitle>
+          <p className="text-[10px] text-muted-foreground">Pull a tarot and/or oracle card for this cycle. Enter the card name and get an AI interpretation tied to the {cycleSign} New Moon.</p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Tarot Card */}
+          <div className="space-y-3 p-4 rounded-lg bg-secondary/20 border border-border/30">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🎴</span>
+              <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Tarot Card</h4>
+            </div>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="e.g. The Tower, 3 of Cups, Queen of Swords..."
+                value={journal?.tarot_card_name || ''}
+                onChange={e => saveJournal({ tarot_card_name: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              />
+              <Textarea
+                placeholder="Your own notes about this card — what struck you, what you felt when you saw it..."
+                value={journal?.tarot_card_notes || ''}
+                onChange={e => saveJournal({ tarot_card_notes: e.target.value })}
+                className="min-h-[60px] bg-background border-border/40 text-sm resize-none"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleInterpretCard('tarot')}
+                disabled={interpretingCard === 'tarot' || !journal?.tarot_card_name?.trim()}
+                className="w-full"
+              >
+                {interpretingCard === 'tarot' ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Interpreting...</> : <><Wand2 className="h-3 w-3 mr-1" /> Interpret This Card</>}
+              </Button>
+              {journal?.tarot_ai_interpretation && (
+                <div className="prose prose-sm dark:prose-invert bg-primary/5 p-3 rounded-lg border border-primary/15">
+                  <ReactMarkdown>{journal.tarot_ai_interpretation}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Oracle Card */}
+          <div className="space-y-3 p-4 rounded-lg bg-secondary/20 border border-border/30">
+            <div className="flex items-center gap-2">
+              <span className="text-base">✨</span>
+              <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Oracle Card</h4>
+            </div>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="e.g. Surrender, The Hidden Self, Transformation..."
+                value={journal?.oracle_card_name || ''}
+                onChange={e => saveJournal({ oracle_card_name: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              />
+              <input
+                type="text"
+                placeholder="Deck name (e.g. Moonology, Work Your Light...)"
+                value={journal?.oracle_deck_name || ''}
+                onChange={e => saveJournal({ oracle_deck_name: e.target.value })}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              />
+              <Textarea
+                placeholder="Your own notes — what the image or message stirred in you..."
+                value={journal?.oracle_card_notes || ''}
+                onChange={e => saveJournal({ oracle_card_notes: e.target.value })}
+                className="min-h-[60px] bg-background border-border/40 text-sm resize-none"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleInterpretCard('oracle')}
+                disabled={interpretingCard === 'oracle' || !journal?.oracle_card_name?.trim()}
+                className="w-full"
+              >
+                {interpretingCard === 'oracle' ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Interpreting...</> : <><Wand2 className="h-3 w-3 mr-1" /> Interpret This Card</>}
+              </Button>
+              {journal?.oracle_ai_interpretation && (
+                <div className="prose prose-sm dark:prose-invert bg-primary/5 p-3 rounded-lg border border-primary/15">
+                  <ReactMarkdown>{journal.oracle_ai_interpretation}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-border/30">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
