@@ -551,16 +551,32 @@ export const LunarWorkbookSection = ({
                 <>
                   <input
                     type="text"
-                    placeholder="Deck name..."
-                    value={(() => {
-                      const dn = journal?.oracle_deck_name;
-                      return dn === 'Other' ? '' : (dn || '');
-                    })()}
+                    placeholder="Type your deck name (e.g. Work Your Light, Sacred Rebels...)"
+                    value=""
                     onChange={e => {
-                      // Store "Other:DeckName" pattern
+                      if (e.target.value) saveJournal({ oracle_deck_name: e.target.value });
+                    }}
+                    onBlur={e => {
+                      if (e.target.value) saveJournal({ oracle_deck_name: e.target.value });
                     }}
                     className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
                   />
+                  <input
+                    type="text"
+                    placeholder="Card name..."
+                    value={journal?.oracle_card_name || ''}
+                    onChange={e => saveJournal({ oracle_card_name: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                  />
+                </>
+              ) : journal?.oracle_deck_name && journal.oracle_deck_name !== 'Moonology Oracle' && journal.oracle_deck_name !== 'Other' ? (
+                // Custom deck name already saved — show it and card input
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Deck:</span>
+                    <span className="text-xs font-medium text-foreground">{journal.oracle_deck_name}</span>
+                    <button onClick={() => saveJournal({ oracle_deck_name: '', oracle_card_name: '' })} className="text-[9px] text-muted-foreground hover:text-foreground ml-auto">✕ Change</button>
+                  </div>
                   <input
                     type="text"
                     placeholder="Card name..."
