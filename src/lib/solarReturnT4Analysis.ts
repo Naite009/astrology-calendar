@@ -664,6 +664,12 @@ export function calculateQuarterlyFocus(
 
     const intensity = activePlanets.length >= 3 ? 'high' : activePlanets.length >= 1 ? 'moderate' : 'quiet';
 
+    const focusSummary = intensity === 'high'
+      ? `High-energy focus on ${themes.slice(0, 2).join(' and ').toLowerCase()}`
+      : intensity === 'moderate'
+      ? `Steady progress in ${themes.slice(0, 2).join(' and ').toLowerCase()}`
+      : `Quieter period for reflection on ${themes.slice(0, 2).join(' and ').toLowerCase()}`;
+
     quarters.push({
       quarter: (q + 1) as 1 | 2 | 3 | 4,
       label: `Q${q + 1}`,
@@ -675,10 +681,11 @@ export function calculateQuarterlyFocus(
         intensity === 'moderate' ? `${activePlanets.join(', ')} activate${activePlanets.length === 1 ? 's' : ''}` :
         'A quieter quarter with focus on'
       } ${themes.slice(0, 2).join(' and ').toLowerCase()}. ${
-        intensity === 'high' ? 'Multiple planetary energies converge — expect significant developments.' :
+        intensity === 'high' ? 'Multiple planetary energies converge. Expect significant developments.' :
         intensity === 'moderate' ? 'Steady progress in these life areas.' :
         'Use this time for reflection and preparation.'
       }`,
+      focus: focusSummary,
     });
   }
 
