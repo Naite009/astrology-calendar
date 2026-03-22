@@ -122,8 +122,12 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
 
   // Fixed label positions for specific cities to avoid collisions
   const FIXED_LABEL_POSITIONS: Record<string, { dx: number; dy: number; anchor: string }> = {
-    'Washington DC': { dx: 12, dy: 6, anchor: 'start' },   // right and slightly below
-    'Philadelphia': { dx: 12, dy: -2, anchor: 'start' },    // to the right
+    'Washington DC': { dx: 18, dy: 10, anchor: 'start' },
+    'Philadelphia': { dx: 18, dy: -10, anchor: 'start' },
+    'Charlotte': { dx: -10, dy: 16, anchor: 'end' },
+    'Ann Arbor': { dx: 0, dy: -14, anchor: 'middle' },
+    'Montreal': { dx: 10, dy: -6, anchor: 'start' },
+    'Boulder': { dx: 10, dy: -4, anchor: 'start' },
   };
 
   // Geographic diversity filter — prevent overlapping labels
@@ -170,8 +174,20 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const mapW = 800;
   const mapH = view === 'us' ? 500 : 400;
   
-  const projectCity = (lat: number, lng: number) => {
+  const projectCity = (lat: number, lng: number, cityName?: string) => {
     if (view === 'us') {
+      const manualUSPositions: Record<string, { x: number; y: number }> = {
+        'San Francisco': { x: 78, y: 175 },
+        'Boulder': { x: 365, y: 166 },
+        'Ann Arbor': { x: 402, y: 142 },
+        'Montreal': { x: 470, y: 148 },
+        'Philadelphia': { x: 455, y: 184 },
+        'Washington DC': { x: 438, y: 166 },
+        'Charlotte': { x: 412, y: 196 },
+        'Miami': { x: 415, y: 290 },
+        'San Juan': { x: 535, y: 330 },
+      };
+      if (cityName && manualUSPositions[cityName]) return manualUSPositions[cityName];
       if (isHawaii(lat, lng)) return projectHawaii(lat, lng, mapW, mapH);
       if (isAlaska(lat, lng)) return projectAlaska(lat, lng, mapW, mapH);
       return projectUS(lat, lng, mapW, mapH);
@@ -193,7 +209,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     });
     
     for (const city of sortedCities) {
-      const { x, y } = projectCity(city.latitude, city.longitude);
+      const { x, y } = projectCity(city.latitude, city.longitude, city.city);
       const w = estimateWidth(city.city);
       
       // Use fixed position if defined for this city
@@ -356,13 +372,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             </defs>
 
             {visibleCities.map(city => {
-              const { x, y } = projectCity(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude, city.city);
               return <circle key={`glow-c-${city.city}`} cx={x} cy={y} r={view === 'us' ? 30 : 25} fill={`url(#glow-${city.city.replace(/\s/g, '')})`} />;
             })}
 
             {/* City dots + labels */}
             {visibleCities.map(city => {
-              const { x, y } = projectCity(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude, city.city);
               const isSelected = selectedCity?.city === city.city;
               const dotR = view === 'us' ? 5 : 4;
               const lp = labelPositions[city.city] || { dx: 0, dy: -10, anchor: 'middle' };

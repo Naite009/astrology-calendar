@@ -608,7 +608,17 @@ export function calculateAstrocartography(
     }
   }
 
-  const topCities = cityResults.slice(0, 50);
+  const PRIORITY_CITIES = [
+    'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
+    'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor', 'Bloomington', 'Miami', 'Charlotte',
+  ];
+  const priorityResults = PRIORITY_CITIES
+    .map(name => cityResults.find(city => city.city === name))
+    .filter((city): city is AstrocartoCity => Boolean(city));
+  const topCities = [
+    ...priorityResults,
+    ...cityResults.filter(city => !PRIORITY_CITIES.includes(city.city)),
+  ].slice(0, 60);
 
   const interpretation = topCities.length > 0
     ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`
