@@ -513,7 +513,12 @@ export function calculateAstrocartography(
       }
     }
 
-    if (angularPlanets.length === 0) continue;
+    // Skip cities with no angular planets UNLESS they're major world cities
+    const ALWAYS_INCLUDE = new Set([
+      'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
+      'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor', 'Bloomington', 'Miami', 'Charlotte',
+    ]);
+    if (angularPlanets.length === 0 && !ALWAYS_INCLUDE.has(cityData.city)) continue;
 
     const avgRating = ratingCount > 0 ? Math.min(10, Math.round((totalRating / ratingCount) * 10) / 10) : 5;
 
