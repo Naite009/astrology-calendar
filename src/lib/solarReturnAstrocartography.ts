@@ -551,14 +551,11 @@ export function calculateAstrocartography(
         continue;
       }
 
-      const weightedScore = weightedTotal / weightSum;
-      const confidence = Math.min(1, weightSum / 4.5);
-      const blend = 0.3 + (confidence * 0.25);
-      const stabilizedScore = (avgRating * (1 - blend)) + (weightedScore * blend);
-
-      intentionRatings[intention] = clampRating(
-        stabilizedScore + ((weightedScore - NEUTRAL_RATING) * 0.12 * confidence)
-      );
+      const intentionScore = weightedTotal / weightSum;
+      // Use the intention-specific score directly — only mix in 20% of overall
+      // as a gentle anchor so scores don't feel completely detached
+      const blended = (intentionScore * 0.8) + (avgRating * 0.2);
+      intentionRatings[intention] = clampRating(blended);
     }
 
     // Build summary
