@@ -202,9 +202,14 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     const currentJournal = journalRef.current;
     if (!currentJournal) return;
     
+    // Optimistic update — reflect changes in UI immediately
+    const optimisticJournal = { ...currentJournal, ...updates };
+    setJournal(optimisticJournal);
+    journalRef.current = optimisticJournal;
+
     setIsSaving(true);
     try {
-      const updatedJournal = { ...currentJournal, ...updates };
+      const updatedJournal = optimisticJournal;
       
       if (currentJournal.id) {
         // Update existing
@@ -262,6 +267,9 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
       journalRef.current = updatedJournal;
     } catch (err) {
       console.error('Failed to save lunar journal:', err);
+      // Revert optimistic update on failure
+      setJournal(currentJournal);
+      journalRef.current = currentJournal;
     } finally {
       setIsSaving(false);
     }
