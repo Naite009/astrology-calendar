@@ -136,13 +136,15 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
   const loadJournal = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: rows, error } = await supabase
         .from('lunar_cycle_journals')
         .select('*')
         .eq('device_id', deviceId)
         .eq('chart_id', chartId)
         .eq('cycle_start_date', cycleKey)
-        .maybeSingle();
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      const data = rows && rows.length > 0 ? rows[0] : null;
       
       if (error) {
         console.error('Error loading lunar journal:', error);
