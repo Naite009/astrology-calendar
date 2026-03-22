@@ -618,6 +618,7 @@ export const LunarWorkbookSection = ({
         onMetricChange={(f, v) => saveJournal({ [f]: v })}
         onTagsChange={tags => saveJournal({ tags })}
         onJournalTextChange={text => saveJournal({ journal_text: text })} />
+      </div>
 
       {/* ═══ 7 · Natal Overlay ═══ */}
       {!simpleMode && natalContext && (
