@@ -963,7 +963,11 @@ export function buildFullJsonStandalone(
     identityShift: generateIdentityShift(analysis, srChart, natalChart),
     lifeDomainScores: calculateLifeDomainScores(analysis),
     powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
-    domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
+    domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart).map(d => ({
+      ...d,
+      narrative: d.synthesis.paragraph,
+      drivers: d.keyPlanets.map(p => ({ planet: p.planet, sign: p.sign, house: p.house, role: p.role, tone: p.tone })),
+    })),
     psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
     secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
     sabianSymbols: (() => {
