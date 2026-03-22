@@ -439,6 +439,28 @@ export const LunarWorkbookSection = ({
                   {["Ace of Pentacles","Two of Pentacles","Three of Pentacles","Four of Pentacles","Five of Pentacles","Six of Pentacles","Seven of Pentacles","Eight of Pentacles","Nine of Pentacles","Ten of Pentacles","Page of Pentacles","Knight of Pentacles","Queen of Pentacles","King of Pentacles"].map(c => <option key={c} value={c}>{c}</option>)}
                 </optgroup>
               </select>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = journal?.tarot_card_name || '';
+                    if (!current) return;
+                    const base = current.replace(' (Reversed)', '');
+                    const isRev = current.includes('(Reversed)');
+                    saveJournal({ tarot_card_name: isRev ? base : `${base} (Reversed)` });
+                  }}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    journal?.tarot_card_name?.includes('(Reversed)') ? 'bg-primary' : 'bg-border'
+                  }`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-background shadow transition-transform ${
+                    journal?.tarot_card_name?.includes('(Reversed)') ? 'translate-x-5' : ''
+                  }`} />
+                </button>
+                <span className={`text-xs ${journal?.tarot_card_name?.includes('(Reversed)') ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                  Reversed {journal?.tarot_card_name?.includes('(Reversed)') ? '🔄' : ''}
+                </span>
+              </label>
               <Textarea
                 placeholder="Your own notes about this card — what struck you, what you felt when you saw it..."
                 value={journal?.tarot_card_notes || ''}
