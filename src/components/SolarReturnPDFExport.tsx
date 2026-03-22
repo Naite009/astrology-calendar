@@ -1085,6 +1085,35 @@ export function buildFullJsonStandalone(
   };
 }
 
+// ── Replace em-dashes and en-dashes with proper punctuation ──
+function stripDashes(text: string): string {
+  if (typeof text !== 'string') return text;
+  // Replace " — " (em-dash with spaces) with ". " or ", "
+  let result = text
+    .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
+    .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
+    .replace(/\.\s*\./g, '.')            // clean up double periods
+    .replace(/,\s*\./g, '.')             // clean up comma-period
+    .replace(/\.\s*,/g, '.')             // clean up period-comma
+    .replace(/\s{2,}/g, ' ')             // collapse multiple spaces
+    .trim();
+  return result;
+}
+
+// ── Recursively strip dashes from all string values in an object ──
+function stripDashesDeep(obj: any): any {
+  if (typeof obj === 'string') return stripDashes(obj);
+  if (Array.isArray(obj)) return obj.map(stripDashesDeep);
+  if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
+    const result: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      result[k] = stripDashesDeep(v);
+    }
+    return result;
+  }
+  return obj;
+}
+
 // ── Strip empty/null fields from JSON export ──
 function stripEmpty(obj: any): any {
   if (Array.isArray(obj)) {
