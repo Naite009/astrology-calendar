@@ -176,11 +176,11 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         'San Francisco': { x: 78, y: 175 },
         'Boulder': { x: 365, y: 166 },
         'Ann Arbor': { x: 402, y: 142 },
-        'Montreal': { x: 470, y: 148 },
-        'Philadelphia': { x: 452, y: 152 },
-        'Washington DC': { x: 432, y: 184 },
-        'Charlotte': { x: 402, y: 224 },
-        'Miami': { x: 430, y: 308 },
+        'Montreal': { x: 474, y: 132 },
+        'Philadelphia': { x: 520, y: 146 },
+        'Washington DC': { x: 500, y: 186 },
+        'Charlotte': { x: 458, y: 236 },
+        'Miami': { x: 482, y: 320 },
         'San Juan': { x: 535, y: 330 },
       };
       if (cityName && manualUSPositions[cityName]) return manualUSPositions[cityName];
