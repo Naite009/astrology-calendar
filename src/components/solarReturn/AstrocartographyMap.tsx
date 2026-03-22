@@ -8,7 +8,7 @@ import { Search } from 'lucide-react';
 import { Globe, MapPin, ChevronRight, Star, X, Maximize2, Minimize2 } from 'lucide-react';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { calculateAstrocartography, SRAstrocartography, AstrocartoCity } from '@/lib/solarReturnAstrocartography';
+import { calculateAstrocartography, SRAstrocartography, AstrocartoCity, AstrocartoIntention, INTENTION_LABELS, INTENTION_EMOJIS } from '@/lib/solarReturnAstrocartography';
 
 // ─── Coordinate projection helpers ─────────────────────────────────
 
@@ -79,27 +79,36 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const [view, setView] = useState<ViewMode>('world');
   const [selectedCity, setSelectedCity] = useState<AstrocartoCity | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [intention, setIntention] = useState<AstrocartoIntention>('overall');
 
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
-  const cities = astrocarto.topCities;
+  // Helper to get the active rating for a city based on selected intention
+  const cityRating = (c: AstrocartoCity) => c.intentionRatings?.[intention] ?? c.rating;
+
+  // Sort cities by the active intention rating
+  const cities = useMemo(() => {
+    return [...astrocarto.topCities].sort((a, b) => cityRating(b) - cityRating(a));
+  }, [astrocarto.topCities, intention]);
 
   // Use the stable best/worst from the calculation engine (not array position)
+  // Best/worst cities based on current intention filter
   const bestCity = useMemo(() => {
-    if (astrocarto.bestBeneficCity) {
+    if (intention === 'overall' && astrocarto.bestBeneficCity) {
       const name = astrocarto.bestBeneficCity.split(',')[0].trim();
       return cities.find(c => c.city === name) || cities[0];
     }
+    // For intention filters, best = highest intention rating
     return cities[0];
-  }, [cities, astrocarto.bestBeneficCity]);
+  }, [cities, astrocarto.bestBeneficCity, intention]);
 
   const worstCity = useMemo(() => {
-    if (astrocarto.worstMaleficCity) {
+    if (intention === 'overall' && astrocarto.worstMaleficCity) {
       const name = astrocarto.worstMaleficCity.split(',')[0].trim();
       return cities.find(c => c.city === name) || cities[cities.length - 1];
     }
     return cities[cities.length - 1];
-  }, [cities, astrocarto.worstMaleficCity]);
+  }, [cities, astrocarto.worstMaleficCity, intention]);
 
   // Cities that MUST appear on the map when present
   const MUST_SHOW = new Set([
@@ -118,9 +127,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
     const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
 
-    // Prioritize green-rated cities (>=7.5) so travel-worthy spots appear
-    const greenCities = rest.filter(c => c.rating >= 7.5);
-    const otherCities = rest.filter(c => c.rating < 7.5);
+    // Prioritize green-rated cities (>=7.5) for current intention so travel-worthy spots appear
+    const greenCities = rest.filter(c => cityRating(c) >= 7.5);
+    const otherCities = rest.filter(c => cityRating(c) < 7.5);
     const prioritizedRest = [...greenCities, ...otherCities];
 
     const selected: AstrocartoCity[] = [...mustShow];
@@ -236,6 +245,23 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           </div>
         </div>
 
+        {/* Intention filter */}
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).map(key => (
+            <button
+              key={key}
+              onClick={() => setIntention(key)}
+              className={`px-2.5 py-1 text-[10px] uppercase tracking-widest rounded-sm border transition-colors ${
+                intention === key
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-muted-foreground border-border hover:border-primary/40'
+              }`}
+            >
+              {INTENTION_EMOJIS[key]} {INTENTION_LABELS[key]}
+            </button>
+          ))}
+        </div>
+
         {/* Best / Most Challenging summary */}
         {bestCity && worstCity && (
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -243,9 +269,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               className="border border-green-500/30 rounded-sm p-3 bg-green-500/5 cursor-pointer hover:bg-green-500/10 transition-colors"
               onClick={() => setSelectedCity(bestCity)}
             >
-              <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">Best City</p>
+              <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">{intention !== 'overall' ? `Best for ${INTENTION_LABELS[intention]}` : 'Best City'}</p>
               <p className="text-lg font-medium text-foreground">{bestCity.city}, {bestCity.country}</p>
-              <p className="text-xs text-muted-foreground mt-1">Rating: {bestCity.rating}/10</p>
+              <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(bestCity)}/10{intention !== 'overall' ? ` for ${INTENTION_LABELS[intention]}` : ''}</p>
             </div>
             <div
               className="border border-amber-500/30 rounded-sm p-3 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors"
@@ -253,7 +279,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             >
               <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">Most Challenging</p>
               <p className="text-lg font-medium text-foreground">{worstCity.city}, {worstCity.country}</p>
-              <p className="text-xs text-muted-foreground mt-1">Rating: {worstCity.rating}/10</p>
+              <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(worstCity)}/10</p>
             </div>
           </div>
         )}
@@ -303,8 +329,8 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             <defs>
               {visibleCities.map(city => (
                 <radialGradient key={`grad-${city.city}`} id={`glow-${city.city.replace(/\s/g, '')}`}>
-                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={ratingColor(city.rating)} stopOpacity={0} />
+                  <stop offset="0%" stopColor={ratingColor(cityRating(city))} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={ratingColor(cityRating(city))} stopOpacity={0} />
                 </radialGradient>
               ))}
             </defs>
@@ -328,7 +354,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                       <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite" />
                     </circle>
                   )}
-                  <circle cx={x} cy={y} r={dotR} fill={ratingColor(city.rating)} stroke={isSelected ? 'hsl(var(--primary))' : 'hsl(var(--background))'} strokeWidth={isSelected ? 2 : 1} opacity={0.9} />
+                  <circle cx={x} cy={y} r={dotR} fill={ratingColor(cityRating(city))} stroke={isSelected ? 'hsl(var(--primary))' : 'hsl(var(--background))'} strokeWidth={isSelected ? 2 : 1} opacity={0.9} />
                   <text x={x + lp.dx} y={y + lp.dy} textAnchor={lp.anchor} className="fill-foreground" fontSize={view === 'us' ? 9 : 7} fontWeight={isSelected ? 600 : 400} opacity={isSelected ? 1 : 0.65}>
                     {city.city}
                   </text>
@@ -386,13 +412,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                 selectedCity?.city === city.city ? 'bg-primary/5' : ''
               }`}
             >
-              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ratingColor(city.rating) }} />
+              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ratingColor(cityRating(city)) }} />
               <span className="flex-1 min-w-0">
                 <span className="text-sm font-medium text-foreground">{city.city}</span>
                 <span className="text-xs text-muted-foreground ml-1">{city.country}</span>
               </span>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(city.rating)}`}>
-                {city.rating}
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(cityRating(city))}`}>
+                {cityRating(city)}
               </span>
               <ChevronRight size={14} className="text-muted-foreground/40 flex-shrink-0" />
             </button>
@@ -512,6 +538,20 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
         {city.rating}/10 — {ratingLabel(city.rating)}
       </span>
     </div>
+
+    {/* Intention ratings breakdown */}
+    {city.intentionRatings && (
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).filter(k => k !== 'overall').map(key => (
+          <div key={key} className="border border-border/50 rounded-sm p-2 bg-secondary/20 text-center">
+            <p className="text-[10px] text-muted-foreground mb-0.5">{INTENTION_EMOJIS[key]} {INTENTION_LABELS[key].split(' ')[0]}</p>
+            <p className="text-sm font-medium" style={{ color: ratingColor(city.intentionRatings[key]) }}>
+              {city.intentionRatings[key]}
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
 
     <p className="text-sm text-muted-foreground leading-relaxed">{city.summary}</p>
 
