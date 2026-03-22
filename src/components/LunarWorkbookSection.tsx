@@ -510,20 +510,83 @@ export const LunarWorkbookSection = ({
               <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Oracle Card</h4>
             </div>
             <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="e.g. Surrender, The Hidden Self, Transformation..."
-                value={journal?.oracle_card_name || ''}
-                onChange={e => saveJournal({ oracle_card_name: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
-              />
-              <input
-                type="text"
-                placeholder="Deck name (e.g. Moonology, Work Your Light...)"
+              {/* Deck selector */}
+              <select
                 value={journal?.oracle_deck_name || ''}
-                onChange={e => saveJournal({ oracle_deck_name: e.target.value })}
-                className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
-              />
+                onChange={e => {
+                  saveJournal({ oracle_deck_name: e.target.value, oracle_card_name: '' });
+                }}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              >
+                <option value="">Choose a deck...</option>
+                <option value="Moonology Oracle">🌙 Moonology Oracle (44 cards)</option>
+                <option value="Other">✦ Other deck (type card name)</option>
+              </select>
+
+              {/* Card selector — Moonology populated, other = text input */}
+              {journal?.oracle_deck_name === 'Moonology Oracle' ? (
+                <select
+                  value={journal?.oracle_card_name || ''}
+                  onChange={e => saveJournal({ oracle_card_name: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                >
+                  <option value="">Select a card...</option>
+                  <optgroup label="Moon Phases">
+                    {["New Moon — Beginnings","Crescent Moon — Commitment","First Quarter Moon — Crisis","Gibbous Moon — Potential","Full Moon — Climax","Disseminating Moon — Sharing","Third Quarter Moon — Trust","Balsamic Moon — Soothing"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </optgroup>
+                  <optgroup label="New Moon in Signs">
+                    {["New Moon in Aries","New Moon in Taurus","New Moon in Gemini","New Moon in Cancer","New Moon in Leo","New Moon in Virgo","New Moon in Libra","New Moon in Scorpio","New Moon in Sagittarius","New Moon in Capricorn","New Moon in Aquarius","New Moon in Pisces"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </optgroup>
+                  <optgroup label="Full Moon in Signs">
+                    {["Full Moon in Aries","Full Moon in Taurus","Full Moon in Gemini","Full Moon in Cancer","Full Moon in Leo","Full Moon in Virgo","Full Moon in Libra","Full Moon in Scorpio","Full Moon in Sagittarius","Full Moon in Capricorn","Full Moon in Aquarius","Full Moon in Pisces"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </optgroup>
+                  <optgroup label="Eclipse & Cycle Cards">
+                    {["New Moon Eclipse — A New Start","Full Moon Eclipse — Climax","Waxing Moon — Courage","Waning Moon — Acceptance"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </optgroup>
+                  <optgroup label="Special Cards">
+                    {["Void of Course Moon — Just Be","Cardinal Moon — Action","Fixed Moon — Sturdy","Mutable Moon — Changeable","Supermoon — Exceptional","Blue Moon — A Rare Chance","Moon's South Node — Karma","Moon's North Node — Fulfilment"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </optgroup>
+                </select>
+              ) : journal?.oracle_deck_name === 'Other' ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Type your deck name (e.g. Work Your Light, Sacred Rebels...)"
+                    value=""
+                    onChange={e => {
+                      if (e.target.value) saveJournal({ oracle_deck_name: e.target.value });
+                    }}
+                    onBlur={e => {
+                      if (e.target.value) saveJournal({ oracle_deck_name: e.target.value });
+                    }}
+                    className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Card name..."
+                    value={journal?.oracle_card_name || ''}
+                    onChange={e => saveJournal({ oracle_card_name: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                  />
+                </>
+              ) : journal?.oracle_deck_name && journal.oracle_deck_name !== 'Moonology Oracle' && journal.oracle_deck_name !== 'Other' ? (
+                // Custom deck name already saved — show it and card input
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Deck:</span>
+                    <span className="text-xs font-medium text-foreground">{journal.oracle_deck_name}</span>
+                    <button onClick={() => saveJournal({ oracle_deck_name: '', oracle_card_name: '' })} className="text-[9px] text-muted-foreground hover:text-foreground ml-auto">✕ Change</button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Card name..."
+                    value={journal?.oracle_card_name || ''}
+                    onChange={e => saveJournal({ oracle_card_name: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                  />
+                </>
+              ) : null}
+
               <Textarea
                 placeholder="Your own notes — what the image or message stirred in you..."
                 value={journal?.oracle_card_notes || ''}
