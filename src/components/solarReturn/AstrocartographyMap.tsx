@@ -111,10 +111,20 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   }, [cities, astrocarto.worstMaleficCity, intention]);
 
   // Cities that MUST appear on the map when present
-  const MUST_SHOW = new Set([
+  const MUST_SHOW_US = new Set([
     'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor',
     'Bloomington', 'Miami', 'Charlotte',
   ]);
+  const MUST_SHOW_WORLD = new Set([
+    'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
+  ]);
+  const MUST_SHOW = new Set([...MUST_SHOW_US, ...MUST_SHOW_WORLD]);
+
+  // Fixed label positions for specific cities to avoid collisions
+  const FIXED_LABEL_POSITIONS: Record<string, { dx: number; dy: number; anchor: string }> = {
+    'Washington DC': { dx: 10, dy: 4, anchor: 'start' },   // always to the right
+    'Philadelphia': { dx: 0, dy: -10, anchor: 'middle' },    // always above
+  };
 
   // Geographic diversity filter — prevent overlapping labels
   const visibleCities = useMemo(() => {
@@ -123,9 +133,10 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
 
-    // Always include must-show cities first
-    const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
-    const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
+    // Always include must-show cities first (view-specific)
+    const viewMustShow = view === 'us' ? MUST_SHOW_US : MUST_SHOW;
+    const mustShow = filtered.filter(c => viewMustShow.has(c.city));
+    const rest = filtered.filter(c => !viewMustShow.has(c.city));
 
     // Prioritize green-rated cities (>=7.5) for current intention so travel-worthy spots appear
     const greenCities = rest.filter(c => cityRating(c) >= 7.5);
@@ -133,7 +144,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const prioritizedRest = [...greenCities, ...otherCities];
 
     const selected: AstrocartoCity[] = [...mustShow];
-    const minDist = view === 'us' ? 1.5 : 6;
+    const minDist = view === 'us' ? 1.5 : 5;
     
     for (const city of prioritizedRest) {
       const tooClose = selected.some(s => {
@@ -144,7 +155,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 22 : 20)) break;
+      if (selected.length >= (view === 'us' ? 22 : 25)) break;
     }
     return selected;
   }, [cities, view]);
@@ -184,6 +195,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     for (const city of sortedCities) {
       const { x, y } = projectCity(city.latitude, city.longitude);
       const w = estimateWidth(city.city);
+      
+      // Use fixed position if defined for this city
+      if (FIXED_LABEL_POSITIONS[city.city] && view === 'us') {
+        const fixed = FIXED_LABEL_POSITIONS[city.city];
+        const lx = x + fixed.dx - (fixed.anchor === 'middle' ? w / 2 : fixed.anchor === 'end' ? w : 0);
+        placed.push({ x: lx + w / 2, y: y + fixed.dy, w, h: 9 });
+        positions[city.city] = fixed;
+        continue;
+      }
       
       // 6 candidate positions: right, left, above, below, upper-right, lower-left
       const candidates = [
