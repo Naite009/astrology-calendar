@@ -153,26 +153,50 @@ class CosmicAudioEngine {
 
   playTone(freq: number, duration: number, waveform: OscillatorType = "sine", pan = 0): void {
     const ctx = this.getCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const t = ctx.currentTime;
     const panner = ctx.createStereoPanner();
-    
-    osc.type = waveform;
-    osc.frequency.value = freq;
     panner.pan.value = pan;
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime + duration - 0.15);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-    
-    osc.connect(gain);
-    gain.connect(panner);
-    panner.connect(this.masterGain!);
-    
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-    this.trackOsc(osc);
+
+    // Layer 1: fundamental — louder singing-bowl attack
+    const osc1 = ctx.createOscillator();
+    osc1.type = waveform;
+    osc1.frequency.value = freq;
+    const g1 = ctx.createGain();
+    g1.gain.setValueAtTime(0, t);
+    g1.gain.linearRampToValueAtTime(0.45, t + 0.06);
+    g1.gain.setValueAtTime(0.45, t + duration - 0.3);
+    g1.gain.linearRampToValueAtTime(0, t + duration);
+    osc1.connect(g1); g1.connect(panner); panner.connect(this.masterGain!);
+    osc1.start(t); osc1.stop(t + duration);
+    this.trackOsc(osc1);
+
+    // Layer 2: detuned shimmer for warmth
+    const osc2 = ctx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.value = freq * 1.003;
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.linearRampToValueAtTime(0.12, t + 0.15);
+    g2.gain.setValueAtTime(0.12, t + duration - 0.5);
+    g2.gain.linearRampToValueAtTime(0, t + duration);
+    const p2 = ctx.createStereoPanner();
+    p2.pan.value = -pan * 0.5;
+    osc2.connect(g2); g2.connect(p2); p2.connect(this.masterGain!);
+    osc2.start(t); osc2.stop(t + duration);
+    this.trackOsc(osc2);
+
+    // Layer 3: octave harmonic for bell-like ring
+    const osc3 = ctx.createOscillator();
+    osc3.type = "sine";
+    osc3.frequency.value = freq * 2;
+    const g3 = ctx.createGain();
+    g3.gain.setValueAtTime(0, t);
+    g3.gain.linearRampToValueAtTime(0.06, t + 0.04);
+    g3.gain.exponentialRampToValueAtTime(0.01, t + duration * 0.4);
+    g3.gain.linearRampToValueAtTime(0, t + duration);
+    osc3.connect(g3); g3.connect(panner);
+    osc3.start(t); osc3.stop(t + duration);
+    this.trackOsc(osc3);
   }
 
   playChord(freqs: number[], duration: number, waveform: OscillatorType = "sine"): void {
