@@ -84,6 +84,16 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
 
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
+  const downloadJSON = () => {
+    const blob = new Blob([JSON.stringify(astrocarto, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'astrocartography-debug.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Helper to get the active rating for a city based on selected intention
   const cityRating = (c: AstrocartoCity) => c.intentionRatings?.[intention] ?? c.rating;
 
@@ -269,7 +279,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             <Globe size={16} className="text-primary" />
             Astrocartography — Where to Celebrate
           </h3>
-          <div className="flex gap-1">
+          <div className="flex gap-1 items-center">
+            <button
+              onClick={downloadJSON}
+              className="px-2 py-1 text-[9px] uppercase tracking-widest rounded-sm border border-border text-muted-foreground hover:border-primary/40 transition-colors mr-1"
+            >
+              ⬇ JSON
+            </button>
             <button
               onClick={() => { setView('world'); setSelectedCity(null); }}
               className={`px-3 py-1 text-[10px] uppercase tracking-widest rounded-sm border transition-colors ${
