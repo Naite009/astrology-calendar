@@ -551,7 +551,7 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
           </div>
         ))}
       </div>
-    )
+    )}
 
     <p className="text-sm text-muted-foreground leading-relaxed">{city.summary}</p>
 
