@@ -721,6 +721,7 @@ export const LunarWorkbookSection = ({
         currentJournal={journal}
         cycleSign={cycleSign}
       />
+      </div>
 
       {/* ═══ 11 · Sign-as-Practice / Learn Your Chart ═══ */}
       {signPractice && (
