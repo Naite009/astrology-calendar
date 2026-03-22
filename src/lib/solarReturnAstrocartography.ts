@@ -526,18 +526,21 @@ export function calculateAstrocartography(
         continue;
       }
       let iTotal = 0;
-      let iWeight = 0;
+      let iCount = 0;
       for (const ap of angularPlanets) {
         const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0;
         const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
         const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
         const orbMultiplier = 1 - (ap.orb / 12);
-        const weighted = baseRating * orbMultiplier * planetW * angleW;
-        iTotal += weighted;
-        iWeight += planetW * angleW;
+        // Scale the base rating by how relevant this planet+angle is to the intention
+        // planetW ranges 0-3, so divide by 2 to center at 1x for "normal" relevance
+        // This means Venus(3) for Love = 1.5x boost, Saturn(0.2) for Love = 0.1x
+        const relevance = (planetW / 2) * angleW;
+        iTotal += baseRating * orbMultiplier * relevance;
+        iCount++;
       }
-      intentionRatings[intention] = iWeight > 0
-        ? Math.min(10, Math.round((iTotal / iWeight) * 10) / 10)
+      intentionRatings[intention] = iCount > 0
+        ? Math.min(10, Math.max(0, Math.round((iTotal / iCount) * 10) / 10))
         : avgRating;
     }
 
