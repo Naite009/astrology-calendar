@@ -517,6 +517,30 @@ export function calculateAstrocartography(
 
     const avgRating = ratingCount > 0 ? Math.min(10, Math.round((totalRating / ratingCount) * 10) / 10) : 5;
 
+    // Calculate per-intention ratings
+    const intentionRatings = {} as Record<AstrocartoIntention, number>;
+    const intentions: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
+    for (const intention of intentions) {
+      if (intention === 'overall') {
+        intentionRatings[intention] = avgRating;
+        continue;
+      }
+      let iTotal = 0;
+      let iWeight = 0;
+      for (const ap of angularPlanets) {
+        const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0;
+        const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
+        const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
+        const orbMultiplier = 1 - (ap.orb / 12);
+        const weighted = baseRating * orbMultiplier * planetW * angleW;
+        iTotal += weighted;
+        iWeight += planetW * angleW;
+      }
+      intentionRatings[intention] = iWeight > 0
+        ? Math.min(10, Math.round((iTotal / iWeight) * 10) / 10)
+        : avgRating;
+    }
+
     // Build summary
     const benefics = angularPlanets.filter(ap => ['Venus', 'Jupiter', 'Sun'].includes(ap.planet));
     const malefics = angularPlanets.filter(ap => ['Saturn', 'Mars', 'Pluto'].includes(ap.planet));
@@ -539,6 +563,7 @@ export function calculateAstrocartography(
       longitude: cityData.lng,
       angularPlanets,
       rating: avgRating,
+      intentionRatings,
       summary,
     });
   }
