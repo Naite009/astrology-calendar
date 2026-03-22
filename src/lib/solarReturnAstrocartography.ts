@@ -111,6 +111,8 @@ const WORLD_CITIES: CityData[] = [
   { city: 'Burlington VT', country: 'USA', lat: 44.48, lng: -73.21 },
   { city: 'Santa Fe', country: 'USA', lat: 35.69, lng: -105.94 },
   { city: 'San Antonio', country: 'USA', lat: 29.42, lng: -98.49 },
+  { city: 'Bloomington', country: 'USA', lat: 39.17, lng: -86.53 },
+  { city: 'Boulder', country: 'USA', lat: 40.01, lng: -105.27 },
   // ── Canada ──
   { city: 'Toronto', country: 'Canada', lat: 43.65, lng: -79.38 },
   { city: 'Vancouver', country: 'Canada', lat: 49.28, lng: -123.12 },

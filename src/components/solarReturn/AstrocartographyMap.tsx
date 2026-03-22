@@ -117,8 +117,22 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     if (view === 'us') {
       filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
-    // On map: show only top 15 to prevent label overlap
-    return filtered.slice(0, 15);
+    // Geographic diversity filter — prevent overlapping labels
+    const selected: AstrocartoCity[] = [];
+    const minDist = view === 'us' ? 2.5 : 8;
+    
+    for (const city of filtered) {
+      const tooClose = selected.some(s => {
+        const dlat = Math.abs(s.latitude - city.latitude);
+        const dlng = Math.abs(s.longitude - city.longitude);
+        return dlat < minDist && dlng < minDist;
+      });
+      if (!tooClose) {
+        selected.push(city);
+      }
+      if (selected.length >= (view === 'us' ? 12 : 10)) break;
+    }
+    return selected;
   }, [cities, view]);
 
   // Full list for the scrollable table below
