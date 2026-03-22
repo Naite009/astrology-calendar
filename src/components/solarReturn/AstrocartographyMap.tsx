@@ -269,7 +269,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               className="border border-green-500/30 rounded-sm p-3 bg-green-500/5 cursor-pointer hover:bg-green-500/10 transition-colors"
               onClick={() => setSelectedCity(bestCity)}
             >
-              <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">Best City</p>
+              <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">{intention !== 'overall' ? `Best for ${INTENTION_LABELS[intention]}` : 'Best City'}</p>
               <p className="text-lg font-medium text-foreground">{bestCity.city}, {bestCity.country}</p>
               <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(bestCity)}/10{intention !== 'overall' ? ` for ${INTENTION_LABELS[intention]}` : ''}</p>
             </div>
