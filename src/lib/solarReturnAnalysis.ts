@@ -1518,67 +1518,33 @@ export const analyzeSolarReturn = (
   // These are STATIC aspects — the Moon does NOT advance through the chart.
   const srMoonAspects: SolarReturnAnalysis['srMoonAspects'] = [];
 
-  const moonAspectInterpretations: Record<string, Record<string, string>> = {
-    Conjunction: {
-      Sun: 'New Moon energy — a year of fresh emotional beginnings, strong instinct to start new chapters',
-      Mercury: 'Emotions and thinking are fused — you process feelings through words, writing, and conversation',
-      Venus: 'Emotional needs and values are aligned — a year of pleasure, beauty, and relational ease',
-      Mars: 'Emotions run hot — strong impulses, quick reactions, courage mixed with impatience',
-      Jupiter: 'Emotional expansion and optimism — the year feels generous, hopeful, and emotionally nourishing',
-      Saturn: 'Emotional restraint — feelings are controlled, mature, and tied to responsibility. Heavy but grounding.',
-      Uranus: 'Emotional volatility — sudden mood shifts, need for freedom, unconventional emotional expression',
-      Neptune: 'Heightened sensitivity, porous boundaries, vivid dreams. Intuition is powerful but clarity is elusive.',
-      Pluto: 'Emotional intensity — deep feelings, compulsive undercurrents, potential for profound psychological insight',
-      Chiron: 'An old wound surfaces for healing — emotional vulnerability becomes a source of wisdom',
-    },
-    Opposition: {
-      Sun: 'Full Moon energy — a year of emotional culmination, awareness through contrast, relationships in the spotlight',
-      Mercury: 'Tension between feelings and rational thinking — decisions feel emotionally charged',
-      Venus: 'Emotional needs may conflict with what you value or who you love — relationship recalibration',
-      Mars: 'Emotional conflict and assertion — anger or passion needs a conscious outlet',
-      Jupiter: 'Emotional over-extension — generosity tested by overcommitment or unrealistic optimism',
-      Saturn: 'Emotional pressure from responsibilities — obligation vs. emotional needs',
-      Uranus: 'Emotional disruption — unexpected changes force emotional independence',
-      Neptune: 'Emotional confusion or disillusionment — seeing clearly requires effort',
-      Pluto: 'Power struggles in emotional life — intensity demands honesty about control dynamics',
-      Chiron: 'Relationships mirror core wounds — healing through confrontation with old pain',
-    },
-    Trine: {
-      Sun: 'Emotional confidence — your feelings and identity flow together naturally',
-      Mercury: 'Easy communication of feelings — emotional intelligence is high this year',
-      Venus: 'Emotional grace — relationships and pleasures feel harmonious and easy',
-      Mars: 'Productive emotional energy — feelings fuel action without friction',
-      Jupiter: 'Natural emotional growth and good fortune — optimism and generosity flow',
-      Saturn: 'Emotional stability — feelings are grounded, mature, and reliable',
-      Uranus: 'Positive emotional changes — freedom and excitement feel natural, not disruptive',
-      Neptune: 'Spiritual and creative flow — intuition, compassion, and imagination are gifts',
-      Pluto: 'Deep emotional empowerment — transformation feels natural rather than forced',
-      Chiron: 'Healing comes naturally — emotional acceptance and integration',
-    },
-    Square: {
-      Sun: 'Tension between emotional needs and conscious purpose — inner friction drives growth',
-      Mercury: 'Emotional stress in communication — misunderstandings or mental overwhelm',
-      Venus: 'Friction between what you feel and what you value — relationship adjustments needed',
-      Mars: 'Emotional frustration — anger or blocked feelings demand a healthy release',
-      Jupiter: 'Emotional restlessness or overcommitment — growth through managing excess',
-      Saturn: 'Emotional restriction — heaviness, delayed gratification, or isolation that forces maturity',
-      Uranus: 'Emotional instability — sudden disruptions or restlessness push you out of comfort zones',
-      Neptune: 'Emotional confusion — boundaries dissolve, escapism tempts, clarity requires discipline',
-      Pluto: 'Emotional power struggles — compulsive feelings surface for transformation',
-      Chiron: 'Emotional wound activated — growth through confronting what hurts',
-    },
-    Sextile: {
-      Sun: 'Opportunities for emotional expression and confidence — take initiative',
-      Mercury: 'Helpful conversations and emotional insights — communication opens doors',
-      Venus: 'Social and romantic opportunities — emotional openness attracts good connections',
-      Mars: 'Emotional motivation — feelings fuel productive action when you choose to act',
-      Jupiter: 'Emotional growth opportunities — learning, travel, or philosophical expansion beckons',
-      Saturn: 'Chance to build emotional stability — effort creates lasting security',
-      Uranus: 'Exciting emotional possibilities — innovation and fresh approaches to feelings',
-      Neptune: 'Creative and spiritual openings — intuition guides you toward meaningful experiences',
-      Pluto: 'Opportunity for deep emotional insight — transformation through willing engagement',
-      Chiron: 'Opening for emotional healing — connection and vulnerability lead to growth',
-    },
+  const moonSRHouse = moonHouse?.house ?? null;
+  const moonSRHouseTheme = moonSRHouse ? (SR_HOUSE_LIFE_AREA[moonSRHouse] || houseThemes[moonSRHouse] || '') : '';
+
+  // Build house-aware, phase-aware moon aspect interpretations
+  const buildMoonAspectInterp = (
+    planet: string, aspectType: string, targetHouse: number | null, targetSign: string
+  ): string => {
+    const planetTheme = PLANET_THEMES[planet] || { domain: `${planet} themes`, drive: `${planet}'s drive`, body: '' };
+    const targetHouseTheme = targetHouse ? (SR_HOUSE_LIFE_AREA[targetHouse] || '') : '';
+    const moonHouseDesc = moonSRHouse ? `Your Moon sits in your ${moonSRHouse}${moonSRHouse === 1 ? 'st' : moonSRHouse === 2 ? 'nd' : moonSRHouse === 3 ? 'rd' : 'th'} house (${moonSRHouseTheme})` : 'Your Moon';
+    const targetHouseDesc = targetHouse ? ` in your ${targetHouse}${targetHouse === 1 ? 'st' : targetHouse === 2 ? 'nd' : targetHouse === 3 ? 'rd' : 'th'} house (${targetHouseTheme})` : '';
+    const feel = ASPECT_FEEL[aspectType] || ASPECT_FEEL.Conjunction;
+
+    // Special handling for Sun conjunction: check moon phase
+    if (planet === 'Sun' && aspectType === 'Conjunction') {
+      const phase = moonPhase?.phase || '';
+      if (phase === 'Balsamic') {
+        return `${moonHouseDesc}, and the Sun${targetHouseDesc} are in a Balsamic conjunction. This is the END of a cycle, not a beginning. Your emotional life this year is about surrender, completion, and letting go. You are closing out old patterns and preparing the ground for something new that has not yet arrived. Rest, reflection, and release are the work. Resist the urge to start new things. Honor what is finishing.`;
+      }
+      if (phase === 'Last Quarter') {
+        return `${moonHouseDesc}, and the Sun${targetHouseDesc} are conjunct in a late-cycle phase. This is a year of reorientation. Old emotional patterns are being released. You are shedding what no longer fits before a new direction emerges.`;
+      }
+      // True New Moon (phase angle < 22.5)
+      return `${moonHouseDesc}, and the Sun${targetHouseDesc} are in a true New Moon conjunction. This is a powerful fresh start. Your emotional needs and conscious purpose are fused into a single drive. A year of planting seeds and new emotional beginnings.`;
+    }
+
+    return `${moonHouseDesc}. ${planet} in ${targetSign}${targetHouseDesc} ${feel.verb} your emotional baseline. ${planetTheme.domain.charAt(0).toUpperCase() + planetTheme.domain.slice(1)} directly shapes how you feel day-to-day. The ${aspectType.toLowerCase()} creates ${feel.quality} between your emotional needs and ${planet}'s themes.`;
   };
 
   if (moonPos) {
@@ -1591,15 +1557,21 @@ export const analyzeSolarReturn = (
         const pDeg = toAbsDeg(pos);
         if (pDeg === null) continue;
         const targetHouse = planetSRHouses[planet] ?? null;
+        const targetSign = pos.sign || '';
+        const targetHouseTheme = targetHouse ? (SR_HOUSE_LIFE_AREA[targetHouse] || houseThemes[targetHouse] || '') : '';
         const asp = detectAspect(moonDeg, pDeg);
         if (asp && asp.orb <= 8) {
-          const specific = moonAspectInterpretations[asp.type]?.[planet] || `${planet} themes color your emotional life this year`;
+          const interpretation = buildMoonAspectInterp(planet, asp.type, targetHouse, targetSign);
           srMoonAspects.push({
             targetPlanet: planet,
             aspectType: asp.type,
             orb: asp.orb,
             targetSRHouse: targetHouse,
-            interpretation: specific,
+            targetSRSign: targetSign,
+            sourceSRHouse: moonSRHouse,
+            sourceHouseTheme: moonSRHouseTheme,
+            targetHouseTheme,
+            interpretation,
           });
         }
       }
