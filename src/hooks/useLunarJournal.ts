@@ -136,27 +136,31 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
   const loadJournal = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data: rows, error } = await supabase
+      const query = supabase
         .from('lunar_cycle_journals')
         .select('*')
-        .eq('device_id', deviceId)
         .eq('chart_id', chartId)
         .eq('cycle_start_date', cycleKey)
         .order('updated_at', { ascending: false })
         .limit(1);
+
+      const { data: rows, error } = user?.id
+        ? await query.eq('user_id', user.id)
+        : await query.eq('device_id', deviceId).is('user_id', null);
+
       const data = rows && rows.length > 0 ? rows[0] : null;
-      
+
       if (error) {
         console.error('Error loading lunar journal:', error);
       } else if (data) {
         setJournal(data as LunarJournalEntry);
       } else {
-        // Initialize empty journal
         setJournal({
           device_id: deviceId,
           chart_id: chartId,
           cycle_start_date: cycleKey,
           cycle_sign: cycleSign,
+          user_id: user?.id,
         });
       }
     } catch (err) {
@@ -164,20 +168,23 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     } finally {
       setIsLoading(false);
     }
-  }, [deviceId, chartId, cycleKey, cycleSign]);
-  
+  }, [deviceId, chartId, cycleKey, cycleSign, user?.id]);
+
   // Load past journals for this chart
   const loadPastJournals = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('lunar_cycle_journals')
         .select('*')
-        .eq('device_id', deviceId)
         .eq('chart_id', chartId)
         .neq('cycle_start_date', cycleKey)
         .order('cycle_start_date', { ascending: false })
         .limit(12);
-      
+
+      const { data, error } = user?.id
+        ? await query.eq('user_id', user.id)
+        : await query.eq('device_id', deviceId).is('user_id', null);
+
       if (error) {
         console.error('Error loading past journals:', error);
       } else if (data) {
@@ -186,7 +193,7 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     } catch (err) {
       console.error('Failed to load past journals:', err);
     }
-  }, [deviceId, chartId, cycleKey]);
+  }, [deviceId, chartId, cycleKey, user?.id]);
   
   useEffect(() => {
     loadJournal();
