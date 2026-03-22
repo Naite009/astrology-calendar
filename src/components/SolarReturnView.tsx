@@ -17,8 +17,6 @@ import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone, buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
-import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
-import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
@@ -124,7 +122,6 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
-  const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
   const [showAiReading, setShowAiReading] = useState(false);
   const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const [isGeneratingForExport, setIsGeneratingForExport] = useState(false);
@@ -343,20 +340,28 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
           </TabsList>
 
-          {/* Tier preview button row */}
-          <TierButtonRow
-            analysis={analysis}
-            natalChart={selectedNatal}
-            solarReturnChart={selectedSR}
-            onDownloadTier={(tier) => {
-              if (tier === 'gift') {
-                handleBirthdayGiftExport();
-              } else {
-                setActiveTier(prev => prev === tier ? null : tier as any);
-              }
-            }}
-            onGenerateAiReading={() => setShowAiReading(true)}
-          />
+          {/* Download JSON + AI Reading row */}
+          <div className="flex items-center gap-3 py-3 px-1 border-t border-border">
+            <button
+              onClick={() => handleBirthdayGiftExport()}
+              className="px-6 py-3 rounded-full text-sm font-semibold transition-all duration-150 cursor-pointer select-none hover:opacity-80 flex items-center gap-2"
+              style={{
+                backgroundColor: '#FFF8E1',
+                color: '#5D4037',
+                border: '2px solid #D4A574',
+              }}
+            >
+              <Download size={18} />
+              Download JSON
+            </button>
+            <button
+              onClick={() => setShowAiReading(true)}
+              className="px-4 py-2.5 rounded-full text-xs font-medium border border-border text-muted-foreground hover:bg-secondary transition-all flex items-center gap-1.5"
+            >
+              <Sparkles size={12} />
+              Generate AI Reading
+            </button>
+          </div>
 
           <AiReadingModal
             open={showAiReading}
@@ -365,19 +370,6 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings)}
             onReadingsUpdate={(r) => setAiReadings(r)}
           />
-
-          {activeTier && analysis && (
-            <TierPreviewPanel
-              tier={activeTier}
-              analysis={analysis}
-              onClose={() => setActiveTier(null)}
-              onDownload={(tier) => {
-                if (selectedSR && selectedNatal) {
-                  downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
-                }
-              }}
-            />
-          )}
 
           <TabsContent value="overview">
             <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
