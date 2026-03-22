@@ -136,27 +136,31 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
   const loadJournal = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data: rows, error } = await supabase
+      const query = supabase
         .from('lunar_cycle_journals')
         .select('*')
-        .eq('device_id', deviceId)
         .eq('chart_id', chartId)
         .eq('cycle_start_date', cycleKey)
         .order('updated_at', { ascending: false })
         .limit(1);
+
+      const { data: rows, error } = user?.id
+        ? await query.eq('user_id', user.id)
+        : await query.eq('device_id', deviceId).is('user_id', null);
+
       const data = rows && rows.length > 0 ? rows[0] : null;
-      
+
       if (error) {
         console.error('Error loading lunar journal:', error);
       } else if (data) {
         setJournal(data as LunarJournalEntry);
       } else {
-        // Initialize empty journal
         setJournal({
           device_id: deviceId,
           chart_id: chartId,
           cycle_start_date: cycleKey,
           cycle_sign: cycleSign,
+          user_id: user?.id,
         });
       }
     } catch (err) {
@@ -164,20 +168,23 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     } finally {
       setIsLoading(false);
     }
-  }, [deviceId, chartId, cycleKey, cycleSign]);
-  
+  }, [deviceId, chartId, cycleKey, cycleSign, user?.id]);
+
   // Load past journals for this chart
   const loadPastJournals = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('lunar_cycle_journals')
         .select('*')
-        .eq('device_id', deviceId)
         .eq('chart_id', chartId)
         .neq('cycle_start_date', cycleKey)
         .order('cycle_start_date', { ascending: false })
         .limit(12);
-      
+
+      const { data, error } = user?.id
+        ? await query.eq('user_id', user.id)
+        : await query.eq('device_id', deviceId).is('user_id', null);
+
       if (error) {
         console.error('Error loading past journals:', error);
       } else if (data) {
@@ -186,7 +193,7 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
     } catch (err) {
       console.error('Failed to load past journals:', err);
     }
-  }, [deviceId, chartId, cycleKey]);
+  }, [deviceId, chartId, cycleKey, user?.id]);
   
   useEffect(() => {
     loadJournal();
@@ -223,7 +230,6 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
         
         if (error) throw error;
       } else {
-        // Upsert: try insert, on conflict update
         const payload = {
           device_id: deviceId,
           chart_id: chartId,
@@ -232,23 +238,24 @@ export const useLunarJournal = (chartId: string, cycleStartDate: Date, cycleSign
           user_id: user?.id || null,
           ...updates,
         };
-        
-        // First try to find if one was created by a concurrent save
-        const { data: existingRows } = await supabase
+
+        const existingQuery = supabase
           .from('lunar_cycle_journals')
           .select('id')
-          .eq('device_id', deviceId)
           .eq('chart_id', chartId)
           .eq('cycle_start_date', cycleKey)
           .order('updated_at', { ascending: false })
           .limit(1);
+
+        const { data: existingRows } = user?.id
+          ? await existingQuery.eq('user_id', user.id)
+          : await existingQuery.eq('device_id', deviceId).is('user_id', null);
         const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
-        
+
         if (existing) {
-          // Row exists now, update it
           const { error } = await supabase
             .from('lunar_cycle_journals')
-            .update({ ...updates, user_id: user?.id || null })
+            .update({ ...updates, user_id: user?.id || null, device_id: deviceId })
             .eq('id', existing.id);
           if (error) throw error;
           updatedJournal.id = existing.id;
