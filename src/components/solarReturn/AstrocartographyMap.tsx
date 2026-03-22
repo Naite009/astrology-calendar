@@ -539,6 +539,20 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
       </span>
     </div>
 
+    {/* Intention ratings breakdown */}
+    {city.intentionRatings && (
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).filter(k => k !== 'overall').map(key => (
+          <div key={key} className="border border-border/50 rounded-sm p-2 bg-secondary/20 text-center">
+            <p className="text-[10px] text-muted-foreground mb-0.5">{INTENTION_EMOJIS[key]} {INTENTION_LABELS[key].split(' ')[0]}</p>
+            <p className="text-sm font-medium" style={{ color: ratingColor(city.intentionRatings[key]) }}>
+              {city.intentionRatings[key]}
+            </p>
+          </div>
+        ))}
+      </div>
+    )
+
     <p className="text-sm text-muted-foreground leading-relaxed">{city.summary}</p>
 
     {city.angularPlanets.length > 0 && (
