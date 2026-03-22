@@ -210,15 +210,24 @@ export const LunarWorkbookSection = ({
         <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
           {cycleSign} New Moon at {cycleDegree}° · {cycleStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
           <button onClick={() => setSimpleMode(!simpleMode)}
             className={`text-[10px] px-3 py-1 rounded-full border transition-all ${simpleMode ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border'}`}>
             {simpleMode ? '🌿 Simple' : '🔬 Advanced'}
           </button>
-          <button onClick={() => document.getElementById('card-pulls-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-[10px] px-3 py-1 rounded-full border border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground transition-all">
-            🃏 Card Pulls
-          </button>
+          {[
+            { id: 'surfacing-section', label: '👁 Surfacing' },
+            { id: 'phase-checkins-section', label: '🌗 Phases' },
+            { id: 'intentions-section', label: '✨ Intentions' },
+            { id: 'card-pulls-section', label: '🃏 Cards' },
+            { id: 'metrics-section', label: '📊 Metrics' },
+            { id: 'patterns-section', label: '🔮 Patterns' },
+          ].map(nav => (
+            <button key={nav.id} onClick={() => document.getElementById(nav.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="text-[10px] px-3 py-1 rounded-full border border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground transition-all">
+              {nav.label}
+            </button>
+          ))}
           <div className="flex items-center gap-1">
             {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
             {!isSaving && journal?.id && <Badge variant="secondary" className="text-[9px]"><Save className="h-2.5 w-2.5 mr-0.5" /> Saved</Badge>}
