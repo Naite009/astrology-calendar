@@ -372,13 +372,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             </defs>
 
             {visibleCities.map(city => {
-              const { x, y } = projectCity(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude, city.city);
               return <circle key={`glow-c-${city.city}`} cx={x} cy={y} r={view === 'us' ? 30 : 25} fill={`url(#glow-${city.city.replace(/\s/g, '')})`} />;
             })}
 
             {/* City dots + labels */}
             {visibleCities.map(city => {
-              const { x, y } = projectCity(city.latitude, city.longitude);
+              const { x, y } = projectCity(city.latitude, city.longitude, city.city);
               const isSelected = selectedCity?.city === city.city;
               const dotR = view === 'us' ? 5 : 4;
               const lp = labelPositions[city.city] || { dx: 0, dy: -10, anchor: 'middle' };
