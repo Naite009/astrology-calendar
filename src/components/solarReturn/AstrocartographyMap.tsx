@@ -337,7 +337,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           </div>
         </div>
         <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-          {allVisibleCities.map(city => (
+          {allVisibleCities.filter(c => !searchQuery || c.city.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())).map(city => (
             <button
               key={city.city}
               onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
