@@ -122,8 +122,8 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
 
   // Fixed label positions for specific cities to avoid collisions
   const FIXED_LABEL_POSITIONS: Record<string, { dx: number; dy: number; anchor: string }> = {
-    'Washington DC': { dx: 10, dy: 4, anchor: 'start' },   // always to the right
-    'Philadelphia': { dx: 0, dy: -10, anchor: 'middle' },    // always above
+    'Washington DC': { dx: 12, dy: 6, anchor: 'start' },   // right and slightly below
+    'Philadelphia': { dx: 12, dy: -2, anchor: 'start' },    // to the right
   };
 
   // Geographic diversity filter — prevent overlapping labels
