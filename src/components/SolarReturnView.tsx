@@ -310,16 +310,16 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       {/* Analysis */}
       {selectedSR && analysis && (
         <>
-        {/* Top-level Birthday Gift Export button */}
+        {/* Top-level export buttons */}
         <div className="flex items-center gap-3 p-3 border border-border rounded-sm bg-card/60">
           <button
             onClick={handleBirthdayGiftExport}
             disabled={isGeneratingForExport}
-            className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all hover:opacity-80 disabled:opacity-50"
-            style={{ backgroundColor: '#FFF8E1', color: '#5D4037', border: '1px solid #D4A574' }}
+            className="flex items-center gap-2.5 px-6 py-3 rounded-lg text-base font-semibold transition-all hover:opacity-80 disabled:opacity-50 shadow-sm"
+            style={{ backgroundColor: '#FFF8E1', color: '#5D4037', border: '2px solid #D4A574' }}
           >
-            {isGeneratingForExport ? <Loader2 size={14} className="animate-spin" /> : <Gift size={14} />}
-            {isGeneratingForExport ? 'Generating AI + Exporting…' : 'Birthday Gift Print'}
+            {isGeneratingForExport ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+            {isGeneratingForExport ? 'Generating…' : 'Download JSON'}
           </button>
           <span className="text-xs text-muted-foreground">
             {aiReadings.plain && aiReadings.astro
