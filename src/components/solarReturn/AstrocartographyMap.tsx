@@ -125,9 +125,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
     const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
 
-    // Prioritize green-rated cities (>=7.5) so travel-worthy spots appear
-    const greenCities = rest.filter(c => c.rating >= 7.5);
-    const otherCities = rest.filter(c => c.rating < 7.5);
+    // Prioritize green-rated cities (>=7.5) for current intention so travel-worthy spots appear
+    const greenCities = rest.filter(c => cityRating(c) >= 7.5);
+    const otherCities = rest.filter(c => cityRating(c) < 7.5);
     const prioritizedRest = [...greenCities, ...otherCities];
 
     const selected: AstrocartoCity[] = [...mustShow];
