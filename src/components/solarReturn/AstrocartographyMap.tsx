@@ -83,12 +83,27 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const astrocarto = useMemo(() => calculateAstrocartography(srChart, natalChart), [srChart, natalChart]);
 
   const cities = astrocarto.topCities;
-  const bestCity = cities[0];
-  const worstCity = cities[cities.length - 1];
 
-  // Cities that MUST appear on the US map when present
-  const MUST_SHOW_US = new Set([
-    'Philadelphia', 'Washington D.C.', 'Boulder', 'Ann Arbor',
+  // Use the stable best/worst from the calculation engine (not array position)
+  const bestCity = useMemo(() => {
+    if (astrocarto.bestBeneficCity) {
+      const name = astrocarto.bestBeneficCity.split(',')[0].trim();
+      return cities.find(c => c.city === name) || cities[0];
+    }
+    return cities[0];
+  }, [cities, astrocarto.bestBeneficCity]);
+
+  const worstCity = useMemo(() => {
+    if (astrocarto.worstMaleficCity) {
+      const name = astrocarto.worstMaleficCity.split(',')[0].trim();
+      return cities.find(c => c.city === name) || cities[cities.length - 1];
+    }
+    return cities[cities.length - 1];
+  }, [cities, astrocarto.worstMaleficCity]);
+
+  // Cities that MUST appear on the map when present
+  const MUST_SHOW = new Set([
+    'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor',
     'Bloomington', 'Miami', 'Charlotte',
   ]);
 
@@ -99,13 +114,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
 
-    // Always include must-show cities first (US view only)
-    const mustShow = view === 'us'
-      ? filtered.filter(c => MUST_SHOW_US.has(c.city))
-      : [];
-    const rest = view === 'us'
-      ? filtered.filter(c => !MUST_SHOW_US.has(c.city))
-      : filtered;
+    // Always include must-show cities first
+    const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
+    const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
 
     const selected: AstrocartoCity[] = [...mustShow];
     const minDist = view === 'us' ? 2.0 : 8;
@@ -119,7 +130,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 15 : 10)) break;
+      if (selected.length >= (view === 'us' ? 18 : 14)) break;
     }
     return selected;
   }, [cities, view]);
