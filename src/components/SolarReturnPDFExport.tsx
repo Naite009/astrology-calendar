@@ -279,7 +279,7 @@ function generateHowThisYearMeetsYou(
   const natalRising = natalChart.houseCusps?.house1?.sign || natalChart.planets?.Ascendant?.sign || '';
   const srSunSign = srChart.planets.Sun?.sign || natalSun;
   const srMoonSign = a.moonSign || srChart.planets.Moon?.sign || '';
-  const srRisingSign = srChart.planets.Ascendant?.sign || a.yearlyTheme?.ascendantSign || '';
+  const srRisingSign = srChart.houseCusps?.house1?.sign || a.yearlyTheme?.ascendantSign || srChart.planets.Ascendant?.sign || '';
   const sunH = a.sunHouse?.house || 1;
 
   ctx.sectionTitle(doc, 'HOW THIS YEAR MEETS YOU', 'Natal vs Solar Return');

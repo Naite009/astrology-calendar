@@ -193,10 +193,10 @@ export async function generateTier1SolarReturnPDF(
   const year = srChart.solarReturnYear;
   const natalSunSign = natalChart.planets?.Sun?.sign || '';
   const natalMoonSign = natalChart.planets?.Moon?.sign || '';
-  const natalRisingSign = natalChart.planets?.Ascendant?.sign || '';
+  const natalRisingSign = natalChart.houseCusps?.house1?.sign || natalChart.planets?.Ascendant?.sign || '';
   const srSunSign = srChart.planets.Sun?.sign || natalSunSign;
   const srMoonSign = analysis.moonSign || srChart.planets.Moon?.sign || '';
-  const srRisingSign = srChart.planets.Ascendant?.sign || analysis.yearlyTheme?.ascendantSign || '';
+  const srRisingSign = srChart.houseCusps?.house1?.sign || analysis.yearlyTheme?.ascendantSign || srChart.planets.Ascendant?.sign || '';
   const sunHouse = analysis.sunHouse?.house || 1;
   const profHouse = analysis.profectionYear?.houseNumber || 1;
   const profAge = analysis.profectionYear?.age;
