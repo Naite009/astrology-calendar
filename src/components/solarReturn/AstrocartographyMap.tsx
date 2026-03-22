@@ -324,6 +324,18 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
           </span>
           <span className="text-[10px] text-muted-foreground">{allVisibleCities.length} locations</span>
         </div>
+        <div className="px-3 py-2 border-b border-border">
+          <div className="relative">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search cities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-sm bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+            />
+          </div>
+        </div>
         <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
           {allVisibleCities.map(city => (
             <button
