@@ -415,6 +415,9 @@ export const LunarWorkbookSection = ({
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">🃏</span> New Moon Card Pulls
+            <Badge variant="secondary" className="ml-auto text-[10px] font-normal">
+              {chartName}
+            </Badge>
           </CardTitle>
           <p className="text-[10px] text-muted-foreground">Pull a tarot and/or oracle card for this cycle. Enter the card name and get an AI interpretation tied to the {cycleSign} New Moon.</p>
         </CardHeader>
