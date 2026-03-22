@@ -12,7 +12,7 @@ const TIER_BUTTONS: { id: TierId; label: string }[] = [
   { id: 't3', label: 'T3 · Deep Dive' },
   { id: 't4', label: 'T4 · Master Reading' },
   { id: 't5', label: 'T5 · Oracle Report' },
-  { id: 'gift', label: 'Birthday Gift Print' },
+  { id: 'gift', label: 'Birthday Report' },
 ];
 
 const TIER_COLORS: Record<TierId, { bg: string; text: string; border: string }> = {
