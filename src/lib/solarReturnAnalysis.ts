@@ -254,7 +254,8 @@ export interface SRHouseOverlay {
   natalHouseTheme: string;
   srInNatalHouse: number | null;   // where the SR planet's degree falls in natal houses (overlay)
   srInNatalHouseTheme: string;
-  houseTheme: string;              // kept for backward compat (= natalHouseTheme)
+  /** @deprecated Use natalHouseTheme instead. This is the natal house theme, kept for backward compat. */
+  houseTheme: string;
   interpretation: string;
 }
 
