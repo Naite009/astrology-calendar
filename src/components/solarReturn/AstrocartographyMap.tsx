@@ -8,7 +8,7 @@ import { Search } from 'lucide-react';
 import { Globe, MapPin, ChevronRight, Star, X, Maximize2, Minimize2 } from 'lucide-react';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { calculateAstrocartography, SRAstrocartography, AstrocartoCity } from '@/lib/solarReturnAstrocartography';
+import { calculateAstrocartography, SRAstrocartography, AstrocartoCity, AstrocartoIntention, INTENTION_LABELS, INTENTION_EMOJIS } from '@/lib/solarReturnAstrocartography';
 
 // ─── Coordinate projection helpers ─────────────────────────────────
 
