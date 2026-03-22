@@ -196,6 +196,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       const { x, y } = projectCity(city.latitude, city.longitude);
       const w = estimateWidth(city.city);
       
+      // Use fixed position if defined for this city
+      if (FIXED_LABEL_POSITIONS[city.city] && view === 'us') {
+        const fixed = FIXED_LABEL_POSITIONS[city.city];
+        const lx = x + fixed.dx - (fixed.anchor === 'middle' ? w / 2 : fixed.anchor === 'end' ? w : 0);
+        placed.push({ x: lx + w / 2, y: y + fixed.dy, w, h: 9 });
+        positions[city.city] = fixed;
+        continue;
+      }
+      
       // 6 candidate positions: right, left, above, below, upper-right, lower-left
       const candidates = [
         { dx: (view === 'us' ? 8 : 7), dy: 0, anchor: 'start' },
