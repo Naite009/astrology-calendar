@@ -125,11 +125,6 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     'Honolulu': { dx: 12, dy: 0, anchor: 'start' },
   };
 
-  const alwaysLabelCities = useMemo(() => new Set(
-    view === 'us'
-      ? ['Philadelphia', 'Washington DC', 'Charlotte', 'Miami', 'Boulder', 'Ann Arbor', 'San Francisco']
-      : ['London', 'Paris', 'Rome', 'Zurich', 'Tokyo', 'Sydney', 'Honolulu']
-  ), [view]);
 
   // Geographic diversity filter — prevent overlapping labels
   const visibleCities = useMemo(() => {
@@ -210,13 +205,6 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     return projectWorld(lat, lng, mapW, mapH);
   };
 
-  const labeledCityNames = useMemo(() => {
-    const names = new Set<string>(alwaysLabelCities);
-    if (bestCity) names.add(bestCity.city);
-    if (worstCity) names.add(worstCity.city);
-    if (selectedCity) names.add(selectedCity.city);
-    return names;
-  }, [alwaysLabelCities, bestCity, worstCity, selectedCity]);
 
   // Label collision avoidance — try more positions, prefer side labels for dense areas
   const labelPositions = useMemo(() => {
@@ -226,7 +214,6 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     
     // Sort must-show cities first so they get priority label positions
     const sortedCities = visibleCities
-      .filter(city => labeledCityNames.has(city.city))
       .sort((a, b) => {
       const aM = MUST_SHOW.has(a.city) ? 0 : 1;
       const bM = MUST_SHOW.has(b.city) ? 0 : 1;
@@ -271,7 +258,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       positions[city.city] = best;
     }
     return positions;
-  }, [visibleCities, view, mapW, mapH, labeledCityNames]);
+  }, [visibleCities, view, mapW, mapH]);
 
   return (
     <div className="space-y-4">
@@ -407,7 +394,6 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               const isSelected = selectedCity?.city === city.city;
                 const dotR = view === 'us' ? 4.5 : 3.5;
                 const lp = labelPositions[city.city] || { dx: 0, dy: -10, anchor: 'middle' as const };
-                const showLabel = labeledCityNames.has(city.city);
               return (
                 <g key={city.city} className="cursor-pointer" onClick={() => setSelectedCity(isSelected ? null : city)}>
                   {isSelected && (
@@ -417,11 +403,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
                     </circle>
                   )}
                   <circle cx={x} cy={y} r={dotR} fill={ratingColor(cityRating(city))} stroke={isSelected ? 'hsl(var(--primary))' : 'hsl(var(--background))'} strokeWidth={isSelected ? 2 : 1} opacity={0.9} />
-                    {showLabel && (
-                      <text x={x + lp.dx} y={y + lp.dy} textAnchor={lp.anchor} className="fill-foreground" fontSize={view === 'us' ? 9 : 7} fontWeight={isSelected ? 600 : 500} opacity={isSelected ? 1 : 0.82}>
-                        {city.city}
-                      </text>
-                    )}
+                    <text x={x + lp.dx} y={y + lp.dy} textAnchor={lp.anchor} className="fill-foreground" fontSize={view === 'us' ? 9 : 7} fontWeight={isSelected ? 600 : 400} opacity={isSelected ? 1 : 0.7}>
+                      {city.city}
+                    </text>
                 </g>
               );
             })}
