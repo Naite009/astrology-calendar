@@ -31,6 +31,7 @@ export interface LunarWeatherMonth {
   checkpoints: MoonTransitCheckpoint[];
   overallTone: string;
   peakDay: number;         // day offset of highest intensity
+  interpretation: string;  // narrative of what this month feels like emotionally
 }
 
 export interface LunarWeatherMap {
