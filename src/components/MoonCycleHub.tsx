@@ -4,6 +4,7 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { LunarCycleView } from "./LunarCycleView";
 import { MoonTransitCalendar } from "./MoonTransitCalendar";
 import { MoonPhasesView } from "./MoonPhasesView";
+import { Button } from "@/components/ui/button";
 
 const MoonPatternsTab = lazy(() =>
   import("./moonCycle/MoonPatternsTab").then((m) => ({ default: m.MoonPatternsTab }))
@@ -26,15 +27,49 @@ export const MoonCycleHub = ({
 }: MoonCycleHubProps) => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  const jumpToSection = (sectionId: string) => {
+    setActiveTab("dashboard");
+
+    let attempts = 0;
+    const tryScroll = () => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < 8) {
+        window.setTimeout(tryScroll, 120);
+      }
+    };
+
+    window.setTimeout(tryScroll, 0);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="text-center mb-2">
-        <h2 className="font-serif text-2xl font-light tracking-widest text-foreground">
-          ☽ Moon Cycle Workbook
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
-          A monthly emotional work cycle · Track what rises, what peaks, and what asks to be released
-        </p>
+      <div className="text-center mb-2 space-y-3">
+        <div>
+          <h2 className="font-serif text-2xl font-light tracking-widest text-foreground">
+            ☽ Moon Cycle Workbook
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
+            A monthly emotional work cycle · Track what rises, what peaks, and what asks to be released
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => jumpToSection("card-pulls-section")}
+          >
+            🃏 Go to Cards
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
