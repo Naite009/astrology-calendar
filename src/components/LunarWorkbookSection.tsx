@@ -215,6 +215,10 @@ export const LunarWorkbookSection = ({
             className={`text-[10px] px-3 py-1 rounded-full border transition-all ${simpleMode ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border'}`}>
             {simpleMode ? '🌿 Simple' : '🔬 Advanced'}
           </button>
+          <button onClick={() => document.getElementById('card-pulls-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-[10px] px-3 py-1 rounded-full border border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground transition-all">
+            🃏 Card Pulls
+          </button>
           <div className="flex items-center gap-1">
             {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
             {!isSaving && journal?.id && <Badge variant="secondary" className="text-[9px]"><Save className="h-2.5 w-2.5 mr-0.5" /> Saved</Badge>}
@@ -398,7 +402,7 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 5b · New Moon Card Pulls ═══ */}
-      <Card className="border-border/30">
+      <Card id="card-pulls-section" className="border-border/30">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">🃏</span> New Moon Card Pulls
@@ -413,13 +417,28 @@ export const LunarWorkbookSection = ({
               <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Tarot Card</h4>
             </div>
             <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="e.g. The Tower, 3 of Cups, Queen of Swords..."
+              <select
                 value={journal?.tarot_card_name || ''}
                 onChange={e => saveJournal({ tarot_card_name: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
-              />
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              >
+                <option value="">Select a card...</option>
+                <optgroup label="Major Arcana">
+                  {["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"].map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+                <optgroup label="Wands">
+                  {["Ace of Wands","Two of Wands","Three of Wands","Four of Wands","Five of Wands","Six of Wands","Seven of Wands","Eight of Wands","Nine of Wands","Ten of Wands","Page of Wands","Knight of Wands","Queen of Wands","King of Wands"].map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+                <optgroup label="Cups">
+                  {["Ace of Cups","Two of Cups","Three of Cups","Four of Cups","Five of Cups","Six of Cups","Seven of Cups","Eight of Cups","Nine of Cups","Ten of Cups","Page of Cups","Knight of Cups","Queen of Cups","King of Cups"].map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+                <optgroup label="Swords">
+                  {["Ace of Swords","Two of Swords","Three of Swords","Four of Swords","Five of Swords","Six of Swords","Seven of Swords","Eight of Swords","Nine of Swords","Ten of Swords","Page of Swords","Knight of Swords","Queen of Swords","King of Swords"].map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+                <optgroup label="Pentacles">
+                  {["Ace of Pentacles","Two of Pentacles","Three of Pentacles","Four of Pentacles","Five of Pentacles","Six of Pentacles","Seven of Pentacles","Eight of Pentacles","Nine of Pentacles","Ten of Pentacles","Page of Pentacles","Knight of Pentacles","Queen of Pentacles","King of Pentacles"].map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>
+              </select>
               <Textarea
                 placeholder="Your own notes about this card — what struck you, what you felt when you saw it..."
                 value={journal?.tarot_card_notes || ''}
