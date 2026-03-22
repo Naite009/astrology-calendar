@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Volume2, Square, Loader } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -299,72 +299,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
-  const [ttsState, setTtsState] = useState<'idle' | 'playing' | 'paused'>('idle');
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const [ttsVoiceName, setTtsVoiceName] = useState<string>(() => localStorage.getItem('cosmic-tts-voice-name') || '');
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   // Document excerpts for AI enrichment
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
-  // Load browser voices
-  useEffect(() => {
-    const loadVoices = () => {
-      const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
-      if (voices.length > 0) setAvailableVoices(voices);
-    };
-    loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
-    return () => { speechSynthesis.onvoiceschanged = null; };
-  }, []);
-
-  const stopTtsAudio = useCallback(() => {
-    speechSynthesis.cancel();
-    utteranceRef.current = null;
-    setTtsState('idle');
-  }, []);
-
-  const playTtsInsights = useCallback(() => {
-    const textToRead = selectedWeekDay === 0 ? cosmicData?.insight : weekDayInsights[selectedWeekDay];
-    if (!textToRead) return;
-
-    if (ttsState === 'playing') { stopTtsAudio(); return; }
-    if (ttsState === 'paused') { speechSynthesis.resume(); setTtsState('playing'); return; }
-
-    const cleanText = textToRead
-      .replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')
-      .replace(/##\s*/g, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/- /g, '')
-      .replace(/\[.*?\]\(.*?\)/g, '')
-      .replace(/\n+/g, ' ')
-      .replace(/[☉☽☿♀♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓☊☋△□⚹☌]/g, '')
-      .trim();
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    // Apply selected voice
-    if (ttsVoiceName && availableVoices.length > 0) {
-      const match = availableVoices.find(v => v.name === ttsVoiceName);
-      if (match) utterance.voice = match;
-    } else if (availableVoices.length > 0) {
-      // Default: pick a nice voice
-      const preferred = availableVoices.find(v => v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Female'));
-      if (preferred) utterance.voice = preferred;
-    }
-
-    utterance.onend = () => setTtsState('idle');
-    utterance.onerror = () => setTtsState('idle');
-    utteranceRef.current = utterance;
-
-    speechSynthesis.speak(utterance);
-    setTtsState('playing');
-  }, [ttsState, stopTtsAudio, cosmicData, weekDayInsights, selectedWeekDay, ttsVoiceName, availableVoices]);
-
-  // Cleanup TTS on unmount
-  useEffect(() => { return () => { stopTtsAudio(); }; }, [stopTtsAudio]);
   
   // Get saved charts - prefer props, fall back to hook
   const hookData = useNatalChart();
@@ -1733,53 +1671,6 @@ Keep the tone professional, insightful, and practically applicable.`,
 
                     {!isLoading && weekDayLoading === null && !error && displayInsight && (
                       <>
-                      {/* Listen Controls */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 p-3 rounded-lg bg-secondary/50">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={playTtsInsights}
-                          className="flex items-center gap-2"
-                        >
-                          {ttsState === 'playing' ? (
-                            <><Square className="h-3.5 w-3.5 fill-current" /> Stop</>
-                          ) : ttsState === 'paused' ? (
-                            <><Volume2 className="h-4 w-4" /> Resume</>
-                          ) : (
-                            <><Volume2 className="h-4 w-4" /> Listen</>
-                          )}
-                        </Button>
-                        {ttsState === 'playing' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { speechSynthesis.pause(); setTtsState('paused'); }}
-                          >
-                            Pause
-                          </Button>
-                        )}
-                        {availableVoices.length > 0 && (
-                          <Select
-                            value={ttsVoiceName || availableVoices[0]?.name || ''}
-                            onValueChange={(v) => {
-                              setTtsVoiceName(v);
-                              localStorage.setItem('cosmic-tts-voice-name', v);
-                              stopTtsAudio();
-                            }}
-                          >
-                            <SelectTrigger className="w-[200px] bg-background h-9">
-                              <SelectValue placeholder="Choose voice" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border z-[100] max-h-[300px]">
-                              {availableVoices.map(v => (
-                                <SelectItem key={v.name} value={v.name}>
-                                  {v.name.replace(/Google\s*/i, '')}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <ReactMarkdown
                           components={{
