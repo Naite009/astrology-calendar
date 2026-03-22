@@ -86,16 +86,31 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const bestCity = cities[0];
   const worstCity = cities[cities.length - 1];
 
+  // Cities that MUST appear on the US map when present
+  const MUST_SHOW_US = new Set([
+    'Philadelphia', 'Washington D.C.', 'Boulder', 'Ann Arbor',
+    'Bloomington', 'Miami', 'Charlotte',
+  ]);
+
   // Geographic diversity filter — prevent overlapping labels
   const visibleCities = useMemo(() => {
     let filtered = cities;
     if (view === 'us') {
       filtered = cities.filter(c => isInUSRegion(c.latitude, c.longitude));
     }
-    const selected: AstrocartoCity[] = [];
-    const minDist = view === 'us' ? 2.5 : 8;
+
+    // Always include must-show cities first (US view only)
+    const mustShow = view === 'us'
+      ? filtered.filter(c => MUST_SHOW_US.has(c.city))
+      : [];
+    const rest = view === 'us'
+      ? filtered.filter(c => !MUST_SHOW_US.has(c.city))
+      : filtered;
+
+    const selected: AstrocartoCity[] = [...mustShow];
+    const minDist = view === 'us' ? 2.0 : 8;
     
-    for (const city of filtered) {
+    for (const city of rest) {
       const tooClose = selected.some(s => {
         const dlat = Math.abs(s.latitude - city.latitude);
         const dlng = Math.abs(s.longitude - city.longitude);
@@ -104,7 +119,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 12 : 10)) break;
+      if (selected.length >= (view === 'us' ? 15 : 10)) break;
     }
     return selected;
   }, [cities, view]);
