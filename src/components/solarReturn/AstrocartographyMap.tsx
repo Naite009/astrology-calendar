@@ -118,10 +118,15 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const mustShow = filtered.filter(c => MUST_SHOW.has(c.city));
     const rest = filtered.filter(c => !MUST_SHOW.has(c.city));
 
+    // Prioritize green-rated cities (>=7.5) so travel-worthy spots appear
+    const greenCities = rest.filter(c => c.rating >= 7.5);
+    const otherCities = rest.filter(c => c.rating < 7.5);
+    const prioritizedRest = [...greenCities, ...otherCities];
+
     const selected: AstrocartoCity[] = [...mustShow];
-    const minDist = view === 'us' ? 2.0 : 8;
+    const minDist = view === 'us' ? 1.5 : 6;
     
-    for (const city of rest) {
+    for (const city of prioritizedRest) {
       const tooClose = selected.some(s => {
         const dlat = Math.abs(s.latitude - city.latitude);
         const dlng = Math.abs(s.longitude - city.longitude);
@@ -130,7 +135,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (!tooClose) {
         selected.push(city);
       }
-      if (selected.length >= (view === 'us' ? 18 : 14)) break;
+      if (selected.length >= (view === 'us' ? 22 : 20)) break;
     }
     return selected;
   }, [cities, view]);
