@@ -210,15 +210,24 @@ export const LunarWorkbookSection = ({
         <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
           {cycleSign} New Moon at {cycleDegree}° · {cycleStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
           <button onClick={() => setSimpleMode(!simpleMode)}
             className={`text-[10px] px-3 py-1 rounded-full border transition-all ${simpleMode ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border'}`}>
             {simpleMode ? '🌿 Simple' : '🔬 Advanced'}
           </button>
-          <button onClick={() => document.getElementById('card-pulls-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-[10px] px-3 py-1 rounded-full border border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground transition-all">
-            🃏 Card Pulls
-          </button>
+          {[
+            { id: 'surfacing-section', label: '👁 Surfacing' },
+            { id: 'phase-checkins-section', label: '🌗 Phases' },
+            { id: 'intentions-section', label: '✨ Intentions' },
+            { id: 'card-pulls-section', label: '🃏 Cards' },
+            { id: 'metrics-section', label: '📊 Metrics' },
+            { id: 'patterns-section', label: '🔮 Patterns' },
+          ].map(nav => (
+            <button key={nav.id} onClick={() => document.getElementById(nav.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="text-[10px] px-3 py-1 rounded-full border border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground transition-all">
+              {nav.label}
+            </button>
+          ))}
           <div className="flex items-center gap-1">
             {isSaving && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
             {!isSaving && journal?.id && <Badge variant="secondary" className="text-[9px]"><Save className="h-2.5 w-2.5 mr-0.5" /> Saved</Badge>}
@@ -331,7 +340,7 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 4 · What Is Surfacing ═══ */}
-      <Card className="border-2 border-primary/25 bg-primary/5">
+      <Card id="surfacing-section" className="border-2 border-primary/25 bg-primary/5">
         <CardContent className="p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔴</span>
@@ -359,7 +368,7 @@ export const LunarWorkbookSection = ({
 
       {/* ═══ 5 · New Moon Seed / Intention ═══ */}
       {(currentPhase === 'newMoon' || !simpleMode) && (
-        <Card className="border-border/30">
+        <Card id="intentions-section" className="border-border/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" /> New Moon Seed
@@ -540,7 +549,7 @@ export const LunarWorkbookSection = ({
         </CardContent>
       </Card>
 
-      <Card className="border-border/30">
+      <Card id="phase-checkins-section" className="border-border/30">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" /> Phase Check-ins
@@ -601,6 +610,7 @@ export const LunarWorkbookSection = ({
       </Collapsible>
 
       {/* ═══ Body State + Metrics ═══ */}
+      <div id="metrics-section">
       <MetricTracker energy={journal?.energy ?? null} stress={journal?.stress ?? null}
         sleepQuality={journal?.sleep_quality ?? null} sensitivity={journal?.body_sensitivity ?? null}
         dreamIntensity={journal?.dream_intensity ?? null} tags={(journal?.tags as string[]) ?? []}
@@ -608,6 +618,7 @@ export const LunarWorkbookSection = ({
         onMetricChange={(f, v) => saveJournal({ [f]: v })}
         onTagsChange={tags => saveJournal({ tags })}
         onJournalTextChange={text => saveJournal({ journal_text: text })} />
+      </div>
 
       {/* ═══ 7 · Natal Overlay ═══ */}
       {!simpleMode && natalContext && (
@@ -704,11 +715,13 @@ export const LunarWorkbookSection = ({
       )}
 
       {/* ═══ 9 · Patterns + Insights ═══ */}
+      <div id="patterns-section">
       <PatternsInsightsSection
         pastJournals={pastJournals}
         currentJournal={journal}
         cycleSign={cycleSign}
       />
+      </div>
 
       {/* ═══ 11 · Sign-as-Practice / Learn Your Chart ═══ */}
       {signPractice && (
