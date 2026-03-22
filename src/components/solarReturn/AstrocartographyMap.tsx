@@ -327,8 +327,8 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             <defs>
               {visibleCities.map(city => (
                 <radialGradient key={`grad-${city.city}`} id={`glow-${city.city.replace(/\s/g, '')}`}>
-                  <stop offset="0%" stopColor={ratingColor(city.rating)} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={ratingColor(city.rating)} stopOpacity={0} />
+                  <stop offset="0%" stopColor={ratingColor(cityRating(city))} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={ratingColor(cityRating(city))} stopOpacity={0} />
                 </radialGradient>
               ))}
             </defs>
