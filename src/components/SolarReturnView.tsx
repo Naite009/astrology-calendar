@@ -363,6 +363,13 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             </button>
           </div>
 
+          <AiReadingModal
+            open={showAiReading}
+            onClose={() => setShowAiReading(false)}
+            personName={selectedNatal.name || 'Chart'}
+            buildFullJson={() => buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings)}
+            onReadingsUpdate={(r) => setAiReadings(r)}
+          />
 
           <TabsContent value="overview">
             <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
