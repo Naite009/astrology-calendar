@@ -534,28 +534,37 @@ export function calculateAstrocartography(
         intentionRatings[intention] = avgRating;
         continue;
       }
-      let weightedTotal = 0;
-      let weightSum = 0;
+      let intentionTotal = 0;
+      let intentionCount = 0;
       for (const ap of angularPlanets) {
         const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0;
         const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
         const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
         const orbMultiplier = Math.max(0.25, 1 - (ap.orb / 10));
-        const relevance = planetW * angleW * orbMultiplier;
-        if (relevance <= 0.12) continue;
-        weightedTotal += baseRating * relevance;
-        weightSum += relevance;
+        const rawScore = baseRating * orbMultiplier;
+        
+        // KEY FIX: The intention relevance factor pulls the score toward neutral (5)
+        // when this planet isn't important for this intention.
+        // planetW ranges 0-3, angleW ranges 0.5-1.5
+        // Combined relevance: planetW * angleW / 3 gives 0-1.5 range
+        // We clamp to 0-1 and use it as a lerp factor between neutral and raw score
+        const relevanceFactor = Math.min(1, (planetW * angleW) / 3);
+        
+        // When relevanceFactor = 1 (primary planet+angle for this intention): use full raw score
+        // When relevanceFactor = 0 (irrelevant): score = neutral 5
+        // When relevanceFactor = 0.3 (low relevance): score heavily pulled toward 5
+        const adjustedScore = NEUTRAL_RATING + (rawScore - NEUTRAL_RATING) * relevanceFactor;
+        
+        intentionTotal += adjustedScore;
+        intentionCount++;
       }
-      if (weightSum === 0) {
+      if (intentionCount === 0) {
         intentionRatings[intention] = avgRating;
         continue;
       }
 
-      const intentionScore = weightedTotal / weightSum;
-      // Use the intention-specific score directly — only mix in 20% of overall
-      // as a gentle anchor so scores don't feel completely detached
-      const blended = (intentionScore * 0.8) + (avgRating * 0.2);
-      intentionRatings[intention] = clampRating(blended);
+      const intentionAvg = intentionTotal / intentionCount;
+      intentionRatings[intention] = clampRating(intentionAvg);
     }
 
     // Build summary
