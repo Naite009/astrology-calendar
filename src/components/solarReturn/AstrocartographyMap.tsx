@@ -144,7 +144,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const prioritizedRest = [...greenCities, ...otherCities];
 
     const selected: AstrocartoCity[] = [...mustShow];
-    const minDist = view === 'us' ? 1.5 : 6;
+    const minDist = view === 'us' ? 1.5 : 5;
     
     for (const city of prioritizedRest) {
       const tooClose = selected.some(s => {
