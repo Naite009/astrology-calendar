@@ -23,6 +23,20 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
 };
 
+const SIGN_GLYPH_MAP: Record<string, string> = {
+  '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+  '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+  '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces',
+};
+
+const normalizeSign = (sign?: string | null): string | null => {
+  if (!sign) return null;
+  return SIGN_GLYPH_MAP[sign] || sign;
+};
+
+const getHouse1RisingSign = (chart?: { houseCusps?: { house1?: { sign?: string } } }): string =>
+  normalizeSign(chart?.houseCusps?.house1?.sign) || '—';
+
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂',
   Jupiter:'♃', Saturn:'♄', Uranus:'♅', Neptune:'♆', Pluto:'♇',
@@ -194,13 +208,13 @@ interface Props {
 export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) => {
   const natalSunSign = natalChart.planets.Sun?.sign || '—';
   const natalMoonSign = natalChart.planets.Moon?.sign || '—';
-  const natalRisingSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign || '—';
+  const natalRisingSign = getHouse1RisingSign(natalChart);
 
   const srSunSign = (srChart.planets as any)?.Sun?.sign || '—';
   const srSunDeg = (srChart.planets as any)?.Sun?.degree;
   const srMoonSign = analysis.moonSign || '—';
   const srMoonHouse = analysis.moonHouse?.house;
-  const srRisingSign = analysis.yearlyTheme?.ascendantSign || '—';
+  const srRisingSign = getHouse1RisingSign(srChart);
 
   const srSunHouse = analysis.sunHouse?.house;
   const srSunNatalHouse = analysis.sunNatalHouse?.house;
