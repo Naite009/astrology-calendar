@@ -26,10 +26,54 @@ const toAbsDeg = (pos: any): number | null => {
 
 // ─── Types ──────────────────────────────────────────────────────────
 
+export type AstrocartoIntention = 'overall' | 'love' | 'career' | 'vitality' | 'healing' | 'adventure' | 'creativity';
+
+export const INTENTION_LABELS: Record<AstrocartoIntention, string> = {
+  overall: 'Overall',
+  love: 'Love & Romance',
+  career: 'Career & Success',
+  vitality: 'Vitality & Confidence',
+  healing: 'Healing & Rest',
+  adventure: 'Adventure & Growth',
+  creativity: 'Creativity & Inspiration',
+};
+
+export const INTENTION_EMOJIS: Record<AstrocartoIntention, string> = {
+  overall: '🌐',
+  love: '💕',
+  career: '🏆',
+  vitality: '🔥',
+  healing: '🌿',
+  adventure: '✈️',
+  creativity: '🎨',
+};
+
+// Planet weights per intention (0 = irrelevant, 1 = normal, 2 = high, 3 = primary driver)
+const INTENTION_PLANET_WEIGHTS: Record<AstrocartoIntention, Record<string, number>> = {
+  overall:    { Sun: 1, Moon: 1, Mercury: 1, Venus: 1, Mars: 1, Jupiter: 1, Saturn: 1, Uranus: 1, Neptune: 1, Pluto: 1 },
+  love:       { Sun: 0.5, Moon: 2, Mercury: 0.3, Venus: 3, Mars: 2, Jupiter: 1, Saturn: 0.2, Uranus: 0.5, Neptune: 1.5, Pluto: 0.5 },
+  career:     { Sun: 3, Moon: 0.3, Mercury: 1.5, Venus: 0.5, Mars: 1.5, Jupiter: 3, Saturn: 2, Uranus: 0.5, Neptune: 0.2, Pluto: 1 },
+  vitality:   { Sun: 3, Moon: 1, Mercury: 0.5, Venus: 1, Mars: 3, Jupiter: 2, Saturn: 0.3, Uranus: 1, Neptune: 0.3, Pluto: 0.5 },
+  healing:    { Sun: 0.5, Moon: 3, Mercury: 0.5, Venus: 2, Mars: 0.2, Jupiter: 1.5, Saturn: 0.5, Uranus: 0.3, Neptune: 3, Pluto: 1.5 },
+  adventure:  { Sun: 1, Moon: 0.5, Mercury: 1, Venus: 0.5, Mars: 2.5, Jupiter: 3, Saturn: 0.2, Uranus: 2.5, Neptune: 0.5, Pluto: 0.5 },
+  creativity: { Sun: 1, Moon: 2, Mercury: 1.5, Venus: 3, Mars: 0.5, Jupiter: 1.5, Saturn: 0.3, Uranus: 2, Neptune: 3, Pluto: 0.5 },
+};
+
+// Angle preference per intention (some intentions favor ASC/DSC, others MC)
+const INTENTION_ANGLE_BONUS: Record<AstrocartoIntention, Record<string, number>> = {
+  overall:    { ASC: 1, MC: 1, DSC: 1, IC: 1 },
+  love:       { ASC: 1.3, MC: 0.6, DSC: 1.5, IC: 1.2 },
+  career:     { ASC: 1, MC: 1.5, DSC: 0.5, IC: 0.5 },
+  vitality:   { ASC: 1.5, MC: 1.2, DSC: 0.6, IC: 0.5 },
+  healing:    { ASC: 0.8, MC: 0.5, DSC: 0.8, IC: 1.5 },
+  adventure:  { ASC: 1.3, MC: 1, DSC: 1, IC: 0.6 },
+  creativity: { ASC: 1.2, MC: 1.3, DSC: 0.8, IC: 1 },
+};
+
 export interface AstrocartoLine {
   planet: string;
   lineType: 'ASC' | 'MC' | 'DSC' | 'IC';
-  longitude: number;  // geographic longitude where this line falls
+  longitude: number;
   interpretation: string;
 }
 
@@ -39,7 +83,8 @@ export interface AstrocartoCity {
   latitude: number;
   longitude: number;
   angularPlanets: { planet: string; angle: string; orb: number }[];
-  rating: number;       // 0-10 desirability
+  rating: number;       // 0-10 overall desirability
+  intentionRatings: Record<AstrocartoIntention, number>; // per-intention 0-10
   summary: string;
 }
 
