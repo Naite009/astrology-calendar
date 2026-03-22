@@ -194,7 +194,7 @@ interface Props {
 export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) => {
   const natalSunSign = natalChart.planets.Sun?.sign || '—';
   const natalMoonSign = natalChart.planets.Moon?.sign || '—';
-  const natalRisingSign = natalChart.planets.Ascendant?.sign || '—';
+  const natalRisingSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign || '—';
 
   const srSunSign = (srChart.planets as any)?.Sun?.sign || '—';
   const srSunDeg = (srChart.planets as any)?.Sun?.degree;

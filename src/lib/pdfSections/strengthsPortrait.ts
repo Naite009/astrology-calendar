@@ -185,7 +185,7 @@ export function generateStrengthsPortrait(
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
   const srSunHouse = analysis.planetSRHouses?.['Sun'] || analysis.sunHouse?.house;
   const srMoonHouse = analysis.planetSRHouses?.['Moon'];
-  const srAscSign = analysis.yearlyTheme?.ascendantSign || srChart?.planets?.Ascendant?.sign || '';
+  const srAscSign = analysis.yearlyTheme?.ascendantSign || srChart?.houseCusps?.house1?.sign || srChart?.planets?.Ascendant?.sign || '';
   const srMoonSign = analysis.moonSign || srChart?.planets?.Moon?.sign || '';
   const srSunSign = srChart?.planets?.Sun?.sign || sunSign;
 
