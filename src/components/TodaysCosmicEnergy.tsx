@@ -299,10 +299,6 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
-  const [ttsState, setTtsState] = useState<'idle' | 'playing' | 'paused'>('idle');
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const [ttsVoiceName, setTtsVoiceName] = useState<string>(() => localStorage.getItem('cosmic-tts-voice-name') || '');
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   // Document excerpts for AI enrichment
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
