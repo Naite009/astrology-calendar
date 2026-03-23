@@ -668,9 +668,9 @@ export const LunarWorkbookSection = ({
               >
                 {isSynthesizing ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Synthesizing...</> : <><Sparkles className="h-3 w-3 mr-1" /> Generate Final Synthesis</>}
               </Button>
-              {(journal as any)?.cards_synthesis && (
+              {journal?.cards_synthesis && (
                 <div className="prose prose-sm dark:prose-invert bg-background/60 p-4 rounded-lg border border-primary/15">
-                  <ReactMarkdown>{(journal as any).cards_synthesis}</ReactMarkdown>
+                  <ReactMarkdown>{journal.cards_synthesis}</ReactMarkdown>
                 </div>
               )}
             </div>
