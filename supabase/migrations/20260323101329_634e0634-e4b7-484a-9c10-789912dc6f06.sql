@@ -1,0 +1,1 @@
+ALTER TABLE public.lunar_cycle_journals ADD COLUMN IF NOT EXISTS cards_synthesis TEXT;

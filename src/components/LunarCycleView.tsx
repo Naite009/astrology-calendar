@@ -1657,13 +1657,43 @@ Keep the tone deep, insightful, and practically applicable.`
             return end;
           })()}
           natalContext={{
-            natalPlanets: Object.entries(activeChart.planets)
-              .filter(([_, data]) => data)
-              .map(([planet, data]) => {
-                const planetData = data as { sign: string; degree: number };
-                return `${planet}: ${Math.floor(planetData.degree)}° ${planetData.sign}`;
-              })
-              .join(', '),
+            natalPlanets: (() => {
+              const cusps = activeChart.houseCusps;
+              const cuspLongitudes: number[] = [];
+              if (cusps) {
+                for (let i = 1; i <= 12; i++) {
+                  const cusp = cusps[`house${i}` as keyof typeof cusps];
+                  if (cusp) {
+                    const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+                    cuspLongitudes.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+                  }
+                }
+              }
+              const calcHouse = (absDeg: number): number | null => {
+                if (cuspLongitudes.length !== 12) return null;
+                for (let i = 0; i < 12; i++) {
+                  const nextI = (i + 1) % 12;
+                  let start = cuspLongitudes[i];
+                  let end = cuspLongitudes[nextI];
+                  if (end < start) end += 360;
+                  let d = absDeg;
+                  if (d < start) d += 360;
+                  if (d >= start && d < end) return i + 1;
+                }
+                return 1;
+              };
+              return Object.entries(activeChart.planets)
+                .filter(([_, data]) => data)
+                .map(([planet, data]) => {
+                  const planetData = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+                  const deg = planetData.degree + (planetData.minutes || 0) / 60;
+                  const absDeg = ZODIAC_SIGNS.indexOf(planetData.sign) * 30 + deg;
+                  const house = calcHouse(absDeg);
+                  const retro = planetData.isRetrograde ? ' Rx' : '';
+                  return `${planet}: ${Math.floor(planetData.degree)}°${planetData.minutes ? String(planetData.minutes).padStart(2, '0') : '00'}' ${planetData.sign}${house ? ` (House ${house})` : ''}${retro}`;
+                })
+                .join(', ');
+            })(),
             newMoonHouse: (() => {
               if (!activeChart.houseCusps) return undefined;
               const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);

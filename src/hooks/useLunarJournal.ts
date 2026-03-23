@@ -89,6 +89,9 @@ export interface LunarJournalEntry {
   oracle_card_notes?: string;
   oracle_ai_interpretation?: string;
   
+  // Cards synthesis
+  cards_synthesis?: string;
+  
   // Tracking metrics
   mood?: number | null;
   energy?: number | null;
