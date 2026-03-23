@@ -16,9 +16,14 @@ serve(async (req) => {
       cardName, 
       deckName,
       cycleSign, 
+      cycleDegree,
       phaseName,
       chartName,
-      intentions 
+      intentions,
+      natalPlanets,
+      newMoonHouse,
+      natalAspects,
+      whatIsSurfacing,
     } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -43,24 +48,57 @@ IMPORTANT: This card appeared REVERSED. A reversed card does NOT simply mean the
 
 Weave the reversal meaning throughout your interpretation. Be specific about what the reversal changes about the card's usual message.` : '';
 
-    const systemPrompt = `You are a wise and compassionate spiritual guide who interprets cards in the context of lunar cycles and personal growth. You blend traditional card meanings with intuitive, soul-centered guidance.
+    // Build rich natal chart context
+    let natalChartBlock = '';
+    if (natalPlanets) {
+      natalChartBlock += `\n\nNATAL CHART PLACEMENTS (for ${chartName || 'the querent'}):\n${natalPlanets}`;
+    }
+    if (newMoonHouse) {
+      natalChartBlock += `\n- This New Moon falls in the native's ${newMoonHouse}${getOrdinalSuffix(parseInt(newMoonHouse))} House`;
+      const houseTheme = HOUSE_THEMES[parseInt(newMoonHouse)];
+      if (houseTheme) natalChartBlock += ` (${houseTheme})`;
+    }
+    if (natalAspects) {
+      natalChartBlock += `\n- New Moon aspects to natal planets: ${natalAspects}`;
+    }
+
+    const systemPrompt = `You are a wise and compassionate spiritual guide who interprets cards through the lens of astrology, lunar cycles, and personal growth. You blend traditional card meanings with deep astrological insight and intuitive, soul-centered guidance.
 
 Your interpretations should:
-- Connect the card's symbolism to the current lunar phase and zodiac energy
-- Offer practical, actionable guidance
+- Connect the card's symbolism to the current lunar phase, zodiac energy, AND the querent's natal chart
+- Reference specific natal placements when relevant (e.g., "With your Moon in Scorpio in the 8th house, this card's theme of emotional depth hits especially close to home")
+- Explain how the current lunar phase activates specific houses and planets in their chart
+- Note any natal aspects the New Moon makes to their planets and what that amplifies
+- Consider planetary dignities: is the ruling planet of the card's associated sign well-placed or challenged in their chart?
+- For Tarot: connect the card's traditional planetary/elemental ruler to its natal placement
+- For Oracle: connect the card's lunar/cyclical message to their specific house activation
+- Offer practical, actionable guidance personalized to their chart
 - Be warm and encouraging without being superficial
-- Reference the user's stated intentions if provided
-- Keep the interpretation focused (2-3 paragraphs)${reversalGuidance}`;
+- Reference the user's stated intentions and current life themes if provided
+- Keep the interpretation focused (3-4 paragraphs)${reversalGuidance}
+
+TAROT-ASTROLOGY CORRESPONDENCES (use when relevant):
+Major Arcana: The Fool=Uranus, Magician=Mercury, High Priestess=Moon, Empress=Venus, Emperor=Aries, Hierophant=Taurus, Lovers=Gemini, Chariot=Cancer, Strength=Leo, Hermit=Virgo, Wheel of Fortune=Jupiter, Justice=Libra, Hanged Man=Neptune, Death=Scorpio, Temperance=Sagittarius, Devil=Capricorn, Tower=Mars, Star=Aquarius, Moon=Pisces, Sun=Sun, Judgement=Pluto, World=Saturn.
+Wands=Fire (Aries/Leo/Sagittarius), Cups=Water (Cancer/Scorpio/Pisces), Swords=Air (Gemini/Libra/Aquarius), Pentacles=Earth (Taurus/Virgo/Capricorn).
+Court Cards: Pages=Earth of suit, Knights=Air/Fire of suit, Queens=Water of suit, Kings=Fire of suit.`;
 
     const userPrompt = `${cardContext}
 
-Context:
-- Current Lunar Cycle: ${cycleSign} New Moon
+LUNAR CYCLE CONTEXT:
+- Current Lunar Cycle: ${cycleSign} New Moon${cycleDegree ? ` at ${cycleDegree}°` : ''}
 - Current Phase: ${phaseName}
+${newMoonHouse ? `- New Moon House in Natal Chart: ${newMoonHouse}${getOrdinalSuffix(parseInt(newMoonHouse))} House` : ''}
+${natalAspects ? `- New Moon Aspects to Natal Planets: ${natalAspects}` : ''}
 ${chartName ? `- Reading for: ${chartName}` : ''}
-${intentions ? `- User's Stated Intentions: "${intentions}"` : ''}
+${natalChartBlock}
+${intentions ? `\nSTATED INTENTIONS FOR THIS CYCLE: "${intentions}"` : ''}
+${whatIsSurfacing ? `\nCURRENT LIFE THEMES (what is surfacing): "${whatIsSurfacing}"` : ''}
 
-Please provide an interpretation of this card in the context of the current lunar cycle and phase. What message does this card hold for the journey ahead? How does it relate to the ${cycleSign} energy and the ${phaseName} phase?`;
+Please provide a rich astrological interpretation of this card. Weave together:
+1. The card's traditional meaning and its astrological ruler/element
+2. How it connects to the ${cycleSign} New Moon energy at the ${phaseName} phase
+3. What it means specifically for this person given their natal placements${newMoonHouse ? ` and ${newMoonHouse}${getOrdinalSuffix(parseInt(newMoonHouse))} house activation` : ''}
+4. Practical guidance for working with this energy during this lunar cycle`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -109,3 +147,25 @@ Please provide an interpretation of this card in the context of the current luna
     });
   }
 });
+
+function getOrdinalSuffix(n: number): string {
+  if (n === 1) return 'st';
+  if (n === 2) return 'nd';
+  if (n === 3) return 'rd';
+  return 'th';
+}
+
+const HOUSE_THEMES: Record<number, string> = {
+  1: 'identity, body, self-presentation',
+  2: 'money, values, security, self-worth',
+  3: 'communication, siblings, local travel, learning',
+  4: 'home, family, roots, emotional foundation',
+  5: 'creativity, romance, children, play, joy',
+  6: 'work, health, daily routines, service',
+  7: 'relationships, partnerships, agreements',
+  8: 'intimacy, shared resources, transformation, death/rebirth',
+  9: 'beliefs, higher education, travel, philosophy',
+  10: 'career, public role, reputation, calling',
+  11: 'friendships, groups, future goals, community',
+  12: 'spirituality, retreat, the unconscious, endings',
+};

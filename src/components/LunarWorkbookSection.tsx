@@ -182,9 +182,14 @@ export const LunarWorkbookSection = ({
           cardName: cardName.trim(),
           deckName: cardType === 'oracle' ? journal?.oracle_deck_name : undefined,
           cycleSign,
+          cycleDegree,
           phaseName,
           chartName,
           intentions: journal?.new_moon_intentions,
+          natalPlanets: natalContext?.natalPlanets,
+          newMoonHouse: natalContext?.newMoonHouse,
+          natalAspects: natalContext?.natalAspects,
+          whatIsSurfacing: journal?.what_is_surfacing,
         }
       });
       if (error) throw error;
