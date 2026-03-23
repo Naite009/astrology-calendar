@@ -408,7 +408,7 @@ export const LunarCycleView = ({
   onClose, 
   userNatalChart, 
   savedCharts = [], 
-  selectedChartId = 'general',
+  selectedChartId,
   onSelectChart 
 }: LunarCycleViewProps) => {
   const [newMoons, setNewMoons] = useState<{ previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } | null>(null);
