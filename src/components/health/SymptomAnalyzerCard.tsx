@@ -18,14 +18,42 @@ function buildChartContext(chart: NatalChart): string {
   lines.push(`Name: ${chart.name}`);
   lines.push(`Birth: ${chart.birthDate} ${chart.birthTime} ${chart.birthLocation}`);
   lines.push('');
-  lines.push('PLANETARY PLACEMENTS:');
+  lines.push('PLANETARY PLACEMENTS (with calculated house positions):');
+
+  const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const cuspLongitudes: number[] = [];
+  if (chart.houseCusps) {
+    for (let i = 1; i <= 12; i++) {
+      const key = `house${i}` as keyof typeof chart.houseCusps;
+      const cusp = chart.houseCusps[key];
+      if (cusp) {
+        cuspLongitudes.push(ZODIAC.indexOf(cusp.sign) * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+      }
+    }
+  }
+  const calcHouse = (absDeg: number): number | null => {
+    if (cuspLongitudes.length !== 12) return null;
+    for (let i = 0; i < 12; i++) {
+      const nextI = (i + 1) % 12;
+      let start = cuspLongitudes[i];
+      let end = cuspLongitudes[nextI];
+      if (end < start) end += 360;
+      let d = absDeg;
+      if (d < start) d += 360;
+      if (d >= start && d < end) return i + 1;
+    }
+    return 1;
+  };
 
   const planetNames = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'];
   for (const name of planetNames) {
     const p = chart.planets[name as keyof typeof chart.planets];
     if (p?.sign) {
       const retro = ('isRetrograde' in p && p.isRetrograde) ? ' (Rx)' : '';
-      lines.push(`  ${name}: ${p.degree}°${p.minutes || 0}' ${p.sign}${retro}`);
+      const deg = p.degree + (p.minutes || 0) / 60;
+      const absDeg = ZODIAC.indexOf(p.sign) * 30 + deg;
+      const house = calcHouse(absDeg);
+      lines.push(`  ${name}: ${p.degree}°${p.minutes || 0}' ${p.sign}${house ? ` (House ${house})` : ''}${retro}`);
     }
   }
 

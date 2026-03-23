@@ -29,6 +29,8 @@ CRITICAL ANTI-HALLUCINATION RULES:
 - If the user asks "where is Jupiter" or any planet RIGHT NOW, use the CURRENT TRANSITS section, NOT their natal chart.
 - NEVER guess or recall planetary positions from memory. ONLY use the data provided.
 - Clearly distinguish between natal placements (birth chart) and current transits (today's sky).
+- Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs. Sign ≠ House. The house positions have been calculated from actual birth chart cusps and are DEFINITIVE.
+- If a planet says "(House 10)" then it is in the 10th house, regardless of what sign it's in.
 
 Important: You have the chart data in context. Use it to give specific, personalized interpretations.`;
 
