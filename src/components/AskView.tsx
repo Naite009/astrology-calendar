@@ -54,13 +54,41 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
     context += `Birth: ${chart.birthDate}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
     if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
-    context += "\n\nNATAL Planetary Positions:\n";
+    context += "\n\nNATAL Planetary Positions (with calculated house placements):\n";
+    
+    // Pre-calculate house cusps for planet-to-house mapping
+    const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const cuspLongitudes: number[] = [];
+    if (Object.keys(houseCusps).length > 0) {
+      for (let i = 1; i <= 12; i++) {
+        const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
+        if (cusp && typeof cusp === 'object' && 'sign' in cusp) {
+          const c = cusp as { sign: string; degree: number; minutes?: number };
+          cuspLongitudes.push(ZODIAC.indexOf(c.sign) * 30 + c.degree + (c.minutes || 0) / 60);
+        }
+      }
+    }
+    const calcHouse = (absDeg: number): number | null => {
+      if (cuspLongitudes.length !== 12) return null;
+      for (let i = 0; i < 12; i++) {
+        const nextI = (i + 1) % 12;
+        let start = cuspLongitudes[i];
+        let end = cuspLongitudes[nextI];
+        if (end < start) end += 360;
+        let d = absDeg;
+        if (d < start) d += 360;
+        if (d >= start && d < end) return i + 1;
+      }
+      return 1;
+    };
     
     Object.entries(planets).forEach(([planet, data]) => {
       if (data && typeof data === 'object' && 'sign' in data) {
         const pos = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
-        context += `- ${planet}: ${pos.degree}° ${pos.sign}`;
-        if (pos.minutes) context += ` ${pos.minutes}'`;
+        const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
+        const house = calcHouse(absDeg);
+        context += `- ${planet}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}`;
+        if (house) context += ` (House ${house})`;
         if (pos.isRetrograde) context += " (R)";
         context += "\n";
       }

@@ -28,7 +28,9 @@ serve(async (req) => {
 
     const hasNatalContext = chartName && (natalPlanets || newMoonHouse);
 
-    const systemPrompt = `You are a soul-centered astrologer who helps people craft meaningful, personalized intentions for lunar cycles. Your guidance is warm, practical, and deeply rooted in astrological symbolism.`;
+    const systemPrompt = `You are a soul-centered astrologer who helps people craft meaningful, personalized intentions for lunar cycles. Your guidance is warm, practical, and deeply rooted in astrological symbolism.
+
+CRITICAL: When natal chart data is provided, use the EXACT house positions shown in parentheses (e.g., "Venus: 15° Taurus (House 2)"). Do NOT infer houses from zodiac signs. Sign ≠ House. The houses have been calculated from actual birth chart cusps.`;
 
     let userPrompt = `Generate 3-4 soul-centered intention suggestions for the ${cycleSign} New Moon at ${cycleDegree}°.
 

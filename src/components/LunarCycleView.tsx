@@ -548,12 +548,40 @@ export const LunarCycleView = ({
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
     const natalAspectsForPrompt = getNatalAspects();
     
-    // Get all natal planet positions
+    // Pre-calculate house cusps for planet mapping
+    const cuspLongitudes: number[] = [];
+    if (activeChart.houseCusps) {
+      for (let i = 1; i <= 12; i++) {
+        const cusp = activeChart.houseCusps[`house${i}` as keyof typeof activeChart.houseCusps];
+        if (cusp) {
+          const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+          cuspLongitudes.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+        }
+      }
+    }
+    const calcHouse = (absDeg: number): number | null => {
+      if (cuspLongitudes.length !== 12) return null;
+      for (let i = 0; i < 12; i++) {
+        const nextI = (i + 1) % 12;
+        let start = cuspLongitudes[i];
+        let end = cuspLongitudes[nextI];
+        if (end < start) end += 360;
+        let d = absDeg;
+        if (d < start) d += 360;
+        if (d >= start && d < end) return i + 1;
+      }
+      return 1;
+    };
+
+    // Get all natal planet positions WITH calculated houses
     const natalPositions = Object.entries(activeChart.planets)
       .filter(([_, data]) => data)
       .map(([planet, data]) => {
         const planetData = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
-        return `${planet}: ${Math.floor(planetData.degree)}° ${planetData.sign}${planetData.isRetrograde ? ' ℞' : ''}`;
+        const deg = planetData.degree + (planetData.minutes || 0) / 60;
+        const absDeg = ZODIAC_SIGNS.indexOf(planetData.sign) * 30 + deg;
+        const house = calcHouse(absDeg);
+        return `${planet}: ${Math.floor(planetData.degree)}°${String(planetData.minutes || 0).padStart(2, '0')}' ${planetData.sign}${house ? ` (House ${house})` : ''}${planetData.isRetrograde ? ' ℞' : ''}`;
       })
       .join('\n');
     
