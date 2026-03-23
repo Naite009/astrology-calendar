@@ -887,27 +887,16 @@ Keep the tone deep, insightful, and practically applicable.`
       {/* Chart Selector */}
       {(userNatalChart || savedCharts.length > 0) && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              Personalize for:
-            </label>
-            <Select value={localSelectedChart} onValueChange={handleChartChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select a chart" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">☽ General (Collective)</SelectItem>
-                {userNatalChart && (
-                  <SelectItem value="user">⭐ {userNatalChart.name || 'My Chart'}</SelectItem>
-                )}
-                {savedCharts.map((chart) => (
-                  <SelectItem key={chart.id} value={chart.id || ''}>
-                    {chart.name || 'Unnamed Chart'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ChartSelector
+            userNatalChart={userNatalChart || null}
+            savedCharts={savedCharts}
+            selectedChartId={localSelectedChart}
+            onSelect={handleChartChange}
+            includeGeneral
+            generalLabel="☽ General (Collective)"
+            generalId="general"
+            label="Personalize for"
+          />
           {activeChart && (
             <Badge variant="secondary" className="self-start">
               Personalized for {activeChart.name || 'Your Chart'}
