@@ -227,6 +227,7 @@ export type Database = {
           balsamic_what_feels_complete: string | null
           balsamic_withdrawal: number | null
           body_sensitivity: number | null
+          cards_synthesis: string | null
           chart_id: string
           clarity: number | null
           communication_quality: number | null
@@ -304,6 +305,7 @@ export type Database = {
           balsamic_what_feels_complete?: string | null
           balsamic_withdrawal?: number | null
           body_sensitivity?: number | null
+          cards_synthesis?: string | null
           chart_id: string
           clarity?: number | null
           communication_quality?: number | null
@@ -381,6 +383,7 @@ export type Database = {
           balsamic_what_feels_complete?: string | null
           balsamic_withdrawal?: number | null
           body_sensitivity?: number | null
+          cards_synthesis?: string | null
           chart_id?: string
           clarity?: number | null
           communication_quality?: number | null
