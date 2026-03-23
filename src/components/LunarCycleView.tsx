@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChartSelector } from "@/components/ChartSelector";
 import * as Astronomy from 'astronomy-engine';
 import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
 import { getPlanetaryPositions, getMoonPhase } from "@/lib/astrology";
@@ -407,7 +408,7 @@ export const LunarCycleView = ({
   onClose, 
   userNatalChart, 
   savedCharts = [], 
-  selectedChartId = 'general',
+  selectedChartId,
   onSelectChart 
 }: LunarCycleViewProps) => {
   const [newMoons, setNewMoons] = useState<{ previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } | null>(null);
@@ -416,7 +417,10 @@ export const LunarCycleView = ({
   const [isLoading, setIsLoading] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [keyPhases, setKeyPhases] = useState<KeyPhaseDates | null>(null);
-  const [localSelectedChart, setLocalSelectedChart] = useState(selectedChartId);
+  // Default to user's own chart when available, otherwise general
+  const [localSelectedChart, setLocalSelectedChart] = useState(
+    selectedChartId || (userNatalChart ? 'user' : 'general')
+  );
   const [cycleOffset, setCycleOffset] = useState(0);
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
@@ -883,27 +887,16 @@ Keep the tone deep, insightful, and practically applicable.`
       {/* Chart Selector */}
       {(userNatalChart || savedCharts.length > 0) && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              Personalize for:
-            </label>
-            <Select value={localSelectedChart} onValueChange={handleChartChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select a chart" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">☽ General (Collective)</SelectItem>
-                {userNatalChart && (
-                  <SelectItem value="user">⭐ {userNatalChart.name || 'My Chart'}</SelectItem>
-                )}
-                {savedCharts.map((chart) => (
-                  <SelectItem key={chart.id} value={chart.id || ''}>
-                    {chart.name || 'Unnamed Chart'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ChartSelector
+            userNatalChart={userNatalChart || null}
+            savedCharts={savedCharts}
+            selectedChartId={localSelectedChart}
+            onSelect={handleChartChange}
+            includeGeneral
+            generalLabel="☽ General (Collective)"
+            generalId="general"
+            label="Personalize for"
+          />
           {activeChart && (
             <Badge variant="secondary" className="self-start">
               Personalized for {activeChart.name || 'Your Chart'}
