@@ -618,6 +618,63 @@ export const LunarWorkbookSection = ({
               )}
             </div>
           </div>
+
+          {/* ─── Final Synthesis ─── */}
+          {journal?.tarot_card_name && journal?.oracle_card_name && (
+            <div className="space-y-3 p-4 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/20 border border-primary/20">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🔮</span>
+                <h4 className="text-xs font-medium uppercase tracking-widest text-foreground">Final Synthesis</h4>
+                <span className="text-[9px] text-muted-foreground ml-auto">Tarot + Oracle + ☽ + Chart</span>
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                Combines both your card pulls with the {cycleSign} New Moon and your natal chart into one unified message.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  setIsSynthesizing(true);
+                  try {
+                    const phaseName = currentPhase === 'newMoon' ? 'New Moon' : currentPhase === 'firstQuarter' ? 'First Quarter' : currentPhase === 'fullMoon' ? 'Full Moon' : currentPhase === 'lastQuarter' ? 'Last Quarter' : 'Balsamic';
+                    const { data, error } = await supabase.functions.invoke('interpret-cards', {
+                      body: {
+                        synthesize: true,
+                        tarotCardName: journal.tarot_card_name,
+                        oracleCardName: journal.oracle_card_name,
+                        tarotInterpretation: journal.tarot_ai_interpretation,
+                        oracleInterpretation: journal.oracle_ai_interpretation,
+                        cycleSign,
+                        cycleDegree,
+                        phaseName,
+                        chartName,
+                        intentions: journal.new_moon_intentions,
+                        natalPlanets: natalContext?.natalPlanets,
+                        newMoonHouse: natalContext?.newMoonHouse,
+                        natalAspects: natalContext?.natalAspects,
+                        whatIsSurfacing: journal.what_is_surfacing,
+                      }
+                    });
+                    if (error) throw error;
+                    if (data?.synthesis) {
+                      saveJournal({ cards_synthesis: data.synthesis } as any);
+                      toast.success("Synthesis generated");
+                    }
+                  } catch { toast.error("Failed to generate synthesis"); }
+                  finally { setIsSynthesizing(false); }
+                }}
+                disabled={isSynthesizing}
+                className="w-full"
+              >
+                {isSynthesizing ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Synthesizing...</> : <><Sparkles className="h-3 w-3 mr-1" /> Generate Final Synthesis</>}
+              </Button>
+              {(journal as any)?.cards_synthesis && (
+                <div className="prose prose-sm dark:prose-invert bg-background/60 p-4 rounded-lg border border-primary/15">
+                  <ReactMarkdown>{(journal as any).cards_synthesis}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
