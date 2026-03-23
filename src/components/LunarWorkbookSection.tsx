@@ -657,7 +657,7 @@ export const LunarWorkbookSection = ({
                     });
                     if (error) throw error;
                     if (data?.synthesis) {
-                      saveJournal({ cards_synthesis: data.synthesis } as any);
+                      saveJournal({ cards_synthesis: data.synthesis });
                       toast.success("Synthesis generated");
                     }
                   } catch { toast.error("Failed to generate synthesis"); }
