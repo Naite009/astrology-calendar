@@ -29,7 +29,7 @@ import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHous
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 import { VenusStarPointTracker } from './VenusStarPointTracker';
-import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
+import { getVOCMoonDetails, formatVOCDuration, formatVOCRange } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
@@ -1305,17 +1305,7 @@ const VOCMoonSection = ({ date, voc }: { date: Date; voc: DayData['voc'] }) => {
           <p className="text-sm text-foreground">
             The Moon is in <span className="font-medium">{vocDetails.currentMoonSign || 'its current sign'}</span> and is void of course{' '}
             <span className="font-medium">
-              {vocDetails.start?.toLocaleTimeString('en-US', { 
-                timeZone: 'America/New_York',
-                hour: 'numeric', 
-                minute: '2-digit' 
-              })}
-              {' '}–{' '}
-              {vocDetails.end?.toLocaleTimeString('en-US', { 
-                timeZone: 'America/New_York',
-                hour: 'numeric', 
-                minute: '2-digit' 
-              })} ET
+              {vocDetails.start && vocDetails.end ? formatVOCRange(vocDetails.start, vocDetails.end, date) : ''}
             </span>
             {vocDetails.durationMinutes && (
               <span className="text-amber-600 dark:text-amber-400"> ({formatVOCDuration(vocDetails.durationMinutes)})</span>

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
-import { getVOCMoonDetails, findNextMoonSignChange, formatVOCTime, formatVOCDuration } from "@/lib/voidOfCourseMoon";
+import { getVOCMoonDetails, findNextMoonSignChange, formatVOCTime, formatVOCDuration, formatVOCRange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
 import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeaningsLookup";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
@@ -1383,7 +1383,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                           <span className="text-foreground">The Moon is in </span>
                           <span className="font-medium">{vocInfo.currentMoonSign ? `${ZODIAC_SYMBOLS[vocInfo.currentMoonSign] || ''} ${vocInfo.currentMoonSign}` : 'its current sign'}</span>
                           <span className="text-foreground"> and is void of course </span>
-                          <span className="font-medium text-foreground">{formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}</span>
+                          <span className="font-medium text-foreground">{formatVOCRange(vocInfo.start, vocInfo.end)}</span>
                           {vocInfo.moonEntersSign && (
                             <>
                               <span className="text-foreground"> before it moves into </span>
