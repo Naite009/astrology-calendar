@@ -529,7 +529,13 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
           className="text-xs text-amber-600 mt-1 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-sm"
           title={`Void of Course Moon\n${vocDetails.lastAspect ? `Last aspect: ☽ ${vocDetails.lastAspect.symbol} ${vocDetails.lastAspect.planet} at ${formatVOCTime(vocDetails.lastAspect.time)}` : 'Already VOC'}\nMoon enters ${vocDetails.moonEntersSign || 'next sign'} at ${vocDetails.end ? formatVOCTime(vocDetails.end) : ''}`}
         >
-          ⚠️ V/C {formatVOCTime(vocDetails.displayStart)}-{formatVOCTime(vocDetails.displayEnd)}
+          ⚠️ V/C {vocDetails.displayStart && vocDetails.displayEnd ? (() => {
+            const startDay = new Date(vocDetails.displayStart!.getFullYear(), vocDetails.displayStart!.getMonth(), vocDetails.displayStart!.getDate());
+            const endDay = new Date(vocDetails.displayEnd!.getFullYear(), vocDetails.displayEnd!.getMonth(), vocDetails.displayEnd!.getDate());
+            const sameDay = startDay.getTime() === endDay.getTime();
+            if (sameDay) return `${formatVOCTime(vocDetails.displayStart!)}-${formatVOCTime(vocDetails.displayEnd!)}`;
+            return `${formatVOCTime(vocDetails.displayStart!)}→${formatVOCTimeWithDay(vocDetails.displayEnd!, vocDetails.displayStart!)}`;
+          })() : ''}
           {vocDetails.moonEntersSign && (
             <span className="ml-1 font-medium">→ {vocDetails.moonEntersSign}</span>
           )}
