@@ -362,3 +362,45 @@ export const formatVOCTime = (date: Date): string => {
     hour12: true,
   });
 };
+
+/**
+ * Format a VOC time with day context (e.g., "Today 6:37 PM", "Tomorrow 6:32 AM", "Mon 6:37 PM")
+ * so overnight VOC windows are unambiguous.
+ */
+export const formatVOCTimeWithDay = (date: Date, referenceDate?: Date): string => {
+  const ref = referenceDate || new Date();
+  const refDay = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((dateDay.getTime() - refDay.getTime()) / 86400000);
+
+  const time = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  if (diffDays === 0) return `Today ${time}`;
+  if (diffDays === 1) return `Tomorrow ${time}`;
+  if (diffDays === -1) return `Yesterday ${time}`;
+
+  // For further dates, use short weekday + date
+  const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return `${dayLabel} ${time}`;
+};
+
+/**
+ * Format a VOC time range with day context.
+ * Only adds day labels when start and end are on different days.
+ */
+export const formatVOCRange = (start: Date, end: Date, referenceDate?: Date): string => {
+  const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const sameDay = startDay.getTime() === endDay.getTime();
+
+  if (sameDay) {
+    // Same day — just show times
+    return `${formatVOCTime(start)} – ${formatVOCTime(end)}`;
+  }
+  // Different days — add day labels
+  return `${formatVOCTimeWithDay(start, referenceDate)} – ${formatVOCTimeWithDay(end, referenceDate)}`;
+};
