@@ -23,7 +23,7 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect, ASPECT_TYPES } from "@/lib/transitAspects";
 import { ChevronDown, ChevronRight, Mic } from "lucide-react";
 import { isVenusStarPointDay } from "@/lib/venusStarPoint";
-import { getVOCMoonDetails, formatVOCTime } from "@/lib/voidOfCourseMoon";
+import { getVOCMoonDetails, formatVOCTime, formatVOCTimeWithDay } from "@/lib/voidOfCourseMoon";
 import { getCurrentPlanetaryHour, getDayRuler } from "@/lib/planetaryHours";
 import { VoiceMemo, getCategoryColor } from "@/hooks/useVoiceMemos";
 import { getOuterTransitTiming, type OuterTransitTiming } from "@/lib/outerPlanetTransitTiming";

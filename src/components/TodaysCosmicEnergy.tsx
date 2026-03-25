@@ -1383,7 +1383,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                           <span className="text-foreground">The Moon is in </span>
                           <span className="font-medium">{vocInfo.currentMoonSign ? `${ZODIAC_SYMBOLS[vocInfo.currentMoonSign] || ''} ${vocInfo.currentMoonSign}` : 'its current sign'}</span>
                           <span className="text-foreground"> and is void of course </span>
-                          <span className="font-medium text-foreground">{formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}</span>
+                          <span className="font-medium text-foreground">{formatVOCRange(vocInfo.start, vocInfo.end)}</span>
                           {vocInfo.moonEntersSign && (
                             <>
                               <span className="text-foreground"> before it moves into </span>

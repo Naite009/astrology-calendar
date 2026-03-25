@@ -29,7 +29,7 @@ import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHous
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 import { VenusStarPointTracker } from './VenusStarPointTracker';
-import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
+import { getVOCMoonDetails, formatVOCDuration, formatVOCRange } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
