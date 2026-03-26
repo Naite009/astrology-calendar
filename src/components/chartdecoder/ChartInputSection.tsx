@@ -26,10 +26,29 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-const PLANET_NAMES = [
+// Core planets always shown
+const CORE_PLANET_NAMES = [
   'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
-  'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Ascendant', 'Midheaven'
+  'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'Midheaven'
 ];
+
+// Extended bodies - expandable sections
+const EXTENDED_GROUPS: { label: string; icon: string; bodies: string[] }[] = [
+  { label: 'Points & Nodes', icon: '☊', bodies: ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] },
+  { label: 'Goddess Asteroids', icon: '⚵', bodies: ['Ceres', 'Pallas', 'Juno', 'Vesta'] },
+  { label: 'Centaurs & Asteroids', icon: '⚷', bodies: ['Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo'] },
+  { label: 'Dwarf Planets & TNOs', icon: '⯰', bodies: ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia'] },
+];
+
+const ALL_PLANET_NAMES = [
+  ...CORE_PLANET_NAMES,
+  ...EXTENDED_GROUPS.flatMap(g => g.bodies)
+];
+
+const BODY_LABELS: Record<string, string> = {
+  NorthNode: 'North Node', SouthNode: 'South Node', Lilith: 'Black Moon Lilith',
+  PartOfFortune: 'Part of Fortune', Gonggong: 'Gonggong', Salacia: 'Salacia',
+};
 
 export const ChartInputSection: React.FC<ChartInputSectionProps> = ({
   onChartDataLoaded,
