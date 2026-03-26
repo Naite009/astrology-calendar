@@ -18,7 +18,7 @@ const CORE_PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'J
 const POINTS = ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] as const;
 const GODDESS_ASTEROIDS = ['Ceres', 'Pallas', 'Juno', 'Vesta'] as const;
 const ASTEROIDS = ['Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo'] as const;
-const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'] as const;
+const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia'] as const;
 
 // All planets combined for data structure
 const PLANETS = [...CORE_PLANETS, ...POINTS, ...GODDESS_ASTEROIDS, ...ASTEROIDS, ...TNOS] as const;
