@@ -61,9 +61,10 @@ export const ChartInputSection: React.FC<ChartInputSectionProps> = ({
 }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [manualPlanets, setManualPlanets] = useState<Partial<ChartPlanet>[]>(
-    PLANET_NAMES.map(name => ({ name, sign: '', degree: 0, retrograde: false, house: null }))
+    ALL_PLANET_NAMES.map(name => ({ name, sign: '', degree: 0, retrograde: false, house: null }))
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [inputMode, setInputMode] = useState<'json' | 'manual'>('manual');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
