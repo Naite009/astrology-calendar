@@ -751,13 +751,13 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
   const sunPos = chart.planets.Sun;
   const moonPos = chart.planets.Moon;
 
-  const sunDecan = sunPos ? getDecan(sunPos.sign, sunPos.degree) : null;
-  const moonDecan = moonPos ? getDecan(moonPos.sign, moonPos.degree) : null;
-  const risingDecan = asc ? getDecan(asc.sign, asc.degree) : null;
+  const sunDecan = sunPos ? getDecan(sunPos.degree, sunPos.sign) : null;
+  const moonDecan = moonPos ? getDecan(moonPos.degree, moonPos.sign) : null;
+  const risingDecan = asc ? getDecan(asc.degree, asc.sign) : null;
 
-  const sunSabian = sunPos ? getSabianSymbol(sunPos.sign, Math.ceil(sunPos.degree)) : null;
-  const moonSabian = moonPos ? getSabianSymbol(moonPos.sign, Math.ceil(moonPos.degree)) : null;
-  const risingSabian = asc ? getSabianSymbol(asc.sign, Math.ceil(asc.degree)) : null;
+  const sunSabian = sunPos ? getSabianSymbol(sunPos.degree, sunPos.sign) : null;
+  const moonSabian = moonPos ? getSabianSymbol(moonPos.degree, moonPos.sign) : null;
+  const risingSabian = asc ? getSabianSymbol(asc.degree, asc.sign) : null;
 
   // Sect: Sun in houses 7-12 = day, 1-6 = night
   const sunHouse = sun?.house || 1;
