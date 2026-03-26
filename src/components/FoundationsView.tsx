@@ -72,6 +72,8 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
     { key: 'aspects', label: 'Aspects', icon: '△' },
     { key: 'midpoints', label: 'Midpoints', icon: '⊕' },
     { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
+    { key: 'mythology', label: 'Mythology', icon: '📖' },
+    { key: 'elements', label: 'Elements & Polarity', icon: '⚖' },
   ];
 
   return (
