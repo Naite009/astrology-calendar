@@ -290,6 +290,18 @@ const emptyHouseCusps = (): Record<string, HouseCusp> => {
   return cusps;
 };
 
+/** Auto-detect intercepted signs from house cusps.
+ *  Signs that appear on zero cusps are intercepted (always in opposite pairs). */
+const detectInterceptedSigns = (cusps: Record<string, HouseCusp>): string[] => {
+  const cuspSigns = new Set<string>();
+  for (let i = 1; i <= 12; i++) {
+    const cusp = cusps[`house${i}`];
+    if (cusp?.sign) cuspSigns.add(cusp.sign);
+  }
+  // Any sign not on a cusp is intercepted
+  return ZODIAC_SIGNS.filter(s => !cuspSigns.has(s));
+};
+
 export const ChartLibrary = ({
   userNatalChart,
   savedCharts,
