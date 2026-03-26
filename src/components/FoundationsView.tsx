@@ -160,6 +160,15 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
           />
         </div>
       )}
+
+      {activeTab === 'mythology' && <MythologyEncyclopediaExplorer />}
+
+      {activeTab === 'elements' && planetHouses.length > 0 && (
+        <ElementDistributionCard planetHouses={planetHouses} />
+      )}
+      {activeTab === 'elements' && planetHouses.length === 0 && (
+        <p className="text-muted-foreground text-sm py-8 text-center">Select a chart above to see element and polarity distribution.</p>
+      )}
     </div>
   );
 }
