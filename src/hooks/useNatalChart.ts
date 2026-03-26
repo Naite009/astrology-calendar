@@ -101,6 +101,8 @@ export interface NatalChart {
     Nessus?: NatalPlanetPosition;
     Pholus?: NatalPlanetPosition;
     Chariklo?: NatalPlanetPosition;
+    Gonggong?: NatalPlanetPosition;
+    Salacia?: NatalPlanetPosition;
   };
   // 12 house cusps (manual entry from astro.com)
   houseCusps?: {
