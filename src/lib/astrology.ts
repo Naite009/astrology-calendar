@@ -49,6 +49,7 @@ export interface PlanetaryPositions {
   southNode?: ExtendedZodiacPosition;
   chiron?: ExtendedZodiacPosition;
   lilith?: ExtendedZodiacPosition;
+  eris?: ExtendedZodiacPosition;
 }
 
 export interface MoonPhase {
