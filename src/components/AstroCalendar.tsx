@@ -212,6 +212,9 @@ export const AstroCalendar = () => {
     if (viewMode === "moon-cycle") {
       return "☽ Cycle Tracker";
     }
+    if (viewMode === "natal-portrait") {
+      return "Natal Portrait";
+    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
