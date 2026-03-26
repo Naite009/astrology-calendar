@@ -819,6 +819,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const nodes = getNodePositions(date);
   const chiron = getChironPosition(date);
   const lilith = getBlackMoonLilith(date);
+  const eris = getErisPosition(date);
 
   const result: PlanetaryPositions = {
     moon: getPosition(Astronomy.Body.Moon),
@@ -835,6 +836,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
     southNode: nodes.south,
     chiron,
     lilith,
+    eris,
   };
 
   POSITIONS_CACHE.set(cacheKey, result);
