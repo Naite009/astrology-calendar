@@ -754,7 +754,41 @@ Here's how the planetary day ruler integrates with today's sky:
 - [2-3 specific activities that blend the day ruler with current sky]
 **5-minute practice:** [ONE concrete ritual that honors both the day ruler and current planetary weather]
 
-End the report after the Planetary Day Practice section. Do NOT include any meal plans, recipes, or food recommendations - those belong in the dedicated Kitchen tab.`;
+## 🏛️ Mythology & Archetypes
+[THIS SECTION IS REQUIRED. For each major planet or body that is active today (has a tight aspect, is changing signs, is stationing, or is prominently placed), tell the MYTHOLOGICAL STORY behind it. This makes astrology come alive.
+
+GUIDELINES:
+- Pick 2-3 of the most active planets/bodies today and tell their myth
+- Include Eris, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, Sedna, or any asteroid/TNO if they appear in the aspects or planet positions data
+- For each, give:
+  1. The Greek/Roman (or relevant cultural) myth in 2-3 vivid sentences
+  2. What archetype this planet embodies (e.g., "Eris is the Disruptor — she reveals what's been excluded")
+  3. How TODAY'S specific transit activates that myth (connect the story to the actual aspect/sign)
+
+MYTHOLOGY REFERENCE:
+- ☉ Sun (Helios/Apollo): The conscious self, the hero's journey, creative sovereignty, the golden child
+- ☽ Moon (Selene/Artemis): The emotional body, the mother, cycles of nurturing and release, the huntress who protects her inner world
+- ☿ Mercury (Hermes): The trickster messenger, guide between worlds, thief and healer, inventor of language
+- ♀ Venus (Aphrodite): Born from sea-foam, goddess of love AND war (in her older forms), beauty as power, desire as compass
+- ♂ Mars (Ares): The warrior, raw aggression but also courage and protection, the lover of Aphrodite
+- ♃ Jupiter (Zeus): King of the gods, expansion through excess, divine justice but also thunderous ego
+- ♄ Saturn (Kronos): The titan who ate his children — time, limitation, karma, but also the golden age before the fall
+- ♅ Uranus (Ouranos): The sky god castrated by his son Saturn — liberation through rupture, genius born from chaos
+- ♆ Neptune (Poseidon): God of the sea and earthquakes — the unconscious depths, illusion, dissolution of boundaries
+- ♇ Pluto (Hades): Lord of the underworld, abductor of Persephone — death/rebirth, hidden wealth, the shadow
+- ⚷ Chiron: The wounded healer centaur, rejected by both gods and humans, who turned his wound into medicine for others
+- ⯰ Eris: Goddess of discord who threw the golden apple "for the fairest" — she reveals what's been EXCLUDED from the table, the uninvited truth that disrupts false harmony
+- ⚸ Lilith (Black Moon): Adam's first wife who refused to submit — the exiled feminine, raw autonomy, what we suppress
+- Ceres (Demeter): The grieving mother who made the earth barren when her daughter was taken — nourishment, loss, seasonal cycles
+- Pallas (Athena): Born from Zeus's head in full armor — strategic wisdom, creative intelligence, the pattern-seer
+- Juno (Hera): Queen of the gods, guardian of committed partnership — loyalty, jealousy, the politics of marriage
+- Vesta (Hestia): Keeper of the sacred flame — devotion, inner sanctuary, what you tend with quiet discipline
+- Sedna: Inuit goddess dragged to the ocean floor by her father — betrayal, deep-sea transformation, ecological grief
+
+Make the myths VIVID and SPECIFIC — tell mini-stories, not just keywords. Connect each myth to what's actually happening in the sky TODAY.
+Example: "Mars squaring Pluto today echoes the ancient tension between Ares and Hades — two brothers who rule different kinds of power. Ares fights in the open; Hades controls from below. When they clash, surface conflicts reveal deeper power dynamics. Ask yourself: what underground current is driving today's friction?"]
+
+End the report after the Mythology & Archetypes section. Do NOT include any meal plans, recipes, or food recommendations - those belong in the dedicated Kitchen tab.`;
 
 
     const systemPrompt = selectedVoice + "\n\n" + formatInstructions;
