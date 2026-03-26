@@ -349,6 +349,18 @@ export const ChartLibrary = ({
   const hasFormOpenedRef = useRef(false);
   // Track pending file to process after form opens
   const pendingFileRef = useRef<File | null>(null);
+  // Auto-detect intercepted signs whenever house cusps change
+  useEffect(() => {
+    const hasAnyCusp = Object.values(formData.houseCusps).some((c: any) => c?.sign);
+    if (!hasAnyCusp) return;
+    const detected = detectInterceptedSigns(formData.houseCusps);
+    setFormData(prev => {
+      const prevSorted = [...prev.interceptedSigns].sort().join(',');
+      const newSorted = [...detected].sort().join(',');
+      if (prevSorted === newSorted) return prev;
+      return { ...prev, interceptedSigns: detected };
+    });
+  }, [formData.houseCusps]);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(() => {
