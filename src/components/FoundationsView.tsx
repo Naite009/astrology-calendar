@@ -8,12 +8,13 @@ import { MidpointExplorer } from '@/components/narrative/MidpointExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
 import { SunMoonDegreeChart } from '@/components/narrative/SunMoonDegreeChart';
 import { MoonFacesTeachings } from '@/components/narrative/MoonFacesTeachings';
+import { MythologyEncyclopediaExplorer } from '@/components/narrative/MythologyEncyclopediaExplorer';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 import { buildLiveSkyChart } from '@/lib/liveSkyChart';
 
-type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses' | 'moon';
+type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses' | 'moon' | 'mythology' | 'elements';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -71,12 +72,14 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
     { key: 'aspects', label: 'Aspects', icon: '△' },
     { key: 'midpoints', label: 'Midpoints', icon: '⊕' },
     { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
+    { key: 'mythology', label: 'Mythology', icon: '📖' },
+    { key: 'elements', label: 'Elements & Polarity', icon: '⚖' },
   ];
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'planets' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints' || activeTab === 'moon') && activeTab !== 'midpoints' && activeTab !== 'moon' && (
+      {allCharts.length > 0 && ['signs', 'planets', 'houses', 'eclipses', 'elements'].includes(activeTab) && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
@@ -156,6 +159,15 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
             savedCharts={savedCharts}
           />
         </div>
+      )}
+
+      {activeTab === 'mythology' && <MythologyEncyclopediaExplorer />}
+
+      {activeTab === 'elements' && planetHouses.length > 0 && (
+        <ElementDistributionCard planetHouses={planetHouses} />
+      )}
+      {activeTab === 'elements' && planetHouses.length === 0 && (
+        <p className="text-muted-foreground text-sm py-8 text-center">Select a chart above to see element and polarity distribution.</p>
       )}
     </div>
   );
