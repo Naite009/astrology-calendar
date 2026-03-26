@@ -47,6 +47,7 @@ const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ defa
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
 const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
+const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
 
 
 type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle";
