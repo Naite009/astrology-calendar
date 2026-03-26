@@ -79,7 +79,7 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'planets' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints' || activeTab === 'moon') && activeTab !== 'midpoints' && activeTab !== 'moon' && (
+      {allCharts.length > 0 && ['signs', 'planets', 'houses', 'eclipses', 'elements'].includes(activeTab) && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
