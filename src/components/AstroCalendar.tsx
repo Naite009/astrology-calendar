@@ -47,9 +47,10 @@ const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ defa
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
 const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
+const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
 
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -210,6 +211,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "moon-cycle") {
       return "☽ Cycle Tracker";
+    }
+    if (viewMode === "natal-portrait") {
+      return "Natal Portrait";
     }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
@@ -649,6 +653,29 @@ export const AstroCalendar = () => {
                 Solar Return
               </button>
               <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("natal-portrait");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "natal-portrait"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Natal Portrait"
+                    : "Add a chart to view Natal Portrait"
+                }
+              >
+                👤 Portrait
+              </button>
+              <button
                 onClick={() => setViewMode("moon-encyclopedia")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "moon-encyclopedia"
@@ -992,6 +1019,15 @@ export const AstroCalendar = () => {
         {viewMode === "solar-return" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <SolarReturnView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "natal-portrait" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <NatalPortraitView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
             />
