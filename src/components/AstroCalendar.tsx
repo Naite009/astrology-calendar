@@ -673,7 +673,7 @@ export const AstroCalendar = () => {
                     : "Add a chart to view Natal Portrait"
                 }
               >
-                👤 Portrait
+                👤 Natal Portrait
               </button>
               <button
                 onClick={() => setViewMode("moon-encyclopedia")}
