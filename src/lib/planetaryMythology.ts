@@ -475,7 +475,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
       'The severed fingers — what is taken from us through betrayal becomes sustenance for others',
       'The ocean floor — the deepest possible descent, far below conscious awareness',
       'The tangled hair — accumulated grief, neglect, and transgression that blocks abundance',
-      'The shaman's journey — the necessity of going to the very bottom to restore balance',
+      "The shaman's journey — the necessity of going to the very bottom to restore balance",
     ],
     psychologicalFunction: 'Sedna represents the deepest layers of ancestral and collective trauma — betrayals so profound they reshape the ecosystem of the psyche. It shows where we must journey to the absolute bottom to find what sustains life.',
     shadowExpression: 'Frozen grief, inability to trust, identifying permanently as victim, ecological disconnection, spiritual bypass of deep wounds.',
