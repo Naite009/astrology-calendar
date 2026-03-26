@@ -26,10 +26,29 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-const PLANET_NAMES = [
+// Core planets always shown
+const CORE_PLANET_NAMES = [
   'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
-  'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Ascendant', 'Midheaven'
+  'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'Midheaven'
 ];
+
+// Extended bodies - expandable sections
+const EXTENDED_GROUPS: { label: string; icon: string; bodies: string[] }[] = [
+  { label: 'Points & Nodes', icon: '☊', bodies: ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] },
+  { label: 'Goddess Asteroids', icon: '⚵', bodies: ['Ceres', 'Pallas', 'Juno', 'Vesta'] },
+  { label: 'Centaurs & Asteroids', icon: '⚷', bodies: ['Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo'] },
+  { label: 'Dwarf Planets & TNOs', icon: '⯰', bodies: ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia'] },
+];
+
+const ALL_PLANET_NAMES = [
+  ...CORE_PLANET_NAMES,
+  ...EXTENDED_GROUPS.flatMap(g => g.bodies)
+];
+
+const BODY_LABELS: Record<string, string> = {
+  NorthNode: 'North Node', SouthNode: 'South Node', Lilith: 'Black Moon Lilith',
+  PartOfFortune: 'Part of Fortune', Gonggong: 'Gonggong', Salacia: 'Salacia',
+};
 
 export const ChartInputSection: React.FC<ChartInputSectionProps> = ({
   onChartDataLoaded,
@@ -42,9 +61,10 @@ export const ChartInputSection: React.FC<ChartInputSectionProps> = ({
 }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [manualPlanets, setManualPlanets] = useState<Partial<ChartPlanet>[]>(
-    PLANET_NAMES.map(name => ({ name, sign: '', degree: 0, retrograde: false, house: null }))
+    ALL_PLANET_NAMES.map(name => ({ name, sign: '', degree: 0, retrograde: false, house: null }))
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [inputMode, setInputMode] = useState<'json' | 'manual'>('manual');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,42 +187,71 @@ export const ChartInputSection: React.FC<ChartInputSectionProps> = ({
 
         {/* Manual Entry */}
         {inputMode === 'manual' && (
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {manualPlanets.map((planet, i) => (
-              <div key={planet.name} className="grid grid-cols-12 gap-1 items-center">
-                <span className="col-span-3 text-xs font-medium truncate">{planet.name}</span>
-                <Select
-                  value={planet.sign || ''}
-                  onValueChange={(val) => handleManualUpdate(i, 'sign', val)}
-                >
-                  <SelectTrigger className="col-span-4 h-8 text-xs">
-                    <SelectValue placeholder="Sign" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ZODIAC_SIGNS.map(sign => (
-                      <SelectItem key={sign} value={sign}>{sign}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  min={0}
-                  max={29.99}
-                  step={0.1}
-                  placeholder="°"
-                  value={planet.degree || ''}
-                  onChange={(e) => handleManualUpdate(i, 'degree', parseFloat(e.target.value) || 0)}
-                  className="col-span-3 h-8 text-xs"
-                />
-                <div className="col-span-2 flex items-center justify-center">
-                  <Switch
-                    checked={planet.retrograde || false}
-                    onCheckedChange={(val) => handleManualUpdate(i, 'retrograde', val)}
-                  />
-                  <span className="text-[10px] ml-1 text-muted-foreground">℞</span>
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {/* Core planets - always visible */}
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Core Planets</div>
+            {manualPlanets.filter(p => CORE_PLANET_NAMES.includes(p.name || '')).map((planet, _) => {
+              const idx = manualPlanets.findIndex(mp => mp.name === planet.name);
+              return (
+                <div key={planet.name} className="grid grid-cols-12 gap-1 items-center">
+                  <span className="col-span-3 text-xs font-medium truncate">{BODY_LABELS[planet.name || ''] || planet.name}</span>
+                  <Select value={planet.sign || ''} onValueChange={(val) => handleManualUpdate(idx, 'sign', val)}>
+                    <SelectTrigger className="col-span-4 h-8 text-xs"><SelectValue placeholder="Sign" /></SelectTrigger>
+                    <SelectContent>{ZODIAC_SIGNS.map(sign => <SelectItem key={sign} value={sign}>{sign}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Input type="number" min={0} max={29.99} step={0.1} placeholder="°" value={planet.degree || ''} onChange={(e) => handleManualUpdate(idx, 'degree', parseFloat(e.target.value) || 0)} className="col-span-3 h-8 text-xs" />
+                  <div className="col-span-2 flex items-center justify-center">
+                    <Switch checked={planet.retrograde || false} onCheckedChange={(val) => handleManualUpdate(idx, 'retrograde', val)} />
+                    <span className="text-[10px] ml-1 text-muted-foreground">℞</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
+            {/* Extended groups - collapsible */}
+            {EXTENDED_GROUPS.map(group => {
+              const isOpen = expandedGroups.has(group.label);
+              const filledCount = group.bodies.filter(b => {
+                const p = manualPlanets.find(mp => mp.name === b);
+                return p?.sign;
+              }).length;
+              return (
+                <Collapsible key={group.label} open={isOpen} onOpenChange={(open) => {
+                  const next = new Set(expandedGroups);
+                  open ? next.add(group.label) : next.delete(group.label);
+                  setExpandedGroups(next);
+                }}>
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full py-1.5 px-2 rounded bg-muted/50 hover:bg-muted text-xs font-semibold">
+                    <span>{group.icon}</span>
+                    <span className="flex-1 text-left">{group.label}</span>
+                    {filledCount > 0 && <span className="text-[10px] text-primary">{filledCount} added</span>}
+                    <Settings className="h-3 w-3 text-muted-foreground" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1.5 pt-1.5 pl-2">
+                    {group.bodies.map(bodyName => {
+                      const idx = manualPlanets.findIndex(mp => mp.name === bodyName);
+                      const planet = manualPlanets[idx];
+                      if (!planet) return null;
+                      return (
+                        <div key={bodyName} className="grid grid-cols-12 gap-1 items-center">
+                          <span className="col-span-3 text-xs font-medium truncate">{BODY_LABELS[bodyName] || bodyName}</span>
+                          <Select value={planet.sign || ''} onValueChange={(val) => handleManualUpdate(idx, 'sign', val)}>
+                            <SelectTrigger className="col-span-4 h-8 text-xs"><SelectValue placeholder="Sign" /></SelectTrigger>
+                            <SelectContent>{ZODIAC_SIGNS.map(sign => <SelectItem key={sign} value={sign}>{sign}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Input type="number" min={0} max={29.99} step={0.1} placeholder="°" value={planet.degree || ''} onChange={(e) => handleManualUpdate(idx, 'degree', parseFloat(e.target.value) || 0)} className="col-span-3 h-8 text-xs" />
+                          <div className="col-span-2 flex items-center justify-center">
+                            <Switch checked={planet.retrograde || false} onCheckedChange={(val) => handleManualUpdate(idx, 'retrograde', val)} />
+                            <span className="text-[10px] ml-1 text-muted-foreground">℞</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+
             <Button onClick={handleManualSubmit} size="sm" className="w-full mt-3">
               Apply Placements
             </Button>
