@@ -8,12 +8,13 @@ import { MidpointExplorer } from '@/components/narrative/MidpointExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
 import { SunMoonDegreeChart } from '@/components/narrative/SunMoonDegreeChart';
 import { MoonFacesTeachings } from '@/components/narrative/MoonFacesTeachings';
+import { MythologyEncyclopediaExplorer } from '@/components/narrative/MythologyEncyclopediaExplorer';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 import { buildLiveSkyChart } from '@/lib/liveSkyChart';
 
-type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses' | 'moon';
+type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses' | 'moon' | 'mythology' | 'elements';
 
 interface Props {
   userNatalChart: NatalChart | null;
