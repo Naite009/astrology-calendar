@@ -90,6 +90,8 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Orcus: '🝿',
   Ixion: '⯳',
   Varuna: '⯴',
+  Gonggong: '🝻',
+  Salacia: '🝼',
 };
 
 const TIMEZONE_OPTIONS = [
