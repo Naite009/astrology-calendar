@@ -208,25 +208,53 @@ const readWithRollingBackups = <T,>(
 // Save with rolling backups (keeps last 3 versions)
 const saveWithRollingBackups = (key: string, data: unknown): void => {
   try {
-    // Rotate backups: v3 <- v2 <- v1 <- current
-    const v2 = localStorage.getItem(`${key}${BACKUP_VERSIONS[1]}`);
-    if (v2) localStorage.setItem(`${key}${BACKUP_VERSIONS[2]}`, v2);
+    const serialized = JSON.stringify(data);
     
-    const v1 = localStorage.getItem(`${key}${BACKUP_VERSIONS[0]}`);
-    if (v1) localStorage.setItem(`${key}${BACKUP_VERSIONS[1]}`, v1);
+    // Check if we have space — if data is large, skip backups to avoid quota issues
+    const dataSize = serialized.length;
+    const skipBackups = dataSize > 500_000; // >500KB, skip backup rotation
     
-    const current = localStorage.getItem(key);
-    if (current) localStorage.setItem(`${key}${BACKUP_VERSIONS[0]}`, current);
+    if (!skipBackups) {
+      try {
+        // Rotate backups: v3 <- v2 <- v1 <- current
+        const v2 = localStorage.getItem(`${key}${BACKUP_VERSIONS[1]}`);
+        if (v2) localStorage.setItem(`${key}${BACKUP_VERSIONS[2]}`, v2);
+        
+        const v1 = localStorage.getItem(`${key}${BACKUP_VERSIONS[0]}`);
+        if (v1) localStorage.setItem(`${key}${BACKUP_VERSIONS[1]}`, v1);
+        
+        const current = localStorage.getItem(key);
+        if (current) localStorage.setItem(`${key}${BACKUP_VERSIONS[0]}`, current);
+      } catch (backupErr) {
+        // Backup rotation failed (quota) — clean up old backups to make room
+        console.warn(`[NatalChart] Backup rotation failed, clearing old backups for ${key}`);
+        for (const suffix of BACKUP_VERSIONS) {
+          try { localStorage.removeItem(`${key}${suffix}`); } catch { /* ignore */ }
+        }
+        try { localStorage.removeItem(`${key}__backup`); } catch { /* ignore */ }
+      }
+    }
     
     // Save new primary
-    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key, serialized);
     
     // Update timestamp
     localStorage.setItem(`${key}${SAVE_TIMESTAMP_SUFFIX}`, new Date().toISOString());
     
-    console.log(`[NatalChart] Saved ${key} with rolling backups`);
+    console.log(`[NatalChart] Saved ${key}${skipBackups ? ' (backups skipped, data too large)' : ' with rolling backups'}`);
   } catch (e) {
-    console.error(`[NatalChart] Failed to save ${key}:`, e);
+    // Last resort: clear all backups and try again
+    console.error(`[NatalChart] Failed to save ${key}, clearing backups:`, e);
+    for (const suffix of BACKUP_VERSIONS) {
+      try { localStorage.removeItem(`${key}${suffix}`); } catch { /* ignore */ }
+    }
+    try { localStorage.removeItem(`${key}__backup`); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log(`[NatalChart] Saved ${key} after clearing backups`);
+    } catch (e2) {
+      console.error(`[NatalChart] Still cannot save ${key}:`, e2);
+    }
   }
 };
 
