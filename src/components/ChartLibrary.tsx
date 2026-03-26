@@ -49,6 +49,8 @@ const PLANET_LABELS: Record<string, string> = {
   Orcus: 'Orcus',
   Ixion: 'Ixion',
   Varuna: 'Varuna',
+  Gonggong: 'Gonggong',
+  Salacia: 'Salacia',
 };
 
 const PLANET_SYMBOLS: Record<string, string> = {
