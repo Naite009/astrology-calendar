@@ -862,7 +862,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       const nowPlanets = getPlanetaryPositions(new Date());
       const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
       const weekPlanetPositions = Object.entries(nowPlanets)
-        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto','chiron','eris','lilith','northNode'].includes(key))
         .map(([key, val]: [string, any]) => ({
           name: key.charAt(0).toUpperCase() + key.slice(1),
           sign: val?.signName || signGlyphMap[val?.sign] || val?.sign || 'Unknown',
