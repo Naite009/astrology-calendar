@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader, BookOpen } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
@@ -1672,10 +1672,6 @@ Keep the tone professional, insightful, and practically applicable.`,
 
                     {!isLoading && weekDayLoading === null && !error && displayInsight && (() => {
                       const cleanedInsight = displayInsight?.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '') || '';
-                      // Split at mythology section
-                      const mythMatch = cleanedInsight.match(/\n(## 🏛️ Mythology[\s\S]*)/i) || cleanedInsight.match(/\n(## Mythology[\s\S]*)/i);
-                      const mainContent = mythMatch ? cleanedInsight.slice(0, mythMatch.index!) : cleanedInsight;
-                      const mythContent = mythMatch ? mythMatch[1] : null;
 
                       const markdownComponents = {
                         h2: ({ children }: any) => (
@@ -1720,41 +1716,11 @@ Keep the tone professional, insightful, and practically applicable.`,
                       };
 
                       return (
-                        <Tabs defaultValue="weather" className="w-full">
-                          <TabsList className="mb-4">
-                            <TabsTrigger value="weather" className="flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5" />
-                              Cosmic Weather
-                            </TabsTrigger>
-                            <TabsTrigger value="mythology" className="flex items-center gap-1.5" disabled={!mythContent}>
-                              <BookOpen className="h-3.5 w-3.5" />
-                              Mythology & Archetypes
-                            </TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="weather">
-                            <div className="prose prose-lg dark:prose-invert max-w-none">
-                              <ReactMarkdown components={markdownComponents}>
-                                {mainContent}
-                              </ReactMarkdown>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="mythology">
-                            {mythContent ? (
-                              <div className="prose prose-lg dark:prose-invert max-w-none">
-                                <ReactMarkdown components={markdownComponents}>
-                                  {mythContent}
-                                </ReactMarkdown>
-                              </div>
-                            ) : (
-                              <div className="text-center py-8">
-                                <BookOpen className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-muted-foreground">Regenerate today's reading to include mythology & archetypes</p>
-                              </div>
-                            )}
-                          </TabsContent>
-                        </Tabs>
+                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                          <ReactMarkdown components={markdownComponents}>
+                            {cleanedInsight}
+                          </ReactMarkdown>
+                        </div>
                       );
                     })()}
 
