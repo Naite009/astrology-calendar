@@ -1716,41 +1716,11 @@ Keep the tone professional, insightful, and practically applicable.`,
                       };
 
                       return (
-                        <Tabs defaultValue="weather" className="w-full">
-                          <TabsList className="mb-4">
-                            <TabsTrigger value="weather" className="flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5" />
-                              Cosmic Weather
-                            </TabsTrigger>
-                            <TabsTrigger value="mythology" className="flex items-center gap-1.5" disabled={!mythContent}>
-                              <BookOpen className="h-3.5 w-3.5" />
-                              Mythology & Archetypes
-                            </TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="weather">
-                            <div className="prose prose-lg dark:prose-invert max-w-none">
-                              <ReactMarkdown components={markdownComponents}>
-                                {mainContent}
-                              </ReactMarkdown>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="mythology">
-                            {mythContent ? (
-                              <div className="prose prose-lg dark:prose-invert max-w-none">
-                                <ReactMarkdown components={markdownComponents}>
-                                  {mythContent}
-                                </ReactMarkdown>
-                              </div>
-                            ) : (
-                              <div className="text-center py-8">
-                                <BookOpen className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-muted-foreground">Regenerate today's reading to include mythology & archetypes</p>
-                              </div>
-                            )}
-                          </TabsContent>
-                        </Tabs>
+                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                          <ReactMarkdown components={markdownComponents}>
+                            {cleanedInsight}
+                          </ReactMarkdown>
+                        </div>
                       );
                     })()}
 
