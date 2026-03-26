@@ -1672,10 +1672,6 @@ Keep the tone professional, insightful, and practically applicable.`,
 
                     {!isLoading && weekDayLoading === null && !error && displayInsight && (() => {
                       const cleanedInsight = displayInsight?.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '') || '';
-                      // Split at mythology section
-                      const mythMatch = cleanedInsight.match(/\n(## 🏛️ Mythology[\s\S]*)/i) || cleanedInsight.match(/\n(## Mythology[\s\S]*)/i);
-                      const mainContent = mythMatch ? cleanedInsight.slice(0, mythMatch.index!) : cleanedInsight;
-                      const mythContent = mythMatch ? mythMatch[1] : null;
 
                       const markdownComponents = {
                         h2: ({ children }: any) => (
