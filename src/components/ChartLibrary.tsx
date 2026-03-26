@@ -18,7 +18,7 @@ const CORE_PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'J
 const POINTS = ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] as const;
 const GODDESS_ASTEROIDS = ['Ceres', 'Pallas', 'Juno', 'Vesta'] as const;
 const ASTEROIDS = ['Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo'] as const;
-const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'] as const;
+const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia'] as const;
 
 // All planets combined for data structure
 const PLANETS = [...CORE_PLANETS, ...POINTS, ...GODDESS_ASTEROIDS, ...ASTEROIDS, ...TNOS] as const;
@@ -49,6 +49,8 @@ const PLANET_LABELS: Record<string, string> = {
   Orcus: 'Orcus',
   Ixion: 'Ixion',
   Varuna: 'Varuna',
+  Gonggong: 'Gonggong',
+  Salacia: 'Salacia',
 };
 
 const PLANET_SYMBOLS: Record<string, string> = {
@@ -88,6 +90,8 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Orcus: '🝿',
   Ixion: '⯳',
   Varuna: '⯴',
+  Gonggong: '🝻',
+  Salacia: '🝼',
 };
 
 const TIMEZONE_OPTIONS = [
@@ -350,16 +354,17 @@ export const ChartLibrary = ({
   // Track pending file to process after form opens
   const pendingFileRef = useRef<File | null>(null);
   // Auto-detect intercepted signs whenever house cusps change
+  // Use a ref to track previous value and avoid infinite save loops
+  const prevInterceptedRef = useRef<string>('');
   useEffect(() => {
     const hasAnyCusp = Object.values(formData.houseCusps).some((c: any) => c?.sign);
     if (!hasAnyCusp) return;
     const detected = detectInterceptedSigns(formData.houseCusps);
-    setFormData(prev => {
-      const prevSorted = [...prev.interceptedSigns].sort().join(',');
-      const newSorted = [...detected].sort().join(',');
-      if (prevSorted === newSorted) return prev;
-      return { ...prev, interceptedSigns: detected };
-    });
+    const key = [...detected].sort().join(',');
+    if (key === prevInterceptedRef.current) return;
+    prevInterceptedRef.current = key;
+    setFormData(prev => ({ ...prev, interceptedSigns: detected }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.houseCusps]);
 
   // Auto-save with debounce
