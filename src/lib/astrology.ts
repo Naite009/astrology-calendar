@@ -213,6 +213,18 @@ export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
   };
 };
 
+// Calculate Eris position using ephemeris lookup table (accurate interpolated data)
+export const getErisPosition = (date: Date): ExtendedZodiacPosition => {
+  const pos = getAccurateAsteroidPosition('eris', date);
+  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
+  return {
+    ...longitudeToZodiac(longitude),
+    longitude,
+    planetSymbol: '⯰',
+    name: 'Eris'
+  };
+};
+
 // Get detailed position with degrees, minutes, seconds
 export const getDetailedPosition = (longitude: number): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
   const normalizedLon = ((longitude % 360) + 360) % 360;
