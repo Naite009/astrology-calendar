@@ -180,8 +180,7 @@ function getPlanetHouseFromChart(chart: NatalChart, planetName: string): number 
 }
 
 function getBodyData(chart: NatalChart): Array<{ name: string; sign: string; degree: number; house: number; isRetrograde: boolean; absDeg: number }> {
-  const result: typeof ret = [];
-  const ret = result;
+  const result: Array<{ name: string; sign: string; degree: number; house: number; isRetrograde: boolean; absDeg: number }> = [];
   for (const name of ALL_BODIES) {
     const pos = chart.planets[name as keyof typeof chart.planets];
     if (!pos?.sign) continue;
