@@ -629,6 +629,11 @@ PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
 ♀ Venus: Love, beauty, values, relationships, pleasure, money, harmony
 ♆ Neptune: Dreams, intuition, spirituality, imagination, confusion, dissolution, compassion
 ♇ Pluto: Transformation, power, rebirth, depth, shadows, intensity, evolution
+⚷ Chiron: The Wounded Healer — the wound that cannot heal itself, the teacher born from pain. Chiron was a centaur: half animal instinct, half higher wisdom. Abandoned at birth, he became the greatest healer and teacher of heroes, yet could not heal his own wound. When Chiron is active, old sore spots surface — not to punish but to teach. The insecurity, the outsider feeling, the place where you learned to help everyone else because you couldn't help yourself.
+⯰ Eris: The Goddess of Discord — uninvited to the feast, and therefore ungovernable. Eris doesn't create chaos arbitrarily; she exposes what was already fractured beneath the surface. Themes: suppressed truths finally surfacing, disruption of false peace, the exile who carries the real story, collective rage that has been denied a seat at the table. Her energy is not comfortable but it is clarifying.
+
+CHIRON + ERIS IN ARIES (COLLECTIVE BACKGROUND FIELD):
+Both Chiron and Eris are currently transiting Aries, creating a long-running collective undercurrent. This is the wound of not being seen as you truly are (Chiron in Aries), held inside a culture that is still deciding who belongs and who gets silenced (Eris in Aries). When EITHER is aspected in today's weather, reference this background field. When BOTH are aspected on the same day, name it directly — the feeling of old personal injuries around identity and worthiness being stirred by something larger than the individual. There is grief here, and also a fierce invitation toward authenticity. Chiron felt like an outsider; Eris was literally excluded. Together in Aries they ask: can you use your voice even when no one invited you to speak?
 
 
 MOON SIGN DEPTH GUIDE:
