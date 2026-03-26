@@ -406,7 +406,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
     myth: `Athena was born from Zeus's head — literally. After Zeus swallowed her pregnant mother Metis (wisdom personified, whom he feared would bear a son more powerful than himself), Athena grew inside his skull until Hephaestus split it open with an axe and she emerged fully armored, ready for battle. She was the goddess of wisdom, strategic warfare, weaving, and civilization — the thinking warrior who won through intelligence rather than brute force. She invented the bridle (taming wild horses), the plow, the chariot, and the art of weaving. In the contest with Poseidon for Athens, she offered the olive tree — practical, sustaining, and civilizing. Athena never lost a battle because she never fought without a plan. But she was also fierce: she turned Medusa into a monster (some say to protect her, others to punish her) and guided heroes like Perseus and Odysseus through impossible tasks.`,
     symbolism: [
       'The owl — wisdom that sees in the dark, pattern recognition',
-      'The aegis with Medusa's head — using fear strategically, the power of the gaze',
+      "The aegis with Medusa's head — using fear strategically, the power of the gaze",
       'The olive tree — practical wisdom that sustains civilization',
       'The loom — weaving patterns from chaos, seeing the whole design',
     ],
