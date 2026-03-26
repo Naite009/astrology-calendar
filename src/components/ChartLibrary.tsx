@@ -1819,34 +1819,40 @@ export const ChartLibrary = ({
                       </div>
                     ))}
                     
-                    {/* Intercepted Signs */}
+                    {/* Intercepted Signs - Auto-detected */}
                     <div className="mt-4 pt-4 border-t border-border/50">
                       <label className="block text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
                         Intercepted Signs
                       </label>
-                      <p className="text-[10px] text-muted-foreground italic mb-2">
-                        Select any signs that are fully contained within a house (not on any cusp).
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {ZODIAC_SIGNS.map(sign => (
-                          <label key={sign} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={formData.interceptedSigns.includes(sign)}
-                              onChange={e => {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  interceptedSigns: e.target.checked
-                                    ? [...prev.interceptedSigns, sign]
-                                    : prev.interceptedSigns.filter(s => s !== sign)
-                                }));
-                              }}
-                              className="rounded border-border"
-                            />
-                            {sign}
-                          </label>
-                        ))}
-                      </div>
+                      {formData.interceptedSigns.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {formData.interceptedSigns.map(sign => (
+                              <span key={sign} className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 text-xs font-medium">
+                                {sign}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground italic">
+                            Auto-detected from house cusps — {formData.interceptedSigns.length === 2 
+                              ? `${formData.interceptedSigns[0]}/${formData.interceptedSigns[1]} axis is intercepted`
+                              : 'these signs appear on no house cusp'}. 
+                            Doubled signs: {ZODIAC_SIGNS.filter(s => {
+                              let count = 0;
+                              for (let i = 1; i <= 12; i++) {
+                                if (formData.houseCusps[`house${i}`]?.sign === s) count++;
+                              }
+                              return count >= 2;
+                            }).join(', ') || 'none'}.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground italic">
+                          {Object.values(formData.houseCusps).some((c: any) => c?.sign)
+                            ? 'No intercepted signs detected — each sign appears on a house cusp.'
+                            : 'Enter house cusps above to auto-detect interceptions.'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
