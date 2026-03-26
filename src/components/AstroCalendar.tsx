@@ -653,6 +653,29 @@ export const AstroCalendar = () => {
                 Solar Return
               </button>
               <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("natal-portrait");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "natal-portrait"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Natal Portrait"
+                    : "Add a chart to view Natal Portrait"
+                }
+              >
+                👤 Portrait
+              </button>
+              <button
                 onClick={() => setViewMode("moon-encyclopedia")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "moon-encyclopedia"
