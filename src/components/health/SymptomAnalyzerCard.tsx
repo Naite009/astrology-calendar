@@ -45,7 +45,13 @@ function buildChartContext(chart: NatalChart): string {
     return 1;
   };
 
-  const planetNames = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'];
+  const planetNames = [
+    'Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'Chiron', 'NorthNode', 'SouthNode', 'Lilith', 'PartOfFortune', 'Vertex',
+    'Ceres', 'Pallas', 'Juno', 'Vesta',
+    'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
+    'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia',
+  ];
   for (const name of planetNames) {
     const p = chart.planets[name as keyof typeof chart.planets];
     if (p?.sign) {

@@ -42,7 +42,13 @@ const getAspectBetween = (deg1: number, deg2: number, orb: number = 8): string |
 // Get all planets with valid positions
 const getValidPlanets = (chart: NatalChart): Array<{ name: string; degree: number }> => {
   const planets: Array<{ name: string; degree: number }> = [];
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron', 'Ascendant'];
+  const planetNames = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'Chiron', 'NorthNode', 'SouthNode', 'Lilith', 'PartOfFortune', 'Vertex', 'Ascendant',
+    'Ceres', 'Pallas', 'Juno', 'Vesta',
+    'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
+    'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia',
+  ];
   
   for (const name of planetNames) {
     const pos = chart.planets[name as keyof typeof chart.planets];

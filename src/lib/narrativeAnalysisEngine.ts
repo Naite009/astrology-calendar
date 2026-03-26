@@ -185,7 +185,10 @@ function computePlanetHouses(chart: NatalChart): PlanetHouseInfo[] {
   const CORE_BODIES: Array<keyof typeof planets> = [
     'Sun', 'Moon', 'Mercury', 'Venus', 'Mars',
     'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
-    'Chiron', 'NorthNode'
+    'Chiron', 'NorthNode', 'SouthNode', 'Lilith', 'PartOfFortune', 'Vertex',
+    'Ceres', 'Pallas', 'Juno', 'Vesta',
+    'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
+    'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia',
   ];
 
   for (const name of CORE_BODIES) {
@@ -216,7 +219,13 @@ function computePlanetHouses(chart: NatalChart): PlanetHouseInfo[] {
 function computeNatalAspects(chart: NatalChart): NatalAspect[] {
   const aspects: NatalAspect[] = [];
   const planets = chart.planets;
-  const planetList = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'];
+  const planetList = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'Chiron', 'NorthNode', 'SouthNode', 'Lilith', 'PartOfFortune', 'Vertex',
+    'Ceres', 'Pallas', 'Juno', 'Vesta',
+    'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
+    'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia',
+  ];
   
   for (let i = 0; i < planetList.length; i++) {
     for (let j = i + 1; j < planetList.length; j++) {
