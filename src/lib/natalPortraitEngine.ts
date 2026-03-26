@@ -173,7 +173,7 @@ function getPlanetHouseFromChart(chart: NatalChart, planetName: string): number 
   // Whole sign fallback
   const asc = getReliableAscendant(chart);
   if (asc) {
-    const ascDeg = toAbsDeg(asc);
+    const ascDeg = toAbsDeg(asc as NatalPlanetPosition);
     return Math.floor(((absDeg - ascDeg + 360) % 360) / 30) + 1;
   }
   return 1;
