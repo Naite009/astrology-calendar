@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BookOpen } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { BookOpen, Search, Star, ArrowRight } from 'lucide-react';
 import {
   PLANETARY_MYTHOLOGY,
   MYTHOLOGY_CATEGORIES,
   MythologyEntry,
   MythologyCategory,
 } from '@/lib/planetaryMythology';
+import { NatalChart } from '@/hooks/useNatalChart';
+import { getPlanetSymbol } from '@/components/PlanetSymbol';
+
+interface MythologyEncyclopediaExplorerProps {
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
+  onNavigateToChartLibrary?: () => void;
+}
 
 const CATEGORY_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   luminary:       { bg: 'bg-primary/5',     border: 'border-primary/20',  text: 'text-primary',           badge: 'bg-primary/10 text-primary' },
@@ -20,7 +29,42 @@ const CATEGORY_STYLES: Record<string, { bg: string; border: string; text: string
   point:          { bg: 'bg-secondary/30',  border: 'border-border',      text: 'text-muted-foreground',  badge: 'bg-secondary text-secondary-foreground' },
 };
 
-function MythDetailModal({ entry, open, onClose }: { entry: MythologyEntry | null; open: boolean; onClose: () => void }) {
+// Normalize mythology entry name to match chart planet keys
+function mythNameToChartKey(name: string): string[] {
+  const map: Record<string, string[]> = {
+    'Sun': ['Sun'], 'Moon': ['Moon'], 'Mercury': ['Mercury'], 'Venus': ['Venus'],
+    'Mars': ['Mars'], 'Jupiter': ['Jupiter'], 'Saturn': ['Saturn'],
+    'Uranus': ['Uranus'], 'Neptune': ['Neptune'], 'Pluto': ['Pluto'],
+    'Chiron': ['Chiron'], 'Eris': ['Eris'], 'Sedna': ['Sedna'],
+    'Lilith (Black Moon)': ['Lilith', 'BlackMoonLilith'],
+    'Ceres': ['Ceres'], 'Pallas': ['Pallas'], 'Juno': ['Juno'], 'Vesta': ['Vesta'],
+    'North Node': ['NorthNode', 'North Node'], 'South Node': ['SouthNode', 'South Node'],
+    'Part of Fortune': ['PartOfFortune', 'Part of Fortune'],
+    'Vertex': ['Vertex'],
+    'Makemake': ['Makemake'], 'Haumea': ['Haumea'], 'Quaoar': ['Quaoar'],
+    'Orcus': ['Orcus'], 'Ixion': ['Ixion'], 'Varuna': ['Varuna'],
+    'Pholus': ['Pholus'], 'Nessus': ['Nessus'], 'Chariklo': ['Chariklo'],
+    'Psyche': ['Psyche'], 'Eros': ['Eros'], 'Amor': ['Amor'], 'Hygiea': ['Hygiea'],
+    'Gonggong': ['Gonggong'], 'Salacia': ['Salacia'],
+  };
+  return map[name] || [name];
+}
+
+function getChartPlacement(name: string, chart: NatalChart | null | undefined): { sign: string; degree: number; minutes?: number; retrograde?: boolean } | null {
+  if (!chart?.planets) return null;
+  const keys = mythNameToChartKey(name);
+  for (const key of keys) {
+    const pos = chart.planets[key as keyof typeof chart.planets];
+    if (pos && typeof pos === 'object' && 'sign' in pos) return pos as any;
+  }
+  return null;
+}
+
+function MythDetailModal({ entry, open, onClose, chartPlacement, onNavigateToChartLibrary }: {
+  entry: MythologyEntry | null; open: boolean; onClose: () => void;
+  chartPlacement: { sign: string; degree: number; minutes?: number; retrograde?: boolean } | null;
+  onNavigateToChartLibrary?: () => void;
+}) {
   if (!entry) return null;
   const cs = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.personal;
 
@@ -38,6 +82,33 @@ function MythDetailModal({ entry, open, onClose }: { entry: MythologyEntry | nul
         </DialogHeader>
         <ScrollArea className="max-h-[75vh] pr-4">
           <div className="space-y-5">
+            {/* In Your Chart banner */}
+            {chartPlacement ? (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <p className="text-sm font-medium text-primary flex items-center gap-2">
+                  <Star className="h-4 w-4 fill-primary" />
+                  In Your Chart
+                </p>
+                <p className="text-sm mt-1">
+                  {entry.name} is at <span className="font-semibold">{chartPlacement.degree}°{chartPlacement.minutes ? `${chartPlacement.minutes}'` : ''} {chartPlacement.sign}</span>
+                  {chartPlacement.retrograde && <span className="text-amber-500 ml-1">℞ Retrograde</span>}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Not in your chart yet.{' '}
+                  {onNavigateToChartLibrary ? (
+                    <button onClick={() => { onClose(); onNavigateToChartLibrary(); }} className="text-primary hover:underline inline-flex items-center gap-1">
+                      Add it in Chart Library <ArrowRight className="h-3 w-3" />
+                    </button>
+                  ) : (
+                    <span>You can add this placement in your Chart Library.</span>
+                  )}
+                </p>
+              </div>
+            )}
+
             {/* Quick identifiers */}
             <div className="flex flex-wrap gap-2">
               <Badge className={cs.badge}>{MYTHOLOGY_CATEGORIES[entry.category as MythologyCategory]?.label}</Badge>
@@ -133,52 +204,173 @@ function MythDetailModal({ entry, open, onClose }: { entry: MythologyEntry | nul
   );
 }
 
-export function MythologyEncyclopediaExplorer() {
+export function MythologyEncyclopediaExplorer({ userNatalChart, savedCharts, onNavigateToChartLibrary }: MythologyEncyclopediaExplorerProps) {
   const [selected, setSelected] = useState<MythologyEntry | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'dropdown' | 'grid'>('dropdown');
+
+  // Sort alphabetically, starred (in chart) first
+  const sortedEntries = useMemo(() => {
+    const all = [...PLANETARY_MYTHOLOGY];
+    const inChart = new Set<string>();
+    if (userNatalChart?.planets) {
+      for (const entry of all) {
+        if (getChartPlacement(entry.name, userNatalChart)) {
+          inChart.add(entry.name);
+        }
+      }
+    }
+    all.sort((a, b) => {
+      const aIn = inChart.has(a.name) ? 0 : 1;
+      const bIn = inChart.has(b.name) ? 0 : 1;
+      if (aIn !== bIn) return aIn - bIn;
+      return a.name.localeCompare(b.name);
+    });
+    return { entries: all, inChart };
+  }, [userNatalChart]);
+
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return sortedEntries.entries;
+    const q = searchQuery.toLowerCase();
+    return sortedEntries.entries.filter(e =>
+      e.name.toLowerCase().includes(q) ||
+      e.archetype.toLowerCase().includes(q) ||
+      e.keywords.some(k => k.toLowerCase().includes(q)) ||
+      e.greekName.toLowerCase().includes(q) ||
+      e.romanName.toLowerCase().includes(q)
+    );
+  }, [sortedEntries.entries, searchQuery]);
 
   const categoryOrder: MythologyCategory[] = ['luminary', 'personal', 'social', 'transpersonal', 'centaur', 'asteroid', 'point'];
+
+  const selectedPlacement = selected ? getChartPlacement(selected.name, userNatalChart) : null;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-1">
         <BookOpen className="h-5 w-5 text-primary" />
         <h3 className="font-serif text-lg">Mythology & Archetypes</h3>
-        <span className="text-xs text-muted-foreground ml-auto">Tap any body to explore its myth</span>
       </div>
 
-      {categoryOrder.map(cat => {
-        const meta = MYTHOLOGY_CATEGORIES[cat];
-        const entries = PLANETARY_MYTHOLOGY.filter(e => e.category === cat);
-        if (entries.length === 0) return null;
-        const cs = CATEGORY_STYLES[cat] || CATEGORY_STYLES.personal;
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search by name, archetype, or keyword..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-        return (
-          <div key={cat}>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-              <span>{meta.icon}</span>
-              {meta.label}
-              <span className="font-normal normal-case tracking-normal">— {meta.description}</span>
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {entries.map(entry => (
-                <button
-                  key={entry.name}
-                  onClick={() => setSelected(entry)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all hover:scale-105 cursor-pointer ${cs.bg} ${cs.border} hover:shadow-md`}
-                >
-                  <span className="text-2xl">{entry.symbol}</span>
-                  <div className="text-left">
-                    <p className={`text-sm font-medium ${cs.text}`}>{entry.name}</p>
-                    <p className="text-xs text-muted-foreground">{entry.archetype}</p>
+      {/* View toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setViewMode('dropdown')}
+          className={`text-xs px-3 py-1 rounded-full transition-colors ${viewMode === 'dropdown' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+        >
+          A–Z List
+        </button>
+        <button
+          onClick={() => setViewMode('grid')}
+          className={`text-xs px-3 py-1 rounded-full transition-colors ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+        >
+          By Category
+        </button>
+        <span className="text-xs text-muted-foreground ml-auto self-center">
+          {PLANETARY_MYTHOLOGY.length} bodies · {sortedEntries.inChart.size} in your chart
+        </span>
+      </div>
+
+      {/* A-Z List view */}
+      {viewMode === 'dropdown' && (
+        <div className="space-y-1">
+          {filteredEntries.map(entry => {
+            const isInChart = sortedEntries.inChart.has(entry.name);
+            const placement = getChartPlacement(entry.name, userNatalChart);
+            const cs = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.personal;
+            return (
+              <button
+                key={entry.name}
+                onClick={() => setSelected(entry)}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border transition-all hover:shadow-sm text-left ${cs.bg} ${cs.border} hover:scale-[1.01]`}
+              >
+                {isInChart && <Star className="h-3.5 w-3.5 fill-primary text-primary flex-shrink-0" />}
+                <span className="text-xl flex-shrink-0 w-8 text-center">{entry.symbol}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${cs.text}`}>{entry.name}</span>
+                    <span className="text-xs text-muted-foreground truncate">— {entry.archetype}</span>
                   </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+                  {placement && (
+                    <p className="text-xs text-primary mt-0.5">
+                      {placement.degree}°{placement.minutes ? `${placement.minutes}'` : ''} {placement.sign}
+                      {placement.retrograde && ' ℞'}
+                    </p>
+                  )}
+                </div>
+                <Badge className={`${cs.badge} text-[10px] flex-shrink-0`}>
+                  {MYTHOLOGY_CATEGORIES[entry.category as MythologyCategory]?.label?.split(' ')[0]}
+                </Badge>
+              </button>
+            );
+          })}
+          {filteredEntries.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">No bodies match "{searchQuery}"</p>
+          )}
+        </div>
+      )}
 
-      <MythDetailModal entry={selected} open={!!selected} onClose={() => setSelected(null)} />
+      {/* Category grid view */}
+      {viewMode === 'grid' && (
+        <>
+          {categoryOrder.map(cat => {
+            const meta = MYTHOLOGY_CATEGORIES[cat];
+            const entries = filteredEntries.filter(e => e.category === cat);
+            if (entries.length === 0) return null;
+
+            return (
+              <div key={cat}>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                  <span>{meta.icon}</span>
+                  {meta.label}
+                  <span className="font-normal normal-case tracking-normal">— {meta.description}</span>
+                </p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {entries.map(entry => {
+                    const cs = CATEGORY_STYLES[cat] || CATEGORY_STYLES.personal;
+                    const isInChart = sortedEntries.inChart.has(entry.name);
+                    return (
+                      <button
+                        key={entry.name}
+                        onClick={() => setSelected(entry)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all hover:scale-105 cursor-pointer ${cs.bg} ${cs.border} hover:shadow-md relative`}
+                      >
+                        {isInChart && <Star className="h-3 w-3 fill-primary text-primary absolute -top-1 -right-1" />}
+                        <span className="text-2xl">{entry.symbol}</span>
+                        <div className="text-left">
+                          <p className={`text-sm font-medium ${cs.text}`}>{entry.name}</p>
+                          <p className="text-xs text-muted-foreground">{entry.archetype}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      <MythDetailModal
+        entry={selected}
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        chartPlacement={selectedPlacement}
+        onNavigateToChartLibrary={onNavigateToChartLibrary}
+      />
     </div>
   );
 }
+
+export default MythologyEncyclopediaExplorer;
