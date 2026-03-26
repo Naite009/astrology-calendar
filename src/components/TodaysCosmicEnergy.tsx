@@ -3,7 +3,7 @@ import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, Ch
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
