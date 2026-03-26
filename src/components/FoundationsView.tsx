@@ -161,7 +161,13 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
         </div>
       )}
 
-      {activeTab === 'mythology' && <MythologyEncyclopediaExplorer />}
+      {activeTab === 'mythology' && (
+        <MythologyEncyclopediaExplorer
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          onNavigateToChartLibrary={onNavigateToView ? () => onNavigateToView('charts') : undefined}
+        />
+      )}
 
       {activeTab === 'elements' && planetHouses.length > 0 && (
         <ElementDistributionCard planetHouses={planetHouses} />
