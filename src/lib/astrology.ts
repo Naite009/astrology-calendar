@@ -49,6 +49,7 @@ export interface PlanetaryPositions {
   southNode?: ExtendedZodiacPosition;
   chiron?: ExtendedZodiacPosition;
   lilith?: ExtendedZodiacPosition;
+  eris?: ExtendedZodiacPosition;
 }
 
 export interface MoonPhase {
@@ -209,6 +210,18 @@ export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
     longitude,
     planetSymbol: '⚸',
     name: 'Black Moon Lilith'
+  };
+};
+
+// Calculate Eris position using ephemeris lookup table (accurate interpolated data)
+export const getErisPosition = (date: Date): ExtendedZodiacPosition => {
+  const pos = getAccurateAsteroidPosition('eris', date);
+  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
+  return {
+    ...longitudeToZodiac(longitude),
+    longitude,
+    planetSymbol: '⯰',
+    name: 'Eris'
   };
 };
 
@@ -806,6 +819,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const nodes = getNodePositions(date);
   const chiron = getChironPosition(date);
   const lilith = getBlackMoonLilith(date);
+  const eris = getErisPosition(date);
 
   const result: PlanetaryPositions = {
     moon: getPosition(Astronomy.Body.Moon),
@@ -822,6 +836,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
     southNode: nodes.south,
     chiron,
     lilith,
+    eris,
   };
 
   POSITIONS_CACHE.set(cacheKey, result);

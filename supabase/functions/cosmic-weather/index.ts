@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-26-v29-no-mythology";
+    const PROMPT_VERSION = "2026-03-26-v30-mythology-chiron-eris";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -629,6 +629,11 @@ PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
 ♀ Venus: Love, beauty, values, relationships, pleasure, money, harmony
 ♆ Neptune: Dreams, intuition, spirituality, imagination, confusion, dissolution, compassion
 ♇ Pluto: Transformation, power, rebirth, depth, shadows, intensity, evolution
+⚷ Chiron: The Wounded Healer — the wound that cannot heal itself, the teacher born from pain. Chiron was a centaur: half animal instinct, half higher wisdom. Abandoned at birth, he became the greatest healer and teacher of heroes, yet could not heal his own wound. When Chiron is active, old sore spots surface — not to punish but to teach. The insecurity, the outsider feeling, the place where you learned to help everyone else because you couldn't help yourself.
+⯰ Eris: The Goddess of Discord — uninvited to the feast, and therefore ungovernable. Eris doesn't create chaos arbitrarily; she exposes what was already fractured beneath the surface. Themes: suppressed truths finally surfacing, disruption of false peace, the exile who carries the real story, collective rage that has been denied a seat at the table. Her energy is not comfortable but it is clarifying.
+
+CHIRON + ERIS IN ARIES (COLLECTIVE BACKGROUND FIELD):
+Both Chiron and Eris are currently transiting Aries, creating a long-running collective undercurrent. This is the wound of not being seen as you truly are (Chiron in Aries), held inside a culture that is still deciding who belongs and who gets silenced (Eris in Aries). When EITHER is aspected in today's weather, reference this background field. When BOTH are aspected on the same day, name it directly — the feeling of old personal injuries around identity and worthiness being stirred by something larger than the individual. There is grief here, and also a fierce invitation toward authenticity. Chiron felt like an outsider; Eris was literally excluded. Together in Aries they ask: can you use your voice even when no one invited you to speak?
 
 
 MOON SIGN DEPTH GUIDE:
@@ -680,6 +685,19 @@ For each noteworthy event, explain:
 
 ## Cosmic Weather
 [3-4 paragraphs weaving together the Moon sign/phase, major aspects (especially applying ones!), and their implications for the COLLECTIVE. 
+
+MYTHOLOGICAL/ARCHETYPAL TEXTURE (weave naturally, not as a lecture):
+When a planet is featured prominently today (tight aspect, station, ingress), briefly invoke its mythological origin as EMOTIONAL CONTEXT — not a history lesson, but texture that makes the energy FELT:
+- If Chiron is aspected: Name the wound-and-wisdom dynamic explicitly. Reference the Wounded Healer — the centaur who was abandoned, who felt like an outsider, who became the greatest teacher of heroes precisely because of what he could never fix in himself. What is the specific wound being touched today? What old sore spot is surfacing? What wisdom is possible on the other side?
+- If Eris is aspected: Invoke the goddess of discord — uninvited to the wedding of the gods, she rolled a golden apple marked "for the fairest" into the feast, and the resulting argument started the Trojan War. Eris doesn't cause the fracture; she reveals it. What suppressed truth is surfacing? What false peace is being disrupted? Where has someone's voice been denied a seat at the table?
+- For other planets: Sun (Helios driving the chariot), Moon (Selene/Artemis), Venus (Aphrodite rising from the sea), Mars (Ares, the warrior no one wanted at dinner), Saturn (Kronos who ate his children out of fear), Jupiter (Zeus expanding beyond all limits), Mercury (Hermes the trickster at the crossroads), Neptune (Poseidon's depths), Pluto (Hades and Persephone, what gets buried comes back transformed), Uranus (sky god castrated by his own son — the shock of severance that creates something new).
+- Use this mythological layer ONLY when a planet is genuinely active (aspected, stationing, changing signs). Don't force it.
+
+THE INVITATION — for each major transit discussed, end with what this energy is ASKING of us. What's possible if we work with it? Be specific to the actual transit, not generic ("this is a powerful time!" is BANNED).
+
+SOMATIC/SENSORY LANGUAGE: Use body-based descriptions where possible — "there's a tightening in the chest," "a softening around the jaw," "a restlessness in the legs," "the feeling of holding your breath." This makes abstract planetary energy TANGIBLE.
+
+CLOSING SENTENCE: End the Cosmic Weather section with ONE grounding sentence or reflective question to carry into the day. Make it specific to today's transits. No generic affirmations.
 
 CRITICAL FOR ASPECTS:
 - If an aspect is APPLYING, emphasize that energy is BUILDING - "Mercury is moving toward a square with Uranus, intensifying mental restlessness"
