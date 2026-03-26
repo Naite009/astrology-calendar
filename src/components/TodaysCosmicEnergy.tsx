@@ -1670,58 +1670,93 @@ Keep the tone professional, insightful, and practically applicable.`,
                       </div>
                     )}
 
-                    {!isLoading && weekDayLoading === null && !error && displayInsight && (
-                      <>
-                      <div className="prose prose-lg dark:prose-invert max-w-none">
-                        <ReactMarkdown
-                          components={{
-                            h2: ({ children }) => (
-                                <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 border-primary/10">
-                                  {children}
-                                </h2>
-                              ),
-                            a: ({ href, children }) => (
-                              <button 
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  if (href) {
-                                    try {
-                                      await navigator.clipboard.writeText(href);
-                                      toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
-                                    } catch {
-                                      toast({ title: "Recipe link", description: href, duration: 10000 });
-                                    }
-                                  }
-                                }}
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
-                              >
-                                {children}
-                                <span className="text-xs opacity-60">📋</span>
-                              </button>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="space-y-2 my-4">{children}</ul>
-                            ),
-                            li: ({ children }) => (
-                              <li className="flex items-start gap-2">
-                                <span className="text-primary mt-1.5">•</span>
-                                <span>{children}</span>
-                              </li>
-                            ),
-                            p: ({ children }) => (
-                              <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-foreground">{children}</strong>
-                            ),
-                          }}
-                        >
-                          {displayInsight?.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')}
-                        </ReactMarkdown>
-                        
-                      </div>
-                      </>
-                    )}
+                    {!isLoading && weekDayLoading === null && !error && displayInsight && (() => {
+                      const cleanedInsight = displayInsight?.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '') || '';
+                      // Split at mythology section
+                      const mythMatch = cleanedInsight.match(/\n(## 🏛️ Mythology[\s\S]*)/i) || cleanedInsight.match(/\n(## Mythology[\s\S]*)/i);
+                      const mainContent = mythMatch ? cleanedInsight.slice(0, mythMatch.index!) : cleanedInsight;
+                      const mythContent = mythMatch ? mythMatch[1] : null;
+
+                      const markdownComponents = {
+                        h2: ({ children }: any) => (
+                          <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 border-primary/10">
+                            {children}
+                          </h2>
+                        ),
+                        a: ({ href, children }: any) => (
+                          <button 
+                            onClick={async (e: React.MouseEvent) => {
+                              e.preventDefault();
+                              if (href) {
+                                try {
+                                  await navigator.clipboard.writeText(href);
+                                  toast({ title: "Link copied!", description: "Paste in your browser." });
+                                } catch {
+                                  toast({ title: "Link", description: href, duration: 10000 });
+                                }
+                              }
+                            }}
+                            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
+                          >
+                            {children}
+                            <span className="text-xs opacity-60">📋</span>
+                          </button>
+                        ),
+                        ul: ({ children }: any) => (
+                          <ul className="space-y-2 my-4">{children}</ul>
+                        ),
+                        li: ({ children }: any) => (
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary mt-1.5">•</span>
+                            <span>{children}</span>
+                          </li>
+                        ),
+                        p: ({ children }: any) => (
+                          <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
+                        ),
+                        strong: ({ children }: any) => (
+                          <strong className="font-semibold text-foreground">{children}</strong>
+                        ),
+                      };
+
+                      return (
+                        <Tabs defaultValue="weather" className="w-full">
+                          <TabsList className="mb-4">
+                            <TabsTrigger value="weather" className="flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Cosmic Weather
+                            </TabsTrigger>
+                            <TabsTrigger value="mythology" className="flex items-center gap-1.5" disabled={!mythContent}>
+                              <BookOpen className="h-3.5 w-3.5" />
+                              Mythology & Archetypes
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="weather">
+                            <div className="prose prose-lg dark:prose-invert max-w-none">
+                              <ReactMarkdown components={markdownComponents}>
+                                {mainContent}
+                              </ReactMarkdown>
+                            </div>
+                          </TabsContent>
+                          
+                          <TabsContent value="mythology">
+                            {mythContent ? (
+                              <div className="prose prose-lg dark:prose-invert max-w-none">
+                                <ReactMarkdown components={markdownComponents}>
+                                  {mythContent}
+                                </ReactMarkdown>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8">
+                                <BookOpen className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                                <p className="text-muted-foreground">Regenerate today's reading to include mythology & archetypes</p>
+                              </div>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+                      );
+                    })()}
 
                     {!isLoading && weekDayLoading === null && !error && !displayInsight && selectedWeekDay !== 0 && (
                       <div className="text-center py-8">
