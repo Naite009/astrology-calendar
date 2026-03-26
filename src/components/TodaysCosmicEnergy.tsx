@@ -932,7 +932,7 @@ Keep the tone insightful, practical, and empowering. Do NOT include any meal pla
       const planets = getPlanetaryPositions(today);
       const signGlyphMap2: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
       const monthPlanetPositions = Object.entries(planets)
-        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto','chiron','eris','lilith','northNode'].includes(key))
         .map(([key, val]: [string, any]) => ({
           name: key.charAt(0).toUpperCase() + key.slice(1),
           sign: val?.signName || signGlyphMap2[val?.sign] || val?.sign || 'Unknown',
