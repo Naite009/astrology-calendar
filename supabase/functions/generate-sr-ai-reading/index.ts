@@ -300,17 +300,32 @@ ${ageInstructions}
   6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
   7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
   8. Use the person's name naturally, but sparingly (2-3 times total).
-  9. Do not use markdown formatting anywhere in the response. No ##, #, bullets, asterisks, or other markup symbols.
-  10. Use plain-text section titles only, with each title on its own line and the paragraph text starting on the next line.
+  9. Always put each section header on its own separate line with ## before it and a blank line after it before the paragraph text begins. Never put a ## header mid-sentence or mid-paragraph.
+  10. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
 
-  Structure your response with exactly these four plain-text section titles, each on its own line: What This Year Is About, How You'll Feel Different, Your Biggest Opportunities, What Will Be Hard.
+  Structure your response with exactly these four section headers, each on its own line with ## before it:
+
+  ## What This Year Is About
+
+  Your paragraph text here.
+
+  ## How You'll Feel Different
+
+  Your paragraph text here.
+
+  ## Your Biggest Opportunities
+
+  Your paragraph text here.
+
+  ## What Will Be Hard
+
+  Your paragraph text here.
 
   Formatting requirements:
-  - Output those four section titles once each, in that exact order.
-  - Do not include any other section titles.
-  - Do not use ## anywhere in the response.
-  - Do not use markdown formatting anywhere in the response.
-  - After each title, start the content on a new line, not on the same line as the title.
+  - Output those four ## headers once each, in that exact order.
+  - Do not include any other section headers. Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
+  - Each ## header must be on its own line with a blank line before and after it.
+  - Never place ## mid-sentence or mid-paragraph.
   - Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph.
   - Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
 
