@@ -324,7 +324,7 @@ Name the 2-3 most important months/periods and what makes them significant. Be s
 ## What To Do With All This
 3-5 bullet points of specific, actionable advice. Each one must be something they can literally do tomorrow. Age-appropriate. Practical. No metaphors.
 
-Keep the total reading between 800-1200 words. Every word must earn its place.`;
+Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
 }
 
 function astroSystemPrompt(ageInstructions: string): string {
