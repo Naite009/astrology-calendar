@@ -300,34 +300,29 @@ ${ageInstructions}
   6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
   7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
   8. Use the person's name naturally, but sparingly (2-3 times total).
-  9. Always put each section header on its own separate line with ## before it and a blank line after it before the paragraph text begins. Never put a ## header mid-sentence or mid-paragraph.
-  10. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
+   9. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
 
-  Structure your response with exactly these four section headers, each on its own line with ## before it:
+   Format your response exactly like this with a blank line between every element:
 
-  ## What This Year Is About
+   ## What This Year Is About
 
-  Your paragraph text here.
+   First paragraph here.
 
-  ## How You'll Feel Different
+   Second paragraph here.
 
-  Your paragraph text here.
+   ## How You'll Feel Different
 
-  ## Your Biggest Opportunities
+   First paragraph here.
 
-  Your paragraph text here.
+   ## Your Biggest Opportunities
 
-  ## What Will Be Hard
+   First paragraph here.
 
-  Your paragraph text here.
+   ## What Will Be Hard
 
-  Formatting requirements:
-  - Output those four ## headers once each, in that exact order.
-  - Do not include any other section headers. Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
-  - Each ## header must be on its own line with a blank line before and after it.
-  - Never place ## mid-sentence or mid-paragraph.
-  - Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph.
-  - Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
+   First paragraph here.
+
+   Every ## header must be on its own line with a blank line before and after it. Never put a ## header inside a sentence or paragraph. Do not include any other section headers. Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph. Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
 
   Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
 }
