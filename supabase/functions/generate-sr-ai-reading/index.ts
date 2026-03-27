@@ -296,9 +296,10 @@ ABSOLUTE RULES:
 4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
    - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
    - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
-5. Write in SHORT, PUNCHY paragraphs. No paragraph longer than 3 sentences. Use line breaks generously.
-6. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
-7. Use the person's name naturally, but sparingly (2-3 times total).
+5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
+6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
+7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
+8. Use the person's name naturally, but sparingly (2-3 times total).
 
 STRUCTURE (use these exact headers):
 
@@ -323,7 +324,7 @@ Name the 2-3 most important months/periods and what makes them significant. Be s
 ## What To Do With All This
 3-5 bullet points of specific, actionable advice. Each one must be something they can literally do tomorrow. Age-appropriate. Practical. No metaphors.
 
-Keep the total reading between 800-1200 words. Every word must earn its place.`;
+Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
 }
 
 function astroSystemPrompt(ageInstructions: string): string {
