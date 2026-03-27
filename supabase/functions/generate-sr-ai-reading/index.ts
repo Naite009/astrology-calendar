@@ -301,28 +301,7 @@ ABSOLUTE RULES:
 7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
 8. Use the person's name naturally, but sparingly (2-3 times total).
 
-STRUCTURE (use these exact headers):
-
-## What This Year Is About
-2-3 sentences. The single biggest theme. No buildup — just say it.
-
-## How You'll Feel Different
-The emotional shift this year. What changes internally. Be specific about what they'll notice day-to-day.
-
-## Your Biggest Opportunities
-The top 2-3 specific opportunities. For each one: what it is, why this year, and one concrete action to take advantage of it.
-
-## What Will Be Hard
-The top 1-2 challenges. No euphemisms. Name the difficulty, explain why it's happening, and give a specific coping strategy.
-
-## Your Year Quarter by Quarter
-Break the year into 4 seasons. For each: 1-2 sentences on what to expect and one specific action item.
-
-## The Timing That Matters
-Name the 2-3 most important months/periods and what makes them significant. Be specific: "March-April is when career opportunities peak" not "spring brings new energy."
-
-## What To Do With All This
-3-5 bullet points of specific, actionable advice. Each one must be something they can literally do tomorrow. Age-appropriate. Practical. No metaphors.
+Structure your response with exactly these four section headers, each on its own line with ## before it: ## What This Year Is About, ## How You'll Feel Different, ## Your Biggest Opportunities, ## What Will Be Hard. Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph. Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone. Do not include any other section headers. Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
 
 Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
 }
