@@ -300,17 +300,17 @@ ${ageInstructions}
   6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
   7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
   8. Use the person's name naturally, but sparingly (2-3 times total).
-  9. The characters "##" may appear EXACTLY FOUR TIMES in the entire response — once for each required section header and nowhere else.
-  10. Never place a header inline, after a sentence, inside a paragraph, or in the middle of body text. Every required header must be on its own separate line with a blank line before the paragraph text begins.
+  9. Do not use markdown formatting anywhere in the response. No ##, #, bullets, asterisks, or other markup symbols.
+  10. Use plain-text section titles only, with each title on its own line and the paragraph text starting on the next line.
 
-  Structure your response with exactly these four section headers, each on its own line with ## before it: ## What This Year Is About, ## How You'll Feel Different, ## Your Biggest Opportunities, ## What Will Be Hard.
+  Structure your response with exactly these four plain-text section titles, each on its own line: What This Year Is About, How You'll Feel Different, Your Biggest Opportunities, What Will Be Hard.
 
   Formatting requirements:
-  - Output those four headers once each, in that exact order.
-  - Do not include any other section headers.
-  - Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
-  - Do not use ## anywhere in the body text.
-  - After each header, start the content on a new line, not on the same line as the header.
+  - Output those four section titles once each, in that exact order.
+  - Do not include any other section titles.
+  - Do not use ## anywhere in the response.
+  - Do not use markdown formatting anywhere in the response.
+  - After each title, start the content on a new line, not on the same line as the title.
   - Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph.
   - Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
 
