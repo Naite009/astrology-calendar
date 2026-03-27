@@ -285,25 +285,36 @@ function plainSystemPrompt(ageInstructions: string): string {
 
 ${ageInstructions}
 
-ABSOLUTE RULES:
-1. NEVER use astrological jargon. No planet names, sign names, house numbers, aspects, degrees, dignities, or any technical terms. Translate EVERYTHING into plain life language.
-   - Instead of "Sun in the 7th house" → "Your main focus this year is partnerships and close relationships"
-   - Instead of "Saturn square Moon" → "You may feel emotionally tested around responsibilities"
-   - Instead of "North Node in the 10th" → "You're being pulled toward career growth and public visibility"
-   - Instead of "Pisces Rising" → "You'll come across as more intuitive and gentle this year"
-2. NEVER start with "Dear [Name]", "Dear soul", or any greeting. Jump straight into the content.
-3. NEVER use vague language like "lean into the energy", "doors will open", "embrace the flow", "align with your truth", "the universe is asking you to". Every sentence must answer: WHAT specifically should they DO or EXPECT?
-4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
-   - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
-   - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
-5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
-6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
-7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
-8. Use the person's name naturally, but sparingly (2-3 times total).
+  ABSOLUTE RULES:
+  1. NEVER use astrological jargon. No planet names, sign names, house numbers, aspects, degrees, dignities, or any technical terms. Translate EVERYTHING into plain life language.
+     - Instead of "Sun in the 7th house" → "Your main focus this year is partnerships and close relationships"
+     - Instead of "Saturn square Moon" → "You may feel emotionally tested around responsibilities"
+     - Instead of "North Node in the 10th" → "You're being pulled toward career growth and public visibility"
+     - Instead of "Pisces Rising" → "You'll come across as more intuitive and gentle this year"
+  2. NEVER start with "Dear [Name]", "Dear soul", or any greeting. Jump straight into the content.
+  3. NEVER use vague language like "lean into the energy", "doors will open", "embrace the flow", "align with your truth", "the universe is asking you to". Every sentence must answer: WHAT specifically should they DO or EXPECT?
+  4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
+     - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
+     - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
+  5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
+  6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
+  7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
+  8. Use the person's name naturally, but sparingly (2-3 times total).
+  9. The characters "##" may appear EXACTLY FOUR TIMES in the entire response — once for each required section header and nowhere else.
+  10. Never place a header inline, after a sentence, inside a paragraph, or in the middle of body text. Every required header must be on its own separate line with a blank line before the paragraph text begins.
 
-Structure your response with exactly these four section headers, each on its own line with ## before it: ## What This Year Is About, ## How You'll Feel Different, ## Your Biggest Opportunities, ## What Will Be Hard. Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph. Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone. Do not include any other section headers. Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
+  Structure your response with exactly these four section headers, each on its own line with ## before it: ## What This Year Is About, ## How You'll Feel Different, ## Your Biggest Opportunities, ## What Will Be Hard.
 
-Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
+  Formatting requirements:
+  - Output those four headers once each, in that exact order.
+  - Do not include any other section headers.
+  - Do not include ## Your Year Quarter by Quarter, ## The Timing That Matters, or ## What To Do With All This.
+  - Do not use ## anywhere in the body text.
+  - After each header, start the content on a new line, not on the same line as the header.
+  - Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph.
+  - Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
+
+  Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
 }
 
 function astroSystemPrompt(ageInstructions: string): string {
