@@ -137,6 +137,22 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
               required
               className="w-full border border-border bg-background px-3 py-3 font-sans text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
             />
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={formData.birthTimeApproximate || false}
+                onChange={(e) => setFormData({ ...formData, birthTimeApproximate: e.target.checked })}
+                className="h-4 w-4 rounded border-border text-primary accent-primary"
+              />
+              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                Birth time is approximate
+              </span>
+            </label>
+            {formData.birthTimeApproximate && (
+              <p className="text-[10px] text-muted-foreground/70 leading-relaxed pl-6">
+                ⚠️ House placements, Ascendant, and MC may be inaccurate. Sign-based interpretations remain valid.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
