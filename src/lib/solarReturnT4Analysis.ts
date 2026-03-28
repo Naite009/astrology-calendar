@@ -334,7 +334,9 @@ export function calculateDignityReport(
   const totalScore = entries.reduce((s, e) => s + e.score, 0);
   const sorted = [...entries].sort((a, b) => b.score - a.score);
   const strongest = sorted[0]?.planet || '';
-  const weakest = sorted[sorted.length - 1]?.planet || '';
+  // Exclude Sun from weakest consideration — Sun is always in fall in a Solar Return chart
+  const nonSunSorted = sorted.filter(e => e.planet !== 'Sun');
+  const weakest = nonSunSorted.length > 0 ? nonSunSorted[nonSunSorted.length - 1]?.planet || '' : sorted[sorted.length - 1]?.planet || '';
 
   const totalInterp = totalScore > 10
     ? 'The chart has strong essential dignity — multiple planets are well-placed, giving the year a sense of competence and natural flow.'
@@ -343,6 +345,12 @@ export function calculateDignityReport(
     : totalScore > -5
     ? 'The chart has mixed dignity — several planets are in uncomfortable signs. Growth comes through working harder with less natural support.'
     : 'The chart has challenging essential dignity — many planets are in difficult positions. This is a year of building strength through adversity and conscious effort.';
+
+  // Add note about Sun always being in fall in SR
+  const sunEntry = entries.find(e => e.planet === 'Sun');
+  if (sunEntry && sunEntry.dignity === 'Fall') {
+    sunEntry.interpretation += ' Note: Sun is in fall in every Solar Return chart by definition — this is expected and does not indicate weakness.';
+  }
 
   return {
     entries,
