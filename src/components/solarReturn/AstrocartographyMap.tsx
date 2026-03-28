@@ -145,13 +145,13 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     const rest = filtered.filter(c => !viewMustShow.has(c.city));
 
     // Prioritize green-rated cities (>=7.5) for current intention so travel-worthy spots appear
-    const greenCities = rest.filter(c => cityRating(c) >= 7.5);
-    const otherCities = rest.filter(c => cityRating(c) < 7.5);
+    const greenCities = rest.filter(c => (c.intentionRatings?.[intention] ?? c.rating) >= 7.5);
+    const otherCities = rest.filter(c => (c.intentionRatings?.[intention] ?? c.rating) < 7.5);
     const prioritizedRest = [...greenCities, ...otherCities];
 
     const selected: AstrocartoCity[] = [...mustShow];
     const minDist = view === 'us' ? 3.2 : 9;
-    
+
     for (const city of prioritizedRest) {
       const tooClose = selected.some(s => {
         const dlat = Math.abs(s.latitude - city.latitude);
@@ -164,7 +164,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
       if (selected.length >= (view === 'us' ? 14 : 18)) break;
     }
     return selected;
-  }, [cities, view]);
+  }, [cities, view, intention]);
 
   const allVisibleCities = useMemo(() => {
     if (view === 'us') {

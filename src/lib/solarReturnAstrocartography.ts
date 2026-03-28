@@ -539,19 +539,19 @@ export function calculateAstrocartography(
         continue;
       }
 
-      let weightedSum = 0;
-      let totalWeight = 0;
+      let scaledSum = 0;
 
       for (const ap of angularPlanets) {
         const baseScore = ANGLE_SCORES[ap.planet]?.[ap.angle] ?? 5;
         const planetWeight = weights[ap.planet] ?? 0.5;
         const angleImportance = angleImportanceMap[ap.angle] ?? 0.8;
-        const contribution = baseScore * planetWeight * angleImportance;
-        weightedSum += contribution;
-        totalWeight += planetWeight * angleImportance;
+        // Scale the base score by intention relevance so weights don't cancel for single-planet cities.
+        // Dividing by 3.0 (max planet weight) keeps the relevance multiplier in a sane range.
+        const relevance = Math.min(planetWeight * angleImportance, 6.0) / 3.0;
+        scaledSum += 5 + (baseScore - 5) * relevance;
       }
 
-      const rawScore = totalWeight > 0 ? weightedSum / totalWeight : overallRating;
+      const rawScore = angularPlanets.length > 0 ? scaledSum / angularPlanets.length : overallRating;
       const blended = rawScore * 0.7 + overallRating * 0.3;
       ratings[intention] = Math.min(10, Math.max(1, Math.round(blended * 10) / 10));
     }
