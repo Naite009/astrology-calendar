@@ -494,8 +494,14 @@ export function calculateAstrocartography(
     ];
 
     const angularPlanets: { planet: string; angle: string; orb: number }[] = [];
-    let totalRating = 0;
-    let ratingCount = 0;
+    const BENEFIC_PLANETS = new Set(['Sun', 'Venus', 'Jupiter']);
+    const MALEFIC_PLANETS = new Set(['Saturn', 'Mars', 'Pluto']);
+    let beneficTotal = 0;
+    let beneficCount = 0;
+    let maleficTotal = 0;
+    let maleficCount = 0;
+    let neutralTotal = 0;
+    let neutralCount = 0;
 
     for (const planet of PLANETS_CORE) {
       const pos = srChart.planets[planet as keyof typeof srChart.planets];
@@ -509,22 +515,58 @@ export function calculateAstrocartography(
         if (diff <= 8) { // 8° orb for angular planets
           angularPlanets.push({ planet, angle: angle.name, orb: Math.round(diff * 10) / 10 });
           const baseRating = PLANET_ANGLE_RATING[planet]?.[angle.name] || 5;
-          // Tighter orb = stronger effect
           const orbMultiplier = 1 - (diff / 12);
-          totalRating += baseRating * orbMultiplier;
-          ratingCount++;
+          const score = baseRating * orbMultiplier;
+          if (BENEFIC_PLANETS.has(planet)) {
+            beneficTotal += score;
+            beneficCount++;
+          } else if (MALEFIC_PLANETS.has(planet)) {
+            maleficTotal += score;
+            maleficCount++;
+          } else {
+            neutralTotal += score;
+            neutralCount++;
+          }
         }
       }
     }
 
-    // Skip cities with no angular planets UNLESS they're major world cities
-    const ALWAYS_INCLUDE = new Set([
-      'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
-      'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor', 'Bloomington', 'Miami', 'Charlotte',
-    ]);
-    if (angularPlanets.length === 0 && !ALWAYS_INCLUDE.has(cityData.city)) continue;
+    // Natal planet on SR angle detection (3° orb)
+    for (const planet of PLANETS_CORE) {
+      const natalPos = natalChart.planets[planet as keyof typeof natalChart.planets];
+      if (!natalPos) continue;
+      const natalDeg = toAbsDeg(natalPos);
+      if (natalDeg === null) continue;
+      for (const angleDeg of [asc, mc]) {
+        let diff = Math.abs(natalDeg - angleDeg);
+        if (diff > 180) diff = 360 - diff;
+        if (diff <= 3) {
+          if (BENEFIC_PLANETS.has(planet)) {
+            beneficTotal += 1.5;
+            beneficCount = Math.max(beneficCount, 1); // ensure we have at least 1
+          } else if (MALEFIC_PLANETS.has(planet)) {
+            maleficTotal -= 1.5; // will reduce finalRating below
+            maleficCount = Math.max(maleficCount, 1);
+          }
+        }
+      }
+    }
 
-    const avgRating = ratingCount > 0 ? clampRating(totalRating / ratingCount) : NEUTRAL_RATING;
+    if (angularPlanets.length === 0) continue;
+
+    const beneficScore = beneficCount > 0 ? beneficTotal / beneficCount : NEUTRAL_RATING;
+    const maleficPenalty = maleficCount > 0 ? maleficTotal / maleficCount : NEUTRAL_RATING;
+    const neutralScore = neutralCount > 0 ? neutralTotal / neutralCount : NEUTRAL_RATING;
+
+    // Benefic score drives the rating up; malefic penalty pulls it down
+    // When no malefics: finalRating ≈ beneficScore. When malefics present: penalty applied.
+    let finalRating = beneficScore - (10 - maleficPenalty) * 0.4;
+    // Blend in neutral planets if present
+    if (neutralCount > 0) {
+      const totalCount = beneficCount + maleficCount + neutralCount;
+      finalRating = finalRating * ((beneficCount + maleficCount) / totalCount) + neutralScore * (neutralCount / totalCount);
+    }
+    const avgRating = clampRating(finalRating);
 
     // Calculate per-intention ratings
     const intentionRatings = {} as Record<AstrocartoIntention, number>;
@@ -626,17 +668,7 @@ export function calculateAstrocartography(
     }
   }
 
-  const PRIORITY_CITIES = [
-    'London', 'Paris', 'Rome', 'Zurich', 'Sydney', 'Tokyo', 'Honolulu',
-    'Philadelphia', 'Washington DC', 'Boulder', 'Ann Arbor', 'Bloomington', 'Miami', 'Charlotte',
-  ];
-  const priorityResults = PRIORITY_CITIES
-    .map(name => cityResults.find(city => city.city === name))
-    .filter((city): city is AstrocartoCity => Boolean(city));
-  const topCities = [
-    ...priorityResults,
-    ...cityResults.filter(city => !PRIORITY_CITIES.includes(city.city)),
-  ].slice(0, 60);
+  const topCities = cityResults.slice(0, 60);
 
   const interpretation = topCities.length > 0
     ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`
