@@ -434,6 +434,7 @@ export interface SolarReturnAnalysis {
   eclipseSensitivity: SREclipseSensitivity[];
   enhancedRetrogrades: SREnhancedRetrograde[];
   quarterlyFocus: SRQuarterlyFocus[];
+  dominantPlanets: SRDominantPlanetsReport;
   // ─── Tier 5 ───
   fixedStars: SRFixedStar[];
   arabicParts: SRArabicPart[];
