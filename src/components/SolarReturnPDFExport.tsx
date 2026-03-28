@@ -670,6 +670,7 @@ export function downloadBirthdayJSONStandalone(
       eclipseSensitivity: analysis.eclipseSensitivity,
       enhancedRetrogrades: analysis.enhancedRetrogrades,
       quarterlyFocus: analysis.quarterlyFocus,
+      dominantPlanets: analysis.dominantPlanets,
       // Tier 5
       fixedStars: analysis.fixedStars,
       arabicParts: analysis.arabicParts,
