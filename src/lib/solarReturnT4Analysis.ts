@@ -77,7 +77,9 @@ export interface SRDignityEntry {
 export interface SRDignityReport {
   entries: SRDignityEntry[];
   totalScore: number;
+  /** Reframed as "Your Powerhouse" — the planet with highest dignity */
   strongestPlanet: string;
+  /** Reframed as "Your Growth Edge" — the planet with lowest dignity (excluding Sun, which is always in fall in SR) */
   weakestPlanet: string;
   interpretation: string;
 }

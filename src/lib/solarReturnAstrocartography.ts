@@ -683,13 +683,19 @@ export function calculateAstrocartography(
   // Sort by rating
   cityResults.sort((a, b) => b.rating - a.rating);
 
-  // Find best benefic and worst malefic cities
-  const bestBeneficCity = cityResults.find(c => 
-    c.angularPlanets.some(ap => ['Venus', 'Jupiter'].includes(ap.planet) && ['ASC', 'MC'].includes(ap.angle))
-  );
-  const worstMaleficCity = [...cityResults].reverse().find(c =>
-    c.angularPlanets.some(ap => ['Saturn', 'Mars', 'Pluto'].includes(ap.planet) && ['ASC', 'DSC'].includes(ap.angle))
-  );
+  // Find best/worst per category from intentionRatings
+  const findBestForIntention = (intent: AstrocartoIntention) => {
+    const sorted = [...cityResults].sort((a, b) => (b.intentionRatings[intent] ?? 0) - (a.intentionRatings[intent] ?? 0));
+    return sorted[0] || null;
+  };
+  const findWorstForIntention = (intent: AstrocartoIntention) => {
+    const sorted = [...cityResults].sort((a, b) => (a.intentionRatings[intent] ?? 10) - (b.intentionRatings[intent] ?? 10));
+    return sorted[0] || null;
+  };
+
+  // Legacy fields: best benefic = best overall, worst malefic = worst overall
+  const bestBeneficCity = findBestForIntention('overall');
+  const worstMaleficCity = findWorstForIntention('overall');
 
   // Rate current location
   const currentMC = calculateMCAtLongitude(GST, currentLng);
