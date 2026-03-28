@@ -25,7 +25,6 @@ import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
-// YearPriorityEngine removed — replaced by expanded 10-domain Life Domain Scores
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
 import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
@@ -48,8 +47,16 @@ import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
-// RelocationComparisonTool removed — too much friction for users
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
+
+// New 8-tab components
+import { ThisYearTab } from '@/components/solarReturn/tabs/ThisYearTab';
+import { TheMoonTab } from '@/components/solarReturn/tabs/TheMoonTab';
+import { ProfileTab } from '@/components/solarReturn/tabs/ProfileTab';
+import { TimeLordsTab } from '@/components/solarReturn/tabs/TimeLordsTab';
+import { LifeAreasTab } from '@/components/solarReturn/tabs/LifeAreasTab';
+import { PlanetsHousesTab } from '@/components/solarReturn/tabs/PlanetsHousesTab';
+import { AspectsTimingTab } from '@/components/solarReturn/tabs/AspectsTimingTab';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
