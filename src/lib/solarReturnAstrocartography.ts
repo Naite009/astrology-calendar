@@ -654,7 +654,7 @@ export function calculateAstrocartography(
     }
     const avgRating = clampRating(finalRating);
 
-    const intentionRatings = calculateIntentionRatings(angularPlanets, avgRating);
+    const intentionRatings = calculateIntentionRatings(angularPlanets, avgRating) as Record<AstrocartoIntention, number>;
 
     // Build summary
     const benefics = angularPlanets.filter(ap => ['Venus', 'Jupiter', 'Sun'].includes(ap.planet));
