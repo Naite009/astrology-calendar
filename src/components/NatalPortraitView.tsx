@@ -536,6 +536,9 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       {/* 10. Power Portrait */}
       <PowerPortraitSection power={portrait.powerPortrait} />
 
+      {/* 10b. Dominant Planets */}
+      <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
+
       {/* 11. Chart Patterns */}
       <PatternsSection patterns={portrait.patterns} />
 
