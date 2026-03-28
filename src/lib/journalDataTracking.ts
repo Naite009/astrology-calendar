@@ -21,14 +21,15 @@ export interface MoonPhaseTag {
 }
 
 const PHASES: { name: string; emoji: string; min: number; max: number }[] = [
-  { name: 'New Moon',        emoji: '🌑', min: 0,     max: 22.5 },
-  { name: 'Waxing Crescent', emoji: '🌒', min: 22.5,  max: 67.5 },
-  { name: 'First Quarter',   emoji: '🌓', min: 67.5,  max: 112.5 },
-  { name: 'Waxing Gibbous',  emoji: '🌔', min: 112.5, max: 157.5 },
-  { name: 'Full Moon',       emoji: '🌕', min: 157.5, max: 202.5 },
-  { name: 'Waning Gibbous',  emoji: '🌖', min: 202.5, max: 247.5 },
-  { name: 'Last Quarter',    emoji: '🌗', min: 247.5, max: 292.5 },
-  { name: 'Balsamic',        emoji: '🌘', min: 292.5, max: 360 },
+  { name: 'New Moon',        emoji: '🌑', min: 0,     max: 45 },
+  { name: 'Waxing Crescent', emoji: '🌒', min: 45,    max: 90 },
+  { name: 'First Quarter',   emoji: '🌓', min: 90,    max: 135 },
+  { name: 'Waxing Gibbous',  emoji: '🌔', min: 135,   max: 180 },
+  { name: 'Full Moon',       emoji: '🌕', min: 180,   max: 225 },
+  { name: 'Waning Gibbous',  emoji: '🌖', min: 225,   max: 270 },
+  { name: 'Last Quarter',    emoji: '🌗', min: 270,   max: 315 },
+  { name: 'Waning Crescent', emoji: '🌘', min: 315,   max: 345 },
+  { name: 'Balsamic',        emoji: '🌘', min: 345,   max: 360 },
 ];
 
 export function getMoonPhaseForDate(date: Date): MoonPhaseTag {
@@ -52,6 +53,7 @@ export function getMoonPhaseForDate(date: Date): MoonPhaseTag {
     'Full Moon': 'Culmination and illumination. What was hidden becomes visible. Release what no longer serves.',
     'Waning Gibbous': 'Gratitude and sharing. Harvest the wisdom from what has been revealed.',
     'Last Quarter': 'Release and let go. Clear space for the next cycle by shedding the old.',
+    'Waning Crescent': 'Quieting down. The last visible sliver — prepare to release and rest.',
     'Balsamic': 'Rest and surrender. The quietest phase — dream, reflect, and trust the void.',
   };
   
