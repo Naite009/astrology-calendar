@@ -5,8 +5,10 @@ import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex'
 import {
   calculateMutualReceptions, calculateDignityReport, calculateHealthOverlay,
   calculateEclipseSensitivity, calculateEnhancedRetrogrades, calculateQuarterlyFocus,
+  calculateDominantPlanets,
   type SRMutualReception, type SRDignityReport, type SRHealthReport,
   type SREclipseSensitivity, type SREnhancedRetrograde, type SRQuarterlyFocus,
+  type SRDominantPlanetsReport,
 } from './solarReturnT4Analysis';
 import {
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
