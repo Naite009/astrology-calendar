@@ -2587,6 +2587,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       eclipseSensitivity: analysis.eclipseSensitivity,
       enhancedRetrogrades: analysis.enhancedRetrogrades,
       quarterlyFocus: analysis.quarterlyFocus,
+      dominantPlanets: analysis.dominantPlanets,
       // Tier 5
       fixedStars: analysis.fixedStars,
       arabicParts: analysis.arabicParts,
