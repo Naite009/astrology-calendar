@@ -44,6 +44,7 @@ import { LifeDomainScoresCard } from '@/components/solarReturn/LifeDomainScoresC
 import { ContradictionCard } from '@/components/solarReturn/ContradictionCard';
 import { LunarWeatherCard } from '@/components/solarReturn/LunarWeatherCard';
 import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
+import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
@@ -904,6 +905,11 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Power Portrait — drive, sustain, burnout, realignment */}
       <PowerPortraitCard portrait={powerPortrait} />
+
+      {/* Dominant Planets — 5-factor scoring engine */}
+      {analysis.dominantPlanets && (
+        <DominantPlanetsCard report={analysis.dominantPlanets} context="solar-return" />
+      )}
 
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />

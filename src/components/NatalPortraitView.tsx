@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, RankedTheme, NatalPowerPortrait, LifetimeWisdom } from '@/lib/natalPortraitEngine';
+import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
   Heart, Briefcase, Waves, Shield, Flame, Compass,
@@ -534,6 +535,9 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
 
       {/* 10. Power Portrait */}
       <PowerPortraitSection power={portrait.powerPortrait} />
+
+      {/* 10b. Dominant Planets */}
+      <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
 
       {/* 11. Chart Patterns */}
       <PatternsSection patterns={portrait.patterns} />
