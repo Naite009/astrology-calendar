@@ -5,8 +5,10 @@ import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex'
 import {
   calculateMutualReceptions, calculateDignityReport, calculateHealthOverlay,
   calculateEclipseSensitivity, calculateEnhancedRetrogrades, calculateQuarterlyFocus,
+  calculateDominantPlanets,
   type SRMutualReception, type SRDignityReport, type SRHealthReport,
   type SREclipseSensitivity, type SREnhancedRetrograde, type SRQuarterlyFocus,
+  type SRDominantPlanetsReport,
 } from './solarReturnT4Analysis';
 import {
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
@@ -432,6 +434,7 @@ export interface SolarReturnAnalysis {
   eclipseSensitivity: SREclipseSensitivity[];
   enhancedRetrogrades: SREnhancedRetrograde[];
   quarterlyFocus: SRQuarterlyFocus[];
+  dominantPlanets: SRDominantPlanetsReport;
   // ─── Tier 5 ───
   fixedStars: SRFixedStar[];
   arabicParts: SRArabicPart[];
@@ -1778,6 +1781,7 @@ export const analyzeSolarReturn = (
   }
   const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0;
   const quarterlyFocus = calculateQuarterlyFocus(srChart, natalChart, planetSRHouses, srChart.solarReturnYear, birthMonth);
+  const dominantPlanets = calculateDominantPlanets(srChart, natalChart, planetSRHouses, angularPlanetsDetailed, srToNatalAspects as any, srInternalAspects as any);
 
   // ─── Tier 5 Calculations ──────────────────────────────────────────
   const fixedStars = calculateFixedStars(srChart, natalChart, srChart.solarReturnYear);
@@ -1843,6 +1847,7 @@ export const analyzeSolarReturn = (
     eclipseSensitivity,
     enhancedRetrogrades,
     quarterlyFocus,
+    dominantPlanets,
     // Tier 5
     fixedStars,
     arabicParts,

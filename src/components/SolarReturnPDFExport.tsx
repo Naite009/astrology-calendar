@@ -670,6 +670,7 @@ export function downloadBirthdayJSONStandalone(
       eclipseSensitivity: analysis.eclipseSensitivity,
       enhancedRetrogrades: analysis.enhancedRetrogrades,
       quarterlyFocus: analysis.quarterlyFocus,
+      dominantPlanets: analysis.dominantPlanets,
       // Tier 5
       fixedStars: analysis.fixedStars,
       arabicParts: analysis.arabicParts,
@@ -907,6 +908,7 @@ export function buildFullJsonStandalone(
     eclipseSensitivity: analysis.eclipseSensitivity,
     enhancedRetrogrades: analysis.enhancedRetrogrades,
     quarterlyFocus: analysis.quarterlyFocus,
+    dominantPlanets: analysis.dominantPlanets,
     fixedStars: analysis.fixedStars,
     arabicParts: analysis.arabicParts,
     firdaria: analysis.firdaria,
@@ -2585,6 +2587,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       eclipseSensitivity: analysis.eclipseSensitivity,
       enhancedRetrogrades: analysis.enhancedRetrogrades,
       quarterlyFocus: analysis.quarterlyFocus,
+      dominantPlanets: analysis.dominantPlanets,
       // Tier 5
       fixedStars: analysis.fixedStars,
       arabicParts: analysis.arabicParts,
