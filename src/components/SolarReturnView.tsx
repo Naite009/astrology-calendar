@@ -48,6 +48,9 @@ import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCard
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
+import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
+import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
+import { TierPreviewContent } from '@/components/solarReturn/TierPreviewContent';
 
 // New 8-tab components
 import { ThisYearTab } from '@/components/solarReturn/tabs/ThisYearTab';
@@ -134,6 +137,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const [isGeneratingForExport, setIsGeneratingForExport] = useState(false);
   const abortExportRef = useRef<AbortController | null>(null);
+  // Tier preview — which tier pill is currently expanded
+  const [activeTier, setActiveTier] = useState<string | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -176,6 +181,16 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       setIsGeneratingForExport(false);
     }
   }, [analysis, selectedSR, selectedNatal, aiReadings]);
+
+  // Tier button handler — 'gift' downloads immediately; t1-t5 toggle the preview panel
+  const handleTierDownload = useCallback((tier: string) => {
+    if (tier === 'gift') {
+      setActiveTier(null);
+      handleBirthdayGiftExport();
+      return;
+    }
+    setActiveTier(prev => prev === tier ? null : tier);
+  }, [handleBirthdayGiftExport]);
 
   if (!allCharts.length) {
     return (
@@ -352,28 +367,31 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <TabsTrigger value="relocation" className="text-[11px] tracking-widest">🗺️ Relocation</TabsTrigger>
           </TabsList>
 
-          {/* Download JSON + AI Reading row */}
-          <div className="flex items-center gap-3 py-3 px-1 border-t border-border">
-            <button
-              onClick={() => handleBirthdayGiftExport()}
-              className="px-6 py-3 rounded-full text-sm font-semibold transition-all duration-150 cursor-pointer select-none hover:opacity-80 flex items-center gap-2"
-              style={{
-                backgroundColor: '#FFF8E1',
-                color: '#5D4037',
-                border: '2px solid #D4A574',
-              }}
-            >
-              <Download size={18} />
-              Download JSON
-            </button>
-            <button
-              onClick={() => setShowAiReading(true)}
-              className="px-4 py-2.5 rounded-full text-xs font-medium border border-border text-muted-foreground hover:bg-secondary transition-all flex items-center gap-1.5"
-            >
-              <Sparkles size={12} />
-              Generate AI Reading
-            </button>
-          </div>
+          {/* Tier download row — T1–T5 tiers + Birthday Report + AI Reading */}
+          <TierButtonRow
+            analysis={analysis}
+            natalChart={selectedNatal}
+            solarReturnChart={selectedSR}
+            onDownloadTier={handleTierDownload}
+            onGenerateAiReading={() => setShowAiReading(true)}
+          />
+          {/* Tier preview: slide-in confirmation strip + detailed tier contents */}
+          {activeTier && activeTier !== 'gift' && (
+            <>
+              <TierPreviewPanel
+                tier={activeTier as 't1' | 't2' | 't3' | 't4' | 't5'}
+                analysis={analysis}
+                onClose={() => setActiveTier(null)}
+                onDownload={() => handleBirthdayGiftExport()}
+              />
+              <div className="border border-border rounded-sm p-4 bg-card/60 mb-2">
+                <TierPreviewContent
+                  tier={activeTier as 't1' | 't2' | 't3' | 't4' | 't5'}
+                  analysis={analysis}
+                />
+              </div>
+            </>
+          )}
 
           <AiReadingModal
             open={showAiReading}
@@ -2669,8 +2687,6 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
-      <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
-
       <div className="border border-primary/20 rounded-sm p-5 bg-card">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
           <Globe size={16} className="text-primary" />

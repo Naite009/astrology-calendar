@@ -33,7 +33,6 @@ export const TierPreviewPanel = ({ tier, analysis, onClose, onDownload }: Props)
 
   const handleDownload = () => {
     onDownload(tier);
-    onDownload(tier);
   };
 
   return (

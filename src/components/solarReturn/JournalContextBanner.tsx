@@ -4,8 +4,8 @@
  */
 
 import { useMemo } from 'react';
-import { Moon, Zap, AlertTriangle, Eclipse } from 'lucide-react';
-import { JournalContextTags, getJournalContextTags } from '@/lib/journalDataTracking';
+import { Zap } from 'lucide-react';
+import { getJournalContextTags } from '@/lib/journalDataTracking';
 import { SRActivationData } from '@/lib/solarReturnActivationWindows';
 
 interface Props {
