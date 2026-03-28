@@ -8,6 +8,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, RankedTheme, NatalPowerPortrait, LifetimeWisdom } from '@/lib/natalPortraitEngine';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
+import { formatDateMMDDYYYY } from '@/lib/localDate';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
   Heart, Briefcase, Waves, Shield, Flame, Compass,
@@ -506,7 +507,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
           <div>
             <h2 className="text-2xl font-serif tracking-wide text-foreground">{selectedChart.name}'s Natal Portrait</h2>
             <p className="text-sm text-muted-foreground">
-              Born {selectedChart.birthDate} at {selectedChart.birthTime} • {selectedChart.birthLocation}
+              Born {formatDateMMDDYYYY(selectedChart.birthDate)} at {selectedChart.birthTime} • {selectedChart.birthLocation}
             </p>
           </div>
         </div>
