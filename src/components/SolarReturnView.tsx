@@ -25,7 +25,6 @@ import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
-// YearPriorityEngine removed — replaced by expanded 10-domain Life Domain Scores
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
 import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
@@ -48,8 +47,16 @@ import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
-// RelocationComparisonTool removed — too much friction for users
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
+
+// New 8-tab components
+import { ThisYearTab } from '@/components/solarReturn/tabs/ThisYearTab';
+import { TheMoonTab } from '@/components/solarReturn/tabs/TheMoonTab';
+import { ProfileTab } from '@/components/solarReturn/tabs/ProfileTab';
+import { TimeLordsTab } from '@/components/solarReturn/tabs/TimeLordsTab';
+import { LifeAreasTab } from '@/components/solarReturn/tabs/LifeAreasTab';
+import { PlanetsHousesTab } from '@/components/solarReturn/tabs/PlanetsHousesTab';
+import { AspectsTimingTab } from '@/components/solarReturn/tabs/AspectsTimingTab';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -333,12 +340,16 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           </button>
         </div>
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="this-year" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-secondary p-1">
-            <TabsTrigger value="overview" className="text-[11px] uppercase tracking-widest">Overview</TabsTrigger>
-            <TabsTrigger value="houses" className="text-[11px] uppercase tracking-widest">House Overlay</TabsTrigger>
-            <TabsTrigger value="aspects" className="text-[11px] uppercase tracking-widest">Aspects</TabsTrigger>
-            <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
+            <TabsTrigger value="this-year" className="text-[11px] tracking-widest">☀️ This Year</TabsTrigger>
+            <TabsTrigger value="moon" className="text-[11px] tracking-widest">☽ The Moon</TabsTrigger>
+            <TabsTrigger value="profile" className="text-[11px] tracking-widest">🧠 Profile</TabsTrigger>
+            <TabsTrigger value="time-lords" className="text-[11px] tracking-widest">⏳ Time Lords</TabsTrigger>
+            <TabsTrigger value="life-areas" className="text-[11px] tracking-widest">🏡 Life Areas</TabsTrigger>
+            <TabsTrigger value="planets" className="text-[11px] tracking-widest">🪐 Planets & Houses</TabsTrigger>
+            <TabsTrigger value="aspects" className="text-[11px] tracking-widest">⚡ Aspects & Timing</TabsTrigger>
+            <TabsTrigger value="relocation" className="text-[11px] tracking-widest">🗺️ Relocation</TabsTrigger>
           </TabsList>
 
           {/* Download JSON + AI Reading row */}
@@ -372,16 +383,32 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             onReadingsUpdate={(r) => setAiReadings(r)}
           />
 
-          <TabsContent value="overview">
-            <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+          <TabsContent value="this-year">
+            <ThisYearTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
-          <TabsContent value="houses">
-            <HouseOverlayTab analysis={analysis} />
+          <TabsContent value="moon">
+            <TheMoonTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="time-lords">
+            <TimeLordsTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="life-areas">
+            <LifeAreasTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="planets">
+            <PlanetsHousesTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
           <TabsContent value="aspects">
-            <AspectsTab analysis={analysis} />
+            <AspectsTimingTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
           <TabsContent value="relocation">
