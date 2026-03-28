@@ -906,6 +906,11 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* Power Portrait — drive, sustain, burnout, realignment */}
       <PowerPortraitCard portrait={powerPortrait} />
 
+      {/* Dominant Planets — 5-factor scoring engine */}
+      {analysis.dominantPlanets && (
+        <DominantPlanetsCard report={analysis.dominantPlanets} context="solar-return" />
+      )}
+
       {/* Life Domain Scores — 10 categories with tone-aware scoring */}
       <LifeDomainScoresCard scores={lifeDomainScores} />
 

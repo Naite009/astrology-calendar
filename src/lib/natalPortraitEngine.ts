@@ -800,6 +800,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     spiritualKarmic: buildSpiritualDomain(chart, bodies),
     houseEmphasis: buildHouseEmphasis(bodies),
     powerPortrait: buildPowerPortrait(chart, bodies),
+    dominantPlanets: calculateNatalDominantPlanets(chart),
     patterns: detectChartPatterns(chart),
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
   };
