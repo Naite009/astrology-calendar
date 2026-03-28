@@ -501,31 +501,40 @@ export function calculateAstrocartography(
 
     const INTENTION_WEIGHTS: Record<string, Record<string, number>> = {
       love:       { Venus: 3.0, Moon: 2.5, Jupiter: 1.5, Mars: 1.2, Neptune: 1.5, Sun: 0.8, Mercury: 0.6, Saturn: 0.4, Uranus: 0.5, Pluto: 0.5, Chiron: 0.6, NorthNode: 0.8 },
-      career:     { Sun: 2.5, Jupiter: 2.5, Saturn: 2.0, Mars: 1.8, Mercury: 1.5, Moon: 0.6, Venus: 0.8, Uranus: 1.2, Neptune: 0.4, Pluto: 1.3, Chiron: 0.5, NorthNode: 1.0 },
-      healing:    { Chiron: 3.0, Moon: 2.5, Neptune: 2.5, Venus: 1.5, Jupiter: 1.5, Saturn: 1.0, Sun: 0.8, Mercury: 0.7, Mars: 0.4, Pluto: 1.2, Uranus: 0.5, NorthNode: 1.0 },
-      adventure:  { Mars: 3.0, Jupiter: 2.5, Uranus: 2.5, Sun: 1.5, Mercury: 1.0, Moon: 0.6, Venus: 0.7, Saturn: 0.3, Neptune: 0.7, Pluto: 0.8, Chiron: 0.4, NorthNode: 0.9 },
+      career:     { Jupiter: 3.0, Sun: 3.0, Saturn: 2.0, Mars: 1.8, Mercury: 1.5, Moon: 0.5, Venus: 0.7, Uranus: 1.2, Neptune: 0.3, Pluto: 1.3, Chiron: 0.5, NorthNode: 1.0 },
+      vitality:   { Sun: 3.0, Mars: 3.0, Jupiter: 2.0, Moon: 1.0, Mercury: 0.5, Venus: 1.0, Saturn: 0.3, Uranus: 1.0, Neptune: 0.3, Pluto: 0.5, Chiron: 0.4, NorthNode: 0.8 },
+      healing:    { Moon: 3.0, Neptune: 3.0, Chiron: 2.5, Venus: 1.5, Jupiter: 1.5, Saturn: 1.0, Sun: 0.8, Mercury: 0.7, Mars: 0.3, Pluto: 1.2, Uranus: 0.5, NorthNode: 1.0 },
+      adventure:  { Mars: 3.0, Jupiter: 3.0, Uranus: 2.5, Sun: 1.5, Mercury: 1.0, Moon: 0.5, Venus: 0.6, Saturn: 0.2, Neptune: 0.6, Pluto: 0.8, Chiron: 0.4, NorthNode: 0.9 },
       creativity: { Venus: 2.5, Neptune: 2.5, Mercury: 2.0, Moon: 1.8, Sun: 1.5, Jupiter: 1.2, Mars: 1.0, Uranus: 1.5, Saturn: 0.6, Pluto: 0.8, Chiron: 0.7, NorthNode: 0.8 },
       spiritual:  { Neptune: 3.0, Moon: 2.0, Chiron: 2.0, Jupiter: 1.8, Pluto: 1.5, Saturn: 1.0, Sun: 0.8, Venus: 1.0, Uranus: 1.2, Mercury: 0.6, Mars: 0.4, NorthNode: 1.5 },
       family:     { Moon: 3.0, Venus: 2.0, Jupiter: 1.8, Saturn: 1.5, Sun: 1.2, Chiron: 1.5, Mercury: 0.8, Mars: 0.5, Neptune: 0.8, Pluto: 0.7, Uranus: 0.4, NorthNode: 1.0 },
       wealth:     { Jupiter: 3.0, Sun: 2.0, Venus: 1.8, Saturn: 1.8, Mars: 1.5, Mercury: 1.3, Pluto: 1.2, Moon: 0.7, Neptune: 0.4, Uranus: 1.0, Chiron: 0.5, NorthNode: 1.0 },
     };
 
-    const ANGLE_IMPORTANCE: Record<string, number> = {
-      ASC: 1.0,
-      MC:  1.0,
-      DSC: 0.85,
-      IC:  0.75,
+    // Per-intention angle multipliers so each intention rewards the right planet+angle combos
+    // e.g. career heavily rewards MC (public status), healing rewards IC (rest/home), adventure rewards ASC
+    const INTENTION_ANGLE_IMPORTANCE: Record<string, Record<string, number>> = {
+      love:       { ASC: 1.2, MC: 0.6, DSC: 1.5, IC: 1.2 },
+      career:     { ASC: 0.7, MC: 2.0, DSC: 0.4, IC: 0.3 },
+      vitality:   { ASC: 1.6, MC: 1.2, DSC: 0.6, IC: 0.4 },
+      healing:    { ASC: 0.7, MC: 0.4, DSC: 0.7, IC: 2.0 },
+      adventure:  { ASC: 1.8, MC: 1.0, DSC: 0.8, IC: 0.4 },
+      creativity: { ASC: 1.2, MC: 1.3, DSC: 0.8, IC: 1.0 },
+      spiritual:  { ASC: 0.8, MC: 0.5, DSC: 0.8, IC: 1.6 },
+      family:     { ASC: 0.9, MC: 0.6, DSC: 1.0, IC: 2.0 },
+      wealth:     { ASC: 0.9, MC: 1.6, DSC: 0.8, IC: 0.6 },
     };
 
-    const intentions = ['love', 'career', 'healing', 'adventure', 'creativity', 'spiritual', 'family', 'wealth'];
+    const intentions = ['love', 'career', 'vitality', 'healing', 'adventure', 'creativity', 'spiritual', 'family', 'wealth'];
 
     const ratings: Record<string, number> = { overall: overallRating };
 
     for (const intention of intentions) {
       const weights = INTENTION_WEIGHTS[intention];
+      const angleImportanceMap = INTENTION_ANGLE_IMPORTANCE[intention] ?? { ASC: 1.0, MC: 1.0, DSC: 0.85, IC: 0.75 };
 
       if (angularPlanets.length === 0) {
-        const variance = ({ love: -0.3, career: -0.5, healing: 0.2, adventure: -0.7, creativity: 0.1, spiritual: 0.3, family: 0.1, wealth: -0.4 } as Record<string, number>)[intention] ?? 0;
+        const variance = ({ love: -0.3, career: -0.5, vitality: -0.4, healing: 0.2, adventure: -0.7, creativity: 0.1, spiritual: 0.3, family: 0.1, wealth: -0.4 } as Record<string, number>)[intention] ?? 0;
         ratings[intention] = Math.min(10, Math.max(1, Math.round((overallRating + variance) * 10) / 10));
         continue;
       }
@@ -536,7 +545,7 @@ export function calculateAstrocartography(
       for (const ap of angularPlanets) {
         const baseScore = ANGLE_SCORES[ap.planet]?.[ap.angle] ?? 5;
         const planetWeight = weights[ap.planet] ?? 0.5;
-        const angleImportance = ANGLE_IMPORTANCE[ap.angle] ?? 0.8;
+        const angleImportance = angleImportanceMap[ap.angle] ?? 0.8;
         const contribution = baseScore * planetWeight * angleImportance;
         weightedSum += contribution;
         totalWeight += planetWeight * angleImportance;
