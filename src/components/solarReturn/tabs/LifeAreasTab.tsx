@@ -37,7 +37,8 @@ export const LifeAreasTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="space-y-4">
           {analysis.synthesisSections.map((section, i) => {
             // Find matching domain scores
-            const matchingDomains = lifeDomainScores.filter(d => {
+            const allDomains = Object.values(lifeDomainScores) as LifeDomainScore[];
+            const matchingDomains = allDomains.filter((d: LifeDomainScore) => {
               const keywords = SYNTHESIS_TO_DOMAIN[section.title] || [section.title.toLowerCase()];
               return keywords.some(k => d.domain.toLowerCase().includes(k));
             });
