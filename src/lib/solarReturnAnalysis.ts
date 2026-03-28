@@ -1355,6 +1355,42 @@ export const analyzeSolarReturn = (
   if (nnPos?.sign) {
     const nnDeg = toAbsDeg(nnPos);
     const nnHouse = nnDeg !== null ? findSRHouse(nnDeg, srChart) : null;
+
+    // Find North Node's natal house from houseOverlays
+    const nnOverlay = houseOverlays.find(o => o.planet === 'NorthNode');
+    const nnNatalHouse = nnOverlay?.natalHouse ?? null;
+    const nnSrInNatalHouse = nnOverlay?.srInNatalHouse ?? null;
+
+    const NODE_SIGN_GROWTH: Record<string, string> = {
+      Aries: 'developing courage, independence, and the willingness to act first and ask permission later',
+      Taurus: 'building stability, trusting your own resources, and learning to slow down and savor',
+      Gemini: 'staying curious, communicating openly, and engaging with the world around you',
+      Cancer: 'nurturing yourself and others, creating emotional safety, and trusting vulnerability',
+      Leo: 'creative self-expression, stepping into the spotlight, and daring to lead with your heart',
+      Virgo: 'practical service, refining your daily rituals, and finding mastery in the details',
+      Libra: 'learning partnership, diplomacy, and how to create harmony without losing yourself',
+      Scorpio: 'emotional depth, surrendering control, and trusting the transformative process',
+      Sagittarius: 'expanding your worldview, seeking direct experience, and forming your own philosophy',
+      Capricorn: 'stepping into authority, building something that lasts, and earning your place',
+      Aquarius: 'thinking beyond yourself, serving the collective, and embracing what makes you different',
+      Pisces: 'dissolving rigid boundaries, trusting intuition over logic, and surrendering to something larger',
+    };
+
+    const NODE_HOUSE_DAILY: Record<number, string> = {
+      1: 'making decisions for yourself, initiating without waiting for permission, and building a stronger sense of who you are apart from others',
+      2: 'managing your own money, developing skills that feel valuable, and grounding yourself in what you actually need versus what feels familiar',
+      3: 'writing, speaking up in daily conversations, asking questions, and connecting with siblings or neighbors in new ways',
+      4: 'creating a home that feels like yours, cooking, nesting, having difficult family conversations, and building emotional foundations',
+      5: 'making art, taking creative risks, dating, playing, and allowing yourself to be seen without a filter',
+      6: 'overhauling your daily routines, paying attention to what you eat and how you move, and showing up consistently even when nobody is watching',
+      7: 'committing to real partnership, compromising without people-pleasing, and learning to truly share your life with another person',
+      8: 'sharing resources, having honest conversations about money and power, and letting yourself be emotionally vulnerable with someone you trust',
+      9: 'traveling, studying something that challenges your assumptions, teaching what you know, and forming beliefs through lived experience rather than theory',
+      10: 'taking on professional responsibility, being visible in your career, and accepting that leadership requires showing up imperfectly',
+      11: 'joining groups, pursuing a cause bigger than yourself, and contributing to community even when it feels uncomfortable',
+      12: 'meditation, therapy, journaling, spending time alone, and releasing the need to control every outcome',
+    };
+
     const nodeHouseInterps: Record<number, string> = {
       1: 'Growth comes through self-assertion and independence. Step into leadership and trust your own path this year.',
       2: 'Growth comes through building your own resources and self-worth. Financial independence and solid values are the lesson.',
@@ -1375,11 +1411,35 @@ export const analyzeSolarReturn = (
       7: 'Partnership Growth', 8: 'Depth & Vulnerability', 9: 'Expanding Horizons',
       10: 'Stepping Into Authority', 11: 'Community Purpose', 12: 'Spiritual Surrender',
     };
+
+    // Build rich interpretation
+    let fullInterp = '';
+    const signGrowth = NODE_SIGN_GROWTH[nnPos.sign];
+    if (signGrowth) {
+      fullInterp += `In ${nnPos.sign}, your growth direction this year is about ${signGrowth}. `;
+    }
+    if (nnHouse) {
+      fullInterp += nodeHouseInterps[nnHouse] || '';
+      const daily = NODE_HOUSE_DAILY[nnHouse];
+      if (daily) {
+        fullInterp += ` In daily life, this looks like ${daily}. `;
+      }
+    }
+    // Natal vs SR shift
+    if (nnNatalHouse && nnHouse && nnNatalHouse !== nnHouse) {
+      fullInterp += `Your natal North Node lives in House ${nnNatalHouse} (${houseThemes[nnNatalHouse] || ''}), but this year it activates House ${nnHouse} (${houseThemes[nnHouse] || ''}) — a shift in where your soul growth is focused. `;
+    } else if (nnNatalHouse && nnHouse && nnNatalHouse === nnHouse) {
+      fullInterp += `Your North Node returns to its natal House ${nnNatalHouse} this year — a powerful reinforcement of your life-long growth direction. `;
+    }
+    if (nnSrInNatalHouse && nnSrInNatalHouse !== nnHouse) {
+      fullInterp += `The SR North Node degree falls in your natal House ${nnSrInNatalHouse} (${houseThemes[nnSrInNatalHouse] || ''}), connecting this year's growth to that natal life area.`;
+    }
+
     nodesFocus = {
       sign: nnPos.sign,
       house: nnHouse,
       theme: nnHouse ? (NODE_HOUSE_THEME[nnHouse] || 'Growth Edge') : 'Growth Edge',
-      interpretation: nnHouse ? (nodeHouseInterps[nnHouse] || '') : 'Your growth edge this year points toward what feels unfamiliar but true — lean into the discomfort.',
+      interpretation: fullInterp.trim() || 'Your growth edge this year points toward what feels unfamiliar but true — lean into the discomfort.',
     };
   }
 
