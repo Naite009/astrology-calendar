@@ -1192,16 +1192,40 @@ export const analyzeSolarReturn = (
     if (mod) { modBal[mod]++; modPlanets[mod].push(planet); }
   }
   const domMod = (Object.entries(modBal) as [string, number][]).sort((a, b) => b[1] - a[1])[0][0];
-  const modalityInterpretations: Record<string, string> = {
+
+  // Modality-Moon phase bridging logic
+  const currentPhase = moonPhase?.phase || '';
+  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous', 'Disseminating'];
+  const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous'];
+  const isClosingMoon = closingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
+  const isOpeningMoon = openingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
+
+  const modalityDefaults: Record<string, string> = {
     cardinal: 'This is an initiating year — new projects, fresh starts, and active leadership. You are motivated to begin things and take charge.',
     fixed: 'This is a year of determination, persistence, and deepening. You are building on what exists, stabilizing, and refusing to budge on what matters.',
     mutable: 'This is a year of flexibility, adaptation, and change. Multiple shifts are likely — your ability to adjust and flow is your greatest asset.',
   };
+
+  let modalityInterp = modalityDefaults[domMod];
+
+  // Bridging: Cardinal + Closing Moon
+  if (domMod === 'cardinal' && isClosingMoon) {
+    modalityInterp = 'Your planets favor bold, decisive action this year. You naturally gravitate toward taking charge. However, your lunar rhythm is one of completion and release. The blend means this: you have the energy to lead and make things happen, but your deepest growth comes from using that drive to finish what you have already started rather than launching something entirely new. Close chapters with confidence. Clear the deck. The fresh start is coming, but this year is about wrapping up powerfully.';
+  }
+  // Bridging: Mutable + Closing Moon
+  else if (domMod === 'mutable' && isClosingMoon) {
+    modalityInterp = `Your energy this year is flexible and adaptive, which pairs naturally with your ${currentPhase} Moon rhythm of release and completion. You are meant to flow with change rather than force it. Let go of what no longer fits. Adjust, adapt, and trust the process of transition.`;
+  }
+  // Bridging: Fixed + Opening Moon
+  else if (domMod === 'fixed' && isOpeningMoon) {
+    modalityInterp = 'Your planets favor persistence and staying the course, while your lunar rhythm is one of new beginnings. The blend means you are planting seeds that require patience and commitment to grow. Start what matters, then dig in for the long haul. This year rewards steady follow-through on fresh intentions.';
+  }
+
   const modalityBalance: SRModalityBalance = {
     ...modBal,
     cardinalPlanets: modPlanets.cardinal, fixedPlanets: modPlanets.fixed, mutablePlanets: modPlanets.mutable,
     dominant: domMod,
-    interpretation: modalityInterpretations[domMod],
+    interpretation: modalityInterp,
   };
 
   // ─── 15. Retrograde Report ────────────────────────────────────────
