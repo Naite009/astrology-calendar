@@ -582,9 +582,50 @@ export function calculateAstrocartography(
     }
     const avgRating = clampRating(finalRating);
 
-    // Calculate per-intention ratings using weighted scoring
-    // For each intention, planets have different importance weights.
-    // A city with Venus on ASC should score high for Love but neutral for Career.
+    // Calculate per-intention ratings using only the planet-angle pairs that truly matter
+    const intentionPrimaryPairs: Record<Exclude<AstrocartoIntention, 'overall'>, Array<{ planet: string; angle: string }>> = {
+      love: [
+        { planet: 'Venus', angle: 'ASC' },
+        { planet: 'Venus', angle: 'DSC' },
+        { planet: 'Moon', angle: 'DSC' },
+        { planet: 'Neptune', angle: 'ASC' },
+        { planet: 'Moon', angle: 'ASC' },
+      ],
+      career: [
+        { planet: 'Jupiter', angle: 'MC' },
+        { planet: 'Sun', angle: 'MC' },
+        { planet: 'Saturn', angle: 'MC' },
+        { planet: 'Mars', angle: 'MC' },
+        { planet: 'Mercury', angle: 'MC' },
+      ],
+      vitality: [
+        { planet: 'Sun', angle: 'ASC' },
+        { planet: 'Mars', angle: 'ASC' },
+        { planet: 'Jupiter', angle: 'ASC' },
+        { planet: 'Sun', angle: 'MC' },
+      ],
+      healing: [
+        { planet: 'Moon', angle: 'IC' },
+        { planet: 'Venus', angle: 'IC' },
+        { planet: 'Neptune', angle: 'IC' },
+        { planet: 'Jupiter', angle: 'IC' },
+        { planet: 'Moon', angle: 'ASC' },
+      ],
+      adventure: [
+        { planet: 'Jupiter', angle: 'ASC' },
+        { planet: 'Mars', angle: 'ASC' },
+        { planet: 'Uranus', angle: 'ASC' },
+        { planet: 'Jupiter', angle: 'MC' },
+      ],
+      creativity: [
+        { planet: 'Venus', angle: 'ASC' },
+        { planet: 'Venus', angle: 'MC' },
+        { planet: 'Neptune', angle: 'ASC' },
+        { planet: 'Moon', angle: 'ASC' },
+        { planet: 'Mercury', angle: 'MC' },
+      ],
+    };
+
     const intentionRatings = {} as Record<AstrocartoIntention, number>;
     const intentions: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
     for (const intention of intentions) {
@@ -592,29 +633,25 @@ export function calculateAstrocartography(
         intentionRatings[intention] = avgRating;
         continue;
       }
-      if (angularPlanets.length === 0) {
+
+      const primarySet = intentionPrimaryPairs[intention];
+      const relevantHits = angularPlanets.filter(ap =>
+        primarySet.some(pair => pair.planet === ap.planet && pair.angle === ap.angle)
+      );
+
+      if (relevantHits.length === 0) {
         intentionRatings[intention] = avgRating;
         continue;
       }
 
-      // Weighted sum: each angular planet's score is scaled by its intention weight
-      let weightedTotal = 0;
-      let weightSum = 0;
-      for (const ap of angularPlanets) {
-        const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0.1;
-        const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
+      let intentionTotal = 0;
+      for (const ap of relevantHits) {
         const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
         const orbMultiplier = Math.max(0.25, 1 - (ap.orb / 10));
-        const rawScore = baseRating * orbMultiplier;
-        
-        // Weight = how important this planet+angle combo is for this intention
-        const weight = planetW * angleW;
-        weightedTotal += rawScore * weight;
-        weightSum += weight;
+        intentionTotal += baseRating * orbMultiplier;
       }
 
-      const intentionAvg = weightSum > 0 ? weightedTotal / weightSum : NEUTRAL_RATING;
-      intentionRatings[intention] = clampRating(intentionAvg);
+      intentionRatings[intention] = clampRating(intentionTotal / relevantHits.length);
     }
 
     // Build summary
