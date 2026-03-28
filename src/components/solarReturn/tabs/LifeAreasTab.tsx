@@ -110,11 +110,11 @@ export const LifeAreasTab = ({ analysis, srChart, natalChart }: Props) => {
       <DomainDeepDiveCards domains={domainDeepDives} />
 
       {/* Remaining domain scores not matched to synthesis */}
-      {lifeDomainScores.length > 0 && (
+      {Object.keys(lifeDomainScores).length > 0 && (
         <div className="border border-border rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">All Life Domain Scores</h3>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {lifeDomainScores.map((d, i) => (
+            {(Object.values(lifeDomainScores) as LifeDomainScore[]).map((d, i) => (
               <div key={i} className="text-center p-3 bg-secondary/20 rounded-sm">
                 <p className="text-lg font-semibold text-foreground">{d.score}</p>
                 <p className="text-[10px] text-muted-foreground">{d.domain}</p>

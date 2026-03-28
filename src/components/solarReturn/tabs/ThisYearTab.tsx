@@ -148,10 +148,10 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
               <div key={i} className="bg-secondary/30 rounded-sm p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold text-foreground">#{i + 1}</span>
-                  <span className="text-sm font-medium text-foreground">{t.title}</span>
+                  <span className="text-sm font-medium text-foreground">{t.theme}</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">importance: {t.importance}/10</span>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{t.narrative}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t.description}</p>
               </div>
             ))}
           </div>
