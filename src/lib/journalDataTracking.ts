@@ -53,6 +53,7 @@ export function getMoonPhaseForDate(date: Date): MoonPhaseTag {
     'Full Moon': 'Culmination and illumination. What was hidden becomes visible. Release what no longer serves.',
     'Waning Gibbous': 'Gratitude and sharing. Harvest the wisdom from what has been revealed.',
     'Last Quarter': 'Release and let go. Clear space for the next cycle by shedding the old.',
+    'Waning Crescent': 'Quieting down. The last visible sliver — prepare to release and rest.',
     'Balsamic': 'Rest and surrender. The quietest phase — dream, reflect, and trust the void.',
   };
   
