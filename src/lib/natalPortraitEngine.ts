@@ -12,6 +12,8 @@ import { detectChartPatterns, ChartPattern } from './chartPatterns';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
+import { calculateNatalDominantPlanets, DominantPlanetsReport } from './dominantPlanetsEngine';
+
 export interface NatalPortrait {
   lifePurpose: LifePurposeSummary;
   topThemes: RankedTheme[];
@@ -23,6 +25,7 @@ export interface NatalPortrait {
   spiritualKarmic: DomainDeepDive;
   houseEmphasis: HouseEmphasis[];
   powerPortrait: NatalPowerPortrait;
+  dominantPlanets: DominantPlanetsReport;
   patterns: ChartPattern[];
   lifetimeWisdom: LifetimeWisdom;
 }
