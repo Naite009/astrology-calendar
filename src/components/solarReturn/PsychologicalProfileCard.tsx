@@ -444,6 +444,9 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
               {mode === 'natal' ? modNatal.dominant : mode === 'sr' ? modSR.dominant : modNatal.dominant + ' → ' + modSR.dominant}
             </span>
           </p>
+          <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+            {mode === 'natal' ? modNatal.description : mode === 'sr' ? modSR.description : `Natal: ${modNatal.description} This year: ${modSR.description}`}
+          </p>
         </div>
       </div>
 
