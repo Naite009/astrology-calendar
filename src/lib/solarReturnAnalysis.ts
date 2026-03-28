@@ -1787,7 +1787,7 @@ export const analyzeSolarReturn = (
     const cusps = extractCusps(srChart);
     return cusps ? findHouseInCusps(deg, cusps) : null;
   };
-  const arabicParts = calculateArabicParts(srChart, findSRHouseForParts);
+  const arabicParts = calculateArabicParts(srChart, findSRHouseForParts, planetSRHouses);
   
   const t5Age = profectionYear?.age ?? 0;
   const firdaria = calculateFirdaria(t5Age);
