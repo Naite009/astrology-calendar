@@ -582,48 +582,32 @@ export function calculateAstrocartography(
     }
     const avgRating = clampRating(finalRating);
 
-    // Calculate per-intention ratings using only the planet-angle pairs that truly matter
-    const intentionPrimaryPairs: Record<Exclude<AstrocartoIntention, 'overall'>, Array<{ planet: string; angle: string }>> = {
-      love: [
-        { planet: 'Venus', angle: 'ASC' },
-        { planet: 'Venus', angle: 'DSC' },
-        { planet: 'Moon', angle: 'DSC' },
-        { planet: 'Neptune', angle: 'ASC' },
-        { planet: 'Moon', angle: 'ASC' },
-      ],
-      career: [
-        { planet: 'Jupiter', angle: 'MC' },
-        { planet: 'Sun', angle: 'MC' },
-        { planet: 'Saturn', angle: 'MC' },
-        { planet: 'Mars', angle: 'MC' },
-        { planet: 'Mercury', angle: 'MC' },
-      ],
-      vitality: [
-        { planet: 'Sun', angle: 'ASC' },
-        { planet: 'Mars', angle: 'ASC' },
-        { planet: 'Jupiter', angle: 'ASC' },
-        { planet: 'Sun', angle: 'MC' },
-      ],
-      healing: [
-        { planet: 'Moon', angle: 'IC' },
-        { planet: 'Venus', angle: 'IC' },
-        { planet: 'Neptune', angle: 'IC' },
-        { planet: 'Jupiter', angle: 'IC' },
-        { planet: 'Moon', angle: 'ASC' },
-      ],
-      adventure: [
-        { planet: 'Jupiter', angle: 'ASC' },
-        { planet: 'Mars', angle: 'ASC' },
-        { planet: 'Uranus', angle: 'ASC' },
-        { planet: 'Jupiter', angle: 'MC' },
-      ],
-      creativity: [
-        { planet: 'Venus', angle: 'ASC' },
-        { planet: 'Venus', angle: 'MC' },
-        { planet: 'Neptune', angle: 'ASC' },
-        { planet: 'Moon', angle: 'ASC' },
-        { planet: 'Mercury', angle: 'MC' },
-      ],
+    // ─── Per-intention scoring with planet weights + angle multipliers ───
+    const INTENTION_PLANET_WEIGHTS: Record<Exclude<AstrocartoIntention, 'overall'>, Record<string, number>> = {
+      love:       { Venus: 10, Moon: 7, Neptune: 5, Jupiter: 3 },
+      career:     { Jupiter: 10, Saturn: 8, Sun: 7, Mercury: 6, Mars: 4 },
+      vitality:   { Sun: 10, Mars: 9, Jupiter: 5, Moon: 4 },
+      healing:    { Moon: 10, Neptune: 8, Pluto: 6, Saturn: 3 },
+      creativity: { Venus: 10, Neptune: 9, Moon: 6, Mercury: 4 },
+      adventure:  { Jupiter: 10, Uranus: 9, Mars: 6 },
+    };
+
+    const INTENTION_ANGLE_MULT: Record<Exclude<AstrocartoIntention, 'overall'>, Record<string, number>> = {
+      career:     { MC: 1.2, ASC: 0.7, DSC: 0.5, IC: 0.3 },
+      vitality:   { ASC: 1.2, MC: 0.6, DSC: 0.5, IC: 0.4 },
+      love:       { DSC: 1.1, ASC: 1.0, IC: 0.8, MC: 0.5 },
+      healing:    { IC: 1.2, DSC: 0.8, ASC: 0.6, MC: 0.4 },
+      creativity: { ASC: 1.0, MC: 0.9, DSC: 0.6, IC: 0.5 },
+      adventure:  { ASC: 1.1, MC: 0.8, DSC: 0.5, IC: 0.4 },
+    };
+
+    const INTENTION_MALEFIC_WEIGHTS: Record<Exclude<AstrocartoIntention, 'overall'>, Record<string, number>> = {
+      love:       { Saturn: 10, Mars: 7, Pluto: 6 },
+      career:     { Neptune: 8, Pluto: 6 },
+      vitality:   { Saturn: 10, Neptune: 7, Pluto: 5 },
+      healing:    {},
+      creativity: { Saturn: 10, Mars: 5 },
+      adventure:  { Saturn: 10 },
     };
 
     const intentionRatings = {} as Record<AstrocartoIntention, number>;
@@ -634,24 +618,39 @@ export function calculateAstrocartography(
         continue;
       }
 
-      const primarySet = intentionPrimaryPairs[intention];
-      const relevantHits = angularPlanets.filter(ap =>
-        primarySet.some(pair => pair.planet === ap.planet && pair.angle === ap.angle)
-      );
+      const planetWeights = INTENTION_PLANET_WEIGHTS[intention];
+      const angleMults = INTENTION_ANGLE_MULT[intention];
+      const maleficWeights = INTENTION_MALEFIC_WEIGHTS[intention];
 
-      if (relevantHits.length === 0) {
+      let beneficScore = 0;
+      let maleficScore = 0;
+      let hasRelevantHit = false;
+
+      for (const ap of angularPlanets) {
+        const bWeight = planetWeights[ap.planet];
+        const mWeight = maleficWeights[ap.planet];
+        const angleMult = angleMults[ap.angle] || 0.3;
+        const orbFactor = Math.max(0.1, (10 - ap.orb) / 10);
+
+        if (bWeight) {
+          beneficScore += bWeight * angleMult * orbFactor;
+          hasRelevantHit = true;
+        }
+        if (mWeight) {
+          maleficScore += mWeight * angleMult * orbFactor;
+          hasRelevantHit = true;
+        }
+      }
+
+      if (!hasRelevantHit) {
         intentionRatings[intention] = avgRating;
         continue;
       }
 
-      let intentionTotal = 0;
-      for (const ap of relevantHits) {
-        const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
-        const orbMultiplier = Math.max(0.25, 1 - (ap.orb / 10));
-        intentionTotal += baseRating * orbMultiplier;
-      }
-
-      intentionRatings[intention] = clampRating(intentionTotal / relevantHits.length);
+      // Normalize: max theoretical single hit ≈ 10 * 1.2 * 1.0 = 12
+      const raw = (beneficScore - maleficScore * 0.4);
+      // Scale to 0-10 range  
+      intentionRatings[intention] = clampRating(5 + raw * 0.4);
     }
 
     // Build summary
