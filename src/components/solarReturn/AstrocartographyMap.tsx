@@ -88,8 +88,14 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
   const cityRating = (c: AstrocartoCity) => c.intentionRatings?.[intention] ?? c.rating;
 
   // Sort cities by the active intention rating
+  // Inline the rating lookup so the sort always uses the current intention value
+  // without depending on a stale closure over cityRating
   const cities = useMemo(() => {
-    return [...astrocarto.topCities].sort((a, b) => cityRating(b) - cityRating(a));
+    return [...astrocarto.topCities].sort((a, b) => {
+      const rateA = a.intentionRatings?.[intention] ?? a.rating;
+      const rateB = b.intentionRatings?.[intention] ?? b.rating;
+      return rateB - rateA;
+    });
   }, [astrocarto.topCities, intention]);
 
   // Use the stable best/worst from the calculation engine (not array position)
