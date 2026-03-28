@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, Crown, Eye, Baby, Briefcase, Calendar, AlertTriangle, Shield, Sparkles, Info, Zap, Mountain } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
-  calculateDominantPlanets,
+  calculateDominantPlanets as calculateLegacyDominant,
   analyzePsychicAbilities,
   analyzeChildren,
   analyzeCareer,
@@ -14,6 +14,8 @@ import {
   analyzeGuardianAngel,
   DominantPlanetResult,
 } from '@/lib/lifePatternAnalysis';
+import { calculateNatalDominantPlanets } from '@/lib/dominantPlanetsEngine';
+import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { convertToChartPlanets } from '@/lib/chartConversion';
