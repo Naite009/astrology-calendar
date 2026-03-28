@@ -701,3 +701,173 @@ export function calculateQuarterlyFocus(
 
   return quarters;
 }
+
+// ─── Dominant Planets Engine ────────────────────────────────────────
+
+export interface SRDominantPlanetBreakdown {
+  sign: number;
+  house: number;
+  angle: number;
+  ruler: number;
+  aspects: number;
+}
+
+export interface SRDominantPlanetEntry {
+  planet: string;
+  rank: number;
+  totalScore: number;
+  percentage: number;
+  breakdown: SRDominantPlanetBreakdown;
+  dignity: string;
+  tags: string[];
+}
+
+export interface SRDominantPlanetsReport {
+  entries: SRDominantPlanetEntry[];
+  captain: string;      // highest total score = most dominant
+  starPlayer: string;   // highest dignity score = most technically skilled
+  billboard: string;    // closest to MC = most publicly visible
+  captainScore: number;
+  interpretation: string;
+}
+
+const DOMINANT_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
+
+export function calculateDominantPlanets(
+  srChart: SolarReturnChart,
+  natalChart: NatalChart,
+  planetSRHouses: Record<string, number | null>,
+  angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[],
+  srToNatalAspects: { planet1: string; planet2: string; type: string; orb: number; importance?: number }[],
+  srInternalAspects: { planet1: string; planet2: string; type: string; orb: number }[],
+): SRDominantPlanetsReport {
+  const results: { planet: string; breakdown: SRDominantPlanetBreakdown; dignity: string; tags: string[] }[] = [];
+
+  // Determine ASC and MC signs for rulership scoring
+  const ascSign = srChart.houseCusps?.house1?.sign || '';
+  const mcSign = srChart.houseCusps?.house10?.sign || '';
+
+  for (const planet of DOMINANT_PLANETS) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+
+    const tags: string[] = [];
+
+    // 1. Sign dignity (0-5, no negatives)
+    const dignity = getDignity(planet, pos.sign);
+    const signScoreMap: Record<string, number> = { 'Domicile': 5, 'Exaltation': 4, 'Peregrine': 0, 'Detriment': 0, 'Fall': 0 };
+    const signScore = signScoreMap[dignity] ?? 0;
+    if (dignity === 'Domicile') tags.push('Domicile');
+    if (dignity === 'Exaltation') tags.push('Exaltation');
+
+    // 2. House placement (1-5)
+    const house = planetSRHouses[planet];
+    let houseScore = 1;
+    if (house) {
+      if ([1, 4, 7, 10].includes(house)) { houseScore = 5; tags.push('Angular'); }
+      else if ([2, 5, 8, 11].includes(house)) houseScore = 3;
+      else houseScore = 1;
+    }
+
+    // 3. Angle proximity (0-6)
+    let angleScore = 0;
+    const angleHits = angularPlanetsDetailed.filter(a => a.planet === planet);
+    for (const hit of angleHits) {
+      const score = Math.max(0, (8 - hit.orb) / 8 * 6);
+      if (score > angleScore) angleScore = score;
+    }
+    if (angleScore > 3) tags.push('On Angle');
+    angleScore = Math.round(angleScore * 10) / 10;
+
+    // 4. Rulership (0-7)
+    let rulerScore = 0;
+    if (ascSign && traditionalRuler[ascSign] === planet) { rulerScore += 4; tags.push('Chart Ruler'); }
+    if (mcSign && traditionalRuler[mcSign] === planet) { rulerScore += 3; tags.push('MC Ruler'); }
+    // Hybrid bonus: Sun/Moon sign rulership (+1 each)
+    const sunSign = srChart.planets.Sun?.sign;
+    const moonSign = srChart.planets.Moon?.sign;
+    if (sunSign && traditionalRuler[sunSign] === planet && planet !== 'Sun') rulerScore += 1;
+    if (moonSign && traditionalRuler[moonSign] === planet && planet !== 'Moon') rulerScore += 1;
+
+    // 5. Aspect count and weight (0-10, capped)
+    let aspectScore = 0;
+    const ASPECT_BASE: Record<string, number> = {
+      'Conjunction': 2, 'Opposition': 1.5, 'Trine': 1.5, 'Square': 1.5, 'Sextile': 1.5,
+      'Semi-Sextile': 0.5, 'Quincunx': 0.5, 'Semi-Square': 0.5, 'Sesquiquadrate': 0.5,
+    };
+
+    // SR internal aspects
+    for (const asp of srInternalAspects) {
+      if (asp.planet1 !== planet && asp.planet2 !== planet) continue;
+      const base = ASPECT_BASE[asp.type] || 0.5;
+      const orbFactor = Math.max(0.3, (8 - asp.orb) / 8);
+      aspectScore += base * orbFactor;
+    }
+
+    // SR-to-natal aspects (weighted by importance)
+    for (const asp of srToNatalAspects) {
+      if (asp.planet1 !== planet && asp.planet2 !== planet) continue;
+      const base = ASPECT_BASE[asp.type] || 0.5;
+      const orbFactor = Math.max(0.3, (8 - asp.orb) / 8);
+      const importanceFactor = asp.importance ? 1.5 * (asp.importance / 10) : 1;
+      aspectScore += base * orbFactor * importanceFactor;
+    }
+
+    aspectScore = Math.min(10, Math.round(aspectScore * 10) / 10);
+    if (aspectScore >= 7) tags.push('Highly Connected');
+
+    results.push({
+      planet,
+      breakdown: { sign: signScore, house: houseScore, angle: angleScore, ruler: rulerScore, aspects: aspectScore },
+      dignity,
+      tags,
+    });
+  }
+
+  // Calculate totals and rank
+  const scored = results.map(r => ({
+    ...r,
+    totalScore: Math.round((r.breakdown.sign + r.breakdown.house + r.breakdown.angle + r.breakdown.ruler + r.breakdown.aspects) * 10) / 10,
+  }));
+  scored.sort((a, b) => b.totalScore - a.totalScore);
+
+  const maxScore = scored[0]?.totalScore || 1;
+  const entries: SRDominantPlanetEntry[] = scored.map((s, i) => ({
+    planet: s.planet,
+    rank: i + 1,
+    totalScore: s.totalScore,
+    percentage: Math.round((s.totalScore / maxScore) * 100),
+    breakdown: s.breakdown,
+    dignity: s.dignity,
+    tags: s.tags,
+  }));
+
+  const captain = entries[0]?.planet || '';
+  const starPlayer = [...entries].sort((a, b) => b.breakdown.sign - a.breakdown.sign)[0]?.planet || '';
+
+  // Billboard = closest to MC
+  let billboard = '';
+  let closestMCOrb = 999;
+  for (const ap of angularPlanetsDetailed) {
+    if ((ap.angle === 'Midheaven' || ap.angle === 'MC') && ap.orb < closestMCOrb) {
+      closestMCOrb = ap.orb;
+      billboard = ap.planet;
+    }
+  }
+  if (!billboard) billboard = entries[0]?.planet || '';
+
+  const top3 = entries.slice(0, 3).map(e => e.planet);
+  const interpretation = `${captain} is your most dominant planet this year with ${entries[0]?.totalScore} points — it has the most influence over your chart through a combination of ${entries[0]?.tags.length > 0 ? entries[0].tags.join(', ').toLowerCase() : 'placement and aspects'}. ${
+    starPlayer !== captain ? `${starPlayer} is your strongest planet by dignity — most comfortable in its sign. ` : ''
+  }${billboard !== captain ? `${billboard} is your most elevated planet (closest to the Midheaven) — what the world sees first. ` : ''
+  }Your top three: ${top3.join(', ')}.`;
+
+  return {
+    entries,
+    captain,
+    starPlayer,
+    billboard,
+    captainScore: entries[0]?.totalScore || 0,
+    interpretation,
+  };
+}
