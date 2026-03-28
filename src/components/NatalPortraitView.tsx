@@ -43,6 +43,54 @@ const SectionWrapper = ({
   );
 };
 
+// ─── Big Three core-line helpers ─────────────────────────────────────
+const SIGN_ESSENCE: Record<string, string> = {
+  Aries: 'bold initiative and raw courage',
+  Taurus: 'steady presence and sensory depth',
+  Gemini: 'quick curiosity and mental agility',
+  Cancer: 'emotional depth and protective instinct',
+  Leo: 'warm radiance and creative confidence',
+  Virgo: 'precise care and quiet service',
+  Libra: 'harmony-seeking grace and relational awareness',
+  Scorpio: 'penetrating intensity and emotional power',
+  Sagittarius: 'expansive vision and restless honesty',
+  Capricorn: 'strategic discipline and earned authority',
+  Aquarius: 'independent originality and detached clarity',
+  Pisces: 'intuitive compassion and spiritual sensitivity',
+};
+
+const HOUSE_LIFE: Record<number, string> = {
+  1: 'your body and first impressions',
+  2: 'your self-worth and resources',
+  3: 'your mind and daily conversations',
+  4: 'your home and emotional foundations',
+  5: 'your creativity and self-expression',
+  6: 'your daily rituals and health',
+  7: 'your partnerships and close bonds',
+  8: 'your intimacy and shared depths',
+  9: 'your beliefs and broader horizons',
+  10: 'your career and public legacy',
+  11: 'your community and future vision',
+  12: 'your inner world and spiritual life',
+};
+
+function getSunCoreLine(sign: string, house: number): string {
+  const essence = SIGN_ESSENCE[sign] || 'unique expression';
+  const where = HOUSE_LIFE[house] || 'this area of life';
+  return `You build your identity through ${essence}, and it comes alive most through ${where}.`;
+}
+
+function getMoonCoreLine(sign: string, house: number): string {
+  const essence = SIGN_ESSENCE[sign] || 'unique sensitivity';
+  const where = HOUSE_LIFE[house] || 'this area of life';
+  return `You feel safest when you can process emotions with ${essence}, especially in ${where}.`;
+}
+
+function getRisingCoreLine(sign: string): string {
+  const essence = SIGN_ESSENCE[sign] || 'distinctive energy';
+  return `The world meets you as ${essence} — it's the first thing people sense about you.`;
+}
+
 // ─── 1. Life Purpose ────────────────────────────────────────────────
 
 const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
@@ -59,6 +107,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
               <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Sun — Identity</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.sunSign}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getSunCoreLine(lp.sunSign, lp.sunHouse)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">House {lp.sunHouse} • {lp.sunDecan}</p>
             {lp.sunSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.sunSabian}"</p>}
           </div>
@@ -68,6 +117,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
               <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Moon — Emotions</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.moonSign}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getMoonCoreLine(lp.moonSign, lp.moonHouse)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">House {lp.moonHouse} • {lp.moonDecan}</p>
             {lp.moonSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.moonSabian}"</p>}
           </div>
@@ -77,6 +127,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
               <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Rising — Mask</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.risingSign}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getRisingCoreLine(lp.risingSign)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">{lp.risingDecan}</p>
             {lp.risingSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.risingSabian}"</p>}
           </div>
