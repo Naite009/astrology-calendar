@@ -150,6 +150,104 @@ const HOUSE_THEMES: Record<number, string> = {
 };
 
 const MAJOR_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+
+// ─── Sign+House-Aware Role Descriptions ─────────────────────────────
+// Every key player role must reference the planet's SIGN flavor and HOUSE life area.
+
+const HOUSE_LIFE_AREA: Record<number, string> = {
+  1: 'your identity and how others perceive you',
+  2: 'your finances, possessions, and self-worth',
+  3: 'your communication style and daily interactions',
+  4: 'your home life, family, and emotional foundations',
+  5: 'your creativity, romance, and self-expression',
+  6: 'your daily routines, health habits, and work environment',
+  7: 'your partnerships, marriage, and one-on-one relationships',
+  8: 'your shared resources, intimacy, and psychological depths',
+  9: 'your beliefs, higher education, and long-distance experiences',
+  10: 'your career, public reputation, and legacy',
+  11: 'your friendships, community, and future vision',
+  12: 'your inner world, solitude, and spiritual life',
+};
+
+const SIGN_STYLE: Record<string, string> = {
+  Aries: 'with impulsive, action-first energy',
+  Taurus: 'with slow, steady, sensory-driven persistence',
+  Gemini: 'with curious, mentally restless adaptability',
+  Cancer: 'with emotionally protective, nurturing instinct',
+  Leo: 'with warm, dramatic, heart-centered confidence',
+  Virgo: 'with precise, analytical, service-oriented care',
+  Libra: 'with harmony-seeking, aesthetically attuned grace',
+  Scorpio: 'with intense, penetrating, all-or-nothing depth',
+  Sagittarius: 'with expansive, freedom-loving optimism',
+  Capricorn: 'with disciplined, strategic, long-game patience',
+  Aquarius: 'with unconventional, independent, future-oriented thinking',
+  Pisces: 'with intuitive, compassionate, boundary-dissolving sensitivity',
+};
+
+function contextualRole(planetName: string, sign: string, house: number | null, domainHint: string): string {
+  const style = SIGN_STYLE[sign] || `through ${sign} energy`;
+  const area = house ? HOUSE_LIFE_AREA[house] || `house ${house}` : 'your chart';
+
+  // Health domain
+  if (domainHint === 'health') {
+    if (planetName === 'Sun') return `Your vitality operates ${style}, and it primarily fuels ${area}`;
+    if (planetName === 'Mars') return `Your physical energy and immune response work ${style}, channeled through ${area}`;
+    if (planetName === 'Chiron') return `Your vulnerability point lives ${style} in ${area} — healing here transforms your whole body`;
+    if (planetName === 'Hygiea') return `Your health awareness pattern is ${style}, focused on ${area}`;
+    if (planetName === 'Ceres') return `You nourish yourself ${style}, and your comfort needs center on ${area}`;
+  }
+
+  // Relationship domain
+  if (domainHint === 'relationship') {
+    if (planetName === 'Venus') return `You love and attract ${style}, most active in ${area}`;
+    if (planetName === 'Mars') return `You pursue desire ${style}, asserting through ${area}`;
+    if (planetName === 'Juno') return `Your committed partnership needs express ${style} in ${area}`;
+    if (planetName === 'Eros') return `Your erotic magnetism operates ${style}, activated through ${area}`;
+    if (planetName === 'Amor') return `Your unconditional love expresses ${style} in ${area}`;
+    if (planetName === 'Lilith') return `Your raw feminine power emerges ${style} through ${area}`;
+  }
+
+  // Career domain
+  if (domainHint === 'career') {
+    if (planetName === 'Sun') return `Your creative leadership shines ${style}, most visible in ${area}`;
+    if (planetName === 'Saturn') return `You build mastery ${style}, with your hardest lessons in ${area}`;
+    if (planetName === 'Jupiter') return `Opportunity expands ${style}, bringing growth through ${area}`;
+    if (planetName === 'Mars') return `Your ambition drives ${style}, channeled into ${area}`;
+    if (planetName === 'Pallas') return `Your strategic intelligence works ${style}, applied to ${area}`;
+  }
+
+  // Emotional domain
+  if (domainHint === 'emotional') {
+    if (planetName === 'Moon') return `Your emotional core processes ${style}, most tender around ${area}`;
+    if (planetName === 'Neptune') return `Your spiritual sensitivity dissolves boundaries ${style} in ${area}`;
+    if (planetName === 'Pluto') return `Your emotional intensity transforms ${style} through ${area}`;
+    if (planetName === 'Chiron') return `Your deepest wound lives ${style} in ${area} — and becomes your teaching`;
+    if (planetName === 'Ceres') return `Your nurturing instinct expresses ${style}, centered on ${area}`;
+  }
+
+  // Shadow domain
+  if (domainHint === 'shadow') {
+    if (planetName === 'Pluto') return `Your power and compulsions operate ${style}, concentrated in ${area}`;
+    if (planetName === 'Saturn') return `Your fear and mastery lesson works ${style} through ${area}`;
+    if (planetName === 'Chiron') return `Your wound-to-wisdom path unfolds ${style} in ${area}`;
+    if (planetName === 'Lilith') return `Your rejected wildness emerges ${style} through ${area}`;
+    if (planetName === 'Nessus') return `Power misuse patterns surface ${style} in ${area}`;
+    if (planetName === 'Orcus') return `Your accountability lesson operates ${style} through ${area}`;
+  }
+
+  // Spiritual domain
+  if (domainHint === 'spiritual') {
+    if (planetName === 'Neptune') return `Your spiritual connection opens ${style}, most permeable in ${area}`;
+    if (planetName === 'NorthNode') return `Your soul's growth direction points ${style} toward ${area}`;
+    if (planetName === 'SouthNode') return `Your past-life gifts operate ${style} through ${area}`;
+    if (planetName === 'Chiron') return `Your healing journey unfolds ${style} in ${area}`;
+    if (planetName === 'Sedna') return `Your surrender lesson lives ${style} in ${area}`;
+    if (planetName === 'Vesta') return `Your sacred devotion burns ${style}, consecrated to ${area}`;
+  }
+
+  return `Operates ${style} through ${area}`;
+}
+
 const ALL_BODIES = [
   ...MAJOR_PLANETS, 'Chiron','NorthNode','SouthNode','Lilith','PartOfFortune','Vertex',
   'Ceres','Pallas','Juno','Vesta','Psyche','Eros','Amor','Hygiea',
@@ -280,12 +378,7 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
   
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Venus' ? 'How you love and what you value in partnership' :
-          b.name === 'Mars' ? 'How you pursue desire and assert in relationships' :
-          b.name === 'Juno' ? 'What you need in committed partnership' :
-          b.name === 'Eros' ? 'Your erotic nature and magnetic attraction style' :
-          b.name === 'Amor' ? 'Your unconditional love expression' :
-          'Your raw, unfiltered feminine power',
+    role: contextualRole(b.name, b.sign, b.house, 'relationship'),
   }));
 
   const houseActivations = relevantHouses.map(h => ({
@@ -315,11 +408,7 @@ function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Sun' ? 'Your core creative expression and leadership style' :
-          b.name === 'Saturn' ? 'Where you build mastery through discipline and time' :
-          b.name === 'Jupiter' ? 'Where opportunity and expansion flow easily' :
-          b.name === 'Mars' ? 'Your drive, ambition, and work ethic' :
-          'Your strategic intelligence and pattern recognition',
+    role: contextualRole(b.name, b.sign, b.house, 'career'),
   }));
 
   const houseActivations = relevantHouses.map(h => ({
@@ -348,11 +437,7 @@ function buildEmotionalDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
 
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Moon' ? 'Your emotional core — what you need to feel safe' :
-          b.name === 'Neptune' ? 'Your spiritual sensitivity and where you idealize' :
-          b.name === 'Pluto' ? 'Where you experience emotional intensity and transformation' :
-          b.name === 'Chiron' ? 'Your deepest wound and greatest healing gift' :
-          'How you nurture and want to be nurtured',
+    role: contextualRole(b.name, b.sign, b.house, 'emotional'),
   }));
 
   const moon = bodies.find(b => b.name === 'Moon');
@@ -379,11 +464,7 @@ function buildHealthDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Mars' ? 'Your physical vitality, energy levels, and immune response' :
-          b.name === 'Chiron' ? 'Your vulnerability point — where healing is needed most' :
-          b.name === 'Hygiea' ? 'Your health consciousness and preventive wellness style' :
-          b.name === 'Ceres' ? 'Your nourishment needs — food, comfort, self-care' :
-          'Your overall vitality and life force',
+    role: contextualRole(b.name, b.sign, b.house, 'health'),
   }));
 
   const houseActivations = [1, 6].map(h => ({
@@ -410,12 +491,7 @@ function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Pluto' ? 'Where you hold power, face compulsions, and transform' :
-          b.name === 'Saturn' ? 'Where fear and limitation become mastery' :
-          b.name === 'Chiron' ? 'Your wound that becomes your teaching' :
-          b.name === 'Lilith' ? 'Your raw, unapologetic, rejected self that demands integration' :
-          b.name === 'Nessus' ? 'Patterns of misuse of power that need conscious awareness' :
-          'Your relationship with accountability and consequences',
+    role: contextualRole(b.name, b.sign, b.house, 'shadow'),
   }));
 
   const houseActivations = [8, 12].map(h => ({
@@ -442,12 +518,7 @@ function buildSpiritualDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
 
   const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
     name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: b.name === 'Neptune' ? 'Your spiritual sensitivity and connection to the divine' :
-          b.name === 'NorthNode' ? 'Your soul\'s growth direction this lifetime' :
-          b.name === 'SouthNode' ? 'Your past-life gifts and comfort zone' :
-          b.name === 'Chiron' ? 'Your wound-to-wisdom path' :
-          b.name === 'Sedna' ? 'Your relationship with surrender and deep trust' :
-          'Your sacred devotion and what you consecrate your energy to',
+    role: contextualRole(b.name, b.sign, b.house, 'spiritual'),
   }));
 
   const houseActivations = [9, 12].map(h => ({
