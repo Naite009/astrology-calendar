@@ -6,6 +6,7 @@ export interface UserData {
   birthTime: string;
   birthLocation: string;
   timezone: string;
+  birthTimeApproximate?: boolean;
 }
 
 export const useUserData = () => {
