@@ -340,12 +340,16 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           </button>
         </div>
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="this-year" className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 bg-secondary p-1">
-            <TabsTrigger value="overview" className="text-[11px] uppercase tracking-widest">Overview</TabsTrigger>
-            <TabsTrigger value="houses" className="text-[11px] uppercase tracking-widest">House Overlay</TabsTrigger>
-            <TabsTrigger value="aspects" className="text-[11px] uppercase tracking-widest">Aspects</TabsTrigger>
-            <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
+            <TabsTrigger value="this-year" className="text-[11px] tracking-widest">☀️ This Year</TabsTrigger>
+            <TabsTrigger value="moon" className="text-[11px] tracking-widest">☽ The Moon</TabsTrigger>
+            <TabsTrigger value="profile" className="text-[11px] tracking-widest">🧠 Profile</TabsTrigger>
+            <TabsTrigger value="time-lords" className="text-[11px] tracking-widest">⏳ Time Lords</TabsTrigger>
+            <TabsTrigger value="life-areas" className="text-[11px] tracking-widest">🏡 Life Areas</TabsTrigger>
+            <TabsTrigger value="planets" className="text-[11px] tracking-widest">🪐 Planets & Houses</TabsTrigger>
+            <TabsTrigger value="aspects" className="text-[11px] tracking-widest">⚡ Aspects & Timing</TabsTrigger>
+            <TabsTrigger value="relocation" className="text-[11px] tracking-widest">🗺️ Relocation</TabsTrigger>
           </TabsList>
 
           {/* Download JSON + AI Reading row */}
@@ -379,16 +383,32 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             onReadingsUpdate={(r) => setAiReadings(r)}
           />
 
-          <TabsContent value="overview">
-            <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+          <TabsContent value="this-year">
+            <ThisYearTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
-          <TabsContent value="houses">
-            <HouseOverlayTab analysis={analysis} />
+          <TabsContent value="moon">
+            <TheMoonTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="time-lords">
+            <TimeLordsTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="life-areas">
+            <LifeAreasTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
+
+          <TabsContent value="planets">
+            <PlanetsHousesTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
           <TabsContent value="aspects">
-            <AspectsTab analysis={analysis} />
+            <AspectsTimingTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
           </TabsContent>
 
           <TabsContent value="relocation">
