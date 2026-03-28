@@ -2669,6 +2669,8 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
+      <AstrocartographyMap srChart={srChart} natalChart={natalChart} />
+
       <div className="border border-primary/20 rounded-sm p-5 bg-card">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
           <Globe size={16} className="text-primary" />
