@@ -69,6 +69,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
               <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Moon — Emotions</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.moonSign}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getMoonCoreLine(lp.moonSign, lp.moonHouse)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">House {lp.moonHouse} • {lp.moonDecan}</p>
             {lp.moonSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.moonSabian}"</p>}
           </div>
