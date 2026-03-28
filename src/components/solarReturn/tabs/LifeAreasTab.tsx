@@ -3,7 +3,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { PLANET_SYMBOLS } from '@/lib/solarReturnConstants';
-import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
+import { calculateLifeDomainScores, LifeDomainScore } from '@/lib/solarReturnLifeDomainScores';
 import { generateDomainDeepDives } from '@/lib/solarReturnDomainDeepDive';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCards';
