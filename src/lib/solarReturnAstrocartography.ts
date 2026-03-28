@@ -558,17 +558,33 @@ export function calculateAstrocartography(
     const maleficPenalty = maleficCount > 0 ? maleficTotal / maleficCount : NEUTRAL_RATING;
     const neutralScore = neutralCount > 0 ? neutralTotal / neutralCount : NEUTRAL_RATING;
 
-    // Benefic score drives the rating up; malefic penalty pulls it down
-    // When no malefics: finalRating ≈ beneficScore. When malefics present: penalty applied.
-    let finalRating = beneficScore - (10 - maleficPenalty) * 0.4;
+    // Only apply malefic penalty when malefics are actually present
+    let finalRating: number;
+    if (maleficCount > 0 && beneficCount > 0) {
+      // Mixed: benefic score minus malefic drag
+      finalRating = beneficScore - (10 - maleficPenalty) * 0.4;
+    } else if (maleficCount > 0) {
+      // Pure malefic: use malefic score directly (will be low)
+      finalRating = maleficPenalty;
+    } else {
+      // Pure benefic or neutral only: no penalty
+      finalRating = beneficScore;
+    }
     // Blend in neutral planets if present
     if (neutralCount > 0) {
-      const totalCount = beneficCount + maleficCount + neutralCount;
-      finalRating = finalRating * ((beneficCount + maleficCount) / totalCount) + neutralScore * (neutralCount / totalCount);
+      const bmCount = beneficCount + maleficCount;
+      const totalCount = bmCount + neutralCount;
+      if (bmCount > 0) {
+        finalRating = finalRating * (bmCount / totalCount) + neutralScore * (neutralCount / totalCount);
+      } else {
+        finalRating = neutralScore;
+      }
     }
     const avgRating = clampRating(finalRating);
 
-    // Calculate per-intention ratings
+    // Calculate per-intention ratings using weighted scoring
+    // For each intention, planets have different importance weights.
+    // A city with Venus on ASC should score high for Love but neutral for Career.
     const intentionRatings = {} as Record<AstrocartoIntention, number>;
     const intentions: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
     for (const intention of intentions) {
@@ -576,36 +592,28 @@ export function calculateAstrocartography(
         intentionRatings[intention] = avgRating;
         continue;
       }
-      let intentionTotal = 0;
-      let intentionCount = 0;
+      if (angularPlanets.length === 0) {
+        intentionRatings[intention] = avgRating;
+        continue;
+      }
+
+      // Weighted sum: each angular planet's score is scaled by its intention weight
+      let weightedTotal = 0;
+      let weightSum = 0;
       for (const ap of angularPlanets) {
-        const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0;
+        const planetW = INTENTION_PLANET_WEIGHTS[intention][ap.planet] || 0.1;
         const angleW = INTENTION_ANGLE_BONUS[intention][ap.angle] || 1;
         const baseRating = PLANET_ANGLE_RATING[ap.planet]?.[ap.angle] || 5;
         const orbMultiplier = Math.max(0.25, 1 - (ap.orb / 10));
         const rawScore = baseRating * orbMultiplier;
         
-        // KEY FIX: The intention relevance factor pulls the score toward neutral (5)
-        // when this planet isn't important for this intention.
-        // planetW ranges 0-3, angleW ranges 0.5-1.5
-        // Combined relevance: planetW * angleW / 3 gives 0-1.5 range
-        // We clamp to 0-1 and use it as a lerp factor between neutral and raw score
-        const relevanceFactor = Math.min(1, (planetW * angleW) / 3);
-        
-        // When relevanceFactor = 1 (primary planet+angle for this intention): use full raw score
-        // When relevanceFactor = 0 (irrelevant): score = neutral 5
-        // When relevanceFactor = 0.3 (low relevance): score heavily pulled toward 5
-        const adjustedScore = NEUTRAL_RATING + (rawScore - NEUTRAL_RATING) * relevanceFactor;
-        
-        intentionTotal += adjustedScore;
-        intentionCount++;
-      }
-      if (intentionCount === 0) {
-        intentionRatings[intention] = avgRating;
-        continue;
+        // Weight = how important this planet+angle combo is for this intention
+        const weight = planetW * angleW;
+        weightedTotal += rawScore * weight;
+        weightSum += weight;
       }
 
-      const intentionAvg = intentionTotal / intentionCount;
+      const intentionAvg = weightSum > 0 ? weightedTotal / weightSum : NEUTRAL_RATING;
       intentionRatings[intention] = clampRating(intentionAvg);
     }
 
