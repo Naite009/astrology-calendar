@@ -558,13 +558,27 @@ export function calculateAstrocartography(
     const maleficPenalty = maleficCount > 0 ? maleficTotal / maleficCount : NEUTRAL_RATING;
     const neutralScore = neutralCount > 0 ? neutralTotal / neutralCount : NEUTRAL_RATING;
 
-    // Benefic score drives the rating up; malefic penalty pulls it down
-    // When no malefics: finalRating ≈ beneficScore. When malefics present: penalty applied.
-    let finalRating = beneficScore - (10 - maleficPenalty) * 0.4;
+    // Only apply malefic penalty when malefics are actually present
+    let finalRating: number;
+    if (maleficCount > 0 && beneficCount > 0) {
+      // Mixed: benefic score minus malefic drag
+      finalRating = beneficScore - (10 - maleficPenalty) * 0.4;
+    } else if (maleficCount > 0) {
+      // Pure malefic: use malefic score directly (will be low)
+      finalRating = maleficPenalty;
+    } else {
+      // Pure benefic or neutral only: no penalty
+      finalRating = beneficScore;
+    }
     // Blend in neutral planets if present
     if (neutralCount > 0) {
-      const totalCount = beneficCount + maleficCount + neutralCount;
-      finalRating = finalRating * ((beneficCount + maleficCount) / totalCount) + neutralScore * (neutralCount / totalCount);
+      const bmCount = beneficCount + maleficCount;
+      const totalCount = bmCount + neutralCount;
+      if (bmCount > 0) {
+        finalRating = finalRating * (bmCount / totalCount) + neutralScore * (neutralCount / totalCount);
+      } else {
+        finalRating = neutralScore;
+      }
     }
     const avgRating = clampRating(finalRating);
 
