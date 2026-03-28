@@ -79,6 +79,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
               <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Rising — Mask</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.risingSign}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getRisingCoreLine(lp.risingSign)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">{lp.risingDecan}</p>
             {lp.risingSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.risingSabian}"</p>}
           </div>
