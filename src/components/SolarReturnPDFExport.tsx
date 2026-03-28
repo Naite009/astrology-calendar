@@ -908,6 +908,7 @@ export function buildFullJsonStandalone(
     eclipseSensitivity: analysis.eclipseSensitivity,
     enhancedRetrogrades: analysis.enhancedRetrogrades,
     quarterlyFocus: analysis.quarterlyFocus,
+    dominantPlanets: analysis.dominantPlanets,
     fixedStars: analysis.fixedStars,
     arabicParts: analysis.arabicParts,
     firdaria: analysis.firdaria,
