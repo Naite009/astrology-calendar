@@ -453,13 +453,16 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
       {/* Hemisphere */}
       <div className="px-5 py-3 border-t border-border">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1">Hemisphere Emphasis</p>
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {mode === 'natal'
-            ? natalProfile.hemispheres.description
-            : mode === 'sr'
-            ? srProfile.hemispheres.description
-            : `Natal: ${natalProfile.hemispheres.description} This year: ${srProfile.hemispheres.description}`}
-        </p>
+        {mode === 'blended' ? (
+          <div className="space-y-1.5">
+            <p className="text-[11px] text-muted-foreground leading-relaxed"><span className="font-medium text-foreground">Natal:</span> {natalProfile.hemispheres.description}</p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed"><span className="font-medium text-foreground">This Year:</span> {srProfile.hemispheres.description}</p>
+          </div>
+        ) : (
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {mode === 'natal' ? natalProfile.hemispheres.description : srProfile.hemispheres.description}
+          </p>
+        )}
       </div>
     </div>
   );
