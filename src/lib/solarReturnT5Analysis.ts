@@ -257,7 +257,8 @@ export function calculateFixedStars(
 
 export function calculateArabicParts(
   srChart: SolarReturnChart,
-  findSRHouse: (deg: number) => number | null
+  findSRHouse: (deg: number) => number | null,
+  planetSRHouses?: Record<string, number | null>
 ): SRArabicPart[] {
   const results: SRArabicPart[] = [];
   
@@ -285,32 +286,81 @@ export function calculateArabicParts(
   const sunHouse = findSRHouse(sunDeg);
   const isDayChart = sunHouse !== null && sunHouse >= 7;
 
-  const PARTS: { name: string; formula: string; calc: () => number | null; interp: string }[] = [
+  // House theme map for chart-specific interpretations
+  const HOUSE_THEMES: Record<number, string> = {
+    1: 'identity and self-expression', 2: 'money, resources, and self-worth', 3: 'communication and learning',
+    4: 'home, family, and roots', 5: 'creativity, romance, and joy', 6: 'daily routines and health',
+    7: 'partnerships and relationships', 8: 'shared resources and transformation', 9: 'travel, beliefs, and higher learning',
+    10: 'career and public reputation', 11: 'community, friendships, and future vision', 12: 'solitude, spirituality, and the unconscious',
+  };
+
+  // Find planets sharing a house
+  const planetsInHouse = (house: number | null): string[] => {
+    if (!house || !planetSRHouses) return [];
+    return Object.entries(planetSRHouses)
+      .filter(([_, h]) => h === house)
+      .map(([p]) => p);
+  };
+
+  const PARTS: { name: string; formula: string; calc: () => number | null; genericInterp: string; chartSpecificInterp: (sign: string, house: number | null) => string }[] = [
     {
       name: 'Part of Fortune (Fortuna)',
-      formula: isDayChart ? 'ASC + Moon − Sun (day)' : 'ASC + Sun − Moon (night)',
+      formula: isDayChart ? 'ASC + Moon - Sun (day)' : 'ASC + Sun - Moon (night)',
       calc: () => isDayChart
         ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
         : ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360,
-      interp: 'Where prosperity, luck, and material well-being flow most naturally this year. The Part of Fortune marks the point where your emotional needs (Moon) and life purpose (Sun) align with your visible self (ASC). Planets aspecting this point amplify or challenge your access to fortune.',
+      genericInterp: 'Where prosperity, luck, and material well-being flow most naturally this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `Your luck and natural abundance land in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. ${coPlanets.join(' and ')} ${coPlanets.length > 1 ? 'are' : 'is'} here too, amplifying your access to good fortune through ${HOUSE_THEMES[house] || 'this area'}`;
+          }
+        }
+        return text + '. Fortune flows most easily when you lean into this part of your life this year.';
+      },
     },
     {
       name: 'Part of Spirit (Daimon)',
-      formula: isDayChart ? 'ASC + Sun − Moon (day)' : 'ASC + Moon − Sun (night)',
+      formula: isDayChart ? 'ASC + Sun - Moon (day)' : 'ASC + Moon - Sun (night)',
       calc: () => isDayChart
         ? ((ascDeg + sunDeg - moonDeg) % 360 + 360) % 360
         : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360,
-      interp: 'Where your conscious will and spiritual agency are strongest this year. The Part of Spirit represents where you can most effectively direct your intentions. While Fortune shows what comes to you, Spirit shows what you can actively create.',
+      genericInterp: 'Where your conscious will and spiritual agency are strongest this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `Your spiritual agency and conscious willpower are strongest in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. With ${coPlanets.join(' and ')} present, your ability to actively direct intentions in ${HOUSE_THEMES[house] || 'this area'} is enhanced`;
+          }
+        }
+        return text + '. While Fortune shows what comes to you, Spirit shows what you can actively create.';
+      },
     },
     {
       name: 'Part of Eros',
-      formula: 'ASC + Venus − Mars',
+      formula: 'ASC + Venus - Mars',
       calc: () => venusDeg !== null && marsDeg !== null ? ((ascDeg + venusDeg - marsDeg) % 360 + 360) % 360 : null,
-      interp: 'The point of passionate desire and erotic connection this year. Where Venus (attraction) meets Mars (pursuit) through your rising sign. This shows where romantic and creative passion is most alive.',
+      genericInterp: 'The point of passionate desire and erotic connection this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `Your point of passionate desire and creative-erotic energy lives in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. ${coPlanets.join(' and ')} here ${coPlanets.length > 1 ? 'intensify' : 'intensifies'} the pull toward passion in this area`;
+          }
+        }
+        return text + '. This is where romantic and creative desire runs hottest this year.';
+      },
     },
     {
       name: 'Part of Necessity (Ananke)',
-      formula: 'ASC + Fortune − Spirit',
+      formula: 'ASC + Fortune - Spirit',
       calc: () => {
         const fortune = isDayChart
           ? ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360
@@ -320,19 +370,52 @@ export function calculateArabicParts(
           : ((ascDeg + moonDeg - sunDeg) % 360 + 360) % 360;
         return ((ascDeg + fortune - spirit) % 360 + 360) % 360;
       },
-      interp: 'Where fate and unavoidable circumstance exert the strongest pull this year. The Part of Necessity shows what you must deal with whether you choose to or not — the non-negotiable themes of the year.',
+      genericInterp: 'Where fate and unavoidable circumstance exert the strongest pull this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `The non-negotiable themes of this year concentrate in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. ${coPlanets.join(' and ')} here ${coPlanets.length > 1 ? 'add' : 'adds'} weight to what must be dealt with`;
+          }
+        }
+        return text + '. This is what you must face whether you choose to or not.';
+      },
     },
     {
       name: 'Part of Marriage',
-      formula: 'ASC + Venus − Saturn',
+      formula: 'ASC + Venus - Saturn',
       calc: () => venusDeg !== null && saturnDeg !== null ? ((ascDeg + venusDeg - saturnDeg) % 360 + 360) % 360 : null,
-      interp: 'The point of committed partnership and formal bonds this year. Where Venus (love) is anchored by Saturn (commitment) through your visible self. Active when engagement, marriage, or formalization of relationships is in focus.',
+      genericInterp: 'The point of committed partnership and formal bonds this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `Committed partnership and formal bonds are activated in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. ${coPlanets.join(' and ')} here ${coPlanets.length > 1 ? 'influence' : 'influences'} how commitment plays out`;
+          }
+        }
+        return text + '. Active when engagement, marriage, or formalization of bonds is in focus.';
+      },
     },
     {
       name: 'Part of Commerce',
-      formula: 'ASC + Mercury − Sun',
+      formula: 'ASC + Mercury - Sun',
       calc: () => mercDeg !== null ? ((ascDeg + mercDeg - sunDeg) % 360 + 360) % 360 : null,
-      interp: 'Where business dealings, negotiations, and commercial activity thrive this year. Active in years focused on trade, sales, contracts, and practical communication.',
+      genericInterp: 'Where business dealings, negotiations, and commercial activity thrive this year.',
+      chartSpecificInterp: (sign, house) => {
+        let text = `Business dealings and commercial activity thrive in ${sign}`;
+        if (house) {
+          text += ` in House ${house} (${HOUSE_THEMES[house] || ''})`;
+          const coPlanets = planetsInHouse(house);
+          if (coPlanets.length > 0) {
+            text += `. ${coPlanets.join(' and ')} here ${coPlanets.length > 1 ? 'support' : 'supports'} trade and negotiations`;
+          }
+        }
+        return text + '. Focus your business energy here for best results this year.';
+      },
     },
   ];
 
@@ -341,6 +424,8 @@ export function calculateArabicParts(
     if (deg === null) continue;
     const pos = degToSignPos(deg);
     const house = findSRHouse(deg);
+    // Use chart-specific interpretation, fall back to generic
+    const interp = part.chartSpecificInterp(pos.sign, house);
     results.push({
       name: part.name,
       formula: part.formula,
@@ -348,7 +433,7 @@ export function calculateArabicParts(
       degree: pos.degree,
       minutes: pos.minutes,
       house,
-      interpretation: part.interp,
+      interpretation: interp,
     });
   }
 
