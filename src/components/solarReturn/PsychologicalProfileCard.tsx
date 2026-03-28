@@ -430,6 +430,9 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
               <span className="text-destructive"> · Missing: {mode === 'natal' ? elNatal.missing : elSR.missing}</span>
             )}
           </p>
+          <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+            {mode === 'natal' ? elNatal.description : mode === 'sr' ? elSR.description : `Natal: ${elNatal.description} This year: ${elSR.description}`}
+          </p>
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">Modality Balance</p>
