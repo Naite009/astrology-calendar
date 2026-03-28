@@ -105,55 +105,13 @@ const ScoreBar = ({ planet, score, maxScore, reasons }: DominantPlanetResult & {
 );
 
 export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
-  const dominant = useMemo(() => calculateDominantPlanets(chart), [chart]);
+  const dominantReport = useMemo(() => calculateNatalDominantPlanets(chart), [chart]);
   const psychic = useMemo(() => analyzePsychicAbilities(chart), [chart]);
   const children = useMemo(() => analyzeChildren(chart), [chart]);
   const career = useMemo(() => analyzeCareer(chart), [chart]);
   const luckyDays = useMemo(() => analyzeLuckyDays(chart), [chart]);
   const sabotage = useMemo(() => analyzeSelfSabotage(chart), [chart]);
   const guardian = useMemo(() => analyzeGuardianAngel(chart), [chart]);
-
-  // Calculate MVP and Most Elevated (planetary condition scores)
-  const { mvpData, mvp, elevated } = useMemo(() => {
-    try {
-      const chartPlanets = convertToChartPlanets(chart);
-      const aspects = computeAspects(chartPlanets, DEFAULT_ORBS);
-      const conditions = analyzeAllPlanetaryConditions(chartPlanets, aspects, chart, true);
-      
-      // Most elevated = closest to MC (house 10)
-      const MC_PROXIMITY: Record<number, number> = {
-        10: 10, 9: 8, 11: 7, 8: 5, 12: 4, 7: 3, 1: 3, 6: 2, 2: 2, 5: 1, 3: 1, 4: 0
-      };
-      const elevatedPlanet = conditions.length > 0
-        ? conditions.reduce((best, c) => {
-            const bestProx = MC_PROXIMITY[best.house || 0] ?? 0;
-            const cProx = MC_PROXIMITY[c.house || 0] ?? 0;
-            return cProx > bestProx ? c : best;
-          }, conditions[0])
-        : null;
-      
-      return { mvpData: conditions, mvp: conditions[0] || null, elevated: elevatedPlanet };
-    } catch {
-      return { mvpData: [] as PlanetaryCondition[], mvp: null, elevated: null };
-    }
-  }, [chart]);
-
-  const maxScore = dominant[0]?.score || 1;
-  const topPlanet = dominant[0];
-
-  // getDominantPlanetMeaning is in the engine but we need it here
-  const meanings: Record<string, string> = {
-    Sun: "Your life force radiates outward. You're meant to be seen, to lead, to express your authentic self without apology.",
-    Moon: "Your emotional world runs the show. You process everything through feeling first, and your intuition is your most reliable compass.",
-    Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency.",
-    Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good.",
-    Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer.",
-    Jupiter: "You're wired for expansion, meaning, and growth. Optimism carries you through what would break others.",
-    Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it.",
-    Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't.",
-    Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are extraordinary.",
-    Pluto: "Transformation is your birthright. You don't do surface-level anything. Your power lies in regeneration."
-  };
 
   return (
     <div className="space-y-4">
@@ -164,159 +122,8 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
         </p>
       </div>
 
-      {/* 1. Your Key Planets — Unified section */}
-      <PatternSection
-        icon={Crown}
-        title="Your Key Planets"
-        subtitle="Three lenses on planetary power in your chart"
-        badgeText={topPlanet ? `${getPlanetSymbol(topPlanet.planet)} ${topPlanet.planet}` : undefined}
-        defaultOpen={true}
-      >
-        {/* Beginner intro */}
-        <div className="p-3 bg-muted/40 rounded-lg border border-border/50">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Every planet in your chart plays a role, but three stand out as especially important. 
-            Think of them as three "awards" a planet can win — and sometimes the same planet wins more than one.
-          </p>
-        </div>
-
-        {/* Three cards in a grid */}
-        <div className="grid grid-cols-1 gap-3">
-          
-          {/* 1. Dominant Planet */}
-          {topPlanet && (
-            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-              <div className="flex items-center gap-2">
-                <Crown size={16} className="text-primary" />
-                <p className="text-sm font-semibold text-foreground">
-                  👑 The Captain: {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet}
-                </p>
-                <Badge variant="secondary" className="text-[10px] ml-auto">{topPlanet.score} pts</Badge>
-              </div>
-              <p className="text-xs text-foreground/85 leading-relaxed">
-                <strong>What this means:</strong> {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} shows up more than any other planet in your chart. 
-                It rules your key signs, connects to the most other planets, and colors how you approach almost everything. 
-                If your chart had a "flavor," this planet would be it.
-              </p>
-              <p className="text-xs text-foreground/80 italic leading-relaxed">
-                {meanings[topPlanet.planet] || ''}
-              </p>
-              
-              {/* Score breakdown */}
-              <details className="group">
-                <summary className="cursor-pointer text-[11px] font-medium text-primary hover:underline flex items-center gap-1">
-                  Why {topPlanet.planet} dominates
-                  <ChevronDown size={12} className="group-open:rotate-180 transition-transform" />
-                </summary>
-                <div className="mt-2 space-y-2">
-                  {dominant.slice(0, 5).map(d => (
-                    <ScoreBar key={d.planet} {...d} maxScore={maxScore} />
-                  ))}
-                </div>
-              </details>
-            </div>
-          )}
-
-          {/* 2. MVP */}
-          {mvp && (
-            <div className="p-4 rounded-lg bg-accent/30 border border-accent/50 space-y-2">
-              <div className="flex items-center gap-2">
-                <Zap size={16} className="text-primary" />
-                <p className="text-sm font-semibold text-foreground">
-                  ⚡ The Star Player: {getPlanetSymbol(mvp.planet)} {mvp.planet}
-                </p>
-                <Badge variant="outline" className="text-[10px] ml-auto">{mvp.qualityRating}</Badge>
-              </div>
-              <p className="text-xs text-foreground/85 leading-relaxed">
-                <strong>What this means:</strong> {getPlanetSymbol(mvp.planet)} {mvp.planet} is in the best shape to actually <em>deliver results</em>. 
-                It's in a sign where it's comfortable, in a helpful part of the sky, and getting good support from other planets. 
-                When you need something to <em>work</em>, lean on this planet's themes.
-              </p>
-              {mvp.strengthFactors.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {mvp.strengthFactors.slice(0, 4).map((f, i) => (
-                    <span key={i} className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">✓ {f}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 3. Most Elevated */}
-          {elevated && (
-            <div className="p-4 rounded-lg bg-secondary/50 border border-secondary space-y-2">
-              <div className="flex items-center gap-2">
-                <Mountain size={16} className="text-primary" />
-                <p className="text-sm font-semibold text-foreground">
-                  🏔️ The Billboard: {getPlanetSymbol(elevated.planet)} {elevated.planet}
-                </p>
-                <Badge variant="outline" className="text-[10px] ml-auto">
-                  House {elevated.house || '?'}
-                </Badge>
-              </div>
-              <p className="text-xs text-foreground/85 leading-relaxed">
-                <strong>What this means:</strong> {getPlanetSymbol(elevated.planet)} {elevated.planet} sits at the very top of your chart, 
-                near the Midheaven — the point the world sees first. This is your "billboard." 
-                It shapes your reputation, how people perceive you professionally, and the energy strangers pick up on before they even know you.
-              </p>
-              {elevated.planet !== (mvp?.planet) && elevated.planet !== (topPlanet?.planet) && (
-                <p className="text-xs text-muted-foreground italic">
-                  Interesting: your billboard planet is different from both your captain and your star player. 
-                  The world sees {getPlanetSymbol(elevated.planet)} {elevated.planet} energy first, even though internally you're more driven by {getPlanetSymbol(topPlanet?.planet || '')} {topPlanet?.planet}.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* How do they relate? */}
-        {topPlanet && mvp && (
-          <div className="p-4 bg-muted/30 rounded-lg border border-border/40 space-y-2">
-            <p className="text-xs font-medium text-foreground/90">🔗 How your key planets work together:</p>
-            
-            {/* All three same */}
-            {topPlanet.planet === mvp.planet && mvp.planet === elevated?.planet ? (
-              <p className="text-xs text-foreground/85 leading-relaxed">
-                <strong>Triple crown!</strong> {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} is your captain, your star player, <em>and</em> your billboard. 
-                This is rare and powerful — the energy that dominates your chart is also your most effective tool AND the first thing the world notices about you. 
-                Trust this planet completely.
-              </p>
-            ) : topPlanet.planet === mvp.planet ? (
-              <p className="text-xs text-foreground/85 leading-relaxed">
-                <strong>Strong alignment:</strong> {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} is both your most influential AND most effective planet. 
-                The energy that runs through your whole chart is also working at full strength.
-                {elevated && elevated.planet !== topPlanet.planet && (
-                  <> But the world's first impression of you comes through {getPlanetSymbol(elevated.planet)} {elevated.planet} — so publicly you may seem more "{elevated.planet}" than you feel inside.</>
-                )}
-              </p>
-            ) : (
-              <div className="space-y-1.5">
-                <p className="text-xs text-foreground/85 leading-relaxed">
-                  <strong>Complementary strengths:</strong> {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} colors everything (influence), 
-                  while {getPlanetSymbol(mvp.planet)} {mvp.planet} gets things done (effectiveness).
-                </p>
-                {/* Condition of the dominant */}
-                {(() => {
-                  const domCond = mvpData.find(c => c.planet === topPlanet.planet);
-                  if (!domCond) return null;
-                  const isStrong = domCond.totalScore >= 5;
-                  const isChallenged = domCond.totalScore < 0;
-                  return (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {isStrong 
-                        ? `Your captain ${getPlanetSymbol(topPlanet.planet)} ${topPlanet.planet} is also well-resourced (${domCond.qualityRating}) — both planets are working for you.`
-                        : isChallenged
-                        ? `Your captain ${getPlanetSymbol(topPlanet.planet)} ${topPlanet.planet} is in a tough spot (${domCond.qualityRating}). It influences a lot but may need extra effort. Lean on ${getPlanetSymbol(mvp.planet)} ${mvp.planet} when you need reliability.`
-                        : `Your captain ${getPlanetSymbol(topPlanet.planet)} ${topPlanet.planet} is in decent shape (${domCond.qualityRating}). It works, but ${getPlanetSymbol(mvp.planet)} ${mvp.planet} is your strongest tool.`
-                      }
-                    </p>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        )}
-      </PatternSection>
+      {/* 1. Dominant Planets — 5-factor scoring card */}
+      <DominantPlanetsCard report={dominantReport} context="natal" />
 
       {/* 7. Guardian Angel (positive — show early) */}
       <PatternSection
