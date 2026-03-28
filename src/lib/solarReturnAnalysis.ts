@@ -1847,6 +1847,7 @@ export const analyzeSolarReturn = (
     eclipseSensitivity,
     enhancedRetrogrades,
     quarterlyFocus,
+    dominantPlanets,
     // Tier 5
     fixedStars,
     arabicParts,
