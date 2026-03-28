@@ -385,7 +385,7 @@ const PowerPortraitSection = ({ power }: { power: NatalPowerPortrait }) => (
 
 // ─── Patterns ───────────────────────────────────────────────────────
 
-const PatternsSection = ({ patterns }: { patterns: NatalPortrait['patterns'] }) => (
+const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortrait['patterns']; minorBodyPatterns: NatalPortrait['minorBodyPatterns'] }) => (
   <SectionWrapper title="Chart Patterns & Configurations" emoji="🔷">
     {patterns.length === 0 ? (
       <p className="text-[12px] text-muted-foreground">No major geometric patterns detected. This isn't a lack — it means your energy is more evenly distributed across your chart rather than concentrated in specific configurations.</p>
@@ -415,6 +415,31 @@ const PatternsSection = ({ patterns }: { patterns: NatalPortrait['patterns'] }) 
             </div>
           </div>
         ))}
+      </div>
+    )}
+
+    {/* Minor Body Patterns — separate section */}
+    {minorBodyPatterns.length > 0 && (
+      <div className="mt-6 pt-4 border-t border-border">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-3">
+          Extended Body Patterns <span className="normal-case tracking-normal font-normal ml-1">(asteroids, TNOs, centaurs)</span>
+        </p>
+        <div className="space-y-2">
+          {minorBodyPatterns.map((p, i) => (
+            <div key={i} className="p-3 bg-secondary/20 rounded-sm border border-border/50">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs opacity-60">{p.symbol}</span>
+                <span className="text-xs font-medium text-muted-foreground italic">{p.name}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/80 mb-1.5">{p.description}</p>
+              <div className="flex flex-wrap gap-1">
+                {p.planets.map((pl, j) => (
+                  <span key={j} className="text-[8px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-full">{pl}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     )}
   </SectionWrapper>
@@ -541,7 +566,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
 
       {/* 11. Chart Patterns */}
-      <PatternsSection patterns={portrait.patterns} />
+      <PatternsSection patterns={portrait.patterns} minorBodyPatterns={portrait.minorBodyPatterns} />
 
       {/* 12. Lifetime Wisdom */}
       <LifetimeWisdomSection wisdom={portrait.lifetimeWisdom} />

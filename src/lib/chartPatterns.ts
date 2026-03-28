@@ -49,7 +49,7 @@ const getValidPlanets = (chart: NatalChart): Array<{ name: string; degree: numbe
     'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
     'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna', 'Gonggong', 'Salacia',
   ];
-  
+
   for (const name of planetNames) {
     const pos = chart.planets[name as keyof typeof chart.planets];
     if (pos?.sign) {
@@ -59,8 +59,20 @@ const getValidPlanets = (chart: NatalChart): Array<{ name: string; degree: numbe
       }
     }
   }
-  
+
   return planets;
+};
+
+// Core bodies for primary pattern detection:
+// 10 planets + Chiron + NorthNode + angles (AC/MC/IC/DC)
+const CORE_BODY_NAMES = new Set([
+  'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+  'Chiron', 'NorthNode',
+  'Ascendant', 'MC', 'IC', 'DC',
+]);
+
+const getCorePlanets = (chart: NatalChart): Array<{ name: string; degree: number }> => {
+  return getValidPlanets(chart).filter(p => CORE_BODY_NAMES.has(p.name));
 };
 
 /**
@@ -652,9 +664,9 @@ const detectKites = (planets: Array<{ name: string; degree: number }>): ChartPat
  * Detect all patterns in a natal chart
  */
 export const detectChartPatterns = (chart: NatalChart): ChartPattern[] => {
-  const planets = getValidPlanets(chart);
+  const planets = getCorePlanets(chart);
   if (planets.length < 3) return [];
-  
+
   const patterns: ChartPattern[] = [
     ...detectGrandTrines(planets),
     ...detectTSquares(planets, chart),
@@ -672,6 +684,37 @@ export const detectChartPatterns = (chart: NatalChart): ChartPattern[] => {
     seen.add(key);
     return true;
   });
+};
+
+/**
+ * Detect patterns involving minor bodies (asteroids, TNOs, centaurs, points).
+ * These use ALL bodies but only return patterns that include at least one non-core body.
+ */
+export const detectMinorBodyPatterns = (chart: NatalChart): ChartPattern[] => {
+  const allPlanets = getValidPlanets(chart);
+  if (allPlanets.length < 3) return [];
+
+  const allPatterns: ChartPattern[] = [
+    ...detectGrandTrines(allPlanets),
+    ...detectTSquares(allPlanets, chart),
+    ...detectGrandCrosses(allPlanets),
+    ...detectYods(allPlanets),
+    ...detectMysticRectangles(allPlanets),
+    ...detectKites(allPlanets),
+  ];
+
+  // Deduplicate
+  const seen = new Set<string>();
+  const deduped = allPatterns.filter(p => {
+    const key = `${p.name}-${p.planets.sort().join(',')}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Only keep patterns that include at least one minor body
+  // AND are NOT already in the core patterns (all-core-body patterns)
+  return deduped.filter(p => p.planets.some(name => !CORE_BODY_NAMES.has(name)));
 };
 
 /**

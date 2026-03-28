@@ -8,7 +8,7 @@ import { getReliableAscendant } from './chartDataValidation';
 import { signDegreesToLongitude, getHouseForLongitude } from './houseCalculations';
 import { getDecan } from './decans';
 import { getSabianSymbol } from './sabianSymbols';
-import { detectChartPatterns, ChartPattern } from './chartPatterns';
+import { detectChartPatterns, detectMinorBodyPatterns, ChartPattern } from './chartPatterns';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ export interface NatalPortrait {
   powerPortrait: NatalPowerPortrait;
   dominantPlanets: DominantPlanetsReport;
   patterns: ChartPattern[];
+  minorBodyPatterns: ChartPattern[];
   lifetimeWisdom: LifetimeWisdom;
 }
 
@@ -873,6 +874,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     powerPortrait: buildPowerPortrait(chart, bodies),
     dominantPlanets: calculateNatalDominantPlanets(chart),
     patterns: detectChartPatterns(chart),
+    minorBodyPatterns: detectMinorBodyPatterns(chart),
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
   };
 }
