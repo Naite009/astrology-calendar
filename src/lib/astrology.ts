@@ -889,7 +889,7 @@ export const getMoonPhase = (date: Date): MoonPhase => {
     phaseIcon = '🌘'; phaseName = 'Balsamic';
   }
 
-  const isBalsamic = phase >= 315 || phase < 45;
+  const isBalsamic = phase >= 315 && phase < 354;
 
   return {
     phaseIcon,
@@ -1073,7 +1073,6 @@ const getVenusAspectDescription = (type: string): string => {
  * This function used hardcoded positions and is no longer accurate
  */
 export const getPersonalTransits = (planets: PlanetaryPositions, userData: UserData | null): PersonalTransits => {
-  console.warn('getPersonalTransits is deprecated - this function used hardcoded natal positions. Use TransitAlertsCard for accurate ephemeris-based transits to actual natal chart.');
   return { hasTransits: false, transits: [] };
 };
 

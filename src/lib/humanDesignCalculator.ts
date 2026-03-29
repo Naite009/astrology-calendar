@@ -162,11 +162,11 @@ export function getPlanetaryPositions(date: Date): Map<string, number> {
   const moonOrbit = Astronomy.GeoMoon(time);
   const moonEcl = Astronomy.Ecliptic(moonOrbit);
   
-  // Calculate North Node (Mean Node approximation)
-  // This is a simplified calculation - for more precision, use Swiss Ephemeris
-  const daysSinceJ2000 = (date.getTime() - Date.UTC(2000, 0, 1, 12, 0, 0)) / (1000 * 60 * 60 * 24);
-  const meanNodeLongitude = (125.04 - 0.0529539 * daysSinceJ2000) % 360;
-  const northNode = meanNodeLongitude < 0 ? meanNodeLongitude + 360 : meanNodeLongitude;
+  // Calculate North Node using Meeus polynomial (Jean Meeus, Astronomical Algorithms)
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const T = (jd - 2451545.0) / 36525;
+  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
+  const northNode = ((omega % 360) + 360) % 360;
   
   positions.set('NorthNode', northNode);
   positions.set('SouthNode', (northNode + 180) % 360);
@@ -209,25 +209,15 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   const hasThroat = definedCenters.includes('Throat');
   const hasSpleen = definedCenters.includes('Spleen');
   
-  console.log('[HD Type Detection] Starting...');
-  console.log('[HD Type Detection] Defined Centers:', definedCenters);
-  console.log('[HD Type Detection] Defined Channels:', definedChannels);
-  console.log('[HD Type Detection] Has Sacral:', hasSacral, '| Has Throat:', hasThroat, '| Has Spleen:', hasSpleen);
-  
   // Reflector: No defined centers
   if (definedCenters.length === 0) {
-    console.log('[HD Type Detection] Result: Reflector (no defined centers)');
     return 'Reflector';
   }
   
   // Normalize channel IDs for lookup (handle both "34-57" and "57-34" formats)
   const hasChannel = (gate1: number, gate2: number): boolean => {
-    const result = definedChannels.includes(`${gate1}-${gate2}`) || 
+    return definedChannels.includes(`${gate1}-${gate2}`) ||
            definedChannels.includes(`${gate2}-${gate1}`);
-    if (result) {
-      console.log(`[HD Type Detection] Found channel: ${gate1}-${gate2}`);
-    }
-    return result;
   };
   
   // Check for specific Sacral-to-Throat pathways
@@ -236,7 +226,6 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   if (hasSacral && hasThroat) {
     // Direct Sacral to Throat: Channel 34-20 (Channel of Charisma)
     const hasDirect34_20 = hasChannel(34, 20);
-    console.log('[HD Type Detection] Direct 34-20 (Charisma):', hasDirect34_20);
     if (hasDirect34_20) {
       hasSacralToThroat = true;
     }
@@ -245,24 +234,20 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
     if (hasSpleen) {
       // Check Sacral to Spleen connections
       const hasSacralToSpleen = hasChannel(34, 57); // Channel of Power
-      console.log('[HD Type Detection] Sacral-Spleen (34-57):', hasSacralToSpleen);
-      
+
       // Check Spleen to Throat connections
       const has48_16 = hasChannel(48, 16); // Channel of the Wavelength
       const has57_20 = hasChannel(57, 20); // Channel of the Brainwave
       const has44_26 = hasChannel(44, 26); // Channel of Surrender
-      console.log('[HD Type Detection] Spleen-Throat: 48-16:', has48_16, '| 57-20:', has57_20, '| 44-26:', has44_26);
 
       // Explicitly support the Sacral→Spleen→Throat path the user called out:
       // 34-57 AND 48-16 (Sacral→Spleen and Spleen→Throat)
       if (hasSacralToSpleen && has48_16) {
-        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND (34-57 + 48-16)!');
         hasSacralToThroat = true;
       }
 
       // Keep other valid Spleen→Throat variants too (e.g., 34-57 + 57-20)
       if (!hasSacralToThroat && hasSacralToSpleen && (has57_20 || has44_26)) {
-        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND (34-57 + other Spleen→Throat)!');
         hasSacralToThroat = true;
       }
     }
@@ -275,24 +260,20 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
                            hasChannel(14, 2) ||  // Channel of the Beat
                            hasChannel(29, 46) || // Channel of Discovery
                            hasChannel(59, 6);    // Channel of Mating (Sacral to Solar Plexus, but 6 connects)
-      console.log('[HD Type Detection] Sacral-G connection:', hasSacralToG);
-      
+
       // G to Throat connections
       const hasGToThroat = hasChannel(1, 8) ||   // Channel of Inspiration
                            hasChannel(7, 31) ||  // Channel of the Alpha
                            hasChannel(13, 33) || // Channel of the Prodigal
                            hasChannel(10, 20);   // Channel of Awakening
-      console.log('[HD Type Detection] G-Throat connection:', hasGToThroat);
-      
+
       if (hasSacralToG && hasGToThroat) {
-        console.log('[HD Type Detection] ✓ Sacral-G-Throat pathway FOUND!');
         hasSacralToThroat = true;
       }
     }
     
     // If specific checks didn't find it, fall back to graph traversal
     if (!hasSacralToThroat) {
-      console.log('[HD Type Detection] No direct pathway found, using BFS graph traversal...');
       // Build a graph of center connections from defined channels
       const connections = new Map<HDCenterName, Set<HDCenterName>>();
       for (const center of definedCenters) {
@@ -309,8 +290,6 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
         }
       }
       
-      console.log('[HD Type Detection] Center connections map:', Array.from(connections.entries()).map(([k, v]) => `${k}: [${Array.from(v).join(', ')}]`));
-      
       // BFS to check if a path exists from Sacral to Throat
       const visited = new Set<HDCenterName>();
       const queue: HDCenterName[] = ['Sacral'];
@@ -318,7 +297,6 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
       while (queue.length > 0) {
         const current = queue.shift()!;
         if (current === 'Throat') {
-          console.log('[HD Type Detection] ✓ BFS found path to Throat!');
           hasSacralToThroat = true;
           break;
         }
@@ -335,21 +313,16 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
         }
       }
       
-      if (!hasSacralToThroat) {
-        console.log('[HD Type Detection] BFS did NOT find path from Sacral to Throat');
-      }
     }
   }
-  
+
   // Manifesting Generator: Sacral defined AND connected to Throat (directly or indirectly)
   if (hasSacral && hasSacralToThroat) {
-    console.log('[HD Type Detection] ★ RESULT: Manifesting Generator');
     return 'Manifesting Generator';
   }
-  
+
   // Generator: Sacral defined but NOT connected to Throat
   if (hasSacral && !hasSacralToThroat) {
-    console.log('[HD Type Detection] ★ RESULT: Generator (Sacral defined, no throat connection)');
     return 'Generator';
   }
   
@@ -418,31 +391,23 @@ export function determineAuthority(
   type: HDType,
   definedChannels?: string[]
 ): HDAuthority {
-  console.log('[HD Authority] Checking authority for type:', type);
-  console.log('[HD Authority] Defined centers:', definedCenters);
-  console.log('[HD Authority] Defined channels:', definedChannels);
-  
   // 1. Reflector: All centers undefined → Lunar Authority
   if (type === 'Reflector' || definedCenters.length === 0) {
-    console.log('[HD Authority] Result: Lunar (Reflector)');
     return 'Lunar';
   }
-  
+
   // 2. Emotional Authority: Solar Plexus defined (takes precedence over everything)
   if (definedCenters.includes('SolarPlexus')) {
-    console.log('[HD Authority] Result: Emotional (Solar Plexus defined)');
     return 'Emotional';
   }
-  
+
   // 3. Sacral Authority: Sacral defined (only for Generators/MGs without Emotional)
   if (definedCenters.includes('Sacral')) {
-    console.log('[HD Authority] Result: Sacral (Sacral defined, no Emotional)');
     return 'Sacral';
   }
-  
+
   // 4. Splenic Authority: Spleen defined (no Emotional, no Sacral)
   if (definedCenters.includes('Spleen')) {
-    console.log('[HD Authority] Result: Splenic (Spleen defined)');
     return 'Splenic';
   }
   
@@ -459,15 +424,12 @@ export function determineAuthority(
     );
     
     if (hasHeartToThroat || definedCenters.includes('Throat')) {
-      console.log('[HD Authority] Result: Ego Manifested (Heart connected to Throat)');
       return 'Ego Manifested';
     }
     if (hasHeartToG || definedCenters.includes('G')) {
-      console.log('[HD Authority] Result: Ego Projected (Heart connected to G)');
       return 'Ego Projected';
     }
     // Default Ego based on type
-    console.log('[HD Authority] Result: Ego based on type');
     return type === 'Manifestor' ? 'Ego Manifested' : 'Ego Projected';
   }
   
@@ -482,24 +444,21 @@ export function determineAuthority(
     );
     
     if (hasGToThroat) {
-      console.log('[HD Authority] Result: Self-Projected (G connected to Throat)');
       return 'Self-Projected';
     }
   }
-  
+
   // 7. Mental/Environmental Authority: No inner authority centers defined
   // Only Head, Ajna, Throat (or no definition below Throat)
-  const hasDefinitionBelowThroat = definedCenters.some(c => 
+  const hasDefinitionBelowThroat = definedCenters.some(c =>
     ['G', 'Heart', 'SolarPlexus', 'Sacral', 'Spleen', 'Root'].includes(c)
   );
-  
+
   if (!hasDefinitionBelowThroat) {
-    console.log('[HD Authority] Result: Mental (no definition below Throat)');
     return 'Mental';
   }
-  
+
   // Fallback for edge cases
-  console.log('[HD Authority] Result: Mental (fallback)');
   return 'Mental';
 }
 
@@ -631,10 +590,6 @@ export function calculateIncarnationCross(
   const unconsciousSun = dSun?.gate || 1;
   const unconsciousEarth = dEarth?.gate || 2;
   
-  console.log('[HD Cross] Looking up cross for gates:', {
-    consciousSun, consciousEarth, unconsciousSun, unconsciousEarth
-  });
-  
   // Cross ANGLE (Right/Left/Juxtaposition) MUST come from the conscious profile line.
   // Even with a database match, we never trust a stored angle label because it can be
   // wrong/incomplete and would create impossible combos (e.g., 6/x saved as Juxtaposition).
@@ -652,7 +607,6 @@ export function calculateIncarnationCross(
   );
   
   if (foundCross) {
-    console.log('[HD Cross] Found exact match:', foundCross.name);
 
     // Normalize the name so the prefix always matches the derived cross type
     const baseName = foundCross.name
@@ -677,7 +631,6 @@ export function calculateIncarnationCross(
   }
   
   // No exact match found - generate a descriptive name
-  console.log('[HD Cross] No exact match, generating name from gates');
   
   // Determine cross type based on profile
   const crossType = derivedCrossType;
@@ -688,9 +641,7 @@ export function calculateIncarnationCross(
   // Generate cross name based on conscious Sun gate
   const gateName = getGateKeyword(consciousSun);
   const crossName = `${crossType} Cross of ${gateName}`;
-  
-  console.log('[HD Cross] Generated name:', crossName);
-  
+
   return {
     name: crossName,
     type: crossType,

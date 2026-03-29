@@ -385,26 +385,28 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
       futureDate.setDate(today.getDate() + i);
       const dateKey = futureDate.toISOString().split('T')[0];
       
-      // Check RED/YELLOW dates (eclipses, major aspects)
-      const avoidData = DATES_TO_AVOID_2026.find(d => d.date === dateKey);
-      if (avoidData && (avoidData.warning === 'RED' || avoidData.warning === 'PURPLE')) {
-        events.push({
-          date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-          type: avoidData.reason.includes('Eclipse') ? 'Eclipse' : 'Major Transit',
-          description: avoidData.reason,
-          daysAway: i
-        });
-      }
-      
-      // Check best days (rare conjunctions, etc.)
-      const bestData = BEST_DAYS_2026.find(d => d.date === dateKey);
-      if (bestData && bestData.rating === 'PURPLE') {
-        events.push({
-          date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-          type: 'Auspicious',
-          description: bestData.reason,
-          daysAway: i
-        });
+      // Check RED/YELLOW dates (eclipses, major aspects) — only valid for 2026
+      if (futureDate.getFullYear() === 2026) {
+        const avoidData = DATES_TO_AVOID_2026.find(d => d.date === dateKey);
+        if (avoidData && (avoidData.warning === 'RED' || avoidData.warning === 'PURPLE')) {
+          events.push({
+            date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+            type: avoidData.reason.includes('Eclipse') ? 'Eclipse' : 'Major Transit',
+            description: avoidData.reason,
+            daysAway: i
+          });
+        }
+
+        // Check best days (rare conjunctions, etc.)
+        const bestData = BEST_DAYS_2026.find(d => d.date === dateKey);
+        if (bestData && bestData.rating === 'PURPLE') {
+          events.push({
+            date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+            type: 'Auspicious',
+            description: bestData.reason,
+            daysAway: i
+          });
+        }
       }
     }
     
