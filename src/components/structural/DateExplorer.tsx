@@ -9,15 +9,16 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { 
-  exploreDateWithContext, 
+import {
+  exploreDateWithContext,
   DateExplorerResult,
-  LifeEventTag 
+  LifeEventTag
 } from '@/lib/structuralStressEngine';
-import { LIFE_EVENT_LABELS, PHASE_COPY } from '@/lib/structuralStressCopy';
+import { LIFE_EVENT_LABELS, PHASE_COPY, MEANING_DIAL_VARIANTS } from '@/lib/structuralStressCopy';
 
 interface DateExplorerProps {
   chart: NatalChart;
@@ -115,6 +116,7 @@ const PRESSURE_DYNAMICS_EXPLAINER = {
 export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }: DateExplorerProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [lifeEvent, setLifeEvent] = useState<LifeEventTag | undefined>();
+  const [situation, setSituation] = useState('');
   const [notes, setNotes] = useState('');
   const [result, setResult] = useState<DateExplorerResult | null>(null);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
@@ -158,6 +160,7 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }
     setResult(null);
     setSelectedDate(undefined);
     setLifeEvent(undefined);
+    setSituation('');
     setNotes('');
     setExpandedTransit(null);
     onDateExplored?.(false);
@@ -165,13 +168,13 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }
 
   const handleSaveEvent = async () => {
     if (!selectedDate || !lifeEvent || !onSaveEvent) return;
-    
+    const combinedNotes = [situation ? `Context: ${situation}` : '', notes].filter(Boolean).join(' | ');
     await onSaveEvent({
       chartId: chart.id,
       eventDate: selectedDate,
       eventType: lifeEvent,
       eventLabel: LIFE_EVENT_LABELS[lifeEvent],
-      notes: notes || undefined
+      notes: combinedNotes || undefined
     });
   };
 
@@ -189,6 +192,23 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Situation text box */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-foreground/80">
+            What are you trying to understand?
+          </label>
+          <Textarea
+            placeholder="e.g. 'why did my relationship fall apart suddenly' or 'what pushed me to quit my job' or 'why did I feel so trapped in 2019'"
+            value={situation}
+            onChange={(e) => setSituation(e.target.value)}
+            className="resize-none text-sm min-h-[60px]"
+            rows={2}
+          />
+          <p className="text-xs text-muted-foreground">
+            Optional — describe the pattern or moment you're investigating. This keeps your exploration focused.
+          </p>
+        </div>
+
         {/* Date Picker and Life Event Selection */}
         <div className="flex flex-wrap gap-3">
           {/* Date Picker with Month/Year Dropdowns */}
@@ -357,6 +377,16 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }
         {/* Results */}
         {result && (
           <div className="mt-6 space-y-6 animate-in fade-in-50 duration-300">
+            {/* Echo the situation being explored */}
+            {situation && (
+              <div className="p-3 rounded-lg bg-secondary/40 border border-border/60 flex items-start gap-2">
+                <Search className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-muted-foreground italic">
+                  Exploring: <span className="text-foreground/80 not-italic">"{situation}"</span>
+                </p>
+              </div>
+            )}
+
             {/* Phase Summary with explainer */}
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -554,6 +584,26 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent, onDateExplored }
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-orange-500" /> Action
                   </span>
+                </div>
+              </div>
+            )}
+
+            {/* Reflection Prompts */}
+            {result.activeTransits.length > 0 && (
+              <div className="pt-2 space-y-3 border-t border-border/50">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <h4 className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Reflect on this period
+                  </h4>
+                </div>
+                <div className="space-y-2">
+                  {MEANING_DIAL_VARIANTS['Insight'].prompts.map((prompt, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5 flex-shrink-0">→</span>
+                      <p className="text-foreground/70 italic">{prompt}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
