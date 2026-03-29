@@ -207,7 +207,7 @@ export const CosmicWeatherBanner = ({
 
   // Create a stable cache key based on date + prompt version to avoid stale astrology text
   const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  const CLIENT_CACHE_VERSION = 'v3-degree-shadow-cazimi';
+  const CLIENT_CACHE_VERSION = 'v4-body-classification-node-validation';
   const cacheKey = `cosmic-day-weather-${CLIENT_CACHE_VERSION}-${dateKey}`;
 
   // Determine the correct moon sign to use:

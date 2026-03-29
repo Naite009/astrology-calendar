@@ -661,6 +661,9 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
             { name: 'Uranus', sign: planets.uranus.signName, degree: planets.uranus.degree },
             { name: 'Neptune', sign: planets.neptune.signName, degree: planets.neptune.degree },
             { name: 'Pluto', sign: planets.pluto.signName, degree: planets.pluto.degree },
+            // Lunar nodes passed explicitly so AI knows their signs and can validate they are always opposite
+            ...(planets.northNode ? [{ name: 'North Node', sign: planets.northNode.signName, degree: planets.northNode.degree }] : []),
+            ...(planets.southNode ? [{ name: 'South Node', sign: planets.southNode.signName, degree: planets.southNode.degree }] : []),
           ]}
           upcomingEvents={upcomingEvents}
           voiceStyle={(() => { try { return localStorage.getItem('cosmic-voice-style') || 'tara'; } catch { return 'tara'; } })()}
