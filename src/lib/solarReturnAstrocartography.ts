@@ -489,7 +489,7 @@ export function calculateAstrocartography(
       Moon:    { ASC: 6, MC: 5, DSC: 7, IC: 9 },
       Mercury: { ASC: 6, MC: 7, DSC: 6, IC: 5 },
       Venus:   { ASC: 9, MC: 7, DSC: 10, IC: 7 },
-      Mars:    { ASC: 5, MC: 7, DSC: 3, IC: 3 },
+      Mars:    { ASC: 8, MC: 7, DSC: 3, IC: 3 },
       Jupiter: { ASC: 9, MC: 10, DSC: 8, IC: 7 },
       Saturn:  { ASC: 3, MC: 5, DSC: 3, IC: 3 },
       Uranus:  { ASC: 5, MC: 5, DSC: 4, IC: 4 },
@@ -515,8 +515,8 @@ export function calculateAstrocartography(
     // e.g. career heavily rewards MC (public status), healing rewards IC (rest/home), adventure rewards ASC
     const INTENTION_ANGLE_IMPORTANCE: Record<string, Record<string, number>> = {
       love:       { ASC: 1.2, MC: 0.6, DSC: 1.5, IC: 1.2 },
-      career:     { ASC: 0.7, MC: 2.0, DSC: 0.4, IC: 0.3 },
-      vitality:   { ASC: 1.6, MC: 1.2, DSC: 0.6, IC: 0.4 },
+      career:     { ASC: 0.3, MC: 2.5, DSC: 0.2, IC: 0.1 },
+      vitality:   { ASC: 2.2, MC: 0.6, DSC: 0.4, IC: 0.3 },
       healing:    { ASC: 0.7, MC: 0.4, DSC: 0.7, IC: 2.0 },
       adventure:  { ASC: 1.8, MC: 1.0, DSC: 0.8, IC: 0.4 },
       creativity: { ASC: 1.2, MC: 1.3, DSC: 0.8, IC: 1.0 },
