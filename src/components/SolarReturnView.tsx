@@ -48,6 +48,8 @@ import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCard
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
+import { calculateSolarReturnAuto } from '@/lib/solarReturnAutoCalculator';
+import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { TierPreviewContent } from '@/components/solarReturn/TierPreviewContent';
@@ -456,6 +458,8 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
   const [planets, setPlanets] = useState<Record<string, { sign: string; degree: number; minutes: number; isRetrograde?: boolean }>>(
     existingSR?.planets ? { ...existingSR.planets } as any : {}
   );
+  const [isAutoCalc, setIsAutoCalc] = useState(false);
+  const [autoCalcError, setAutoCalcError] = useState<string | null>(null);
   const [houseCusps, setHouseCusps] = useState<Record<string, { sign: string; degree: number; minutes: number }>>(
     existingSR?.houseCusps ? { ...existingSR.houseCusps } as any : {}
   );
@@ -638,6 +642,72 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
     e.target.value = '';
   };
 
+  // ── Auto-Calculate Solar Return ────────────────────────────────────
+  const handleAutoCalculate = () => {
+    setAutoCalcError(null);
+
+    // Need natal Sun position
+    const natalSun = (natalChart.planets as any)?.Sun;
+    if (!natalSun?.sign) {
+      setAutoCalcError('Natal chart is missing the Sun position. Please enter your natal chart first.');
+      return;
+    }
+
+    // Resolve lat/lng from location string or stored coordinates
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    // Check for "lat, lng" coordinate format in location field
+    const coordMatch = location.match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
+    if (coordMatch) {
+      lat = parseFloat(coordMatch[1]);
+      lng = parseFloat(coordMatch[2]);
+    } else if (location.trim()) {
+      const coords = getCoordinatesFromLocation(location);
+      if (coords) { lat = coords.lat; lng = coords.lon; }
+    }
+
+    // Fall back to birth location if SR location not resolved
+    if (lat === null || lng === null) {
+      const birthCoordMatch = (natalChart.birthLocation || '').match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
+      if (birthCoordMatch) {
+        lat = parseFloat(birthCoordMatch[1]);
+        lng = parseFloat(birthCoordMatch[2]);
+      } else {
+        const birthCoords = getCoordinatesFromLocation(natalChart.birthLocation || '');
+        if (birthCoords) { lat = birthCoords.lat; lng = birthCoords.lon; }
+      }
+    }
+
+    if (lat === null || lng === null) {
+      setAutoCalcError('Could not determine location coordinates. Enter a city name or "lat, lng" coordinates in the SR Location field.');
+      return;
+    }
+
+    setIsAutoCalc(true);
+    try {
+      const result = calculateSolarReturnAuto(
+        natalSun.sign,
+        natalSun.degree ?? 0,
+        natalSun.minutes ?? 0,
+        natalChart.birthDate || '',
+        year,
+        lat,
+        lng,
+      );
+
+      setPlanets(result.planets as any);
+      setHouseCusps(result.houseCusps as any);
+      setSrDateTime(result.srDateTimeUTC);
+      if (Object.keys(result.houseCusps).length > 0) setShowHouses(true);
+      toast.success(`Solar return calculated: ${result.srDateTimeLabel}`);
+    } catch (err: any) {
+      setAutoCalcError(err?.message || 'Calculation failed. Check natal Sun position and year.');
+    } finally {
+      setIsAutoCalc(false);
+    }
+  };
+
   const handleSave = () => {
     if (!planets.Sun?.sign) return;
     onSave({
@@ -785,6 +855,34 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
             className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
           />
         </div>
+      </div>
+
+      {/* Auto-Calculate button */}
+      <div className="border border-primary/30 rounded-sm p-3 bg-primary/5 space-y-2">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground">Auto-Calculate from Astronomy</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Uses your natal Sun position + SR year/location to compute the exact solar return moment and all planet positions automatically.
+            </p>
+          </div>
+          <button
+            onClick={handleAutoCalculate}
+            disabled={isAutoCalc}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-sm text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          >
+            {isAutoCalc ? <Loader2 size={12} className="animate-spin" /> : <Star size={12} />}
+            {isAutoCalc ? 'Calculating…' : 'Auto-Calculate SR'}
+          </button>
+        </div>
+        {autoCalcError && (
+          <p className="text-xs text-destructive">{autoCalcError}</p>
+        )}
+        {srDateTime && (
+          <p className="text-[10px] text-primary">
+            ☉ SR moment: {srDateTime.replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC')}
+          </p>
+        )}
       </div>
 
       {/* Core planet positions */}

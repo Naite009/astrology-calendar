@@ -8,6 +8,7 @@
  * which cities put benefics (Venus, Jupiter, Sun) on powerful angles.
  */
 
+import * as Astronomy from 'astronomy-engine';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 
@@ -347,25 +348,41 @@ function calculateASCAtLocation(
 }
 
 /**
- * Estimate Greenwich Sidereal Time from the SR chart's MC position and location.
- * If MC and location are known, we can reverse-calculate GST.
+ * Derive Greenwich Sidereal Time from the SR chart's MC position and location.
+ *
+ * The exact relationship between MC ecliptic longitude (λ) and RAMC is:
+ *   tan(RAMC) = tan(λ) * cos(obliquity)
+ *   ⟹  RAMC = atan2(sin(λ)*cos(obl), cos(λ))
+ *
+ * Then LST = RAMC and GST = LST − geoLongitude.
  */
 function estimateGST(mcSign: string, mcDegree: number, mcMinutes: number, geoLongitude: number, obliquity: number = 23.44): number {
   const mcIdx = SIGNS.indexOf(mcSign);
   if (mcIdx < 0) return 0;
   const mcLong = mcIdx * 30 + mcDegree + mcMinutes / 60;
 
-  // MC longitude = atan2(sin(RAMC), cos(RAMC)*cos(obl))
-  // So RAMC = atan2(sin(mcLong), cos(mcLong)*cos(obl))
-  // Actually this is approximate — MC ≈ RAMC for small obliquity effect
   const oblRad = toRad(obliquity);
   const mcRad = toRad(mcLong);
+  // Exact formula: RAMC = atan2(sin(MC)*cos(obl), cos(MC))
   let RAMC = toDeg(Math.atan2(Math.sin(mcRad) * Math.cos(oblRad), Math.cos(mcRad)));
   RAMC = ((RAMC % 360) + 360) % 360;
 
-  // LST = RAMC (in degrees), GST = LST - geoLongitude
+  // LST = RAMC, GST = LST − geoLongitude
   const GST = ((RAMC - geoLongitude) % 360 + 360) % 360;
   return GST;
+}
+
+/**
+ * Get precise GST from a stored SR datetime string (ISO or "YYYY-MM-DD HH:MM").
+ * Returns null if the string cannot be parsed to a valid date.
+ */
+function gstFromDateTimeString(dtStr: string): number | null {
+  if (!dtStr) return null;
+  const d = new Date(dtStr);
+  if (isNaN(d.getTime())) return null;
+  // astronomy-engine SiderealTime returns GAST in hours; convert to degrees
+  const gastHours = Astronomy.SiderealTime(d);
+  return ((gastHours * 15) % 360 + 360) % 360;
 }
 
 // ─── Main Calculator ────────────────────────────────────────────────
@@ -401,55 +418,58 @@ export function calculateAstrocartography(
     };
   }
 
-  const GST = estimateGST(srMC.sign, srMC.degree, (srMC as any).minutes || 0, currentLng);
+  // Fix 2: Use astronomy-engine SiderealTime when SR datetime is stored (precise).
+  // Fall back to MC-based estimation when no datetime is available.
+  const srDateTime = (srChart as any).solarReturnDateTime as string | undefined;
+  const GST = gstFromDateTimeString(srDateTime || '')
+    ?? estimateGST(srMC.sign, srMC.degree, (srMC as any).minutes || 0, currentLng);
 
-  // For each planet, find the longitude where it hits each angle
+  const OBLIQUITY = 23.4392911;
+  const oblRad = toRad(OBLIQUITY);
+
+  // For each planet, find where it hits each angle
   for (const planet of PLANETS_CORE) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const planetDeg = toAbsDeg(pos);
     if (planetDeg === null) continue;
 
-    // MC line: find longitude where MC = planet degree
-    // MC at longitude L = f(GST, L). We solve for L.
-    // Sweep longitudes in 1° increments and find where MC ≈ planetDeg
-    for (let lng = -180; lng < 180; lng += 1) {
-      const mc = calculateMCAtLongitude(GST, lng);
-      let diffMC = Math.abs(mc - planetDeg);
-      if (diffMC > 180) diffMC = 360 - diffMC;
-      if (diffMC <= 1.5) {
-        lines.push({
-          planet,
-          lineType: 'MC',
-          longitude: lng,
-          interpretation: PLANET_LINE_INTERPS[planet]?.MC || `${planet} on the MC at longitude ${lng}°`,
-        });
-      }
+    // ── Fix 3a: Analytical MC/IC line calculation ──────────────────────
+    // Given MC longitude λ, RAMC = atan2(sin(λ)*cos(obl), cos(λ))
+    // Then geographic longitude = RAMC − GST (mod 360), normalized to ±180.
+    const pRad = toRad(planetDeg);
+    const ramc = ((toDeg(Math.atan2(Math.sin(pRad) * Math.cos(oblRad), Math.cos(pRad))) % 360) + 360) % 360;
+    const mcLngRaw = ((ramc - GST) % 360 + 360) % 360;
+    const mcLng = mcLngRaw > 180 ? mcLngRaw - 360 : mcLngRaw;
 
-      // IC line (opposite MC)
-      const ic = (mc + 180) % 360;
-      let diffIC = Math.abs(ic - planetDeg);
-      if (diffIC > 180) diffIC = 360 - diffIC;
-      if (diffIC <= 1.5) {
-        lines.push({
-          planet,
-          lineType: 'IC',
-          longitude: lng,
-          interpretation: PLANET_LINE_INTERPS[planet]?.IC || `${planet} on the IC at longitude ${lng}°`,
-        });
-      }
-    }
+    lines.push({
+      planet,
+      lineType: 'MC',
+      longitude: Math.round(mcLng * 10) / 10,
+      interpretation: PLANET_LINE_INTERPS[planet]?.MC || `${planet} on the MC at longitude ${mcLng.toFixed(1)}°`,
+    });
 
-    // ASC/DSC lines depend on latitude too — calculate for a reference latitude band
-    const refLatitudes = [25, 35, 45, 55]; // cover common habitable latitudes
+    // IC is exactly 180° away
+    const icLng = mcLng > 0 ? mcLng - 180 : mcLng + 180;
+    lines.push({
+      planet,
+      lineType: 'IC',
+      longitude: Math.round(icLng * 10) / 10,
+      interpretation: PLANET_LINE_INTERPS[planet]?.IC || `${planet} on the IC at longitude ${icLng.toFixed(1)}°`,
+    });
+
+    // ── Fix 1 + 3b: ASC/DSC lines with full-globe latitude coverage ────
+    // Cover southern hemisphere, equatorial, northern, and subarctic latitudes.
+    // Use 1° longitude steps for precise line placement.
+    const refLatitudes = [-58, -48, -38, -28, -18, -8, 2, 12, 22, 32, 42, 52, 62];
     for (const refLat of refLatitudes) {
-      for (let lng = -180; lng < 180; lng += 2) {
-        const asc = calculateASCAtLocation(GST, lng, refLat);
+      for (let lng = -180; lng < 180; lng += 1) {
+        const asc = calculateASCAtLocation(GST, lng, refLat, OBLIQUITY);
         let diffASC = Math.abs(asc - planetDeg);
         if (diffASC > 180) diffASC = 360 - diffASC;
-        if (diffASC <= 2) {
-          // Only add if we don't already have a nearby ASC line for this planet
-          const existing = lines.find(l => l.planet === planet && l.lineType === 'ASC' && Math.abs(l.longitude - lng) < 5);
+        if (diffASC <= 1.0) {
+          // Deduplicate: skip if we already have an ASC line within 3° for this planet
+          const existing = lines.find(l => l.planet === planet && l.lineType === 'ASC' && Math.abs(l.longitude - lng) < 3);
           if (!existing) {
             lines.push({
               planet,
@@ -463,8 +483,8 @@ export function calculateAstrocartography(
         const dsc = (asc + 180) % 360;
         let diffDSC = Math.abs(dsc - planetDeg);
         if (diffDSC > 180) diffDSC = 360 - diffDSC;
-        if (diffDSC <= 2) {
-          const existing = lines.find(l => l.planet === planet && l.lineType === 'DSC' && Math.abs(l.longitude - lng) < 5);
+        if (diffDSC <= 1.0) {
+          const existing = lines.find(l => l.planet === planet && l.lineType === 'DSC' && Math.abs(l.longitude - lng) < 3);
           if (!existing) {
             lines.push({
               planet,
