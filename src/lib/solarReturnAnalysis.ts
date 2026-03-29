@@ -976,13 +976,11 @@ export const analyzeSolarReturn = (
       
       if (natalCusp) {
         const cuspSign = (natalCusp as any).sign;
-        console.log(`[Profection] house${houseNumber} cusp data:`, JSON.stringify(natalCusp), 'sign:', cuspSign);
         if (cuspSign && SIGNS.includes(cuspSign)) {
           natalCuspSign = cuspSign;
           timeLord = traditionalRuler[cuspSign] || '';
         }
       } else {
-        console.log(`[Profection] No houseCusps.${natalCuspKey} found, falling back to whole-sign. natalRisingSign:`, natalRisingSign);
       }
       // Fallback: if no house cusps, use whole sign from ascendant
       if (!timeLord && natalRisingSign) {
