@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-26-v30-mythology-chiron-eris";
+    const PROMPT_VERSION = "2026-03-29-v31-body-classification-node-validation";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -83,15 +83,99 @@ serve(async (req) => {
       }
     }
 
+    // =========================================================================
+    // CELESTIAL BODY CLASSIFICATION
+    // =========================================================================
+    const TRADITIONAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+    const MODERN_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
+    const ALL_PLANETS = [...TRADITIONAL_PLANETS, ...MODERN_PLANETS];
+    const LUNAR_POINTS = ['North Node', 'South Node'];
+
+    // Separate planets from points in the incoming data
+    const truePlanetPositions = (planetPositions || []).filter((p: any) => ALL_PLANETS.includes(p.name));
+    const pointPositions = (planetPositions || []).filter((p: any) => LUNAR_POINTS.includes(p.name));
+
+    // Extract node positions for explicit validation
+    const northNodePos = pointPositions.find((p: any) => p.name === 'North Node');
+    const southNodePos = pointPositions.find((p: any) => p.name === 'South Node');
+
+    // Check for any mutual receptions (planet A in sign ruled by planet B, and vice versa)
+    const SIGN_RULERS_FOR_MR: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+      Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
+      Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+    };
+    const mutualReceptions: string[] = [];
+    for (let i = 0; i < truePlanetPositions.length; i++) {
+      for (let j = i + 1; j < truePlanetPositions.length; j++) {
+        const p1 = truePlanetPositions[i] as any;
+        const p2 = truePlanetPositions[j] as any;
+        const rulerOfP1Sign = SIGN_RULERS_FOR_MR[p1.sign];
+        const rulerOfP2Sign = SIGN_RULERS_FOR_MR[p2.sign];
+        if (rulerOfP1Sign === p2.name && rulerOfP2Sign === p1.name) {
+          mutualReceptions.push(`${p1.name} in ${p1.sign} ↔ ${p2.name} in ${p2.sign}`);
+        }
+      }
+    }
+
+    // Check for anaretic degrees (29° = crisis/completion energy)
+    const anareticPlanets = truePlanetPositions.filter((p: any) => p.degree === 29);
+
     // Build planetary positions text - this is the ground truth
     const planetText = planetPositions?.length > 0
       ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA — computed from astronomy-engine ephemeris, NOT from AI training data):
-${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}
+
+PLANETS (${truePlanetPositions.length} bodies):
+${truePlanetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}${p.degree === 29 ? ' ⚠️ ANARETIC DEGREE — final degree, crisis/completion energy' : ''}`).join('\n')}
+
+ASTRONOMICAL POINTS — NOT PLANETS (do NOT count these toward planet totals or stellium counts):
+${pointPositions.length > 0 ? pointPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n') : '(none provided)'}
 
 ⚠️ PLANET-SIGN ACCURACY RULE (NON-NEGOTIABLE):
-The positions above are computed from a high-precision astronomical ephemeris. You MUST use ONLY these sign placements.
-${planetPositions.map((p: any) => `- ${p.name} is in ${p.sign}. Do NOT say ${p.name} is in any other sign.`).join('\n')}
-If you mention a stellium, list ONLY the planets whose sign matches above. Do NOT add planets to a stellium that are in a DIFFERENT sign.`
+You MUST use ONLY these sign placements — computed from high-precision ephemeris, NOT from training data.
+${truePlanetPositions.map((p: any) => `- ${p.name} is in ${p.sign}. Do NOT say ${p.name} is in any other sign.`).join('\n')}
+If you mention nodes: North Node is in ${northNodePos?.sign || '(see data)'}. South Node is in ${southNodePos?.sign || '(see data)'}. They are ALWAYS in opposite signs.
+If you mention a stellium, list ONLY planets (from the PLANETS list above) in the same sign. Do NOT add nodes, Eris, or asteroids to a stellium planet count.`
+      : '';
+
+    // =========================================================================
+    // CELESTIAL BODY TERMINOLOGY RULE (prevents calling nodes/Eris "planets")
+    // =========================================================================
+    const bodyTerminologyRule = `CELESTIAL BODY TERMINOLOGY — NON-NEGOTIABLE:
+
+Traditional planets (7): Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn
+Modern planets (3): Uranus, Neptune, Pluto
+
+⚠️ North Node (☊) and South Node (☋) are LUNAR NODES — mathematical points on the Moon's orbit, NOT planets. Never say "the planet North Node." Say "the North Node" or "the lunar nodes."
+⚠️ Eris is a DWARF PLANET in the Kuiper Belt, NOT a traditional or modern planet. Do NOT include Eris in planet counts. Do NOT mention Eris at all unless it appears in the planetary positions data above — it is not provided today.
+⚠️ Chiron is a CENTAUR/ASTEROID, not a planet. Say "the asteroid Chiron" or simply "Chiron."
+⚠️ A STELLIUM requires 3 or more actual planets (from the traditional or modern lists above) in the same sign. Points and dwarf planets do NOT count toward the 3-planet minimum.
+⚠️ When grouping bodies in a sign, use PRECISE language: "3 planets in Pisces (Sun, Mercury, Venus), plus the North Node" — NOT "4 planets in Pisces including the North Node."
+⚠️ NEVER say both North Node and South Node are in the same sign. They are always in OPPOSITE signs (exactly 180° apart). This is an astronomical impossibility — if you write it, it is an error.`;
+
+    // =========================================================================
+    // NODE VALIDATION BLOCK
+    // =========================================================================
+    const nodeValidationText = northNodePos && southNodePos
+      ? `LUNAR NODE POSITIONS — VERIFIED (NON-NEGOTIABLE):
+North Node ☊: ${northNodePos.degree}° ${northNodePos.sign}
+South Node ☋: ${southNodePos.degree}° ${southNodePos.sign}
+These are ALWAYS 180° apart. The South Node is the EXACT OPPOSITE of the North Node.
+⚠️ DO NOT place the South Node in ${northNodePos.sign}. It is in ${southNodePos.sign}.
+⚠️ DO NOT count either Node as a "planet" or toward a stellium count.`
+      : '';
+
+    // =========================================================================
+    // MUTUAL RECEPTION AND ANARETIC DEGREE NOTES
+    // =========================================================================
+    const mutualReceptionText = mutualReceptions.length > 0
+      ? `MUTUAL RECEPTIONS TODAY (astrologically significant — mention these):
+${mutualReceptions.map(mr => `- ${mr} — these planets support each other, operating as if in their own signs. This adds dignity and ease to both.`).join('\n')}`
+      : '';
+
+    const anareticText = anareticPlanets.length > 0
+      ? `ANARETIC DEGREE (29°) — EMPHASIZE THIS:
+${anareticPlanets.map((p: any) => `- ${p.name} at 29° ${p.sign}: This is the final, crisis-completion degree. ${p.name}'s themes feel urgent and ready to shift. Something about ${p.sign} energy is wrapping up.`).join('\n')}`
       : '';
 
     // Build all-planet retrograde status text
@@ -109,16 +193,24 @@ CRITICAL: If Venus is listed as DIRECT above, do NOT mention "Venus retrograde" 
       : '';
 
     // Build the astrological context for the prompt
-    const stelliumText = stelliums?.length > 0 
-      ? `Stelliums (MAJOR — emphasize these!): ${stelliums.map((s: any) => {
-          const planetNames = s.planets.map((p: any) => p.name).join(', ');
-          const hasNode = s.hasNorthNode;
-          let base = `${s.count} planets in ${s.sign} (${planetNames})`;
-          if (hasNode) {
-            base += ` — ⚠️ THE NORTH NODE IS PART OF THIS STELLIUM. This is HUGE, especially during eclipse season. The North Node represents what we are collectively being called to DEVELOP. A stellium containing the North Node means ALL these planets are fueling the evolutionary direction. In ${s.sign}: emphasize spiritual connection, compassion, intuition, working with guides/angels/unseen support. If a natal chart is selected, connect this to the user's own North Node promise. Encourage them to reflect: "Where is your North Node? What is YOUR nodal promise?" The nodes are extra significant right now because we are in eclipse season.`;
-          }
-          return base;
-        }).join('; ')}`
+    // Note: detectStelliums() only counts true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn)
+    // Nodes, Eris, Chiron are never counted in stelliums — no hasNorthNode handling needed
+    const stelliumText = stelliums?.length > 0
+      ? `STELLIUMS (3+ true planets in same sign — MAJOR, emphasize these!):
+${stelliums.map((s: any) => {
+  const planetNames = s.planets.map((p: any) => p.name).join(', ');
+  // Check if North Node is also in this sign (conjunction bonus, but it's NOT part of the stellium count)
+  const northNodeInSameSign = northNodePos?.sign === s.sign;
+  const southNodeInSameSign = southNodePos?.sign === s.sign;
+  let base = `- ${s.count} planets in ${s.sign}: ${planetNames} — TRUE PLANETARY STELLIUM`;
+  if (northNodeInSameSign) {
+    base += `\n  ADDITIONAL NOTE: The North Node (☊) is also in ${s.sign}, but it is NOT a planet — it is a point. The stellium count remains ${s.count} planets. However, note that this entire planetary stellium is conjunct the North Node, giving it strong evolutionary/destiny significance. In ${s.sign}: this collective energy is pointing toward growth and future direction. Mention the node SEPARATELY: "${s.count} planets in ${s.sign}, with the North Node also present."`;
+  }
+  if (southNodeInSameSign) {
+    base += `\n  ADDITIONAL NOTE: The South Node (☋) is also in ${s.sign}, NOT a planet — it is a point. The stellium count remains ${s.count} planets. The South Node here suggests these planetary energies connect to release, completion, and past patterns. Mention it SEPARATELY.`;
+  }
+  return base;
+}).join('\n')}`
       : '';
     
     const rareAspectText = rareAspects?.length > 0
@@ -809,6 +901,10 @@ ${planetText}
 ${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
 CRITICAL: The day of the week is "${date?.split(',')[0]?.trim() || 'unknown'}". Use this EXACT day name throughout your response — in greetings, Planetary Day Practice, and everywhere else.
 
+${bodyTerminologyRule}
+
+${nodeValidationText}
+
 ${planetText}
 
 ${exactPhaseText ? `${exactPhaseText}` : `Moon Phase: ${moonPhase}`}
@@ -826,6 +922,8 @@ ${aspectMeaningsBlock}
 ${dispositorBlock}
 ${vocText}
 ${stelliumText}
+${mutualReceptionText}
+${anareticText}
 ${imminentChangesText}
 ${allRetroText}
 ${notRetroText}
@@ -976,7 +1074,121 @@ CRITICAL INSTRUCTIONS:
       return output;
     };
 
-    const insight = enforcePlanetSigns(insightVerified);
+    const insightPostProcessed = enforcePlanetSigns(insightVerified);
+
+    // =========================================================================
+    // ASTROLOGICAL FACT VALIDATION
+    // Three hard rules checked against ground-truth ephemeris data:
+    //   1. Nodes are always in OPPOSITE signs (North Node ≠ South Node sign)
+    //   2. Stelliums require 3+ true planets (nodes/Eris/asteroids don't count)
+    //   3. Balsamic Moon and New Moon are mutually exclusive phases
+    // If any rule is violated, regenerate once with an explicit correction prompt.
+    // =========================================================================
+    const ALL_ZODIAC_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+    const validateAstrologicalFacts = (text: string): { valid: boolean; violations: string[] } => {
+      const violations: string[] = [];
+
+      // Rule 1: North Node and South Node must be in opposite signs
+      if (northNodePos && southNodePos) {
+        const northSign = northNodePos.sign as string;
+        const southSign = southNodePos.sign as string;
+
+        // Check each sign: if text places BOTH North Node AND South Node in the same sign, that's wrong
+        for (const sign of ALL_ZODIAC_SIGNS) {
+          const northInThisSign = new RegExp(`North\\s+Node[^.\\n]{0,50}\\b${sign}\\b|\\b${sign}\\b[^.\\n]{0,50}North\\s+Node`, 'i').test(text);
+          const southInThisSign = new RegExp(`South\\s+Node[^.\\n]{0,50}\\b${sign}\\b|\\b${sign}\\b[^.\\n]{0,50}South\\s+Node`, 'i').test(text);
+          // If both nodes are described as being in the same sign, that's impossible
+          if (northInThisSign && southInThisSign) {
+            violations.push(`NODE SIGN ERROR: Both North Node and South Node placed in ${sign}. North Node is in ${northSign}, South Node MUST be in ${southSign} (always opposite).`);
+            break;
+          }
+        }
+
+        // Check for "both nodes in [sign]" or "including both...nodes" patterns
+        if (/both\s+(?:the\s+)?nodes?\s+in\s+\w+|including\s+both\s+(?:the\s+)?(?:north\s+and\s+south\s+)?nodes?|both\s+north\s+and\s+south\s+nodes?\s+(?:are\s+)?in/i.test(text)) {
+          violations.push(`NODE GROUPING ERROR: Text implies both North and South Nodes are in the same sign or group. They are always in opposite signs — North Node in ${northSign}, South Node in ${southSign}.`);
+        }
+      }
+
+      // Rule 2: Stelliums require 3+ true planets — nodes and dwarf planets don't count
+      // Catch "2 planets form a stellium" or "stellium" applied to just 2 bodies
+      if (/\b2\s+(?:planets?|bodies)\b[^.]{0,80}stellium|stellium[^.]{0,80}\b2\s+(?:planets?|bodies)\b/i.test(text)) {
+        violations.push('STELLIUM ERROR: Text calls a 2-body grouping a "stellium". A stellium requires 3 or more true planets.');
+      }
+      // Catch nodes being counted as part of a stellium
+      if (/stellium[^.]{0,120}(?:North\s+Node|South\s+Node)|(?:North\s+Node|South\s+Node)[^.]{0,120}stellium/i.test(text)) {
+        violations.push('STELLIUM NODE ERROR: Text includes a lunar node in a stellium. Nodes are mathematical points, not planets, and do not count toward a stellium.');
+      }
+      // Catch Eris being counted in a group as a planet
+      if (/\bEris\b[^.]{0,60}planets?|planets?[^.]{0,60}\bEris\b/i.test(text) && !/Eris is a dwarf planet/i.test(text)) {
+        violations.push('ERIS CLASSIFICATION ERROR: Text counts Eris as a planet. Eris is a dwarf planet and was not in today\'s data. Do not mention it.');
+      }
+
+      // Rule 3: Balsamic Moon and New Moon are mutually exclusive phases
+      // Balsamic = 315–354°, New Moon = 354–6° — they cannot overlap
+      const phaseName = (moonPhase || '').toLowerCase();
+      const textLower = text.toLowerCase();
+      if (phaseName === 'new moon' && textLower.includes('balsamic')) {
+        violations.push(`MOON PHASE CONFLICT: Today is a New Moon but text mentions "balsamic." Balsamic (315–354°) and New Moon (354–6°) are adjacent but distinct phases — they cannot be the same day.`);
+      }
+      if ((phaseName.includes('balsamic') || phaseName.includes('dark moon')) &&
+          /\bnew\s+moon\s+(?:energy|phase|today|is\s+here|lands|arrives|exact)|today[^.]{0,30}new\s+moon\s+(?:phase|energy)/i.test(text)) {
+        violations.push(`MOON PHASE CONFLICT: Today is Balsamic Moon but text describes it as a New Moon. These are different phases.`);
+      }
+
+      return { valid: violations.length === 0, violations };
+    };
+
+    const initialValidation = validateAstrologicalFacts(insightPostProcessed);
+    let finalInsight = insightPostProcessed;
+
+    if (!initialValidation.valid) {
+      console.warn(`[Validation] ${initialValidation.violations.length} astrological violation(s) detected — regenerating:`, initialValidation.violations);
+
+      const correctionInstruction = `\n\n⚠️ CORRECTION REQUIRED — YOUR PREVIOUS DRAFT CONTAINED THESE ASTROLOGICAL ERRORS:\n${initialValidation.violations.map((v, i) => `${i + 1}. ${v}`).join('\n')}\n\nRegenerate the COMPLETE report, fixing ALL errors above. Key ground truth to use:\n- North Node ☊ is in ${northNodePos?.sign ?? 'see data'} (NOT the same sign as the South Node)\n- South Node ☋ is in ${southNodePos?.sign ?? 'see data'} (always opposite the North Node)\n- Today's Moon phase is: ${moonPhase} — describe ONLY this phase, not any other\n- Stelliums: count ONLY true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)\n- Do NOT mention Eris unless it appeared in the planetary positions data\n- Do NOT count nodes, Eris, or asteroids toward a stellium`;
+
+      try {
+        const retryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: systemPrompt + personalizedSystemAddendum + refBlock },
+              { role: "user", content: userPrompt + correctionInstruction },
+            ],
+          }),
+        });
+
+        if (retryResponse.ok) {
+          const retryData = await retryResponse.json();
+          const retryRaw = retryData.choices?.[0]?.message?.content;
+          if (retryRaw) {
+            const retryVerified = enforceMercuryTiming(retryRaw);
+            const retryProcessed = enforcePlanetSigns(retryVerified);
+            const retryValidation = validateAstrologicalFacts(retryProcessed);
+            if (retryValidation.valid) {
+              console.log('[Validation] Retry PASSED all checks.');
+            } else {
+              console.warn('[Validation] Retry still has violations:', retryValidation.violations);
+            }
+            // Always use the retry output — it will be better even if not perfect
+            finalInsight = retryProcessed;
+          }
+        } else {
+          console.error('[Validation] Retry request failed with status', retryResponse.status);
+        }
+      } catch (retryError) {
+        console.error('[Validation] Retry generation threw:', retryError);
+        // Fall through: use the original (imperfect) output rather than returning nothing
+      }
+    } else {
+      console.log('[Validation] All astrological fact checks passed.');
+    }
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
@@ -986,7 +1198,7 @@ CRITICAL INSTRUCTIONS:
         device_id: cacheDeviceId,
         voice_style: cacheVoiceStyle,
         chart_id: cacheChartId,
-        content: insight,
+        content: finalInsight,
         expires_at: expiresAt,
       }, {
         onConflict: 'date_key,device_id,voice_style,chart_id'
@@ -996,7 +1208,7 @@ CRITICAL INSTRUCTIONS:
       });
     }
 
-    return new Response(JSON.stringify({ insight, cached: false }), {
+    return new Response(JSON.stringify({ insight: finalInsight, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
