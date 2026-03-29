@@ -994,3 +994,125 @@ export function generateStructuralAnalysis(
 
   return { signature, windows, saturnCards, focusedWindows };
 }
+
+// ============== PLANETARY HOUSE POSITIONS - Where outer planets are transiting right now ==============
+
+export interface PlanetHousePosition {
+  planet: string;
+  transitingSign: string;
+  transitingDegreeInSign: number;
+  house: number;
+  houseTheme: string;
+}
+
+export function getPlanetaryHousePositions(chart: NatalChart, date: Date): PlanetHousePosition[] {
+  const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const planetsToShow = ['Saturn', 'Pluto', 'Uranus', 'Neptune', 'Jupiter'] as const;
+  const result: PlanetHousePosition[] = [];
+
+  for (const planet of planetsToShow) {
+    try {
+      const body = Astronomy.Body[planet as keyof typeof Astronomy.Body];
+      if (!body) continue;
+      const time = Astronomy.MakeTime(date);
+      const observer = new Astronomy.Observer(0, 0, 0);
+      const equator = Astronomy.Equator(body, time, observer, false, false);
+      const ecliptic = Astronomy.Ecliptic(equator.vec);
+      let lon = ecliptic.elon;
+      if (lon < 0) lon += 360;
+
+      const signIndex = Math.floor(lon / 30);
+      const degreeInSign = Math.floor(lon % 30);
+      const house = chart.houseCusps ? getHouseFromDegree(lon, chart.houseCusps) : 1;
+      const houseTheme = HOUSE_THEMES[house]?.[0] || 'life area';
+
+      result.push({
+        planet,
+        transitingSign: SIGNS[signIndex] || 'Unknown',
+        transitingDegreeInSign: degreeInSign,
+        house,
+        houseTheme
+      });
+    } catch {
+      /* skip if astronomy-engine fails */
+    }
+  }
+
+  return result;
+}
+
+// ============== LIFE STAGE CYCLES - Detect which major cycle the person is in ==============
+
+export interface LifeStageCycle {
+  name: string;
+  planet: string;
+  description: string;
+  invitation: string;
+  ageRange: [number, number];
+  isActive: boolean;
+  isApproaching: boolean;
+  yearsUntil?: number;
+}
+
+export function getLifeStageCycles(chart: NatalChart): LifeStageCycle[] {
+  if (!chart.birthDate) return [];
+
+  const birthDate = new Date(chart.birthDate);
+  const today = new Date();
+  const birthMonth = birthDate.getMonth();
+  const birthDay = birthDate.getDate();
+  const hasBirthdayPassedThisYear =
+    today.getMonth() > birthMonth ||
+    (today.getMonth() === birthMonth && today.getDate() >= birthDay);
+  const age = today.getFullYear() - birthDate.getFullYear() - (hasBirthdayPassedThisYear ? 0 : 1);
+
+  const cycles: Omit<LifeStageCycle, 'isActive' | 'isApproaching' | 'yearsUntil'>[] = [
+    {
+      name: "First Saturn Return",
+      planet: "Saturn",
+      ageRange: [27, 31],
+      description: "The first major structural reckoning. Saturn returns to where it was when you were born, demanding you take real ownership of your life direction—separate from what family, culture, or circumstance set in motion.",
+      invitation: "What have you been living by default? What would you choose if you chose consciously?"
+    },
+    {
+      name: "Uranus Opposition",
+      planet: "Uranus",
+      ageRange: [40, 44],
+      description: "Uranus reaches the exact opposite point from your natal Uranus. Authenticity begins to confront the structures you've built. What felt like 'the right path' may feel hollow. Freedom and awakening become non-negotiable.",
+      invitation: "Where have you been living someone else's idea of your life?"
+    },
+    {
+      name: "Saturn Opposition",
+      planet: "Saturn",
+      ageRange: [42, 46],
+      description: "Saturn reaches its opposition to your natal Saturn—a mid-life authority reckoning. Commitments made in the first Saturn Return are now tested. You'll see clearly what's sustainable and what costs too much.",
+      invitation: "Which commitments still serve you—and which ones have you simply been too afraid to release?"
+    },
+    {
+      name: "Chiron Return",
+      planet: "Chiron",
+      ageRange: [49, 52],
+      description: "Chiron returns to its natal position—a deep healing threshold. Old wounds surface not to reinjure you, but to be integrated. What hurt you most in your early life becomes the source of your deepest wisdom.",
+      invitation: "What wound have you been carrying that was never truly yours to bear alone?"
+    },
+    {
+      name: "Second Saturn Return",
+      planet: "Saturn",
+      ageRange: [57, 61],
+      description: "Saturn returns for the second time. A second major life review—where anything not authentically yours tends to fall away. Legacy, meaning, and what truly matters become the central questions.",
+      invitation: "What do you want your life to have meant? What's worth building in the time remaining?"
+    }
+  ];
+
+  const APPROACH_WINDOW = 3; // show upcoming cycles within 3 years
+
+  return cycles
+    .map(cycle => ({
+      ...cycle,
+      isActive: age >= cycle.ageRange[0] && age <= cycle.ageRange[1],
+      isApproaching: age >= cycle.ageRange[0] - APPROACH_WINDOW && age < cycle.ageRange[0],
+      yearsUntil: age < cycle.ageRange[0] ? cycle.ageRange[0] - age : undefined
+    }))
+    .filter(c => c.isActive || c.isApproaching);
+}

@@ -1,13 +1,14 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Layers, Info } from 'lucide-react';
+import { Layers, Info, MapPin, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { useLifeEvents } from '@/hooks/useLifeEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  generateStructuralAnalysis, 
-  exploreDateWithContext,
-  DateExplorerResult
+import {
+  generateStructuralAnalysis,
+  getPlanetaryHousePositions,
+  getLifeStageCycles,
 } from '@/lib/structuralStressEngine';
 import { SAFETY_COPY } from '@/lib/structuralStressCopy';
 import { SaturnLensCards } from './structural/SaturnLensCards';
@@ -41,6 +42,18 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
     if (!selectedChart) return null;
     return generateStructuralAnalysis(selectedChart, 5, 5);
   }, [selectedChart]);
+
+  const planetaryWeather = useMemo(() => {
+    if (!selectedChart) return [];
+    return getPlanetaryHousePositions(selectedChart, new Date());
+  }, [selectedChart]);
+
+  const lifeStageCycles = useMemo(() => {
+    if (!selectedChart) return [];
+    return getLifeStageCycles(selectedChart);
+  }, [selectedChart]);
+
+  const [showNatalRef, setShowNatalRef] = useState(false);
 
   // Get life events for selected chart
   const chartLifeEvents = useMemo(() => {
@@ -132,6 +145,68 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
 
       {selectedChart && analysis && (
         <>
+          {/* Life Stage Banner */}
+          {lifeStageCycles.length > 0 && (
+            <div className="space-y-2">
+              {lifeStageCycles.map((cycle) => (
+                <Card
+                  key={cycle.name}
+                  className={cycle.isActive
+                    ? "border-amber-500/40 bg-amber-500/5"
+                    : "border-blue-500/30 bg-blue-500/5"}
+                >
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className={`h-4 w-4 mt-0.5 flex-shrink-0 ${cycle.isActive ? 'text-amber-500' : 'text-blue-400'}`} />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{cycle.name}</span>
+                          <Badge variant="outline" className={`text-xs ${cycle.isActive ? 'border-amber-500/50 text-amber-600 dark:text-amber-400' : 'border-blue-500/50 text-blue-600 dark:text-blue-400'}`}>
+                            {cycle.isActive ? 'Active Now' : `~${cycle.yearsUntil} year${cycle.yearsUntil === 1 ? '' : 's'} away`}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">Ages {cycle.ageRange[0]}–{cycle.ageRange[1]} • {cycle.planet}</span>
+                        </div>
+                        <p className="text-sm text-foreground/80 leading-relaxed">{cycle.description}</p>
+                        <p className="text-sm italic text-primary/80 mt-1">"{cycle.invitation}"</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Planetary Weather Now */}
+          {planetaryWeather.length > 0 && (
+            <Card className="border-primary/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-serif text-base flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  Where the Planets Are in Your Chart Right Now
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  The houses these planets occupy show which life areas are under long-term pressure or expansion today.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {planetaryWeather.map((p) => (
+                    <div key={p.planet} className="flex items-center gap-3 p-2 rounded-md bg-secondary/40 border border-border/40">
+                      <div className="min-w-[70px]">
+                        <span className="font-medium text-sm">{p.planet}</span>
+                        <div className="text-xs text-muted-foreground">{p.transitingDegreeInSign}° {p.transitingSign}</div>
+                      </div>
+                      <div className="text-xs text-right flex-1">
+                        <span className="text-foreground/80">House {p.house}</span>
+                        <div className="text-muted-foreground capitalize">{p.houseTheme}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Main Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
@@ -246,6 +321,57 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
                   <SaturnLensCards cards={analysis.saturnCards} />
                 )}
               </div>
+
+              {/* Natal Chart Quick Reference */}
+              <Card className="border-border/50">
+                <CardHeader className="pb-2">
+                  <button
+                    onClick={() => setShowNatalRef(!showNatalRef)}
+                    className="flex items-center justify-between w-full text-left"
+                  >
+                    <CardTitle className="font-serif text-base">Natal Chart Reference</CardTitle>
+                    {showNatalRef
+                      ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    Your natal planet positions — useful context when reading transit interpretations.
+                  </p>
+                </CardHeader>
+                {showNatalRef && (
+                  <CardContent>
+                    <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                      {(Object.entries(selectedChart.planets) as [string, { sign: string; degree: number; minutes: number; isRetrograde?: boolean } | undefined][])
+                        .filter(([, pos]) => pos && pos.sign)
+                        .map(([planet, pos]) => (
+                          <div key={planet} className="flex items-center gap-2 text-sm py-1 border-b border-border/30">
+                            <span className="font-medium min-w-[90px] text-foreground/80">{planet}</span>
+                            <span className="text-muted-foreground">
+                              {pos!.degree}°{pos!.minutes > 0 ? `${pos!.minutes.toString().padStart(2,'0')}'` : ''} {pos!.sign}
+                              {pos!.isRetrograde ? ' ℞' : ''}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                    {selectedChart.houseCusps && (
+                      <div className="mt-4">
+                        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">House Cusps</p>
+                        <div className="grid gap-1 grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
+                          {Object.entries(selectedChart.houseCusps).map(([key, cusp]) => {
+                            const houseNum = key.replace('house', '');
+                            return (
+                              <div key={key} className="text-xs text-center p-1.5 rounded bg-secondary/40">
+                                <div className="text-muted-foreground">H{houseNum}</div>
+                                <div className="font-medium">{(cusp as { sign: string; degree: number }).degree}° {(cusp as { sign: string; degree: number }).sign.slice(0,3)}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
 
               {/* Safety Notice */}
               <Card className="border-amber-500/30 bg-amber-500/5">
