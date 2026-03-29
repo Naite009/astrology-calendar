@@ -6,6 +6,7 @@ import { PLANET_SYMBOLS, SIGN_SYMBOLS } from '@/lib/solarReturnConstants';
 import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
 import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
+import { JournalContextBanner } from '@/components/solarReturn/JournalContextBanner';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
 import { Sparkles, Target } from 'lucide-react';
@@ -112,6 +113,9 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
 
       {/* Activation Timeline */}
       {activationData.transitHits.length > 0 && <ActivationTimeline data={activationData} />}
+
+      {/* Current Cosmic Context — moon phase, eclipse proximity, active SR transits */}
+      <JournalContextBanner date={new Date()} activationData={activationData} />
 
       {/* Angle Activations */}
       <AngleActivationCard natalChart={natalChart} srChart={srChart} />

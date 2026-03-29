@@ -552,8 +552,9 @@ export function calculateAstrocartography(
       }
 
       const rawScore = angularPlanets.length > 0 ? scaledSum / angularPlanets.length : overallRating;
-      const blended = rawScore * 0.7 + overallRating * 0.3;
-      ratings[intention] = Math.min(10, Math.max(1, Math.round(blended * 10) / 10));
+      // Do NOT blend with overallRating — a high overall score (e.g. Jupiter line city) would
+      // anchor every intention and prevent intention-specific winners from rising.
+      ratings[intention] = Math.min(10, Math.max(1, Math.round(rawScore * 10) / 10));
     }
 
     return ratings;
@@ -730,7 +731,28 @@ export function calculateAstrocartography(
     }
   }
 
-  const topCities = cityResults.slice(0, 60);
+  // Build topCities so every intention has its best candidates in the pool.
+  // A simple top-60 by overall would exclude intention-specific winners (e.g. Moon IC
+  // city is great for healing but may rank #65 overall due to Saturn also being angular).
+  const SCORED_INTENTIONS: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
+  const topCitySet = new Set<string>();
+  const topCitiesArr: AstrocartoCity[] = [];
+  // Top 20 by overall rating first
+  for (const c of cityResults.slice(0, 20)) {
+    topCitySet.add(c.city);
+    topCitiesArr.push(c);
+  }
+  // Top 8 per specific intention (so the best city per tab is always represented)
+  for (const intent of SCORED_INTENTIONS.filter(i => i !== 'overall')) {
+    const byIntent = [...cityResults].sort((a, b) => (b.intentionRatings[intent] ?? 0) - (a.intentionRatings[intent] ?? 0));
+    for (const c of byIntent.slice(0, 8)) {
+      if (!topCitySet.has(c.city)) {
+        topCitySet.add(c.city);
+        topCitiesArr.push(c);
+      }
+    }
+  }
+  const topCities = topCitiesArr;
 
   const interpretation = topCities.length > 0
     ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`
