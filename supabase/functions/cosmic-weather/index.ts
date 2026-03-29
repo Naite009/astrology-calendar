@@ -1074,7 +1074,121 @@ CRITICAL INSTRUCTIONS:
       return output;
     };
 
-    const insight = enforcePlanetSigns(insightVerified);
+    const insightPostProcessed = enforcePlanetSigns(insightVerified);
+
+    // =========================================================================
+    // ASTROLOGICAL FACT VALIDATION
+    // Three hard rules checked against ground-truth ephemeris data:
+    //   1. Nodes are always in OPPOSITE signs (North Node ≠ South Node sign)
+    //   2. Stelliums require 3+ true planets (nodes/Eris/asteroids don't count)
+    //   3. Balsamic Moon and New Moon are mutually exclusive phases
+    // If any rule is violated, regenerate once with an explicit correction prompt.
+    // =========================================================================
+    const ALL_ZODIAC_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+    const validateAstrologicalFacts = (text: string): { valid: boolean; violations: string[] } => {
+      const violations: string[] = [];
+
+      // Rule 1: North Node and South Node must be in opposite signs
+      if (northNodePos && southNodePos) {
+        const northSign = northNodePos.sign as string;
+        const southSign = southNodePos.sign as string;
+
+        // Check each sign: if text places BOTH North Node AND South Node in the same sign, that's wrong
+        for (const sign of ALL_ZODIAC_SIGNS) {
+          const northInThisSign = new RegExp(`North\\s+Node[^.\\n]{0,50}\\b${sign}\\b|\\b${sign}\\b[^.\\n]{0,50}North\\s+Node`, 'i').test(text);
+          const southInThisSign = new RegExp(`South\\s+Node[^.\\n]{0,50}\\b${sign}\\b|\\b${sign}\\b[^.\\n]{0,50}South\\s+Node`, 'i').test(text);
+          // If both nodes are described as being in the same sign, that's impossible
+          if (northInThisSign && southInThisSign) {
+            violations.push(`NODE SIGN ERROR: Both North Node and South Node placed in ${sign}. North Node is in ${northSign}, South Node MUST be in ${southSign} (always opposite).`);
+            break;
+          }
+        }
+
+        // Check for "both nodes in [sign]" or "including both...nodes" patterns
+        if (/both\s+(?:the\s+)?nodes?\s+in\s+\w+|including\s+both\s+(?:the\s+)?(?:north\s+and\s+south\s+)?nodes?|both\s+north\s+and\s+south\s+nodes?\s+(?:are\s+)?in/i.test(text)) {
+          violations.push(`NODE GROUPING ERROR: Text implies both North and South Nodes are in the same sign or group. They are always in opposite signs — North Node in ${northSign}, South Node in ${southSign}.`);
+        }
+      }
+
+      // Rule 2: Stelliums require 3+ true planets — nodes and dwarf planets don't count
+      // Catch "2 planets form a stellium" or "stellium" applied to just 2 bodies
+      if (/\b2\s+(?:planets?|bodies)\b[^.]{0,80}stellium|stellium[^.]{0,80}\b2\s+(?:planets?|bodies)\b/i.test(text)) {
+        violations.push('STELLIUM ERROR: Text calls a 2-body grouping a "stellium". A stellium requires 3 or more true planets.');
+      }
+      // Catch nodes being counted as part of a stellium
+      if (/stellium[^.]{0,120}(?:North\s+Node|South\s+Node)|(?:North\s+Node|South\s+Node)[^.]{0,120}stellium/i.test(text)) {
+        violations.push('STELLIUM NODE ERROR: Text includes a lunar node in a stellium. Nodes are mathematical points, not planets, and do not count toward a stellium.');
+      }
+      // Catch Eris being counted in a group as a planet
+      if (/\bEris\b[^.]{0,60}planets?|planets?[^.]{0,60}\bEris\b/i.test(text) && !/Eris is a dwarf planet/i.test(text)) {
+        violations.push('ERIS CLASSIFICATION ERROR: Text counts Eris as a planet. Eris is a dwarf planet and was not in today\'s data. Do not mention it.');
+      }
+
+      // Rule 3: Balsamic Moon and New Moon are mutually exclusive phases
+      // Balsamic = 315–354°, New Moon = 354–6° — they cannot overlap
+      const phaseName = (moonPhase || '').toLowerCase();
+      const textLower = text.toLowerCase();
+      if (phaseName === 'new moon' && textLower.includes('balsamic')) {
+        violations.push(`MOON PHASE CONFLICT: Today is a New Moon but text mentions "balsamic." Balsamic (315–354°) and New Moon (354–6°) are adjacent but distinct phases — they cannot be the same day.`);
+      }
+      if ((phaseName.includes('balsamic') || phaseName.includes('dark moon')) &&
+          /\bnew\s+moon\s+(?:energy|phase|today|is\s+here|lands|arrives|exact)|today[^.]{0,30}new\s+moon\s+(?:phase|energy)/i.test(text)) {
+        violations.push(`MOON PHASE CONFLICT: Today is Balsamic Moon but text describes it as a New Moon. These are different phases.`);
+      }
+
+      return { valid: violations.length === 0, violations };
+    };
+
+    const initialValidation = validateAstrologicalFacts(insightPostProcessed);
+    let finalInsight = insightPostProcessed;
+
+    if (!initialValidation.valid) {
+      console.warn(`[Validation] ${initialValidation.violations.length} astrological violation(s) detected — regenerating:`, initialValidation.violations);
+
+      const correctionInstruction = `\n\n⚠️ CORRECTION REQUIRED — YOUR PREVIOUS DRAFT CONTAINED THESE ASTROLOGICAL ERRORS:\n${initialValidation.violations.map((v, i) => `${i + 1}. ${v}`).join('\n')}\n\nRegenerate the COMPLETE report, fixing ALL errors above. Key ground truth to use:\n- North Node ☊ is in ${northNodePos?.sign ?? 'see data'} (NOT the same sign as the South Node)\n- South Node ☋ is in ${southNodePos?.sign ?? 'see data'} (always opposite the North Node)\n- Today's Moon phase is: ${moonPhase} — describe ONLY this phase, not any other\n- Stelliums: count ONLY true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)\n- Do NOT mention Eris unless it appeared in the planetary positions data\n- Do NOT count nodes, Eris, or asteroids toward a stellium`;
+
+      try {
+        const retryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: systemPrompt + personalizedSystemAddendum + refBlock },
+              { role: "user", content: userPrompt + correctionInstruction },
+            ],
+          }),
+        });
+
+        if (retryResponse.ok) {
+          const retryData = await retryResponse.json();
+          const retryRaw = retryData.choices?.[0]?.message?.content;
+          if (retryRaw) {
+            const retryVerified = enforceMercuryTiming(retryRaw);
+            const retryProcessed = enforcePlanetSigns(retryVerified);
+            const retryValidation = validateAstrologicalFacts(retryProcessed);
+            if (retryValidation.valid) {
+              console.log('[Validation] Retry PASSED all checks.');
+            } else {
+              console.warn('[Validation] Retry still has violations:', retryValidation.violations);
+            }
+            // Always use the retry output — it will be better even if not perfect
+            finalInsight = retryProcessed;
+          }
+        } else {
+          console.error('[Validation] Retry request failed with status', retryResponse.status);
+        }
+      } catch (retryError) {
+        console.error('[Validation] Retry generation threw:', retryError);
+        // Fall through: use the original (imperfect) output rather than returning nothing
+      }
+    } else {
+      console.log('[Validation] All astrological fact checks passed.');
+    }
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
@@ -1084,7 +1198,7 @@ CRITICAL INSTRUCTIONS:
         device_id: cacheDeviceId,
         voice_style: cacheVoiceStyle,
         chart_id: cacheChartId,
-        content: insight,
+        content: finalInsight,
         expires_at: expiresAt,
       }, {
         onConflict: 'date_key,device_id,voice_style,chart_id'
@@ -1094,7 +1208,7 @@ CRITICAL INSTRUCTIONS:
       });
     }
 
-    return new Response(JSON.stringify({ insight, cached: false }), {
+    return new Response(JSON.stringify({ insight: finalInsight, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
