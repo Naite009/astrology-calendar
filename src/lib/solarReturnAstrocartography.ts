@@ -755,25 +755,34 @@ export function calculateAstrocartography(
     }
   }
 
-  // Build topCities so every intention has its best candidates in the pool.
-  // A simple top-60 by overall would exclude intention-specific winners (e.g. Moon IC
-  // city is great for healing but may rank #65 overall due to Saturn also being angular).
+  // Build topCities with US city cap: max 12 US cities total across all intentions,
+  // to prevent mediocre US cities from flooding every category.
   const SCORED_INTENTIONS: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
+  const MAX_US_CITIES = 12;
   const topCitySet = new Set<string>();
   const topCitiesArr: AstrocartoCity[] = [];
-  // Top 20 by overall rating first
-  for (const c of cityResults.slice(0, 20)) {
+  let usCityCount = 0;
+
+  const tryAddCity = (c: AstrocartoCity): boolean => {
+    if (topCitySet.has(c.city)) return false;
+    if (c.country === 'USA') {
+      if (usCityCount >= MAX_US_CITIES) return false;
+      usCityCount++;
+    }
     topCitySet.add(c.city);
     topCitiesArr.push(c);
+    return true;
+  };
+
+  // Top 15 by overall rating first
+  for (const c of cityResults.slice(0, 30)) {
+    tryAddCity(c);
   }
-  // Top 8 per specific intention (so the best city per tab is always represented)
+  // Top 5 per specific intention (so the best city per tab is always represented)
   for (const intent of SCORED_INTENTIONS.filter(i => i !== 'overall')) {
     const byIntent = [...cityResults].sort((a, b) => (b.intentionRatings[intent] ?? 0) - (a.intentionRatings[intent] ?? 0));
-    for (const c of byIntent.slice(0, 8)) {
-      if (!topCitySet.has(c.city)) {
-        topCitySet.add(c.city);
-        topCitiesArr.push(c);
-      }
+    for (const c of byIntent.slice(0, 5)) {
+      tryAddCity(c);
     }
   }
   const topCities = topCitiesArr;
