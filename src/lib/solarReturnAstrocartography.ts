@@ -100,7 +100,7 @@ export interface SRAstrocartography {
 
 // ─── Major Cities Database ──────────────────────────────────────────
 
-interface CityData { city: string; country: string; lat: number; lng: number; }
+interface CityData { city: string; country: string; state?: string; lat: number; lng: number; }
 
 const WORLD_CITIES: CityData[] = [
   // ── USA (comprehensive) ──
