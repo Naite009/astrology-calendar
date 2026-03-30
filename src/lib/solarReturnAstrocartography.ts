@@ -81,6 +81,7 @@ export interface AstrocartoLine {
 export interface AstrocartoCity {
   city: string;
   country: string;
+  state?: string;       // US state abbreviation (e.g. "NC", "PA")
   latitude: number;
   longitude: number;
   angularPlanets: { planet: string; angle: string; orb: number }[];
