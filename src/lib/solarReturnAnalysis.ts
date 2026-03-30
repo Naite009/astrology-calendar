@@ -1044,14 +1044,15 @@ export const analyzeSolarReturn = (
       let diff = moonDeg - sunDeg;
       if (diff < 0) diff += 360;
       const phases: { name: string; min: number; max: number; desc: string }[] = [
-        { name: 'New Moon', min: 0, max: 22.5, desc: 'A year of new beginnings, planting seeds, and fresh starts. Energy is raw and initiatory — you are starting a new personal cycle. Trust your instincts even when the path is unclear.' },
-        { name: 'Crescent', min: 22.5, max: 67.5, desc: 'A year of pushing through resistance to establish something new. You may encounter doubts or obstacles early but the momentum is building. Courage and persistence are required.' },
-        { name: 'First Quarter', min: 67.5, max: 112.5, desc: 'A year of crisis in action — decisions must be made, and you cannot remain passive. External events force you to commit or change direction. Action-oriented and sometimes tense.' },
-        { name: 'Gibbous', min: 112.5, max: 157.5, desc: 'A year of refinement and adjustment before a major culmination. You are fine-tuning, improving, and preparing for something to come to fruition. Patience and analysis are key.' },
-        { name: 'Full Moon', min: 157.5, max: 202.5, desc: 'A year of culmination, revelation, and maximum visibility. What you have been building reaches a peak. Relationships are highlighted — awareness of self and others is heightened.' },
-        { name: 'Disseminating', min: 202.5, max: 247.5, desc: 'A year of sharing what you have learned and giving back. You are distributing wisdom, teaching, or reaping the harvest of previous efforts. Social engagement increases.' },
-        { name: 'Last Quarter', min: 247.5, max: 292.5, desc: 'A year of reorientation and releasing old structures. A crisis in consciousness — you are letting go of what no longer serves you. Internal shifts matter more than external events.' },
-        { name: 'Balsamic', min: 292.5, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
+        { name: 'New Moon', min: 0, max: 45, desc: 'A year of new beginnings, planting seeds, and fresh starts. Energy is raw and initiatory — you are starting a new personal cycle. Trust your instincts even when the path is unclear.' },
+        { name: 'Waxing Crescent', min: 45, max: 90, desc: 'A year of pushing through resistance to establish something new. You may encounter doubts or obstacles early but the momentum is building. Courage and persistence are required.' },
+        { name: 'First Quarter', min: 90, max: 135, desc: 'A year of crisis in action — decisions must be made, and you cannot remain passive. External events force you to commit or change direction. Action-oriented and sometimes tense.' },
+        { name: 'Waxing Gibbous', min: 135, max: 180, desc: 'A year of refinement and adjustment before a major culmination. You are fine-tuning, improving, and preparing for something to come to fruition. Patience and analysis are key.' },
+        { name: 'Full Moon', min: 180, max: 225, desc: 'A year of culmination, revelation, and maximum visibility. What you have been building reaches a peak. Relationships are highlighted — awareness of self and others is heightened.' },
+        { name: 'Waning Gibbous', min: 225, max: 270, desc: 'A year of sharing what you have learned and giving back. You are distributing wisdom, teaching, or reaping the harvest of previous efforts. Social engagement increases.' },
+        { name: 'Last Quarter', min: 270, max: 315, desc: 'A year of reorientation and releasing old structures. A crisis in consciousness — you are letting go of what no longer serves you. Internal shifts matter more than external events.' },
+        { name: 'Waning Crescent', min: 315, max: 345, desc: 'A year of retreat, reflection, and spiritual processing. The old cycle is winding down. Solitude and inner work prepare you for the renewal ahead.' },
+        { name: 'Balsamic', min: 345, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
       ];
       const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
       // Eclipse requires Sun-Moon alignment AND proximity to the nodal axis (within ~12° of nodes)
