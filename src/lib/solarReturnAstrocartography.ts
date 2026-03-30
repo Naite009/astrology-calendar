@@ -707,6 +707,7 @@ export function calculateAstrocartography(
     cityResults.push({
       city: cityData.city,
       country: cityData.country,
+      ...(cityData.state ? { state: cityData.state } : {}),
       latitude: cityData.lat,
       longitude: cityData.lng,
       angularPlanets,
