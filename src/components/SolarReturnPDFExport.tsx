@@ -451,6 +451,27 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
   };
 }
 
+// ─── Personal Planetary Hours Interpretation ────────────────────────
+const PLANETARY_HOUR_VIBES: Record<string, { feel: string; double: string }> = {
+  Sun:     { feel: 'You\'ll feel a surge of confidence and clarity — this is a year where your sense of purpose feels strong from the start. You wake up knowing who you are.', double: 'Double Sun energy makes this a powerfully self-defining year. You radiate authority and attract recognition without trying.' },
+  Moon:    { feel: 'You\'ll feel emotionally heightened and deeply intuitive — this year begins with a sense of inner knowing. Trust what your body and feelings are telling you.', double: 'Double Moon energy makes this a profoundly emotional and inward year. Home, family, and your inner world take center stage.' },
+  Mercury: { feel: 'You\'ll feel mentally sharp and communicative — ideas flow easily and connections happen through conversation. This is a year of learning and expressing.', double: 'Double Mercury energy makes this a year dominated by communication, learning, and mental agility. Words carry extra weight.' },
+  Venus:   { feel: 'You\'ll feel magnetic, warm, and drawn to beauty — this year opens with grace and ease. Love, pleasure, and creative inspiration feel close.', double: 'Double Venus energy makes this a year saturated with beauty, love, and sensory pleasure. Relationships and creativity flourish.' },
+  Mars:    { feel: 'You\'ll feel fired up and ready to act — there\'s an urgency to get things moving. Channel this energy into bold projects rather than frustration.', double: 'Double Mars energy makes this a year of intense drive and physical vitality. You have the fuel to conquer, but watch for burnout and conflicts.' },
+  Jupiter: { feel: 'You\'ll feel expansive, optimistic, and lucky — opportunities seem to appear out of nowhere. This is a year where faith in the future pays off.', double: 'Double Jupiter energy makes this a year of extraordinary growth and abundance. Generosity flows both ways — give freely and receive fully.' },
+  Saturn:  { feel: 'You\'ll feel grounded, serious, and focused on what matters — there\'s a mature energy that asks you to do the real work. Discipline is your superpower this year.', double: 'Double Saturn energy makes this a year of serious commitment and structural change. What you build now is meant to last decades.' },
+};
+
+function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
+  if (hourPlanet === dayPlanet) {
+    return PLANETARY_HOUR_VIBES[hourPlanet]?.double || `Your Solar Return occurs during a ${hourPlanet} hour on a ${dayPlanet} day — doubled planetary energy amplifies this planet's themes all year.`;
+  }
+  const hourVibe = PLANETARY_HOUR_VIBES[hourPlanet]?.feel || `The ${hourPlanet} hour colors your birthday moment with ${hourPlanet}'s energy.`;
+  const dayVibe = PLANETARY_HOUR_VIBES[dayPlanet]?.feel || '';
+  const blend = dayVibe ? ` Meanwhile, the ${dayPlanet} day adds a backdrop of ${dayPlanet.toLowerCase()} themes to the entire day.` : '';
+  return `${hourVibe}${blend}`;
+}
+
 // ─── Planetary Hours at SR Moment ───────────────────────────────────
 function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
   const locationStr = srChart.solarReturnLocation || srChart.birthLocation || '';
