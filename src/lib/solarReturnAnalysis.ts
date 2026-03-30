@@ -1197,7 +1197,7 @@ export const analyzeSolarReturn = (
 
   // Modality-Moon phase bridging logic
   const currentPhase = moonPhase?.phase || '';
-  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous', 'Disseminating'];
+  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous'];
   const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous'];
   const isClosingMoon = closingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
   const isOpeningMoon = openingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));

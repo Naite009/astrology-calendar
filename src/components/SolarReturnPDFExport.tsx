@@ -492,7 +492,7 @@ function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
         bestFor: PLANETARY_HOUR_MEANINGS[h.planet as keyof typeof PLANETARY_HOUR_MEANINGS]?.bestFor || [],
       })),
       interpretation: srHour
-        ? `Your Solar Return occurs during a ${srHour.planet} hour on a ${dayRuler.planet} day. ${srHour.planet === dayRuler.planet ? `Double ${srHour.planet} energy — this planet's themes are strongly amplified for the entire year.` : `The ${dayRuler.planet} day-ruler combines with the ${srHour.planet} hour-ruler, blending ${dayRuler.planet}'s themes with ${srHour.planet}'s influence at the moment of your Sun's return.`}`
+        ? generatePersonalPlanetaryHoursInterpretation(srHour.planet, dayRuler.planet)
         : 'Planetary hour could not be determined for the Solar Return moment.',
     };
   } catch {
