@@ -505,18 +505,20 @@ export function calculateAstrocartography(
     angularPlanets: Array<{ planet: string; angle: string }>,
     overallRating: number
   ): Record<string, number> {
+    // Scale: 0 = terrible, 5 = neutral, 10 = excellent
+    // Malefics score BELOW 5 to genuinely penalize cities where they're angular
     const ANGLE_SCORES: Record<string, Record<string, number>> = {
-      Sun:     { ASC: 7, MC: 9, DSC: 5, IC: 4 },
-      Moon:    { ASC: 6, MC: 5, DSC: 7, IC: 9 },
-      Mercury: { ASC: 6, MC: 7, DSC: 6, IC: 5 },
-      Venus:   { ASC: 9, MC: 7, DSC: 10, IC: 7 },
-      Mars:    { ASC: 8, MC: 7, DSC: 3, IC: 3 },
-      Jupiter: { ASC: 9, MC: 10, DSC: 8, IC: 7 },
-      Saturn:  { ASC: 3, MC: 5, DSC: 3, IC: 3 },
-      Uranus:  { ASC: 5, MC: 5, DSC: 4, IC: 4 },
-      Neptune: { ASC: 6, MC: 5, DSC: 6, IC: 8 },
-      Pluto:   { ASC: 4, MC: 5, DSC: 3, IC: 4 },
-      Chiron:  { ASC: 6, MC: 5, DSC: 6, IC: 8 },
+      Sun:       { ASC: 8, MC: 9, DSC: 6, IC: 5 },
+      Moon:      { ASC: 7, MC: 5, DSC: 7, IC: 9 },
+      Mercury:   { ASC: 6, MC: 7, DSC: 6, IC: 5 },
+      Venus:     { ASC: 9, MC: 8, DSC: 10, IC: 7 },
+      Mars:      { ASC: 4, MC: 4, DSC: 1, IC: 2 },
+      Jupiter:   { ASC: 9, MC: 10, DSC: 8, IC: 7 },
+      Saturn:    { ASC: 2, MC: 3, DSC: 1, IC: 1 },
+      Uranus:    { ASC: 4, MC: 4, DSC: 3, IC: 3 },
+      Neptune:   { ASC: 5, MC: 3, DSC: 4, IC: 6 },
+      Pluto:     { ASC: 3, MC: 3, DSC: 1, IC: 2 },
+      Chiron:    { ASC: 5, MC: 4, DSC: 5, IC: 7 },
       NorthNode: { ASC: 7, MC: 7, DSC: 7, IC: 6 },
     };
 
