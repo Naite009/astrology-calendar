@@ -81,6 +81,7 @@ export interface AstrocartoLine {
 export interface AstrocartoCity {
   city: string;
   country: string;
+  state?: string;       // US state abbreviation (e.g. "NC", "PA")
   latitude: number;
   longitude: number;
   angularPlanets: { planet: string; angle: string; orb: number }[];
@@ -100,65 +101,65 @@ export interface SRAstrocartography {
 
 // ─── Major Cities Database ──────────────────────────────────────────
 
-interface CityData { city: string; country: string; lat: number; lng: number; }
+interface CityData { city: string; country: string; state?: string; lat: number; lng: number; }
 
 const WORLD_CITIES: CityData[] = [
   // ── USA (comprehensive) ──
-  { city: 'New York', country: 'USA', lat: 40.71, lng: -74.01 },
-  { city: 'Los Angeles', country: 'USA', lat: 33.94, lng: -118.24 },
-  { city: 'Chicago', country: 'USA', lat: 41.88, lng: -87.63 },
-  { city: 'Miami', country: 'USA', lat: 25.76, lng: -80.19 },
-  { city: 'San Francisco', country: 'USA', lat: 37.77, lng: -122.42 },
-  { city: 'Denver', country: 'USA', lat: 39.74, lng: -104.98 },
-  { city: 'Austin', country: 'USA', lat: 30.27, lng: -97.74 },
-  { city: 'Seattle', country: 'USA', lat: 47.61, lng: -122.33 },
-  { city: 'Nashville', country: 'USA', lat: 36.16, lng: -86.78 },
-  { city: 'Honolulu', country: 'USA', lat: 21.31, lng: -157.86 },
-  { city: 'Sedona', country: 'USA', lat: 34.87, lng: -111.76 },
-  { city: 'Indianapolis', country: 'USA', lat: 39.77, lng: -86.16 },
-  { city: 'Ann Arbor', country: 'USA', lat: 42.28, lng: -83.74 },
-  { city: 'Detroit', country: 'USA', lat: 42.33, lng: -83.05 },
-  { city: 'Portland', country: 'USA', lat: 45.52, lng: -122.68 },
-  { city: 'Phoenix', country: 'USA', lat: 33.45, lng: -112.07 },
-  { city: 'Atlanta', country: 'USA', lat: 33.75, lng: -84.39 },
-  { city: 'Boston', country: 'USA', lat: 42.36, lng: -71.06 },
-  { city: 'Dallas', country: 'USA', lat: 32.78, lng: -96.80 },
-  { city: 'Houston', country: 'USA', lat: 29.76, lng: -95.37 },
-  { city: 'New Orleans', country: 'USA', lat: 29.95, lng: -90.07 },
-  { city: 'Las Vegas', country: 'USA', lat: 36.17, lng: -115.14 },
-  { city: 'San Diego', country: 'USA', lat: 32.72, lng: -117.16 },
-  { city: 'Minneapolis', country: 'USA', lat: 44.98, lng: -93.27 },
-  { city: 'Charlotte', country: 'USA', lat: 35.23, lng: -80.84 },
-  { city: 'Salt Lake City', country: 'USA', lat: 40.76, lng: -111.89 },
-  { city: 'Savannah', country: 'USA', lat: 32.08, lng: -81.09 },
-  { city: 'Asheville', country: 'USA', lat: 35.60, lng: -82.55 },
-  { city: 'Maui', country: 'USA', lat: 20.80, lng: -156.32 },
-  { city: 'Anchorage', country: 'USA', lat: 61.22, lng: -149.90 },
-  { city: 'Philadelphia', country: 'USA', lat: 39.95, lng: -75.17 },
-  { city: 'Portland ME', country: 'USA', lat: 43.66, lng: -70.26 },
-  { city: 'Washington DC', country: 'USA', lat: 38.91, lng: -77.04 },
-  { city: 'Richmond', country: 'USA', lat: 37.54, lng: -77.43 },
-  { city: 'Pittsburgh', country: 'USA', lat: 40.44, lng: -79.99 },
-  { city: 'Cleveland', country: 'USA', lat: 41.50, lng: -81.69 },
-  { city: 'Columbus', country: 'USA', lat: 39.96, lng: -82.99 },
-  { city: 'Cincinnati', country: 'USA', lat: 39.10, lng: -84.51 },
-  { city: 'St. Louis', country: 'USA', lat: 38.63, lng: -90.20 },
-  { city: 'Kansas City', country: 'USA', lat: 39.10, lng: -94.58 },
-  { city: 'Raleigh', country: 'USA', lat: 35.78, lng: -78.64 },
-  { city: 'Tampa', country: 'USA', lat: 27.95, lng: -82.46 },
-  { city: 'Orlando', country: 'USA', lat: 28.54, lng: -81.38 },
-  { city: 'Jacksonville', country: 'USA', lat: 30.33, lng: -81.66 },
-  { city: 'Charleston', country: 'USA', lat: 32.78, lng: -79.93 },
-  { city: 'Memphis', country: 'USA', lat: 35.15, lng: -90.05 },
-  { city: 'Albuquerque', country: 'USA', lat: 35.08, lng: -106.65 },
-  { city: 'Tucson', country: 'USA', lat: 32.22, lng: -110.97 },
-  { city: 'Milwaukee', country: 'USA', lat: 43.04, lng: -87.91 },
-  { city: 'Boise', country: 'USA', lat: 43.62, lng: -116.21 },
-  { city: 'Burlington VT', country: 'USA', lat: 44.48, lng: -73.21 },
-  { city: 'Santa Fe', country: 'USA', lat: 35.69, lng: -105.94 },
-  { city: 'San Antonio', country: 'USA', lat: 29.42, lng: -98.49 },
-  { city: 'Bloomington', country: 'USA', lat: 39.17, lng: -86.53 },
-  { city: 'Boulder', country: 'USA', lat: 40.01, lng: -105.27 },
+  { city: 'New York', country: 'USA', state: 'NY', lat: 40.71, lng: -74.01 },
+  { city: 'Los Angeles', country: 'USA', state: 'CA', lat: 33.94, lng: -118.24 },
+  { city: 'Chicago', country: 'USA', state: 'IL', lat: 41.88, lng: -87.63 },
+  { city: 'Miami', country: 'USA', state: 'FL', lat: 25.76, lng: -80.19 },
+  { city: 'San Francisco', country: 'USA', state: 'CA', lat: 37.77, lng: -122.42 },
+  { city: 'Denver', country: 'USA', state: 'CO', lat: 39.74, lng: -104.98 },
+  { city: 'Austin', country: 'USA', state: 'TX', lat: 30.27, lng: -97.74 },
+  { city: 'Seattle', country: 'USA', state: 'WA', lat: 47.61, lng: -122.33 },
+  { city: 'Nashville', country: 'USA', state: 'TN', lat: 36.16, lng: -86.78 },
+  { city: 'Honolulu', country: 'USA', state: 'HI', lat: 21.31, lng: -157.86 },
+  { city: 'Sedona', country: 'USA', state: 'AZ', lat: 34.87, lng: -111.76 },
+  { city: 'Indianapolis', country: 'USA', state: 'IN', lat: 39.77, lng: -86.16 },
+  { city: 'Ann Arbor', country: 'USA', state: 'MI', lat: 42.28, lng: -83.74 },
+  { city: 'Detroit', country: 'USA', state: 'MI', lat: 42.33, lng: -83.05 },
+  { city: 'Portland', country: 'USA', state: 'OR', lat: 45.52, lng: -122.68 },
+  { city: 'Phoenix', country: 'USA', state: 'AZ', lat: 33.45, lng: -112.07 },
+  { city: 'Atlanta', country: 'USA', state: 'GA', lat: 33.75, lng: -84.39 },
+  { city: 'Boston', country: 'USA', state: 'MA', lat: 42.36, lng: -71.06 },
+  { city: 'Dallas', country: 'USA', state: 'TX', lat: 32.78, lng: -96.80 },
+  { city: 'Houston', country: 'USA', state: 'TX', lat: 29.76, lng: -95.37 },
+  { city: 'New Orleans', country: 'USA', state: 'LA', lat: 29.95, lng: -90.07 },
+  { city: 'Las Vegas', country: 'USA', state: 'NV', lat: 36.17, lng: -115.14 },
+  { city: 'San Diego', country: 'USA', state: 'CA', lat: 32.72, lng: -117.16 },
+  { city: 'Minneapolis', country: 'USA', state: 'MN', lat: 44.98, lng: -93.27 },
+  { city: 'Charlotte', country: 'USA', state: 'NC', lat: 35.23, lng: -80.84 },
+  { city: 'Salt Lake City', country: 'USA', state: 'UT', lat: 40.76, lng: -111.89 },
+  { city: 'Savannah', country: 'USA', state: 'GA', lat: 32.08, lng: -81.09 },
+  { city: 'Asheville', country: 'USA', state: 'NC', lat: 35.60, lng: -82.55 },
+  { city: 'Maui', country: 'USA', state: 'HI', lat: 20.80, lng: -156.32 },
+  { city: 'Anchorage', country: 'USA', state: 'AK', lat: 61.22, lng: -149.90 },
+  { city: 'Philadelphia', country: 'USA', state: 'PA', lat: 39.95, lng: -75.17 },
+  { city: 'Portland ME', country: 'USA', state: 'ME', lat: 43.66, lng: -70.26 },
+  { city: 'Washington DC', country: 'USA', state: 'DC', lat: 38.91, lng: -77.04 },
+  { city: 'Richmond', country: 'USA', state: 'VA', lat: 37.54, lng: -77.43 },
+  { city: 'Pittsburgh', country: 'USA', state: 'PA', lat: 40.44, lng: -79.99 },
+  { city: 'Cleveland', country: 'USA', state: 'OH', lat: 41.50, lng: -81.69 },
+  { city: 'Columbus', country: 'USA', state: 'OH', lat: 39.96, lng: -82.99 },
+  { city: 'Cincinnati', country: 'USA', state: 'OH', lat: 39.10, lng: -84.51 },
+  { city: 'St. Louis', country: 'USA', state: 'MO', lat: 38.63, lng: -90.20 },
+  { city: 'Kansas City', country: 'USA', state: 'MO', lat: 39.10, lng: -94.58 },
+  { city: 'Raleigh', country: 'USA', state: 'NC', lat: 35.78, lng: -78.64 },
+  { city: 'Tampa', country: 'USA', state: 'FL', lat: 27.95, lng: -82.46 },
+  { city: 'Orlando', country: 'USA', state: 'FL', lat: 28.54, lng: -81.38 },
+  { city: 'Jacksonville', country: 'USA', state: 'FL', lat: 30.33, lng: -81.66 },
+  { city: 'Charleston', country: 'USA', state: 'SC', lat: 32.78, lng: -79.93 },
+  { city: 'Memphis', country: 'USA', state: 'TN', lat: 35.15, lng: -90.05 },
+  { city: 'Albuquerque', country: 'USA', state: 'NM', lat: 35.08, lng: -106.65 },
+  { city: 'Tucson', country: 'USA', state: 'AZ', lat: 32.22, lng: -110.97 },
+  { city: 'Milwaukee', country: 'USA', state: 'WI', lat: 43.04, lng: -87.91 },
+  { city: 'Boise', country: 'USA', state: 'ID', lat: 43.62, lng: -116.21 },
+  { city: 'Burlington VT', country: 'USA', state: 'VT', lat: 44.48, lng: -73.21 },
+  { city: 'Santa Fe', country: 'USA', state: 'NM', lat: 35.69, lng: -105.94 },
+  { city: 'San Antonio', country: 'USA', state: 'TX', lat: 29.42, lng: -98.49 },
+  { city: 'Bloomington', country: 'USA', state: 'IN', lat: 39.17, lng: -86.53 },
+  { city: 'Boulder', country: 'USA', state: 'CO', lat: 40.01, lng: -105.27 },
   // ── Canada ──
   { city: 'Toronto', country: 'Canada', lat: 43.65, lng: -79.38 },
   { city: 'Vancouver', country: 'Canada', lat: 49.28, lng: -123.12 },
@@ -504,18 +505,20 @@ export function calculateAstrocartography(
     angularPlanets: Array<{ planet: string; angle: string }>,
     overallRating: number
   ): Record<string, number> {
+    // Scale: 0 = terrible, 5 = neutral, 10 = excellent
+    // Malefics score BELOW 5 to genuinely penalize cities where they're angular
     const ANGLE_SCORES: Record<string, Record<string, number>> = {
-      Sun:     { ASC: 7, MC: 9, DSC: 5, IC: 4 },
-      Moon:    { ASC: 6, MC: 5, DSC: 7, IC: 9 },
-      Mercury: { ASC: 6, MC: 7, DSC: 6, IC: 5 },
-      Venus:   { ASC: 9, MC: 7, DSC: 10, IC: 7 },
-      Mars:    { ASC: 8, MC: 7, DSC: 3, IC: 3 },
-      Jupiter: { ASC: 9, MC: 10, DSC: 8, IC: 7 },
-      Saturn:  { ASC: 3, MC: 5, DSC: 3, IC: 3 },
-      Uranus:  { ASC: 5, MC: 5, DSC: 4, IC: 4 },
-      Neptune: { ASC: 6, MC: 5, DSC: 6, IC: 8 },
-      Pluto:   { ASC: 4, MC: 5, DSC: 3, IC: 4 },
-      Chiron:  { ASC: 6, MC: 5, DSC: 6, IC: 8 },
+      Sun:       { ASC: 8, MC: 9, DSC: 6, IC: 5 },
+      Moon:      { ASC: 7, MC: 5, DSC: 7, IC: 9 },
+      Mercury:   { ASC: 6, MC: 7, DSC: 6, IC: 5 },
+      Venus:     { ASC: 9, MC: 8, DSC: 10, IC: 7 },
+      Mars:      { ASC: 4, MC: 4, DSC: 1, IC: 2 },
+      Jupiter:   { ASC: 9, MC: 10, DSC: 8, IC: 7 },
+      Saturn:    { ASC: 2, MC: 3, DSC: 1, IC: 1 },
+      Uranus:    { ASC: 4, MC: 4, DSC: 3, IC: 3 },
+      Neptune:   { ASC: 5, MC: 3, DSC: 4, IC: 6 },
+      Pluto:     { ASC: 3, MC: 3, DSC: 1, IC: 2 },
+      Chiron:    { ASC: 5, MC: 4, DSC: 5, IC: 7 },
       NorthNode: { ASC: 7, MC: 7, DSC: 7, IC: 6 },
     };
 
@@ -704,6 +707,7 @@ export function calculateAstrocartography(
     cityResults.push({
       city: cityData.city,
       country: cityData.country,
+      ...(cityData.state ? { state: cityData.state } : {}),
       latitude: cityData.lat,
       longitude: cityData.lng,
       angularPlanets,
@@ -751,25 +755,34 @@ export function calculateAstrocartography(
     }
   }
 
-  // Build topCities so every intention has its best candidates in the pool.
-  // A simple top-60 by overall would exclude intention-specific winners (e.g. Moon IC
-  // city is great for healing but may rank #65 overall due to Saturn also being angular).
+  // Build topCities with US city cap: max 12 US cities total across all intentions,
+  // to prevent mediocre US cities from flooding every category.
   const SCORED_INTENTIONS: AstrocartoIntention[] = ['overall', 'love', 'career', 'vitality', 'healing', 'adventure', 'creativity'];
+  const MAX_US_CITIES = 12;
   const topCitySet = new Set<string>();
   const topCitiesArr: AstrocartoCity[] = [];
-  // Top 20 by overall rating first
-  for (const c of cityResults.slice(0, 20)) {
+  let usCityCount = 0;
+
+  const tryAddCity = (c: AstrocartoCity): boolean => {
+    if (topCitySet.has(c.city)) return false;
+    if (c.country === 'USA') {
+      if (usCityCount >= MAX_US_CITIES) return false;
+      usCityCount++;
+    }
     topCitySet.add(c.city);
     topCitiesArr.push(c);
+    return true;
+  };
+
+  // Top 15 by overall rating first
+  for (const c of cityResults.slice(0, 30)) {
+    tryAddCity(c);
   }
-  // Top 8 per specific intention (so the best city per tab is always represented)
+  // Top 5 per specific intention (so the best city per tab is always represented)
   for (const intent of SCORED_INTENTIONS.filter(i => i !== 'overall')) {
     const byIntent = [...cityResults].sort((a, b) => (b.intentionRatings[intent] ?? 0) - (a.intentionRatings[intent] ?? 0));
-    for (const c of byIntent.slice(0, 8)) {
-      if (!topCitySet.has(c.city)) {
-        topCitySet.add(c.city);
-        topCitiesArr.push(c);
-      }
+    for (const c of byIntent.slice(0, 5)) {
+      tryAddCity(c);
     }
   }
   const topCities = topCitiesArr;
