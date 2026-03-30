@@ -138,7 +138,7 @@ export function calculateSolarReturnAuto(
   const houses = calculatePlacidusHouses(srDate, lat, lng);
   const houseCusps: Record<string, { sign: string; degree: number; minutes: number }> = {};
   for (let i = 1; i <= 12; i++) {
-    houseCusps[`house${i}`] = (houses as Record<string, { sign: string; degree: number; minutes: number }>)[`house${i}`];
+    houseCusps[`house${i}`] = (houses as unknown as Record<string, { sign: string; degree: number; minutes: number }>)[`house${i}`];
   }
 
   // 6. Build human-readable label (UTC time)
