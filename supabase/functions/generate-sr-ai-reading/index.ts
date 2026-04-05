@@ -299,8 +299,9 @@ ${ageInstructions}
   5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
   6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
   7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
-  8. Use the person's name naturally, but sparingly (2-3 times total).
-   9. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
+  8. Use the person's FIRST NAME exactly ONCE — in the very first sentence of the reading. After that, use "you" and "your" exclusively. NEVER repeat their name again anywhere in the text.
+  9. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
+  10. NEVER write two-word or fragment sentences like "Culmination energy." or "Relationships reveal their truth." or "Growth period." Every sentence must be a COMPLETE thought with a subject, verb, and object that explains what will actually happen in plain language. If you catch yourself writing a short abstract phrase, expand it into a full sentence that a non-astrologer would understand.
 
    Format your response exactly like this with a blank line between every element:
 

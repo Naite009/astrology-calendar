@@ -152,34 +152,34 @@ function getYearArchetype(analysis: SolarReturnAnalysis): { name: string; descri
   // Moon phase archetypes
   if (moonPhase.includes('New')) return {
     name: 'A Year of New Beginnings',
-    description: 'This is a planting year — seeds sown now grow for years. Trust impulse over analysis. Start things.',
+    description: 'This is a year for starting fresh — the projects, relationships, and habits you begin now will shape the next several years of your life.',
   };
   if (moonPhase.includes('Full')) return {
     name: 'A Year of Harvest',
-    description: 'What you\'ve been building is becoming visible. Relationships reveal their truth. Culmination energy.',
+    description: 'The things you have been working on over the past few years are starting to show real, visible results, and your relationships are reaching important turning points.',
   };
   if (moonPhase.includes('Balsamic')) return {
     name: 'A Year of Completion',
-    description: 'Finish, release, and prepare. This is the quiet before a new cycle begins. Honor what\'s ending with grace.',
+    description: 'This year is about finishing what you started, releasing what no longer fits, and making space for the entirely new chapter that begins next year.',
   };
   if (moonPhase.includes('First Quarter')) return {
     name: 'A Year of Decision',
-    description: 'You\'re ready to commit to a direction. This year encourages action through clarity about what matters most.',
+    description: 'You will face clear moments this year where you need to choose a direction and commit to it, and the decisions you make now will define the next several years.',
   };
   if (moonPhase.includes('Last Quarter')) return {
     name: 'A Year of Release',
-    description: 'Old structures that served you are making room for something new. The changes happening are evolution, not loss.',
+    description: 'Structures and routines that once supported you are naturally falling away to make room for something better — these changes are growth, not loss.',
   };
 
   // Sun house archetypes
-  if (sunH === 1) return { name: 'A Year of Self-Reinvention', description: 'You are the project. Everything else follows from how you show up.' };
-  if (sunH === 10) return { name: 'A Builder\'s Year', description: 'Career, reputation, and visible achievement define this chapter. Build something lasting.' };
-  if (sunH === 7) return { name: 'A Year of Partnership', description: 'Growth happens through others. Relationships are the classroom and the gift.' };
-  if (sunH === 4) return { name: 'A Year of Roots', description: 'Home, family, and emotional foundation are the priority. Build from the inside out.' };
-  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something meaningful is shifting at a deep level. Personal breakthroughs and new beginnings emerge from honest self-reflection.' };
-  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'The most private, introspective year possible. Rest and reflection are the real work.' };
+  if (sunH === 1) return { name: 'A Year of Self-Reinvention', description: 'This year puts you at the center of your own story — how you present yourself, what you look like, and how you carry yourself all undergo meaningful changes.' };
+  if (sunH === 10) return { name: 'A Builder\'s Year', description: 'Your career, public reputation, and long-term ambitions take center stage this year, and the work you put in now builds something that lasts well beyond this birthday.' };
+  if (sunH === 7) return { name: 'A Year of Partnership', description: 'Your most important growth this year happens through other people — close relationships, business partnerships, and one-on-one connections are where the real action is.' };
+  if (sunH === 4) return { name: 'A Year of Roots', description: 'Home, family, and your emotional foundation are the priority this year — you may move, renovate, reconnect with family, or do deep inner work that changes how you feel about yourself.' };
+  if (sunH === 8) return { name: 'A Year of Transformation', description: 'Something important is shifting at a deep level this year — you may experience personal breakthroughs, financial changes, or emotional realizations that fundamentally change how you see yourself.' };
+  if (sunH === 12) return { name: 'A Year of Inner Work', description: 'This is your most private and introspective year — the real progress happens through rest, reflection, therapy, creative solitude, and honest self-examination.' };
 
-  return { name: 'A Year of Growth', description: 'Multiple areas of your life are activated — focus on what matters most, not what\'s loudest.' };
+  return { name: 'A Year of Growth', description: 'Multiple areas of your life are activated this year, so your main challenge is focusing your energy on what truly matters rather than spreading yourself too thin.' };
 }
 
 export function generateExecutiveSummary(
