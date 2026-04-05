@@ -1129,6 +1129,23 @@ function stripDashes(text: string): string {
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
+    // Fix bad ordinals: 1th→1st, 2th→2nd, 3th→3rd, Xth stays for X>=4
+    .replace(/\b1(\d?)th\b/g, (m, d) => d ? m : '1st')
+    .replace(/\b2(\d?)th\b/g, (m, d) => d ? m : '2nd')
+    .replace(/\b3(\d?)th\b/g, (m, d) => d ? m : '3rd')
+    .replace(/\b11th\b/g, '11th')       // keep 11th, 12th, 13th correct
+    .replace(/\b12th\b/g, '12th')
+    .replace(/\b13th\b/g, '13th')
+    .replace(/\b21th\b/g, '21st')
+    .replace(/\b22th\b/g, '22nd')
+    .replace(/\b23th\b/g, '23rd')
+    .replace(/\b31th\b/g, '31st')
+    .replace(/\b32th\b/g, '32nd')
+    .replace(/\b33th\b/g, '33rd')
+    // Fix periods before lowercase (likely should be commas): "Jupiter. the planet" → "Jupiter, the planet"
+    .replace(/\.\s+([a-z])/g, (_, ch) => `, ${ch}`)
+    // Fix truncated sentences: add period if string ends without punctuation
+    .replace(/([a-zA-Z0-9])\s*$/, '$1.')
     .replace(/\.\s*\./g, '.')            // clean up double periods
     .replace(/,\s*\./g, '.')             // clean up comma-period
     .replace(/\.\s*,/g, '.')             // clean up period-comma
