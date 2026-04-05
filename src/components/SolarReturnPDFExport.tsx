@@ -1191,14 +1191,19 @@ function expandFragments(text: string): string {
   });
 }
 
-// ── Recursively strip dashes from all string values in an object ──
-function stripDashesDeep(obj: any): any {
-  if (typeof obj === 'string') return stripDashes(obj);
-  if (Array.isArray(obj)) return obj.map(stripDashesDeep);
+// ── Recursively clean all string values in an object ──
+function stripDashesDeep(obj: any, personName?: string): any {
+  if (typeof obj === 'string') return expandFragments(stripDashes(obj));
+  if (Array.isArray(obj)) return obj.map(v => stripDashesDeep(v, personName));
   if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
     const result: any = {};
     for (const [k, v] of Object.entries(obj)) {
-      result[k] = stripDashesDeep(v);
+      let cleaned = stripDashesDeep(v, personName);
+      // Deduplicate name specifically in AI reading fields
+      if (personName && typeof cleaned === 'string' && (k === 'aiReadingPlain' || k === 'aiReadingAstro')) {
+        cleaned = deduplicateName(cleaned, personName);
+      }
+      result[k] = cleaned;
     }
     return result;
   }
