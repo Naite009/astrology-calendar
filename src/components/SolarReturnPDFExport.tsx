@@ -239,6 +239,70 @@ const HTYM_SUN_BODY: Record<number, string> = {
   12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are not extras — they are the curriculum.',
 };
 
+// ── Sign-specific plain-language descriptions for JSON export ──
+const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: string }> = {
+  Aries: {
+    sun: 'You lead with courage and independence — you are someone who takes initiative, speaks directly, and needs to feel like you are forging your own path.',
+    moon: 'You process emotions quickly and physically — when something upsets you, you want to act on it immediately rather than sit with the feeling.',
+    rising: 'You come across as bold, direct, and energetic — people see you as someone who takes charge and is not afraid to go first.',
+  },
+  Taurus: {
+    sun: 'You value stability, comfort, and building things that last — you are patient, sensory, and deeply loyal once you commit to something.',
+    moon: 'You need emotional security and physical comfort to feel safe — change is hard for you, but once you settle in, your emotional steadiness is a gift to everyone around you.',
+    rising: 'You come across as calm, grounded, and reliable — people feel safe around you and see you as someone who takes a measured, thoughtful approach to life.',
+  },
+  Gemini: {
+    sun: 'You are driven by curiosity and communication — you need variety, intellectual stimulation, and the freedom to explore multiple interests at once.',
+    moon: 'You process emotions by talking and thinking them through — writing, conversation, and mental activity are how you work through what you feel.',
+    rising: 'You come across as witty, curious, and socially adaptable — people see you as someone who can talk to anyone and make connections effortlessly.',
+  },
+  Cancer: {
+    sun: 'You are deeply nurturing and emotionally intelligent — family, home, and emotional safety are your core priorities, and you protect what you love fiercely.',
+    moon: 'Your emotions run deep and your intuition is powerful — you absorb the feelings of people around you and need regular time alone to process and recharge.',
+    rising: 'You come across as warm, caring, and approachable — people instinctively trust you and feel comfortable sharing their feelings with you.',
+  },
+  Leo: {
+    sun: 'You shine when you are creating, performing, or leading — you need recognition, creative expression, and the freedom to be authentically yourself in everything you do.',
+    moon: 'You need to feel special and appreciated to be emotionally secure — genuine praise and loyal love are not luxuries for you, they are necessities.',
+    rising: 'You come across as confident, warm, and charismatic — people are naturally drawn to your presence and see you as someone who lights up a room.',
+  },
+  Virgo: {
+    sun: 'You find meaning through being useful, improving things, and solving problems — you notice details others miss and hold yourself to high standards.',
+    moon: 'You process emotions by analyzing them and finding practical solutions — you feel better when you can fix something, organize something, or help someone.',
+    rising: 'You come across as competent, thoughtful, and detail-oriented — people see you as someone they can rely on to get things right.',
+  },
+  Libra: {
+    sun: 'You are drawn to beauty, fairness, and meaningful partnerships — you see both sides of every situation and work hard to create harmony in your relationships.',
+    moon: 'You need emotional balance and peaceful relationships to feel secure — conflict genuinely unsettles you, and you process feelings best when you can talk them through with someone you trust.',
+    rising: 'You come across as gracious, diplomatic, and aesthetically attuned — people see you as someone who brings elegance and fairness to every interaction.',
+  },
+  Scorpio: {
+    sun: 'You live with emotional intensity and psychological depth — you are drawn to truth, transformation, and understanding what lies beneath the surface of everything.',
+    moon: 'Your emotions are intense, private, and all-or-nothing — you feel things deeply but rarely show it, and betrayal or dishonesty affects you more profoundly than most people understand.',
+    rising: 'You come across as intense, perceptive, and magnetic — people sense your depth immediately and either feel drawn to you or slightly intimidated by your presence.',
+  },
+  Sagittarius: {
+    sun: 'You are driven by a need for meaning, adventure, and growth — you think big, seek truth, and feel most alive when you are learning, traveling, or exploring new philosophies.',
+    moon: 'You process emotions through movement, humor, and searching for meaning — when things get heavy, you instinctively look for the bigger picture or plan an escape.',
+    rising: 'You come across as optimistic, adventurous, and philosophical — people see you as someone who is always looking toward the horizon and inspiring others to think bigger.',
+  },
+  Capricorn: {
+    sun: 'You are ambitious, disciplined, and focused on building something meaningful over time — you take responsibility seriously and measure success by what you have actually accomplished.',
+    moon: 'You process emotions privately and practically — you may appear stoic on the outside, but you feel things deeply and cope by staying productive and in control.',
+    rising: 'You come across as serious, capable, and authoritative — people see you as someone who has their life together and can be trusted with important responsibilities.',
+  },
+  Aquarius: {
+    sun: 'You value independence, originality, and making the world better — you think differently from most people and are drawn to innovation, social causes, and intellectual freedom.',
+    moon: 'You process emotions with some detachment, preferring to understand feelings intellectually before engaging with them — you need space and freedom even in your closest relationships.',
+    rising: 'You come across as unique, independent, and slightly unconventional — people see you as someone who marches to their own drum and is not afraid to be different.',
+  },
+  Pisces: {
+    sun: 'You are deeply empathic, creative, and spiritually attuned — you absorb the emotions of the world around you and express yourself best through art, music, healing, or compassion.',
+    moon: 'Your emotional world is vast and borderless — you feel everything intensely, dream vividly, and need creative or spiritual outlets to process the enormous amount of feeling you carry.',
+    rising: 'You come across as gentle, dreamy, and compassionate — people see you as someone who is deeply kind and intuitively understands what others are going through.',
+  },
+};
+
 const HTYM_MOON_BODY: Record<string, string> = {
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
   Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
