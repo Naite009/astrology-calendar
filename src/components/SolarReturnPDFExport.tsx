@@ -812,7 +812,7 @@ export function downloadBirthdayJSONStandalone(
     }
   };
 
-  const cleaned = stripDashesDeep(stripEmpty(payload) || payload);
+  const cleaned = stripDashesDeep(stripEmpty(payload) || payload, natalChart.name);
   const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
