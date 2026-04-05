@@ -239,6 +239,70 @@ const HTYM_SUN_BODY: Record<number, string> = {
   12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are not extras — they are the curriculum.',
 };
 
+// ── Sign-specific plain-language descriptions for JSON export ──
+const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: string }> = {
+  Aries: {
+    sun: 'You lead with courage and independence — you are someone who takes initiative, speaks directly, and needs to feel like you are forging your own path.',
+    moon: 'You process emotions quickly and physically — when something upsets you, you want to act on it immediately rather than sit with the feeling.',
+    rising: 'You come across as bold, direct, and energetic — people see you as someone who takes charge and is not afraid to go first.',
+  },
+  Taurus: {
+    sun: 'You value stability, comfort, and building things that last — you are patient, sensory, and deeply loyal once you commit to something.',
+    moon: 'You need emotional security and physical comfort to feel safe — change is hard for you, but once you settle in, your emotional steadiness is a gift to everyone around you.',
+    rising: 'You come across as calm, grounded, and reliable — people feel safe around you and see you as someone who takes a measured, thoughtful approach to life.',
+  },
+  Gemini: {
+    sun: 'You are driven by curiosity and communication — you need variety, intellectual stimulation, and the freedom to explore multiple interests at once.',
+    moon: 'You process emotions by talking and thinking them through — writing, conversation, and mental activity are how you work through what you feel.',
+    rising: 'You come across as witty, curious, and socially adaptable — people see you as someone who can talk to anyone and make connections effortlessly.',
+  },
+  Cancer: {
+    sun: 'You are deeply nurturing and emotionally intelligent — family, home, and emotional safety are your core priorities, and you protect what you love fiercely.',
+    moon: 'Your emotions run deep and your intuition is powerful — you absorb the feelings of people around you and need regular time alone to process and recharge.',
+    rising: 'You come across as warm, caring, and approachable — people instinctively trust you and feel comfortable sharing their feelings with you.',
+  },
+  Leo: {
+    sun: 'You shine when you are creating, performing, or leading — you need recognition, creative expression, and the freedom to be authentically yourself in everything you do.',
+    moon: 'You need to feel special and appreciated to be emotionally secure — genuine praise and loyal love are not luxuries for you, they are necessities.',
+    rising: 'You come across as confident, warm, and charismatic — people are naturally drawn to your presence and see you as someone who lights up a room.',
+  },
+  Virgo: {
+    sun: 'You find meaning through being useful, improving things, and solving problems — you notice details others miss and hold yourself to high standards.',
+    moon: 'You process emotions by analyzing them and finding practical solutions — you feel better when you can fix something, organize something, or help someone.',
+    rising: 'You come across as competent, thoughtful, and detail-oriented — people see you as someone they can rely on to get things right.',
+  },
+  Libra: {
+    sun: 'You are drawn to beauty, fairness, and meaningful partnerships — you see both sides of every situation and work hard to create harmony in your relationships.',
+    moon: 'You need emotional balance and peaceful relationships to feel secure — conflict genuinely unsettles you, and you process feelings best when you can talk them through with someone you trust.',
+    rising: 'You come across as gracious, diplomatic, and aesthetically attuned — people see you as someone who brings elegance and fairness to every interaction.',
+  },
+  Scorpio: {
+    sun: 'You live with emotional intensity and psychological depth — you are drawn to truth, transformation, and understanding what lies beneath the surface of everything.',
+    moon: 'Your emotions are intense, private, and all-or-nothing — you feel things deeply but rarely show it, and betrayal or dishonesty affects you more profoundly than most people understand.',
+    rising: 'You come across as intense, perceptive, and magnetic — people sense your depth immediately and either feel drawn to you or slightly intimidated by your presence.',
+  },
+  Sagittarius: {
+    sun: 'You are driven by a need for meaning, adventure, and growth — you think big, seek truth, and feel most alive when you are learning, traveling, or exploring new philosophies.',
+    moon: 'You process emotions through movement, humor, and searching for meaning — when things get heavy, you instinctively look for the bigger picture or plan an escape.',
+    rising: 'You come across as optimistic, adventurous, and philosophical — people see you as someone who is always looking toward the horizon and inspiring others to think bigger.',
+  },
+  Capricorn: {
+    sun: 'You are ambitious, disciplined, and focused on building something meaningful over time — you take responsibility seriously and measure success by what you have actually accomplished.',
+    moon: 'You process emotions privately and practically — you may appear stoic on the outside, but you feel things deeply and cope by staying productive and in control.',
+    rising: 'You come across as serious, capable, and authoritative — people see you as someone who has their life together and can be trusted with important responsibilities.',
+  },
+  Aquarius: {
+    sun: 'You value independence, originality, and making the world better — you think differently from most people and are drawn to innovation, social causes, and intellectual freedom.',
+    moon: 'You process emotions with some detachment, preferring to understand feelings intellectually before engaging with them — you need space and freedom even in your closest relationships.',
+    rising: 'You come across as unique, independent, and slightly unconventional — people see you as someone who marches to their own drum and is not afraid to be different.',
+  },
+  Pisces: {
+    sun: 'You are deeply empathic, creative, and spiritually attuned — you absorb the emotions of the world around you and express yourself best through art, music, healing, or compassion.',
+    moon: 'Your emotional world is vast and borderless — you feel everything intensely, dream vividly, and need creative or spiritual outlets to process the enormous amount of feeling you carry.',
+    rising: 'You come across as gentle, dreamy, and compassionate — people see you as someone who is deeply kind and intuitively understands what others are going through.',
+  },
+};
+
 const HTYM_MOON_BODY: Record<string, string> = {
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
   Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
@@ -647,11 +711,16 @@ export function downloadBirthdayJSONStandalone(
       birthLocation: natalChart.birthLocation || '',
       solarReturnYear: srChart.solarReturnYear,
       natalSun: natalChart.planets?.Sun?.sign || '',
+      natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
       natalMoon: natalChart.planets?.Moon?.sign || '',
+      natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
       natalRising: natalChart.houseCusps?.house1?.sign || '',
+      natalRisingDesc: SIGN_DESCRIPTIONS[natalChart.houseCusps?.house1?.sign || '']?.rising || '',
       srSun: natalChart.planets?.Sun?.sign || '',
       srMoon: analysis.moonSign || '',
+      srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
       srRising: analysis.yearlyTheme?.ascendantSign || '',
+      srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || '',
       yearlyTheme: analysis.yearlyTheme,
       sunHouse: analysis.sunHouse,
       sunNatalHouse: analysis.sunNatalHouse,
@@ -812,7 +881,7 @@ export function downloadBirthdayJSONStandalone(
     }
   };
 
-  const cleaned = stripDashesDeep(stripEmpty(payload) || payload);
+  const cleaned = stripDashesDeep(stripEmpty(payload) || payload, natalChart.name);
   const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -886,11 +955,16 @@ export function buildFullJsonStandalone(
     birthLocation: natalChart.birthLocation || '',
     solarReturnYear: srChart.solarReturnYear,
     natalSun: natalChart.planets?.Sun?.sign || '',
+    natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
     natalMoon: natalChart.planets?.Moon?.sign || '',
+    natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
     natalRising: natalChart.houseCusps?.house1?.sign || '',
+    natalRisingDesc: SIGN_DESCRIPTIONS[natalChart.houseCusps?.house1?.sign || '']?.rising || '',
     srSun: natalChart.planets?.Sun?.sign || '',
     srMoon: analysis.moonSign || '',
+    srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
     srRising: analysis.yearlyTheme?.ascendantSign || '',
+    srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || '',
     yearlyTheme: analysis.yearlyTheme,
     sunHouse: analysis.sunHouse,
     sunNatalHouse: analysis.sunNatalHouse,
@@ -1123,9 +1197,8 @@ export function buildFullJsonStandalone(
 }
 
 // ── Replace em-dashes and en-dashes with proper punctuation ──
-function stripDashes(text: string): string {
+function stripDashes(text: string, _personName?: string): string {
   if (typeof text !== 'string') return text;
-  // Replace " — " (em-dash with spaces) with ". " or ", "
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
@@ -1152,14 +1225,59 @@ function stripDashes(text: string): string {
   return result;
 }
 
-// ── Recursively strip dashes from all string values in an object ──
-function stripDashesDeep(obj: any): any {
-  if (typeof obj === 'string') return stripDashes(obj);
-  if (Array.isArray(obj)) return obj.map(stripDashesDeep);
+// ── Remove all but the first occurrence of the person's name in AI text ──
+function deduplicateName(text: string, personName: string): string {
+  if (!personName || typeof text !== 'string') return text;
+  const firstName = personName.trim().split(/\s+/)[0];
+  if (!firstName || firstName.length < 2) return text;
+  // Match name with optional surrounding punctuation: "Ike," "Ike." "Ike "
+  const nameRegex = new RegExp(`\\b${firstName}\\b`, 'gi');
+  let count = 0;
+  return text.replace(nameRegex, (match) => {
+    count++;
+    return count === 1 ? match : 'you';
+  });
+}
+
+// ── Expand jargon fragment sentences into proper prose ──
+const FRAGMENT_EXPANSIONS: Record<string, string> = {
+  'culmination energy': 'The things you have been building are reaching a natural peak and becoming visible to others.',
+  'growth period': 'This is a time when multiple areas of your life are expanding and developing in meaningful ways.',
+  'transformation energy': 'Something deep inside you is shifting, and old patterns are making room for a stronger version of who you are.',
+  'expansion energy': 'Your world is getting bigger — new opportunities, new perspectives, and new possibilities are opening up.',
+  'release energy': 'This is a time to let go of what no longer serves you so that something better can take its place.',
+  'new beginnings': 'Fresh starts are available to you now — the seeds you plant during this time will grow for years to come.',
+};
+
+function expandFragments(text: string): string {
+  if (typeof text !== 'string') return text;
+  // Replace standalone fragment sentences (2-3 words ending in period)
+  return text.replace(/(?:^|(?<=\.\s))([A-Z][a-z]+(?:\s[a-z]+){0,2})\.\s*/g, (match, fragment) => {
+    const key = fragment.toLowerCase().trim();
+    if (FRAGMENT_EXPANSIONS[key]) return FRAGMENT_EXPANSIONS[key] + ' ';
+    // If it's a very short "sentence" (≤ 4 words), flag it but leave it
+    const words = fragment.split(/\s+/);
+    if (words.length <= 2) {
+      // Expand generic 2-word fragments by making them complete sentences
+      return `This is a time of ${fragment.toLowerCase()}. `;
+    }
+    return match;
+  });
+}
+
+// ── Recursively clean all string values in an object ──
+function stripDashesDeep(obj: any, personName?: string): any {
+  if (typeof obj === 'string') return expandFragments(stripDashes(obj));
+  if (Array.isArray(obj)) return obj.map(v => stripDashesDeep(v, personName));
   if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
     const result: any = {};
     for (const [k, v] of Object.entries(obj)) {
-      result[k] = stripDashesDeep(v);
+      let cleaned = stripDashesDeep(v, personName);
+      // Deduplicate name specifically in AI reading fields
+      if (personName && typeof cleaned === 'string' && (k === 'aiReadingPlain' || k === 'aiReadingAstro')) {
+        cleaned = deduplicateName(cleaned, personName);
+      }
+      result[k] = cleaned;
     }
     return result;
   }
