@@ -1123,9 +1123,8 @@ export function buildFullJsonStandalone(
 }
 
 // ── Replace em-dashes and en-dashes with proper punctuation ──
-function stripDashes(text: string): string {
+function stripDashes(text: string, _personName?: string): string {
   if (typeof text !== 'string') return text;
-  // Replace " — " (em-dash with spaces) with ". " or ", "
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
@@ -1150,6 +1149,46 @@ function stripDashes(text: string): string {
     .replace(/\s{2,}/g, ' ')             // collapse multiple spaces
     .trim();
   return result;
+}
+
+// ── Remove all but the first occurrence of the person's name in AI text ──
+function deduplicateName(text: string, personName: string): string {
+  if (!personName || typeof text !== 'string') return text;
+  const firstName = personName.trim().split(/\s+/)[0];
+  if (!firstName || firstName.length < 2) return text;
+  // Match name with optional surrounding punctuation: "Ike," "Ike." "Ike "
+  const nameRegex = new RegExp(`\\b${firstName}\\b`, 'gi');
+  let count = 0;
+  return text.replace(nameRegex, (match) => {
+    count++;
+    return count === 1 ? match : 'you';
+  });
+}
+
+// ── Expand jargon fragment sentences into proper prose ──
+const FRAGMENT_EXPANSIONS: Record<string, string> = {
+  'culmination energy': 'The things you have been building are reaching a natural peak and becoming visible to others.',
+  'growth period': 'This is a time when multiple areas of your life are expanding and developing in meaningful ways.',
+  'transformation energy': 'Something deep inside you is shifting, and old patterns are making room for a stronger version of who you are.',
+  'expansion energy': 'Your world is getting bigger — new opportunities, new perspectives, and new possibilities are opening up.',
+  'release energy': 'This is a time to let go of what no longer serves you so that something better can take its place.',
+  'new beginnings': 'Fresh starts are available to you now — the seeds you plant during this time will grow for years to come.',
+};
+
+function expandFragments(text: string): string {
+  if (typeof text !== 'string') return text;
+  // Replace standalone fragment sentences (2-3 words ending in period)
+  return text.replace(/(?:^|(?<=\.\s))([A-Z][a-z]+(?:\s[a-z]+){0,2})\.\s*/g, (match, fragment) => {
+    const key = fragment.toLowerCase().trim();
+    if (FRAGMENT_EXPANSIONS[key]) return FRAGMENT_EXPANSIONS[key] + ' ';
+    // If it's a very short "sentence" (≤ 4 words), flag it but leave it
+    const words = fragment.split(/\s+/);
+    if (words.length <= 2) {
+      // Expand generic 2-word fragments by making them complete sentences
+      return `This is a time of ${fragment.toLowerCase()}. `;
+    }
+    return match;
+  });
 }
 
 // ── Recursively strip dashes from all string values in an object ──
