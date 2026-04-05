@@ -1129,6 +1129,21 @@ function stripDashes(text: string): string {
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
+    // Fix bad ordinals: 1th→1st, 2th→2nd, 3th→3rd, but keep 11th/12th/13th
+    .replace(/(\d+)th\b/g, (m, num) => {
+      const n = parseInt(num, 10);
+      const lastTwo = n % 100;
+      if (lastTwo >= 11 && lastTwo <= 13) return m; // 11th, 12th, 13th stay
+      const lastOne = n % 10;
+      if (lastOne === 1) return `${n}st`;
+      if (lastOne === 2) return `${n}nd`;
+      if (lastOne === 3) return `${n}rd`;
+      return m;
+    })
+    // Fix periods before lowercase (likely should be commas): "Jupiter. the planet" → "Jupiter, the planet"
+    .replace(/\.\s+([a-z])/g, (_, ch) => `, ${ch}`)
+    // Fix truncated sentences: add period if string ends without punctuation
+    .replace(/([a-zA-Z0-9])\s*$/, '$1.')
     .replace(/\.\s*\./g, '.')            // clean up double periods
     .replace(/,\s*\./g, '.')             // clean up comma-period
     .replace(/\.\s*,/g, '.')             // clean up period-comma
