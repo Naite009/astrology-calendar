@@ -266,7 +266,6 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
       }
       y += 4;
     }
-    y += 8;
   }
 
   addFooter();
