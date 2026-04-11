@@ -298,8 +298,25 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const loadConversation = (convo: SavedConversation) => {
-    assignThreadId(convo.chartId, convo.id);
-    setActiveChartId(convo.chartId);
+    // Resolve the chart id: use the saved chartId if it still exists, otherwise try to match by name
+    let resolvedChartId = convo.chartId;
+    const chartExists =
+      convo.chartId === "user"
+        ? Boolean(userNatalChart)
+        : savedCharts.some(c => c.id === convo.chartId);
+
+    if (!chartExists) {
+      // Try matching by chart name
+      if (userNatalChart && userNatalChart.name === convo.chartName) {
+        resolvedChartId = "user";
+      } else {
+        const match = savedCharts.find(c => c.name === convo.chartName);
+        if (match) resolvedChartId = match.id!;
+      }
+    }
+
+    assignThreadId(resolvedChartId, convo.id);
+    setActiveChartId(resolvedChartId);
     setEntries(convo.entries);
     setShowHistory(false);
   };
