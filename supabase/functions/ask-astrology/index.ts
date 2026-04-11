@@ -79,9 +79,14 @@ Return this exact structure:
         { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "Persistence and determination." },
         { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "Adaptability." }
       ],
+      "polarity": [
+        { "name": "Yang (Active)", "symbol": "☀️", "signs": ["Aries", "Gemini", "Leo", "Libra", "Sagittarius", "Aquarius"], "count": 5, "planets": ["Sun", "Mercury", "Mars", "Jupiter", "Pluto"], "interpretation": "Outward-directed energy dominates." },
+        { "name": "Yin (Receptive)", "symbol": "🌙", "signs": ["Taurus", "Cancer", "Virgo", "Scorpio", "Capricorn", "Pisces"], "count": 5, "planets": ["Moon", "Venus", "Saturn", "Uranus", "Neptune"], "interpretation": "Inward-directed energy." }
+      ],
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
-      "balance_interpretation": "2-3 sentence synthesis of what the elemental and modal balance means for this person and how it relates to the question asked."
+      "dominant_polarity": "Yang (Active)",
+      "balance_interpretation": "2-3 sentence synthesis of what the elemental, modal, and polarity balance means for this person and how it relates to the question asked."
     },
     {
       "type": "summary_box",
