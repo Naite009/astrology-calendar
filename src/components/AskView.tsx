@@ -160,6 +160,10 @@ function removeActiveChat(chartId: string) {
   }
 }
 
+function displayBirthDate(date?: string) {
+  return formatDateMMDDYYYY(date) || date || "";
+}
+
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
   const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
   const initialAskChartIdRef = useRef<string>(
