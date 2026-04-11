@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, fileType, fileName } = await req.json();
+    const { imageBase64, fileType, fileName, chartType } = await req.json();
 
     if (!imageBase64) {
       return new Response(JSON.stringify({ error: "No file provided" }), {
@@ -33,7 +33,23 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Extract planetary positions, house cusps, PROGRESSIONS, and TRANSITS from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
+    const isSolarReturn = chartType === 'solar-return';
+    const docType = isPDF || isWord ? 'document' : 'image';
+
+    const chartSelectionInstructions = isSolarReturn
+      ? `SELECTING THE RIGHT CHART:
+- This is a SOLAR RETURN chart. Extract the Solar Return planetary positions as the PRIMARY "planets" data.
+- The Solar Return chart shows where the planets were when the Sun returned to its natal degree.
+- Do NOT confuse the natal birth data sidebar with the SR chart positions — the SR WHEEL and SR TABLE are what matter.
+- If the chart shows both natal and SR data (bi-wheel), extract the OUTER ring (Solar Return) positions into "planets".
+- The location shown is the Solar Return location, not necessarily the birth location.
+- Extract the SR date (the birthday return date) if visible.`
+      : `SELECTING THE RIGHT CHART:
+- Extract the NATAL/RADIX/BIRTH chart as primary.
+- ALSO extract progressions and transits if they appear on the same chart.
+- If multiple charts exist, use the one with birth info (date, time, place).`;
+
+    const prompt = `Extract planetary positions, house cusps, PROGRESSIONS, and TRANSITS from this astrological ${isSolarReturn ? 'SOLAR RETURN ' : ''}chart ${docType}.
 
 CRITICAL - READ THE PRINTED TABLE(S), NOT THE WHEEL:
 - There is usually a PRINTED TABLE of planet positions below or beside the wheel. READ THAT TABLE EXACTLY.
@@ -61,6 +77,14 @@ NODES - READ CAREFULLY:
 - South Node may be labeled: ☋, "South Node", or "Ketu" 
 - Read their degrees from the TABLE, not the wheel position.
 
+EXTENDED CELESTIAL BODIES - EXTRACT ALL THAT ARE VISIBLE:
+- Goddess asteroids: Ceres (⚳), Pallas (⚴), Juno (⚵), Vesta (⚶)
+- Love/health asteroids: Psyche, Eros, Amor, Hygiea
+- Centaurs: Chiron (⚷), Pholus, Nessus, Chariklo
+- Dwarf planets/TNOs: Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna, Gonggong, Salacia
+- Points: Lilith (Mean Lilith ⚸), Part of Fortune (⊕ or Fortuna), Vertex (Vx)
+- If ANY of these appear in the table or chart, extract them with the same sign/degree/minutes format.
+
 PROGRESSIONS (AC pr, MC pr, planets) - IMPORTANT:
 - Look for a section labeled "Progressions", "Secondary Progressions", "Progressed", or "pr" suffix.
 - Common locations: small box to the right of the wheel, or in a separate table section.
@@ -75,17 +99,14 @@ TRANSITS - IMPORTANT:
 - Often in an outer ring on the wheel or in a separate table.
 - Extract transit positions if visible.
 
-SELECTING THE RIGHT CHART:
-- Extract the NATAL/RADIX/BIRTH chart as primary.
-- ALSO extract progressions and transits if they appear on the same chart.
-- If multiple charts exist, use the one with birth info (date, time, place).
+${chartSelectionInstructions}
 
 Extract birth info if visible:
 - Name (usually at top)
 - Birth date (convert to YYYY-MM-DD format)
 - Birth time (convert to 24-hour HH:MM)
 - Birth location
-- Progression/Transit date if shown (the "current" date the chart was calculated for)
+- Progression/Transit date if shown (the "current" date the chart was calculated for)${isSolarReturn ? '\n- Solar Return date (the date of the Sun return)' : ''}
 
 Return this exact JSON structure (no markdown, no commentary):
 {
@@ -94,12 +115,21 @@ Return this exact JSON structure (no markdown, no commentary):
     "birthDate": "1990-01-15",
     "birthTime": "14:30",
     "birthLocation": "New York, NY, USA",
-    "progressionDate": "2025-02-06"
+    "progressionDate": "2025-02-06"${isSolarReturn ? ',\n    "solarReturnDate": "2025-01-15",\n    "solarReturnLocation": "Houston, TX, USA"' : ''}
   },
   "planets": {
     "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
     "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
-    "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30, "isRetrograde": false }
+    "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30, "isRetrograde": false },
+    "Chiron": { "sign": "Aries", "degree": 20, "minutes": 5, "isRetrograde": false },
+    "Ceres": { "sign": "Taurus", "degree": 12, "minutes": 30, "isRetrograde": false },
+    "Juno": { "sign": "Gemini", "degree": 8, "minutes": 15, "isRetrograde": false },
+    "Pallas": { "sign": "Virgo", "degree": 3, "minutes": 45, "isRetrograde": false },
+    "Vesta": { "sign": "Scorpio", "degree": 18, "minutes": 22, "isRetrograde": false },
+    "Lilith": { "sign": "Cancer", "degree": 15, "minutes": 10, "isRetrograde": false },
+    "PartOfFortune": { "sign": "Leo", "degree": 22, "minutes": 5, "isRetrograde": false },
+    "Psyche": { "sign": "Libra", "degree": 7, "minutes": 30, "isRetrograde": false },
+    "Eros": { "sign": "Pisces", "degree": 14, "minutes": 20, "isRetrograde": false }
   },
   "houseCusps": {
     "house1": { "sign": "Leo", "degree": 5, "minutes": 30 },
@@ -151,10 +181,11 @@ Rules:
 - NorthNode and SouthNode degrees must match the table exactly.
 - birthDate: YYYY-MM-DD format.
 - birthTime: 24-hour HH:MM format.
-- Planet names: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant, NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
+- Planet names: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant, NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo, Gonggong, Salacia.
 - Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
 - For progressions: Include AC, MC, and any progressed planets visible.
 - For transits: Include any transit positions visible on the chart.
+- EXTRACT EVERY celestial body visible in the table — do not skip asteroids, centaurs, or dwarf planets.
 
 For Astro.com charts: if you only see 6 cusps printed (AC, 2, 3, MC, 11, 12), extract those into astroComCusps. If you see all 12 printed, prefer filling houseCusps directly.
 
