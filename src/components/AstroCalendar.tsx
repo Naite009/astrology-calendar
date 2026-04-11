@@ -56,7 +56,15 @@ export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
   const [showUserForm, setShowUserForm] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("month");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = sessionStorage.getItem("astro_view_mode");
+    return (saved as ViewMode) || "month";
+  });
+
+  // Persist viewMode so it survives re-mounts
+  useEffect(() => {
+    sessionStorage.setItem("astro_view_mode", viewMode);
+  }, [viewMode]);
   const [showLegend, setShowLegend] = useState(false);
   const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
