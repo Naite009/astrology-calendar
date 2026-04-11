@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
@@ -39,6 +40,7 @@ interface AskViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
   selectedChartId: string | null;
+  solarReturnCharts?: SolarReturnChart[];
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
