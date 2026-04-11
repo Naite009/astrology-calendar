@@ -585,10 +585,16 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
             <div className="flex items-center gap-1">
               {hasAssistantReadings && (
-                <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download as PDF">
-                  <Download className="h-4 w-4 mr-1" />
-                  PDF
-                </Button>
+                <>
+                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title="Download as JSON">
+                    <Download className="h-4 w-4 mr-1" />
+                    JSON
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download as PDF">
+                    <Download className="h-4 w-4 mr-1" />
+                    PDF
+                  </Button>
+                </>
               )}
               <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-muted-foreground" title="View saved conversations">
                 <History className="h-4 w-4" />
