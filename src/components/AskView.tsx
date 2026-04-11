@@ -653,7 +653,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <span className="font-medium text-foreground">{selectedChart.name}</span>
                 {" · "}
                 {displayBirthDate(selectedChart.birthDate)}
-                {selectedChart.birthTime && ` at ${selectedChart.birthTime}`}
+                {selectedChart.birthTime && ` at ${formatTime12h(selectedChart.birthTime)}`}
                 {selectedChart.birthLocation && ` · ${selectedChart.birthLocation}`}
               </p>
             </div>
