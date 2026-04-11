@@ -620,8 +620,10 @@ export function calculateAstrocartography(
         if (diff <= 8) { // 8° orb for angular planets
           angularPlanets.push({ planet, angle: angle.name, orb: Math.round(diff * 10) / 10 });
           const baseRating = PLANET_ANGLE_RATING[planet]?.[angle.name] || 5;
-          const orbMultiplier = 1 - (diff / 12);
-          const score = baseRating * orbMultiplier;
+          // Gentler orb decay: tight orbs (0-2°) keep ~90-100% of score,
+          // wider orbs (6-8°) still keep ~60-70%. Previous formula was too aggressive.
+          const orbMultiplier = 1 - (diff * diff) / (8 * 8 * 1.5);  // quadratic decay, ~100% at 0°, ~74% at 5°, ~58% at 8°
+          const score = baseRating * Math.max(orbMultiplier, 0.4);
           if (BENEFIC_PLANETS.has(planet)) {
             beneficTotal += score;
             beneficCount++;
