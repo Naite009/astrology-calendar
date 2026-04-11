@@ -29,6 +29,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
+import { useSolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
@@ -88,6 +89,7 @@ export const AstroCalendar = () => {
     setSavedCharts,
     saveUserNatalChart
   );
+  const { solarReturnCharts } = useSolarReturnChart();
 
   // Voice memos
   const voiceMemos = useVoiceMemos();
