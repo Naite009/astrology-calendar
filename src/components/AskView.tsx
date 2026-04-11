@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { getPlanetaryPositions } from "@/lib/astrology";
+import { generateAskPdf } from "@/lib/askPdfExport";
 import {
   Popover,
   PopoverContent,
@@ -19,6 +20,14 @@ interface Message {
   content: string;
 }
 
+interface SavedConversation {
+  id: string;
+  chartName: string;
+  chartId: string;
+  messages: Message[];
+  timestamp: number;
+}
+
 interface AskViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -26,17 +35,49 @@ interface AskViewProps {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
+const STORAGE_KEY = "ask-conversations";
+const ACTIVE_CHAT_KEY = "ask-active-chat";
+
+function loadConversations(): SavedConversation[] {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch { return []; }
+}
+
+function saveConversations(convos: SavedConversation[]) {
+  // Keep last 50 conversations
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(convos.slice(0, 50)));
+}
+
+function loadActiveChat(chartId: string): Message[] {
+  try {
+    const data = JSON.parse(localStorage.getItem(ACTIVE_CHAT_KEY) || "{}");
+    if (data.chartId === chartId) return data.messages || [];
+  } catch {}
+  return [];
+}
+
+function saveActiveChat(chartId: string, messages: Message[]) {
+  localStorage.setItem(ACTIVE_CHAT_KEY, JSON.stringify({ chartId, messages }));
+}
 
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeChartId, setActiveChartId] = useState<string>(initialChartId || "user");
+  const [messages, setMessages] = useState<Message[]>(() => loadActiveChat(initialChartId || "user"));
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeChartId, setActiveChartId] = useState<string>(initialChartId || "user");
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [chartSearch, setChartSearch] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Build sorted chart list: user first (starred), then alphabetical, filter SR charts
+  // Persist messages on change
+  useEffect(() => {
+    saveActiveChat(activeChartId, messages);
+  }, [messages, activeChartId]);
+
+  // Build sorted chart list
   const chartOptions = useMemo(() => {
     const others = savedCharts
       .filter(c => c.id !== userNatalChart?.id && !(c as any).isSolarReturn)
@@ -50,7 +91,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return chartOptions.others.filter(c => c.name?.toLowerCase().includes(q));
   }, [chartOptions.others, chartSearch]);
 
-  // Get the selected chart for context
   const getSelectedChart = (): NatalChart | null => {
     if (activeChartId === "user") return userNatalChart;
     return savedCharts.find(c => c.id === activeChartId) || userNatalChart;
@@ -58,17 +98,45 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   
   const selectedChart = getSelectedChart();
 
-  // Clear chat when switching charts
   const selectChart = (id: string) => {
     if (id !== activeChartId) {
+      // Save current conversation before switching
+      if (messages.length > 0) {
+        saveCurrentConversation();
+      }
       setActiveChartId(id);
-      setMessages([]);
+      setMessages(loadActiveChat(id));
     }
     setSelectorOpen(false);
     setChartSearch("");
   };
+
+  const saveCurrentConversation = useCallback(() => {
+    if (messages.length === 0) return;
+    const convo: SavedConversation = {
+      id: `${activeChartId}-${Date.now()}`,
+      chartName: selectedChart?.name || "Unknown",
+      chartId: activeChartId,
+      messages: [...messages],
+      timestamp: Date.now(),
+    };
+    const existing = loadConversations();
+    saveConversations([convo, ...existing]);
+    toast.success("Conversation saved");
+  }, [messages, activeChartId, selectedChart]);
+
+  const loadConversation = (convo: SavedConversation) => {
+    setActiveChartId(convo.chartId);
+    setMessages(convo.messages);
+    setShowHistory(false);
+  };
+
+  const deleteConversation = (id: string) => {
+    const existing = loadConversations();
+    saveConversations(existing.filter(c => c.id !== id));
+    toast.success("Conversation deleted");
+  };
   
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -163,6 +231,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setIsLoading(true);
     
     let assistantContent = "";
+    const controller = new AbortController();
+    abortRef.current = controller;
     
     const updateAssistant = (chunk: string) => {
       assistantContent += chunk;
@@ -193,6 +263,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           })),
           chartContext,
         }),
+        signal: controller.signal,
       });
       
       if (resp.status === 429) {
@@ -260,6 +331,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
       
     } catch (error) {
+      if ((error as any)?.name === 'AbortError') return;
       console.error("Ask error:", error);
       toast.error("Failed to get response. Please try again.");
       setMessages(prev => {
@@ -270,6 +342,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       });
     } finally {
       setIsLoading(false);
+      abortRef.current = null;
     }
   };
 
@@ -281,9 +354,72 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const clearChat = () => {
+    if (messages.length > 0) {
+      saveCurrentConversation();
+    }
     setMessages([]);
     setInput("");
+    localStorage.removeItem(ACTIVE_CHAT_KEY);
   };
+
+  const handleDownloadPdf = () => {
+    if (!selectedChart || messages.length === 0) return;
+    // Extract only assistant messages for PDF
+    const assistantMessages = messages.filter(m => m.role === "assistant");
+    if (assistantMessages.length === 0) {
+      toast.error("No answers to export yet.");
+      return;
+    }
+    generateAskPdf(selectedChart, assistantMessages);
+  };
+
+  const conversations = loadConversations();
+
+  // History panel
+  if (showHistory) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            Saved Conversations
+          </h3>
+          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
+            <X className="h-4 w-4 mr-1" /> Back
+          </Button>
+        </div>
+        {conversations.length === 0 ? (
+          <Card className="border-border">
+            <CardContent className="py-8 text-center text-muted-foreground text-sm">
+              No saved conversations yet. Conversations are auto-saved when you clear chat or switch charts.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {conversations.map(convo => {
+              const firstQ = convo.messages.find(m => m.role === "user")?.content || "No question";
+              const answerCount = convo.messages.filter(m => m.role === "assistant").length;
+              return (
+                <Card key={convo.id} className="border-border hover:border-primary/30 transition-colors cursor-pointer"
+                  onClick={() => loadConversation(convo)}>
+                  <CardContent className="py-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">{convo.chartName} · {new Date(convo.timestamp).toLocaleDateString()}</p>
+                      <p className="text-sm text-foreground truncate">{firstQ}</p>
+                      <p className="text-xs text-muted-foreground">{answerCount} answer{answerCount !== 1 ? "s" : ""}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={(e) => { e.stopPropagation(); deleteConversation(convo.id); }}>
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -301,16 +437,27 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 </CardDescription>
               </div>
             </div>
-            {messages.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearChat} className="text-muted-foreground">
-                <Trash2 className="h-4 w-4 mr-1" />
-                Clear
+            <div className="flex items-center gap-1">
+              {messages.some(m => m.role === "assistant") && (
+                <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download answers as PDF">
+                  <Download className="h-4 w-4 mr-1" />
+                  PDF
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-muted-foreground" title="View saved conversations">
+                <History className="h-4 w-4" />
               </Button>
-            )}
+              {messages.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearChat} className="text-muted-foreground">
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Chart Selector Dropdown */}
+          {/* Chart Selector */}
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Reading chart for</p>
             <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
@@ -327,7 +474,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                {/* Search */}
                 {chartOptions.others.length > 3 && (
                   <div className="p-2 border-b border-border">
                     <div className="relative">
@@ -344,7 +490,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                   </div>
                 )}
                 <div className="max-h-[280px] overflow-y-auto">
-                  {/* Primary user — always first, starred */}
                   {chartOptions.primary && (
                     <button
                       onClick={() => selectChart("user")}
@@ -357,11 +502,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       )}
                     </button>
                   )}
-                  {/* Divider */}
                   {chartOptions.primary && filteredOthers.length > 0 && (
                     <div className="border-t border-border" />
                   )}
-                  {/* Other charts alphabetically */}
                   {filteredOthers.map(chart => (
                     <button
                       key={chart.id}
@@ -383,7 +526,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </Popover>
           </div>
 
-          {/* Chart Context Info */}
+          {/* Chart Context */}
           {selectedChart && (
             <div className="rounded-md bg-muted/50 p-3 text-sm">
               <p className="text-muted-foreground">
@@ -396,7 +539,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           )}
           
-          {/* Messages Area */}
+          {/* Messages */}
           <ScrollArea className="h-[400px] pr-4" ref={scrollRef}>
             <div className="space-y-4">
               {messages.length === 0 && (
@@ -459,7 +602,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           </ScrollArea>
           
-          {/* Input Area */}
+          {/* Input */}
           <div className="flex gap-2">
             <Textarea
               value={input}
