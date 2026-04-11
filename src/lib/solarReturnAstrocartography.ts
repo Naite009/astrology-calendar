@@ -568,10 +568,11 @@ export function calculateAstrocartography(
         const baseScore = ANGLE_SCORES[ap.planet]?.[ap.angle] ?? 5;
         const planetWeight = weights[ap.planet] ?? 0.5;
         const angleImportance = angleImportanceMap[ap.angle] ?? 0.8;
-        // Scale the base score by intention relevance so weights don't cancel for single-planet cities.
-        // Dividing by 3.0 (max planet weight) keeps the relevance multiplier in a sane range.
+        // Use the full base score scaled by relevance instead of centering on 5,
+        // so high-scoring combos (Jupiter on MC for career) can actually reach green
         const relevance = Math.min(planetWeight * angleImportance, 6.0) / 3.0;
-        scaledSum += 5 + (baseScore - 5) * relevance;
+        // Weighted interpolation: move from neutral (5) toward baseScore proportional to relevance
+        scaledSum += 5 + (baseScore - 5) * Math.min(relevance, 1.8);
       }
 
       const rawScore = angularPlanets.length > 0 ? scaledSum / angularPlanets.length : overallRating;
