@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2 } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 
@@ -56,7 +56,15 @@ export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
   const [showUserForm, setShowUserForm] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("month");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = sessionStorage.getItem("astro_view_mode");
+    return (saved as ViewMode) || "month";
+  });
+
+  // Persist viewMode so it survives re-mounts
+  useEffect(() => {
+    sessionStorage.setItem("astro_view_mode", viewMode);
+  }, [viewMode]);
   const [showLegend, setShowLegend] = useState(false);
   const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
