@@ -7,17 +7,21 @@ interface Message {
 }
 
 const COLORS = {
-  bg: [26, 26, 30] as [number, number, number],
-  card: [35, 35, 42] as [number, number, number],
-  gold: [212, 175, 55] as [number, number, number],
-  cream: [245, 240, 230] as [number, number, number],
-  muted: [160, 160, 170] as [number, number, number],
-  accent: [180, 160, 120] as [number, number, number],
+  bg: [255, 255, 255] as [number, number, number],
+  card: [248, 246, 242] as [number, number, number],
+  cardBorder: [220, 215, 205] as [number, number, number],
+  gold: [160, 130, 60] as [number, number, number],
+  heading: [40, 40, 45] as [number, number, number],
+  body: [55, 55, 60] as [number, number, number],
+  muted: [130, 130, 140] as [number, number, number],
+  accent: [110, 90, 50] as [number, number, number],
+  highlight: [255, 250, 235] as [number, number, number],
+  highlightBorder: [210, 190, 130] as [number, number, number],
 };
 
 const PAGE_W = 210;
 const PAGE_H = 297;
-const MARGIN = 20;
+const MARGIN = 22;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
 function stripMarkdown(text: string): string {
@@ -27,9 +31,23 @@ function stripMarkdown(text: string): string {
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/`(.*?)`/g, "$1")
     .replace(/^[-*]\s+/gm, "• ")
-    .replace(/^\d+\.\s+/gm, (m) => m)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .trim();
+}
+
+// Detect lines that are likely important callouts
+function isCalloutLine(line: string): boolean {
+  const lower = line.toLowerCase();
+  return (
+    lower.startsWith("key takeaway") ||
+    lower.startsWith("important") ||
+    lower.startsWith("note:") ||
+    lower.startsWith("bottom line") ||
+    lower.startsWith("summary") ||
+    lower.startsWith("in short") ||
+    lower.startsWith("the core") ||
+    lower.startsWith("what this means")
+  );
 }
 
 export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) {
@@ -37,64 +55,62 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
   let y = 0;
 
   const ensureSpace = (needed: number) => {
-    if (y + needed > PAGE_H - 25) {
+    if (y + needed > PAGE_H - 22) {
       addFooter();
       pdf.addPage();
       y = MARGIN;
-      drawPageBg();
     }
   };
 
-  const drawPageBg = () => {
-    pdf.setFillColor(...COLORS.bg);
-    pdf.rect(0, 0, PAGE_W, PAGE_H, "F");
-  };
-
   const addFooter = () => {
+    pdf.setDrawColor(...COLORS.cardBorder);
+    pdf.setLineWidth(0.3);
+    pdf.line(MARGIN, PAGE_H - 16, PAGE_W - MARGIN, PAGE_H - 16);
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7);
+    pdf.setFontSize(7.5);
     pdf.setTextColor(...COLORS.muted);
-    pdf.text(`${chart.name} · Chart Reading`, MARGIN, PAGE_H - 10);
-    pdf.text(`Page ${pdf.getNumberOfPages()}`, PAGE_W - MARGIN, PAGE_H - 10, { align: "right" });
+    pdf.text(`${chart.name} · Chart Reading`, MARGIN, PAGE_H - 11);
+    pdf.text(`Page ${pdf.getNumberOfPages()}`, PAGE_W - MARGIN, PAGE_H - 11, { align: "right" });
   };
 
   // --- COVER PAGE ---
-  drawPageBg();
-
-  // Decorative line
-  pdf.setDrawColor(...COLORS.gold);
-  pdf.setLineWidth(0.5);
-  pdf.line(MARGIN, 60, PAGE_W - MARGIN, 60);
+  // Decorative top band
+  pdf.setFillColor(...COLORS.gold);
+  pdf.rect(0, 0, PAGE_W, 4, "F");
 
   // Title
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(28);
-  pdf.setTextColor(...COLORS.cream);
-  pdf.text("Chart Reading", PAGE_W / 2, 80, { align: "center" });
+  pdf.setFontSize(32);
+  pdf.setTextColor(...COLORS.heading);
+  pdf.text("Chart Reading", PAGE_W / 2, 55, { align: "center" });
 
-  // Subtitle
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(14);
-  pdf.setTextColor(...COLORS.gold);
-  pdf.text(chart.name || "Natal Chart", PAGE_W / 2, 92, { align: "center" });
+  // Decorative line
+  pdf.setDrawColor(...COLORS.gold);
+  pdf.setLineWidth(0.8);
+  pdf.line(PAGE_W / 2 - 30, 62, PAGE_W / 2 + 30, 62);
+
+  // Name
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  pdf.setTextColor(...COLORS.accent);
+  pdf.text(chart.name || "Natal Chart", PAGE_W / 2, 76, { align: "center" });
 
   // Birth info
-  pdf.setFontSize(10);
-  pdf.setTextColor(...COLORS.muted);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(11);
+  pdf.setTextColor(...COLORS.body);
   const birthInfo: string[] = [];
   if (chart.birthDate) birthInfo.push(chart.birthDate);
   if (chart.birthTime) birthInfo.push(chart.birthTime);
   if (chart.birthLocation) birthInfo.push(chart.birthLocation);
-  pdf.text(birthInfo.join(" · "), PAGE_W / 2, 104, { align: "center" });
+  pdf.text(birthInfo.join("  ·  "), PAGE_W / 2, 88, { align: "center" });
 
-  // Date generated
-  pdf.setFontSize(8);
-  pdf.text(`Generated ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, PAGE_W / 2, 114, { align: "center" });
+  // Date
+  pdf.setFontSize(9);
+  pdf.setTextColor(...COLORS.muted);
+  pdf.text(`Generated ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, PAGE_W / 2, 98, { align: "center" });
 
-  pdf.setDrawColor(...COLORS.gold);
-  pdf.line(MARGIN, 125, PAGE_W - MARGIN, 125);
-
-  // Planetary summary card on cover
+  // Key Placements box
   const planets = chart.planets || {};
   const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   const houseCusps = chart.houseCusps || {};
@@ -123,43 +139,51 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
   };
 
   const keyPlanets = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-  y = 135;
-  pdf.setFillColor(...COLORS.card);
-  pdf.roundedRect(MARGIN, y, CONTENT_W, 4 + keyPlanets.length * 6 + 4, 3, 3, "F");
-
-  // Gold accent bar
-  pdf.setFillColor(...COLORS.gold);
-  pdf.rect(MARGIN, y, 2, 4 + keyPlanets.length * 6 + 4, "F");
-
-  y += 6;
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8);
-  pdf.setTextColor(...COLORS.gold);
-  pdf.text("KEY PLACEMENTS", MARGIN + 8, y);
-  y += 5;
-
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
-  pdf.setTextColor(...COLORS.cream);
-
+  const planetLines: string[] = [];
   for (const name of keyPlanets) {
     const p = planets[name as keyof typeof planets];
     if (p && typeof p === 'object' && 'sign' in p) {
       const pos = p as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
       const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
       const house = calcHouse(absDeg);
-      const retro = pos.isRetrograde ? " ℞" : "";
-      const houseStr = house ? ` · House ${house}` : "";
-      pdf.text(`${name}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}${houseStr}${retro}`, MARGIN + 8, y);
-      y += 6;
+      const retro = pos.isRetrograde ? "  ℞" : "";
+      const houseStr = house ? `  ·  House ${house}` : "";
+      planetLines.push(`${name}:  ${pos.degree}°${pos.minutes || 0}' ${pos.sign}${houseStr}${retro}`);
     }
+  }
+
+  const boxH = 12 + planetLines.length * 7;
+  const boxY = 112;
+
+  // Card background
+  pdf.setFillColor(...COLORS.card);
+  pdf.setDrawColor(...COLORS.cardBorder);
+  pdf.setLineWidth(0.4);
+  pdf.roundedRect(MARGIN + 10, boxY, CONTENT_W - 20, boxH, 2, 2, "FD");
+
+  // Gold left accent
+  pdf.setFillColor(...COLORS.gold);
+  pdf.rect(MARGIN + 10, boxY, 3, boxH, "F");
+
+  y = boxY + 8;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(...COLORS.accent);
+  pdf.text("KEY PLACEMENTS", MARGIN + 20, y);
+  y += 6;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10);
+  pdf.setTextColor(...COLORS.body);
+  for (const line of planetLines) {
+    pdf.text(line, MARGIN + 20, y);
+    y += 7;
   }
 
   addFooter();
 
   // --- CONTENT PAGES ---
   pdf.addPage();
-  drawPageBg();
   y = MARGIN;
 
   for (let i = 0; i < assistantMessages.length; i++) {
@@ -167,17 +191,18 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
     const cleanText = stripMarkdown(msg.content);
     const paragraphs = cleanText.split(/\n\n+/).filter(p => p.trim());
 
-    // Section header
-    ensureSpace(20);
-    pdf.setFillColor(...COLORS.gold);
-    pdf.rect(MARGIN, y, CONTENT_W, 0.5, "F");
-    y += 6;
+    // Section divider
+    ensureSpace(18);
+    pdf.setDrawColor(...COLORS.gold);
+    pdf.setLineWidth(0.6);
+    pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 8;
 
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.setTextColor(...COLORS.gold);
+    pdf.setFontSize(16);
+    pdf.setTextColor(...COLORS.heading);
     pdf.text(`Interpretation ${i + 1}`, MARGIN, y);
-    y += 8;
+    y += 10;
 
     for (const para of paragraphs) {
       const lines = para.split(/\n/);
@@ -186,41 +211,66 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
         if (!trimmed) continue;
 
         const isBullet = trimmed.startsWith("• ");
-        const indent = isBullet ? 6 : 0;
+        const indent = isBullet ? 5 : 0;
 
-        // Check if this looks like a heading (short line, no period)
-        const isHeading = trimmed.length < 60 && !trimmed.endsWith(".") && !isBullet && !trimmed.startsWith("•");
-
-        if (isHeading && trimmed.length > 3) {
-          ensureSpace(14);
+        // Callout box for important lines
+        if (isCalloutLine(trimmed)) {
+          ensureSpace(18);
           y += 3;
+          const wrappedCallout = pdf.splitTextToSize(trimmed, CONTENT_W - 18);
+          const calloutH = wrappedCallout.length * 6 + 10;
+
+          pdf.setFillColor(...COLORS.highlight);
+          pdf.setDrawColor(...COLORS.highlightBorder);
+          pdf.setLineWidth(0.4);
+          pdf.roundedRect(MARGIN, y - 4, CONTENT_W, calloutH, 2, 2, "FD");
+          pdf.setFillColor(...COLORS.gold);
+          pdf.rect(MARGIN, y - 4, 3, calloutH, "F");
+
           pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(9);
+          pdf.setFontSize(10);
           pdf.setTextColor(...COLORS.accent);
+          let cy = y + 3;
+          for (const wl of wrappedCallout) {
+            pdf.text(wl, MARGIN + 8, cy);
+            cy += 6;
+          }
+          y = cy + 4;
+          continue;
+        }
+
+        // Heading detection
+        const isHeading = trimmed.length < 70 && !trimmed.endsWith(".") && !isBullet && trimmed.length > 3 && !trimmed.startsWith("•");
+
+        if (isHeading) {
+          ensureSpace(16);
+          y += 4;
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(13);
+          pdf.setTextColor(...COLORS.heading);
           pdf.text(trimmed, MARGIN + indent, y);
-          y += 6;
+          y += 8;
         } else {
           pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(8.5);
-          pdf.setTextColor(...COLORS.cream);
+          pdf.setFontSize(11);
+          pdf.setTextColor(...COLORS.body);
 
-          const wrapped = pdf.splitTextToSize(trimmed, CONTENT_W - indent - 4);
+          const wrapped = pdf.splitTextToSize(trimmed, CONTENT_W - indent - 2);
           for (const wl of wrapped) {
-            ensureSpace(5);
+            ensureSpace(7);
             pdf.text(wl, MARGIN + indent, y);
-            y += 4.5;
+            y += 6;
           }
-          y += 2;
+          y += 3;
         }
       }
-      y += 3;
+      y += 4;
     }
-    y += 6;
+    y += 8;
   }
 
   addFooter();
 
-  // Save
   const safeName = (chart.name || "chart").replace(/[^a-zA-Z0-9]/g, "_");
   pdf.save(`${safeName}_reading_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
