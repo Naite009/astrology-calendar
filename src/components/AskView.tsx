@@ -42,6 +42,7 @@ interface AskViewProps {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
 const STORAGE_KEY = "ask-conversations";
+const LEGACY_ACTIVE_CHAT_KEY = "ask-active-chat";
 const ACTIVE_CHAT_KEY_PREFIX = "ask-active-chat:";
 const ACTIVE_META_KEY = "ask-active-meta";
 const MAX_SAVED_CONVERSATIONS = 50;
@@ -77,6 +78,28 @@ function getActiveChatKey(chartId: string) {
   return `${ACTIVE_CHAT_KEY_PREFIX}${chartId}`;
 }
 
+function loadLegacyActiveChat(): { chartId: string; entries: ChatEntry[] } | null {
+  const parsed = readStorage<unknown>(LEGACY_ACTIVE_CHAT_KEY, null);
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return null;
+  }
+
+  const record = parsed as { chartId?: unknown; entries?: unknown };
+  return {
+    chartId: typeof record.chartId === "string" ? record.chartId : "user",
+    entries: Array.isArray(record.entries) ? (record.entries as ChatEntry[]) : [],
+  };
+}
+
+function clearLegacyActiveChat() {
+  try {
+    localStorage.removeItem(LEGACY_ACTIVE_CHAT_KEY);
+  } catch {
+    // ignore cleanup failures
+  }
+}
+
 function loadConversations(): SavedConversation[] {
   const parsed = readStorage<unknown>(STORAGE_KEY, []);
   const conversations = Array.isArray(parsed) ? (parsed as SavedConversation[]) : [];
@@ -90,13 +113,15 @@ function saveConversations(convos: SavedConversation[]) {
 
 function loadActiveMeta(): AskActiveMeta {
   const parsed = readStorage<Partial<AskActiveMeta>>(ACTIVE_META_KEY, {});
+  const legacy = loadLegacyActiveChat();
   const threadIds =
     parsed.threadIds && typeof parsed.threadIds === "object" && !Array.isArray(parsed.threadIds)
       ? (parsed.threadIds as Record<string, string>)
       : {};
 
   return {
-    selectedChartId: typeof parsed.selectedChartId === "string" ? parsed.selectedChartId : "user",
+    selectedChartId:
+      typeof parsed.selectedChartId === "string" ? parsed.selectedChartId : legacy?.chartId || "user",
     threadIds,
   };
 }
@@ -107,6 +132,18 @@ function saveActiveMeta(meta: AskActiveMeta) {
 
 function loadActiveChat(chartId: string): ChatEntry[] {
   const parsed = readStorage<unknown>(getActiveChatKey(chartId), []);
+
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    return parsed as ChatEntry[];
+  }
+
+  const legacy = loadLegacyActiveChat();
+  if (legacy?.chartId === chartId && legacy.entries.length > 0) {
+    writeStorage(getActiveChatKey(chartId), legacy.entries, legacy.entries.slice(-12));
+    clearLegacyActiveChat();
+    return legacy.entries;
+  }
+
   return Array.isArray(parsed) ? (parsed as ChatEntry[]) : [];
 }
 
