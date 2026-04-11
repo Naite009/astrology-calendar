@@ -66,6 +66,24 @@ Return this exact structure:
       ]
     },
     {
+      "type": "modality_element",
+      "title": "Elemental & Modal Balance",
+      "elements": [
+        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "Strong drive and initiative." },
+        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "Practical grounding." },
+        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "Mental agility." },
+        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "Emotional depth." }
+      ],
+      "modalities": [
+        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "Leadership energy." },
+        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "Persistence and determination." },
+        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "Adaptability." }
+      ],
+      "dominant_element": "Fire",
+      "dominant_modality": "Mutable",
+      "balance_interpretation": "2-3 sentence synthesis of what the elemental and modal balance means for this person and how it relates to the question asked."
+    },
+    {
       "type": "summary_box",
       "title": "Summary",
       "items": [
@@ -81,11 +99,12 @@ Rules:
 - Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto — never omit them
 - Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ☊ — never skip symbols
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
-- For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + summary_box
-- For question_type "relocation": use narrative_section (Best Locations/Why) + a "city_comparison" section + timing_section + summary_box
-- For question_type "career": use narrative_section + timing_section + summary_box
-- For question_type "timing": lead with timing_section, then narrative_section, then summary_box
-- For question_type "general": use narrative_section sections only + summary_box
+- Always include a modality_element section BEFORE the summary_box — count planets by element (Fire/Earth/Air/Water) and modality (Cardinal/Fixed/Mutable) based on sign placements, identify dominants, and synthesize what this means for the question
+- For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + modality_element + summary_box
+- For question_type "relocation": use narrative_section (Best Locations/Why) + a "city_comparison" section + timing_section + modality_element + summary_box
+- For question_type "career": use narrative_section + timing_section + modality_element + summary_box
+- For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
+- For question_type "general": use narrative_section sections only + modality_element + summary_box
 - summary_box labels should match the question — for relocation use Where/Why/When, for career use Role/Sector/When
 - body text in narrative_section should never exceed 4 sentences
 - bullets array can be empty [] if not needed — never omit the field
