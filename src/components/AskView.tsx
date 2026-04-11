@@ -438,6 +438,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         body: JSON.stringify({
           messages: apiMessages,
           chartContext,
+          currentDate: formatLocalDateKey(new Date()),
         }),
       });
 
