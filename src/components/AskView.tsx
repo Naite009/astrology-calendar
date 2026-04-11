@@ -178,7 +178,7 @@ function formatTime12h(time?: string): string {
   return `${h}:${m} ${suffix}`;
 }
 
-export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
+export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId, solarReturnCharts = [] }: AskViewProps) => {
   const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
   const initialAskChartIdRef = useRef<string>(
     initialMetaRef.current.selectedChartId || initialChartId || "user"
