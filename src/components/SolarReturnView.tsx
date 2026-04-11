@@ -526,6 +526,7 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
             imageBase64: fileBase64,
             fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
             fileName: file.name,
+            chartType: 'solar-return',
           },
         });
         data = result.data;
