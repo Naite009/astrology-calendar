@@ -969,6 +969,7 @@ export const AstroCalendar = () => {
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
             selectedChartId={selectedChartForTiming}
+            solarReturnCharts={solarReturnCharts}
           />
         )}
 
