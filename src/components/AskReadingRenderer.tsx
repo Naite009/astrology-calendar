@@ -251,6 +251,64 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
     </Card>
   );
 }
+function ModalityElementCard({ section }: { section: ModalityElementSection }) {
+  const totalPlanets = section.elements.reduce((s, e) => s + e.count, 0) || 10;
+  return (
+    <Card className="border-border bg-card/50">
+      <CardContent className="p-4 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground tracking-wide uppercase">{section.title}</h3>
+
+        {/* Elements */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Elements</p>
+          <div className="grid grid-cols-2 gap-2">
+            {section.elements.map((el, i) => (
+              <div key={i} className="rounded-lg border border-border p-2.5 bg-muted/20">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-foreground">{el.symbol} {el.name}</span>
+                  <span className="text-xs font-semibold text-primary">{el.count}/{totalPlanets}</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
+                  <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(el.count / totalPlanets) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">{el.planets.join(", ")}</p>
+                <p className="text-xs text-foreground/70 mt-1">{el.interpretation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Modalities */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Modalities</p>
+          <div className="space-y-2">
+            {section.modalities.map((mod, i) => (
+              <div key={i} className="rounded-lg border border-border p-2.5 bg-muted/20">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-foreground">{mod.name}</span>
+                  <span className="text-xs font-semibold text-primary">{mod.count}/{totalPlanets}</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
+                  <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(mod.count / totalPlanets) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">{mod.planets.join(", ")}</p>
+                <p className="text-xs text-foreground/70 mt-1">{mod.interpretation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dominant + Synthesis */}
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
+          <p className="text-xs font-semibold text-primary">
+            Dominant: {section.dominant_element} · {section.dominant_modality}
+          </p>
+          <p className="text-xs text-foreground/80">{section.balance_interpretation}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function ReadingRenderer({ reading }: { reading: StructuredReading }) {
   return (
