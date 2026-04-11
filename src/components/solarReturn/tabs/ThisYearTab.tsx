@@ -119,13 +119,22 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
         </div>
       </div>
 
-      {/* SR Ascendant Ruler in Natal */}
+      {/* SR Ascendant Ruler — Both Layers */}
       {analysis.srAscRulerInNatal && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
             <Compass size={16} className="text-primary" />
             Where This Year Plays Out
           </h3>
+
+          {/* Teaching explainer */}
+          <div className="bg-secondary/30 rounded-sm p-3 mb-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              The SR Ascendant ruler appears in <strong>two charts at once</strong>. In the Solar Return chart it shows the <em>energy and style</em> of your year — how things feel. In your natal chart it shows the <em>life area</em> that gets activated — where things happen. Think of it like a movie: the SR placement is the plot, and the natal placement is the setting.
+            </p>
+          </div>
+
+          {/* Steps */}
           <div className="bg-secondary/50 rounded-sm p-3 mb-4 space-y-1.5">
             <p className="text-xs text-foreground">
               <span className="text-primary font-semibold">Step 1:</span> SR Ascendant is {SIGN_SYMBOLS[analysis.srAscRulerInNatal.srAscSign] || ''} <strong>{analysis.srAscRulerInNatal.srAscSign}</strong>
@@ -133,19 +142,36 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
             <p className="text-xs text-foreground">
               <span className="text-primary font-semibold">Step 2:</span> Ruled by <strong>{PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet}</strong>
             </p>
-            <p className="text-xs text-foreground">
-              <span className="text-primary font-semibold">Result:</span> Natal {analysis.srAscRulerInNatal.rulerPlanet} is in{' '}
-              {analysis.srAscRulerInNatal.rulerNatalSign && <strong>{SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign]} {analysis.srAscRulerInNatal.rulerNatalSign}</strong>}
-              {analysis.srAscRulerInNatal.rulerNatalHouse && <> in <strong>natal {ordinal(analysis.srAscRulerInNatal.rulerNatalHouse)} house</strong></>}
-            </p>
           </div>
-          {analysis.srAscRulerInNatal.rulerNatalHouse && (
-            <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-3">
-              <p className="text-xs font-medium text-primary uppercase tracking-widest">
-                Year plays out in natal {ordinal(analysis.srAscRulerInNatal.rulerNatalHouse)} house
+
+          {/* Two-layer display */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {/* SR Chart layer */}
+            <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
+              <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-2">🎬 The Plot — How This Year Feels</p>
+              <p className="text-xs font-medium text-foreground mb-1">
+                {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign] || ''} {analysis.srAscRulerInNatal.rulerSRSign}
+                {analysis.srAscRulerInNatal.rulerSRHouse && <> · SR {ordinal(analysis.srAscRulerInNatal.rulerSRHouse)} house</>}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                This is the energy and style of your year — how you instinctively approach situations, what drives your decisions, and where this year's action concentrates in the Solar Return chart.
               </p>
             </div>
-          )}
+
+            {/* Natal Chart layer */}
+            <div className="bg-secondary/50 border border-border rounded-sm p-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">📍 The Setting — Where It Lands In Your Life</p>
+              <p className="text-xs font-medium text-foreground mb-1">
+                {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} {analysis.srAscRulerInNatal.rulerNatalSign}
+                {analysis.srAscRulerInNatal.rulerNatalHouse && <> · natal {ordinal(analysis.srAscRulerInNatal.rulerNatalHouse)} house</>}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                This is the permanent life area that gets activated — where the year's story physically shows up in your everyday experience.
+              </p>
+            </div>
+          </div>
+
+          {/* Combined interpretation */}
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscRulerInNatal.interpretation}</p>
         </div>
       )}
