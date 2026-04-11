@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
@@ -39,6 +40,7 @@ interface AskViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
   selectedChartId: string | null;
+  solarReturnCharts?: SolarReturnChart[];
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
@@ -176,7 +178,7 @@ function formatTime12h(time?: string): string {
   return `${h}:${m} ${suffix}`;
 }
 
-export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
+export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId, solarReturnCharts = [] }: AskViewProps) => {
   const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
   const initialAskChartIdRef = useRef<string>(
     initialMetaRef.current.selectedChartId || initialChartId || "user"
@@ -405,6 +407,66 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       });
     } catch {}
+
+    // --- SOLAR RETURN CONTEXT ---
+    const natalId = chart.id || "";
+    const matchingSRs = solarReturnCharts
+      .filter(sr => sr.natalChartId === natalId || sr.natalChartId === "user" && activeChartId === "user")
+      .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0));
+    const currentSR = matchingSRs[0];
+    if (currentSR) {
+      context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
+      if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
+      if (currentSR.solarReturnLocation) context += `SR location: ${currentSR.solarReturnLocation}\n`;
+      const srPlanets = currentSR.planets || {};
+      const srCusps = currentSR.houseCusps || {};
+      const srCuspLongs: number[] = [];
+      if (Object.keys(srCusps).length > 0) {
+        for (let i = 1; i <= 12; i++) {
+          const cusp = srCusps[`house${i}` as keyof typeof srCusps];
+          if (cusp && typeof cusp === 'object' && 'sign' in cusp) {
+            const c = cusp as { sign: string; degree: number; minutes?: number };
+            srCuspLongs.push(ZODIAC.indexOf(c.sign) * 30 + c.degree + (c.minutes || 0) / 60);
+          }
+        }
+      }
+      const calcSRHouse = (absDeg: number): number | null => {
+        if (srCuspLongs.length !== 12) return null;
+        for (let i = 0; i < 12; i++) {
+          const nextI = (i + 1) % 12;
+          let start = srCuspLongs[i];
+          let end = srCuspLongs[nextI];
+          if (end < start) end += 360;
+          let d = absDeg;
+          if (d < start) d += 360;
+          if (d >= start && d < end) return i + 1;
+        }
+        return 1;
+      };
+      context += "SR Planetary Positions:\n";
+      Object.entries(srPlanets).forEach(([planet, data]) => {
+        if (data && typeof data === 'object' && 'sign' in data) {
+          const pos = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+          const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
+          const house = calcSRHouse(absDeg);
+          context += `- SR ${planet}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}`;
+          if (house) context += ` (SR House ${house})`;
+          if (pos.isRetrograde) context += " (R)";
+          context += "\n";
+        }
+      });
+      if (Object.keys(srCusps).length > 0) {
+        context += "SR House Cusps:\n";
+        Object.entries(srCusps).forEach(([house, data]) => {
+          if (data && typeof data === 'object' && 'sign' in data) {
+            const pos = data as { sign: string; degree: number };
+            const houseNum = house.replace('house', '');
+            context += `- SR House ${houseNum}: ${pos.degree}° ${pos.sign}\n`;
+          }
+        });
+      }
+    }
+
     return context;
   };
 
