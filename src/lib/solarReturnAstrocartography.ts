@@ -568,10 +568,11 @@ export function calculateAstrocartography(
         const baseScore = ANGLE_SCORES[ap.planet]?.[ap.angle] ?? 5;
         const planetWeight = weights[ap.planet] ?? 0.5;
         const angleImportance = angleImportanceMap[ap.angle] ?? 0.8;
-        // Scale the base score by intention relevance so weights don't cancel for single-planet cities.
-        // Dividing by 3.0 (max planet weight) keeps the relevance multiplier in a sane range.
+        // Use the full base score scaled by relevance instead of centering on 5,
+        // so high-scoring combos (Jupiter on MC for career) can actually reach green
         const relevance = Math.min(planetWeight * angleImportance, 6.0) / 3.0;
-        scaledSum += 5 + (baseScore - 5) * relevance;
+        // Weighted interpolation: move from neutral (5) toward baseScore proportional to relevance
+        scaledSum += 5 + (baseScore - 5) * Math.min(relevance, 1.8);
       }
 
       const rawScore = angularPlanets.length > 0 ? scaledSum / angularPlanets.length : overallRating;
@@ -620,8 +621,10 @@ export function calculateAstrocartography(
         if (diff <= 8) { // 8° orb for angular planets
           angularPlanets.push({ planet, angle: angle.name, orb: Math.round(diff * 10) / 10 });
           const baseRating = PLANET_ANGLE_RATING[planet]?.[angle.name] || 5;
-          const orbMultiplier = 1 - (diff / 12);
-          const score = baseRating * orbMultiplier;
+          // Gentler orb decay: tight orbs (0-2°) keep ~90-100% of score,
+          // wider orbs (6-8°) still keep ~60-70%. Previous formula was too aggressive.
+          const orbMultiplier = 1 - (diff * diff) / (8 * 8 * 1.5);  // quadratic decay, ~100% at 0°, ~74% at 5°, ~58% at 8°
+          const score = baseRating * Math.max(orbMultiplier, 0.4);
           if (BENEFIC_PLANETS.has(planet)) {
             beneficTotal += score;
             beneficCount++;
