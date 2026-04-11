@@ -1,10 +1,6 @@
 import jsPDF from "jspdf";
 import { NatalChart } from "@/hooks/useNatalChart";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
+import type { StructuredReading, ReadingSection } from "@/components/AskReadingRenderer";
 
 const COLORS = {
   bg: [255, 255, 255] as [number, number, number],
@@ -24,40 +20,16 @@ const PAGE_H = 297;
 const MARGIN = 22;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/#{1,6}\s*/g, "")
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/\*(.*?)\*/g, "$1")
-    .replace(/`(.*?)`/g, "$1")
-    .replace(/^[-*]\s+/gm, "• ")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .trim();
-}
-
-// Detect lines that are likely important callouts
-function isCalloutLine(line: string): boolean {
-  const lower = line.toLowerCase();
-  return (
-    lower.startsWith("key takeaway") ||
-    lower.startsWith("important") ||
-    lower.startsWith("note:") ||
-    lower.startsWith("bottom line") ||
-    lower.startsWith("summary") ||
-    lower.startsWith("in short") ||
-    lower.startsWith("the core") ||
-    lower.startsWith("what this means")
-  );
-}
-
-export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) {
+export function generateAskPdf(chart: NatalChart, readings: StructuredReading[]) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   let y = 0;
+  let pageNum = 0;
 
   const ensureSpace = (needed: number) => {
     if (y + needed > PAGE_H - 22) {
       addFooter();
       pdf.addPage();
+      pageNum++;
       y = MARGIN;
     }
   };
@@ -74,28 +46,23 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
   };
 
   // --- COVER PAGE ---
-  // Decorative top band
   pdf.setFillColor(...COLORS.gold);
   pdf.rect(0, 0, PAGE_W, 4, "F");
 
-  // Title
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(32);
   pdf.setTextColor(...COLORS.heading);
   pdf.text("Chart Reading", PAGE_W / 2, 55, { align: "center" });
 
-  // Decorative line
   pdf.setDrawColor(...COLORS.gold);
   pdf.setLineWidth(0.8);
   pdf.line(PAGE_W / 2 - 30, 62, PAGE_W / 2 + 30, 62);
 
-  // Name
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
   pdf.setTextColor(...COLORS.accent);
   pdf.text(chart.name || "Natal Chart", PAGE_W / 2, 76, { align: "center" });
 
-  // Birth info
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   pdf.setTextColor(...COLORS.body);
@@ -105,171 +72,306 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
   if (chart.birthLocation) birthInfo.push(chart.birthLocation);
   pdf.text(birthInfo.join("  ·  "), PAGE_W / 2, 88, { align: "center" });
 
-  // Date
   pdf.setFontSize(9);
   pdf.setTextColor(...COLORS.muted);
   pdf.text(`Generated ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, PAGE_W / 2, 98, { align: "center" });
 
-  // Key Placements box
-  const planets = chart.planets || {};
-  const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const houseCusps = chart.houseCusps || {};
-  const cuspLongitudes: number[] = [];
-  if (Object.keys(houseCusps).length > 0) {
-    for (let i = 1; i <= 12; i++) {
-      const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
-      if (cusp && typeof cusp === 'object' && 'sign' in cusp) {
-        const c = cusp as { sign: string; degree: number; minutes?: number };
-        cuspLongitudes.push(ZODIAC.indexOf(c.sign) * 30 + c.degree + (c.minutes || 0) / 60);
-      }
-    }
-  }
-  const calcHouse = (absDeg: number): number | null => {
-    if (cuspLongitudes.length !== 12) return null;
-    for (let i = 0; i < 12; i++) {
-      const nextI = (i + 1) % 12;
-      let start = cuspLongitudes[i];
-      let end = cuspLongitudes[nextI];
-      if (end < start) end += 360;
-      let d = absDeg;
-      if (d < start) d += 360;
-      if (d >= start && d < end) return i + 1;
-    }
-    return 1;
-  };
-
-  const keyPlanets = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-  const planetLines: string[] = [];
-  for (const name of keyPlanets) {
-    const p = planets[name as keyof typeof planets];
-    if (p && typeof p === 'object' && 'sign' in p) {
-      const pos = p as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
-      const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
-      const house = calcHouse(absDeg);
-      const retro = pos.isRetrograde ? "  ℞" : "";
-      const houseStr = house ? `  ·  House ${house}` : "";
-      planetLines.push(`${name}:  ${pos.degree}°${pos.minutes || 0}' ${pos.sign}${houseStr}${retro}`);
-    }
-  }
-
-  const boxH = 12 + planetLines.length * 7;
-  const boxY = 112;
-
-  // Card background
-  pdf.setFillColor(...COLORS.card);
-  pdf.setDrawColor(...COLORS.cardBorder);
-  pdf.setLineWidth(0.4);
-  pdf.roundedRect(MARGIN + 10, boxY, CONTENT_W - 20, boxH, 2, 2, "FD");
-
-  // Gold left accent
-  pdf.setFillColor(...COLORS.gold);
-  pdf.rect(MARGIN + 10, boxY, 3, boxH, "F");
-
-  y = boxY + 8;
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(9);
-  pdf.setTextColor(...COLORS.accent);
-  pdf.text("KEY PLACEMENTS", MARGIN + 20, y);
-  y += 6;
-
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(10);
-  pdf.setTextColor(...COLORS.body);
-  for (const line of planetLines) {
-    pdf.text(line, MARGIN + 20, y);
-    y += 7;
-  }
-
   addFooter();
 
   // --- CONTENT PAGES ---
-  // Merge all assistant answers into one continuous reading
-  const allText = assistantMessages.map(m => stripMarkdown(m.content)).join("\n\n");
-  const allParagraphs = allText.split(/\n\n+/).filter(p => p.trim());
-
-  pdf.addPage();
-  y = MARGIN;
-
-  // Single title for the whole reading
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(18);
-  pdf.setTextColor(...COLORS.heading);
-  pdf.text("Your Reading", MARGIN, y);
-  y += 4;
-  pdf.setDrawColor(...COLORS.gold);
-  pdf.setLineWidth(0.6);
-  pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 10;
-
-  {
-    const paragraphs = allParagraphs;
-
-    for (const para of paragraphs) {
-      const lines = para.split(/\n/);
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        const isBullet = trimmed.startsWith("• ");
-        const indent = isBullet ? 5 : 0;
-
-        // Callout box for important lines
-        if (isCalloutLine(trimmed)) {
-          ensureSpace(18);
-          y += 3;
-          const wrappedCallout = pdf.splitTextToSize(trimmed, CONTENT_W - 18);
-          const calloutH = wrappedCallout.length * 6 + 10;
-
-          pdf.setFillColor(...COLORS.highlight);
-          pdf.setDrawColor(...COLORS.highlightBorder);
-          pdf.setLineWidth(0.4);
-          pdf.roundedRect(MARGIN, y - 4, CONTENT_W, calloutH, 2, 2, "FD");
-          pdf.setFillColor(...COLORS.gold);
-          pdf.rect(MARGIN, y - 4, 3, calloutH, "F");
-
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(10);
-          pdf.setTextColor(...COLORS.accent);
-          let cy = y + 3;
-          for (const wl of wrappedCallout) {
-            pdf.text(wl, MARGIN + 8, cy);
-            cy += 6;
-          }
-          y = cy + 4;
-          continue;
-        }
-
-        // Heading detection
-        const isHeading = trimmed.length < 70 && !trimmed.endsWith(".") && !isBullet && trimmed.length > 3 && !trimmed.startsWith("•");
-
-        if (isHeading) {
-          ensureSpace(16);
-          y += 4;
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(13);
-          pdf.setTextColor(...COLORS.heading);
-          pdf.text(trimmed, MARGIN + indent, y);
-          y += 8;
-        } else {
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(11);
-          pdf.setTextColor(...COLORS.body);
-
-          const wrapped = pdf.splitTextToSize(trimmed, CONTENT_W - indent - 2);
-          for (const wl of wrapped) {
-            ensureSpace(7);
-            pdf.text(wl, MARGIN + indent, y);
-            y += 6;
-          }
-          y += 3;
-        }
-      }
-      y += 4;
+  for (const reading of readings) {
+    for (const section of reading.sections) {
+      renderSection(pdf, section);
     }
   }
 
-  addFooter();
+  function renderSection(pdf: jsPDF, section: ReadingSection) {
+    switch (section.type) {
+      case "placement_table":
+        renderPlacementTable(section);
+        break;
+      case "narrative_section":
+        renderNarrative(section);
+        break;
+      case "timing_section":
+        renderTiming(section);
+        break;
+      case "summary_box":
+        renderSummary(section);
+        break;
+      case "city_comparison":
+        renderCityComparison(section);
+        break;
+    }
+  }
 
+  function renderPlacementTable(section: { title: string; rows: any[] }) {
+    pdf.addPage();
+    y = MARGIN;
+
+    // Title
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN, y);
+    y += 3;
+    pdf.setDrawColor(...COLORS.gold);
+    pdf.setLineWidth(0.5);
+    pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 8;
+
+    // Table header
+    const colX = [MARGIN, MARGIN + 50, MARGIN + 85, MARGIN + 120, MARGIN + 145];
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...COLORS.muted);
+    pdf.text("Planet", colX[0], y);
+    pdf.text("Symbol", colX[1], y);
+    pdf.text("Degrees", colX[2], y);
+    pdf.text("Sign", colX[3], y);
+    pdf.text("House", colX[4], y);
+    y += 3;
+    pdf.setDrawColor(...COLORS.cardBorder);
+    pdf.setLineWidth(0.3);
+    pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 5;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    for (const row of section.rows) {
+      ensureSpace(7);
+      pdf.setTextColor(...COLORS.body);
+      pdf.text(row.planet || "", colX[0], y);
+      pdf.setTextColor(...COLORS.gold);
+      pdf.text(row.symbol || "", colX[1], y);
+      pdf.setTextColor(...COLORS.body);
+      pdf.text(row.degrees || "", colX[2], y);
+      pdf.text(row.sign || "", colX[3], y);
+      pdf.text(String(row.house ?? ""), colX[4], y);
+      y += 7;
+    }
+    y += 4;
+  }
+
+  function renderNarrative(section: { title: string; subtitle?: string; body: string; bullets: any[] }) {
+    ensureSpace(40);
+    y += 4;
+
+    // Title
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN, y);
+    y += 6;
+
+    if (section.subtitle) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...COLORS.muted);
+      pdf.text(section.subtitle, MARGIN, y);
+      y += 5;
+    }
+
+    // Body
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
+    pdf.setTextColor(...COLORS.body);
+    const bodyLines = pdf.splitTextToSize(section.body, CONTENT_W);
+    for (const line of bodyLines) {
+      ensureSpace(6);
+      pdf.text(line, MARGIN, y);
+      y += 6;
+    }
+    y += 3;
+
+    // Bullets
+    for (const bullet of section.bullets) {
+      ensureSpace(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.accent);
+      pdf.text(`${bullet.label}:`, MARGIN + 3, y);
+      const labelW = pdf.getTextWidth(`${bullet.label}: `);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(...COLORS.body);
+      const bulletLines = pdf.splitTextToSize(bullet.text, CONTENT_W - labelW - 6);
+      pdf.text(bulletLines[0] || "", MARGIN + 3 + labelW, y);
+      y += 6;
+      for (let i = 1; i < bulletLines.length; i++) {
+        ensureSpace(6);
+        pdf.text(bulletLines[i], MARGIN + 6, y);
+        y += 6;
+      }
+    }
+    y += 4;
+  }
+
+  function renderTiming(section: { title: string; transits: any[]; windows: any[] }) {
+    ensureSpace(30);
+    y += 4;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN, y);
+    y += 8;
+
+    if (section.transits?.length) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...COLORS.muted);
+      pdf.text("ACTIVE TRANSITS", MARGIN, y);
+      y += 6;
+
+      for (const t of section.transits) {
+        ensureSpace(16);
+        // Highlighted box
+        const interpLines = pdf.splitTextToSize(t.interpretation, CONTENT_W - 12);
+        const boxH = 10 + interpLines.length * 5;
+        pdf.setFillColor(...COLORS.highlight);
+        pdf.setDrawColor(...COLORS.highlightBorder);
+        pdf.setLineWidth(0.3);
+        pdf.roundedRect(MARGIN, y - 3, CONTENT_W, boxH, 1.5, 1.5, "FD");
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.setTextColor(...COLORS.accent);
+        pdf.text(`${t.symbol} ${t.planet}`, MARGIN + 4, y + 2);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...COLORS.muted);
+        pdf.text(t.position, MARGIN + 4 + pdf.getTextWidth(`${t.symbol} ${t.planet}  `), y + 2);
+
+        y += 8;
+        pdf.setFontSize(10);
+        pdf.setTextColor(...COLORS.body);
+        for (const il of interpLines) {
+          pdf.text(il, MARGIN + 6, y);
+          y += 5;
+        }
+        y += 4;
+      }
+    }
+
+    if (section.windows?.length) {
+      ensureSpace(10);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...COLORS.muted);
+      pdf.text("KEY DATES", MARGIN, y);
+      y += 6;
+
+      for (const w of section.windows) {
+        ensureSpace(10);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.setTextColor(...COLORS.accent);
+        pdf.text(w.label, MARGIN + 3, y);
+        y += 5;
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(...COLORS.body);
+        const dLines = pdf.splitTextToSize(w.description, CONTENT_W - 6);
+        for (const dl of dLines) {
+          ensureSpace(6);
+          pdf.text(dl, MARGIN + 6, y);
+          y += 5;
+        }
+        y += 3;
+      }
+    }
+    y += 4;
+  }
+
+  function renderSummary(section: { title: string; items: any[] }) {
+    ensureSpace(20);
+    y += 4;
+
+    // Gold-bordered summary box
+    const itemLines: string[][] = [];
+    let totalH = 14;
+    for (const item of section.items) {
+      const lines = pdf.splitTextToSize(item.value, CONTENT_W - 30);
+      itemLines.push(lines);
+      totalH += 6 + lines.length * 5 + 2;
+    }
+
+    pdf.setFillColor(...COLORS.highlight);
+    pdf.setDrawColor(...COLORS.gold);
+    pdf.setLineWidth(0.6);
+    pdf.roundedRect(MARGIN, y - 2, CONTENT_W, totalH, 2, 2, "FD");
+    pdf.setFillColor(...COLORS.gold);
+    pdf.rect(MARGIN, y - 2, 3, totalH, "F");
+
+    y += 5;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN + 8, y);
+    y += 8;
+
+    for (let i = 0; i < section.items.length; i++) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.accent);
+      pdf.text(section.items[i].label, MARGIN + 8, y);
+      y += 5;
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(...COLORS.body);
+      for (const vl of itemLines[i]) {
+        pdf.text(vl, MARGIN + 10, y);
+        y += 5;
+      }
+      y += 2;
+    }
+    y += 4;
+  }
+
+  function renderCityComparison(section: { title: string; cities: any[] }) {
+    ensureSpace(30);
+    y += 4;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN, y);
+    y += 8;
+
+    for (const city of section.cities) {
+      ensureSpace(20);
+      pdf.setFillColor(...COLORS.card);
+      pdf.setDrawColor(...COLORS.cardBorder);
+      pdf.setLineWidth(0.3);
+      const cityH = 22 + Math.ceil(city.lines?.length / 3) * 6;
+      pdf.roundedRect(MARGIN, y - 3, CONTENT_W, cityH, 1.5, 1.5, "FD");
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...COLORS.heading);
+      pdf.text(city.name, MARGIN + 4, y + 2);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.gold);
+      pdf.text(`${city.score}/10`, PAGE_W - MARGIN - 4, y + 2, { align: "right" });
+
+      y += 7;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...COLORS.muted);
+      pdf.text(city.theme || "", MARGIN + 6, y);
+      y += 5;
+
+      if (city.lines?.length) {
+        pdf.setTextColor(...COLORS.body);
+        pdf.text(city.lines.join("  ·  "), MARGIN + 6, y);
+        y += 5;
+      }
+      y += 5;
+    }
+    y += 4;
+  }
+
+  addFooter();
   const safeName = (chart.name || "chart").replace(/[^a-zA-Z0-9]/g, "_");
   pdf.save(`${safeName}_reading_${new Date().toISOString().slice(0, 10)}.pdf`);
 }

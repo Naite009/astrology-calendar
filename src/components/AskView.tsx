@@ -6,25 +6,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { generateAskPdf } from "@/lib/askPdfExport";
+import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface Message {
+interface ChatEntry {
   role: "user" | "assistant";
-  content: string;
+  content: string; // user question text
+  reading?: StructuredReading; // structured data for assistant
 }
 
 interface SavedConversation {
   id: string;
   chartName: string;
   chartId: string;
-  messages: Message[];
+  entries: ChatEntry[];
   timestamp: number;
 }
 
@@ -45,39 +46,35 @@ function loadConversations(): SavedConversation[] {
 }
 
 function saveConversations(convos: SavedConversation[]) {
-  // Keep last 50 conversations
   localStorage.setItem(STORAGE_KEY, JSON.stringify(convos.slice(0, 50)));
 }
 
-function loadActiveChat(chartId: string): Message[] {
+function loadActiveChat(chartId: string): ChatEntry[] {
   try {
     const data = JSON.parse(localStorage.getItem(ACTIVE_CHAT_KEY) || "{}");
-    if (data.chartId === chartId) return data.messages || [];
+    if (data.chartId === chartId) return data.entries || [];
   } catch {}
   return [];
 }
 
-function saveActiveChat(chartId: string, messages: Message[]) {
-  localStorage.setItem(ACTIVE_CHAT_KEY, JSON.stringify({ chartId, messages }));
+function saveActiveChat(chartId: string, entries: ChatEntry[]) {
+  localStorage.setItem(ACTIVE_CHAT_KEY, JSON.stringify({ chartId, entries }));
 }
 
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
   const [activeChartId, setActiveChartId] = useState<string>(initialChartId || "user");
-  const [messages, setMessages] = useState<Message[]>(() => loadActiveChat(initialChartId || "user"));
+  const [entries, setEntries] = useState<ChatEntry[]>(() => loadActiveChat(initialChartId || "user"));
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [chartSearch, setChartSearch] = useState("");
-  const abortRef = useRef<AbortController | null>(null);
 
-  // Persist messages on change
   useEffect(() => {
-    saveActiveChat(activeChartId, messages);
-  }, [messages, activeChartId]);
+    saveActiveChat(activeChartId, entries);
+  }, [entries, activeChartId]);
 
-  // Build sorted chart list
   const chartOptions = useMemo(() => {
     const others = savedCharts
       .filter(c => c.id !== userNatalChart?.id && !(c as any).isSolarReturn)
@@ -95,39 +92,35 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     if (activeChartId === "user") return userNatalChart;
     return savedCharts.find(c => c.id === activeChartId) || userNatalChart;
   };
-  
   const selectedChart = getSelectedChart();
 
   const selectChart = (id: string) => {
     if (id !== activeChartId) {
-      // Save current conversation before switching
-      if (messages.length > 0) {
-        saveCurrentConversation();
-      }
+      if (entries.length > 0) saveCurrentConversation();
       setActiveChartId(id);
-      setMessages(loadActiveChat(id));
+      setEntries(loadActiveChat(id));
     }
     setSelectorOpen(false);
     setChartSearch("");
   };
 
   const saveCurrentConversation = useCallback(() => {
-    if (messages.length === 0) return;
+    if (entries.length === 0) return;
     const convo: SavedConversation = {
       id: `${activeChartId}-${Date.now()}`,
       chartName: selectedChart?.name || "Unknown",
       chartId: activeChartId,
-      messages: [...messages],
+      entries: [...entries],
       timestamp: Date.now(),
     };
     const existing = loadConversations();
     saveConversations([convo, ...existing]);
     toast.success("Conversation saved");
-  }, [messages, activeChartId, selectedChart]);
+  }, [entries, activeChartId, selectedChart]);
 
   const loadConversation = (convo: SavedConversation) => {
     setActiveChartId(convo.chartId);
-    setMessages(convo.messages);
+    setEntries(convo.entries);
     setShowHistory(false);
   };
 
@@ -136,25 +129,22 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     saveConversations(existing.filter(c => c.id !== id));
     toast.success("Conversation deleted");
   };
-  
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [entries]);
 
   const buildChartContext = (chart: NatalChart | null): string => {
     if (!chart) return "No chart data available.";
-    
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
-    
     let context = `Chart for ${chart.name}:\n`;
     context += `Birth: ${chart.birthDate}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
     if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
     context += "\n\nNATAL Planetary Positions (with calculated house placements):\n";
-    
     const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     const cuspLongitudes: number[] = [];
     if (Object.keys(houseCusps).length > 0) {
@@ -179,7 +169,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
       return 1;
     };
-    
     Object.entries(planets).forEach(([planet, data]) => {
       if (data && typeof data === 'object' && 'sign' in data) {
         const pos = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
@@ -191,7 +180,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         context += "\n";
       }
     });
-    
     if (Object.keys(houseCusps).length > 0) {
       context += "\nHouse Cusps:\n";
       Object.entries(houseCusps).forEach(([house, data]) => {
@@ -202,9 +190,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       });
     }
-    
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
-    context += "IMPORTANT: These are the REAL current planetary positions calculated from ephemeris. Use these if the user asks about current transits or 'where is [planet] right now'.\n";
     try {
       const nowPlanets = getPlanetaryPositions(new Date());
       const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
@@ -215,41 +201,24 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           context += `- Transiting ${key.charAt(0).toUpperCase() + key.slice(1)}: ${deg}° ${sign}\n`;
         }
       });
-    } catch (e) {
-      // Fallback: transit data unavailable
-    }
-    
+    } catch {}
     return context;
   };
 
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;
-    
-    const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages(prev => [...prev, userMessage]);
+    const userEntry: ChatEntry = { role: "user", content: input.trim() };
+    setEntries(prev => [...prev, userEntry]);
     setInput("");
     setIsLoading(true);
-    
-    let assistantContent = "";
-    const controller = new AbortController();
-    abortRef.current = controller;
-    
-    const updateAssistant = (chunk: string) => {
-      assistantContent += chunk;
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          return prev.map((m, i) => 
-            i === prev.length - 1 ? { ...m, content: assistantContent } : m
-          );
-        }
-        return [...prev, { role: "assistant", content: assistantContent }];
-      });
-    };
-    
+
     try {
       const chartContext = buildChartContext(selectedChart);
-      
+      // Build messages for context (previous Q&As)
+      const apiMessages = [...entries, userEntry]
+        .filter(e => e.role === "user")
+        .map(e => ({ role: "user" as const, content: e.content }));
+      // Only send the latest user message with full history context
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -257,92 +226,45 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
-            role: m.role,
-            content: m.content
-          })),
+          messages: apiMessages,
           chartContext,
         }),
-        signal: controller.signal,
       });
-      
+
       if (resp.status === 429) {
         toast.error("Rate limit exceeded. Please wait a moment and try again.");
         setIsLoading(false);
         return;
       }
-      
       if (resp.status === 402) {
         toast.error("AI credits exhausted. Please add credits to continue.");
         setIsLoading(false);
         return;
       }
-      
-      if (!resp.ok || !resp.body) {
-        throw new Error("Failed to get response");
+      if (!resp.ok) throw new Error("Failed to get response");
+
+      const data = await resp.json();
+
+      if (data.error) {
+        toast.error(data.error);
+        setIsLoading(false);
+        return;
       }
-      
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        buffer += decoder.decode(value, { stream: true });
-        
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-          
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) updateAssistant(content);
-          } catch {
-            buffer = line + "\n" + buffer;
-            break;
-          }
-        }
+
+      // Check if it's structured or raw
+      if (data.sections) {
+        const reading = data as StructuredReading;
+        setEntries(prev => [...prev, { role: "assistant", content: "", reading }]);
+      } else if (data.raw) {
+        setEntries(prev => [...prev, { role: "assistant", content: data.raw }]);
+      } else {
+        setEntries(prev => [...prev, { role: "assistant", content: JSON.stringify(data, null, 2) }]);
       }
-      
-      // Final flush
-      if (buffer.trim()) {
-        for (let raw of buffer.split("\n")) {
-          if (!raw || raw.startsWith(":") || raw.trim() === "") continue;
-          if (!raw.startsWith("data: ")) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) updateAssistant(content);
-          } catch { /* ignore */ }
-        }
-      }
-      
     } catch (error) {
-      if ((error as any)?.name === 'AbortError') return;
       console.error("Ask error:", error);
       toast.error("Failed to get response. Please try again.");
-      setMessages(prev => {
-        if (prev[prev.length - 1]?.role === "assistant" && !prev[prev.length - 1]?.content) {
-          return prev.slice(0, -1);
-        }
-        return prev;
-      });
     } finally {
       setIsLoading(false);
-      abortRef.current = null;
     }
   };
 
@@ -354,28 +276,24 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const clearChat = () => {
-    if (messages.length > 0) {
-      saveCurrentConversation();
-    }
-    setMessages([]);
+    if (entries.length > 0) saveCurrentConversation();
+    setEntries([]);
     setInput("");
     localStorage.removeItem(ACTIVE_CHAT_KEY);
   };
 
   const handleDownloadPdf = () => {
-    if (!selectedChart || messages.length === 0) return;
-    // Extract only assistant messages for PDF
-    const assistantMessages = messages.filter(m => m.role === "assistant");
-    if (assistantMessages.length === 0) {
-      toast.error("No answers to export yet.");
+    if (!selectedChart || entries.length === 0) return;
+    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+    if (readings.length === 0) {
+      toast.error("No structured readings to export yet.");
       return;
     }
-    generateAskPdf(selectedChart, assistantMessages);
+    generateAskPdf(selectedChart, readings);
   };
 
   const conversations = loadConversations();
 
-  // History panel
   if (showHistory) {
     return (
       <div className="space-y-4">
@@ -391,14 +309,14 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         {conversations.length === 0 ? (
           <Card className="border-border">
             <CardContent className="py-8 text-center text-muted-foreground text-sm">
-              No saved conversations yet. Conversations are auto-saved when you clear chat or switch charts.
+              No saved conversations yet.
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
             {conversations.map(convo => {
-              const firstQ = convo.messages.find(m => m.role === "user")?.content || "No question";
-              const answerCount = convo.messages.filter(m => m.role === "assistant").length;
+              const firstQ = convo.entries.find(e => e.role === "user")?.content || "No question";
+              const answerCount = convo.entries.filter(e => e.role === "assistant").length;
               return (
                 <Card key={convo.id} className="border-border hover:border-primary/30 transition-colors cursor-pointer"
                   onClick={() => loadConversation(convo)}>
@@ -421,6 +339,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
   }
 
+  const hasAssistantReadings = entries.some(e => e.role === "assistant" && e.reading);
+
   return (
     <div className="space-y-6">
       <Card className="border-primary/20">
@@ -438,8 +358,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {messages.some(m => m.role === "assistant") && (
-                <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download answers as PDF">
+              {hasAssistantReadings && (
+                <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download as PDF">
                   <Download className="h-4 w-4 mr-1" />
                   PDF
                 </Button>
@@ -447,7 +367,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-muted-foreground" title="View saved conversations">
                 <History className="h-4 w-4" />
               </Button>
-              {messages.length > 0 && (
+              {entries.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={clearChat} className="text-muted-foreground">
                   <Trash2 className="h-4 w-4 mr-1" />
                   Clear
@@ -538,70 +458,68 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </p>
             </div>
           )}
-          
+
           {/* Messages */}
-          <ScrollArea className="h-[400px] pr-4" ref={scrollRef}>
+          <ScrollArea className="h-[500px] pr-4" ref={scrollRef}>
             <div className="space-y-4">
-              {messages.length === 0 && (
+              {entries.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Sparkles className="h-12 w-12 text-muted-foreground/30 mb-4" />
                   <p className="text-muted-foreground mb-2">
                     Ask any question about {selectedChart?.name || "the chart"}
                   </p>
                   <p className="text-sm text-muted-foreground/70 max-w-md">
-                    For example: "Where does the ability to see spirits come from in this chart?" 
+                    For example: "Where does the ability to see spirits come from in this chart?"
                     or "Why is there tension between the Sun and Saturn?"
                   </p>
                 </div>
               )}
-              
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {message.role === "assistant" && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Sparkles className="h-4 w-4 text-primary" />
+
+              {entries.map((entry, index) => (
+                <div key={index}>
+                  {entry.role === "user" && (
+                    <div className="flex gap-3 justify-end">
+                      <div className="max-w-[80%] rounded-lg px-4 py-3 bg-primary text-primary-foreground">
+                        <p className="text-sm">{entry.content}</p>
+                      </div>
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     </div>
                   )}
-                  <div
-                    className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    {message.role === "assistant" ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                  {entry.role === "assistant" && (
+                    <div className="flex gap-3 justify-start">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-1">
+                        <Sparkles className="h-4 w-4 text-primary" />
                       </div>
-                    ) : (
-                      <p className="text-sm">{message.content}</p>
-                    )}
-                  </div>
-                  {message.role === "user" && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
-                      <User className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 max-w-[90%]">
+                        {entry.reading ? (
+                          <ReadingRenderer reading={entry.reading} />
+                        ) : (
+                          <div className="rounded-lg px-4 py-3 bg-muted">
+                            <p className="text-sm whitespace-pre-wrap">{entry.content}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
               ))}
-              
-              {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+
+              {isLoading && (
                 <div className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                     <Sparkles className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                    <span className="text-sm text-muted-foreground">Reading the chart...</span>
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
-          
+
           {/* Input */}
           <div className="flex gap-2">
             <Textarea
@@ -625,7 +543,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               )}
             </Button>
           </div>
-          
+
           {!selectedChart && (
             <p className="text-xs text-destructive">
               No chart selected. Add a chart in the Charts tab for personalized answers.
