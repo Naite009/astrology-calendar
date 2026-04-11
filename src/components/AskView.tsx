@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Sparkles, User, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,11 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { getPlanetaryPositions } from "@/lib/astrology";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,20 +27,46 @@ interface AskViewProps {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
 
-export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskViewProps) => {
+export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+  const [activeChartId, setActiveChartId] = useState<string>(initialChartId || "user");
+  const [selectorOpen, setSelectorOpen] = useState(false);
+  const [chartSearch, setChartSearch] = useState("");
+
+  // Build sorted chart list: user first (starred), then alphabetical, filter SR charts
+  const chartOptions = useMemo(() => {
+    const others = savedCharts
+      .filter(c => c.id !== userNatalChart?.id && !(c as any).isSolarReturn)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    return { primary: userNatalChart, others };
+  }, [userNatalChart, savedCharts]);
+
+  const filteredOthers = useMemo(() => {
+    if (!chartSearch.trim()) return chartOptions.others;
+    const q = chartSearch.toLowerCase();
+    return chartOptions.others.filter(c => c.name?.toLowerCase().includes(q));
+  }, [chartOptions.others, chartSearch]);
+
   // Get the selected chart for context
   const getSelectedChart = (): NatalChart | null => {
-    if (!selectedChartId || selectedChartId === "general") return userNatalChart;
-    if (selectedChartId === "user") return userNatalChart;
-    return savedCharts.find(c => c.id === selectedChartId) || userNatalChart;
+    if (activeChartId === "user") return userNatalChart;
+    return savedCharts.find(c => c.id === activeChartId) || userNatalChart;
   };
   
   const selectedChart = getSelectedChart();
+
+  // Clear chat when switching charts
+  const selectChart = (id: string) => {
+    if (id !== activeChartId) {
+      setActiveChartId(id);
+      setMessages([]);
+    }
+    setSelectorOpen(false);
+    setChartSearch("");
+  };
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -56,7 +87,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
     if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
     context += "\n\nNATAL Planetary Positions (with calculated house placements):\n";
     
-    // Pre-calculate house cusps for planet-to-house mapping
     const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     const cuspLongitudes: number[] = [];
     if (Object.keys(houseCusps).length > 0) {
@@ -105,7 +135,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
       });
     }
     
-    // Add CURRENT TRANSIT positions so the AI knows where planets are NOW
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
     context += "IMPORTANT: These are the REAL current planetary positions calculated from ephemeris. Use these if the user asks about current transits or 'where is [planet] right now'.\n";
     try {
@@ -233,7 +262,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
     } catch (error) {
       console.error("Ask error:", error);
       toast.error("Failed to get response. Please try again.");
-      // Remove the pending assistant message if it exists
       setMessages(prev => {
         if (prev[prev.length - 1]?.role === "assistant" && !prev[prev.length - 1]?.content) {
           return prev.slice(0, -1);
@@ -282,6 +310,79 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Chart Selector Dropdown */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Reading chart for</p>
+            <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
+              <PopoverTrigger asChild>
+                <button className="w-full flex items-center justify-between gap-2 rounded-sm border border-border bg-card px-3 py-2.5 text-left hover:border-primary/40 transition-colors">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {activeChartId === "user" && <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />}
+                    <span className="text-sm font-medium text-foreground truncate">{selectedChart?.name || "Select a chart"}</span>
+                    {selectedChart?.birthDate && (
+                      <span className="text-xs text-muted-foreground flex-shrink-0">{selectedChart.birthDate}</span>
+                    )}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                {/* Search */}
+                {chartOptions.others.length > 3 && (
+                  <div className="p-2 border-b border-border">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search charts…"
+                        value={chartSearch}
+                        onChange={e => setChartSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-sm bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="max-h-[280px] overflow-y-auto">
+                  {/* Primary user — always first, starred */}
+                  {chartOptions.primary && (
+                    <button
+                      onClick={() => selectChart("user")}
+                      className={`w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/50 transition-colors ${activeChartId === "user" ? "bg-primary/5" : ""}`}
+                    >
+                      <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />
+                      <span className="text-sm font-medium text-foreground truncate">{chartOptions.primary.name}</span>
+                      {chartOptions.primary.birthDate && (
+                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{chartOptions.primary.birthDate}</span>
+                      )}
+                    </button>
+                  )}
+                  {/* Divider */}
+                  {chartOptions.primary && filteredOthers.length > 0 && (
+                    <div className="border-t border-border" />
+                  )}
+                  {/* Other charts alphabetically */}
+                  {filteredOthers.map(chart => (
+                    <button
+                      key={chart.id}
+                      onClick={() => selectChart(chart.id)}
+                      className={`w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/50 transition-colors ${activeChartId === chart.id ? "bg-primary/5" : ""}`}
+                    >
+                      <span className="w-3.5 flex-shrink-0" />
+                      <span className="text-sm text-foreground truncate">{chart.name}</span>
+                      {chart.birthDate && (
+                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{chart.birthDate}</span>
+                      )}
+                    </button>
+                  ))}
+                  {filteredOthers.length === 0 && chartSearch && (
+                    <p className="text-xs text-muted-foreground text-center py-3">No charts match "{chartSearch}"</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           {/* Chart Context Info */}
           {selectedChart && (
             <div className="rounded-md bg-muted/50 p-3 text-sm">
