@@ -5,6 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const getCurrentDateKey = (value?: string) => {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  return new Date().toISOString().slice(0, 10);
+};
+
 const SYSTEM_PROMPT = `You are a professional astrologer giving a chart reading. You will receive a person's natal chart placements and a question. You must respond ONLY with valid JSON — no prose, no markdown, no explanation before or after. Do not wrap in backticks.
 
 Return this exact structure:
@@ -53,7 +61,8 @@ Return this exact structure:
       ],
       "windows": [
         { "label": "May 2026", "description": "Why this date matters." },
-        { "label": "January of any year", "description": "Why this date matters." }
+        { "label": "late June 2026", "description": "Why this date matters." },
+        { "label": "September 2026", "description": "Why this date matters." }
       ]
     },
     {
@@ -82,6 +91,15 @@ Rules:
 - bullets array can be empty [] if not needed — never omit the field
 - Use the EXACT planetary positions from the chart data provided — do NOT fabricate or guess positions
 - The house positions shown in the chart data are calculated from actual cusps and are DEFINITIVE. Sign ≠ House.
+- Set generated_date to the CURRENT LOCAL DATE provided below.
+- For ANY timing references (timing_section windows, summary_box "When" fields, and narrative mentions of timing), every date or window must be in the future relative to the CURRENT LOCAL DATE provided below.
+- Never mention a month, season, year, or range that has already fully passed.
+- If a likely activation window has already passed, skip it and move to the next meaningful future window.
+- For question_type "timing", include 3 to 5 future windows ordered from soonest to latest.
+- Always include at least 2 backup or follow-up windows after the first window so the user has more than one future date to look forward to.
+- If strong windows are sparse, still include the next 3 meaningful future periods even if they are farther out.
+- Prefer specific future labels like "May 2026", "late June 2026", or "May 12-28, 2026" over vague labels like "mid 2025" or generic labels like "January of any year".
+- In summary_box timing answers, the "When" item must mention the earliest future window and at least one later backup window.
 
 For city_comparison sections (relocation only), use this structure:
 {
@@ -104,16 +122,21 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, chartContext } = await req.json();
+    const { messages, chartContext, currentDate } = await req.json();
+    const effectiveCurrentDate = getCurrentDateKey(currentDate);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemMessage = chartContext 
-      ? `${SYSTEM_PROMPT}\n\n--- CHART DATA ---\n${chartContext}`
-      : SYSTEM_PROMPT;
+    const systemMessage = [
+      SYSTEM_PROMPT,
+      `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
+      chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -161,6 +184,10 @@ serve(async (req) => {
       // Strip any markdown code fences if present
       const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
       parsedContent = JSON.parse(cleaned);
+
+      if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+        parsedContent.generated_date = effectiveCurrentDate;
+      }
     } catch {
       // If JSON parsing fails, return the raw content
       parsedContent = { raw: content };
