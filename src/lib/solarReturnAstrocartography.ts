@@ -4,7 +4,7 @@
  * Calculates where each planet would be angular (conjunct ASC, MC, DSC, IC)
  * at different geographic longitudes for the Solar Return moment.
  * 
- * This enables "where should I spend my birthday?" analysis by showing
+ * This enables "where should I travel this year?" analysis by showing
  * which cities put benefics (Venus, Jupiter, Sun) on powerful angles.
  */
 
@@ -791,7 +791,7 @@ export function calculateAstrocartography(
   const topCities = topCitiesArr;
 
   const interpretation = topCities.length > 0
-    ? `Your Solar Return astrocartography shows ${lines.length} planetary lines across the globe. ${bestBeneficCity ? `The most favorable location is ${bestBeneficCity.city}, ${bestBeneficCity.country} (${bestBeneficCity.summary}).` : ''} ${worstMaleficCity ? `Exercise caution around ${worstMaleficCity.city}, ${worstMaleficCity.country} (${worstMaleficCity.summary}).` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral position.'}`
+    ? `Your Solar Return planetary lines reveal the best travel destinations for this year. ${bestBeneficCity ? `Top pick: ${bestBeneficCity.city}, ${bestBeneficCity.country} — ${bestBeneficCity.summary}` : ''} ${worstMaleficCity ? `Use caution traveling near ${worstMaleficCity.city}, ${worstMaleficCity.country} — ${worstMaleficCity.summary}` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral baseline.'}`
     : 'Astrocartography data could not be calculated for this chart.';
 
   return {

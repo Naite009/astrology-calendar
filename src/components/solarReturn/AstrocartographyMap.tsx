@@ -273,7 +273,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
             <Globe size={16} className="text-primary" />
-            Astrocartography — Where to Celebrate
+            Astrocartography — Where to Travel This Year
           </h3>
           <div className="flex gap-1">
             <button
@@ -433,7 +433,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         </div>
 
         <p className="text-[10px] text-muted-foreground/60 text-center mt-2 uppercase tracking-widest">
-          {view === 'world' ? 'Click USA Close-Up for detailed US cities including Hawaii' : 'Click a city dot to see what energy that location activates'}
+          {view === 'world' ? 'Where to travel this year based on your Solar Return planetary lines — click a city or switch to USA Close-Up' : 'Click a city dot to see which planetary lines run through it and why'}
         </p>
       </div>
 
@@ -494,6 +494,34 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
     </div>
   );
 };
+
+// ─── Planet Glyphs ──────────────────────────────────────────────────
+
+const PLANET_GLYPHS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+};
+
+const BENEFIC_SET = new Set(['Sun', 'Venus', 'Jupiter']);
+const MALEFIC_SET = new Set(['Saturn', 'Mars', 'Pluto']);
+
+function planetNature(planet: string): 'benefic' | 'malefic' | 'neutral' {
+  if (BENEFIC_SET.has(planet)) return 'benefic';
+  if (MALEFIC_SET.has(planet)) return 'malefic';
+  return 'neutral';
+}
+
+function natureColor(nature: 'benefic' | 'malefic' | 'neutral'): string {
+  if (nature === 'benefic') return 'hsl(142, 71%, 45%)';
+  if (nature === 'malefic') return 'hsl(0, 84%, 60%)';
+  return 'hsl(48, 96%, 53%)';
+}
+
+function natureBadge(nature: 'benefic' | 'malefic' | 'neutral'): string {
+  if (nature === 'benefic') return 'text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20';
+  if (nature === 'malefic') return 'text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20';
+  return 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+}
 
 // ─── Deep Interpretation Data ───────────────────────────────────────
 
@@ -580,103 +608,196 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
   },
 };
 
+// ─── Score Breakdown Helper ─────────────────────────────────────────
+
+const PLANET_ANGLE_RATING_DISPLAY: Record<string, Record<string, number>> = {
+  Sun:     { ASC: 8, MC: 9, DSC: 5, IC: 4 },
+  Moon:    { ASC: 7, MC: 5, DSC: 6, IC: 8 },
+  Mercury: { ASC: 6, MC: 7, DSC: 5, IC: 4 },
+  Venus:   { ASC: 9, MC: 8, DSC: 9, IC: 7 },
+  Mars:    { ASC: 4, MC: 5, DSC: 2, IC: 3 },
+  Jupiter: { ASC: 9, MC: 10, DSC: 8, IC: 7 },
+  Saturn:  { ASC: 3, MC: 5, DSC: 2, IC: 2 },
+  Uranus:  { ASC: 4, MC: 4, DSC: 3, IC: 3 },
+  Neptune: { ASC: 5, MC: 3, DSC: 4, IC: 5 },
+  Pluto:   { ASC: 3, MC: 4, DSC: 2, IC: 3 },
+};
+
+function computeOrbMultiplier(orb: number): number {
+  return Math.max(1 - (orb * orb) / (8 * 8 * 1.5), 0.4);
+}
+
+function orbStrengthLabel(orb: number): string {
+  if (orb <= 1) return 'exact — maximum power';
+  if (orb <= 3) return 'very strong influence';
+  if (orb <= 5) return 'strong influence';
+  return 'moderate influence';
+}
+
 // ─── City Detail Card ───────────────────────────────────────────────
 
-const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () => void }) => (
-  <div className="border border-primary/30 rounded-sm p-5 bg-card space-y-4 relative">
-    <button onClick={onClose} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
-      <X size={16} />
-    </button>
+const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () => void }) => {
+  // Build the "Lines Near This City" summary
+  const lineSummaries = city.angularPlanets
+    .sort((a, b) => a.orb - b.orb)
+    .map(ap => `${PLANET_GLYPHS[ap.planet] || ''} ${ap.planet} ${ap.angle} (${ap.orb}°)`);
 
-    <div>
-      <div className="flex items-center gap-2 mb-1">
-        <MapPin size={16} className="text-primary" />
-        <h4 className="text-base font-medium text-foreground">{city.city}, {city.country}</h4>
+  const tightestLines = city.angularPlanets.filter(ap => ap.orb <= 3);
+  const linesSentence = tightestLines.length > 0
+    ? `This city sits on the ${tightestLines.map(ap => `${PLANET_GLYPHS[ap.planet] || ''} ${ap.planet} ${ap.angle} line (${ap.orb}°)`).join(' and ')}.`
+    : `This city is near the ${lineSummaries.slice(0, 2).join(' and ')}.`;
+
+  return (
+    <div className="border border-primary/30 rounded-sm p-5 bg-card space-y-4 relative">
+      <button onClick={onClose} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
+        <X size={16} />
+      </button>
+
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <MapPin size={16} className="text-primary" />
+          <h4 className="text-base font-medium text-foreground">{city.city}, {city.country}</h4>
+        </div>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(city.rating)}`}>
+          {city.rating}/10 — {ratingLabel(city.rating)}
+        </span>
       </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(city.rating)}`}>
-        {city.rating}/10 — {ratingLabel(city.rating)}
-      </span>
-    </div>
 
-    {/* Intention ratings breakdown */}
-    {city.intentionRatings && (
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-        {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).filter(k => k !== 'overall').map(key => (
-          <div key={key} className="border border-border/50 rounded-sm p-2 bg-secondary/20 text-center">
-            <p className="text-[10px] text-muted-foreground mb-0.5">{INTENTION_EMOJIS[key]} {INTENTION_LABELS[key].split(' ')[0]}</p>
-            <p className="text-sm font-medium" style={{ color: ratingColor(city.intentionRatings[key]) }}>
-              {city.intentionRatings[key]}
-            </p>
+      {/* Lines Near This City — summary sentence */}
+      <div className="border border-border/50 rounded-sm p-3 bg-secondary/20">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Planetary Lines Near This City</p>
+        <p className="text-sm text-foreground leading-relaxed">{linesSentence}</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {city.angularPlanets.sort((a, b) => a.orb - b.orb).map((ap, i) => {
+            const nature = planetNature(ap.planet);
+            return (
+              <span key={i} className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm border ${natureBadge(nature)}`}>
+                <span style={{ color: natureColor(nature) }}>{PLANET_GLYPHS[ap.planet] || ap.planet.charAt(0)}</span>
+                {ap.angle} {ap.orb}°
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Intention ratings breakdown */}
+      {city.intentionRatings && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {(Object.keys(INTENTION_LABELS) as AstrocartoIntention[]).filter(k => k !== 'overall').map(key => (
+            <div key={key} className="border border-border/50 rounded-sm p-2 bg-secondary/20 text-center">
+              <p className="text-[10px] text-muted-foreground mb-0.5">{INTENTION_EMOJIS[key]} {INTENTION_LABELS[key].split(' ')[0]}</p>
+              <p className="text-sm font-medium" style={{ color: ratingColor(city.intentionRatings[key]) }}>
+                {city.intentionRatings[key]}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-sm text-muted-foreground leading-relaxed">{city.summary}</p>
+
+      {/* Score Breakdown Table */}
+      {city.angularPlanets.length > 0 && (
+        <div className="border border-border/50 rounded-sm overflow-hidden">
+          <div className="bg-secondary/40 px-3 py-2">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Score Breakdown — Why This Rating</p>
           </div>
-        ))}
-      </div>
-    )}
-
-    <p className="text-sm text-muted-foreground leading-relaxed">{city.summary}</p>
-
-    {city.angularPlanets.length > 0 && (
-      <div className="space-y-3">
-        <h5 className="text-[10px] uppercase tracking-widest text-muted-foreground">What's Activated Here</h5>
-        {city.angularPlanets.map((ap, i) => {
-          const deep = DEEP[ap.planet]?.[ap.angle];
-          return (
-            <div key={i} className="border border-border/50 rounded-sm bg-secondary/30 overflow-hidden">
-              <div className="flex items-start gap-3 p-3">
-                <span
-                  className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
-                  style={{ background: ratingColor(
-                    ['Venus', 'Jupiter', 'Sun'].includes(ap.planet) ? 8 :
-                    ['Saturn', 'Mars', 'Pluto'].includes(ap.planet) ? 3 : 5.5
-                  ) }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {PLANET_PLAIN[ap.planet] || ap.planet} — on the {ANGLE_LABELS[ap.angle] || ap.angle}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Orb: {ap.orb}° — {ap.orb <= 3 ? 'very strong influence' : ap.orb <= 5 ? 'strong influence' : 'moderate influence'}
-                  </p>
+          <div className="divide-y divide-border/30">
+            <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground bg-secondary/20">
+              <span>Planet × Angle</span>
+              <span className="text-right">Base</span>
+              <span className="text-right">Orb</span>
+              <span className="text-right">Mult</span>
+              <span className="text-right">Score</span>
+            </div>
+            {city.angularPlanets.sort((a, b) => a.orb - b.orb).map((ap, i) => {
+              const baseScore = PLANET_ANGLE_RATING_DISPLAY[ap.planet]?.[ap.angle] ?? 5;
+              const orbMult = computeOrbMultiplier(ap.orb);
+              const contribution = Math.round(baseScore * orbMult * 10) / 10;
+              const nature = planetNature(ap.planet);
+              return (
+                <div key={i} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 px-3 py-2 items-center">
+                  <span className="flex items-center gap-1.5 text-sm">
+                    <span className="text-base" style={{ color: natureColor(nature) }}>{PLANET_GLYPHS[ap.planet] || ap.planet.charAt(0)}</span>
+                    <span className="text-foreground font-medium">{ap.planet}</span>
+                    <span className="text-muted-foreground">× {ap.angle}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground text-right tabular-nums">{baseScore}</span>
+                  <span className="text-xs text-muted-foreground text-right tabular-nums">{ap.orb}°</span>
+                  <span className="text-xs text-muted-foreground text-right tabular-nums">×{orbMult.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-right tabular-nums" style={{ color: ratingColor(contribution) }}>{contribution}</span>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-              {deep && (
-                <div className="px-3 pb-3 space-y-3 border-t border-border/30 pt-3 ml-5">
-                  <p className="text-sm text-foreground/90 leading-relaxed italic">"{deep.vibe}"</p>
-                  
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground/80">Day-to-day feel:</span> {deep.dayToDay}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">Best For</p>
-                      <ul className="space-y-0.5">
-                        {deep.bestFor.map((item, j) => (
-                          <li key={j} className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full bg-green-500 flex-shrink-0" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">Watch For</p>
-                      <ul className="space-y-0.5">
-                        {deep.watchFor.map((item, j) => (
-                          <li key={j} className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+      {/* Deep Interpretation per angular planet */}
+      {city.angularPlanets.length > 0 && (
+        <div className="space-y-3">
+          <h5 className="text-[10px] uppercase tracking-widest text-muted-foreground">What's Activated Here</h5>
+          {city.angularPlanets.sort((a, b) => a.orb - b.orb).map((ap, i) => {
+            const deep = DEEP[ap.planet]?.[ap.angle];
+            const nature = planetNature(ap.planet);
+            return (
+              <div key={i} className="border border-border/50 rounded-sm bg-secondary/30 overflow-hidden">
+                <div className="flex items-start gap-3 p-3">
+                  <span className="text-lg mt-0.5 flex-shrink-0" style={{ color: natureColor(nature) }}>
+                    {PLANET_GLYPHS[ap.planet] || ap.planet.charAt(0)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {ap.planet} on the {ANGLE_LABELS[ap.angle] || ap.angle}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Orb: {ap.orb}° — {orbStrengthLabel(ap.orb)}
+                    </p>
+                    <span className={`inline-block text-[10px] mt-1 px-1.5 py-0.5 rounded-sm border ${natureBadge(nature)}`}>
+                      {nature === 'benefic' ? '✦ Benefic' : nature === 'malefic' ? '⚠ Malefic' : '◆ Neutral'}
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-);
+
+                {deep && (
+                  <div className="px-3 pb-3 space-y-3 border-t border-border/30 pt-3 ml-5">
+                    <p className="text-sm text-foreground/90 leading-relaxed italic">"{deep.vibe}"</p>
+                    
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      <span className="font-medium text-foreground/80">Day-to-day feel:</span> {deep.dayToDay}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-green-600 dark:text-green-400 font-medium mb-1">Best For</p>
+                        <ul className="space-y-0.5">
+                          {deep.bestFor.map((item, j) => (
+                            <li key={j} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              <span className="w-1 h-1 rounded-full bg-green-500 flex-shrink-0" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">Watch For</p>
+                        <ul className="space-y-0.5">
+                          {deep.watchFor.map((item, j) => (
+                            <li key={j} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
