@@ -73,13 +73,24 @@ export interface ModalityEntry {
   interpretation: string;
 }
 
+export interface PolarityEntry {
+  name: string;
+  symbol: string;
+  signs?: string[];
+  count: number;
+  planets: string[];
+  interpretation: string;
+}
+
 export interface ModalityElementSection {
   type: "modality_element";
   title: string;
   elements: ElementEntry[];
   modalities: ModalityEntry[];
+  polarity?: PolarityEntry[];
   dominant_element: string;
   dominant_modality: string;
+  dominant_polarity?: string;
   balance_interpretation: string;
 }
 
