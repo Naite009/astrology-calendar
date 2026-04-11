@@ -492,6 +492,32 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     generateAskPdf(selectedChart, readings);
   };
 
+  const handleDownloadJson = () => {
+    if (!selectedChart || entries.length === 0) return;
+    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+    if (readings.length === 0) {
+      toast.error("No structured readings to export yet.");
+      return;
+    }
+    const jsonData = {
+      chart: {
+        name: selectedChart.name,
+        birthDate: selectedChart.birthDate,
+        birthTime: selectedChart.birthTime,
+        birthPlace: selectedChart.birthPlace,
+      },
+      exportedAt: new Date().toISOString(),
+      readings,
+    };
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedChart.name.replace(/\s+/g, "-").toLowerCase()}-readings.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const conversations = loadConversations();
 
   if (showHistory) {
