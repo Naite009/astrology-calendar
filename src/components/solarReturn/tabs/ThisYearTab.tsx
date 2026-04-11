@@ -91,7 +91,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
             <p className="text-xs text-muted-foreground">Add house cusps to see placement.</p>
           )}
         </div>
-        {/* Moon (brief) */}
+        {/* Moon */}
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium mb-2">☽ Moon Placement</h4>
           <p className="text-sm font-medium text-foreground mb-1">Moon in {analysis.moonSign}</p>
@@ -99,7 +99,21 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
             <p className="text-xs text-muted-foreground mb-1">SR House {analysis.moonHouse.house}</p>
           )}
           {analysis.moonNatalHouse.house && analysis.moonNatalHouse.house !== analysis.moonHouse.house && (
-            <p className="text-xs text-muted-foreground">→ lands in natal {ordinal(analysis.moonNatalHouse.house)} house</p>
+            <p className="text-xs text-muted-foreground mb-2">→ lands in natal {ordinal(analysis.moonNatalHouse.house)} house</p>
+          )}
+          {srMoonInSign[analysis.moonSign] && (
+            <p className="text-xs text-muted-foreground leading-relaxed mb-2">{srMoonInSign[analysis.moonSign]}</p>
+          )}
+          {analysis.moonHouse.house && srMoonInHouse[analysis.moonHouse.house] && (
+            <div className="bg-primary/5 rounded-sm p-3 mb-2">
+              <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Focus</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{srMoonInHouse[analysis.moonHouse.house]}</p>
+            </div>
+          )}
+          {analysis.moonNatalHouse.house && analysis.moonNatalHouse.house !== analysis.moonHouse.house && (
+            <p className="text-xs text-muted-foreground leading-relaxed mb-2 border-t border-border pt-2">
+              {srOverlayNarrative('The Moon', analysis.moonHouse.house, analysis.moonNatalHouse.house)}
+            </p>
           )}
           <p className="text-[10px] text-muted-foreground mt-2 italic">See the ☽ Moon tab for the full emotional year analysis.</p>
         </div>
