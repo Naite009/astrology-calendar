@@ -29,6 +29,11 @@ interface SavedConversation {
   timestamp: number;
 }
 
+interface AskActiveMeta {
+  selectedChartId: string;
+  threadIds: Record<string, string>;
+}
+
 interface AskViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -37,33 +42,97 @@ interface AskViewProps {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
 const STORAGE_KEY = "ask-conversations";
-const ACTIVE_CHAT_KEY = "ask-active-chat";
+const ACTIVE_CHAT_KEY_PREFIX = "ask-active-chat:";
+const ACTIVE_META_KEY = "ask-active-meta";
+const MAX_SAVED_CONVERSATIONS = 50;
+
+function readStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return (parsed ?? fallback) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage(key: string, value: unknown, fallbackValue?: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`[AskView] Failed to persist ${key}`, error);
+
+    if (fallbackValue === undefined) return;
+
+    try {
+      localStorage.setItem(key, JSON.stringify(fallbackValue));
+    } catch (retryError) {
+      console.error(`[AskView] Failed to persist fallback for ${key}`, retryError);
+    }
+  }
+}
+
+function getActiveChatKey(chartId: string) {
+  return `${ACTIVE_CHAT_KEY_PREFIX}${chartId}`;
+}
 
 function loadConversations(): SavedConversation[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch { return []; }
+  const parsed = readStorage<unknown>(STORAGE_KEY, []);
+  const conversations = Array.isArray(parsed) ? (parsed as SavedConversation[]) : [];
+  return conversations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 }
 
 function saveConversations(convos: SavedConversation[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(convos.slice(0, 50)));
+  const trimmed = convos.slice(0, MAX_SAVED_CONVERSATIONS);
+  writeStorage(STORAGE_KEY, trimmed, trimmed.slice(0, 20));
+}
+
+function loadActiveMeta(): AskActiveMeta {
+  const parsed = readStorage<Partial<AskActiveMeta>>(ACTIVE_META_KEY, {});
+  const threadIds =
+    parsed.threadIds && typeof parsed.threadIds === "object" && !Array.isArray(parsed.threadIds)
+      ? (parsed.threadIds as Record<string, string>)
+      : {};
+
+  return {
+    selectedChartId: typeof parsed.selectedChartId === "string" ? parsed.selectedChartId : "user",
+    threadIds,
+  };
+}
+
+function saveActiveMeta(meta: AskActiveMeta) {
+  writeStorage(ACTIVE_META_KEY, meta);
 }
 
 function loadActiveChat(chartId: string): ChatEntry[] {
-  try {
-    const data = JSON.parse(localStorage.getItem(ACTIVE_CHAT_KEY) || "{}");
-    if (data.chartId === chartId) return data.entries || [];
-  } catch {}
-  return [];
+  const parsed = readStorage<unknown>(getActiveChatKey(chartId), []);
+  return Array.isArray(parsed) ? (parsed as ChatEntry[]) : [];
 }
 
 function saveActiveChat(chartId: string, entries: ChatEntry[]) {
-  localStorage.setItem(ACTIVE_CHAT_KEY, JSON.stringify({ chartId, entries }));
+  writeStorage(getActiveChatKey(chartId), entries, entries.slice(-12));
+}
+
+function removeActiveChat(chartId: string) {
+  try {
+    localStorage.removeItem(getActiveChatKey(chartId));
+  } catch {
+    // ignore storage cleanup failures
+  }
 }
 
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
-  const [activeChartId, setActiveChartId] = useState<string>(initialChartId || "user");
-  const [entries, setEntries] = useState<ChatEntry[]>(() => loadActiveChat(initialChartId || "user"));
+  const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
+  const initialAskChartIdRef = useRef<string>(
+    initialMetaRef.current.selectedChartId || initialChartId || "user"
+  );
+  const activeChartIdRef = useRef<string>(initialAskChartIdRef.current);
+  const threadIdsRef = useRef<Record<string, string>>(initialMetaRef.current.threadIds || {});
+
+  const [activeChartId, setActiveChartId] = useState<string>(initialAskChartIdRef.current);
+  const [entries, setEntries] = useState<ChatEntry[]>(() => loadActiveChat(initialAskChartIdRef.current));
+  const [threadIds, setThreadIds] = useState<Record<string, string>>(threadIdsRef.current);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -71,7 +140,36 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [chartSearch, setChartSearch] = useState("");
 
+  const syncThreadIds = useCallback((nextThreadIds: Record<string, string>) => {
+    threadIdsRef.current = nextThreadIds;
+    setThreadIds(nextThreadIds);
+  }, []);
+
+  const assignThreadId = useCallback((chartId: string, conversationId: string) => {
+    syncThreadIds({ ...threadIdsRef.current, [chartId]: conversationId });
+  }, [syncThreadIds]);
+
+  const clearThreadId = useCallback((chartId: string) => {
+    if (!(chartId in threadIdsRef.current)) return;
+    const nextThreadIds = { ...threadIdsRef.current };
+    delete nextThreadIds[chartId];
+    syncThreadIds(nextThreadIds);
+  }, [syncThreadIds]);
+
   useEffect(() => {
+    activeChartIdRef.current = activeChartId;
+  }, [activeChartId]);
+
+  useEffect(() => {
+    saveActiveMeta({ selectedChartId: activeChartId, threadIds });
+  }, [activeChartId, threadIds]);
+
+  useEffect(() => {
+    if (entries.length === 0) {
+      removeActiveChat(activeChartId);
+      return;
+    }
+
     saveActiveChat(activeChartId, entries);
   }, [entries, activeChartId]);
 
@@ -81,6 +179,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     return { primary: userNatalChart, others };
   }, [userNatalChart, savedCharts]);
+
+  useEffect(() => {
+    const chartExists =
+      activeChartId === "user"
+        ? Boolean(userNatalChart)
+        : savedCharts.some(chart => chart.id === activeChartId);
+
+    if (chartExists) return;
+
+    const preferredSavedChartId =
+      initialChartId && savedCharts.some(chart => chart.id === initialChartId)
+        ? initialChartId
+        : null;
+    const fallbackChartId = userNatalChart ? "user" : preferredSavedChartId || savedCharts[0]?.id || "user";
+
+    if (fallbackChartId === activeChartId) return;
+
+    setActiveChartId(fallbackChartId);
+    setEntries(loadActiveChat(fallbackChartId));
+  }, [activeChartId, initialChartId, savedCharts, userNatalChart]);
 
   const filteredOthers = useMemo(() => {
     if (!chartSearch.trim()) return chartOptions.others;
@@ -94,9 +212,30 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
   const selectedChart = getSelectedChart();
 
+  const upsertConversationSnapshot = useCallback((nextEntries: ChatEntry[], chartId: string, chartName: string) => {
+    if (!nextEntries.some(entry => entry.role === "assistant")) return;
+
+    const existingThreadId = threadIdsRef.current[chartId];
+    const conversationId = existingThreadId || `${chartId}-${Date.now()}`;
+
+    if (!existingThreadId) {
+      assignThreadId(chartId, conversationId);
+    }
+
+    const convo: SavedConversation = {
+      id: conversationId,
+      chartName,
+      chartId,
+      entries: [...nextEntries],
+      timestamp: Date.now(),
+    };
+
+    const existing = loadConversations().filter(conversation => conversation.id !== conversationId);
+    saveConversations([convo, ...existing]);
+  }, [assignThreadId]);
+
   const selectChart = (id: string) => {
     if (id !== activeChartId) {
-      if (entries.length > 0) saveCurrentConversation();
       setActiveChartId(id);
       setEntries(loadActiveChat(id));
     }
@@ -104,21 +243,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setChartSearch("");
   };
 
-  const saveCurrentConversation = useCallback(() => {
-    if (entries.length === 0) return;
-    const convo: SavedConversation = {
-      id: `${activeChartId}-${Date.now()}`,
-      chartName: selectedChart?.name || "Unknown",
-      chartId: activeChartId,
-      entries: [...entries],
-      timestamp: Date.now(),
-    };
-    const existing = loadConversations();
-    saveConversations([convo, ...existing]);
-    toast.success("Conversation saved");
-  }, [entries, activeChartId, selectedChart]);
-
   const loadConversation = (convo: SavedConversation) => {
+    assignThreadId(convo.chartId, convo.id);
     setActiveChartId(convo.chartId);
     setEntries(convo.entries);
     setShowHistory(false);
@@ -126,7 +252,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   const deleteConversation = (id: string) => {
     const existing = loadConversations();
-    saveConversations(existing.filter(c => c.id !== id));
+    const deletedConversation = existing.find(conversation => conversation.id === id);
+    saveConversations(existing.filter(conversation => conversation.id !== id));
+
+    if (deletedConversation && threadIdsRef.current[deletedConversation.chartId] === id) {
+      clearThreadId(deletedConversation.chartId);
+    }
+
     toast.success("Conversation deleted");
   };
 
@@ -206,19 +338,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return;
-    const userEntry: ChatEntry = { role: "user", content: input.trim() };
-    setEntries(prev => [...prev, userEntry]);
+    const question = input.trim();
+    if (!question || isLoading) return;
+
+    const chartIdForRequest = activeChartId;
+    const chartForRequest = selectedChart;
+    const chartNameForRequest = chartForRequest?.name || "Unknown";
+    const userEntry: ChatEntry = { role: "user", content: question };
+    const requestEntries = [...entries, userEntry];
+
+    setEntries(requestEntries);
+    saveActiveChat(chartIdForRequest, requestEntries);
     setInput("");
     setIsLoading(true);
 
     try {
-      const chartContext = buildChartContext(selectedChart);
-      // Build messages for context (previous Q&As)
-      const apiMessages = [...entries, userEntry]
-        .filter(e => e.role === "user")
-        .map(e => ({ role: "user" as const, content: e.content }));
-      // Only send the latest user message with full history context
+      const chartContext = buildChartContext(chartForRequest);
+      const apiMessages = requestEntries
+        .filter(entry => entry.role === "user")
+        .map(entry => ({ role: "user" as const, content: entry.content }));
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -251,14 +390,22 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
 
-      // Check if it's structured or raw
+      let assistantEntry: ChatEntry;
+
       if (data.sections) {
-        const reading = data as StructuredReading;
-        setEntries(prev => [...prev, { role: "assistant", content: "", reading }]);
+        assistantEntry = { role: "assistant", content: "", reading: data as StructuredReading };
       } else if (data.raw) {
-        setEntries(prev => [...prev, { role: "assistant", content: data.raw }]);
+        assistantEntry = { role: "assistant", content: data.raw };
       } else {
-        setEntries(prev => [...prev, { role: "assistant", content: JSON.stringify(data, null, 2) }]);
+        assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+      }
+
+      const nextEntries = [...requestEntries, assistantEntry];
+      saveActiveChat(chartIdForRequest, nextEntries);
+      upsertConversationSnapshot(nextEntries, chartIdForRequest, chartNameForRequest);
+
+      if (activeChartIdRef.current === chartIdForRequest) {
+        setEntries(nextEntries);
       }
     } catch (error) {
       console.error("Ask error:", error);
@@ -276,10 +423,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const clearChat = () => {
-    if (entries.length > 0) saveCurrentConversation();
+    clearThreadId(activeChartId);
     setEntries([]);
     setInput("");
-    localStorage.removeItem(ACTIVE_CHAT_KEY);
   };
 
   const handleDownloadPdf = () => {
