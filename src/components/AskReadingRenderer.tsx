@@ -58,6 +58,31 @@ export interface SummaryBoxSection {
   items: SummaryItem[];
 }
 
+export interface ElementEntry {
+  name: string;
+  symbol: string;
+  count: number;
+  planets: string[];
+  interpretation: string;
+}
+
+export interface ModalityEntry {
+  name: string;
+  count: number;
+  planets: string[];
+  interpretation: string;
+}
+
+export interface ModalityElementSection {
+  type: "modality_element";
+  title: string;
+  elements: ElementEntry[];
+  modalities: ModalityEntry[];
+  dominant_element: string;
+  dominant_modality: string;
+  balance_interpretation: string;
+}
+
 export interface CityEntry {
   name: string;
   lines: string[];
@@ -76,7 +101,8 @@ export type ReadingSection =
   | NarrativeSection
   | TimingSection
   | SummaryBoxSection
-  | CityComparisonSection;
+  | CityComparisonSection
+  | ModalityElementSection;
 
 export interface StructuredReading {
   subject: string;
