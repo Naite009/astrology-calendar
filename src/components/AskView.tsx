@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions } from "@/lib/astrology";
+import { formatDateMMDDYYYY } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import {
@@ -157,6 +158,10 @@ function removeActiveChat(chartId: string) {
   } catch {
     // ignore storage cleanup failures
   }
+}
+
+function displayBirthDate(date?: string) {
+  return formatDateMMDDYYYY(date) || date || "";
 }
 
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
@@ -310,7 +315,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
     let context = `Chart for ${chart.name}:\n`;
-    context += `Birth: ${chart.birthDate}`;
+    context += `Birth: ${displayBirthDate(chart.birthDate)}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
     if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
     context += "\n\nNATAL Planetary Positions (with calculated house placements):\n";
@@ -570,7 +575,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                     {activeChartId === "user" && <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />}
                     <span className="text-sm font-medium text-foreground truncate">{selectedChart?.name || "Select a chart"}</span>
                     {selectedChart?.birthDate && (
-                      <span className="text-xs text-muted-foreground flex-shrink-0">{selectedChart.birthDate}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">{displayBirthDate(selectedChart?.birthDate)}</span>
                     )}
                   </div>
                   <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -601,7 +606,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />
                       <span className="text-sm font-medium text-foreground truncate">{chartOptions.primary.name}</span>
                       {chartOptions.primary.birthDate && (
-                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{chartOptions.primary.birthDate}</span>
+                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{displayBirthDate(chartOptions.primary.birthDate)}</span>
                       )}
                     </button>
                   )}
@@ -617,7 +622,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       <span className="w-3.5 flex-shrink-0" />
                       <span className="text-sm text-foreground truncate">{chart.name}</span>
                       {chart.birthDate && (
-                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{chart.birthDate}</span>
+                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{displayBirthDate(chart.birthDate)}</span>
                       )}
                     </button>
                   ))}
@@ -635,7 +640,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               <p className="text-muted-foreground">
                 <span className="font-medium text-foreground">{selectedChart.name}</span>
                 {" · "}
-                {selectedChart.birthDate}
+                {displayBirthDate(selectedChart.birthDate)}
                 {selectedChart.birthTime && ` at ${selectedChart.birthTime}`}
                 {selectedChart.birthLocation && ` · ${selectedChart.birthLocation}`}
               </p>
