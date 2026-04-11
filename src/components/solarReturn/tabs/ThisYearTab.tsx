@@ -150,24 +150,24 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
             {/* SR Chart layer */}
             <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
               <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-2">🎬 The Plot — How This Year Feels</p>
-              <p className="text-xs font-medium text-foreground mb-1">
+              <p className="text-xs font-medium text-foreground mb-2">
                 {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign] || ''} {analysis.srAscRulerInNatal.rulerSRSign}
                 {analysis.srAscRulerInNatal.rulerSRHouse && <> · SR {ordinal(analysis.srAscRulerInNatal.rulerSRHouse)} house</>}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                This is the energy and style of your year — how you instinctively approach situations, what drives your decisions, and where this year's action concentrates in the Solar Return chart.
+                {generatePlotNarrative(analysis.srAscRulerInNatal.rulerPlanet, analysis.srAscRulerInNatal.rulerSRSign, analysis.srAscRulerInNatal.rulerSRHouse)}
               </p>
             </div>
 
             {/* Natal Chart layer */}
             <div className="bg-secondary/50 border border-border rounded-sm p-3">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">📍 The Setting — Where It Lands In Your Life</p>
-              <p className="text-xs font-medium text-foreground mb-1">
+              <p className="text-xs font-medium text-foreground mb-2">
                 {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} {analysis.srAscRulerInNatal.rulerNatalSign}
                 {analysis.srAscRulerInNatal.rulerNatalHouse && <> · natal {ordinal(analysis.srAscRulerInNatal.rulerNatalHouse)} house</>}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                This is the permanent life area that gets activated — where the year's story physically shows up in your everyday experience.
+                {generateSettingNarrative(analysis.srAscRulerInNatal.rulerPlanet, analysis.srAscRulerInNatal.rulerNatalSign, analysis.srAscRulerInNatal.rulerNatalHouse)}
               </p>
             </div>
           </div>
