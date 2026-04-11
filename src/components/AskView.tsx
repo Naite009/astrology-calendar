@@ -504,7 +504,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         name: selectedChart.name,
         birthDate: selectedChart.birthDate,
         birthTime: selectedChart.birthTime,
-        birthPlace: selectedChart.birthPlace,
+        birthLocation: selectedChart.birthLocation,
       },
       exportedAt: new Date().toISOString(),
       readings,
