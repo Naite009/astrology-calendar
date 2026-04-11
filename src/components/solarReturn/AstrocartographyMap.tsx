@@ -331,9 +331,9 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
               className="border border-amber-500/30 rounded-sm p-3 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors"
               onClick={() => setSelectedCity(worstCity)}
             >
-              <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">Most Challenging</p>
+              <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-medium mb-1">{intention !== 'overall' ? `Most Challenging for ${INTENTION_LABELS[intention]}` : 'Most Challenging'}</p>
               <p className="text-lg font-medium text-foreground">{worstCity.city}, {worstCity.country}</p>
-              <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(worstCity)}/10</p>
+              <p className="text-xs text-muted-foreground mt-1">Rating: {cityRating(worstCity)}/10{intention !== 'overall' ? ` for ${INTENTION_LABELS[intention]}` : ''}</p>
             </div>
           </div>
         )}
