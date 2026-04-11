@@ -8,6 +8,7 @@ import { buildFinalAdvice } from '@/lib/solarReturnFinalAdvice';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { scoreAspects, generateTopThemes } from '@/lib/solarReturnAspectScoring';
 import { srSunInHouse, srMoonInSign, srMoonInHouse, srOverlayNarrative, rulerConditionNarrative } from '@/lib/solarReturnInterpretations';
+import { generatePlotNarrative, generateSettingNarrative } from '@/lib/solarReturnRulerNarratives';
 import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryCard';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { Sun, Compass } from 'lucide-react';
