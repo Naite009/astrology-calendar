@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X } from "lucide-react";
+import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -500,6 +500,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setInput("");
   };
 
+  const startNewQuestion = () => {
+    // Save current conversation to history if it has responses
+    if (entries.some(e => e.role === "assistant") && selectedChart) {
+      upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "Unknown");
+    }
+    // Clear thread and entries for a fresh question, keeping same chart
+    clearThreadId(activeChartId);
+    setEntries([]);
+    setInput("");
+  };
+
   const handleDownloadPdf = () => {
     if (!selectedChart || entries.length === 0) return;
     const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
@@ -613,6 +624,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                     PDF
                   </Button>
                 </>
+              )}
+              {entries.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={startNewQuestion} className="text-muted-foreground" title="Start a new question (saves current to history)">
+                  <Plus className="h-4 w-4 mr-1" />
+                  New
+                </Button>
               )}
               <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-muted-foreground" title="View saved conversations">
                 <History className="h-4 w-4" />
