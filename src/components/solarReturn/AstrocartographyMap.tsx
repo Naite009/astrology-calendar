@@ -337,6 +337,11 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
             </div>
           </div>
         )}
+        {intention !== 'overall' && (
+          <p className="text-[10px] text-muted-foreground italic mb-4">
+            Rankings change per intention because each planet line affects different life areas differently. A city with Jupiter on the MC is excellent for career but may not help with healing or family.
+          </p>
+        )}
 
         {/* SVG Map */}
         <div className="border border-border rounded-sm overflow-hidden bg-secondary/30 relative">
