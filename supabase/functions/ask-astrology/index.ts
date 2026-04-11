@@ -66,6 +66,24 @@ Return this exact structure:
       ]
     },
     {
+      "type": "modality_element",
+      "title": "Elemental & Modal Balance",
+      "elements": [
+        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "Strong drive and initiative." },
+        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "Practical grounding." },
+        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "Mental agility." },
+        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "Emotional depth." }
+      ],
+      "modalities": [
+        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "Leadership energy." },
+        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "Persistence and determination." },
+        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "Adaptability." }
+      ],
+      "dominant_element": "Fire",
+      "dominant_modality": "Mutable",
+      "balance_interpretation": "2-3 sentence synthesis of what the elemental and modal balance means for this person and how it relates to the question asked."
+    },
+    {
       "type": "summary_box",
       "title": "Summary",
       "items": [
