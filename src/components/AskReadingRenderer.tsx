@@ -274,6 +274,8 @@ export function ReadingRenderer({ reading }: { reading: StructuredReading }) {
             return <SummaryBox key={i} section={section} />;
           case "city_comparison":
             return <CityComparison key={i} section={section} />;
+          case "modality_element":
+            return <ModalityElementCard key={i} section={section} />;
           default:
             return null;
         }
