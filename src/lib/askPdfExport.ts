@@ -183,26 +183,26 @@ export function generateAskPdf(chart: NatalChart, assistantMessages: Message[]) 
   addFooter();
 
   // --- CONTENT PAGES ---
+  // Merge all assistant answers into one continuous reading
+  const allText = assistantMessages.map(m => stripMarkdown(m.content)).join("\n\n");
+  const allParagraphs = allText.split(/\n\n+/).filter(p => p.trim());
+
   pdf.addPage();
   y = MARGIN;
 
-  for (let i = 0; i < assistantMessages.length; i++) {
-    const msg = assistantMessages[i];
-    const cleanText = stripMarkdown(msg.content);
-    const paragraphs = cleanText.split(/\n\n+/).filter(p => p.trim());
+  // Single title for the whole reading
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  pdf.setTextColor(...COLORS.heading);
+  pdf.text("Your Reading", MARGIN, y);
+  y += 4;
+  pdf.setDrawColor(...COLORS.gold);
+  pdf.setLineWidth(0.6);
+  pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+  y += 10;
 
-    // Section divider
-    ensureSpace(18);
-    pdf.setDrawColor(...COLORS.gold);
-    pdf.setLineWidth(0.6);
-    pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
-    y += 8;
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    pdf.setTextColor(...COLORS.heading);
-    pdf.text(`Interpretation ${i + 1}`, MARGIN, y);
-    y += 10;
+  {
+    const paragraphs = allParagraphs;
 
     for (const para of paragraphs) {
       const lines = para.split(/\n/);
