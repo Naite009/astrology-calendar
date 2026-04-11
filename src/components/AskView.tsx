@@ -164,6 +164,18 @@ function displayBirthDate(date?: string) {
   return formatDateMMDDYYYY(date) || date || "";
 }
 
+function formatTime12h(time?: string): string {
+  if (!time) return "";
+  const parts = time.split(":");
+  let h = parseInt(parts[0], 10);
+  const m = parts[1] || "00";
+  if (isNaN(h)) return time;
+  const suffix = h >= 12 ? "P.M." : "A.M.";
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${m} ${suffix}`;
+}
+
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId }: AskViewProps) => {
   const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
   const initialAskChartIdRef = useRef<string>(
@@ -641,7 +653,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <span className="font-medium text-foreground">{selectedChart.name}</span>
                 {" · "}
                 {displayBirthDate(selectedChart.birthDate)}
-                {selectedChart.birthTime && ` at ${selectedChart.birthTime}`}
+                {selectedChart.birthTime && ` at ${formatTime12h(selectedChart.birthTime)}`}
                 {selectedChart.birthLocation && ` · ${selectedChart.birthLocation}`}
               </p>
             </div>
