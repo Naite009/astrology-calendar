@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus } from "lucide-react";
+import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -563,14 +563,79 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const startNewQuestion = () => {
-    // Save current conversation to history if it has responses
     if (entries.some(e => e.role === "assistant") && selectedChart) {
       upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "Unknown");
     }
-    // Clear thread and entries for a fresh question, keeping same chart
     clearThreadId(activeChartId);
     setEntries([]);
     setInput("");
+  };
+
+  const regenerateLastAnswer = async () => {
+    // Find the last user question
+    const lastUserEntry = [...entries].reverse().find(e => e.role === "user");
+    if (!lastUserEntry || isLoading) return;
+
+    // Remove the last assistant response (if any) so we can regenerate
+    const lastAssistantIdx = entries.map(e => e.role).lastIndexOf("assistant");
+    const trimmedEntries = lastAssistantIdx >= 0
+      ? entries.slice(0, lastAssistantIdx)
+      : [...entries];
+
+    setEntries(trimmedEntries);
+    setIsLoading(true);
+
+    try {
+      const chartForRequest = selectedChart;
+      const chartIdForRequest = activeChartId;
+      const chartNameForRequest = chartForRequest?.name || "Unknown";
+      const chartContext = buildChartContext(chartForRequest);
+      const apiMessages = trimmedEntries
+        .filter(entry => entry.role === "user")
+        .map(entry => ({ role: "user" as const, content: entry.content }));
+
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: apiMessages,
+          chartContext,
+          currentDate: formatLocalDateKey(new Date()),
+        }),
+      });
+
+      if (resp.status === 429) { toast.error("Rate limit exceeded."); setIsLoading(false); return; }
+      if (resp.status === 402) { toast.error("AI credits exhausted."); setIsLoading(false); return; }
+      if (!resp.ok) throw new Error("Failed to get response");
+
+      const data = await resp.json();
+      if (data.error) { toast.error(data.error); setIsLoading(false); return; }
+
+      let assistantEntry: ChatEntry;
+      if (data.sections) {
+        assistantEntry = { role: "assistant", content: "", reading: data as StructuredReading };
+      } else if (data.raw) {
+        assistantEntry = { role: "assistant", content: data.raw };
+      } else {
+        assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+      }
+
+      const nextEntries = [...trimmedEntries, assistantEntry];
+      saveActiveChat(chartIdForRequest, nextEntries);
+      upsertConversationSnapshot(nextEntries, chartIdForRequest, chartNameForRequest);
+
+      if (activeChartIdRef.current === chartIdForRequest) {
+        setEntries(nextEntries);
+      }
+    } catch (error) {
+      console.error("Regenerate error:", error);
+      toast.error("Failed to regenerate. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDownloadPdf = () => {
@@ -686,6 +751,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                     PDF
                   </Button>
                 </>
+              )}
+              {entries.some(e => e.role === "assistant") && (
+                <Button variant="ghost" size="sm" onClick={regenerateLastAnswer} disabled={isLoading} className="text-muted-foreground" title="Regenerate the last answer with the same question">
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </Button>
               )}
               {entries.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={startNewQuestion} className="text-muted-foreground" title="Start a new question (saves current to history)">
