@@ -752,6 +752,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                   </Button>
                 </>
               )}
+              {entries.some(e => e.role === "assistant") && (
+                <Button variant="ghost" size="sm" onClick={regenerateLastAnswer} disabled={isLoading} className="text-muted-foreground" title="Regenerate the last answer with the same question">
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </Button>
+              )}
               {entries.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={startNewQuestion} className="text-muted-foreground" title="Start a new question (saves current to history)">
                   <Plus className="h-4 w-4 mr-1" />
