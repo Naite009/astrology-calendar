@@ -425,11 +425,30 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         if (junoHouse) context += ` (House ${junoHouse})`;
         context += "\n";
       }
+      // Lilith: validate sign is a real zodiac sign, recalculate if malformed
+      let lilithData: { sign: string; degree: number; minutes?: number } | null = null;
       if (chart.planets?.Lilith) {
-        const lilith = chart.planets.Lilith as { sign: string; degree: number; minutes?: number };
-        const lilithAbsDeg = ZODIAC.indexOf(lilith.sign) * 30 + lilith.degree + (lilith.minutes || 0) / 60;
+        const raw = chart.planets.Lilith as { sign: string; degree: number; minutes?: number };
+        if (ZODIAC.includes(raw.sign) && typeof raw.degree === 'number' && raw.degree >= 0 && raw.degree < 30) {
+          lilithData = raw;
+        }
+      }
+      // Recalculate from birth date if missing or malformed
+      if (!lilithData && chart.birthDate) {
+        try {
+          const bd = new Date(chart.birthDate + (chart.birthTime ? `T${chart.birthTime}:00` : 'T12:00:00'));
+          if (!isNaN(bd.getTime())) {
+            const recalc = getDetailedLilithPosition(bd);
+            if (ZODIAC.includes(recalc.sign)) {
+              lilithData = recalc;
+            }
+          }
+        } catch {}
+      }
+      if (lilithData) {
+        const lilithAbsDeg = ZODIAC.indexOf(lilithData.sign) * 30 + lilithData.degree + (lilithData.minutes || 0) / 60;
         const lilithHouse = calcHouse(lilithAbsDeg);
-        context += `- Lilith: ${lilith.degree}°${lilith.minutes || 0}' ${lilith.sign}`;
+        context += `- Lilith: ${lilithData.degree}°${lilithData.minutes || 0}' ${lilithData.sign}`;
         if (lilithHouse) context += ` (House ${lilithHouse})`;
         context += "\n";
       }
