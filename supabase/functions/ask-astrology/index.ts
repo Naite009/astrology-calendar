@@ -106,9 +106,11 @@ Return this exact structure:
 }
 
 Rules:
-- Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven — never omit them
-- Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ — never skip symbols
-- Always include Chiron (⚷) and Midheaven (MC) in the placement_table
+- Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven, South Node, Lilith, and Juno (when data is provided) — never omit them
+- Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ ☋ ⚸ ⚵ — never skip symbols
+- Always include Chiron (⚷), Midheaven (MC), South Node (☋), and Lilith (⚸) in the placement_table. Include Juno (⚵) when chart data provides it.
+- Each transit in timing_section MUST include: the "position" field showing the exact degree AND which natal point it aspects (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer"), plus a "date_range" field with the approximate active period (e.g., "May 8–June 2, 2026"). Never use vague descriptions like "enters Cancer."
+- For transits, also note if the transiting planet is retrograde (R) — this changes interpretation significantly.
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
 - ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron should still appear in the placement_table and be discussed in narrative sections — just exclude it from element/modality/polarity tallies.
