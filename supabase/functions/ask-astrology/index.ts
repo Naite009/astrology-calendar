@@ -230,6 +230,14 @@ CRITICAL ASTROCARTOGRAPHY RULES:
 - The same birth data ALWAYS produces the same natal lines. SR lines change each birthday year.
 - Use whole-number scores only (1-10). Round any decimal to the nearest integer.
 
+CRITICAL ASPECT VERIFICATION RULES:
+- Before claiming ANY aspect (conjunction, trine, square, opposition, sextile, quincunx) between two points, you MUST calculate the actual orb using the exact degrees from the placement table or chart data.
+- Maximum orb allowances: Conjunction/Opposition = 8°, Trine/Square = 7°, Sextile = 5°, Quincunx = 3°.
+- If the orb exceeds the maximum, DO NOT mention the aspect. Being in the same sign does NOT mean two planets are conjunct.
+- Always state the actual orb when claiming an aspect in narrative text, e.g. "Venus trine Moon (3° orb)."
+- Before finalizing the reading, audit EVERY aspect claim in narrative_section and timing_section bodies against the degrees in the placement_table. If the math doesn't check out, remove or replace the claim.
+- This applies to natal-to-natal aspects, transit-to-natal aspects, and SR-to-natal aspects equally.
+
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
 - If a planet says "(House 10)" then it is in the 10th house, regardless of what sign it's in.
