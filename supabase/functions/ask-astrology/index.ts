@@ -113,7 +113,7 @@ Rules:
 - For transits, also note if the transiting planet is retrograde (R) — this changes interpretation significantly.
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
-- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron should still appear in the placement_table and be discussed in narrative sections — just exclude it from element/modality/polarity tallies.
+- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, Lilith, Juno, North Node, South Node, Ascendant, Midheaven, or any other points/asteroids. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron, Lilith, South Node, and Juno should still appear in the placement_table and be discussed in narrative sections — just NEVER include them in element/modality/polarity tallies. This rule is absolute and applies to ALL reading types.
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + city_comparison (if astrocartography data available) + modality_element + summary_box
 
 RELATIONSHIP READING RULES:
@@ -133,7 +133,8 @@ GEOGRAPHIC ACCURACY RULES:
 - Double-check all city/state pairings for US cities. Use correct state abbreviations (e.g., Atlanta is GA not TN, Portland OR vs Portland ME, Kansas City MO vs KS). Never guess — if unsure, omit the state rather than use a wrong one.
 
 CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
-- Include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present).
+- You MUST include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present). This is a hard minimum — do NOT return only 1 caution city.
+- If the astrocartography data contains fewer than 2 cities with clearly challenging lines for a timeframe, still pick the 2 lowest-scored or most malefic-adjacent cities from the data and label them as caution zones.
 - Caution cities should highlight Saturn DSC/IC, Pluto DSC/IC, Mars DSC lines and explain the specific difficulty.
 
 TRANSIT FORMAT RULES:
