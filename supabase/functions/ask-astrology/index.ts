@@ -114,6 +114,7 @@ Rules:
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
 - ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, Lilith, Juno, North Node, South Node, Ascendant, Midheaven, or any other points/asteroids. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron, Lilith, South Node, and Juno should still appear in the placement_table and be discussed in narrative sections — just NEVER include them in element/modality/polarity tallies. This rule is absolute and applies to ALL reading types.
+- POLARITY SIGNS: Always list ALL 6 Yang signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius) and ALL 6 Yin signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces) in the polarity "signs" array, even if zero planets occupy some of them. Never omit empty signs.
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + city_comparison (if astrocartography data available) + modality_element + summary_box
 
 RELATIONSHIP READING RULES:
