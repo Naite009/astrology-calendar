@@ -484,21 +484,34 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         if (srAstrocarto && srAstrocarto.topCities.length > 0) {
           context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ASTROCARTOGRAPHY (this year only, changes annually) ---\n`;
           context += 'These lines are calculated from the Solar Return chart and apply ONLY to the current birthday year.\n\n';
+
+          // Current location rating
+          context += `Current location rating this year: ${srAstrocarto.currentLocationRating}/10\n`;
+          if (srAstrocarto.bestBeneficCity) context += `Best overall city this year: ${srAstrocarto.bestBeneficCity}\n`;
+          if (srAstrocarto.worstMaleficCity) context += `Most challenging city this year: ${srAstrocarto.worstMaleficCity}\n`;
+          context += '\n';
+
+          // Top cities with intention breakdowns
+          const INTENTION_KEYS = ['love', 'career', 'healing', 'adventure', 'creativity', 'vitality'] as const;
           const beneficSR = srAstrocarto.topCities
             .filter(c => c.angularPlanets.some(ap => ['Sun','Moon','Venus','Jupiter'].includes(ap.planet)))
             .sort((a, b) => b.rating - a.rating)
-            .slice(0, 12);
+            .slice(0, 15);
           const cautionSR = srAstrocarto.topCities
             .filter(c => c.angularPlanets.some(ap => ['Saturn','Mars','Pluto'].includes(ap.planet)) &&
               !c.angularPlanets.some(ap => ['Venus','Jupiter'].includes(ap.planet)))
             .sort((a, b) => a.rating - b.rating)
             .slice(0, 5);
+
           if (beneficSR.length > 0) {
             context += 'SR BENEFIC CITIES (this year):\n';
             for (const c of beneficSR) {
               const label = c.state ? `${c.city}, ${c.state}, ${c.country}` : `${c.city}, ${c.country}`;
               const lines = c.angularPlanets.map(ap => `${ap.planet} ${ap.angle} (${ap.orb.toFixed(1)}°)`).join('; ');
-              context += `• ${label} — ${lines} — Rating: ${c.rating}/10\n`;
+              const intentionStr = INTENTION_KEYS
+                .map(k => `${k}:${(c.intentionRatings as any)?.[k] ?? '?'}`)
+                .join(' ');
+              context += `• ${label} — ${lines} — Overall: ${c.rating}/10 [${intentionStr}]\n`;
             }
             context += '\n';
           }
@@ -511,6 +524,19 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             }
             context += '\n';
           }
+
+          // Best city per intention
+          context += 'BEST CITY PER INTENTION (this year):\n';
+          for (const intent of INTENTION_KEYS) {
+            const best = [...srAstrocarto.topCities].sort((a, b) =>
+              ((b.intentionRatings as any)?.[intent] ?? 0) - ((a.intentionRatings as any)?.[intent] ?? 0)
+            )[0];
+            if (best) {
+              const label = best.state ? `${best.city}, ${best.state}` : `${best.city}, ${best.country}`;
+              context += `• ${intent}: ${label} (${(best.intentionRatings as any)?.[intent] ?? '?'}/10)\n`;
+            }
+          }
+          context += '\n';
         }
       } catch {}
     }
