@@ -106,7 +106,7 @@ Rules:
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box — count planets by element (Fire/Earth/Air/Water) and modality (Cardinal/Fixed/Mutable) based on sign placements, identify dominants, and synthesize what this means for the question
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + modality_element + summary_box
-- For question_type "relocation": use narrative_section (Best Locations/Why) + TWO "city_comparison" sections (one titled "This Year's Best Locations" from SR astrocartography data, one titled "Long-Term Best Locations" from natal astrocartography data — these MUST show different cities because they use different calculations) + timing_section + modality_element + summary_box
+- For question_type "relocation": use narrative_section (Best Locations/Why) + TWO "city_comparison" sections (one titled "This Year's Best Locations" using SOLAR RETURN astrocartography data, one titled "Long-Term Best Locations" using NATAL astrocartography data — these MUST show different cities because the calculations are different) + timing_section + modality_element + summary_box. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Include the user's current location rating in the narrative.
 - For question_type "career": use narrative_section + timing_section + modality_element + summary_box
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
 - For question_type "general": use narrative_section sections only + modality_element + summary_box
