@@ -468,6 +468,14 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     }
 
+    // --- NATAL ASTROCARTOGRAPHY (deterministic) ---
+    try {
+      const astrocarto = calculateNatalAstrocartography(chart);
+      if (astrocarto) {
+        context += "\n" + astrocarto.contextString;
+      }
+    } catch {}
+
     return context;
   };
 
