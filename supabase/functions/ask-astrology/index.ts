@@ -20,7 +20,7 @@ Return this exact structure:
 {
   "subject": "Full Name",
   "birth_info": "Date · Time · Location",
-  "question_type": "relationship" | "relocation" | "career" | "timing" | "general",
+  "question_type": "relationship" | "relocation" | "career" | "health" | "money" | "spiritual" | "timing" | "general",
   "question_asked": "the user's original question verbatim",
   "generated_date": "YYYY-MM-DD",
   "sections": [
