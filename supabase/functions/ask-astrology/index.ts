@@ -130,10 +130,18 @@ For city_comparison sections (relocation only), use this structure:
   "type": "city_comparison",
   "title": "Location Analysis",
   "cities": [
-    { "name": "City Name", "lines": ["Jupiter MC line", "Venus ASC line"], "theme": "Career expansion and visibility", "score": 8 },
-    { "name": "City Name", "lines": ["Saturn DSC line"], "theme": "Structured partnerships", "score": 6 }
+    { "name": "City Name", "lines": ["Jupiter MC line (0.8° orb)"], "theme": "Career expansion and visibility", "score": 8 },
+    { "name": "City Name", "lines": ["Saturn DSC line (1.2° orb)"], "theme": "Structured partnerships — caution zone", "score": 3 }
   ]
 }
+
+CRITICAL ASTROCARTOGRAPHY RULES:
+- The chart data includes a "NATAL ASTROCARTOGRAPHY" section with PRE-CALCULATED planetary lines for major cities. These are DETERMINISTIC math-based calculations from the exact birth data.
+- For city_comparison sections, you MUST use ONLY the cities and lines listed in the NATAL ASTROCARTOGRAPHY section. Do NOT invent, guess, or add cities that are not in the provided data.
+- Copy the exact planet, angle, and orb values from the astrocartography data into the "lines" array.
+- If no astrocartography data is provided, explicitly state "Astrocartography lines could not be calculated" and skip the city_comparison section entirely.
+- The same birth data ALWAYS produces the same lines. If the user regenerates, the cities MUST remain identical because they come from the injected data, not from your generation.
+- Separate benefic cities (Venus/Jupiter/Sun/Moon lines) from caution cities (Saturn/Mars/Pluto lines) in your interpretation.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
