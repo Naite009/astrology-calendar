@@ -38,8 +38,10 @@ Return this exact structure:
         { "planet": "Uranus", "symbol": "♅", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "Neptune", "symbol": "♆", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "Pluto", "symbol": "♇", "degrees": "...", "sign": "...", "house": "..." },
+        { "planet": "Chiron", "symbol": "⚷", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "North Node", "symbol": "☊", "degrees": "...", "sign": "...", "house": "..." },
-        { "planet": "Ascendant", "symbol": "AC", "degrees": "0°51'", "sign": "Cancer", "house": 1 }
+        { "planet": "Ascendant", "symbol": "AC", "degrees": "0°51'", "sign": "Cancer", "house": 1 },
+        { "planet": "Midheaven", "symbol": "MC", "degrees": "...", "sign": "...", "house": 10 }
       ]
     },
     {
@@ -101,10 +103,12 @@ Return this exact structure:
 }
 
 Rules:
-- Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto — never omit them
-- Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ☊ — never skip symbols
+- Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven — never omit them
+- Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ — never skip symbols
+- Always include Chiron (⚷) and Midheaven (MC) in the placement_table
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
-- Always include a modality_element section BEFORE the summary_box — count planets by element (Fire/Earth/Air/Water) and modality (Cardinal/Fixed/Mutable) based on sign placements, identify dominants, and synthesize what this means for the question
+- Always include a modality_element section BEFORE the summary_box
+- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) plus Chiron (11 bodies total). Do NOT count North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 11 across elements, 11 across modalities, and 11 across polarity.
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + modality_element + summary_box
 - For question_type "relocation": use narrative_section (Best Locations/Why) + TWO "city_comparison" sections (one titled "This Year's Best Locations" using SOLAR RETURN astrocartography data, one titled "Long-Term Best Locations" using NATAL astrocartography data — these MUST show different cities because the calculations are different) + timing_section + modality_element + summary_box. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
 - For question_type "career": use narrative_section + timing_section + modality_element + summary_box
@@ -125,13 +129,19 @@ Rules:
 - Prefer specific future labels like "May 2026", "late June 2026", or "May 12-28, 2026" over vague labels like "mid 2025" or generic labels like "January of any year".
 - In summary_box timing answers, the "When" item must mention the earliest future window and at least one later backup window.
 
-For city_comparison sections (relocation only), use this structure:
+For city_comparison sections (relocation only), use this structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate benefic (recommended) cities from caution cities into DIFFERENT city_comparison sections — never mix them:
 {
   "type": "city_comparison",
-  "title": "Location Analysis",
+  "title": "Recommended Locations",
   "cities": [
-    { "name": "City Name", "lines": ["Jupiter MC line (0.8° orb)"], "theme": "Career expansion and visibility", "score": 8 },
-    { "name": "City Name", "lines": ["Saturn DSC line (1.2° orb)"], "theme": "Structured partnerships — caution zone", "score": 3 }
+    { "name": "City Name", "lines": ["Jupiter MC line (0.8° orb)"], "theme": "Career expansion and visibility", "score": 8 }
+  ]
+}
+{
+  "type": "city_comparison",
+  "title": "Caution Zones",
+  "cities": [
+    { "name": "City Name", "lines": ["Saturn DSC line (1.2° orb)"], "theme": "Structured partnerships — difficult energy", "score": 3 }
   ]
 }
 
@@ -140,11 +150,12 @@ CRITICAL ASTROCARTOGRAPHY RULES:
   1. "NATAL ASTROCARTOGRAPHY" — permanent lines based on birth data. Use these for LONG-TERM relocation recommendations (where to live permanently).
   2. "SOLAR RETURN ASTROCARTOGRAPHY" — annual lines based on the current birthday year. Use these for THIS-YEAR travel/relocation recommendations.
 - For city_comparison sections in relocation queries, include BOTH a "This Year" group (from SR lines) and a "Long Term" group (from natal lines). These will typically show DIFFERENT cities because the calculations are different.
+- Within each group, separate recommended cities (benefic lines) from caution cities (malefic lines) into distinct city_comparison sections.
 - You MUST use ONLY the cities listed in the provided data. Do NOT invent, guess, or add cities that are not in the injected sections.
 - Copy the exact planet, angle, and orb values from the data into the "lines" array.
 - If no astrocartography data is provided for a category, explicitly state that and skip that group.
 - The same birth data ALWAYS produces the same natal lines. SR lines change each birthday year.
-- Separate benefic cities (Venus/Jupiter/Sun/Moon lines) from caution cities (Saturn/Mars/Pluto lines) in your interpretation.
+- Use whole-number scores only (1-10). Round any decimal to the nearest integer.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
