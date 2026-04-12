@@ -136,11 +136,14 @@ For city_comparison sections (relocation only), use this structure:
 }
 
 CRITICAL ASTROCARTOGRAPHY RULES:
-- The chart data includes a "NATAL ASTROCARTOGRAPHY" section with PRE-CALCULATED planetary lines for major cities. These are DETERMINISTIC math-based calculations from the exact birth data.
-- For city_comparison sections, you MUST use ONLY the cities and lines listed in the NATAL ASTROCARTOGRAPHY section. Do NOT invent, guess, or add cities that are not in the provided data.
-- Copy the exact planet, angle, and orb values from the astrocartography data into the "lines" array.
-- If no astrocartography data is provided, explicitly state "Astrocartography lines could not be calculated" and skip the city_comparison section entirely.
-- The same birth data ALWAYS produces the same lines. If the user regenerates, the cities MUST remain identical because they come from the injected data, not from your generation.
+- The chart data may include TWO astrocartography sections:
+  1. "NATAL ASTROCARTOGRAPHY" — permanent lines based on birth data. Use these for LONG-TERM relocation recommendations (where to live permanently).
+  2. "SOLAR RETURN ASTROCARTOGRAPHY" — annual lines based on the current birthday year. Use these for THIS-YEAR travel/relocation recommendations.
+- For city_comparison sections in relocation queries, include BOTH a "This Year" group (from SR lines) and a "Long Term" group (from natal lines). These will typically show DIFFERENT cities because the calculations are different.
+- You MUST use ONLY the cities listed in the provided data. Do NOT invent, guess, or add cities that are not in the injected sections.
+- Copy the exact planet, angle, and orb values from the data into the "lines" array.
+- If no astrocartography data is provided for a category, explicitly state that and skip that group.
+- The same birth data ALWAYS produces the same natal lines. SR lines change each birthday year.
 - Separate benefic cities (Venus/Jupiter/Sun/Moon lines) from caution cities (Saturn/Mars/Pluto lines) in your interpretation.
 
 CRITICAL ANTI-HALLUCINATION RULES:
