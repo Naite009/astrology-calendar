@@ -136,7 +136,43 @@ RELATIONSHIP READING RULES:
   10. modality_element — "Elemental & Modal Balance"
   11. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window"
   The narrative always leads with home/roots, then career, then astrocartography lines. City comparisons come AFTER the narrative that explains them. SR and natal lines MUST show different cities because the calculations are different. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
-- For question_type "career": use narrative_section + timing_section + modality_element + summary_box
+- For question_type "career": Use this EXACT section order:
+  1. placement_table — "Key Placements"
+  2. narrative_section — "Your Career DNA" (10th house cusp sign, its ruler, Sun sign/house, MC degree)
+  3. narrative_section — "Hidden Strengths" (6th house for daily work style, 2nd house for earning style, 8th house for joint ventures/investments)
+  4. narrative_section — "The Growth Edge" (North Node purpose, Saturn lessons, Chiron's wound-to-gift in career context)
+  5. city_comparison — "Best Cities for Career" (at least 4 cities where Sun MC, Jupiter MC, or Venus MC lines fall)
+  6. city_comparison — "Caution Zones for Career" (at least 2 cities where Saturn MC, Mars MC, or Pluto MC lines fall)
+  7. timing_section — "Career Timing Windows" (transits to MC ruler, 10th house planets, and North Node with exact degrees and date ranges)
+  8. modality_element — "Elemental & Modal Balance"
+  9. summary_box — "Strategy Summary" with items: "Ideal Field", "Ideal Work Style", "When to Act", "What to Avoid"
+- For question_type "health": Use this EXACT section order:
+  1. placement_table — "Key Placements"
+  2. narrative_section — "Your Vitality Blueprint" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
+  3. narrative_section — "Stress Points & Vulnerabilities" (6th house for chronic patterns, 12th house for hidden drains, Saturn for structural weaknesses, any stelliums creating overload)
+  4. narrative_section — "Healing & Recovery" (Chiron sign/house for wound-to-gift, Neptune for intuition/spiritual healing, Jupiter for where the body recovers best)
+  5. city_comparison — "Best Locations for Wellness" (at least 4 cities where Moon IC, Venus ASC, or Jupiter ASC lines support vitality) — ONLY if astrocartography data is available and location is relevant to the question
+  6. timing_section — "Health Timing" (transits to 6th house ruler, Ascendant ruler, and Mars with exact degrees and date ranges; flag challenging transits to health houses)
+  7. modality_element — "Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
+  8. summary_box — "Strategy Summary" with items: "Core Strength", "Watch Points", "Best Practices", "Timing"
+- For question_type "money": Use this EXACT section order:
+  1. placement_table — "Key Placements"
+  2. narrative_section — "Your Earning Style" (2nd house cusp, its ruler, Venus sign/house for values and income)
+  3. narrative_section — "Shared Resources & Investments" (8th house cusp, its ruler, Pluto for transformation of wealth, any planets in 8th)
+  4. narrative_section — "Career Earnings Potential" (10th house/MC connection to income, Jupiter for abundance/opportunity, Saturn for long-term wealth building)
+  5. city_comparison — "Best Cities for Wealth" (at least 4 cities where Jupiter IC, Venus MC, or Sun MC lines support financial growth) — ONLY if astrocartography data is available and location is relevant
+  6. timing_section — "Financial Timing Windows" (transits to 2nd/8th house rulers, Venus, and Jupiter with exact degrees and date ranges)
+  7. modality_element — "Elemental & Modal Balance"
+  8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
+- For question_type "spiritual": Use this EXACT section order:
+  1. placement_table — "Key Placements"
+  2. narrative_section — "Your Soul's Blueprint" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
+  3. narrative_section — "The Inner Teacher" (Saturn sign/house for life lessons, Chiron for wound-to-gift, 12th house for spiritual connection)
+  4. narrative_section — "The Awakening Points" (Uranus for breakthroughs, Neptune for spiritual vision, Pluto for deep transformation)
+  5. timing_section — "Spiritual Timing" (transits to North Node, Neptune, and 12th house ruler with exact degrees and date ranges)
+  6. modality_element — "Elemental & Modal Balance" (frame interpretations as spiritual temperament)
+  7. summary_box — "Strategy Summary" with items: "Soul Purpose", "Key Lesson", "Spiritual Practice", "Timing for Growth"
+- CITY COMPARISON OPTIONAL RULE: Only include city_comparison sections if the reading type inherently involves location as a meaningful factor (relocation, relationship+location). For health, money, and spiritual readings, skip city comparisons UNLESS the user specifically asks about location or the question mentions moving/travel.
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
 - For question_type "general": use narrative_section sections only + modality_element + summary_box
 - summary_box labels should match the question — for relocation use Where/Why/When, for career use Role/Sector/When. When caution cities are present, ALWAYS add a "What to Avoid" item in the summary_box listing the caution cities by name (e.g., "What to Avoid": "Atlanta, GA and Denver, CO — challenging Saturn/Pluto lines").
