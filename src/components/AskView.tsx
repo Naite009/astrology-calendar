@@ -485,8 +485,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ASTROCARTOGRAPHY (this year only, changes annually) ---\n`;
           context += 'These lines are calculated from the Solar Return chart and apply ONLY to the current birthday year.\n\n';
 
-          // Current location rating
-          context += `Current location rating this year: ${srAstrocarto.currentLocationRating}/10\n`;
           if (srAstrocarto.bestBeneficCity) context += `Best overall city this year: ${srAstrocarto.bestBeneficCity}\n`;
           if (srAstrocarto.worstMaleficCity) context += `Most challenging city this year: ${srAstrocarto.worstMaleficCity}\n`;
           context += '\n';
