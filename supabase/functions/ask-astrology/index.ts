@@ -133,7 +133,8 @@ GEOGRAPHIC ACCURACY RULES:
 - Double-check all city/state pairings for US cities. Use correct state abbreviations (e.g., Atlanta is GA not TN, Portland OR vs Portland ME, Kansas City MO vs KS). Never guess — if unsure, omit the state rather than use a wrong one.
 
 CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
-- Include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present).
+- You MUST include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present). This is a hard minimum — do NOT return only 1 caution city.
+- If the astrocartography data contains fewer than 2 cities with clearly challenging lines for a timeframe, still pick the 2 lowest-scored or most malefic-adjacent cities from the data and label them as caution zones.
 - Caution cities should highlight Saturn DSC/IC, Pluto DSC/IC, Mars DSC lines and explain the specific difficulty.
 
 TRANSIT FORMAT RULES:
