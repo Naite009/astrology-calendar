@@ -15,6 +15,7 @@ import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
+import { AskQuickTopics } from "@/components/AskQuickTopics";
 import {
   Popover,
   PopoverContent,
@@ -625,8 +626,23 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return context;
   };
 
-  const handleSubmit = async () => {
-    const question = input.trim();
+  const handleQuickTopic = (prompt: string) => {
+    setInput(prompt);
+    // Use a ref flag to auto-submit on next render
+    quickSubmitRef.current = prompt;
+  };
+
+  const quickSubmitRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (quickSubmitRef.current && input === quickSubmitRef.current && !isLoading) {
+      quickSubmitRef.current = null;
+      handleSubmitDirect(input);
+    }
+  }, [input]);
+
+  const handleSubmitDirect = async (directQuestion?: string) => {
+    const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
 
     const chartIdForRequest = activeChartId;
@@ -703,6 +719,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       setIsLoading(false);
     }
   };
+
+  const handleSubmit = () => handleSubmitDirect();
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -1018,15 +1036,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           <ScrollArea className="h-[500px] pr-4" ref={scrollRef}>
             <div className="space-y-4">
               {entries.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Sparkles className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <p className="text-muted-foreground mb-2">
-                    Ask any question about {selectedChart?.name || "the chart"}
-                  </p>
-                  <p className="text-sm text-muted-foreground/70 max-w-md">
-                    For example: "Where does the ability to see spirits come from in this chart?"
-                    or "Why is there tension between the Sun and Saturn?"
-                  </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center space-y-5">
+                  <div>
+                    <Sparkles className="h-10 w-10 text-muted-foreground/30 mb-3 mx-auto" />
+                    <p className="text-muted-foreground mb-1">
+                      Ask any question about {selectedChart?.name || "the chart"}
+                    </p>
+                    <p className="text-sm text-muted-foreground/70 max-w-md mx-auto">
+                      Or choose a topic for a comprehensive reading:
+                    </p>
+                  </div>
+                  {selectedChart && (
+                    <AskQuickTopics
+                      onSelect={handleQuickTopic}
+                      chartName={selectedChart.name || "Unknown"}
+                      birthDate={selectedChart.birthDate || "unknown date"}
+                      birthTime={selectedChart.birthTime || "unknown time"}
+                      birthLocation={selectedChart.birthLocation || "unknown location"}
+                      disabled={isLoading}
+                    />
+                  )}
                 </div>
               )}
 
