@@ -230,13 +230,14 @@ CRITICAL ASTROCARTOGRAPHY RULES:
 - The same birth data ALWAYS produces the same natal lines. SR lines change each birthday year.
 - Use whole-number scores only (1-10). Round any decimal to the nearest integer.
 
-CRITICAL ASPECT VERIFICATION RULES:
-- Before claiming ANY aspect (conjunction, trine, square, opposition, sextile, quincunx) between two points, you MUST calculate the actual orb using the exact degrees from the placement table or chart data.
-- Maximum orb allowances: Conjunction/Opposition = 8°, Trine/Square = 7°, Sextile = 5°, Quincunx = 3°.
-- If the orb exceeds the maximum, DO NOT mention the aspect. Being in the same sign does NOT mean two planets are conjunct.
-- Always state the actual orb when claiming an aspect in narrative text, e.g. "Venus trine Moon (3° orb)."
-- Before finalizing the reading, audit EVERY aspect claim in narrative_section and timing_section bodies against the degrees in the placement_table. If the math doesn't check out, remove or replace the claim.
-- This applies to natal-to-natal aspects, transit-to-natal aspects, and SR-to-natal aspects equally.
+MANDATORY ASPECT VERIFICATION PROTOCOL:
+- STEP 1 (PRE-WRITE): Before writing ANY narrative section, list every aspect you plan to reference. For each one, extract the two planets' exact degrees from the placement table and compute the angular separation. Check against the correct aspect angle (0° conjunction, 60° sextile, 90° square, 120° trine, 150° quincunx, 180° opposition). The difference between the separation and the aspect angle is the orb.
+- STEP 2 (ORB CHECK): Maximum orbs — Conjunction/Opposition: 8°, Trine/Square: 7°, Sextile: 5°, Quincunx: 3°. If the orb exceeds the limit, the aspect DOES NOT EXIST. Do not mention it anywhere in the reading.
+- STEP 3 (SAME-SIGN ≠ CONJUNCT): Two planets in the same sign or same house are NOT automatically conjunct. Example: Sun at 2° Aries and Saturn at 28° Aries are 26° apart — NO conjunction exists.
+- STEP 4 (STATE THE ORB): Always include the actual orb when claiming an aspect, e.g. "Venus trine Moon (3° orb)."
+- STEP 5 (POST-WRITE AUDIT): After completing the entire reading, cross-check EVERY aspect claim in all narrative_section bodies, timing_section transits, and summary_box text against the placement table degrees. If any claim fails the orb math, REMOVE it or REPLACE it with a real aspect from the chart.
+- STEP 6 (REPLACE, DON'T DELETE): When removing a hallucinated aspect, scan the chart for a REAL aspect to discuss instead. Never leave an empty interpretation — find genuine chart data to support the narrative.
+- This protocol applies equally to natal-to-natal, transit-to-natal, and SR-to-natal aspects.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
