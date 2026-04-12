@@ -108,7 +108,7 @@ Rules:
 - Always include Chiron (⚷) and Midheaven (MC) in the placement_table
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
-- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) plus Chiron (11 bodies total). Do NOT count North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 11 across elements, 11 across modalities, and 11 across polarity.
+- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron should still appear in the placement_table and be discussed in narrative sections — just exclude it from element/modality/polarity tallies.
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + city_comparison (if astrocartography data available) + modality_element + summary_box
 
 RELATIONSHIP READING RULES:
