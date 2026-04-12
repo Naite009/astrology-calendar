@@ -40,6 +40,9 @@ Return this exact structure:
         { "planet": "Pluto", "symbol": "♇", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "Chiron", "symbol": "⚷", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "North Node", "symbol": "☊", "degrees": "...", "sign": "...", "house": "..." },
+        { "planet": "South Node", "symbol": "☋", "degrees": "...", "sign": "...", "house": "..." },
+        { "planet": "Lilith", "symbol": "⚸", "degrees": "...", "sign": "...", "house": "..." },
+        { "planet": "Juno", "symbol": "⚵", "degrees": "...", "sign": "...", "house": "..." },
         { "planet": "Ascendant", "symbol": "AC", "degrees": "0°51'", "sign": "Cancer", "house": 1 },
         { "planet": "Midheaven", "symbol": "MC", "degrees": "...", "sign": "...", "house": 10 }
       ]
@@ -58,11 +61,11 @@ Return this exact structure:
       "type": "timing_section",
       "title": "Timing Windows",
       "transits": [
-        { "planet": "Jupiter", "symbol": "♃", "position": "16°00' Cancer", "interpretation": "What this means right now." },
-        { "planet": "Pluto", "symbol": "♇", "position": "5°00' Aquarius", "interpretation": "What this means right now." }
+        { "planet": "Jupiter", "symbol": "♃", "position": "14°22' Cancer conjunct natal Venus at 15°01' Cancer", "date_range": "May 8–June 2, 2026", "interpretation": "What this means and what to expect." },
+        { "planet": "Pluto", "symbol": "♇", "position": "5°00' Aquarius square natal Moon at 5°16' Cancer", "date_range": "all of 2026 (exact in March)", "interpretation": "What this means and what to expect." }
       ],
       "windows": [
-        { "label": "May 2026", "description": "Why this date matters." },
+        { "label": "May 8–June 2, 2026", "description": "Why this date matters." },
         { "label": "late June 2026", "description": "Why this date matters." },
         { "label": "September 2026", "description": "Why this date matters." }
       ]
