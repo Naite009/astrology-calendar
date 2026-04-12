@@ -108,7 +108,7 @@ Rules:
 - Always include Chiron (⚷) and Midheaven (MC) in the placement_table
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
-- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) plus Chiron (11 bodies total). Do NOT count North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 11 across elements, 11 across modalities, and 11 across polarity.
+- ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron should still appear in the placement_table and be discussed in narrative sections — just exclude it from element/modality/polarity tallies.
 - For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + city_comparison (if astrocartography data available) + modality_element + summary_box
 
 RELATIONSHIP READING RULES:
@@ -121,8 +121,19 @@ RELATIONSHIP READING RULES:
 - For question_type "career": use narrative_section + timing_section + modality_element + summary_box
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
 - For question_type "general": use narrative_section sections only + modality_element + summary_box
-- summary_box labels should match the question — for relocation use Where/Why/When, for career use Role/Sector/When
+- summary_box labels should match the question — for relocation use Where/Why/When, for career use Role/Sector/When. When caution cities are present, ALWAYS add a "What to Avoid" item in the summary_box listing the caution cities by name (e.g., "What to Avoid": "Atlanta, GA and Denver, CO — challenging Saturn/Pluto lines").
 - body text in narrative_section should never exceed 4 sentences
+
+GEOGRAPHIC ACCURACY RULES:
+- Double-check all city/state pairings for US cities. Use correct state abbreviations (e.g., Atlanta is GA not TN, Portland OR vs Portland ME, Kansas City MO vs KS). Never guess — if unsure, omit the state rather than use a wrong one.
+
+CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
+- Include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present).
+- Caution cities should highlight Saturn DSC/IC, Pluto DSC/IC, Mars DSC lines and explain the specific difficulty.
+
+TRANSIT FORMAT RULES:
+- For every transit in timing_section, include the exact degree (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer") and an approximate date range (e.g., "active May 8–June 2, 2026"), not just "enters sign" or "transits Cancer."
+- Vague transit descriptions like "Jupiter enters Cancer" are NOT sufficient — always specify the natal point being activated and the degree.
 - bullets array can be empty [] if not needed — never omit the field
 - Use the EXACT planetary positions from the chart data provided — do NOT fabricate or guess positions
 - The house positions shown in the chart data are calculated from actual cusps and are DEFINITIVE. Sign ≠ House.
