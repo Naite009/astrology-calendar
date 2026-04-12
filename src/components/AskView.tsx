@@ -15,6 +15,7 @@ import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
+import { AskQuickTopics } from "@/components/AskQuickTopics";
 import {
   Popover,
   PopoverContent,
