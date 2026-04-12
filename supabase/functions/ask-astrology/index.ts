@@ -122,7 +122,19 @@ RELATIONSHIP READING RULES:
 - CAUTION CITIES: When astrocartography data is available for relationship questions, include at least 2 caution cities where challenging planetary lines (Saturn DSC, Pluto DSC, Mars DSC, Saturn IC) could attract difficult relationship dynamics. Explain the specific challenge each line brings (e.g., "Saturn DSC: partnerships feel heavy, delayed, or karmic").
 - CITY COUNT: Aim for at least 6 cities total in any city_comparison output — at least 4 recommended and at least 2 caution. Use the "love" intention ratings when available to prioritize cities for relationship queries.
 - If the question is about relationships AND mentions location/moving/travel, treat it as BOTH relationship AND relocation — include city_comparison sections using the love-intention filter.
-- For question_type "relocation": use narrative_section (Best Locations/Why) + TWO "city_comparison" sections (one titled "This Year's Best Locations" using SOLAR RETURN astrocartography data, one titled "Long-Term Best Locations" using NATAL astrocartography data — these MUST show different cities because the calculations are different) + timing_section + modality_element + summary_box. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
+- For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
+  1. placement_table — "Key Placements"
+  2. narrative_section — "Home & Roots" (analyze 4th House natal + solar return placements, IC line themes)
+  3. narrative_section — "Career & Public Life" (analyze 10th House natal + solar return placements, MC line themes)
+  4. narrative_section — "Astrocartography Power Zones" (summarize benefic and caution lines with specific cities before the comparison tables)
+  5. city_comparison — "This Year's Best Locations" (from SOLAR RETURN astrocartography, recommended cities only)
+  6. city_comparison — "This Year's Caution Zones" (from SOLAR RETURN astrocartography, caution cities only, minimum 2)
+  7. city_comparison — "Long-Term Best Locations" (from NATAL astrocartography, recommended cities only)
+  8. city_comparison — "Long-Term Caution Zones" (from NATAL astrocartography, caution cities only, minimum 2)
+  9. timing_section — "Timing for a Move"
+  10. modality_element — "Elemental & Modal Balance"
+  11. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window"
+  The narrative always leads with home/roots, then career, then astrocartography lines. City comparisons come AFTER the narrative that explains them. SR and natal lines MUST show different cities because the calculations are different. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
 - For question_type "career": use narrative_section + timing_section + modality_element + summary_box
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
 - For question_type "general": use narrative_section sections only + modality_element + summary_box
