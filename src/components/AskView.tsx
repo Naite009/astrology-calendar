@@ -8,6 +8,7 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions } from "@/lib/astrology";
+import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
