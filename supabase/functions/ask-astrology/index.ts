@@ -109,7 +109,14 @@ Rules:
 - Include 3 to 6 sections depending on the question — do not pad with empty sections
 - Always include a modality_element section BEFORE the summary_box
 - ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) plus Chiron (11 bodies total). Do NOT count North Node, South Node, Ascendant, Midheaven, or any other points. Counts must add up to exactly 11 across elements, 11 across modalities, and 11 across polarity.
-- For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + modality_element + summary_box
+- For question_type "relationship": use narrative_section (Who/Where/How) + timing_section + city_comparison (if astrocartography data available) + modality_element + summary_box
+
+RELATIONSHIP READING RULES:
+- PLACEMENT TABLE: Include Chiron (⚷), Midheaven (MC), and Juno (⚵) in the placement_table whenever they are referenced in any narrative section. If Juno data is provided in the chart context, always include it.
+- TIMING TRANSITS: Include ALL major transits affecting Venus, the 7th house ruler, Juno, and the Descendant — not just 2. Aim for 4-6 transits minimum. Include outer planet transits (Pluto, Neptune, Uranus) to these points as well as Jupiter and Saturn transits.
+- CAUTION CITIES: When astrocartography data is available for relationship questions, include at least 2 caution cities where challenging planetary lines (Saturn DSC, Pluto DSC, Mars DSC, Saturn IC) could attract difficult relationship dynamics. Explain the specific challenge each line brings (e.g., "Saturn DSC: partnerships feel heavy, delayed, or karmic").
+- CITY COUNT: Aim for at least 6 cities total in any city_comparison output — at least 4 recommended and at least 2 caution. Use the "love" intention ratings when available to prioritize cities for relationship queries.
+- If the question is about relationships AND mentions location/moving/travel, treat it as BOTH relationship AND relocation — include city_comparison sections using the love-intention filter.
 - For question_type "relocation": use narrative_section (Best Locations/Why) + TWO "city_comparison" sections (one titled "This Year's Best Locations" using SOLAR RETURN astrocartography data, one titled "Long-Term Best Locations" using NATAL astrocartography data — these MUST show different cities because the calculations are different) + timing_section + modality_element + summary_box. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
 - For question_type "career": use narrative_section + timing_section + modality_element + summary_box
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
