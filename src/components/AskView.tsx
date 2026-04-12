@@ -9,6 +9,7 @@ import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
+import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
@@ -468,13 +469,51 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     }
 
-    // --- NATAL ASTROCARTOGRAPHY (deterministic) ---
+    // --- NATAL ASTROCARTOGRAPHY (deterministic, long-term) ---
     try {
       const astrocarto = calculateNatalAstrocartography(chart);
       if (astrocarto) {
         context += "\n" + astrocarto.contextString;
       }
     } catch {}
+
+    // --- SOLAR RETURN ASTROCARTOGRAPHY (this year only) ---
+    if (currentSR) {
+      try {
+        const srAstrocarto = calculateAstrocartography(currentSR, chart);
+        if (srAstrocarto && srAstrocarto.topCities.length > 0) {
+          context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ASTROCARTOGRAPHY (this year only, changes annually) ---\n`;
+          context += 'These lines are calculated from the Solar Return chart and apply ONLY to the current birthday year.\n\n';
+          const beneficSR = srAstrocarto.topCities
+            .filter(c => c.angularPlanets.some(ap => ['Sun','Moon','Venus','Jupiter'].includes(ap.planet)))
+            .sort((a, b) => b.rating - a.rating)
+            .slice(0, 12);
+          const cautionSR = srAstrocarto.topCities
+            .filter(c => c.angularPlanets.some(ap => ['Saturn','Mars','Pluto'].includes(ap.planet)) &&
+              !c.angularPlanets.some(ap => ['Venus','Jupiter'].includes(ap.planet)))
+            .sort((a, b) => a.rating - b.rating)
+            .slice(0, 5);
+          if (beneficSR.length > 0) {
+            context += 'SR BENEFIC CITIES (this year):\n';
+            for (const c of beneficSR) {
+              const label = c.state ? `${c.city}, ${c.state}, ${c.country}` : `${c.city}, ${c.country}`;
+              const lines = c.angularPlanets.map(ap => `${ap.planet} ${ap.angle} (${ap.orb.toFixed(1)}°)`).join('; ');
+              context += `• ${label} — ${lines} — Rating: ${c.rating}/10\n`;
+            }
+            context += '\n';
+          }
+          if (cautionSR.length > 0) {
+            context += 'SR CAUTION CITIES (this year):\n';
+            for (const c of cautionSR) {
+              const label = c.state ? `${c.city}, ${c.state}, ${c.country}` : `${c.city}, ${c.country}`;
+              const lines = c.angularPlanets.map(ap => `${ap.planet} ${ap.angle} (${ap.orb.toFixed(1)}°)`).join('; ');
+              context += `• ${label} — ${lines} — Rating: ${c.rating}/10\n`;
+            }
+            context += '\n';
+          }
+        }
+      } catch {}
+    }
 
     return context;
   };
