@@ -7,7 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
-import { getPlanetaryPositions } from "@/lib/astrology";
+import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition, getDetailedLilithPosition } from "@/lib/astrology";
+import { calculateTransitAspects } from "@/lib/transitAspects";
+import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
@@ -397,17 +399,79 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       });
     }
-    context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
+
+    // --- KEY RELATIONSHIP POINTS ---
+    const TRADITIONAL_RULERS: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+      Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+      Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
+    };
+    const house7Cusp = houseCusps.house7 as { sign: string; degree: number } | undefined;
+    if (house7Cusp) {
+      const dscSign = house7Cusp.sign;
+      const ruler7 = TRADITIONAL_RULERS[dscSign] || 'Unknown';
+      context += `\nKey Relationship Points:\n`;
+      context += `- Descendant (7th house cusp): ${house7Cusp.degree}° ${dscSign}\n`;
+      context += `- 7th House Ruler: ${ruler7} (rules ${dscSign})\n`;
+    }
+
+    // --- JUNO & LILITH (if available in chart data) ---
     try {
-      const nowPlanets = getPlanetaryPositions(new Date());
+      if (chart.planets?.Juno) {
+        const juno = chart.planets.Juno as { sign: string; degree: number; minutes?: number };
+        const junoAbsDeg = ZODIAC.indexOf(juno.sign) * 30 + juno.degree + (juno.minutes || 0) / 60;
+        const junoHouse = calcHouse(junoAbsDeg);
+        context += `- Juno: ${juno.degree}°${juno.minutes || 0}' ${juno.sign}`;
+        if (junoHouse) context += ` (House ${junoHouse})`;
+        context += "\n";
+      }
+      if (chart.planets?.Lilith) {
+        const lilith = chart.planets.Lilith as { sign: string; degree: number; minutes?: number };
+        const lilithAbsDeg = ZODIAC.indexOf(lilith.sign) * 30 + lilith.degree + (lilith.minutes || 0) / 60;
+        const lilithHouse = calcHouse(lilithAbsDeg);
+        context += `- Lilith: ${lilith.degree}°${lilith.minutes || 0}' ${lilith.sign}`;
+        if (lilithHouse) context += ` (House ${lilithHouse})`;
+        context += "\n";
+      }
+    } catch {}
+
+    context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
+    const PLANET_BODIES: Record<string, any> = {
+      mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
+      jupiter: Astronomy.Body.Jupiter, saturn: Astronomy.Body.Saturn, uranus: Astronomy.Body.Uranus,
+      neptune: Astronomy.Body.Neptune, pluto: Astronomy.Body.Pluto
+    };
+    try {
+      const now = new Date();
+      const nowPlanets = getPlanetaryPositions(now);
       const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
       Object.entries(nowPlanets).forEach(([key, val]: [string, any]) => {
         if (['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key) && val) {
           const sign = val.signName || signGlyphMap[val.sign] || val.sign || 'Unknown';
           const deg = typeof val.degree === 'number' ? val.degree.toFixed(1) : val.degree || 0;
-          context += `- Transiting ${key.charAt(0).toUpperCase() + key.slice(1)}: ${deg}° ${sign}\n`;
+          let line = `- Transiting ${key.charAt(0).toUpperCase() + key.slice(1)}: ${deg}° ${sign}`;
+          // Add retrograde status
+          const body = PLANET_BODIES[key];
+          if (body) {
+            try {
+              if (isPlanetRetrograde(body, now)) line += ' (R)';
+            } catch {}
+          }
+          context += line + "\n";
         }
       });
+
+      // --- PRE-COMPUTED TRANSIT-TO-NATAL ASPECTS ---
+      try {
+        const transitAspects = calculateTransitAspects(now, nowPlanets, chart);
+        if (transitAspects.length > 0) {
+          context += "\n--- ACTIVE TRANSIT ASPECTS TO NATAL CHART ---\n";
+          const sorted = [...transitAspects].sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+          for (const ta of sorted.slice(0, 15)) {
+            context += `- Transiting ${ta.transitPlanet} ${ta.transitDegree.toFixed(1)}° ${ta.transitSign} ${ta.symbol} Natal ${ta.natalPlanet} ${ta.natalDegree.toFixed(1)}° ${ta.natalSign} (orb: ${ta.orb}°) — ${ta.aspect}\n`;
+          }
+        }
+      } catch {}
     } catch {}
 
     // --- SOLAR RETURN CONTEXT ---
