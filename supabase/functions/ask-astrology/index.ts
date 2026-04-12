@@ -86,7 +86,7 @@ Return this exact structure:
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
       "dominant_polarity": "Yang (Active)",
-      "balance_interpretation": "2-3 sentence synthesis of what the elemental, modal, and polarity balance means for this person and how it relates to the question asked."
+      "balance_interpretation": "2-3 sentence synthesis that directly answers HOW this elemental/modal/polarity balance helps or hinders the person's specific question. For relationship questions, explain what patterns attract or repel partners and what sustains connection. For career, explain work style strengths and blind spots. Be specific and actionable, not generic."
     },
     {
       "type": "summary_box",
