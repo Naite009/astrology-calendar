@@ -277,7 +277,7 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
               <div key={i} className="rounded-lg border border-border p-2.5 bg-muted/20">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-foreground">{el.symbol} {el.name}</span>
-                  <span className="text-xs font-semibold text-primary">{el.count}/{totalPlanets}</span>
+                  <span className="text-xs font-semibold text-primary">{el.count}</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                   <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(el.count / totalPlanets) * 100}%` }} />
@@ -297,7 +297,7 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
               <div key={i} className="rounded-lg border border-border p-2.5 bg-muted/20">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-foreground">{mod.name}</span>
-                  <span className="text-xs font-semibold text-primary">{mod.count}/{totalPlanets}</span>
+                  <span className="text-xs font-semibold text-primary">{mod.count}</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                   <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(mod.count / totalPlanets) * 100}%` }} />
@@ -318,7 +318,7 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
                 <div key={i} className="rounded-lg border border-border p-2.5 bg-muted/20">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-foreground">{pol.symbol} {pol.name}</span>
-                    <span className="text-xs font-semibold text-primary">{pol.count}/{totalPlanets}</span>
+                    <span className="text-xs font-semibold text-primary">{pol.count}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                     <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(pol.count / totalPlanets) * 100}%` }} />
