@@ -200,11 +200,19 @@ LANGUAGE STYLE: Clear, grounded, human, specific. Avoid astrology jargon unless 
 
 RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of ALL relationship narrative sections):
 
+CRITICAL: The style examples below are REFERENCE ONLY. Do not copy their content or assume their placements. Apply this same clarity, tone, and explanation depth to whatever chart data is actually provided.
+
+NARRATIVE SECTION FORMAT FOR RELATIONSHIP READINGS:
+- The "body" field of "Natal Relationship Architecture" MUST contain flowing paragraphs — one per placement — NOT a single summary sentence.
+- Each paragraph should be 2-4 sentences covering one placement (Venus, Mars, Moon, 7th house, etc.).
+- The "bullets" field is OPTIONAL for this section. If used, bullets should cover synthesis points (love language, shadow pattern, ideal partner) — NOT the placement interpretations themselves.
+- For "Your Relationship Pattern", "Contradiction Patterns", and "SR Love Activation", bullets ARE the primary structure.
+
 PARAGRAPH STRUCTURE:
-- Each placement interpretation should be its own paragraph, 2-4 sentences.
+- Each placement interpretation should be its own paragraph within the "body" field.
 - Lead with the placement name once (e.g., "Venus in Taurus in the 11th house shows that..."), then immediately explain the real-life behavior.
 - After explaining the placement, connect it to how it interacts with another placement in the chart.
-- Do NOT use bullet lists inside narrative sections for placement interpretations — use flowing paragraphs.
+- Paragraphs should be separated by line breaks within the body string.
 
 SENTENCE STYLE:
 - Use direct, second-person address ("You tend to...", "You may find that...", "This can lead to...").
@@ -213,23 +221,31 @@ SENTENCE STYLE:
 - Keep sentences short to medium length. No run-on sentences. No academic or clinical tone.
 - The reading should sound like a thoughtful friend explaining your patterns — not a textbook, not a horoscope, not a therapy session.
 
-WHAT GOOD RELATIONSHIP WRITING LOOKS LIKE:
-- "Venus in Taurus in the 11th house shows that love builds slowly and through familiarity. You are most drawn to people you already feel comfortable with, often through friends, shared environments, or repeated contact."
-- "Mars in Gemini in the 12th house shows that attraction is strongly mental and conversational. You may be drawn to people through communication, humor, or curiosity, but the way you pursue or express desire may not always be direct. This can lead to situations where attraction is implied rather than clearly stated."
-- "The Moon in Cancer conjunct Saturn shows that emotional safety is extremely important, even if you don't always express it openly. You need a partner who is not just present, but emotionally steady, reassuring, and trustworthy over time."
+WHAT GOOD RELATIONSHIP WRITING LOOKS LIKE (style reference — do NOT copy these placements):
+- "Venus in Taurus in the 11th house shows that love builds slowly and through familiarity. You are most drawn to people you already feel comfortable with, often through friends, shared environments, or repeated contact. You don't tend to fall quickly, but when you do, you want something stable, consistent, and real."
+- "Mars in Gemini in the 12th house shows that attraction is strongly mental and conversational. You may be drawn to people through communication, humor, or curiosity, but the way you pursue or express desire may not always be direct. This can lead to situations where attraction is implied rather than clearly stated, or where feelings develop in more private or less defined ways. At times, this can create patterns of mixed signals, situationships, or attraction to unavailable people, which can complicate the steadiness you actually want in love."
+- "The Moon in Cancer conjunct Saturn shows that emotional safety is extremely important, even if you don't always express it openly. You may come across as composed or self-contained, but you are highly sensitive to emotional tone, consistency, and reliability. You need a partner who is not just present, but emotionally steady, reassuring, and trustworthy over time."
 
 WHAT BAD RELATIONSHIP WRITING LOOKS LIKE (FORBIDDEN):
 - "With Venus in Taurus, you value loyalty and stability in love." (too generic, no behavior)
 - "Mars in the 12th house creates hidden desires and subconscious attraction patterns." (jargon, no lived experience)
 - "Your Moon-Saturn conjunction indicates emotional restriction and karmic bonding." (clinical, abstract)
 - "This powerful placement suggests deep transformation through intimate encounters." (vague, overblown)
+- "Your core relationship needs are for profound emotional safety and tangible stability." (summary sentence instead of behavioral paragraphs)
 
 SYNTHESIS STYLE:
-- The "Your Relationship Pattern" section must read like a simple, clear summary a friend would give. Example: "You want a stable, loyal, emotionally safe relationship, but part of you is drawn to more mentally stimulating or less clearly defined dynamics, which can sometimes make love feel more complicated than it needs to be."
-- The "Contradiction Patterns" section must read like a gentle observation. Example: "Part of you wants something steady, predictable, and emotionally safe. But another part of you is drawn to situations that are more mentally engaging, less direct, or harder to define. Understanding this pattern helps you choose relationships that feel both engaging and stable."
+- The "Your Relationship Pattern" section body must be one clear, plain-English sentence. The bullets (3-5) must be simple forces written at a 13-year-old reading level. NO astrology terms.
+- Example body: "You want a stable, loyal, emotionally safe relationship, but part of you is drawn to more mentally stimulating or less clearly defined dynamics, which can sometimes make love feel more complicated than it needs to be."
+- Example bullets: "One part of you wants consistency, loyalty, and something that grows over time." / "Another part of you is drawn to curiosity, conversation, and less predictable attraction patterns."
+
+CONTRADICTION PATTERNS STYLE:
+- The body should be a gentle observation synthesizing the core contradiction.
+- Each of the 4 bullets should be 2-3 sentences describing the tension in plain behavioral terms.
+- Example: "Part of you wants something steady, predictable, and emotionally safe. But another part of you is drawn to situations that are more mentally engaging, less direct, or harder to define. This can create a pattern where you are pulled toward connection quickly, but clarity or stability takes longer to establish."
 
 SR LOVE ACTIVATION STYLE:
 - Write as lived experience, not themes. BAD: "Relationships are activated this year." GOOD: "This year, relationships are likely to feel more active and noticeable. You may find that people enter your life more easily, or that attraction develops more quickly than usual."
+- The body should be 2-3 flowing paragraphs describing the year's relationship feel.
 - Each of the 6 experience bullets should be 1-3 sentences of real-life description. No abstractions.
 - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
