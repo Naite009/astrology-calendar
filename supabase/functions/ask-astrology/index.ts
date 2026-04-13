@@ -133,17 +133,22 @@ RELATIONSHIP READING RULES:
 - SYNTHESIS DEPTH: Each narrative section must synthesize specific chart placements into psychological insight — not just list placements. Explain HOW Venus in a specific sign/house creates a specific love language, not just "Venus is in Taurus."
 - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Home & Roots" (analyze 4th House natal + solar return placements, IC line themes)
-  3. narrative_section — "Career & Public Life" (analyze 10th House natal + solar return placements, MC line themes)
-  4. narrative_section — "Astrocartography Power Zones" (summarize benefic and caution lines with specific cities before the comparison tables)
-  5. city_comparison — "This Year's Best Locations" (from SOLAR RETURN astrocartography, recommended cities only)
-  6. city_comparison — "This Year's Caution Zones" (from SOLAR RETURN astrocartography, caution cities only, minimum 2)
-  7. city_comparison — "Long-Term Best Locations" (from NATAL astrocartography, recommended cities only)
-  8. city_comparison — "Long-Term Caution Zones" (from NATAL astrocartography, caution cities only, minimum 2)
-  9. timing_section — "Timing for a Move"
-  10. modality_element — "Elemental & Modal Balance"
-  11. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window"
-  The narrative always leads with home/roots, then career, then astrocartography lines. City comparisons come AFTER the narrative that explains them. SR and natal lines MUST show different cities because the calculations are different. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
+  2. narrative_section — "Natal Astrocartography" (Sun, Moon, Venus, Jupiter, Saturn, Mars, Pluto angular lines — MC, IC, ASC, DSC. Report which lines cross which cities with distance from line. Minimum 6-10 candidate cities.)
+  3. narrative_section — "Relocated Natal Chart Comparison" (For shortlisted cities: relocated Ascendant, relocated Midheaven and IC, relocated 4th/7th/10th houses, relocated Moon, relocated 4th/10th house rulers, benefics or malefics on relocated angles.)
+  4. narrative_section — "Home & Emotional Fit" (Natal 4th house cusp and ruler, Moon sign/house, IC themes. Ideal climate, pace, neighborhood type, community style. Also analyze SR 4th house for this year's home energy shift.)
+  5. narrative_section — "Career & Public Life Fit" (Natal 10th house and ruler, MC themes. Career-supportive cities. Cities supporting visibility, ambition, recognition. SR Midheaven direction this year.)
+  6. narrative_section — "Solar Return Relocation Effects" (For shortlisted cities: relocated SR Ascendant, SR Midheaven/IC, SR Venus/Jupiter on angles vs SR Saturn/Mars/Pluto/Neptune on angles. Which cities improve SR home/career/love picture, which destabilize it.)
+  7. city_comparison — "This Year's Best Locations" (from SOLAR RETURN astrocartography, recommended cities only, scored by home/career/love/vitality/healing/intensity)
+  8. city_comparison — "This Year's Caution Zones" (from SOLAR RETURN astrocartography, caution cities only, minimum 2)
+  9. city_comparison — "Long-Term Best Locations" (from NATAL astrocartography, recommended cities only, scored by home/career/love/vitality/healing/intensity)
+  10. city_comparison — "Long-Term Caution Zones" (from NATAL astrocartography, caution cities only, minimum 2)
+  11. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
+  12. modality_element — "Elemental & Modal Balance"
+  13. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window"
+  RELOCATED CHART RULES: When comparing cities, do not just list which astrocartography lines pass nearby. Also describe how the natal chart angles SHIFT in that location (e.g., "In Portland, the relocated Ascendant moves to Sagittarius, putting Jupiter on the MC"). This is what makes recommendations specific rather than generic.
+  CITY SCORING RULES: Score each city out of 10 AND provide sub-ratings for home, career, love, vitality, healing, and intensity where relevant. Do not call a city universally "best" — specify best for what life area.
+  SATURN/MARS/PLUTO NUANCE: Do not treat these lines as automatically bad. Saturn lines can build career discipline; Mars lines can fuel ambition; Pluto lines can catalyze transformation. Explain the use AND cost of each.
+  The narrative always leads with astrocartography lines, then relocated chart comparison, then home/career fit. City comparisons come AFTER the narratives. SR and natal lines MUST show different cities because the calculations are different. When SR data includes intention ratings (love, career, healing, etc.), use them to match city recommendations to the user's stated intention. Do NOT assume the user's current location — birth location is where they were born, SR location is where they were on their birthday. Never rate or reference a presumed "current location." Only compare recommended cities against each other.
 - For question_type "career": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Career DNA" (10th house cusp sign, its ruler, Sun sign/house, MC degree)

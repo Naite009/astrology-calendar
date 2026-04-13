@@ -15,7 +15,27 @@ export const QUICK_TOPICS: QuickTopic[] = [
     label: "Where Should I Live?",
     icon: <MapPin className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
-      `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, provide a comprehensive relocation analysis. Today's date is ${today()}. All timing must be future-relative to today. Cover each of the following as its own detailed section: NATAL ASTROCARTOGRAPHY LINES — which planetary lines cross which cities? Analyze Sun, Moon, Venus, Jupiter, and Midheaven lines for career/success locations. Analyze Moon, Venus, and IC lines for home/comfort locations. Flag any Saturn, Pluto, or Mars lines as caution zones. Cover at least 6-8 specific cities. 4TH HOUSE ANALYSIS (Home & Roots) — what does the natal 4th house cusp sign, its ruler's placement, and any planets in the 4th say about the ideal living environment? Include the Moon's sign and house as the primary emotional comfort indicator. What kind of home, climate, and community suits this person? Also analyze the solar return 4th house — how does this year's energy shift the home picture? 10TH HOUSE ANALYSIS (Career & Public Life) — what does the natal 10th house say about where career thrives? Where is the solar return Midheaven pointing this year? Which cities align career lines with the SR Midheaven? SOLAR RETURN RELOCATION EFFECTS — how would the SR Ascendant and angles shift in different cities? Which cities put benefic planets (Venus, Jupiter) on SR angles? Which cities would put challenging planets on angles and should be avoided? Use intention ratings (love, career, healing, vitality) when available to match cities to the person's priorities. ELEMENTAL AND MODAL FIT — based on the chart's elemental balance, does this person thrive in water cities (coastal, tropical), fire cities (desert, hot, dynamic), earth cities (mountains, rural, stable), or air cities (high altitude, intellectual hubs)? How does the solar return element balance modify this for the current year? TIMING FOR A MOVE — best windows based on transits to the 4th house ruler, IC, and Moon over the next 12-18 months. Include any upcoming eclipses or outer planet transits activating relocation houses. CITY COMPARISON TABLE — compare at least 6 cities. Separate recommended from caution cities. For each city include: which astro lines cross it, the overall theme, a score out of 10, and specific life areas it supports. Include at least 2 caution cities per timeframe. Show THIS YEAR cities (from solar return) and LONG-TERM cities (from natal) as separate tables. STRATEGY SUMMARY — top cities this year, top cities long-term, cities to avoid, and ideal timing window.`,
+      `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, determine the best cities for relocation. Today's date is ${today()}. All timing must be future-relative to today.
+
+CORE RULES: Do not guess astrocartography lines from interpretation alone — use calculated planetary angular lines only. Use city-to-line proximity thresholds and report distance from line when possible. Separate long-term natal relocation fit from current-year solar return relocation effects. Score each city by life priorities (home, career, love, vitality, healing, intensity) instead of one generic recommendation. Do not call a city universally "best" without specifying best for what. Do not treat Saturn, Mars, or Pluto lines as automatically bad — explain their use and cost. Make it clear which cities are better for home, which for career, and which for a temporary growth year.
+
+Cover each of the following as its own detailed section:
+
+NATAL ASTROCARTOGRAPHY — Sun, Moon, Venus, Jupiter, Saturn, Mars, Pluto angular lines (MC, IC, ASC, DSC). Report which lines cross which cities and the distance from line for each recommended city. Minimum 6-10 candidate cities.
+
+RELOCATED NATAL CHART COMPARISON — For shortlisted cities, analyze: relocated Ascendant, relocated Midheaven and IC, relocated 4th/7th/10th houses, relocated Moon, relocated 4th house ruler, relocated 10th house ruler, benefics or malefics on relocated angles.
+
+HOME AND EMOTIONAL FIT — Natal 4th house cusp and ruler, Moon sign and house, IC themes. What is the ideal climate, pace, neighborhood type, and community style? Also analyze the solar return 4th house — how does this year's energy shift the home picture?
+
+CAREER AND PUBLIC LIFE FIT — Natal 10th house and ruler, MC themes, career-supportive cities. Which cities support public visibility, ambition, or recognition? How does the SR Midheaven point this year?
+
+SOLAR RETURN RELOCATION EFFECTS — For shortlisted cities: relocated SR Ascendant, relocated SR Midheaven and IC, SR Venus and Jupiter on angles vs SR Saturn/Mars/Pluto/Neptune on angles. Which cities improve the SR home/career/love picture? Which destabilize it?
+
+TIMING FOR A MOVE — Transits to Moon, IC, 4th house ruler, and 10th house ruler. Eclipses activating the 4th/10th axis or home indicators. Best move windows and caution windows over the next 12-18 months.
+
+CITY SCORING AND DECISION SUPPORT — Score each city out of 10 and rate separately for home, career, love, vitality, healing, and intensity. Separate THIS YEAR cities (from solar return) from LONG-TERM cities (from natal). Include at least 2 caution cities per timeframe. Include recommended and caution cities as separate tables.
+
+STRATEGY SUMMARY — Top cities this year, top cities long-term, cities to avoid, and ideal timing window. Prioritize clarity and decision usefulness over generic astrocartography language.`,
   },
   {
     id: "relationship",
