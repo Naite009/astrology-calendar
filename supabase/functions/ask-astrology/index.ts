@@ -197,6 +197,40 @@ TRANSLATION EXAMPLE:
 SYNTHESIS RULE: After describing each placement's behavior, connect it to at least one other placement. Highlight contradictions between placements. Do not leave placements as isolated meanings. The reader should understand their relationship behavior even if they know nothing about astrology.
 
 LANGUAGE STYLE: Clear, grounded, human, specific. Avoid astrology jargon unless immediately explained in behavioral terms. Goal: the user sees themselves in real situations, not abstract archetypes.
+
+RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of ALL relationship narrative sections):
+
+PARAGRAPH STRUCTURE:
+- Each placement interpretation should be its own paragraph, 2-4 sentences.
+- Lead with the placement name once (e.g., "Venus in Taurus in the 11th house shows that..."), then immediately explain the real-life behavior.
+- After explaining the placement, connect it to how it interacts with another placement in the chart.
+- Do NOT use bullet lists inside narrative sections for placement interpretations — use flowing paragraphs.
+
+SENTENCE STYLE:
+- Use direct, second-person address ("You tend to...", "You may find that...", "This can lead to...").
+- Sentences should describe observable behavior, not character traits. BAD: "You are loyal and sensual." GOOD: "You tend to show love through steady presence, physical closeness, and doing things for the person rather than just saying it."
+- Use conditional/softened language naturally: "may", "can", "tends to", "often", "at times". Avoid absolute declarations.
+- Keep sentences short to medium length. No run-on sentences. No academic or clinical tone.
+- The reading should sound like a thoughtful friend explaining your patterns — not a textbook, not a horoscope, not a therapy session.
+
+WHAT GOOD RELATIONSHIP WRITING LOOKS LIKE:
+- "Venus in Taurus in the 11th house shows that love builds slowly and through familiarity. You are most drawn to people you already feel comfortable with, often through friends, shared environments, or repeated contact."
+- "Mars in Gemini in the 12th house shows that attraction is strongly mental and conversational. You may be drawn to people through communication, humor, or curiosity, but the way you pursue or express desire may not always be direct. This can lead to situations where attraction is implied rather than clearly stated."
+- "The Moon in Cancer conjunct Saturn shows that emotional safety is extremely important, even if you don't always express it openly. You need a partner who is not just present, but emotionally steady, reassuring, and trustworthy over time."
+
+WHAT BAD RELATIONSHIP WRITING LOOKS LIKE (FORBIDDEN):
+- "With Venus in Taurus, you value loyalty and stability in love." (too generic, no behavior)
+- "Mars in the 12th house creates hidden desires and subconscious attraction patterns." (jargon, no lived experience)
+- "Your Moon-Saturn conjunction indicates emotional restriction and karmic bonding." (clinical, abstract)
+- "This powerful placement suggests deep transformation through intimate encounters." (vague, overblown)
+
+SYNTHESIS STYLE:
+- The "Your Relationship Pattern" section must read like a simple, clear summary a friend would give. Example: "You want a stable, loyal, emotionally safe relationship, but part of you is drawn to more mentally stimulating or less clearly defined dynamics, which can sometimes make love feel more complicated than it needs to be."
+- The "Contradiction Patterns" section must read like a gentle observation. Example: "Part of you wants something steady, predictable, and emotionally safe. But another part of you is drawn to situations that are more mentally engaging, less direct, or harder to define. Understanding this pattern helps you choose relationships that feel both engaging and stable."
+
+SR LOVE ACTIVATION STYLE:
+- Write as lived experience, not themes. BAD: "Relationships are activated this year." GOOD: "This year, relationships are likely to feel more active and noticeable. You may find that people enter your life more easily, or that attraction develops more quickly than usual."
+- Each of the 6 experience bullets should be 1-3 sentences of real-life description. No abstractions.
 - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
   2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
