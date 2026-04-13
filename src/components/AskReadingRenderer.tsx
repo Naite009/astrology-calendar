@@ -316,6 +316,9 @@ function CityCardView({ city }: { city: CityEntry }) {
 
       {city.lines && city.lines.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1.5">
+          <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
+            {city.mode?.toLowerCase().includes("astrocartography") ? "Lines:" : "Chart Basis:"}
+          </span>
           {city.lines.map((line, j) => (
             <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground/80">{line}</span>
           ))}
@@ -409,6 +412,24 @@ function CityTableView({ cities }: { cities: CityEntry[] }) {
   );
 }
 
+function AnalysisModeBanner({ mode }: { mode: string }) {
+  const isAstrology = !mode || mode.toLowerCase().includes("astrology");
+  return (
+    <div className={`rounded-md px-3 py-2 text-xs border ${
+      isAstrology
+        ? "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"
+        : "bg-blue-500/10 border-blue-500/30 text-blue-800 dark:text-blue-300"
+    }`}>
+      <span className="font-semibold">{isAstrology ? "📊 Astrology-Based Relocation Guidance" : "🗺️ Astrocartography-Based Recommendation"}</span>
+      <span className="block mt-0.5 opacity-80">
+        {isAstrology
+          ? "City recommendations are derived from natal chart themes and solar return patterns — not from calculated planetary map lines. Scores reflect symbolic environmental fit, not geographic line proximity."
+          : "City recommendations use calculated planetary angular lines with measured distances. Scores reflect line proximity and angular activation."}
+      </span>
+    </div>
+  );
+}
+
 function CityComparison({ section }: { section: CityComparisonSection }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [sortBy, setSortBy] = useState<SortKey>("overall");
@@ -416,6 +437,9 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
   const hasSubScores = section.cities.some(c => c.home_score != null);
 
   const sortedCities = useMemo(() => sortCities(section.cities, sortBy), [section.cities, sortBy]);
+
+  // Determine mode from the first city
+  const sectionMode = section.cities[0]?.mode || "Astrology-Based";
 
   const sortOptions: { key: SortKey; label: string }[] = [
     { key: "overall", label: "Overall" },
@@ -456,6 +480,7 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
             >Table</button>
           </div>
         </div>
+        <AnalysisModeBanner mode={sectionMode} />
         {viewMode === "card" ? (
           <div className="space-y-3">
             {sortedCities.map((city, i) => (

@@ -273,16 +273,20 @@ CITY COMPARISON FIELD RULES:
 - "region": One of: North America, South America, Europe, Africa, Middle East, Asia, Oceania
 - "mode": "Astrology-Based" (default) or "Astrocartography" (only if line data exists)
 - "tags": Array of 2-5 tags from: Water-Supportive, Structured, Social, Quiet, Career-Active, Healing-Oriented, High-Intensity, Romantic, Grounding, Transformational
-- "lines": If mode is "Astrocartography", use line data. If mode is "Astrology-Based", use chart reasoning (e.g., "Moon in Cancer favors nurturing communities"). NEVER fake line data.
+- "lines": CRITICAL — this field has DIFFERENT meanings depending on mode:
+  * If mode is "Astrocartography": use actual calculated line data (e.g., "Venus MC line at 2.1° orb")
+  * If mode is "Astrology-Based": use chart symbolism reasoning (e.g., "Moon in Cancer favors nurturing coastal communities", "4th house ruler in Pisces supports waterfront living"). These are INTERPRETIVE INFERENCES, not measured line positions. NEVER use phrases like "Venus line", "Jupiter MC line", "on the X line", "near the Y line", or any language implying calculated planetary map lines.
 - "supports": 2-4 life areas this city is strongest for
 - "cautions": 1-2 potential downsides or tradeoffs
-- "explanation": 2-3 sentence paragraph explaining WHY this city fits, connecting chart placements to city characteristics
+- "explanation": 2-3 sentence paragraph explaining WHY this city fits, connecting chart placements to city characteristics. In Astrology-Based mode, explain using house/sign/aspect symbolism. NEVER reference "lines" or "angular positions" in Astrology-Based mode.
 - All sub-scores (home_score, career_score, love_score, healing_score, vitality_score, risk_score) are REQUIRED for every city in relocation readings
 
-LABELING RULES:
-- NEVER claim exact planetary line positions unless actual astrocartography calculations are provided in the chart data.
-- If only natal chart and solar return data are available, ALL cities must use mode "Astrology-Based" and the "lines" array must contain chart-based reasoning, NOT line claims.
-- If actual astrocartography data IS present, use mode "Astrocartography" and copy exact line data.
+LABELING RULES — ABSOLUTE AND NON-NEGOTIABLE:
+- The distinction between "Astrology-Based" and "Astrocartography" is a matter of intellectual honesty. Astrocartography requires CALCULATED planetary angular lines with specific orbs and distances. Natal chart + solar return analysis CANNOT produce this data.
+- If only natal chart and solar return data are available (which is the DEFAULT case), ALL cities MUST use mode "Astrology-Based". The "lines" array MUST contain chart-based reasoning phrased as interpretive themes, NEVER as line positions.
+- Phrases that are FORBIDDEN in Astrology-Based mode: "Venus line", "Jupiter line", "Sun MC line", "Moon IC line", "on the [planet] line", "near the [planet] line", "crosses the [planet] line", "[planet] angular line", "line passes through", "within X degrees of the [planet] line". These phrases imply calculated astrocartography data that does not exist.
+- Phrases that ARE ALLOWED in Astrology-Based mode: "4th house ruler in Pisces favors coastal environments", "Moon in Cancer resonates with nurturing communities", "Jupiter in the 10th house supports career cities", "Venus-ruled chart benefits from artistic cultural hubs".
+- If actual astrocartography data IS present in the chart context, use mode "Astrocartography" and copy exact line data.
 
 ASTROCARTOGRAPHY DATA RULES:
 - The chart data may include TWO astrocartography sections: "NATAL ASTROCARTOGRAPHY" for long-term and "SOLAR RETURN ASTROCARTOGRAPHY" for this-year.
