@@ -114,6 +114,19 @@ export interface CityEntry {
   supports?: string;
   cautions?: string;
   explanation?: string;
+  // Future fields for astrocartography / relocated chart modes
+  planetary_lines?: string[];
+  line_distance_km?: number;
+  line_strength?: string;
+  relocated_chart_notes?: string;
+  benefics_on_angles?: string[];
+  challenging_planets_on_angles?: string[];
+  // Expanded detail fields
+  why_it_works?: string;
+  tradeoffs?: string;
+  best_for?: string;
+  timeframe_notes?: string;
+  mode_explainer?: string;
 }
 
 export interface CityComparisonSection {
