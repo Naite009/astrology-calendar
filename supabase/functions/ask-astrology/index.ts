@@ -240,47 +240,54 @@ TRANSIT FORMAT RULES:
 - Prefer specific future labels like "May 2026", "late June 2026", or "May 12-28, 2026" over vague labels like "mid 2025" or generic labels like "January of any year".
 - In summary_box timing answers, the "When" item must mention the earliest future window and at least one later backup window.
 
-For city_comparison sections, use this enhanced structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate benefic (recommended) cities from caution cities into DIFFERENT city_comparison sections — never mix them:
+For city_comparison sections, use this enhanced structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate recommended cities from caution cities into DIFFERENT city_comparison sections:
 {
   "type": "city_comparison",
-  "title": "Recommended Locations",
+  "title": "Top Cities This Year",
   "cities": [
     {
-      "name": "City Name",
-      "lines": ["Jupiter MC line (0.8° orb)"],
-      "theme": "Career expansion and visibility",
+      "name": "Lisbon",
+      "country": "Portugal",
+      "region": "Europe",
+      "lines": ["4th house ruler in Pisces favors coastal cities"],
+      "theme": "Balanced coastal renewal",
       "score": 8,
       "mode": "Astrology-Based",
-      "home_score": 7,
-      "career_score": 9,
-      "love_score": 6,
-      "healing_score": 5,
+      "tags": ["Water-Supportive", "Structured", "Romantic", "Healing-Oriented"],
+      "home_score": 9,
+      "career_score": 7,
+      "love_score": 8,
+      "healing_score": 9,
       "vitality_score": 7,
       "risk_score": 3,
-      "supports": "Career, public visibility, professional growth",
-      "cautions": "May feel emotionally neutral long-term",
-      "explanation": "Why this city works: detailed explanation connecting chart placements to city fit."
+      "supports": "Home, healing, relationships, steady lifestyle",
+      "cautions": "May be less aggressive for pure ambition",
+      "explanation": "Why this city works: 2-3 sentences connecting chart placements to city characteristics."
     }
   ]
 }
 
-CITY COMPARISON LABELING RULES:
-- If the chart data includes pre-calculated astrocartography planetary line data with orbs and distances, set "mode" to "Astrocartography" and populate the "lines" array with specific line data.
-- If NO actual astrocartography line calculations are available, set "mode" to "Astrology-Based" and populate the "lines" array with the chart-based reasoning (e.g., "4th house ruler in Pisces favors coastal cities", "Jupiter in 9th supports international relocation"). Do NOT label these as astrocartography lines.
-- NEVER claim exact planetary line positions unless actual astrocartography calculations are provided in the chart data. Astrology-based relocation guidance and astrocartography are different things.
-- The "supports" field should list 2-4 life areas this city is strongest for.
-- The "cautions" field should list 1-2 potential downsides or tradeoffs.
-- The "explanation" field should be a 2-3 sentence paragraph explaining WHY this city fits (connecting chart placements to city characteristics).
+CITY COMPARISON FIELD RULES:
+- "name": City name only (e.g., "Lisbon", "San Diego")
+- "country": Full country name (e.g., "Portugal", "United States")
+- "region": One of: North America, South America, Europe, Africa, Middle East, Asia, Oceania
+- "mode": "Astrology-Based" (default) or "Astrocartography" (only if line data exists)
+- "tags": Array of 2-5 tags from: Water-Supportive, Structured, Social, Quiet, Career-Active, Healing-Oriented, High-Intensity, Romantic, Grounding, Transformational
+- "lines": If mode is "Astrocartography", use line data. If mode is "Astrology-Based", use chart reasoning (e.g., "Moon in Cancer favors nurturing communities"). NEVER fake line data.
+- "supports": 2-4 life areas this city is strongest for
+- "cautions": 1-2 potential downsides or tradeoffs
+- "explanation": 2-3 sentence paragraph explaining WHY this city fits, connecting chart placements to city characteristics
+- All sub-scores (home_score, career_score, love_score, healing_score, vitality_score, risk_score) are REQUIRED for every city in relocation readings
+
+LABELING RULES:
+- NEVER claim exact planetary line positions unless actual astrocartography calculations are provided in the chart data.
+- If only natal chart and solar return data are available, ALL cities must use mode "Astrology-Based" and the "lines" array must contain chart-based reasoning, NOT line claims.
+- If actual astrocartography data IS present, use mode "Astrocartography" and copy exact line data.
 
 ASTROCARTOGRAPHY DATA RULES:
-- The chart data may include TWO astrocartography sections:
-  1. "NATAL ASTROCARTOGRAPHY" — permanent lines based on birth data. Use these for LONG-TERM relocation recommendations (where to live permanently).
-  2. "SOLAR RETURN ASTROCARTOGRAPHY" — annual lines based on the current birthday year. Use these for THIS-YEAR travel/relocation recommendations.
-- For city_comparison sections in relocation queries, include BOTH a "This Year" group (from SR lines) and a "Long Term" group (from natal lines). These will typically show DIFFERENT cities because the calculations are different.
-- Within each group, separate recommended cities (benefic lines) from caution cities (malefic lines) into distinct city_comparison sections.
-- You MUST use ONLY the cities listed in the provided data. Do NOT invent, guess, or add cities that are not in the injected sections.
-- Copy the exact planet, angle, and orb values from the data into the "lines" array.
-- If no astrocartography data is provided for a category, explicitly state that and skip that group.
+- The chart data may include TWO astrocartography sections: "NATAL ASTROCARTOGRAPHY" for long-term and "SOLAR RETURN ASTROCARTOGRAPHY" for this-year.
+- If present, use the provided line data. If not present, use chart-based reasoning and label as "Astrology-Based."
+- You MUST use ONLY the cities listed in the provided data when astrocartography data is present. When it is NOT present, recommend from a diverse global pool.
 - The same birth data ALWAYS produces the same natal lines. SR lines change each birthday year.
 - Use whole-number scores only (1-10). Round any decimal to the nearest integer.
 
