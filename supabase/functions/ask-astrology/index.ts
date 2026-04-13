@@ -216,23 +216,39 @@ TRANSIT FORMAT RULES:
 - Prefer specific future labels like "May 2026", "late June 2026", or "May 12-28, 2026" over vague labels like "mid 2025" or generic labels like "January of any year".
 - In summary_box timing answers, the "When" item must mention the earliest future window and at least one later backup window.
 
-For city_comparison sections (relocation only), use this structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate benefic (recommended) cities from caution cities into DIFFERENT city_comparison sections — never mix them:
+For city_comparison sections, use this enhanced structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate benefic (recommended) cities from caution cities into DIFFERENT city_comparison sections — never mix them:
 {
   "type": "city_comparison",
   "title": "Recommended Locations",
   "cities": [
-    { "name": "City Name", "lines": ["Jupiter MC line (0.8° orb)"], "theme": "Career expansion and visibility", "score": 8 }
-  ]
-}
-{
-  "type": "city_comparison",
-  "title": "Caution Zones",
-  "cities": [
-    { "name": "City Name", "lines": ["Saturn DSC line (1.2° orb)"], "theme": "Structured partnerships — difficult energy", "score": 3 }
+    {
+      "name": "City Name",
+      "lines": ["Jupiter MC line (0.8° orb)"],
+      "theme": "Career expansion and visibility",
+      "score": 8,
+      "mode": "Astrology-Based",
+      "home_score": 7,
+      "career_score": 9,
+      "love_score": 6,
+      "healing_score": 5,
+      "vitality_score": 7,
+      "risk_score": 3,
+      "supports": "Career, public visibility, professional growth",
+      "cautions": "May feel emotionally neutral long-term",
+      "explanation": "Why this city works: detailed explanation connecting chart placements to city fit."
+    }
   ]
 }
 
-CRITICAL ASTROCARTOGRAPHY RULES:
+CITY COMPARISON LABELING RULES:
+- If the chart data includes pre-calculated astrocartography planetary line data with orbs and distances, set "mode" to "Astrocartography" and populate the "lines" array with specific line data.
+- If NO actual astrocartography line calculations are available, set "mode" to "Astrology-Based" and populate the "lines" array with the chart-based reasoning (e.g., "4th house ruler in Pisces favors coastal cities", "Jupiter in 9th supports international relocation"). Do NOT label these as astrocartography lines.
+- NEVER claim exact planetary line positions unless actual astrocartography calculations are provided in the chart data. Astrology-based relocation guidance and astrocartography are different things.
+- The "supports" field should list 2-4 life areas this city is strongest for.
+- The "cautions" field should list 1-2 potential downsides or tradeoffs.
+- The "explanation" field should be a 2-3 sentence paragraph explaining WHY this city fits (connecting chart placements to city characteristics).
+
+ASTROCARTOGRAPHY DATA RULES:
 - The chart data may include TWO astrocartography sections:
   1. "NATAL ASTROCARTOGRAPHY" — permanent lines based on birth data. Use these for LONG-TERM relocation recommendations (where to live permanently).
   2. "SOLAR RETURN ASTROCARTOGRAPHY" — annual lines based on the current birthday year. Use these for THIS-YEAR travel/relocation recommendations.
