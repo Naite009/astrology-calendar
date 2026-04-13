@@ -280,23 +280,35 @@ serve(async (req) => {
       .filter(Boolean)
       .join("\n\n");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemMessage },
-          ...messages,
-        ],
-        temperature: 0.3,
-      }),
-    });
+    const MAX_RETRIES = 3;
+    let response: Response | null = null;
+    let lastError = "";
 
-    if (!response.ok) {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        // Exponential backoff: 2s, 4s
+        await new Promise(r => setTimeout(r, 2000 * attempt));
+        console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
+      }
+
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          messages: [
+            { role: "system", content: systemMessage },
+            ...messages,
+          ],
+          temperature: 0.3,
+        }),
+      });
+
+      if (response.ok) break;
+
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
           status: 429,
@@ -309,10 +321,27 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // Retry on 502/503/504 (transient gateway errors)
+      if ([502, 503, 504].includes(response.status) && attempt < MAX_RETRIES - 1) {
+        lastError = await response.text();
+        console.warn(`Transient gateway error ${response.status}, will retry...`);
+        continue;
+      }
+
+      // Non-retryable error
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
+      return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!response || !response.ok) {
+      console.error("All retries exhausted. Last error:", lastError);
+      return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
