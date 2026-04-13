@@ -469,7 +469,7 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
     </Card>
   );
 }
-
+function ModalityElementCard({ section }: { section: ModalityElementSection }) {
   const totalPlanets = section.elements.reduce((s, e) => s + e.count, 0) || 10;
   return (
     <Card className="border-border bg-card/50">
