@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Types for structured reading
