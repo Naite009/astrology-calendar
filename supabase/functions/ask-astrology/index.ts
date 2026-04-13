@@ -150,6 +150,32 @@ RELATIONSHIP READING RULES:
 - TONE: Do not overpromise soulmates or marriage. Do not claim certainty about outcomes. Differentiate chemistry from compatibility. Differentiate attraction from stability. Call out contradiction patterns when present.
 - SYNTHESIS DEPTH: Each narrative section must synthesize specific chart placements into psychological insight — not just list placements. Explain HOW Venus in a specific sign/house creates a specific love language, not just "Venus is in Taurus."
 - WORDING PRECISION: Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. Use careful language around karmic/fated themes — do not overstate inevitability. Differentiate attraction from compatibility, chemistry from durability, opportunity from readiness.
+
+RELATIONSHIP TRANSLATION LAYER (MANDATORY for all relationship narrative sections):
+Every placement MUST be translated into observable, real-life relationship behavior — not traits, keywords, or generic astrology descriptions.
+
+TRANSLATION REQUIREMENTS:
+- Explain HOW the person acts in relationships (behavior, not adjective).
+- Explain HOW attraction works for them (what draws them in, how they pursue or receive).
+- Explain WHAT kinds of situations they get into (patterns, dynamics, recurring scenarios).
+- Explain WHAT problems can arise (specific relational difficulties, not vague "challenges").
+- Explain HOW each placement interacts with other placements (synthesis, contradictions, complications).
+- Avoid vague personality adjectives unless tied to a specific behavior.
+
+FORBIDDEN OUTPUT PATTERNS (never use these as standalone descriptions):
+"curious personality", "experimental sexuality", "intense nature", "deep emotions", "likes communication", "passionate lover", "loyal partner", "freedom-loving", "emotionally complex"
+
+REQUIRED OUTPUT PATTERNS (use these behavioral framings):
+"may be drawn to...", "may tend to...", "can lead to situations where...", "this can show up as...", "this often creates a pattern of...", "this may complicate...", "in practice, this looks like...", "the risk here is...", "what actually happens is..."
+
+TRANSLATION EXAMPLE:
+- Input: Mars in Gemini in the 12th house
+- BAD: "curious, verbal, experimental sexuality"
+- GOOD: "Attraction is mental and verbal — conversation, wit, and curiosity are major turn-ons. Pursuit may be indirect or hard to read, rather than straightforward. There can be a tendency toward hidden attraction patterns, such as private crushes or unclear situations. This can lead to situationships, mixed signals, or attraction to unavailable people. This complicates the steady, grounded love style shown by Venus."
+
+SYNTHESIS RULE: After describing each placement's behavior, connect it to at least one other placement. Highlight contradictions between placements. Do not leave placements as isolated meanings. The reader should understand their relationship behavior even if they know nothing about astrology.
+
+LANGUAGE STYLE: Clear, grounded, human, specific. Avoid astrology jargon unless immediately explained in behavioral terms. Goal: the user sees themselves in real situations, not abstract archetypes.
 - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
   2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
