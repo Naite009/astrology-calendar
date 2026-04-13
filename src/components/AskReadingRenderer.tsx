@@ -101,6 +101,9 @@ export interface CityEntry {
   theme: string;
   score: number;
   mode?: string;
+  country?: string;
+  region?: string;
+  tags?: string[];
   home_score?: number;
   career_score?: number;
   love_score?: number;
@@ -267,6 +270,7 @@ function CityCardView({ city }: { city: CityEntry }) {
   const [expanded, setExpanded] = useState(false);
   const hasSubScores = city.home_score != null || city.career_score != null;
   const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
+  const displayName = city.country ? `${city.name}, ${city.country}` : city.name;
 
   return (
     <div
@@ -275,18 +279,29 @@ function CityCardView({ city }: { city: CityEntry }) {
       }`}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-foreground">{city.name}</span>
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-foreground">{displayName}</span>
           {city.mode && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{city.mode}</span>
           )}
+          {city.region && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground">{city.region}</span>
+          )}
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
           isCaution ? "bg-red-500/10 text-red-600" : "bg-primary/10 text-primary"
         }`}>{city.score}/10</span>
       </div>
       <p className="text-xs text-muted-foreground mb-2">{city.theme}</p>
+
+      {city.tags && city.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {city.tags.map((tag, j) => (
+            <span key={j} className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 text-primary/80 bg-primary/5">{tag}</span>
+          ))}
+        </div>
+      )}
 
       {hasSubScores && (
         <div className="space-y-1 mb-2">
@@ -299,7 +314,7 @@ function CityCardView({ city }: { city: CityEntry }) {
         </div>
       )}
 
-      {city.lines.length > 0 && (
+      {city.lines && city.lines.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1.5">
           {city.lines.map((line, j) => (
             <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground/80">{line}</span>
@@ -324,6 +339,23 @@ function CityCardView({ city }: { city: CityEntry }) {
       )}
     </div>
   );
+}
+
+type SortKey = "overall" | "home" | "career" | "love" | "healing" | "vitality" | "risk";
+
+function sortCities(cities: CityEntry[], sortBy: SortKey): CityEntry[] {
+  const getVal = (c: CityEntry): number => {
+    switch (sortBy) {
+      case "home": return c.home_score ?? 0;
+      case "career": return c.career_score ?? 0;
+      case "love": return c.love_score ?? 0;
+      case "healing": return c.healing_score ?? 0;
+      case "vitality": return c.vitality_score ?? 0;
+      case "risk": return -(c.risk_score ?? 10); // lower risk = better
+      default: return c.score;
+    }
+  };
+  return [...cities].sort((a, b) => getVal(b) - getVal(a));
 }
 
 function CityTableView({ cities }: { cities: CityEntry[] }) {
@@ -352,9 +384,10 @@ function CityTableView({ cities }: { cities: CityEntry[] }) {
         <tbody>
           {cities.map((city, i) => {
             const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
+            const displayName = city.country ? `${city.name}, ${city.country}` : city.name;
             return (
               <tr key={i} className={`border-b border-border/50 ${isCaution ? "bg-red-500/5" : i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                <td className="px-2 py-1.5 font-medium text-foreground whitespace-nowrap">{city.name}</td>
+                <td className="px-2 py-1.5 font-medium text-foreground whitespace-nowrap">{displayName}</td>
                 {hasSubScores && (
                   <>
                     <td className="text-center px-1 py-1.5 tabular-nums">{city.home_score ?? "–"}</td>
@@ -378,16 +411,41 @@ function CityTableView({ cities }: { cities: CityEntry[] }) {
 
 function CityComparison({ section }: { section: CityComparisonSection }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [sortBy, setSortBy] = useState<SortKey>("overall");
   const isCautionSection = /caution/i.test(section.title);
+  const hasSubScores = section.cities.some(c => c.home_score != null);
+
+  const sortedCities = useMemo(() => sortCities(section.cities, sortBy), [section.cities, sortBy]);
+
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "overall", label: "Overall" },
+    { key: "home", label: "Home" },
+    { key: "career", label: "Career" },
+    { key: "love", label: "Love" },
+    { key: "healing", label: "Healing" },
+    { key: "vitality", label: "Vitality" },
+    { key: "risk", label: "Low Risk" },
+  ];
 
   return (
     <Card className={`border-border ${isCautionSection ? "border-red-500/20" : ""}`}>
       <CardContent className="pt-5 pb-4 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className={`text-sm font-semibold tracking-wide uppercase ${isCautionSection ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
             {isCautionSection ? "⚠ " : ""}{section.title}
           </h3>
-          <div className="flex gap-1">
+          <div className="flex gap-1 items-center">
+            {hasSubScores && (
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                className="text-[10px] px-1.5 py-0.5 rounded border border-border bg-background text-foreground"
+              >
+                {sortOptions.map(o => (
+                  <option key={o.key} value={o.key}>{o.label}</option>
+                ))}
+              </select>
+            )}
             <button
               onClick={() => setViewMode("card")}
               className={`text-[10px] px-2 py-0.5 rounded ${viewMode === "card" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
@@ -400,12 +458,12 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
         </div>
         {viewMode === "card" ? (
           <div className="space-y-3">
-            {section.cities.map((city, i) => (
+            {sortedCities.map((city, i) => (
               <CityCardView key={i} city={city} />
             ))}
           </div>
         ) : (
-          <CityTableView cities={section.cities} />
+          <CityTableView cities={sortedCities} />
         )}
       </CardContent>
     </Card>
