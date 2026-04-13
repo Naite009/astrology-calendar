@@ -1,3 +1,4 @@
+import React, { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Types for structured reading
@@ -99,6 +100,16 @@ export interface CityEntry {
   lines: string[];
   theme: string;
   score: number;
+  mode?: string;
+  home_score?: number;
+  career_score?: number;
+  love_score?: number;
+  healing_score?: number;
+  vitality_score?: number;
+  risk_score?: number;
+  supports?: string;
+  cautions?: string;
+  explanation?: string;
 }
 
 export interface CityComparisonSection {
@@ -237,27 +248,165 @@ function SummaryBox({ section }: { section: SummaryBoxSection }) {
   );
 }
 
-function CityComparison({ section }: { section: CityComparisonSection }) {
+function ScoreBar({ label, value, max = 10 }: { label: string; value?: number; max?: number }) {
+  if (value == null) return null;
+  const pct = (value / max) * 100;
+  const color = value >= 7 ? "bg-green-500/70" : value >= 5 ? "bg-yellow-500/70" : "bg-red-500/70";
   return (
-    <Card className="border-border">
-      <CardContent className="pt-5 pb-4 space-y-3">
-        <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
-        <div className="space-y-3">
-          {section.cities.map((city, i) => (
-            <div key={i} className="rounded-md border border-border p-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold text-foreground">{city.name}</span>
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{city.score}/10</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">{city.theme}</p>
-              <div className="flex flex-wrap gap-1">
-                {city.lines.map((line, j) => (
-                  <span key={j} className="text-xs bg-muted px-2 py-0.5 rounded text-foreground/80">{line}</span>
-                ))}
-              </div>
-            </div>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-muted-foreground w-12 shrink-0">{label}</span>
+      <div className="flex-1 bg-muted rounded-full h-1.5">
+        <div className={`${color} h-1.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-[10px] font-semibold text-foreground w-4 text-right">{value}</span>
+    </div>
+  );
+}
+
+function CityCardView({ city }: { city: CityEntry }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasSubScores = city.home_score != null || city.career_score != null;
+  const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
+
+  return (
+    <div
+      className={`rounded-lg border p-3 cursor-pointer transition-all hover:shadow-sm ${
+        isCaution ? "border-red-500/30 bg-red-500/5" : "border-border"
+      }`}
+      onClick={() => setExpanded(!expanded)}
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-foreground">{city.name}</span>
+          {city.mode && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{city.mode}</span>
+          )}
+        </div>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+          isCaution ? "bg-red-500/10 text-red-600" : "bg-primary/10 text-primary"
+        }`}>{city.score}/10</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-2">{city.theme}</p>
+
+      {hasSubScores && (
+        <div className="space-y-1 mb-2">
+          <ScoreBar label="Home" value={city.home_score} />
+          <ScoreBar label="Career" value={city.career_score} />
+          <ScoreBar label="Love" value={city.love_score} />
+          <ScoreBar label="Healing" value={city.healing_score} />
+          <ScoreBar label="Vitality" value={city.vitality_score} />
+          <ScoreBar label="Risk" value={city.risk_score} />
+        </div>
+      )}
+
+      {city.lines.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1.5">
+          {city.lines.map((line, j) => (
+            <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground/80">{line}</span>
           ))}
         </div>
+      )}
+
+      {city.supports && (
+        <p className="text-[11px] text-green-700 dark:text-green-400">✓ {city.supports}</p>
+      )}
+      {city.cautions && (
+        <p className="text-[11px] text-red-600 dark:text-red-400">⚠ {city.cautions}</p>
+      )}
+
+      {expanded && city.explanation && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-xs text-foreground/80 leading-relaxed">{city.explanation}</p>
+        </div>
+      )}
+      {!expanded && city.explanation && (
+        <p className="text-[10px] text-muted-foreground mt-1">Tap to expand details →</p>
+      )}
+    </div>
+  );
+}
+
+function CityTableView({ cities }: { cities: CityEntry[] }) {
+  const hasSubScores = cities.some(c => c.home_score != null);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-border bg-muted/30">
+            <th className="text-left px-2 py-1.5 font-medium text-muted-foreground">City</th>
+            {hasSubScores && (
+              <>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Home</th>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Career</th>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Love</th>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Heal</th>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Vital</th>
+                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Risk</th>
+              </>
+            )}
+            <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Score</th>
+            <th className="text-left px-2 py-1.5 font-medium text-muted-foreground">Theme</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cities.map((city, i) => {
+            const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
+            return (
+              <tr key={i} className={`border-b border-border/50 ${isCaution ? "bg-red-500/5" : i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                <td className="px-2 py-1.5 font-medium text-foreground whitespace-nowrap">{city.name}</td>
+                {hasSubScores && (
+                  <>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.home_score ?? "–"}</td>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.career_score ?? "–"}</td>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.love_score ?? "–"}</td>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.healing_score ?? "–"}</td>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.vitality_score ?? "–"}</td>
+                    <td className="text-center px-1 py-1.5 tabular-nums">{city.risk_score ?? "–"}</td>
+                  </>
+                )}
+                <td className="text-center px-1 py-1.5 font-bold text-primary tabular-nums">{city.score}</td>
+                <td className="px-2 py-1.5 text-foreground/80">{city.theme}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CityComparison({ section }: { section: CityComparisonSection }) {
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const isCautionSection = /caution/i.test(section.title);
+
+  return (
+    <Card className={`border-border ${isCautionSection ? "border-red-500/20" : ""}`}>
+      <CardContent className="pt-5 pb-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className={`text-sm font-semibold tracking-wide uppercase ${isCautionSection ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+            {isCautionSection ? "⚠ " : ""}{section.title}
+          </h3>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setViewMode("card")}
+              className={`text-[10px] px-2 py-0.5 rounded ${viewMode === "card" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+            >Cards</button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`text-[10px] px-2 py-0.5 rounded ${viewMode === "table" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+            >Table</button>
+          </div>
+        </div>
+        {viewMode === "card" ? (
+          <div className="space-y-3">
+            {section.cities.map((city, i) => (
+              <CityCardView key={i} city={city} />
+            ))}
+          </div>
+        ) : (
+          <CityTableView cities={section.cities} />
+        )}
       </CardContent>
     </Card>
   );
