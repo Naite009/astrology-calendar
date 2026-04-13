@@ -227,6 +227,19 @@ CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
 TRANSIT FORMAT RULES:
 - For every transit in timing_section, include the exact degree (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer") and an approximate date range (e.g., "active May 8–June 2, 2026"), not just "enters sign" or "transits Cancer."
 - Vague transit descriptions like "Jupiter enters Cancer" are NOT sufficient — always specify the natal point being activated and the degree.
+
+MULTI-PASS TRANSIT PRECISION (MANDATORY FOR OUTER PLANETS):
+- For Jupiter, Saturn, Uranus, Neptune, and Pluto transits to natal points, CHECK if the transiting planet will retrograde back over the natal point during its active period.
+- If retrograde motion occurs, you MUST report EACH PASS as a SEPARATE transit entry:
+  * Pass 1 (Direct): The first exact hit while moving forward. Include "(Pass 1 — Direct)" in the position field.
+  * Pass 2 (Retrograde): The second exact hit while retrograde. Include "(Pass 2 — Retrograde, R)" in the position field.
+  * Pass 3 (Direct): The final exact hit after stationing direct. Include "(Pass 3 — Direct, final)" in the position field.
+- Each pass gets its own date_range reflecting when THAT specific pass is active (applying through separating).
+- Do NOT collapse multiple passes into a single date range like "March–November 2026." That hides critical timing information.
+- The interpretation for each pass should differ: Pass 1 = initial activation/awareness; Pass 2 = review/internalization/revisiting; Pass 3 = resolution/integration/final outcome.
+- If a transit has only one pass (no retrograde over the natal point), report it normally as a single entry.
+- For Mars and inner planet transits, single-pass reporting is acceptable since they move too fast for multi-pass dynamics to matter in most cases.
+
 - bullets array can be empty [] if not needed — never omit the field
 - Use the EXACT planetary positions from the chart data provided — do NOT fabricate or guess positions
 - The house positions shown in the chart data are calculated from actual cusps and are DEFINITIVE. Sign ≠ House.
