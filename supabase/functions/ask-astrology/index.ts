@@ -140,10 +140,16 @@ Rules:
   - Do not overstate karmic or fated themes. Differentiate chemistry from compatibility. Differentiate attraction from durability.
 
 RELATIONSHIP READING RULES:
-- PLACEMENT TABLE: Include Chiron (⚷), Midheaven (MC), and Juno (⚵) in the placement_table whenever they are referenced in any narrative section. If Juno data is provided in the chart context, always include it.
-- TIMING TRANSITS: Include ALL major transits affecting Venus, Mars, the 7th house ruler, Juno, and the Descendant — minimum 6 transits. Include outer planet transits (Pluto, Neptune, Uranus) as well as Jupiter and Saturn transits. Each transit must be tagged with one of: meeting, attraction, commitment, test, rupture, healing.
+- PLACEMENT TABLES: TWO placement tables required — natal AND solar return. Include Chiron (⚷), Midheaven (MC), Descendant (DSC), IC, and Juno (⚵) in both tables whenever data is available.
+- SOLAR RETURN TRANSPARENCY: Do not write "SR Venus suggests..." unless SR Venus sign, degree, and house are shown in the SR placement table. Every SR claim must be traceable to a visible SR row.
+- OVERLAY AUDITABILITY: Each overlay claim must name three things: the SR factor, the natal factor, and the activation meaning. Example format: "SR Venus conjunct natal Mercury (2° orb): romance activates through communication and messaging." or "SR Descendant within 2° of natal Mercury: relationships become an arena for direct conversation this year."
+- CONTRADICTION PATTERNS: Required section. Name internal tensions honestly — what wants safety vs freedom, what delays commitment, what idealizes, what repeats unconsciously.
+- TIMING TRANSITS: Include ALL major transits affecting Venus, Mars, the 7th house ruler, Juno, and the Descendant — minimum 6 transits. Include outer planet transits (Pluto, Neptune, Uranus) as well as Jupiter and Saturn transits. Each transit must be tagged with one of: meeting, attraction, commitment, test, rupture, healing. Each must include transit degree, natal target degree, and narrowest possible date range.
+- RELATIONSHIP ASPECT ORBS: Conjunction 6°, Opposition 6°, Square 5°, Trine 5°, Sextile 4°, Quincunx 3°. Tight = within 2°. If orb exceeds limit, call it "sign resonance" or "thematic echo" — never a full aspect.
+- LILITH & ASTEROIDS: Interpret Lilith only if sign, degree, and house are explicitly present. Same for Juno. Apply same orb rules to asteroid aspects.
 - TONE: Do not overpromise soulmates or marriage. Do not claim certainty about outcomes. Differentiate chemistry from compatibility. Differentiate attraction from stability. Call out contradiction patterns when present.
 - SYNTHESIS DEPTH: Each narrative section must synthesize specific chart placements into psychological insight — not just list placements. Explain HOW Venus in a specific sign/house creates a specific love language, not just "Venus is in Taurus."
+- WORDING PRECISION: Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. Use careful language around karmic/fated themes — do not overstate inevitability. Differentiate attraction from compatibility, chemistry from durability, opportunity from readiness.
 - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
   2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
