@@ -17,31 +17,43 @@ export const QUICK_TOPICS: QuickTopic[] = [
     prompt: (name, date, time, loc) =>
       `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, determine the best cities for relocation. Today's date is ${today()}. All timing must be future-relative to today.
 
-CORE RULES: Do NOT label city recommendations as "astrocartography" unless actual planetary line calculations are available in the chart data. If no astrocartography calculations are present, label recommendations as "Astrology-Based" relocation guidance. Do not recommend a city based on lines alone — compare geographic activation with emotional and psychological needs from the natal chart. Score each city across categories (home, career, love, stability, growth, risk) instead of one generic recommendation. Include sub-scores for each category. Highlight tradeoffs for each city. Do not call a city universally "best" without specifying best for what. Do not treat Saturn, Mars, or Pluto as automatically bad — explain their use and cost. Include a "supports" field listing what life areas the city is strongest for, a "cautions" field for downsides, and an "explanation" field with 2-3 sentences on why the city fits or doesn't.
+ANALYSIS MODE: This is Astrology-Based Relocation Guidance unless actual astrocartography line calculations are present in the chart data. Do NOT label recommendations as "astrocartography" unless real planetary line data with orbs and distances exists. Do NOT claim a city is "on a Venus line" or "on a Jupiter line" unless line calculations are provided. If only natal chart and solar return are available, use chart symbolism to infer environmental fit.
+
+SCORING ALGORITHM: Score each city across 6 categories (home, career, love, healing, vitality, risk) on a 1-10 scale. For THIS YEAR cities, weight solar return at 55% and natal at 45%. For LONG-TERM cities, weight natal at 75% and solar return at 25%. Calculate overall_score as weighted average of the 5 support scores minus a risk penalty (max(0, (risk_score - 5) * 0.35)), clamped 1-10.
+
+SCORING CATEGORY LOGIC:
+- Home: natal 4th house/ruler, Moon, IC themes + city climate/pace/community match + SR 4th/Moon modifiers
+- Career: natal 10th house/ruler, Sun, MC themes + city opportunity/industry/visibility + SR MC/10th modifiers
+- Love: natal Venus, 7th house/ruler, Juno, 5th house + city social accessibility/romantic culture + SR Venus/5th/7th modifiers
+- Healing: Moon condition, 12th house, Neptune, Chiron + city calmness/nature/privacy + SR Moon/Neptune/Chiron modifiers
+- Vitality: Sun, Mars, Jupiter, 1st house + city energy/outdoor access/pace + SR Sun/Mars/Jupiter modifiers
+- Risk: Saturn/Mars/Pluto/Uranus sensitivity + city overstimulation/isolation/pressure + SR destabilization signatures
+
+GLOBAL CITY SUPPORT: When no user-specified city list is provided, recommend cities from a diverse global pool spanning multiple world regions (North America, Europe, Asia, Oceania, South America, Middle East, Africa). Always include city + country. Balance at least 2-3 world regions in recommendations.
+
+CITY TAGS: Assign 2-5 tags per city from: Water-Supportive, Structured, Social, Quiet, Career-Active, Healing-Oriented, High-Intensity, Romantic, Grounding, Transformational.
 
 Cover each of the following as its own detailed section:
 
-ENVIRONMENTAL PROFILE — Before recommending any cities, establish what this person NEEDS from a location based on their natal chart and solar return:
+ENVIRONMENTAL PROFILE — Before recommending any cities, establish what this person NEEDS:
 - Ideal home environment (from 4th house cusp/ruler, Moon sign/house, IC themes)
-- Ideal climate type (from elemental balance — fire=hot/dry, earth=temperate/stable, air=high-altitude/breezy, water=coastal/humid)
-- Social structure needs (from 7th/11th house, Venus, and Moon — do they need a tight-knit community, cosmopolitan anonymity, creative scene, etc.?)
-- Emotional stability needs (from Moon aspects, 4th house condition, Saturn aspects — do they need routine and security or stimulation and change?)
-- Career environment needs (from 10th house, MC ruler, Sun — do they need a corporate hub, entrepreneurial culture, creative city, or academic center?)
-- This year's environmental shift (from SR 4th house, SR Moon, SR Ascendant — how do needs change temporarily this year?)
+- Ideal climate type (fire=hot/dry, earth=temperate/stable, air=high-altitude/breezy, water=coastal/humid)
+- Social structure needs (from 7th/11th house, Venus, Moon)
+- Emotional stability needs (from Moon aspects, 4th house condition, Saturn)
+- Career environment needs (from 10th house, MC ruler, Sun)
+- This year's environmental shift (from SR 4th house, SR Moon, SR Ascendant)
 
-NATAL ASTROCARTOGRAPHY — Sun, Moon, Venus, Jupiter, Saturn, Mars, Pluto angular lines (MC, IC, ASC, DSC). Report which lines cross which cities and the distance from line for each. Minimum 8-12 global cities.
+ASTROCARTOGRAPHY OR CHART-BASED GUIDANCE — If astrocartography line data is present, report planetary angular lines with distances. If NOT present, explain chart-based reasoning for city fit (e.g., "4th house ruler in Pisces favors coastal cities") and label as Astrology-Based. Do NOT fake line data.
 
-RELOCATED NATAL CHART COMPARISON — For shortlisted cities, analyze: relocated Ascendant, relocated Midheaven and IC, relocated 4th/7th/10th houses, relocated Moon, relocated Venus, relocated 4th house ruler, relocated 10th house ruler, benefics or malefics on relocated angles.
+DECISION SYNTHESIS — For each city, explain WHY it works by connecting chart placements to city characteristics. Include clear tradeoffs. Flag cities with strong chart resonance but environmental mismatch, and vice versa.
 
-SOLAR RETURN RELOCATION EFFECTS — For shortlisted cities: relocated SR Ascendant, relocated SR Midheaven and IC, SR Venus and Jupiter on angles vs SR Saturn/Mars/Pluto/Neptune on angles. Which cities improve the SR home/career/love picture? Which destabilize it?
+TIMING FOR A MOVE — Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows and caution windows over next 12-18 months.
 
-DECISION SYNTHESIS — For each recommended city, explain WHY it works by connecting the astrocartography activation to the person's environmental profile needs. A city with great lines but poor psychological fit should be flagged. A city with modest lines but strong natal chart resonance should be highlighted. Include clear tradeoffs (e.g., "Great for career but emotionally isolating" or "Perfect home energy but limited career activation").
+CITY COMPARISON TABLES — Top 3 cities this year (SR-weighted). Top 3 long-term cities (natal-weighted). 2-3 caution cities. Each city must include: name, country, score, sub-scores (home/career/love/healing/vitality/risk), tags, theme, supports, cautions, and explanation.
 
-TIMING FOR A MOVE — Transits to Moon, IC, 4th house ruler, and 10th house ruler. Eclipses activating the 4th/10th axis or home indicators. Best move windows and caution windows over the next 12-18 months.
+STRATEGY SUMMARY — Top cities this year, top cities long-term, cities to avoid, ideal timing window, analysis mode disclosure.
 
-CITY SCORING TABLE — Top 3 cities this year (from solar return). Top 3 long-term cities (from natal). 2-3 caution cities. Score each city out of 10 and rate separately for home, career, love, stability, and growth. Include a clear explanation of why each city works or does not.
-
-STRATEGY SUMMARY — Top cities this year, top cities long-term, cities to avoid, ideal timing window. Tone: clear, direct, decision-focused.`,
+ANTI-HALLUCINATION RULES: Never claim exact planetary line positions without line data. Never invent relocated angles without relocated chart data. Frame recommendations as "strongest matches" not certainties. Do not treat Mars/Saturn/Pluto as automatically bad — explain as intense/demanding/transformational. Always state whether this is Astrology-Based or Astrocartography-Based.`,
   },
   {
     id: "relationship",

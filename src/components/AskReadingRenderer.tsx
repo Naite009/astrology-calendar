@@ -101,6 +101,9 @@ export interface CityEntry {
   theme: string;
   score: number;
   mode?: string;
+  country?: string;
+  region?: string;
+  tags?: string[];
   home_score?: number;
   career_score?: number;
   love_score?: number;
