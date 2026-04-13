@@ -226,6 +226,7 @@ CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
 
 TRANSIT FORMAT RULES:
 - For every transit in timing_section, include the exact degree (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer") and an approximate date range (e.g., "active May 8–June 2, 2026"), not just "enters sign" or "transits Cancer."
+- When the chart data provides pre-computed exact hit dates, include them as a specific "exact_date" within the position field (e.g., "exact May 18, 2026"). When exact dates are unavailable, use the narrowest possible date range — never round to a full month if a 2-week window is determinable.
 - Vague transit descriptions like "Jupiter enters Cancer" are NOT sufficient — always specify the natal point being activated and the degree.
 
 MULTI-PASS TRANSIT PRECISION (MANDATORY FOR OUTER PLANETS):
