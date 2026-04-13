@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Types for structured reading
@@ -113,6 +114,19 @@ export interface CityEntry {
   supports?: string;
   cautions?: string;
   explanation?: string;
+  // Future fields for astrocartography / relocated chart modes
+  planetary_lines?: string[];
+  line_distance_km?: number;
+  line_strength?: string;
+  relocated_chart_notes?: string;
+  benefics_on_angles?: string[];
+  challenging_planets_on_angles?: string[];
+  // Expanded detail fields
+  why_it_works?: string;
+  tradeoffs?: string;
+  best_for?: string;
+  timeframe_notes?: string;
+  mode_explainer?: string;
 }
 
 export interface CityComparisonSection {
@@ -251,50 +265,148 @@ function SummaryBox({ section }: { section: SummaryBoxSection }) {
   );
 }
 
+// ─── Score utilities ───────────────────────────────────────────────────
+
+function scorePillClass(value: number, isRisk = false): string {
+  if (isRisk) {
+    if (value <= 3) return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
+    if (value <= 6) return "bg-amber-500/15 text-amber-700 dark:text-amber-400";
+    return "bg-red-500/15 text-red-700 dark:text-red-400";
+  }
+  if (value >= 9) return "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold";
+  if (value >= 7) return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
+  if (value >= 4) return "bg-amber-500/15 text-amber-700 dark:text-amber-400";
+  return "bg-red-500/15 text-red-700 dark:text-red-400";
+}
+
+function ScorePill({ value, isRisk = false }: { value?: number; isRisk?: boolean }) {
+  if (value == null) return <span className="text-muted-foreground">–</span>;
+  return (
+    <span className={`inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 rounded-md text-[11px] font-semibold tabular-nums ${scorePillClass(value, isRisk)}`}>
+      {value}
+    </span>
+  );
+}
+
 function ScoreBar({ label, value, max = 10 }: { label: string; value?: number; max?: number }) {
   if (value == null) return null;
   const pct = (value / max) * 100;
-  const color = value >= 7 ? "bg-green-500/70" : value >= 5 ? "bg-yellow-500/70" : "bg-red-500/70";
+  const isRisk = label.toLowerCase() === "risk";
+  const barColor = isRisk
+    ? (value <= 3 ? "bg-emerald-500/70" : value <= 6 ? "bg-amber-500/70" : "bg-red-500/70")
+    : (value >= 7 ? "bg-emerald-500/70" : value >= 4 ? "bg-amber-500/70" : "bg-red-500/70");
   return (
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground w-12 shrink-0">{label}</span>
       <div className="flex-1 bg-muted rounded-full h-1.5">
-        <div className={`${color} h-1.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+        <div className={`${barColor} h-1.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-semibold text-foreground w-4 text-right">{value}</span>
+      <ScorePill value={value} isRisk={isRisk} />
     </div>
   );
 }
+
+// ─── Analysis mode banner ─────────────────────────────────────────────
+
+function AnalysisModeBanner({ mode }: { mode: string }) {
+  const isAstrocartography = mode?.toLowerCase().includes("astrocartography");
+  const isRelocated = mode?.toLowerCase().includes("relocated");
+
+  if (isAstrocartography) {
+    return (
+      <div className="rounded-md px-3 py-2 text-xs border bg-blue-500/10 border-blue-500/30 text-blue-800 dark:text-blue-300">
+        <span className="font-semibold">🗺️ Astrocartography-Based Recommendation</span>
+        <span className="block mt-0.5 opacity-80">
+          These recommendations include calculated planetary angular lines with measured distances.
+        </span>
+      </div>
+    );
+  }
+  if (isRelocated) {
+    return (
+      <div className="rounded-md px-3 py-2 text-xs border bg-violet-500/10 border-violet-500/30 text-violet-800 dark:text-violet-300">
+        <span className="font-semibold">📐 Relocated Chart Analysis</span>
+        <span className="block mt-0.5 opacity-80">
+          These recommendations include relocated chart interpretation showing shifted angles and houses for each city.
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-md px-3 py-2 text-xs border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
+      <span className="font-semibold">📊 Astrology-Based Relocation Guidance</span>
+      <span className="block mt-0.5 opacity-80">
+        City recommendations are derived from natal chart themes and solar return patterns — not from calculated planetary map lines. Scores reflect symbolic environmental fit, not geographic line proximity.
+      </span>
+    </div>
+  );
+}
+
+// ─── Expanded city detail panel ───────────────────────────────────────
+
+function CityDetailPanel({ city }: { city: CityEntry }) {
+  const details = [
+    { key: "why_it_works", label: "Why It Works", value: city.why_it_works || city.explanation },
+    { key: "tradeoffs", label: "Tradeoffs", value: city.tradeoffs },
+    { key: "best_for", label: "Best For", value: city.best_for },
+    { key: "timeframe_notes", label: "Timeframe Notes", value: city.timeframe_notes },
+    { key: "mode_explainer", label: "Analysis Note", value: city.mode_explainer },
+  ].filter(d => d.value);
+
+  if (details.length === 0) return null;
+
+  return (
+    <div className="mt-2 pt-2 border-t border-border space-y-2">
+      {details.map(d => (
+        <div key={d.key}>
+          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">{d.label}</span>
+          <p className="text-xs text-foreground/80 leading-relaxed mt-0.5">{d.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Card view ────────────────────────────────────────────────────────
 
 function CityCardView({ city }: { city: CityEntry }) {
   const [expanded, setExpanded] = useState(false);
   const hasSubScores = city.home_score != null || city.career_score != null;
   const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
   const displayName = city.country ? `${city.name}, ${city.country}` : city.name;
+  const isAstrocartography = city.mode?.toLowerCase().includes("astrocartography");
 
   return (
     <div
       className={`rounded-lg border p-3 cursor-pointer transition-all hover:shadow-sm ${
-        isCaution ? "border-red-500/30 bg-red-500/5" : "border-border"
+        isCaution ? "border-destructive/30 bg-destructive/5" : "border-border"
       }`}
       onClick={() => setExpanded(!expanded)}
     >
+      {/* Header row */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-foreground">{displayName}</span>
           {city.mode && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{city.mode}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+              isAstrocartography
+                ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+            }`}>{city.mode}</span>
           )}
           {city.region && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground">{city.region}</span>
           )}
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-          isCaution ? "bg-red-500/10 text-red-600" : "bg-primary/10 text-primary"
-        }`}>{city.score}/10</span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <ScorePill value={city.score} />
+          {expanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+        </div>
       </div>
+
       <p className="text-xs text-muted-foreground mb-2">{city.theme}</p>
 
+      {/* Tags */}
       {city.tags && city.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {city.tags.map((tag, j) => (
@@ -303,6 +415,7 @@ function CityCardView({ city }: { city: CityEntry }) {
         </div>
       )}
 
+      {/* Sub-scores */}
       {hasSubScores && (
         <div className="space-y-1 mb-2">
           <ScoreBar label="Home" value={city.home_score} />
@@ -314,10 +427,11 @@ function CityCardView({ city }: { city: CityEntry }) {
         </div>
       )}
 
+      {/* Chart basis / Lines */}
       {city.lines && city.lines.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1.5">
           <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
-            {city.mode?.toLowerCase().includes("astrocartography") ? "Lines:" : "Chart Basis:"}
+            {isAstrocartography ? "Lines:" : "Chart Basis:"}
           </span>
           {city.lines.map((line, j) => (
             <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground/80">{line}</span>
@@ -325,85 +439,220 @@ function CityCardView({ city }: { city: CityEntry }) {
         </div>
       )}
 
+      {/* Supports / Cautions */}
       {city.supports && (
-        <p className="text-[11px] text-green-700 dark:text-green-400">✓ {city.supports}</p>
+        <p className="text-[11px] text-emerald-700 dark:text-emerald-400">✓ {city.supports}</p>
       )}
       {city.cautions && (
-        <p className="text-[11px] text-red-600 dark:text-red-400">⚠ {city.cautions}</p>
+        <p className="text-[11px] text-destructive">⚠ {city.cautions}</p>
       )}
 
-      {expanded && city.explanation && (
-        <div className="mt-2 pt-2 border-t border-border">
-          <p className="text-xs text-foreground/80 leading-relaxed">{city.explanation}</p>
-        </div>
-      )}
-      {!expanded && city.explanation && (
+      {/* Expanded detail */}
+      {expanded && <CityDetailPanel city={city} />}
+      {!expanded && (city.explanation || city.why_it_works) && (
         <p className="text-[10px] text-muted-foreground mt-1">Tap to expand details →</p>
       )}
     </div>
   );
 }
 
-type SortKey = "overall" | "home" | "career" | "love" | "healing" | "vitality" | "risk";
+// ─── Sorting ──────────────────────────────────────────────────────────
 
-function sortCities(cities: CityEntry[], sortBy: SortKey): CityEntry[] {
-  const getVal = (c: CityEntry): number => {
+type SortKey = "overall" | "home" | "career" | "love" | "healing" | "vitality" | "risk" | "city";
+type SortDir = "asc" | "desc";
+
+function sortCities(cities: CityEntry[], sortBy: SortKey, dir: SortDir = "desc"): CityEntry[] {
+  const getVal = (c: CityEntry): number | string => {
     switch (sortBy) {
       case "home": return c.home_score ?? 0;
       case "career": return c.career_score ?? 0;
       case "love": return c.love_score ?? 0;
       case "healing": return c.healing_score ?? 0;
       case "vitality": return c.vitality_score ?? 0;
-      case "risk": return -(c.risk_score ?? 10); // lower risk = better
+      case "risk": return c.risk_score ?? 10;
+      case "city": return c.name.toLowerCase();
       default: return c.score;
     }
   };
-  return [...cities].sort((a, b) => getVal(b) - getVal(a));
+  return [...cities].sort((a, b) => {
+    const va = getVal(a); const vb = getVal(b);
+    if (typeof va === "string" && typeof vb === "string") return dir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+    const na = va as number; const nb = vb as number;
+    // For risk, lower is better in "desc" (best first)
+    if (sortBy === "risk") return dir === "desc" ? na - nb : nb - na;
+    return dir === "desc" ? nb - na : na - nb;
+  });
 }
 
-function CityTableView({ cities }: { cities: CityEntry[] }) {
+// ─── Table view ───────────────────────────────────────────────────────
+
+function CityTableView({ cities, sortBy, sortDir, onSort }: {
+  cities: CityEntry[];
+  sortBy: SortKey;
+  sortDir: SortDir;
+  onSort: (key: SortKey) => void;
+}) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const hasSubScores = cities.some(c => c.home_score != null);
+  const isAstrocartography = cities.some(c => c.mode?.toLowerCase().includes("astrocartography"));
+  const hasRelocated = cities.some(c => c.relocated_chart_notes);
+
+  const SortHeader = ({ label, colKey }: { label: string; colKey: SortKey }) => (
+    <th
+      className="text-center px-1.5 py-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+      onClick={() => onSort(colKey)}
+    >
+      <span className="inline-flex items-center gap-0.5">
+        {label}
+        {sortBy === colKey && (
+          <span className="text-primary text-[9px]">{sortDir === "desc" ? "▼" : "▲"}</span>
+        )}
+      </span>
+    </th>
+  );
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto -mx-1">
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-border bg-muted/30">
-            <th className="text-left px-2 py-1.5 font-medium text-muted-foreground">City</th>
+            <SortHeader label="City" colKey="city" />
             {hasSubScores && (
               <>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Home</th>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Career</th>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Love</th>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Heal</th>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Vital</th>
-                <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Risk</th>
+                <SortHeader label="Home" colKey="home" />
+                <SortHeader label="Career" colKey="career" />
+                <SortHeader label="Love" colKey="love" />
+                <SortHeader label="Heal" colKey="healing" />
+                <SortHeader label="Vital" colKey="vitality" />
+                <SortHeader label="Risk" colKey="risk" />
               </>
             )}
-            <th className="text-center px-1 py-1.5 font-medium text-muted-foreground">Score</th>
-            <th className="text-left px-2 py-1.5 font-medium text-muted-foreground">Theme</th>
+            <SortHeader label="Overall" colKey="overall" />
+            <th className="text-left px-2 py-2 font-medium text-muted-foreground">Theme</th>
+            {isAstrocartography && (
+              <th className="text-left px-2 py-2 font-medium text-muted-foreground">Lines</th>
+            )}
+            {hasRelocated && (
+              <th className="text-left px-2 py-2 font-medium text-muted-foreground">Relocated Notes</th>
+            )}
           </tr>
         </thead>
         <tbody>
           {cities.map((city, i) => {
             const isCaution = (city.risk_score ?? 0) >= 7 || city.score <= 4;
             const displayName = city.country ? `${city.name}, ${city.country}` : city.name;
+            const isExpanded = expandedIdx === i;
+
             return (
-              <tr key={i} className={`border-b border-border/50 ${isCaution ? "bg-red-500/5" : i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                <td className="px-2 py-1.5 font-medium text-foreground whitespace-nowrap">{displayName}</td>
-                {hasSubScores && (
-                  <>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.home_score ?? "–"}</td>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.career_score ?? "–"}</td>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.love_score ?? "–"}</td>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.healing_score ?? "–"}</td>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.vitality_score ?? "–"}</td>
-                    <td className="text-center px-1 py-1.5 tabular-nums">{city.risk_score ?? "–"}</td>
-                  </>
+              <React.Fragment key={i}>
+                <tr
+                  className={`border-b border-border/50 cursor-pointer transition-colors hover:bg-muted/20 ${
+                    isCaution ? "bg-destructive/5" : i % 2 === 0 ? "" : "bg-muted/10"
+                  }`}
+                  onClick={() => setExpandedIdx(isExpanded ? null : i)}
+                >
+                  <td className="px-2 py-2 font-medium text-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground shrink-0" /> : <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />}
+                      <span>{displayName}</span>
+                      {city.region && (
+                        <span className="text-[9px] px-1 py-0.5 rounded bg-accent/40 text-accent-foreground">{city.region}</span>
+                      )}
+                    </div>
+                  </td>
+                  {hasSubScores && (
+                    <>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.home_score} /></td>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.career_score} /></td>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.love_score} /></td>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.healing_score} /></td>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.vitality_score} /></td>
+                      <td className="text-center px-1 py-2"><ScorePill value={city.risk_score} isRisk /></td>
+                    </>
+                  )}
+                  <td className="text-center px-1 py-2">
+                    <span className="inline-flex items-center justify-center min-w-[32px] px-2 py-0.5 rounded-md text-xs font-bold bg-primary/15 text-primary tabular-nums">
+                      {city.score}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2 text-foreground/80 max-w-[200px] truncate">{city.theme}</td>
+                  {isAstrocartography && (
+                    <td className="px-2 py-2">
+                      {city.planetary_lines?.map((l, j) => (
+                        <span key={j} className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 px-1 py-0.5 rounded mr-0.5">{l}</span>
+                      )) || (city.lines?.map((l, j) => (
+                        <span key={j} className="text-[10px] bg-muted px-1 py-0.5 rounded mr-0.5">{l}</span>
+                      )))}
+                    </td>
+                  )}
+                  {hasRelocated && (
+                    <td className="px-2 py-2 text-foreground/70 max-w-[180px] truncate">{city.relocated_chart_notes || "–"}</td>
+                  )}
+                </tr>
+                {isExpanded && (
+                  <tr className="bg-muted/5">
+                    <td colSpan={20} className="px-4 py-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Left: details */}
+                        <div className="space-y-2">
+                          <CityDetailPanel city={city} />
+                          {city.supports && (
+                            <p className="text-[11px] text-emerald-700 dark:text-emerald-400">✓ Supports: {city.supports}</p>
+                          )}
+                          {city.cautions && (
+                            <p className="text-[11px] text-destructive">⚠ Cautions: {city.cautions}</p>
+                          )}
+                        </div>
+                        {/* Right: tags + lines */}
+                        <div className="space-y-2">
+                          {city.tags && city.tags.length > 0 && (
+                            <div>
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase">Tags</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {city.tags.map((tag, j) => (
+                                  <span key={j} className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 text-primary/80 bg-primary/5">{tag}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {city.lines && city.lines.length > 0 && (
+                            <div>
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                                {city.mode?.toLowerCase().includes("astrocartography") ? "Planetary Lines" : "Chart Basis"}
+                              </span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {city.lines.map((line, j) => (
+                                  <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground/80">{line}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {city.benefics_on_angles && city.benefics_on_angles.length > 0 && (
+                            <div>
+                              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase">Benefics on Angles</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {city.benefics_on_angles.map((b, j) => (
+                                  <span key={j} className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded">{b}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {city.challenging_planets_on_angles && city.challenging_planets_on_angles.length > 0 && (
+                            <div>
+                              <span className="text-[10px] font-semibold text-destructive uppercase">Challenging Angles</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {city.challenging_planets_on_angles.map((c, j) => (
+                                  <span key={j} className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">{c}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 )}
-                <td className="text-center px-1 py-1.5 font-bold text-primary tabular-nums">{city.score}</td>
-                <td className="px-2 py-1.5 text-foreground/80">{city.theme}</td>
-              </tr>
+              </React.Fragment>
             );
           })}
         </tbody>
@@ -412,84 +661,206 @@ function CityTableView({ cities }: { cities: CityEntry[] }) {
   );
 }
 
-function AnalysisModeBanner({ mode }: { mode: string }) {
-  const isAstrology = !mode || mode.toLowerCase().includes("astrology");
-  return (
-    <div className={`rounded-md px-3 py-2 text-xs border ${
-      isAstrology
-        ? "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"
-        : "bg-blue-500/10 border-blue-500/30 text-blue-800 dark:text-blue-300"
-    }`}>
-      <span className="font-semibold">{isAstrology ? "📊 Astrology-Based Relocation Guidance" : "🗺️ Astrocartography-Based Recommendation"}</span>
-      <span className="block mt-0.5 opacity-80">
-        {isAstrology
-          ? "City recommendations are derived from natal chart themes and solar return patterns — not from calculated planetary map lines. Scores reflect symbolic environmental fit, not geographic line proximity."
-          : "City recommendations use calculated planetary angular lines with measured distances. Scores reflect line proximity and angular activation."}
-      </span>
-    </div>
-  );
-}
+// ─── Main CityComparison component ────────────────────────────────────
+
+const ALL_TAGS = [
+  "Water-Supportive", "Structured", "Social", "Quiet", "Career-Active",
+  "Healing-Oriented", "High-Intensity", "Romantic", "Grounding", "Transformational",
+];
+
+const SORT_OPTIONS: { key: SortKey; dir: SortDir; label: string }[] = [
+  { key: "overall", dir: "desc", label: "Highest Overall" },
+  { key: "home", dir: "desc", label: "Best for Home" },
+  { key: "career", dir: "desc", label: "Best for Career" },
+  { key: "love", dir: "desc", label: "Best for Love" },
+  { key: "healing", dir: "desc", label: "Best for Healing" },
+  { key: "vitality", dir: "desc", label: "Best for Vitality" },
+  { key: "risk", dir: "desc", label: "Lowest Risk" },
+  { key: "city", dir: "asc", label: "Alphabetical" },
+];
 
 function CityComparison({ section }: { section: CityComparisonSection }) {
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [sortBy, setSortBy] = useState<SortKey>("overall");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [regionFilter, setRegionFilter] = useState("All");
+
   const isCautionSection = /caution/i.test(section.title);
   const hasSubScores = section.cities.some(c => c.home_score != null);
-
-  const sortedCities = useMemo(() => sortCities(section.cities, sortBy), [section.cities, sortBy]);
-
-  // Determine mode from the first city
   const sectionMode = section.cities[0]?.mode || "Astrology-Based";
 
-  const sortOptions: { key: SortKey; label: string }[] = [
-    { key: "overall", label: "Overall" },
-    { key: "home", label: "Home" },
-    { key: "career", label: "Career" },
-    { key: "love", label: "Love" },
-    { key: "healing", label: "Healing" },
-    { key: "vitality", label: "Vitality" },
-    { key: "risk", label: "Low Risk" },
-  ];
+  // Available regions from data
+  const regions = useMemo(() => {
+    const r = new Set(section.cities.map(c => c.region).filter(Boolean) as string[]);
+    return ["All", ...Array.from(r).sort()];
+  }, [section.cities]);
+
+  // Available tags from data
+  const availableTags = useMemo(() => {
+    const t = new Set<string>();
+    section.cities.forEach(c => c.tags?.forEach(tag => t.add(tag)));
+    return ALL_TAGS.filter(tag => t.has(tag));
+  }, [section.cities]);
+
+  const toggleTag = useCallback((tag: string) => {
+    setSelectedTags(prev => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag); else next.add(tag);
+      return next;
+    });
+  }, []);
+
+  const handleSort = useCallback((key: SortKey) => {
+    if (key === sortBy) {
+      setSortDir(d => d === "desc" ? "asc" : "desc");
+    } else {
+      setSortBy(key);
+      setSortDir(key === "city" ? "asc" : "desc");
+    }
+  }, [sortBy]);
+
+  const filteredCities = useMemo(() => {
+    let result = section.cities;
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        (c.country?.toLowerCase().includes(q)) ||
+        (c.region?.toLowerCase().includes(q)) ||
+        (c.theme?.toLowerCase().includes(q))
+      );
+    }
+
+    // Region
+    if (regionFilter !== "All") {
+      result = result.filter(c => c.region === regionFilter);
+    }
+
+    // Tags
+    if (selectedTags.size > 0) {
+      result = result.filter(c =>
+        c.tags?.some(t => selectedTags.has(t))
+      );
+    }
+
+    return sortCities(result, sortBy, sortDir);
+  }, [section.cities, searchQuery, regionFilter, selectedTags, sortBy, sortDir]);
 
   return (
-    <Card className={`border-border ${isCautionSection ? "border-red-500/20" : ""}`}>
+    <Card className={`border-border ${isCautionSection ? "border-destructive/20" : ""}`}>
       <CardContent className="pt-5 pb-4 space-y-3">
+        {/* Title row */}
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h3 className={`text-sm font-semibold tracking-wide uppercase ${isCautionSection ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+          <h3 className={`text-sm font-semibold tracking-wide uppercase ${isCautionSection ? "text-destructive" : "text-foreground"}`}>
             {isCautionSection ? "⚠ " : ""}{section.title}
           </h3>
           <div className="flex gap-1 items-center">
-            {hasSubScores && (
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortKey)}
-                className="text-[10px] px-1.5 py-0.5 rounded border border-border bg-background text-foreground"
-              >
-                {sortOptions.map(o => (
-                  <option key={o.key} value={o.key}>{o.label}</option>
-                ))}
-              </select>
-            )}
             <button
               onClick={() => setViewMode("card")}
-              className={`text-[10px] px-2 py-0.5 rounded ${viewMode === "card" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
-            >Cards</button>
+              className={`p-1 rounded ${viewMode === "card" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+              title="Card view"
+            ><LayoutGrid className="h-3.5 w-3.5" /></button>
             <button
               onClick={() => setViewMode("table")}
-              className={`text-[10px] px-2 py-0.5 rounded ${viewMode === "table" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
-            >Table</button>
+              className={`p-1 rounded ${viewMode === "table" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+              title="Table view"
+            ><Table2 className="h-3.5 w-3.5" /></button>
           </div>
         </div>
+
+        {/* Mode banner */}
         <AnalysisModeBanner mode={sectionMode} />
-        {viewMode === "card" ? (
+
+        {/* Filters bar */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[160px] max-w-[260px]">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search city, country, theme…"
+              className="w-full text-xs pl-6 pr-2 py-1.5 rounded-md border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+            />
+          </div>
+
+          {/* Region filter */}
+          {regions.length > 2 && (
+            <select
+              value={regionFilter}
+              onChange={e => setRegionFilter(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded-md border border-border bg-background text-foreground"
+            >
+              {regions.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          )}
+
+          {/* Sort */}
+          {hasSubScores && (
+            <select
+              value={`${sortBy}:${sortDir}`}
+              onChange={e => {
+                const opt = SORT_OPTIONS.find(o => `${o.key}:${o.dir}` === e.target.value);
+                if (opt) { setSortBy(opt.key); setSortDir(opt.dir); }
+              }}
+              className="text-xs px-2 py-1.5 rounded-md border border-border bg-background text-foreground"
+            >
+              {SORT_OPTIONS.map(o => (
+                <option key={`${o.key}:${o.dir}`} value={`${o.key}:${o.dir}`}>{o.label}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Tag chips */}
+        {availableTags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {availableTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                  selectedTags.has(tag)
+                    ? "border-primary bg-primary/15 text-primary font-semibold"
+                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >{tag}</button>
+            ))}
+            {selectedTags.size > 0 && (
+              <button
+                onClick={() => setSelectedTags(new Set())}
+                className="text-[10px] px-2 py-0.5 rounded-full text-muted-foreground hover:text-foreground"
+              >Clear</button>
+            )}
+          </div>
+        )}
+
+        {/* Content */}
+        {filteredCities.length === 0 ? (
+          <div className="text-center py-6 space-y-1">
+            <p className="text-sm font-medium text-foreground">No cities match these filters</p>
+            <p className="text-xs text-muted-foreground">Try removing a tag, changing the region, or clearing the search.</p>
+          </div>
+        ) : viewMode === "card" ? (
           <div className="space-y-3">
-            {sortedCities.map((city, i) => (
+            {filteredCities.map((city, i) => (
               <CityCardView key={i} city={city} />
             ))}
           </div>
         ) : (
-          <CityTableView cities={sortedCities} />
+          <CityTableView cities={filteredCities} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
         )}
+
+        {/* Footer count */}
+        <p className="text-[10px] text-muted-foreground text-right">
+          {filteredCities.length} of {section.cities.length} cities
+          {selectedTags.size > 0 || regionFilter !== "All" || searchQuery ? " (filtered)" : ""}
+        </p>
       </CardContent>
     </Card>
   );
