@@ -652,6 +652,10 @@ serve(async (req) => {
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
+      // Inject hard Juno gate based on actual data presence
+      junoDataPresent
+        ? null
+        : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
     ]
