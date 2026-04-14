@@ -633,6 +633,19 @@ serve(async (req) => {
     // This is application logic, not a prompt suggestion
     const lilithDataPresent = typeof chartContext === 'string' && /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
 
+    // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
+    const junoDataPresent = typeof chartContext === 'string' && /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
+
+    // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
+    const chartHouseMap: Record<string, number> = {};
+    if (typeof chartContext === 'string') {
+      const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
+      let hm;
+      while ((hm = houseRegex.exec(chartContext)) !== null) {
+        chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
+      }
+    }
+
     const systemMessage = [
       SYSTEM_PROMPT,
       // Inject hard Lilith gate based on actual data presence
