@@ -788,6 +788,50 @@ serve(async (req) => {
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
 
+        // POST-GENERATION SOLAR RETURN YEAR CORRECTION
+        if (srYearFromContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const wrongYearPattern = /Solar Return\s+(\d{4})(?:\s*[-–]\s*(\d{4}))?/gi;
+          for (const section of parsedContent.sections) {
+            // Fix titles
+            if (typeof section.title === 'string') {
+              section.title = section.title.replace(wrongYearPattern, (match: string, y1: string, y2: string) => {
+                const year1 = parseInt(y1, 10);
+                if (year1 !== srYearFromContext) {
+                  console.warn(`SR year correction in title: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                  return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                }
+                return match;
+              });
+            }
+            // Fix body text
+            if (typeof section.body === 'string') {
+              section.body = section.body.replace(wrongYearPattern, (match: string, y1: string) => {
+                const year1 = parseInt(y1, 10);
+                if (year1 !== srYearFromContext) {
+                  console.warn(`SR year correction in body: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                  return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                }
+                return match;
+              });
+            }
+            // Fix bullets
+            if (Array.isArray(section.bullets)) {
+              for (const bullet of section.bullets) {
+                if (typeof bullet.text === 'string') {
+                  bullet.text = bullet.text.replace(wrongYearPattern, (match: string, y1: string) => {
+                    const year1 = parseInt(y1, 10);
+                    if (year1 !== srYearFromContext) {
+                      console.warn(`SR year correction in bullet: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                      return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                    }
+                    return match;
+                  });
+                }
+              }
+            }
+          }
+        }
+
         // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
         if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           for (const section of parsedContent.sections) {
