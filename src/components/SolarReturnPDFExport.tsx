@@ -702,6 +702,10 @@ export function downloadBirthdayJSONStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
+  // Calculate age at this solar return
+  const birthYear = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
+  const srAge = !isNaN(birthYear) ? srChart.solarReturnYear - birthYear : null;
+
   const payload = {
     report_type: "solar_return_birthday",
     data: {
@@ -710,6 +714,11 @@ export function downloadBirthdayJSONStandalone(
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
       solarReturnYear: srChart.solarReturnYear,
+      solarReturnYearSpan: `${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+      solarReturnAge: srAge,
+      solarReturnLabel: srAge !== null
+        ? `Solar Return Year ${srAge} (${srChart.solarReturnYear}–${srChart.solarReturnYear + 1})`
+        : `Solar Return ${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
       natalSun: natalChart.planets?.Sun?.sign || '',
       natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
       natalMoon: natalChart.planets?.Moon?.sign || '',
@@ -948,12 +957,21 @@ export function buildFullJsonStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
+  // Calculate age at this solar return
+  const birthYear2 = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
+  const srAge2 = !isNaN(birthYear2) ? srChart.solarReturnYear - birthYear2 : null;
+
   return {
     name: natalChart.name || '',
     cakeImageUrl,
     birthDate: natalChart.birthDate || '',
     birthLocation: natalChart.birthLocation || '',
     solarReturnYear: srChart.solarReturnYear,
+    solarReturnYearSpan: `${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+    solarReturnAge: srAge2,
+    solarReturnLabel: srAge2 !== null
+      ? `Solar Return Year ${srAge2} (${srChart.solarReturnYear}–${srChart.solarReturnYear + 1})`
+      : `Solar Return ${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
     natalSun: natalChart.planets?.Sun?.sign || '',
     natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
     natalMoon: natalChart.planets?.Moon?.sign || '',
