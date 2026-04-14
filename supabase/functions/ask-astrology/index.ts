@@ -77,8 +77,10 @@ Return this exact structure:
       "type": "timing_section",
       "title": "Timing Windows",
       "transits": [
-        { "planet": "Jupiter", "symbol": "♃", "position": "14°22' Cancer conjunct natal Venus at 15°01' Cancer", "date_range": "May 8–June 2, 2026", "interpretation": "What this means and what to expect." },
-        { "planet": "Pluto", "symbol": "♇", "position": "5°00' Aquarius square natal Moon at 5°16' Cancer", "date_range": "all of 2026 (exact in March)", "interpretation": "What this means and what to expect." }
+        { "planet": "Jupiter", "symbol": "♃", "position": "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer", "aspect": "conjunction", "exact_degree": "14°22' Cancer", "natal_point": "Venus at 15°01' Cancer", "first_applying_date": "May 8, 2026", "exact_hit_date": "May 18, 2026", "separating_end_date": "June 2, 2026", "pass_label": "single pass", "date_range": "May 8–June 2, 2026", "tag": "attraction", "interpretation": "Plain-language explanation of what this means and what to expect." },
+        { "planet": "Pluto", "symbol": "♇", "position": "Pluto at 5°00' Aquarius square natal Moon at 5°16' Cancer (Pass 1 — Direct)", "aspect": "square", "exact_degree": "5°00' Aquarius", "natal_point": "Moon at 5°16' Cancer", "first_applying_date": "Feb 1, 2026", "exact_hit_date": "Mar 12, 2026", "separating_end_date": "Apr 20, 2026", "pass_label": "Pass 1 — Direct", "date_range": "Feb 1–Apr 20, 2026", "tag": "test", "interpretation": "First activation — what surfaces and how it feels." },
+        { "planet": "Pluto", "symbol": "♇", "position": "Pluto at 5°00' Aquarius square natal Moon at 5°16' Cancer (Pass 2 — Retrograde, R)", "aspect": "square", "exact_degree": "5°00' Aquarius (R)", "natal_point": "Moon at 5°16' Cancer", "first_applying_date": "Jul 5, 2026", "exact_hit_date": "Aug 2, 2026", "separating_end_date": "Sep 10, 2026", "pass_label": "Pass 2 — Retrograde", "date_range": "Jul 5–Sep 10, 2026", "tag": "test", "interpretation": "Revisiting — what comes back up for review." },
+        { "planet": "Pluto", "symbol": "♇", "position": "Pluto at 5°00' Aquarius square natal Moon at 5°16' Cancer (Pass 3 — Direct, final)", "aspect": "square", "exact_degree": "5°00' Aquarius", "natal_point": "Moon at 5°16' Cancer", "first_applying_date": "Oct 15, 2026", "exact_hit_date": "Nov 8, 2026", "separating_end_date": "Dec 5, 2026", "pass_label": "Pass 3 — Final Direct", "date_range": "Oct 15–Dec 5, 2026", "tag": "test", "interpretation": "Final resolution — what integrates or completes." }
       ],
       "windows": [
         { "label": "May 8–June 2, 2026", "description": "Why this date matters." },
@@ -166,10 +168,12 @@ FLEXIBLE RESPONSE FORMAT (for general/uncategorized questions):
 - Even in short responses, EVERY sentence must describe behavior or experience, never generic traits.
 
 FORBIDDEN OUTPUT PATTERNS (across ALL reading types):
-"intense energy", "transformational experience", "curious nature", "deep emotions", "communicative personality", "powerful placement", "karmic bonding", "emotional restriction", "supports growth", "enhances energy", "activates potential", "deep connection", "spiritual journey", "inner transformation"
+"intense energy", "transformational experience", "curious nature", "deep emotions", "communicative personality", "powerful placement", "karmic bonding", "emotional restriction", "supports growth", "enhances energy", "activates potential", "deep connection", "spiritual journey", "inner transformation", "mentally stimulating", "psychologically complex", "emotionally consuming", "intense", "deep", "transformational"
+
+IMPORTANT: If you must use any of the above words, you MUST immediately follow with what it actually looks like in real life. Example — BAD: "This creates an intense dynamic." GOOD: "This can create a pattern where arguments escalate quickly because neither person backs down first."
 
 PREFERRED PHRASING (across ALL reading types):
-"this can show up as...", "you may notice that...", "this often leads to...", "this can create a pattern where...", "this may make it easier or harder to...", "in practice, this looks like...", "the risk here is...", "what actually happens is...", "you may find yourself...", "this tends to lead to situations where..."
+"this can create a pattern where...", "this may show up as...", "in real life, this often means...", "this can lead to situations where...", "you may notice that...", "this often leads to...", "this may make it easier or harder to...", "in practice, this looks like...", "the risk here is...", "what actually happens is...", "you may find yourself...", "this tends to lead to situations where..."
 
 TONE RULES:
 - Clear, direct, human, insightful.
@@ -209,11 +213,11 @@ Rules:
      - Do NOT reference Venus, Mars, Moon, Saturn, houses, signs, or any astrological terminology. Translate everything into feelings, behaviors, and real-life situations.)
   5. narrative_section — "Relationship Needs Profile" (MANDATORY. This is a simple, intuitive map of how the person loves. Structure:
      - "body": One introductory sentence framing this as a quick reference for relationship drivers. Example: "These are the core forces that shape how you connect, what you need, and what draws you in."
-     - "bullets": Exactly 4 bullets, each one clear sentence in plain language, directly tied to the chart:
-       { "label": "What You Value in Love", "text": "One sentence derived from Venus sign/house — what this person prioritizes and appreciates in a partner and relationship. Must be specific to their Venus placement, not generic." },
-       { "label": "What You Need Emotionally", "text": "One sentence derived from Moon sign/house — the emotional environment they need to feel safe and loved. Must reflect their actual Moon placement." },
-       { "label": "What Attracts You", "text": "One sentence derived from Mars sign/house — what sparks desire and chemistry for them. Must describe the TYPE of person or dynamic that pulls them in, based on their Mars." },
-       { "label": "What Long-Term Partnership Requires", "text": "One sentence derived from 7th house cusp sign and ruler — the non-negotiable quality or dynamic that must exist for commitment to work. Must reflect their actual 7th house." }
+     - "bullets": Exactly 4 bullets using the EXACT label format below. Each must be ONE short, direct sentence describing behavior or lived experience — not traits. No filler language. No astrology jargon.
+       { "label": "Venus → what you value in love", "text": "One sentence. Example: 'You value consistency and relationships that build over time.'" },
+       { "label": "Moon → what you need emotionally", "text": "One sentence. Example: 'You need emotional safety and reliability to feel secure.'" },
+       { "label": "Mars → what attracts you", "text": "One sentence. Example: 'You're attracted to intelligence, conversation, and mental stimulation.'" },
+       { "label": "7th house → what long-term partnership requires", "text": "One sentence. Example: 'Long-term, you need commitment, structure, and a dependable partner.'" }
      - Each bullet must be ONE clear sentence, written so someone with zero astrology knowledge instantly understands it.
      - Do NOT use planet or sign names in the bullet text — translate entirely into feelings, preferences, and behaviors.
      - This section should feel like a personality snapshot for love, not a chart readout.)
@@ -226,16 +230,37 @@ Rules:
      - "What may feel unstable" — name the discomfort. Example: "Some connections may feel exciting but not immediately stable — timing or availability may be off."
      - "What is being tested or learned" — the growth edge. Example: "You may be learning the difference between chemistry and real compatibility."
      FORBIDDEN: Generic phrases like "this year focuses on romance and creativity", "love is highlighted", "relationships are activated." Every sentence must describe something the person would actually experience or feel.)
-  7. narrative_section — "Natal & Solar Return Overlay" (EXPLICIT cross-chart logic. For each overlay claim, name the SR factor, the natal factor, and the meaning. Required checks: SR Venus aspecting natal Venus/Moon/Mars/Juno/7th house ruler; SR ASC or DSC within 3° of natal Venus/Moon/Mars/Juno/DSC ruler/Saturn-if-7th-ruler; SR 5th ruler aspecting natal relationship indicators; SR 7th ruler aspecting natal relationship indicators; SR planets falling in natal 5th/7th/8th/11th house; SR angles activating natal Venus/Mars/Moon/7th ruler. Format each as: "SR [factor] [aspect] natal [factor] ([orb]°): [meaning]." Synthesize what is triggered this year vs natal baseline.)
+  7. narrative_section — "Natal & Solar Return Overlay" (EXPLICIT cross-chart logic. MANDATORY: Include at least 3–5 explicit cross-chart activations when supported by the data. Do NOT summarize generally or give only 1–2 examples. For each overlay claim, name the SR factor, the natal factor, and the meaning. Required checks: SR Venus aspecting natal Venus/Moon/Mars/Juno/7th house ruler; SR ASC or DSC within 3° of natal Venus/Moon/Mars/Juno/DSC ruler/Saturn-if-7th-ruler; SR 5th ruler aspecting natal relationship indicators; SR 7th ruler aspecting natal relationship indicators; SR planets falling in natal 5th/7th/8th/11th house; SR angles activating natal Venus/Mars/Moon/7th ruler. Format each as: "SR [factor] [aspect] natal [factor] ([orb]°): [meaning]." Example: "SR Venus conjunct natal Mercury (2° orb): attraction is strongly tied to conversation, messaging, and mental connection this year." Example: "SR Saturn square natal Moon-Saturn (1° orb): this year pressure-tests emotional security and exposes where fear or self-protection shapes relationship choices." Synthesize what is triggered this year vs natal baseline.)
   8. narrative_section — "Relationship Contradiction Patterns" (MANDATORY. Structure as exactly 4 bullets, each addressing one internal conflict:
      - bullet 1 — "What part of you wants stability" (derived from Venus, Moon, 4th house, 7th house placements). Use framing: "This part of you wants..."
      - bullet 2 — "What part of you wants excitement or change" (derived from Mars, Uranus, fire/air placements). Use framing: "But another part of you..."
      - bullet 3 — "Where confusion or mixed signals can happen" (derived from 12th house, Neptune, Mercury-Mars dynamics). Use framing: "This can create a pattern where..."
      - bullet 4 — "What can cause relationship patterns to repeat" (derived from South Node, Saturn, 8th house). Use framing: "If not understood, this can lead to..."
      Each bullet must name the specific tension, describe how it shows up in real behavior, and explain what happens if the person doesn't recognize it. Use careful language — differentiate attraction from compatibility, chemistry from durability, relationship opportunity from relationship readiness. Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. The body paragraph should synthesize all four tensions into one clear statement about the person's core relationship contradiction.)
-  9. timing_section — "Relationship Timing Windows" (Minimum 6 transits from Jupiter, Saturn, Uranus, Neptune, Pluto to natal Venus, Mars, Moon, Juno, Descendant, 7th house ruler. EACH transit must include ALL of: transiting_planet, aspect type, natal target, transit degree, date_range (narrowest possible), and tag. Accepted tags: meeting / attraction / commitment / test / rupture / healing. Must include at least 1 supportive and 1 challenging transit. For outer planets with retrograde passes, report each pass separately per the MULTI-PASS rules. If exact dates are available show them; if approximate, label as approximate. Do NOT collapse multiple passes into one range.)
+  9. timing_section — "Relationship Timing Windows" (Minimum 6 transits from Jupiter, Saturn, Uranus, Neptune, Pluto to natal Venus, Mars, Moon, Juno, Descendant, 7th house ruler. For EACH transit, output ALL of these exact fields:
+     - "planet": transiting planet name
+     - "symbol": planet symbol
+     - "position": full description with degrees
+     - "aspect": aspect type (conjunction, square, trine, opposition, sextile, quincunx)
+     - "exact_degree": transit planet degree and sign
+     - "natal_point": natal point with degree and sign
+     - "first_applying_date": when the transit first enters effective orb
+     - "exact_hit_date": the exact perfection date (closest orb)
+     - "separating_end_date": when the transit exits effective orb
+     - "pass_label": "single pass" OR "Pass 1 — Direct" / "Pass 2 — Retrograde" / "Pass 3 — Final Direct"
+     - "date_range": full active period
+     - "tag": one of: meeting / attraction / commitment / test / rupture / healing
+     - "interpretation": plain-language explanation
+     Do NOT collapse multiple passes into one simplified date range. Each retrograde pass gets its own separate transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
   10. modality_element — "Elemental & Modal Balance"
-  11. summary_box — "Relationship Strategy Summary" with items: "Who to Look For", "Where Love Begins", "Best Windows", "Caution Windows", "What to Avoid Repeating"
+  11. summary_box — "Relationship Strategy Summary" (MUST be decisive and specific. Include these items:
+     - "Who to Move Toward": Describe the type of person to pursue — specific behavioral qualities, not vague traits. Example: "Move toward people whose actions match their words early."
+     - "Early Warning Signs": Name what to watch out for at the start. Example: "Be cautious with anyone who feels exciting but confusing from the start."
+     - "Pattern to Break": Name the single most important pattern to break. Example: "The pattern to break is staying too long in attraction without enough clarity."
+     - "What This Year Is Best For": State clearly what this year is best used for in love. Example: "This year is best used for learning the difference between chemistry and actual compatibility."
+     - "Best Windows": Timing windows.
+     - "Caution Windows": Timing windows.
+     Do NOT stay general. Every item must give the user a clear, actionable directive.)
   Do NOT include city_comparison or astrocartography sections in relationship readings unless the user explicitly mentions location/moving/travel.
   Do NOT interpret Lilith unless Lilith data with a valid sign, degree, and house is explicitly present in the chart context. If Lilith data is missing or malformed, skip it entirely — do not guess or fabricate.
   
@@ -573,7 +598,16 @@ CRITICAL ANTI-HALLUCINATION RULES:
 - If Juno and Lilith positions are provided, reference them in relationship and shadow-work interpretations.
 - If SOLAR RETURN data is provided, integrate it into your reading. For relationship questions, note SR Venus/Mars/Juno/7th house placements. For relocation questions, note SR 4th/9th house and angular planets. For timing questions, use SR activation windows alongside transits. Always distinguish natal vs SR placements clearly.
 - When SR data is present, mention the year's themes (SR Ascendant sign, SR Sun house, SR Moon phase/house) as they shape the CURRENT year's energy landscape.
-- If a transiting planet is marked (R) for retrograde, note this in your interpretation — retrogrades change the quality of the transit (internalization, review, revisiting past themes).`;
+- If a transiting planet is marked (R) for retrograde, note this in your interpretation — retrogrades change the quality of the transit (internalization, review, revisiting past themes).
+
+PASS/FAIL RULE — MANDATORY FINAL CHECK:
+Before finalizing output, verify ALL of the following. If ANY check fails, the response is incomplete and MUST be rewritten:
+1. Timing section: Every transit includes transiting planet, aspect, exact degree, first applying date, exact hit date, separating date, pass label, tag, and interpretation. Multi-pass transits are NOT collapsed.
+2. Relationship Needs Profile: Uses exact "Venus →", "Moon →", "Mars →", "7th house →" label format. Each is one short sentence of behavior/experience.
+3. Overlay section: Contains at least 3–5 explicit cross-chart activations, each naming SR factor + natal factor + meaning.
+4. No generic language: No standalone use of "intense", "deep", "mentally stimulating", "psychologically complex", "emotionally consuming", "transformational" without immediate real-life translation.
+5. Strategy summary: Includes decisive directives — who to move toward, early warning signs, pattern to break, what this year is best for.
+6. Mars in Gemini in the 12th behavioral explanation, contradiction patterns, "what this year feels like" format, and one-sentence relationship pattern summary are all preserved when applicable.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
