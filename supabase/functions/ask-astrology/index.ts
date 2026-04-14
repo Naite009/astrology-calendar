@@ -241,17 +241,17 @@ Rules:
      - "pass_label": "single pass" OR "Pass 1 — Direct" / "Pass 2 — Retrograde" / "Pass 3 — Final Direct"
      - "date_range": full active period
      - "tag": one of: meeting / attraction / commitment / test / rupture / healing
-     - "interpretation": plain-language explanation
+      - "interpretation": plain-language explanation that MUST include one real-life scenario sentence. Example: "This can show up as meeting someone suddenly through conversation or online, where the attraction feels instant but unpredictable." Do NOT write interpretations that only explain the astrology — always add what it looks like in real life.
      Do NOT collapse multiple passes into one simplified date range. Each retrograde pass gets its own separate transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
   10. modality_element — "Elemental & Modal Balance"
-  11. summary_box — "Relationship Strategy Summary" (MUST be decisive and specific. Include these items:
-     - "Who to Move Toward": Describe the type of person to pursue — specific behavioral qualities, not vague traits. Example: "Move toward people whose actions match their words early."
-     - "Early Warning Signs": Name what to watch out for at the start. Example: "Be cautious with anyone who feels exciting but confusing from the start."
-     - "Pattern to Break": Name the single most important pattern to break. Example: "The pattern to break is staying too long in attraction without enough clarity."
-     - "What This Year Is Best For": State clearly what this year is best used for in love. Example: "This year is best used for learning the difference between chemistry and actual compatibility."
-     - "Best Windows": Timing windows.
-     - "Caution Windows": Timing windows.
-     Do NOT stay general. Every item must give the user a clear, actionable directive.)
+   11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
+      - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
+      - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
+      - "Pattern to Break": Name it bluntly. Example: "Stop treating mental chemistry as proof of compatibility — it's not."
+      - "What This Year Is Best For": Be decisive. Example: "This year is for learning to stay only where things are clear, not where they're exciting."
+      - "Best Windows": Timing windows.
+      - "Caution Windows": Timing windows.
+      Do NOT stay safe or diplomatic. The user needs to hear the hard truth clearly. Every item must feel like advice they'd remember.)
   Do NOT include city_comparison or astrocartography sections in relationship readings unless the user explicitly mentions location/moving/travel.
   Do NOT interpret Lilith unless Lilith data with a valid sign, degree, and house is explicitly present in the chart context. If Lilith data is missing or malformed, skip it entirely — do not guess or fabricate.
   
@@ -345,18 +345,17 @@ SYNTHESIS STYLE:
 - Example bullets: "One part of you wants consistency, loyalty, and something that grows over time." / "Another part of you is drawn to curiosity, conversation, and less predictable attraction patterns."
 
 RELATIONSHIP NEEDS PROFILE (MANDATORY — must appear immediately after "Your Relationship Pattern" section, as section 5 in relationship readings):
-This is a simple, intuitive map of how the person loves. Structure:
+This is a simple, punchy map of how the person loves. SHORT sentences only.
 - "title": "Relationship Needs Profile"
 - "type": "narrative_section"
-- "body": One introductory sentence: "These are the core forces that shape how you connect, what you need, and what draws you in."
-- "bullets": Exactly 4 bullets in this exact order:
-  { "label": "What You Value in Love", "text": "[One clear sentence derived from Venus sign/house — what this person prioritizes and appreciates in a partner. Must describe actual preference or behavior, not a trait. Example: 'You value a partner who shows up consistently and proves their feelings through actions over time, not just words or grand gestures.']" },
-  { "label": "What You Need Emotionally", "text": "[One clear sentence derived from Moon sign/house — the emotional environment they need to feel safe. Must describe a real need, not a label. Example: 'You need to feel like your partner is emotionally steady and won't disappear when things get hard — inconsistency feels deeply unsettling to you.']" },
-  { "label": "What Attracts You", "text": "[One clear sentence derived from Mars sign/house — what sparks desire and chemistry. Must describe the TYPE of person or dynamic, not an adjective. Example: 'You are drawn to people who are quick-witted, verbally playful, and keep you mentally engaged — boredom kills attraction faster than anything.']" },
-  { "label": "What Long-Term Partnership Requires", "text": "[One clear sentence derived from 7th house cusp sign and ruler — the non-negotiable for commitment. Must describe what MUST exist, not a vague quality. Example: 'For a relationship to last, you need a partner who gives you both emotional closeness and enough space to maintain your own identity — feeling trapped or smothered will push you away.']" }
-- Each bullet must be ONE clear sentence in plain language. NO planet names, sign names, or house numbers in the text.
-- Each sentence must describe behavior, preference, or experience — NOT traits or adjectives.
-- This section should feel like a personality snapshot for love that anyone could read and immediately understand.
+- "body": "These are the core forces that shape how you connect, what you need, and what draws you in."
+- "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must be ONE SHORT sentence — maximum 15 words. No filler, no qualifiers, no elaboration. Punchy and instant.
+  { "label": "Venus → what you value in love", "text": "[MAX 15 words. Example: 'You value consistency and relationships that build over time.']" },
+  { "label": "Moon → what you need emotionally", "text": "[MAX 15 words. Example: 'You need emotional safety and reliability to feel secure.']" },
+  { "label": "Mars → what attracts you", "text": "[MAX 15 words. Example: 'You're attracted to intelligence, conversation, and mental stimulation.']" },
+  { "label": "7th house → what long-term partnership requires", "text": "[MAX 15 words. Example: 'Long-term, you need commitment, structure, and a dependable partner.']" }
+- STRICT RULES: No planet names, sign names, or house numbers in bullet text. No sentences longer than 15 words. No words like "intense", "deep", "transformative", "passionate". Each sentence must describe what the person DOES or NEEDS — not what they ARE.
+- TARGET FEEL: Someone reads this in 10 seconds and says "yes, that's me."
 
 CONTRADICTION PATTERNS STYLE:
 - The body should be a gentle observation synthesizing the core contradiction.
