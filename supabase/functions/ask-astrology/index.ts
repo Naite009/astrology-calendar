@@ -598,7 +598,16 @@ CRITICAL ANTI-HALLUCINATION RULES:
 - If Juno and Lilith positions are provided, reference them in relationship and shadow-work interpretations.
 - If SOLAR RETURN data is provided, integrate it into your reading. For relationship questions, note SR Venus/Mars/Juno/7th house placements. For relocation questions, note SR 4th/9th house and angular planets. For timing questions, use SR activation windows alongside transits. Always distinguish natal vs SR placements clearly.
 - When SR data is present, mention the year's themes (SR Ascendant sign, SR Sun house, SR Moon phase/house) as they shape the CURRENT year's energy landscape.
-- If a transiting planet is marked (R) for retrograde, note this in your interpretation — retrogrades change the quality of the transit (internalization, review, revisiting past themes).`;
+- If a transiting planet is marked (R) for retrograde, note this in your interpretation — retrogrades change the quality of the transit (internalization, review, revisiting past themes).
+
+PASS/FAIL RULE — MANDATORY FINAL CHECK:
+Before finalizing output, verify ALL of the following. If ANY check fails, the response is incomplete and MUST be rewritten:
+1. Timing section: Every transit includes transiting planet, aspect, exact degree, first applying date, exact hit date, separating date, pass label, tag, and interpretation. Multi-pass transits are NOT collapsed.
+2. Relationship Needs Profile: Uses exact "Venus →", "Moon →", "Mars →", "7th house →" label format. Each is one short sentence of behavior/experience.
+3. Overlay section: Contains at least 3–5 explicit cross-chart activations, each naming SR factor + natal factor + meaning.
+4. No generic language: No standalone use of "intense", "deep", "mentally stimulating", "psychologically complex", "emotionally consuming", "transformational" without immediate real-life translation.
+5. Strategy summary: Includes decisive directives — who to move toward, early warning signs, pattern to break, what this year is best for.
+6. Mars in Gemini in the 12th behavioral explanation, contradiction patterns, "what this year feels like" format, and one-sentence relationship pattern summary are all preserved when applicable.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
