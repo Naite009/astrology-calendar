@@ -300,7 +300,7 @@ SR LOVE ACTIVATION STYLE:
 - Write as lived experience, not themes. BAD: "Relationships are activated this year." GOOD: "This year, relationships are likely to feel more active and noticeable. You may find that people enter your life more easily, or that attraction develops more quickly than usual."
 - The body should be 2-3 flowing paragraphs describing the year's relationship feel.
 - Each of the 6 experience bullets should be 1-3 sentences of real-life description. No abstractions.
-- For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
+  - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
   1. placement_table — "Key Placements"
   2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
   3. narrative_section — "Astrocartography Lines" OR "Chart-Based Relocation Guidance" (If astrocartography line data is present in the chart context, report planetary angular lines with distances. If NOT present, label this section "Chart-Based Relocation Guidance" and explain chart-derived reasoning for city fit WITHOUT claiming line positions. Never fake line data.)
@@ -312,6 +312,23 @@ SR LOVE ACTIVATION STYLE:
   9. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
   10. modality_element — "Elemental & Modal Balance"
   11. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window", "Analysis Mode"
+
+  LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields and "Decision Synthesis" section):
+  Do NOT describe locations using abstract astrology meanings. For EVERY recommended or caution city, the explanation MUST cover:
+  - How the person will FEEL living there day-to-day (emotional texture, not abstract "energy")
+  - How their behavior may change (what they do differently, how they show up)
+  - What improves (relationships, career, emotional state, physical energy — be specific)
+  - What becomes harder or less prioritized (tradeoffs, what fades or requires more effort)
+  - What kind of life experience this location creates (daily rhythm, social life, pace)
+  - How the location connects back to the person's specific chart needs (reference their Moon, Venus, MC, etc. needs from the Environmental Profile)
+
+  FORBIDDEN LOCATION PHRASES: "supports growth", "enhances energy", "activates potential", "provides opportunities for transformation", "aligns with your path", "resonates with your chart"
+
+  REQUIRED LOCATION PHRASES: "you may feel...", "this can show up as...", "your day-to-day life may...", "this tends to lead to...", "living here, you would likely notice...", "the tradeoff is that...", "what becomes harder here is..."
+
+  LOCATION EXPLANATION EXAMPLE:
+  - BAD: "Lisbon supports your emotional growth and enhances your creative energy. The Venus line activates romantic potential."
+  - GOOD: "Living in Lisbon, you may feel a slower, more emotionally grounded pace of life. Your day-to-day tends to feel less pressured, with more space for connection and creativity. Relationships may come more easily here — you're likely to feel more open and approachable. The tradeoff is that career ambition may take a back seat, and you might feel less driven or structured than in a faster city. This fits your need for emotional safety and steady connection, but may not fully satisfy the part of you that wants professional momentum."
 
   ANALYSIS MODE RULES:
   - If the chart data contains pre-calculated astrocartography line data, set all city "mode" fields to "Astrocartography" and use the line data.
