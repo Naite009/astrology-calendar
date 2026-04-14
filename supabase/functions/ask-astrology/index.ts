@@ -657,12 +657,29 @@ serve(async (req) => {
     // This is application logic, not a prompt suggestion
     const lilithDataPresent = typeof chartContext === 'string' && /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
 
+    // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
+    const junoDataPresent = typeof chartContext === 'string' && /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
+
+    // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
+    const chartHouseMap: Record<string, number> = {};
+    if (typeof chartContext === 'string') {
+      const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
+      let hm;
+      while ((hm = houseRegex.exec(chartContext)) !== null) {
+        chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
+      }
+    }
+
     const systemMessage = [
       SYSTEM_PROMPT,
       // Inject hard Lilith gate based on actual data presence
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
+      // Inject hard Juno gate based on actual data presence
+      junoDataPresent
+        ? null
+        : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
     ]
@@ -781,6 +798,118 @@ serve(async (req) => {
                 const text = typeof b === 'string' ? b : (b.text || b.label || '');
                 return !text.includes('Lilith');
               });
+            }
+          }
+        }
+
+        // POST-GENERATION JUNO STRIPPING: If Juno was not in chart data, remove from output
+        if (!junoDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
+              section.rows = section.rows.filter((row: any) => 
+                !(row.planet && row.planet.toLowerCase().includes('juno'))
+              );
+            }
+            if (section.type === 'narrative_section' && typeof section.body === 'string') {
+              section.body = section.body
+                .split(/(?<=[.!?])\s+/)
+                .filter((s: string) => !s.includes('Juno'))
+                .join(' ');
+            }
+            if (Array.isArray(section.bullets)) {
+              section.bullets = section.bullets.filter((b: any) => {
+                const text = typeof b === 'string' ? b : (b.text || b.label || '');
+                return !text.includes('Juno');
+              });
+            }
+          }
+        }
+
+        // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
+        if (Object.keys(chartHouseMap).length > 0 && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
+              for (const row of section.rows) {
+                if (row.planet && chartHouseMap[row.planet] !== undefined) {
+                  const correctHouse = chartHouseMap[row.planet];
+                  if (row.house !== correctHouse) {
+                    console.warn(`House cross-check fix: ${row.planet} was house ${row.house}, corrected to ${correctHouse}`);
+                    row.house = correctHouse;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'modality_element') {
+              // Validate elements sum to 10
+              if (Array.isArray(section.elements)) {
+                const elemSum = section.elements.reduce((sum: number, e: any) => sum + (e.count || 0), 0);
+                if (elemSum !== 10) {
+                  console.warn(`Element count validation: sum was ${elemSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Element counts sum to ${elemSum} instead of 10`);
+                }
+              }
+              // Validate modalities sum to 10
+              if (Array.isArray(section.modalities)) {
+                const modSum = section.modalities.reduce((sum: number, m: any) => sum + (m.count || 0), 0);
+                if (modSum !== 10) {
+                  console.warn(`Modality count validation: sum was ${modSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Modality counts sum to ${modSum} instead of 10`);
+                }
+              }
+              // Validate polarity sums to 10
+              if (Array.isArray(section.polarity)) {
+                const polSum = section.polarity.reduce((sum: number, p: any) => sum + (p.count || 0), 0);
+                if (polSum !== 10) {
+                  console.warn(`Polarity count validation: sum was ${polSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Polarity counts sum to ${polSum} instead of 10`);
+                }
+              }
+            }
+          }
+        }
+
+        // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
+        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          // Extract known natal planet names from chart data
+          const knownNatalPoints = new Set<string>();
+          const natalPointRegex = /^(\w[\w\s]*?):\s*\d+°/gm;
+          let npm;
+          while ((npm = natalPointRegex.exec(chartContext)) !== null) {
+            knownNatalPoints.add(npm[1].trim());
+          }
+          // Also add common aliases
+          if (knownNatalPoints.has('North Node')) knownNatalPoints.add('NN');
+          if (knownNatalPoints.has('South Node')) knownNatalPoints.add('SN');
+          knownNatalPoints.add('Ascendant'); knownNatalPoints.add('ASC'); knownNatalPoints.add('AC');
+          knownNatalPoints.add('Midheaven'); knownNatalPoints.add('MC');
+          knownNatalPoints.add('Descendant'); knownNatalPoints.add('DSC'); knownNatalPoints.add('DC');
+          knownNatalPoints.add('IC');
+
+          for (const section of parsedContent.sections) {
+            if (section.type === 'timing_section' && Array.isArray(section.transits)) {
+              const validTransits: any[] = [];
+              for (const transit of section.transits) {
+                // Check if the natal_point references a known planet/point
+                const natalRef = transit.natal_point || transit.position || '';
+                const referencesKnownPoint = Array.from(knownNatalPoints).some(
+                  (pt) => natalRef.includes(pt)
+                );
+                if (referencesKnownPoint) {
+                  validTransits.push(transit);
+                } else {
+                  console.warn(`Transit verification: removed transit referencing unknown natal point: "${natalRef}"`);
+                }
+              }
+              section.transits = validTransits;
             }
           }
         }
