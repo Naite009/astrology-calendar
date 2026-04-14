@@ -660,6 +660,15 @@ serve(async (req) => {
     // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
     const junoDataPresent = typeof chartContext === 'string' && /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
 
+    // SOLAR RETURN YEAR EXTRACTION: Parse the actual SR year from chart context for validation
+    let srYearFromContext: number | null = null;
+    if (typeof chartContext === 'string') {
+      const srYearMatch = chartContext.match(/SOLAR RETURN\s+(\d{4})/);
+      if (srYearMatch) {
+        srYearFromContext = parseInt(srYearMatch[1], 10);
+      }
+    }
+
     // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
     const chartHouseMap: Record<string, number> = {};
     if (typeof chartContext === 'string') {
