@@ -237,9 +237,30 @@ Rules:
      - bullet 3 — "Where confusion or mixed signals can happen" (derived from 12th house, Neptune, Mercury-Mars dynamics). Use framing: "This can create a pattern where..."
      - bullet 4 — "What can cause relationship patterns to repeat" (derived from South Node, Saturn, 8th house). Use framing: "If not understood, this can lead to..."
      Each bullet must name the specific tension, describe how it shows up in real behavior, and explain what happens if the person doesn't recognize it. Use careful language — differentiate attraction from compatibility, chemistry from durability, relationship opportunity from relationship readiness. Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. The body paragraph should synthesize all four tensions into one clear statement about the person's core relationship contradiction.)
-  9. timing_section — "Relationship Timing Windows" (Minimum 6 transits from Jupiter, Saturn, Uranus, Neptune, Pluto to natal Venus, Mars, Moon, Juno, Descendant, 7th house ruler. EACH transit must include ALL of: transiting_planet, aspect type, natal target, transit degree, date_range (narrowest possible), and tag. Accepted tags: meeting / attraction / commitment / test / rupture / healing. Must include at least 1 supportive and 1 challenging transit. For outer planets with retrograde passes, report each pass separately per the MULTI-PASS rules. If exact dates are available show them; if approximate, label as approximate. Do NOT collapse multiple passes into one range.)
+  9. timing_section — "Relationship Timing Windows" (Minimum 6 transits from Jupiter, Saturn, Uranus, Neptune, Pluto to natal Venus, Mars, Moon, Juno, Descendant, 7th house ruler. For EACH transit, output ALL of these exact fields:
+     - "planet": transiting planet name
+     - "symbol": planet symbol
+     - "position": full description with degrees
+     - "aspect": aspect type (conjunction, square, trine, opposition, sextile, quincunx)
+     - "exact_degree": transit planet degree and sign
+     - "natal_point": natal point with degree and sign
+     - "first_applying_date": when the transit first enters effective orb
+     - "exact_hit_date": the exact perfection date (closest orb)
+     - "separating_end_date": when the transit exits effective orb
+     - "pass_label": "single pass" OR "Pass 1 — Direct" / "Pass 2 — Retrograde" / "Pass 3 — Final Direct"
+     - "date_range": full active period
+     - "tag": one of: meeting / attraction / commitment / test / rupture / healing
+     - "interpretation": plain-language explanation
+     Do NOT collapse multiple passes into one simplified date range. Each retrograde pass gets its own separate transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
   10. modality_element — "Elemental & Modal Balance"
-  11. summary_box — "Relationship Strategy Summary" with items: "Who to Look For", "Where Love Begins", "Best Windows", "Caution Windows", "What to Avoid Repeating"
+  11. summary_box — "Relationship Strategy Summary" (MUST be decisive and specific. Include these items:
+     - "Who to Move Toward": Describe the type of person to pursue — specific behavioral qualities, not vague traits. Example: "Move toward people whose actions match their words early."
+     - "Early Warning Signs": Name what to watch out for at the start. Example: "Be cautious with anyone who feels exciting but confusing from the start."
+     - "Pattern to Break": Name the single most important pattern to break. Example: "The pattern to break is staying too long in attraction without enough clarity."
+     - "What This Year Is Best For": State clearly what this year is best used for in love. Example: "This year is best used for learning the difference between chemistry and actual compatibility."
+     - "Best Windows": Timing windows.
+     - "Caution Windows": Timing windows.
+     Do NOT stay general. Every item must give the user a clear, actionable directive.)
   Do NOT include city_comparison or astrocartography sections in relationship readings unless the user explicitly mentions location/moving/travel.
   Do NOT interpret Lilith unless Lilith data with a valid sign, degree, and house is explicitly present in the chart context. If Lilith data is missing or malformed, skip it entirely — do not guess or fabricate.
   
