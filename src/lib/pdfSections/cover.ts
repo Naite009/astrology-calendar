@@ -68,6 +68,10 @@ export async function generatePDFCover(
   const name = natalChart.name || 'Chart';
   const year = srChart.solarReturnYear;
 
+  // Calculate age at this solar return
+  const birthYear = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
+  const srAge = !isNaN(birthYear) ? year - birthYear : null;
+
   const natalSun  = natalChart.planets?.Sun?.sign  || '';
   const natalMoon = natalChart.planets?.Moon?.sign || '';
   const natalRising = natalChart.houseCusps?.house1?.sign || '';
@@ -83,7 +87,7 @@ export async function generatePDFCover(
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
   doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
 
-  // Top: "SOLAR RETURN  ·  2026" centered
+  // Top: "SOLAR RETURN" centered
   let y = frameInset + 30;
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
@@ -91,10 +95,14 @@ export async function generatePDFCover(
   doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
   y += 16;
+  // Year span + age (e.g., "YEAR 49  ·  2026–2027")
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(5);
-  doc.text(String(year), pw / 2, y, { align: 'center' });
+  const yearLabel = srAge !== null
+    ? `YEAR ${srAge}  ·  ${year}–${year + 1}`
+    : `${year}–${year + 1}`;
+  doc.text(yearLabel, pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
 
   // Hairline under masthead
