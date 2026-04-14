@@ -211,16 +211,7 @@ Rules:
        { "label": "The Safety Need", "text": "You need to feel emotionally safe before you can fully open up, but you may choose people who don't immediately provide that." },
        { "label": "The Long Game", "text": "Long-term partnership matters deeply to you, but getting there requires sorting out the tension between what feels exciting and what actually lasts." }
      - Do NOT reference Venus, Mars, Moon, Saturn, houses, signs, or any astrological terminology. Translate everything into feelings, behaviors, and real-life situations.)
-  5. narrative_section — "Relationship Needs Profile" (MANDATORY. This is a simple, intuitive map of how the person loves. Structure:
-     - "body": One introductory sentence framing this as a quick reference for relationship drivers. Example: "These are the core forces that shape how you connect, what you need, and what draws you in."
-     - "bullets": Exactly 4 bullets using the EXACT label format below. Each must be ONE short, direct sentence describing behavior or lived experience — not traits. No filler language. No astrology jargon.
-       { "label": "Venus → what you value in love", "text": "One sentence. Example: 'You value consistency and relationships that build over time.'" },
-       { "label": "Moon → what you need emotionally", "text": "One sentence. Example: 'You need emotional safety and reliability to feel secure.'" },
-       { "label": "Mars → what attracts you", "text": "One sentence. Example: 'You're attracted to intelligence, conversation, and mental stimulation.'" },
-       { "label": "7th house → what long-term partnership requires", "text": "One sentence. Example: 'Long-term, you need commitment, structure, and a dependable partner.'" }
-     - Each bullet must be ONE clear sentence, written so someone with zero astrology knowledge instantly understands it.
-     - Do NOT use planet or sign names in the bullet text — translate entirely into feelings, preferences, and behaviors.
-     - This section should feel like a personality snapshot for love, not a chart readout.)
+   5. narrative_section — "Relationship Needs Profile" (uses the EXACT format defined in the RELATIONSHIP NEEDS PROFILE section below — arrow labels, one short sentence each, no exceptions)
   6. narrative_section — "Solar Return Love Activation" (SR Venus sign/house, SR Moon sign/house, SR 5th/7th house cusps and planets, SR Juno if available, SR outer planets aspecting 5th/7th/Venus/Mars/Moon/Descendant. EVERY claim must cite the specific SR placement, e.g. "SR Venus in Aries in the 6th suggests..." — only if that SR data exists. If SR data is partial, say so and limit interpretation.
      RELATIONSHIP EXPERIENCE TRANSLATION (MANDATORY): After the technical SR analysis, the section MUST translate findings into real-life relationship experiences using these 6 required outputs:
      - "What this year FEELS like in relationships" — emotional texture, not abstract themes. BAD: "This year focuses on romance." GOOD: "You are likely to meet people more easily this year."
