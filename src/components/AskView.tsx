@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
-import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition, getDetailedLilithPosition } from "@/lib/astrology";
+import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition } from "@/lib/astrology";
 import { calculateTransitAspects } from "@/lib/transitAspects";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
