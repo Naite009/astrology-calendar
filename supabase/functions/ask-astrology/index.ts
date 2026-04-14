@@ -689,6 +689,10 @@ serve(async (req) => {
       junoDataPresent
         ? null
         : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
+      // Inject SR year enforcement if SR data is present
+      srYearFromContext
+        ? `ABSOLUTE RULE — SOLAR RETURN YEAR: The Solar Return year in this chart data is ${srYearFromContext}. This means the SR covers the period ${srYearFromContext}–${srYearFromContext + 1}. When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — you MUST use the year ${srYearFromContext} (or the span ${srYearFromContext}–${srYearFromContext + 1}). Do NOT use any other year. Do NOT guess the SR year from the birth date or current date. The SR year is ${srYearFromContext}. This is a hard data constraint.`
+        : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
     ]
