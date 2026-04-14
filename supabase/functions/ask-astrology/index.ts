@@ -305,13 +305,21 @@ SR LOVE ACTIVATION STYLE:
   2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
   3. narrative_section — "Astrocartography Lines" OR "Chart-Based Relocation Guidance" (If astrocartography line data is present in the chart context, report planetary angular lines with distances. If NOT present, label this section "Chart-Based Relocation Guidance" and explain chart-derived reasoning for city fit WITHOUT claiming line positions. Never fake line data.)
   4. narrative_section — "Decision Synthesis" (For each city, explain WHY it works by connecting chart placements to city characteristics. Include tradeoffs. Flag mismatches between chart resonance and environmental fit.)
-  5. city_comparison — "Top Cities This Year" (SR-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
-  6. city_comparison — "This Year's Caution Zones" (SR-weighted, 2-3 caution cities)
-  7. city_comparison — "Top Cities Long-Term" (natal-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
-  8. city_comparison — "Long-Term Caution Zones" (natal-weighted, 2-3 caution cities)
-  9. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
-  10. modality_element — "Elemental & Modal Balance"
-  11. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window", "Analysis Mode"
+  5. narrative_section — "Location Fit Profiles" (MANDATORY. For EACH top recommended city, provide a structured fit profile using exactly 4 bullets per city. Group cities using sub-headers in the body field. Structure per city:
+     - "body": Brief intro naming the cities being profiled. Then for each city, a sub-header line (e.g., "**Lisbon, Portugal**") followed by the 4-line profile.
+     - "bullets": One bullet per city, each with 4 sub-points as the "text" field:
+       { "label": "[City Name]", "text": "Emotional experience: [one plain-language sentence derived from Moon/IC/4th house interaction with this location — how home and inner life feel here]. Social & relationship experience: [one plain-language sentence derived from Venus/7th/11th house interaction — how connection and love life feel here]. Career & public life experience: [one plain-language sentence derived from Sun/MC/10th house interaction — how work and visibility feel here]. Energy & lifestyle pace: [one plain-language sentence derived from Mars/Uranus/1st house interaction — how daily rhythm, motivation, and physical energy feel here]." }
+     - Each sentence must be ONE clear, plain-language statement. No astrology jargon in the sentence itself.
+     - Each sentence must describe what the person EXPERIENCES, not what the placement "means."
+     - FORBIDDEN: "supports emotional growth", "enhances career potential", "activates social energy"
+     - REQUIRED: "you may feel...", "your social life tends to...", "career here may feel...", "the pace of life here...")
+  6. city_comparison — "Top Cities This Year" (SR-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
+  7. city_comparison — "This Year's Caution Zones" (SR-weighted, 2-3 caution cities)
+  8. city_comparison — "Top Cities Long-Term" (natal-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
+  9. city_comparison — "Long-Term Caution Zones" (natal-weighted, 2-3 caution cities)
+  10. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
+  11. modality_element — "Elemental & Modal Balance"
+  12. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window", "Analysis Mode"
 
   LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields and "Decision Synthesis" section):
   Do NOT describe locations using abstract astrology meanings. For EVERY recommended or caution city, the explanation MUST cover:
