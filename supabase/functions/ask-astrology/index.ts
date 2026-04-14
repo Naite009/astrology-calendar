@@ -703,7 +703,17 @@ serve(async (req) => {
     let parsedContent;
     try {
       // Strip any markdown code fences if present
-      const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      
+      // If still not valid JSON, try to extract the JSON object between first { and last }
+      if (!cleaned.startsWith('{')) {
+        const firstBrace = cleaned.indexOf('{');
+        const lastBrace = cleaned.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+        }
+      }
+      
       parsedContent = JSON.parse(cleaned);
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
