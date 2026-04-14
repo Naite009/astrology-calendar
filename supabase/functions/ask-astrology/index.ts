@@ -913,10 +913,80 @@ serve(async (req) => {
             }
           }
         }
+
+        // POST-GENERATION ASPECT VERIFICATION: Degree-based math check for claimed aspects
+        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          // Parse natal planet degrees from chart data: "Planet: DD°MM' Sign (House N)"
+          const signIndex: Record<string, number> = {
+            'Aries': 0, 'Taurus': 1, 'Gemini': 2, 'Cancer': 3, 'Leo': 4, 'Virgo': 5,
+            'Libra': 6, 'Scorpio': 7, 'Sagittarius': 8, 'Capricorn': 9, 'Aquarius': 10, 'Pisces': 11
+          };
+          const natalDegrees: Record<string, number> = {};
+          const degRegex = /(\w[\w\s]*?):\s*(\d+)°(\d+)'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/g;
+          let dm;
+          while ((dm = degRegex.exec(chartContext)) !== null) {
+            const planet = dm[1].trim();
+            const deg = parseInt(dm[2], 10);
+            const min = parseInt(dm[3], 10);
+            const sign = dm[4];
+            natalDegrees[planet] = (signIndex[sign] || 0) * 30 + deg + min / 60;
+          }
+
+          const aspectAngles: Record<string, number> = {
+            'conjunction': 0, 'sextile': 60, 'square': 90, 'trine': 120, 'quincunx': 150, 'opposition': 180
+          };
+          const maxOrbs: Record<string, number> = {
+            'conjunction': 8, 'opposition': 8, 'trine': 7, 'square': 7, 'sextile': 5, 'quincunx': 3
+          };
+
+          for (const section of parsedContent.sections) {
+            // Check timing_section transits for aspect validity
+            if (section.type === 'timing_section' && Array.isArray(section.transits)) {
+              for (const transit of section.transits) {
+                if (transit.aspect && transit.exact_degree && transit.natal_point) {
+                  // Try to parse transit degree from exact_degree field
+                  const transitMatch = transit.exact_degree.match(/(\d+)°(\d+)?'?\s*(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/i);
+                  // Try to find the natal point's degree
+                  const natalName = Object.keys(natalDegrees).find(p => transit.natal_point.includes(p));
+                  
+                  if (transitMatch && natalName) {
+                    const tDeg = (signIndex[transitMatch[3]] || 0) * 30 + parseInt(transitMatch[1], 10) + (parseInt(transitMatch[2] || '0', 10)) / 60;
+                    const nDeg = natalDegrees[natalName];
+                    let separation = Math.abs(tDeg - nDeg);
+                    if (separation > 180) separation = 360 - separation;
+                    
+                    const aspectType = transit.aspect.toLowerCase();
+                    const expectedAngle = aspectAngles[aspectType];
+                    const maxOrb = maxOrbs[aspectType];
+                    
+                    if (expectedAngle !== undefined && maxOrb !== undefined) {
+                      const actualOrb = Math.abs(separation - expectedAngle);
+                      if (actualOrb > maxOrb) {
+                        console.warn(`Aspect verification FAILED: ${transit.planet} ${transit.aspect} ${natalName} — separation ${separation.toFixed(1)}°, expected ~${expectedAngle}°, orb ${actualOrb.toFixed(1)}° exceeds max ${maxOrb}°. Marking as invalid.`);
+                        transit._aspect_invalid = true;
+                        transit._actual_orb = parseFloat(actualOrb.toFixed(1));
+                        transit._actual_separation = parseFloat(separation.toFixed(1));
+                      } else {
+                        // Correct the orb label if needed
+                        const orbLabel = actualOrb <= 2 ? 'tight' : actualOrb <= 5 ? 'moderate' : 'wide';
+                        transit._verified_orb = parseFloat(actualOrb.toFixed(1));
+                        transit._orb_label = orbLabel;
+                      }
+                    }
+                  }
+                }
+              }
+              // Remove transits with invalid aspects
+              section.transits = section.transits.filter((t: any) => !t._aspect_invalid);
+            }
+          }
+        }
       }
-    } catch {
-      // If JSON parsing fails, return the raw content
-      parsedContent = { raw: content };
+    } catch (parseError) {
+      // Log the actual parsing error for debugging
+      console.error("JSON parsing failed for AI response:", parseError instanceof Error ? parseError.message : parseError);
+      console.error("Raw content (first 500 chars):", typeof content === 'string' ? content.substring(0, 500) : 'non-string content');
+      parsedContent = { raw: content, _parse_error: parseError instanceof Error ? parseError.message : 'Unknown parse error' };
     }
 
     return new Response(JSON.stringify(parsedContent), {
