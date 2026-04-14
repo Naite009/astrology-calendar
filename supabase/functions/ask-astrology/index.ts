@@ -660,6 +660,15 @@ serve(async (req) => {
     // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
     const junoDataPresent = typeof chartContext === 'string' && /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
 
+    // SOLAR RETURN YEAR EXTRACTION: Parse the actual SR year from chart context for validation
+    let srYearFromContext: number | null = null;
+    if (typeof chartContext === 'string') {
+      const srYearMatch = chartContext.match(/SOLAR RETURN\s+(\d{4})/);
+      if (srYearMatch) {
+        srYearFromContext = parseInt(srYearMatch[1], 10);
+      }
+    }
+
     // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
     const chartHouseMap: Record<string, number> = {};
     if (typeof chartContext === 'string') {
@@ -680,6 +689,10 @@ serve(async (req) => {
       junoDataPresent
         ? null
         : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
+      // Inject SR year enforcement if SR data is present
+      srYearFromContext
+        ? `ABSOLUTE RULE — SOLAR RETURN YEAR: The Solar Return year in this chart data is ${srYearFromContext}. This means the SR covers the period ${srYearFromContext}–${srYearFromContext + 1}. When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — you MUST use the year ${srYearFromContext} (or the span ${srYearFromContext}–${srYearFromContext + 1}). Do NOT use any other year. Do NOT guess the SR year from the birth date or current date. The SR year is ${srYearFromContext}. This is a hard data constraint.`
+        : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
     ]
@@ -774,6 +787,50 @@ serve(async (req) => {
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
+
+        // POST-GENERATION SOLAR RETURN YEAR CORRECTION
+        if (srYearFromContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const wrongYearPattern = /Solar Return\s+(\d{4})(?:\s*[-–]\s*(\d{4}))?/gi;
+          for (const section of parsedContent.sections) {
+            // Fix titles
+            if (typeof section.title === 'string') {
+              section.title = section.title.replace(wrongYearPattern, (match: string, y1: string, y2: string) => {
+                const year1 = parseInt(y1, 10);
+                if (year1 !== srYearFromContext) {
+                  console.warn(`SR year correction in title: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                  return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                }
+                return match;
+              });
+            }
+            // Fix body text
+            if (typeof section.body === 'string') {
+              section.body = section.body.replace(wrongYearPattern, (match: string, y1: string) => {
+                const year1 = parseInt(y1, 10);
+                if (year1 !== srYearFromContext) {
+                  console.warn(`SR year correction in body: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                  return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                }
+                return match;
+              });
+            }
+            // Fix bullets
+            if (Array.isArray(section.bullets)) {
+              for (const bullet of section.bullets) {
+                if (typeof bullet.text === 'string') {
+                  bullet.text = bullet.text.replace(wrongYearPattern, (match: string, y1: string) => {
+                    const year1 = parseInt(y1, 10);
+                    if (year1 !== srYearFromContext) {
+                      console.warn(`SR year correction in bullet: "${match}" → "Solar Return ${srYearFromContext}–${srYearFromContext + 1}"`);
+                      return `Solar Return ${srYearFromContext}–${srYearFromContext + 1}`;
+                    }
+                    return match;
+                  });
+                }
+              }
+            }
+          }
+        }
 
         // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
         if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
