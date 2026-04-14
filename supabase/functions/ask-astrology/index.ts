@@ -777,6 +777,118 @@ serve(async (req) => {
             }
           }
         }
+
+        // POST-GENERATION JUNO STRIPPING: If Juno was not in chart data, remove from output
+        if (!junoDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
+              section.rows = section.rows.filter((row: any) => 
+                !(row.planet && row.planet.toLowerCase().includes('juno'))
+              );
+            }
+            if (section.type === 'narrative_section' && typeof section.body === 'string') {
+              section.body = section.body
+                .split(/(?<=[.!?])\s+/)
+                .filter((s: string) => !s.includes('Juno'))
+                .join(' ');
+            }
+            if (Array.isArray(section.bullets)) {
+              section.bullets = section.bullets.filter((b: any) => {
+                const text = typeof b === 'string' ? b : (b.text || b.label || '');
+                return !text.includes('Juno');
+              });
+            }
+          }
+        }
+
+        // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
+        if (Object.keys(chartHouseMap).length > 0 && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
+              for (const row of section.rows) {
+                if (row.planet && chartHouseMap[row.planet] !== undefined) {
+                  const correctHouse = chartHouseMap[row.planet];
+                  if (row.house !== correctHouse) {
+                    console.warn(`House cross-check fix: ${row.planet} was house ${row.house}, corrected to ${correctHouse}`);
+                    row.house = correctHouse;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'modality_element') {
+              // Validate elements sum to 10
+              if (Array.isArray(section.elements)) {
+                const elemSum = section.elements.reduce((sum: number, e: any) => sum + (e.count || 0), 0);
+                if (elemSum !== 10) {
+                  console.warn(`Element count validation: sum was ${elemSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Element counts sum to ${elemSum} instead of 10`);
+                }
+              }
+              // Validate modalities sum to 10
+              if (Array.isArray(section.modalities)) {
+                const modSum = section.modalities.reduce((sum: number, m: any) => sum + (m.count || 0), 0);
+                if (modSum !== 10) {
+                  console.warn(`Modality count validation: sum was ${modSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Modality counts sum to ${modSum} instead of 10`);
+                }
+              }
+              // Validate polarity sums to 10
+              if (Array.isArray(section.polarity)) {
+                const polSum = section.polarity.reduce((sum: number, p: any) => sum + (p.count || 0), 0);
+                if (polSum !== 10) {
+                  console.warn(`Polarity count validation: sum was ${polSum}, expected 10. Flagging.`);
+                  section._validation_warning = section._validation_warning || [];
+                  section._validation_warning.push(`Polarity counts sum to ${polSum} instead of 10`);
+                }
+              }
+            }
+          }
+        }
+
+        // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
+        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          // Extract known natal planet names from chart data
+          const knownNatalPoints = new Set<string>();
+          const natalPointRegex = /^(\w[\w\s]*?):\s*\d+°/gm;
+          let npm;
+          while ((npm = natalPointRegex.exec(chartContext)) !== null) {
+            knownNatalPoints.add(npm[1].trim());
+          }
+          // Also add common aliases
+          if (knownNatalPoints.has('North Node')) knownNatalPoints.add('NN');
+          if (knownNatalPoints.has('South Node')) knownNatalPoints.add('SN');
+          knownNatalPoints.add('Ascendant'); knownNatalPoints.add('ASC'); knownNatalPoints.add('AC');
+          knownNatalPoints.add('Midheaven'); knownNatalPoints.add('MC');
+          knownNatalPoints.add('Descendant'); knownNatalPoints.add('DSC'); knownNatalPoints.add('DC');
+          knownNatalPoints.add('IC');
+
+          for (const section of parsedContent.sections) {
+            if (section.type === 'timing_section' && Array.isArray(section.transits)) {
+              const validTransits: any[] = [];
+              for (const transit of section.transits) {
+                // Check if the natal_point references a known planet/point
+                const natalRef = transit.natal_point || transit.position || '';
+                const referencesKnownPoint = Array.from(knownNatalPoints).some(
+                  (pt) => natalRef.includes(pt)
+                );
+                if (referencesKnownPoint) {
+                  validTransits.push(transit);
+                } else {
+                  console.warn(`Transit verification: removed transit referencing unknown natal point: "${natalRef}"`);
+                }
+              }
+              section.transits = validTransits;
+            }
+          }
+        }
       }
     } catch {
       // If JSON parsing fails, return the raw content
