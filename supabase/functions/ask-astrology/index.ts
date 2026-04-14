@@ -503,8 +503,16 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // LILITH HARD DATA GATE: Check if chartContext actually contains Lilith data
+    // This is application logic, not a prompt suggestion
+    const lilithDataPresent = typeof chartContext === 'string' && /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
+
     const systemMessage = [
       SYSTEM_PROMPT,
+      // Inject hard Lilith gate based on actual data presence
+      lilithDataPresent
+        ? null
+        : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
     ]
@@ -589,11 +597,34 @@ serve(async (req) => {
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
+
+        // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
+        if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            // Strip Lilith rows from placement tables
+            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
+              section.rows = section.rows.filter((row: any) => 
+                !(row.planet && row.planet.toLowerCase().includes('lilith'))
+              );
+            }
+            // Strip Lilith mentions from narrative body text
+            if (section.type === 'narrative_section' && typeof section.body === 'string') {
+              // Remove sentences containing "Lilith"
+              section.body = section.body
+                .split(/(?<=[.!?])\s+/)
+                .filter((s: string) => !s.includes('Lilith'))
+                .join(' ');
+            }
+            // Strip from bullets
+            if (Array.isArray(section.bullets)) {
+              section.bullets = section.bullets.filter((b: any) => {
+                const text = typeof b === 'string' ? b : (b.text || b.label || '');
+                return !text.includes('Lilith');
+              });
+            }
+          }
+        }
       }
-    } catch {
-      // If JSON parsing fails, return the raw content
-      parsedContent = { raw: content };
-    }
 
     return new Response(JSON.stringify(parsedContent), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
