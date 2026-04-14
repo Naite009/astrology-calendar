@@ -625,6 +625,10 @@ serve(async (req) => {
           }
         }
       }
+    } catch {
+      // If JSON parsing fails, return the raw content
+      parsedContent = { raw: content };
+    }
 
     return new Response(JSON.stringify(parsedContent), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
