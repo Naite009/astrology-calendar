@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
-import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition, getDetailedLilithPosition } from "@/lib/astrology";
+import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition } from "@/lib/astrology";
 import { calculateTransitAspects } from "@/lib/transitAspects";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
@@ -426,33 +426,20 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         if (junoHouse) context += ` (House ${junoHouse})`;
         context += "\n";
       }
-      // Lilith: validate sign is a real zodiac sign, recalculate if malformed
-      let lilithData: { sign: string; degree: number; minutes?: number } | null = null;
+      // Lilith: HARD DATA GATE — only include if sign, degree, AND house are ALL explicitly valid
       if (chart.planets?.Lilith) {
         const raw = chart.planets.Lilith as { sign: string; degree: number; minutes?: number };
         if (ZODIAC.includes(raw.sign) && typeof raw.degree === 'number' && raw.degree >= 0 && raw.degree < 30) {
-          lilithData = raw;
+          const lilithAbsDeg = ZODIAC.indexOf(raw.sign) * 30 + raw.degree + (raw.minutes || 0) / 60;
+          const lilithHouse = calcHouse(lilithAbsDeg);
+          // Only include Lilith if house can be calculated (all three fields present)
+          if (lilithHouse !== null) {
+            context += `- Lilith: ${raw.degree}°${raw.minutes || 0}' ${raw.sign} (House ${lilithHouse})\n`;
+          }
         }
       }
-      // Recalculate from birth date if missing or malformed
-      if (!lilithData && chart.birthDate) {
-        try {
-          const bd = new Date(chart.birthDate + (chart.birthTime ? `T${chart.birthTime}:00` : 'T12:00:00'));
-          if (!isNaN(bd.getTime())) {
-            const recalc = getDetailedLilithPosition(bd);
-            if (ZODIAC.includes(recalc.sign)) {
-              lilithData = recalc;
-            }
-          }
-        } catch {}
-      }
-      if (lilithData) {
-        const lilithAbsDeg = ZODIAC.indexOf(lilithData.sign) * 30 + lilithData.degree + (lilithData.minutes || 0) / 60;
-        const lilithHouse = calcHouse(lilithAbsDeg);
-        context += `- Lilith: ${lilithData.degree}°${lilithData.minutes || 0}' ${lilithData.sign}`;
-        if (lilithHouse) context += ` (House ${lilithHouse})`;
-        context += "\n";
-      }
+      // If Lilith data is missing, malformed, or house cannot be calculated, it is silently omitted.
+      // No recalculation, no inference, no fallback.
     } catch {}
 
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
