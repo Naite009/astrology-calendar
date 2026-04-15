@@ -347,6 +347,8 @@ LANGUAGE STYLE: Always translate astrology into natural, human language. Do not 
 
 CLARITY TRANSLATION RULE: Do not describe placements using abstract or trait-based language. Always translate into real-life situations and experiences. When describing a placement, answer: what actually happens, what the person experiences, what situations they get into, what this leads to over time. Avoid phrases like "mentally stimulating", "emotionally complex", "intense dynamics", "psychologically deep", "unclear energy". Instead describe concrete scenarios like "you may find yourself unsure where you stand with someone", "you might get attached before the relationship is clearly defined", "this can lead to mixed signals or inconsistent behavior". Every interpretation should feel like something the reader has actually experienced.
 
+REWRITE FOR RECOGNITION: After writing each key sentence, internally test it: if someone with zero astrology knowledge read this, would they immediately recognize it from their real life? If not, rewrite it until they would. The reader should think "that's exactly what happens to me" — not "I wonder what that means." Never leave a sentence in abstract or symbolic form. Always land on the lived experience.
+
 RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of ALL relationship narrative sections):
 
 CRITICAL: The style examples below are REFERENCE ONLY. Do not copy their content or assume their placements. Apply this same clarity, tone, and explanation depth to whatever chart data is actually provided.
