@@ -254,8 +254,8 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Included prompt for {activeTopic.label}
               </p>
-              <div className="rounded-md border border-border bg-muted/40 p-3">
-                <p className="text-sm text-foreground/90 whitespace-pre-wrap line-clamp-6">
+              <div className="rounded-md border border-border bg-muted/40 p-3 max-h-[200px] overflow-y-auto">
+                <p className="text-xs text-foreground/80 whitespace-pre-wrap">
                   {activeTopic.prompt(chartName, birthDate, birthTime, birthLocation)}
                 </p>
               </div>
