@@ -241,7 +241,7 @@ Rules:
 - POLARITY SIGNS: Always list ALL 6 Yang signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius) and ALL 6 Yin signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces) in the polarity "signs" array, even if zero planets occupy some of them. Never omit empty signs.
 - For question_type "relationship": Use this EXACT section order — 11 sections total:
   1. placement_table — "Natal Key Placements" (all natal planets, Chiron, Nodes, Lilith if available, Juno, ASC, MC, DSC, IC with degrees/sign/house)
-  2. placement_table — "Solar Return Key Placements" (MANDATORY if SR data exists. Include SR Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, North Node, South Node, Juno if available, Lilith if available, ASC, MC, DSC, IC. Each row must show degrees, sign, and house. Do NOT write any SR interpretation unless this table is present. If SR data is partial, include what is available and note gaps.)
+  2. placement_table — "Solar Return Key Placements" (MANDATORY if SR data exists. Title must be EXACTLY "Solar Return Key Placements" — NO year numbers, NO date ranges, NO parentheses with years. Use ONLY the SR planetary positions from the "SR Planetary Positions" section of the chart context — these are DIFFERENT from the natal positions. Do NOT copy natal planet positions into this table. Include SR Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, North Node, South Node, Juno if available, Lilith if available, ASC, MC, DSC, IC. Each row must show the SR degrees, SR sign, and SR house. If SR data is partial, include what is available and note gaps.)
   3. narrative_section — "Natal Relationship Architecture" (Venus, Mars, Moon signs/houses/aspects with orbs; 5th, 7th, 8th house cusps, rulers, planets; Juno sign/house/aspects; Lilith ONLY if data is explicitly provided. MUST EXPLICITLY ANSWER: How this person gives love. How they receive love. What makes them feel emotionally safe. What they are drawn to romantically. What they are drawn to sexually. What makes commitment easier. What makes commitment harder. How intimacy works for them. What shadow pattern repeats in love. What kind of partner actually fits long-term.)
   4. narrative_section — "Your Relationship Pattern" (MANDATORY. NO ASTROLOGY JARGON ALLOWED in this section — zero planet names, sign names, house numbers, or technical terms. Written so a 13-year-old could understand it. Structure:
      - "body": One sentence summarizing the entire relationship pattern. Example: "You want a stable, loyal, emotionally safe relationship, but part of you is pulled toward complicated, mentally stimulating, or less-direct dynamics that can blur clarity."
@@ -805,8 +805,17 @@ serve(async (req) => {
 
         // POST-GENERATION: Strip any year numbers after "Solar Return"
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          // Match "Solar Return" followed by year anywhere, including in parentheses
           const srYearPattern = /Solar Return\s+\d{4}(?:\s*[-–]\s*\d{4})?/gi;
-          const stripYear = (text: string) => text.replace(srYearPattern, 'Solar Return');
+          const srYearParensPattern = /\s*\(\d{4}(?:\s*[-–]\s*\d{4})?\)/g;
+          const stripYear = (text: string) => {
+            let result = text.replace(srYearPattern, 'Solar Return');
+            // Also strip standalone year ranges in parentheses near "Solar Return" or "Key Placements"
+            result = result.replace(/(?:Solar Return|Key Placements)\s*\(\d{4}(?:\s*[-–]\s*\d{4})?\)/gi, (match) => match.replace(srYearParensPattern, ''));
+            // Catch any remaining year parentheses in titles
+            result = result.replace(/\s*\(\d{4}(?:\s*[-–—]\s*\d{4})?\)\s*/g, ' ').trim();
+            return result;
+          };
           for (const section of parsedContent.sections) {
             if (typeof section.title === 'string') section.title = stripYear(section.title);
             if (typeof section.body === 'string') section.body = stripYear(section.body);
