@@ -692,7 +692,7 @@ serve(async (req) => {
         : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
       // Inject SR year enforcement if SR data is present
       srYearFromContext
-        ? `ABSOLUTE RULE — SOLAR RETURN YEAR: The Solar Return year in this chart data is ${srYearFromContext}. When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — you MUST use the year ${srYearFromContext} only. Do NOT use year ranges like 2024–2025 or ${srYearFromContext}–${srYearFromContext + 1}. Do NOT guess the SR year from the birth date or current date. This is a hard data constraint.`
+        ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
         : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
@@ -789,45 +789,20 @@ serve(async (req) => {
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
 
-        // POST-GENERATION SOLAR RETURN YEAR CORRECTION
-        if (srYearFromContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          const wrongYearPattern = /Solar Return\s+(\d{4})(?:\s*[-–]\s*(\d{4}))?/gi;
+        // POST-GENERATION: Strip any year numbers after "Solar Return"
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const srYearPattern = /Solar Return\s+\d{4}(?:\s*[-–]\s*\d{4})?/gi;
+          const stripYear = (text: string) => text.replace(srYearPattern, 'Solar Return');
           for (const section of parsedContent.sections) {
-            // Fix titles
-            if (typeof section.title === 'string') {
-              section.title = section.title.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                const year1 = parseInt(y1, 10);
-                if (year1 !== srYearFromContext || y2) {
-                  console.warn(`SR year correction in title: "${match}" → "Solar Return ${srYearFromContext}"`);
-                  return `Solar Return ${srYearFromContext}`;
-                }
-                return match;
-              });
-            }
-            // Fix body text
-            if (typeof section.body === 'string') {
-              section.body = section.body.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                const year1 = parseInt(y1, 10);
-                if (year1 !== srYearFromContext || y2) {
-                  console.warn(`SR year correction in body: "${match}" → "Solar Return ${srYearFromContext}"`);
-                  return `Solar Return ${srYearFromContext}`;
-                }
-                return match;
-              });
-            }
-            // Fix bullets
+            if (typeof section.title === 'string') section.title = stripYear(section.title);
+            if (typeof section.body === 'string') section.body = stripYear(section.body);
             if (Array.isArray(section.bullets)) {
               for (const bullet of section.bullets) {
-                if (typeof bullet.text === 'string') {
-                  bullet.text = bullet.text.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                    const year1 = parseInt(y1, 10);
-                    if (year1 !== srYearFromContext || y2) {
-                      console.warn(`SR year correction in bullet: "${match}" → "Solar Return ${srYearFromContext}"`);
-                      return `Solar Return ${srYearFromContext}`;
-                    }
-                    return match;
-                  });
-                }
+                if (typeof bullet.text === 'string') bullet.text = stripYear(bullet.text);
+              }
+            }
+          }
+        }
               }
             }
           }
