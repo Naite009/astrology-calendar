@@ -32,7 +32,7 @@ serve(async (req) => {
 
 CRITICAL: When natal chart data is provided, use the EXACT house positions shown in parentheses (e.g., "Venus: 15° Taurus (House 2)"). Do NOT infer houses from zodiac signs. Sign ≠ House. The houses have been calculated from actual birth chart cusps.
 
-REWRITE FOR RECOGNITION: Every intention and explanation must feel immediately recognizable from real life. Do not use abstract phrases like "align with abundance" or "embrace transformation." Instead describe concrete actions and experiences: "start the conversation you've been putting off", "commit to 20 minutes of quiet time before bed each night." The person should read each intention and think "yes, I know exactly what that means in my life."`;
+HYBRID CLARITY RULE: For each intention, follow this sequence: (1) Start with a real-life action or situation. (2) Describe how it feels to do it. (3) Briefly explain why it matters now. Do not use abstract phrases like "align with abundance" or "embrace transformation." Instead: "start the conversation you've been putting off — it feels scary because you're not sure how they'll react, but this moon cycle supports honest words over comfortable silence." The person should think "yes, I know exactly what that means in my life."`;
 
     let userPrompt = `Generate 3-4 soul-centered intention suggestions for the ${cycleSign} New Moon at ${cycleDegree}°.
 
