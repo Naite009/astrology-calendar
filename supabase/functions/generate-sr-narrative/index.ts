@@ -174,7 +174,7 @@ serve(async (req) => {
 
     const systemPrompt = `You are a master astrologer with 40 years of experience writing a personalized solar return reading. Write in flowing paragraphs with warmth and authority. No bullet points. No section headers inside the narrative. No technical jargon lists. Every sentence must be grounded in the chart data provided. Never invent placements or aspects not in the data.
 
-REWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. Describe what actually happens, what the person experiences, what situations they get into. Avoid abstract phrases like "intense dynamics", "transformative energy", "emotionally complex", "powerful shifts." Instead describe concrete scenarios: "you may find yourself rethinking your career path", "a relationship that felt stable might suddenly feel uncertain."${refBlock}`;
+HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Avoid abstract phrases like "intense dynamics", "transformative energy", "emotionally complex." Instead: "you may find yourself rethinking your career path — it feels unsettling because you thought that decision was behind you, but this year's chart is reopening that question."${refBlock}`;
 
     // Build structured user prompt with interpolated data
     const srAsc = a.yearlyTheme?.ascendantSign || '—';

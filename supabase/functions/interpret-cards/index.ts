@@ -49,7 +49,7 @@ Your synthesis should:
 - Be warm, specific, and practical — not generic
 - Use the querent's actual natal placements when connecting themes
 
-REWRITE FOR RECOGNITION: Every sentence must feel like something the reader has actually experienced. Do not use abstract phrases like "profound invitation" or "deep calling." Describe what actually happens: "you may notice old worries coming back at night", "this is the part where you stop waiting for permission and just begin."
+HYBRID CLARITY RULE: For each insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Do not use abstract phrases like "profound invitation" or "deep calling." Instead: "you may notice old worries coming back at night — it feels exhausting because you thought you were past this, but the card is pointing to something unfinished."
 
 CRITICAL: Use the EXACT house positions provided in the natal data. Do NOT infer houses from zodiac signs. The house positions have been calculated from the actual birth chart house cusps.`;
 
@@ -147,7 +147,7 @@ WRITING STYLE RULES:
 - For tarot: ground the interpretation in the card's visual symbolism and archetypal narrative
 - For oracle: focus on the card's direct message and how it speaks to the current moment
 
-REWRITE FOR RECOGNITION: Every sentence must describe something the reader has actually lived through. Do not say "this card invites transformation" — say "this is about the moment you realize something in your life has already changed and you can't go back." The reader should think "that's exactly what I'm going through" — not "that sounds interesting."
+HYBRID CLARITY RULE: For each insight: (1) Start with what actually happens. (2) Describe how it feels. (3) Briefly explain why. Do not say "this card invites transformation" — say "this is about the moment you realize something has already changed and you can't go back — it feels disorienting, because the life you were planning for isn't quite the one that's forming."
 
 Your interpretations should:
 - Connect the card's symbolism to the current lunar phase, zodiac energy, AND the querent's natal chart
