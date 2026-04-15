@@ -230,6 +230,7 @@ ASTEROID & OPTIONAL POINT DATA INTEGRITY (MANDATORY — applies to ALL reading t
 - This rule overrides any other instruction that might suggest including Lilith or Juno. Data presence is the ONLY gate for interpretation.
 
 Rules:
+- HOUSE NUMBER ACCURACY (CRITICAL): Every house number in placement tables MUST be copied EXACTLY from the pre-computed values in the chart context (shown as "(House X)" or "(SR House X)"). NEVER calculate, infer, or guess house numbers from a planet's sign. In Placidus house systems, sign and house are INDEPENDENT — a planet in Aries can be in ANY house (1 through 12) depending on the Ascendant degree. If you see "SR Mercury: 11°26' Pisces (SR House 4)" in the context, the house column MUST say 4, not 11 or 12. This is the #1 source of errors — triple-check every house number against the context before outputting.
 - Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven, South Node — never omit them. Include Lilith and Juno ONLY if their data is explicitly present in the chart context.
 - Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ ☋ ⚸ ⚵ — never skip symbols
 - Always include Chiron (⚷), Midheaven (MC), and South Node (☋) in the placement_table. Include Lilith (⚸) and Juno (⚵) ONLY when their data is explicitly provided in the chart context — never fabricate their positions.
