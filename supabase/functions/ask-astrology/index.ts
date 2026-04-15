@@ -90,26 +90,26 @@ Return this exact structure:
     },
     {
       "type": "modality_element",
-      "title": "Elemental & Modal Balance",
+      "title": "Natal Elemental & Modal Balance",
       "elements": [
-        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "Strong drive and initiative." },
-        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "Practical grounding." },
-        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "Mental agility." },
-        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "Emotional depth." }
+        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "1 sentence: what does having 3 fire planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "1 sentence: what does having 2 earth planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "1 sentence: what does having 3 air planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "1 sentence: what does having 2 water planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." }
       ],
       "modalities": [
-        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "Leadership energy." },
-        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "Persistence and determination." },
-        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "Adaptability." }
+        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "1 sentence: what does cardinal dominance mean for how THIS person initiates or responds in the domain of their question? Describe action, not a label." },
+        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "1 sentence: what does this fixed count mean for how THIS person holds on or lets go in the domain of their question?" },
+        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "1 sentence: what does mutable dominance mean for how THIS person adapts or avoids decisions in the domain of their question?" }
       ],
       "polarity": [
-        { "name": "Yang (Active)", "symbol": "☀️", "signs": ["Aries", "Gemini", "Leo", "Libra", "Sagittarius", "Aquarius"], "count": 5, "planets": ["Sun", "Mercury", "Mars", "Jupiter", "Pluto"], "interpretation": "Outward-directed energy dominates." },
-        { "name": "Yin (Receptive)", "symbol": "🌙", "signs": ["Taurus", "Cancer", "Virgo", "Scorpio", "Capricorn", "Pisces"], "count": 5, "planets": ["Moon", "Venus", "Saturn", "Uranus", "Neptune"], "interpretation": "Inward-directed energy." }
+        { "name": "Yang (Active)", "symbol": "☀️", "signs": ["Aries", "Gemini", "Leo", "Libra", "Sagittarius", "Aquarius"], "count": 5, "planets": ["Sun", "Mercury", "Mars", "Jupiter", "Pluto"], "interpretation": "1 sentence about how yang dominance shows up in this person's behavior for their question — not a trait word." },
+        { "name": "Yin (Receptive)", "symbol": "🌙", "signs": ["Taurus", "Cancer", "Virgo", "Scorpio", "Capricorn", "Pisces"], "count": 5, "planets": ["Moon", "Venus", "Saturn", "Uranus", "Neptune"], "interpretation": "1 sentence about how yin energy shows up in this person's behavior for their question — not a trait word." }
       ],
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
       "dominant_polarity": "Yang (Active)",
-      "balance_interpretation": "2-3 sentence synthesis that directly answers HOW this elemental/modal/polarity balance helps or hinders the person's specific question. For relationship questions, explain what patterns attract or repel partners and what sustains connection. For career, explain work style strengths and blind spots. Be specific and actionable, not generic."
+      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
     },
     {
       "type": "summary_box",
@@ -236,7 +236,7 @@ Rules:
 - Each transit in timing_section MUST include: the "position" field showing the exact degree AND which natal point it aspects (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer"), plus a "date_range" field with the approximate active period (e.g., "May 8–June 2, 2026"). Never use vague descriptions like "enters Cancer."
 - For transits, also note if the transiting planet is retrograde (R) — this changes interpretation significantly.
 - Include 3 to 6 sections depending on the question — do not pad with empty sections. For categorized reading types (relationship, relocation, career, health, money, spiritual), follow the dedicated section count. For general questions, use the minimum sections needed.
-- Always include a modality_element section BEFORE the summary_box
+- Always include a modality_element section BEFORE the summary_box. Title it "Natal Elemental & Modal Balance". This section analyzes the NATAL chart's elemental and modal distribution ONLY — do not mix in Solar Return placements. Every element/modality interpretation MUST be a behavioral sentence specific to the person's question — NEVER a generic trait label like "Strong drive" or "Practical grounding". If the elemental/modal insight was already covered in earlier narrative sections (Relationship Pattern, Contradiction Patterns, etc.), either compress this section to only what is NEW or note "See above" for repeated insights.
 - ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, Lilith, Juno, North Node, South Node, Ascendant, Midheaven, or any other points/asteroids. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron, Lilith, South Node, and Juno should still appear in the placement_table and be discussed in narrative sections — just NEVER include them in element/modality/polarity tallies. This rule is absolute and applies to ALL reading types.
 - POLARITY SIGNS: Always list ALL 6 Yang signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius) and ALL 6 Yin signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces) in the polarity "signs" array, even if zero planets occupy some of them. Never omit empty signs.
 - For question_type "relationship": Use this EXACT section order — 11 sections total:
@@ -333,7 +333,7 @@ Rules:
 
      COVERAGE RULE: The 12–18 month window must have trigger windows spread across it — not all in one cluster. If the first trigger is in month 2, there must be another trigger or turning point later. The person must always see hope ahead.
      Include at least 1 supportive trigger and 1 challenging trigger. If exact dates are available show them; if approximate, label as approximate.)
-  10. modality_element — "Elemental & Modal Balance"
+  10. modality_element — "Natal Elemental & Modal Balance"
    11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
