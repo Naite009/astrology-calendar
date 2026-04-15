@@ -830,7 +830,24 @@ serve(async (req) => {
       });
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      const responseText = await response.text();
+      if (!responseText || responseText.trim().length === 0) {
+        console.error("ask-astrology error: Empty response body from AI gateway");
+        return new Response(JSON.stringify({ error: "AI returned an empty response. Please try again." }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("ask-astrology error: Failed to parse AI response JSON:", parseError);
+      return new Response(JSON.stringify({ error: "AI returned an invalid response. Please try again." }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const content = data.choices?.[0]?.message?.content || "";
     
     // Try to parse the JSON response to validate it
