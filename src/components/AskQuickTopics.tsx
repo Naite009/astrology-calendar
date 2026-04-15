@@ -205,7 +205,7 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
     setPersonalContext("");
   };
 
-  const handleSubmit = (includeContext: boolean) => {
+  const handleSubmit = () => {
     if (!activeTopic) return;
     const prompt = buildPromptWithContext(
       activeTopic,
@@ -213,30 +213,22 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
       birthDate,
       birthTime,
       birthLocation,
-      includeContext ? personalContext : undefined
+      personalContext
     );
     setActiveTopic(null);
     setPersonalContext("");
     onSelect(prompt);
   };
 
-  const handleCancel = () => {
-    setActiveTopic(null);
-    setPersonalContext("");
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(!!personalContext.trim());
-    }
-    if (e.key === "Escape") {
-      handleCancel();
+      handleSubmit();
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 w-full">
       <div className="flex flex-wrap gap-2 justify-center">
         {QUICK_TOPICS.map((topic) => (
           <button
@@ -256,36 +248,50 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
       </div>
 
       {activeTopic && (
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="rounded-lg border border-border bg-card p-3 space-y-2.5">
-            <p className="text-sm text-muted-foreground">
-              Anything specific you'd like addressed in this reading?
-            </p>
-            <Textarea
-              ref={textareaRef}
-              value={personalContext}
-              onChange={(e) => setPersonalContext(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                activeTopic.id === "relationship"
-                  ? 'e.g., "I met someone earthy, should I pursue it?"'
-                  : activeTopic.id === "relocation"
-                  ? 'e.g., "I got a job offer in Denver"'
-                  : activeTopic.id === "career"
-                  ? 'e.g., "Thinking about switching to freelance work"'
-                  : activeTopic.id === "health"
-                  ? 'e.g., "I\'ve been having trouble sleeping lately"'
-                  : activeTopic.id === "money"
-                  ? 'e.g., "Considering investing in real estate"'
-                  : 'e.g., "I keep seeing repeating numbers everywhere"'
-              }
-              className="min-h-[60px] text-sm resize-none"
-              rows={2}
-            />
-            <div className="flex gap-2 justify-end">
+        <div className="w-full max-w-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Included prompt for {activeTopic.label}
+              </p>
+              <div className="rounded-md border border-border bg-muted/40 p-3">
+                <p className="text-sm text-foreground/90 whitespace-pre-wrap line-clamp-6">
+                  {activeTopic.prompt(chartName, birthDate, birthTime, birthLocation)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Anything additional you'd like included in this reading?
+              </p>
+              <Textarea
+                ref={textareaRef}
+                value={personalContext}
+                onChange={(e) => setPersonalContext(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  activeTopic.id === "relationship"
+                    ? 'e.g., "I met someone earthy, should I pursue it?"'
+                    : activeTopic.id === "relocation"
+                    ? 'e.g., "I got a job offer in Denver"'
+                    : activeTopic.id === "career"
+                    ? 'e.g., "Thinking about switching to freelance work"'
+                    : activeTopic.id === "health"
+                    ? 'e.g., "I\'ve been having trouble sleeping lately"'
+                    : activeTopic.id === "money"
+                    ? 'e.g., "Considering investing in real estate"'
+                    : 'e.g., "I keep seeing repeating numbers everywhere"'
+                }
+                className="min-h-[72px] text-sm resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end">
               <Button
                 size="sm"
-                onClick={() => handleSubmit(personalContext.trim() ? true : false)}
+                onClick={handleSubmit}
                 className="text-xs"
               >
                 <Send className="h-3 w-3 mr-1" />
