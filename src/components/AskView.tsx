@@ -628,6 +628,94 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   }, [input]);
 
+  // Deterministic house correction: overwrites AI-generated house numbers with pre-computed values
+  const correctPlacementHouses = useCallback((data: any, chart: NatalChart | null, srChart: SolarReturnChart | null) => {
+    if (!data?.sections || !chart) return data;
+    const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const toAbs = (pos: { sign: string; degree: number; minutes?: number }): number | null => {
+      const idx = ZODIAC.indexOf(pos.sign);
+      if (idx < 0) return null;
+      return idx * 30 + pos.degree + (pos.minutes || 0) / 60;
+    };
+    const buildCusps = (cuspsObj: any): number[] => {
+      const arr: number[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const c = cuspsObj?.[`house${i}`];
+        if (c && typeof c === 'object' && 'sign' in c) {
+          const abs = toAbs(c as any);
+          if (abs !== null) arr.push(abs); else return [];
+        } else return [];
+      }
+      return arr.length === 12 ? arr : [];
+    };
+    const findHouse = (deg: number, cusps: number[]): number | null => {
+      if (cusps.length !== 12) return null;
+      for (let i = 0; i < 12; i++) {
+        let start = cusps[i];
+        let end = cusps[(i + 1) % 12];
+        if (end < start) end += 360;
+        let d = deg;
+        if (d < start) d += 360;
+        if (d >= start && d < end) return i + 1;
+      }
+      return 1;
+    };
+
+    // Build natal house map
+    const natalCusps = buildCusps(chart.houseCusps);
+    const natalHouseMap: Record<string, number> = {};
+    if (natalCusps.length === 12) {
+      Object.entries(chart.planets || {}).forEach(([name, pos]) => {
+        if (pos && typeof pos === 'object' && 'sign' in pos) {
+          const abs = toAbs(pos as any);
+          if (abs !== null) {
+            const h = findHouse(abs, natalCusps);
+            if (h) natalHouseMap[name.toLowerCase()] = h;
+          }
+        }
+      });
+    }
+
+    // Build SR house map
+    const srHouseMap: Record<string, number> = {};
+    if (srChart) {
+      const srCusps = buildCusps(srChart.houseCusps);
+      if (srCusps.length === 12) {
+        Object.entries(srChart.planets || {}).forEach(([name, pos]) => {
+          if (pos && typeof pos === 'object' && 'sign' in pos) {
+            const abs = toAbs(pos as any);
+            if (abs !== null) {
+              const h = findHouse(abs, srCusps);
+              if (h) srHouseMap[name.toLowerCase()] = h;
+            }
+          }
+        });
+      }
+    }
+
+    // Planet name normalization for matching AI output to our maps
+    const normalize = (name: string): string => {
+      return name.replace(/[☉☽☿♀♂♃♄♅♆♇⚷☊☋⚸⚵]/g, '').trim().toLowerCase()
+        .replace('north node', 'northnode').replace('south node', 'southnode')
+        .replace('n. node', 'northnode').replace('s. node', 'southnode');
+    };
+
+    for (const section of data.sections) {
+      if (section.type !== 'placement_table') continue;
+      const isSR = /solar return/i.test(section.title);
+      const houseMap = isSR ? srHouseMap : natalHouseMap;
+      if (Object.keys(houseMap).length === 0) continue;
+
+      for (const row of section.rows || []) {
+        const key = normalize(row.planet);
+        if (houseMap[key] !== undefined) {
+          row.house = houseMap[key];
+        }
+      }
+    }
+    return data;
+  }, []);
+
   const handleSubmitDirect = async (directQuestion?: string) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
@@ -685,7 +773,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       let assistantEntry: ChatEntry;
 
       if (data.sections) {
-        assistantEntry = { role: "assistant", content: "", reading: data as StructuredReading };
+        const currentSR = solarReturnCharts
+          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const corrected = correctPlacementHouses(data, chartForRequest, currentSR);
+        assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
       } else {
@@ -776,7 +868,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        assistantEntry = { role: "assistant", content: "", reading: data as StructuredReading };
+        const currentSR = solarReturnCharts
+          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const corrected = correctPlacementHouses(data, chartForRequest, currentSR);
+        assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
       } else {
