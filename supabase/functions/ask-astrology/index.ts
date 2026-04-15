@@ -482,7 +482,7 @@ SR LOVE ACTIVATION STYLE:
   8. city_comparison — "Top Cities Long-Term" (natal-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
   9. city_comparison — "Long-Term Caution Zones" (natal-weighted, 2-3 caution cities)
   10. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
-  11. modality_element — "Elemental & Modal Balance"
+  11. modality_element — "Natal Elemental & Modal Balance"
   12. summary_box — "Strategy Summary" with items: "Best Type of Place Overall", "What to Prioritize When Choosing", "What to Avoid Repeating (Pattern)", "Top Cities This Year", "Top Cities Long-Term", "Ideal Timing Window", "Analysis Mode"
 
   TRADEOFFS RULE (REQUIRED — prevents generic answers):
@@ -547,7 +547,7 @@ SR LOVE ACTIVATION STYLE:
   5. city_comparison — "Best Cities for Career" (at least 4 cities where Sun MC, Jupiter MC, or Venus MC lines fall)
   6. city_comparison — "Caution Zones for Career" (at least 2 cities where Saturn MC, Mars MC, or Pluto MC lines fall)
   7. timing_section — "Career Timing Windows" (transits to MC ruler, 10th house planets, and North Node with exact degrees and date ranges)
-  8. modality_element — "Elemental & Modal Balance"
+  8. modality_element — "Natal Elemental & Modal Balance"
   9. summary_box — "Strategy Summary" with items: "Ideal Field", "Ideal Work Style", "When to Act", "What to Avoid"
 - For question_type "health": Use this EXACT section order:
   1. placement_table — "Key Placements"
@@ -556,7 +556,7 @@ SR LOVE ACTIVATION STYLE:
   4. narrative_section — "Healing & Recovery" (Chiron sign/house for wound-to-gift, Neptune for intuition/spiritual healing, Jupiter for where the body recovers best)
   5. city_comparison — "Best Locations for Wellness" (at least 4 cities where Moon IC, Venus ASC, or Jupiter ASC lines support vitality) — ONLY if astrocartography data is available and location is relevant to the question
   6. timing_section — "Health Timing" (transits to 6th house ruler, Ascendant ruler, and Mars with exact degrees and date ranges; flag challenging transits to health houses)
-  7. modality_element — "Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
+  7. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
   8. summary_box — "Strategy Summary" with items: "Core Strength", "Watch Points", "Best Practices", "Timing"
 - For question_type "money": Use this EXACT section order:
   1. placement_table — "Key Placements"
@@ -565,7 +565,7 @@ SR LOVE ACTIVATION STYLE:
   4. narrative_section — "Career Earnings Potential" (10th house/MC connection to income, Jupiter for abundance/opportunity, Saturn for long-term wealth building)
   5. city_comparison — "Best Cities for Wealth" (at least 4 cities where Jupiter IC, Venus MC, or Sun MC lines support financial growth) — ONLY if astrocartography data is available and location is relevant
   6. timing_section — "Financial Timing Windows" (transits to 2nd/8th house rulers, Venus, and Jupiter with exact degrees and date ranges)
-  7. modality_element — "Elemental & Modal Balance"
+  7. modality_element — "Natal Elemental & Modal Balance"
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
