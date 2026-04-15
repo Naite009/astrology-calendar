@@ -70,7 +70,7 @@ Cover each of the following as its own section:
 
 SECTION 1: HOW THIS PERSON LOVES
 
-Lead with the 2–4 most important relationship placements in this chart — the ones that actually explain how this person operates in love. Always include Venus and the 7th house ruler. Include Moon, Mars, North Node, 5th/8th house rulers, Juno, Vertex, or Lilith ONLY if they add something the other placements don't already say. Do not list every placement mechanically — weave them into a portrait.
+Lead with the 2–4 most important relationship placements in this chart — the ones that actually explain how this person operates in love. Always include Venus and the 7th house ruler. For Venus, Mars, and Moon: cover sign, house, and major aspects within valid orb only. Include Moon, Mars, North Node, 5th/8th house rulers, Juno, or Lilith ONLY if they add something the other placements don't already say. Do not list every placement mechanically — weave them into a portrait.
 
 Then distill into these synthesis points (skip any that would be redundant or generic — only include points where the chart says something specific):
 - What they're attracted to vs. what they actually need
