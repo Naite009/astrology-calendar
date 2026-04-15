@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react"; // deterministic correction v2
 import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
