@@ -1288,7 +1288,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about the chart interpretation..."
+              placeholder="Ask any custom question about the chart..."
               className="min-h-[60px] resize-none"
               disabled={isLoading}
             />
