@@ -162,6 +162,8 @@ STRUCTURE:
 8. Deconditioning guidance: Practical steps for living their design${includeShadow ? '\n9. Shadow/Not-Self patterns: Where conditioning pulls them off-track (frame compassionately)' : ''}
 10. Integration: How all the pieces create a coherent picture of who they are
 
+REWRITE FOR RECOGNITION: After writing each key sentence, test: would someone with no Human Design or astrology knowledge recognize this from their real life? If not, rewrite it. The reader should think "that's exactly what happens to me" — not "I wonder what that means." Describe what actually happens: what situations they get into, what they feel, how they behave. Never leave a sentence in abstract form.
+
 Write approximately ${wordCount} words.`;
 
       userPrompt = `Generate a Human Design narrative reading for ${chartName}.
