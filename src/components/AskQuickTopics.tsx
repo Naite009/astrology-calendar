@@ -60,113 +60,69 @@ ANTI-HALLUCINATION RULES: Never claim exact planetary line positions without lin
     label: "Love & Relationships",
     icon: <Heart className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
-      `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, provide a deep, structured relationship and love analysis. Today's date is ${today()}. All timing must be future-relative to today. Do NOT include any location, city, or astrocartography analysis — this is a relationship-only reading. Do NOT interpret Lilith unless Lilith data is explicitly provided in the chart context with a valid sign, degree, and house. Do NOT interpret Juno or SR Juno unless Juno data is explicitly provided with a valid sign, degree, and house — if unavailable, omit entirely without comment.
+      `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, provide a focused relationship and love analysis. Today's date is ${today()}. All timing must be future-relative to today. Do NOT include any location, city, or astrocartography analysis — this is a relationship-only reading. Do NOT interpret Lilith unless Lilith data is explicitly provided in the chart context with a valid sign, degree, and house. Do NOT interpret Juno or SR Juno unless Juno data is explicitly provided with a valid sign, degree, and house — if unavailable, omit entirely without comment.
 
-Cover each of the following as its own detailed section:
+PRIORITY RULE: Prioritize clarity over exhaustiveness. Only discuss placements and aspects that genuinely shape this person's relationship patterns. Skip any placement that doesn't add meaningful insight. A shorter, honest reading is better than a long one that repeats itself.
 
----
-
-SECTION 1: NATAL RELATIONSHIP ARCHITECTURE
-
-Analyze each of the following placements individually before synthesizing:
-- Venus: sign, house, and all aspects
-- Mars: sign, house, and all aspects
-- Moon: sign, house, and all aspects
-- North Node: sign, house, and aspects — interpret as the soul-growth trajectory in relationships and the relational pattern being grown toward (contrast with South Node as the default comfort zone)
-- 5th house: cusp sign, its ruler (sign, house, and aspects), and any planets in the 5th (romance, dating, attraction)
-- 7th house: cusp sign, its ruler (sign, house, and aspects), and any planets in the 7th (partnership, commitment, the Descendant archetype)
-- 8th house: cusp sign, its ruler (sign, house, and aspects), and any planets in the 8th (intimacy, trust, sexual bonding, power dynamics, shared vulnerability)
-- Juno: sign, house, and aspects — interpret as commitment needs and the partner archetype sought for long-term bonding (include only if data is available)
-- Vertex: sign and house — interpret as the fated encounter point and what types of people or circumstances tend to arrive as significant relationship catalysts (include only if data is available)
-- Lilith: sign, house, and aspects — interpret as shadow attraction patterns and taboo desire (include only if explicitly provided with valid sign, degree, and house)
-
-Then synthesize into the following points. Each must be a full sentence grounded in at least one specific chart placement:
-- Love language
-- Attraction style
-- Dating style
-- Sexual style
-- Emotional needs in relationship
-- Commitment pattern
-- Intimacy pattern
-- Shadow relationship pattern (what gets repeated unconsciously)
-- Contradiction patterns in the chart (call out any placements that pull in opposing directions — do not smooth over tension)
-- Ideal partner profile
+Cover each of the following as its own section:
 
 ---
 
-SECTION 2: SOLAR RETURN LOVE ACTIVATION
+SECTION 1: HOW THIS PERSON LOVES
 
-Analyze each of the following SR placements individually:
-- SR Venus: sign, house, and aspects
-- SR Moon: sign, house, and aspects
-- SR North Node: sign and house — how does the SR nodal axis interact with the natal relationship axis and nodal story?
-- SR 5th house: cusp sign, its ruler, and any planets in the SR 5th
-- SR 7th house: cusp sign, its ruler, and any planets in the SR 7th
-- SR Juno: sign and house (include only if data is available)
-- SR outer planets (Jupiter, Saturn, Uranus, Neptune, Pluto): include only those making a direct aspect to SR Venus, SR Mars, SR Moon, SR 5th house ruler, SR 7th house ruler, or the SR Descendant — skip any that are not meaningfully activated
+Lead with the 2–4 most important relationship placements in this chart — the ones that actually explain how this person operates in love. Always include Venus and the 7th house ruler. Include Moon, Mars, North Node, 5th/8th house rulers, Juno, Vertex, or Lilith ONLY if they add something the other placements don't already say. Do not list every placement mechanically — weave them into a portrait.
 
-Then synthesize:
-- Relationship tone of the year
-- Likelihood and conditions for new relationships forming
-- Likelihood and conditions for deepening existing relationships
-- Instability vs. commitment themes
-- Healing themes in love
-- Best environments or contexts for meeting someone (describe by house/life domain, not geography)
+Then distill into these synthesis points (skip any that would be redundant or generic — only include points where the chart says something specific):
+- What they're attracted to vs. what they actually need
+- How they show up early in relationships vs. once committed
+- Shadow pattern (what gets repeated unconsciously)
+- Any genuine contradiction in the chart (placements pulling in opposite directions — name it honestly)
+- What kind of partner would actually work long-term
 
 ---
 
-SECTION 3: NATAL AND SOLAR RETURN OVERLAY
+SECTION 2: THIS YEAR IN LOVE (SOLAR RETURN)
 
-Cross-reference SR placements against natal relationship indicators using a maximum orb of 3°:
-- SR Venus aspects to natal Venus, Mars, Moon, Juno (if available), and Descendant ruler
-- SR Descendant: note if it falls within 3° of any natal planet and interpret
-- SR 5th house ruler aspects to natal relationship indicators
-- SR 7th house ruler aspects to natal relationship indicators
-- SR planets falling into natal 5th, 7th, 8th, or 11th houses
-- SR angles (ASC, DSC, MC, IC) activating natal Venus, Mars, Moon, or 7th house ruler
+Focus on only the SR placements that meaningfully activate relationship themes. Always cover SR Venus and the SR 7th house. Include SR Moon, SR 5th house, SR Juno, SR North Node, or SR outer planets ONLY if they make a direct aspect to a relationship indicator or fall in a relationship house. Skip anything inactive.
 
-Then synthesize:
-- What is being triggered in the natal relationship pattern this year
-- What feels new vs. what feels like familiar territory
-- Where growth is happening vs. where disruption is happening
-- How the SR is either supporting or challenging the natal relationship architecture
+Synthesize into:
+- The emotional tone of relationships this year
+- What's shifting compared to the natal baseline
+- Whether this year favors meeting someone new, deepening what exists, or doing inner work first
 
 ---
 
-SECTION 4: RELATIONSHIP TIMING WINDOWS
+SECTION 3: WHERE NATAL AND SOLAR RETURN CONNECT
 
-Using ephemeris-based calculations only, cover all meaningful transits over the next 12–18 months from today's date. Include transits from Jupiter, Saturn, Uranus, Neptune, and Pluto — and Chiron if it is making a direct, exact aspect — to the following natal points: Venus, Mars, Moon, North Node, Juno (if available), Descendant, and the 7th house ruler.
+Only include cross-references where a SR placement falls within 3° of a natal relationship point. Do not manufacture connections. If there are few genuine overlaps, say so — that itself is meaningful.
 
-Only include a transit if the transiting planet comes within 1° of exact during the window. Do not stretch or manufacture transits to reach a minimum count. For slow-moving planets (Saturn, Uranus, Neptune, Pluto), confirm the aspect is genuinely active within the 18-month window before including it.
-
-For EACH qualifying transit provide:
-- Transiting planet and aspect type
-- Exact degree of the aspect
-- First applying date (when orb enters 1°)
-- Exact hit date
-- Separating/end date (when orb leaves 1°)
-- Plain-language interpretation of how this transit is likely to feel in relationships
-- Tag: one of [meeting / attraction / deepening / commitment / test / rupture / healing / karmic]
+Synthesize: What part of the natal relationship pattern is being activated or challenged this year?
 
 ---
 
-SECTION 5: ELEMENTAL AND MODAL BALANCE
+SECTION 4: RELATIONSHIP TIMING
 
-Analyze the elemental (fire, earth, air, water) and modal (cardinal, fixed, mutable) distribution of the natal chart. Ground this specifically in how the elemental and modal balance — or imbalance — shows up in the relationship indicators already analyzed above. Do not give a generic textbook summary. Connect directly to Venus, Mars, Moon, the 7th house ruler, and the synthesis points from Section 1. Include what this person may unconsciously seek in a partner to compensate for what is underrepresented in their own chart.
+Using ephemeris-based calculations only, cover transits over the next 12–18 months to natal Venus, Mars, Moon, Descendant, and 7th house ruler. Include North Node, Juno, or Chiron targets only if a major transit is genuinely within 1° during the window.
+
+Only include transits that actually occur within 1° during the window. If there are only 2 real transits, report 2. Do not pad.
+
+For each transit:
+- What's transiting what, and the aspect type
+- Exact degree and date range (applying → exact → separating)
+- What it's likely to feel like in plain language
+- Tag: meeting / attraction / deepening / commitment / test / rupture / healing / karmic
 
 ---
 
-SECTION 6: RELATIONSHIP STRATEGY SUMMARY
+SECTION 5: RELATIONSHIP STRATEGY
 
-Synthesize the entire reading into actionable guidance:
-- Ideal partner archetype (drawn from the full chart, not just Sun sign)
-- Where love is most likely to begin (describe by house and life domain — not cities or geography)
+Synthesize the entire reading into honest, actionable guidance:
+- What kind of partner actually fits this chart (not Sun-sign matching — real compatibility factors)
 - Best timing windows from Section 4
-- Caution windows from Section 4
-- Shadow patterns to stop repeating (drawn from Section 1 synthesis)
+- The one shadow pattern most worth breaking
 - How to work with this chart instead of against it
 
-Tone requirements for this section: Do not overpromise soulmates, marriage, or certainty about outcomes. Differentiate chemistry from long-term compatibility. Differentiate initial attraction from relational stability. Be honest about contradiction patterns. This section should feel like wise counsel, not a horoscope.`,
+Tone: Wise counsel, not a horoscope. Do not overpromise. Differentiate chemistry from compatibility. Be direct about contradictions.`,
   },
   {
     id: "career",
