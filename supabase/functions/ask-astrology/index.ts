@@ -412,16 +412,19 @@ SR LOVE ACTIVATION STYLE:
 - The body should be 2-3 flowing paragraphs describing the year's relationship feel.
 - Each of the 6 experience bullets should be 1-3 sentences of real-life description. No abstractions.
   - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
+
+  PRIORITY RULE: Prioritize clarity over exhaustiveness. Only include locations and insights that clearly describe what daily life would feel like. Start with experience, not astrology.
+
   1. placement_table — "Key Placements"
-  2. narrative_section — "Environmental Profile" (BEFORE recommending any cities, establish what this person NEEDS: ideal home environment from 4th house/Moon/IC; ideal climate type from elemental balance; social structure needs from 7th/11th/Venus/Moon; emotional stability needs from Moon/4th house/Saturn; career environment needs from 10th/MC/Sun; this year's environmental shift from SR 4th/SR Moon/SR Ascendant.)
-  3. narrative_section — "Astrocartography Lines" OR "Chart-Based Relocation Guidance" (If astrocartography line data is present in the chart context, report planetary angular lines with distances. If NOT present, label this section "Chart-Based Relocation Guidance" and explain chart-derived reasoning for city fit WITHOUT claiming line positions. Never fake line data.)
-  4. narrative_section — "Decision Synthesis" (For each city, explain WHY it works by connecting chart placements to city characteristics. Include tradeoffs. Flag mismatches between chart resonance and environmental fit.)
+  2. narrative_section — "What Kind of Place Fits You" (SECTION 1 — BEFORE recommending any cities, describe the TYPE of environment that fits this person based on: Moon (emotional comfort), 4th house (home environment), 10th house (life direction), Venus (what feels good day-to-day). Translate into real life: pace of life (fast vs calm), social environment (private vs social), structure (stable vs flexible), environment (city, coast, quiet, busy, etc.). Also include this year's environmental shift from SR 4th/SR Moon/SR Ascendant if available. Do NOT use abstract phrases like "supports growth." Do NOT say "you thrive in..." — say "you may feel more at ease in...")
+  3. narrative_section — "Astrocartography Lines" OR "Chart-Based Relocation Guidance" (If astrocartography line data is present, report planetary angular lines with distances. If NOT present, label this section "Chart-Based Relocation Guidance" and explain chart-derived reasoning for city fit WITHOUT claiming line positions. Never fake line data.)
+  4. narrative_section — "Best Places to Live" (SECTION 2 — 4-6 real cities or regions. For EACH location include: what it feels like living there, what improves in daily life, what becomes easier, and what the tradeoff is — what may feel off or harder over time. Use language like "you may feel...", "daily life may look like...", "this makes it easier to..." Avoid "good energy", "activates potential.")
   5. narrative_section — "Location Fit Profiles" (MANDATORY. For EACH top recommended city, provide a structured fit profile using exactly 4 bullets per city. Group cities using sub-headers in the body field. Structure per city:
      - "body": Brief intro naming the cities being profiled. Then for each city, a sub-header line (e.g., "**Lisbon, Portugal**") followed by the 4-line profile.
      - "bullets": One bullet per city, each with 4 sub-points as the "text" field:
-       { "label": "[City Name]", "text": "Emotional experience: [one plain-language sentence derived from Moon/IC/4th house interaction with this location — how home and inner life feel here]. Social & relationship experience: [one plain-language sentence derived from Venus/7th/11th house interaction — how connection and love life feel here]. Career & public life experience: [one plain-language sentence derived from Sun/MC/10th house interaction — how work and visibility feel here]. Energy & lifestyle pace: [one plain-language sentence derived from Mars/Uranus/1st house interaction — how daily rhythm, motivation, and physical energy feel here]." }
-     - Each sentence must be ONE clear, plain-language statement. No astrology jargon in the sentence itself.
-     - Each sentence must describe what the person EXPERIENCES, not what the placement "means."
+       { "label": "[City Name]", "text": "Emotional experience: [one sentence — how home and inner life feel here]. Social & relationship experience: [one sentence — how connection and love life feel here]. Career & public life experience: [one sentence — how work and visibility feel here]. Energy & lifestyle pace: [one sentence — how daily rhythm, motivation, and physical energy feel here]." }
+     - Each sentence must describe what the person EXPERIENCES — a daily experience, a feeling, and a pattern.
+     - IMAGINABILITY RULE: Every key sentence must describe something the user can picture in real life. If it sounds abstract, rewrite it.
      - FORBIDDEN: "supports emotional growth", "enhances career potential", "activates social energy"
      - REQUIRED: "you may feel...", "your social life tends to...", "career here may feel...", "the pace of life here...")
   6. city_comparison — "Top Cities This Year" (SR-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
@@ -430,29 +433,36 @@ SR LOVE ACTIVATION STYLE:
   9. city_comparison — "Long-Term Caution Zones" (natal-weighted, 2-3 caution cities)
   10. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
   11. modality_element — "Elemental & Modal Balance"
-  12. summary_box — "Strategy Summary" with items: "Top Cities This Year", "Top Cities Long-Term", "What to Avoid", "Ideal Timing Window", "Analysis Mode"
+  12. summary_box — "Strategy Summary" with items: "Best Type of Place Overall", "What to Prioritize When Choosing", "What to Avoid Repeating (Pattern)", "Top Cities This Year", "Top Cities Long-Term", "Ideal Timing Window", "Analysis Mode"
 
-  LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields and "Decision Synthesis" section):
+  TRADEOFFS RULE (REQUIRED — prevents generic answers):
+  Every recommended place MUST include one clear downside: what might feel limiting, what might get frustrating, what this place does NOT support. No city gets a free pass.
+
+  THIS YEAR VS LONG-TERM RULE:
+  If Solar Return data is available, explicitly distinguish: what kind of place works THIS YEAR vs what kind of place works LONG-TERM. Explain the difference clearly in the Decision Synthesis and Summary.
+
+  LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields, "Best Places to Live" section, and "Location Fit Profiles"):
   Do NOT describe locations using abstract astrology meanings. For EVERY recommended or caution city, the explanation MUST cover:
   - How the person will FEEL living there day-to-day (emotional texture, not abstract "energy")
   - How their behavior may change (what they do differently, how they show up)
   - What improves (relationships, career, emotional state, physical energy — be specific)
   - What becomes harder or less prioritized (tradeoffs, what fades or requires more effort)
   - What kind of life experience this location creates (daily rhythm, social life, pace)
-  - How the location connects back to the person's specific chart needs (reference their Moon, Venus, MC, etc. needs from the Environmental Profile)
 
-  FORBIDDEN LOCATION PHRASES: "supports growth", "enhances energy", "activates potential", "provides opportunities for transformation", "aligns with your path", "resonates with your chart"
+  REAL-LIFE EXPERIENCE RULE: Every location must describe a daily experience, a feeling, and a pattern. Test: can the user picture themselves living there? If not, rewrite.
 
-  REQUIRED LOCATION PHRASES: "you may feel...", "this can show up as...", "your day-to-day life may...", "this tends to lead to...", "living here, you would likely notice...", "the tradeoff is that...", "what becomes harder here is..."
+  FORBIDDEN LOCATION PHRASES: "supports growth", "enhances energy", "activates potential", "provides opportunities for transformation", "aligns with your path", "resonates with your chart", "good energy", "you thrive in"
+
+  REQUIRED LOCATION PHRASES: "you may feel...", "you may feel more at ease in...", "this can show up as...", "your day-to-day life may...", "this tends to lead to...", "living here, you would likely notice...", "the tradeoff is that...", "what becomes harder here is...", "daily life may look like...", "this makes it easier to..."
 
   LOCATION EXPLANATION EXAMPLE:
   - BAD: "Lisbon supports your emotional growth and enhances your creative energy. The Venus line activates romantic potential."
-  - GOOD: "Living in Lisbon, you may feel a slower, more emotionally grounded pace of life. Your day-to-day tends to feel less pressured, with more space for connection and creativity. Relationships may come more easily here — you're likely to feel more open and approachable. The tradeoff is that career ambition may take a back seat, and you might feel less driven or structured than in a faster city. This fits your need for emotional safety and steady connection, but may not fully satisfy the part of you that wants professional momentum."
+  - GOOD: "Living in Lisbon, you may feel a slower, more emotionally grounded pace of life — it feels like exhaling after years of holding your breath. Your day-to-day tends to feel less pressured, with more space for connection and creativity. Relationships may come more easily here — you're likely to feel more open and approachable. The tradeoff is that career ambition may take a back seat, and you might feel less driven or structured than in a faster city."
 
   ANALYSIS MODE RULES:
   - If the chart data contains pre-calculated astrocartography line data, set all city "mode" fields to "Astrocartography" and use the line data.
   - If NO astrocartography line data is present, set all city "mode" fields to "Astrology-Based" and use chart symbolism to infer city fit. Do NOT claim planetary line positions. Do NOT say a city is "on a Venus line" or "near a Jupiter MC line."
-  - The "Analysis Mode" item in the summary_box MUST honestly state which mode was used: "Astrology-Based Relocation Guidance" or "Astrocartography-Based Recommendation."
+  - The "Analysis Mode" item in the summary_box MUST honestly state which mode was used.
 
   SCORING ALGORITHM:
   - Score each city on 6 categories (home, career, love, healing, vitality, risk) from 1-10 (whole numbers only).
@@ -478,7 +488,7 @@ SR LOVE ACTIVATION STYLE:
   
   ANTI-HALLUCINATION: Never claim line positions without data. Never invent relocated angles without calculations. Frame as "strongest matches" not certainties. Always state the analysis mode.
   
-  Do NOT assume the user's current location. Never rate a presumed "current location." Only compare recommended cities. Tone must be clear, direct, and decision-focused.
+  Do NOT assume the user's current location. Never rate a presumed "current location." Only compare recommended cities. Tone must be practical and honest — no fluff.
 - For question_type "career": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Career DNA" (10th house cusp sign, its ruler, Sun sign/house, MC degree)
