@@ -284,42 +284,13 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
             />
             <div className="flex gap-2 justify-end">
               <Button
-                variant="ghost"
                 size="sm"
-                onClick={handleCancel}
+                onClick={() => handleSubmit(personalContext.trim() ? true : false)}
                 className="text-xs"
               >
-                <X className="h-3 w-3 mr-1" />
-                Cancel
+                <Send className="h-3 w-3 mr-1" />
+                Generate Reading
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSubmit(false)}
-                className="text-xs"
-              >
-                Skip — General Reading
-              </Button>
-              {personalContext.trim() && (
-                <Button
-                  size="sm"
-                  onClick={() => handleSubmit(true)}
-                  className="text-xs"
-                >
-                  <Send className="h-3 w-3 mr-1" />
-                  Include & Generate
-                </Button>
-              )}
-              {!personalContext.trim() && (
-                <Button
-                  size="sm"
-                  onClick={() => handleSubmit(false)}
-                  className="text-xs"
-                >
-                  <Send className="h-3 w-3 mr-1" />
-                  Generate Reading
-                </Button>
-              )}
             </div>
           </div>
         </div>
