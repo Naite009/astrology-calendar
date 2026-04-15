@@ -868,7 +868,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        assistantEntry = { role: "assistant", content: "", reading: data as StructuredReading };
+        const currentSR = solarReturnCharts
+          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const corrected = correctPlacementHouses(data, chartForRequest, currentSR);
+        assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
       } else {
