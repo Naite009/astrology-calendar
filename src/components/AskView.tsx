@@ -614,19 +614,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const handleQuickTopic = (prompt: string) => {
-    setInput(prompt);
-    // Use a ref flag to auto-submit on next render
-    quickSubmitRef.current = prompt;
+    void handleSubmitDirect(prompt);
   };
-
-  const quickSubmitRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (quickSubmitRef.current && input === quickSubmitRef.current && !isLoading) {
-      quickSubmitRef.current = null;
-      handleSubmitDirect(input);
-    }
-  }, [input]);
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
   // AND corrects house/sign references in narrative prose with actual chart data
@@ -1299,7 +1288,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about the chart interpretation..."
+              placeholder="Ask any custom question about the chart..."
               className="min-h-[60px] resize-none"
               disabled={isLoading}
             />
