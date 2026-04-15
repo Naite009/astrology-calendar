@@ -691,6 +691,8 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
     const tzName = userTimezone || 'America/New_York';
 
     const formatInstructions = `
+REWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. The reader should think "that's exactly what happens" — not "I wonder what that means." Translate all abstract or symbolic language into concrete, lived experience. Describe what actually happens, what people feel, what situations arise. Avoid trait-based language like "intense dynamics" or "transformative energy" — instead say what the person actually experiences.
+
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
 0b. **TIMEZONE & TIMES**: The user is in ${tzName} (${tzLabel}). ONLY use times that are EXPLICITLY provided in the data (moonSignChange.time, imminentSignChanges[].ingressTime, exactLunarPhase.time). NEVER calculate, guess, or recall times from your training data. If no time is provided for an event, do NOT mention a time — just say "today" or "later today". All provided times are already converted to ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation.

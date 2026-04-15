@@ -206,7 +206,9 @@ serve(async (req) => {
       ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich, deepen, and ground your interpretations with authoritative sourced insights. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
       : '';
 
-    const systemPrompt = selectedVoice + "\n" + structureBlock + refBlock;
+    const recognitionRule = "\n\nREWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. The reader should think 'that's exactly what happens to me.' Describe what actually happens, what the person feels, what situations they get into. Avoid abstract phrases like 'intense dynamics', 'transformative energy', 'emotionally complex'. Instead describe concrete scenarios people have lived through.";
+
+    const systemPrompt = selectedVoice + "\n" + structureBlock + recognitionRule + refBlock;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

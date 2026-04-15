@@ -49,6 +49,8 @@ Your synthesis should:
 - Be warm, specific, and practical — not generic
 - Use the querent's actual natal placements when connecting themes
 
+REWRITE FOR RECOGNITION: Every sentence must feel like something the reader has actually experienced. Do not use abstract phrases like "profound invitation" or "deep calling." Describe what actually happens: "you may notice old worries coming back at night", "this is the part where you stop waiting for permission and just begin."
+
 CRITICAL: Use the EXACT house positions provided in the natal data. Do NOT infer houses from zodiac signs. The house positions have been calculated from the actual birth chart house cusps.`;
 
       const synthesisUserPrompt = `TAROT CARD: ${tarotCardName}
@@ -144,6 +146,8 @@ WRITING STYLE RULES:
 - Vary your opening, your metaphors, and your framing for each card type (tarot vs oracle).
 - For tarot: ground the interpretation in the card's visual symbolism and archetypal narrative
 - For oracle: focus on the card's direct message and how it speaks to the current moment
+
+REWRITE FOR RECOGNITION: Every sentence must describe something the reader has actually lived through. Do not say "this card invites transformation" — say "this is about the moment you realize something in your life has already changed and you can't go back." The reader should think "that's exactly what I'm going through" — not "that sounds interesting."
 
 Your interpretations should:
 - Connect the card's symbolism to the current lunar phase, zodiac energy, AND the querent's natal chart
