@@ -628,8 +628,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   }, [input]);
 
-  // Deterministic house correction: overwrites AI-generated house numbers with pre-computed values
-  const correctPlacementHouses = useCallback((data: any, chart: NatalChart | null, srChart: SolarReturnChart | null) => {
+  // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
+  // AND corrects house/sign references in narrative prose with actual chart data
+  const correctPlacementData = useCallback((data: any, chart: NatalChart | null, srChart: SolarReturnChart | null) => {
     if (!data?.sections || !chart) return data;
     const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     const toAbs = (pos: { sign: string; degree: number; minutes?: number }): number | null => {
@@ -660,59 +661,164 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
       return 1;
     };
+    const ordinal = (n: number): string => {
+      if (n === 1) return '1st'; if (n === 2) return '2nd'; if (n === 3) return '3rd'; return `${n}th`;
+    };
 
-    // Build natal house map
-    const natalCusps = buildCusps(chart.houseCusps);
-    const natalHouseMap: Record<string, number> = {};
-    if (natalCusps.length === 12) {
-      Object.entries(chart.planets || {}).forEach(([name, pos]) => {
-        if (pos && typeof pos === 'object' && 'sign' in pos) {
-          const abs = toAbs(pos as any);
-          if (abs !== null) {
-            const h = findHouse(abs, natalCusps);
-            if (h) natalHouseMap[name.toLowerCase()] = h;
-          }
-        }
-      });
+    interface PlanetTruth {
+      sign: string;
+      degree: number;
+      minutes: number;
+      house: number | null;
+      isRetrograde: boolean;
+      degreeStr: string; // e.g. "15°23'"
     }
 
-    // Build SR house map
-    const srHouseMap: Record<string, number> = {};
-    if (srChart) {
-      const srCusps = buildCusps(srChart.houseCusps);
-      if (srCusps.length === 12) {
-        Object.entries(srChart.planets || {}).forEach(([name, pos]) => {
-          if (pos && typeof pos === 'object' && 'sign' in pos) {
-            const abs = toAbs(pos as any);
-            if (abs !== null) {
-              const h = findHouse(abs, srCusps);
-              if (h) srHouseMap[name.toLowerCase()] = h;
-            }
+    const buildTruthMap = (planets: any, cuspsObj: any): Record<string, PlanetTruth> => {
+      const cusps = buildCusps(cuspsObj);
+      const map: Record<string, PlanetTruth> = {};
+      Object.entries(planets || {}).forEach(([name, pos]: [string, any]) => {
+        if (!pos || typeof pos !== 'object' || !('sign' in pos)) return;
+        const deg = pos.degree ?? 0;
+        const min = pos.minutes ?? 0;
+        const abs = toAbs(pos);
+        const house = abs !== null ? findHouse(abs, cusps) : null;
+        const isRet = pos.isRetrograde === true || pos.retrograde === true;
+        map[name.toLowerCase()] = {
+          sign: pos.sign,
+          degree: deg,
+          minutes: min,
+          house,
+          isRetrograde: isRet,
+          degreeStr: `${deg}°${min.toString().padStart(2, '0')}'`,
+        };
+      });
+      // Add angles from cusps
+      if (cuspsObj) {
+        const angleMap: Record<string, string> = { ascendant: 'house1', asc: 'house1', mc: 'house10', midheaven: 'house10', dsc: 'house7', descendant: 'house7', ic: 'house4' };
+        const houseNum: Record<string, number> = { house1: 1, house10: 10, house7: 7, house4: 4 };
+        Object.entries(angleMap).forEach(([angleName, cuspKey]) => {
+          const c = cuspsObj[cuspKey];
+          if (c && typeof c === 'object' && 'sign' in c) {
+            const deg = c.degree ?? 0;
+            const min = c.minutes ?? 0;
+            map[angleName] = {
+              sign: c.sign, degree: deg, minutes: min,
+              house: houseNum[cuspKey] ?? null,
+              isRetrograde: false,
+              degreeStr: `${deg}°${min.toString().padStart(2, '0')}'`,
+            };
           }
         });
       }
-    }
-
-    // Planet name normalization for matching AI output to our maps
-    const normalize = (name: string): string => {
-      return name.replace(/[☉☽☿♀♂♃♄♅♆♇⚷☊☋⚸⚵]/g, '').trim().toLowerCase()
-        .replace('north node', 'northnode').replace('south node', 'southnode')
-        .replace('n. node', 'northnode').replace('s. node', 'southnode');
+      return map;
     };
 
+    const natalTruth = buildTruthMap(chart.planets, chart.houseCusps);
+    const srTruth = srChart ? buildTruthMap(srChart.planets, srChart.houseCusps) : {};
+
+    // Normalize planet name from AI output to our key
+    const normalize = (name: string): string => {
+      return name.replace(/[☉☽☿♀♂♃♄♅♆♇⚷☊☋⚸⚵🜕⚳⚴⯰]/g, '').trim().toLowerCase()
+        .replace('north node', 'northnode').replace('south node', 'southnode')
+        .replace('n. node', 'northnode').replace('s. node', 'southnode')
+        .replace('part of fortune', 'partoffortune');
+    };
+
+    // 1. Fix placement tables: overwrite sign, degrees, house, retrograde
     for (const section of data.sections) {
       if (section.type !== 'placement_table') continue;
       const isSR = /solar return/i.test(section.title);
-      const houseMap = isSR ? srHouseMap : natalHouseMap;
-      if (Object.keys(houseMap).length === 0) continue;
+      const truthMap = isSR ? srTruth : natalTruth;
+      if (Object.keys(truthMap).length === 0) continue;
 
       for (const row of section.rows || []) {
         const key = normalize(row.planet);
-        if (houseMap[key] !== undefined) {
-          row.house = houseMap[key];
+        const truth = truthMap[key];
+        if (!truth) continue;
+        // Overwrite ALL fields
+        row.sign = truth.sign;
+        row.degrees = truth.degreeStr;
+        row.house = truth.house ?? row.house;
+        // Add retrograde marker to planet name if needed
+        if (truth.isRetrograde && !row.planet.includes('℞') && !row.planet.includes('Rx') && !row.planet.toLowerCase().includes('retro')) {
+          row.planet = row.planet + ' ℞';
+        } else if (!truth.isRetrograde) {
+          row.planet = row.planet.replace(/\s*[℞]/, '').replace(/\s*\(Rx\)/, '').replace(/\s*Rx/, '');
         }
       }
     }
+
+    // 2. Fix narrative prose: correct "X in the Nth house" and "X in Sign" references
+    const allTruth = { ...natalTruth }; // Natal as default for narrative references
+    // Build reverse map: planet display names to truth
+    const PLANET_DISPLAY_NAMES = [
+      'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+      'Uranus', 'Neptune', 'Pluto', 'Chiron', 'North Node', 'South Node',
+      'Lilith', 'Juno', 'Ceres', 'Pallas', 'Vesta', 'Eris',
+    ];
+
+    const fixNarrativeText = (text: string, truthMap: Record<string, PlanetTruth>): string => {
+      if (!text || typeof text !== 'string') return text;
+      let fixed = text;
+
+      for (const pName of PLANET_DISPLAY_NAMES) {
+        const key = pName.toLowerCase().replace(/\s+/g, '');
+        const truth = truthMap[key];
+        if (!truth || truth.house === null) continue;
+
+        // Fix "Planet in the Nth house" — match any ordinal
+        const housePattern = new RegExp(
+          `(${pName})\\s+in\\s+the\\s+(\\d+(?:st|nd|rd|th))\\s+house`,
+          'gi'
+        );
+        fixed = fixed.replace(housePattern, (match, planet) => {
+          return `${planet} in the ${ordinal(truth.house!)} house`;
+        });
+
+        // Fix "Planet in Sign" where Sign is wrong (only fix if clearly a zodiac sign)
+        for (const wrongSign of ZODIAC) {
+          if (wrongSign === truth.sign) continue;
+          // Match "Planet in WrongSign" but not "Planet in the" (house refs)
+          const signPattern = new RegExp(
+            `(${pName})\\s+in\\s+(${wrongSign})(?!\\s+(?:the|house|rising|ascendant))`,
+            'gi'
+          );
+          fixed = fixed.replace(signPattern, `$1 in ${truth.sign}`);
+        }
+      }
+      return fixed;
+    };
+
+    // Apply narrative fixes to all text sections
+    for (const section of data.sections) {
+      if (section.type === 'placement_table') continue;
+      // Determine which truth map to use — SR sections use SR truth
+      const isSR = /solar return/i.test(section.title || '');
+      const truthMap = isSR && Object.keys(srTruth).length > 0 ? srTruth : natalTruth;
+
+      if (section.body && typeof section.body === 'string') {
+        section.body = fixNarrativeText(section.body, truthMap);
+      }
+      if (section.bullets && Array.isArray(section.bullets)) {
+        for (const bullet of section.bullets) {
+          if (bullet.text && typeof bullet.text === 'string') {
+            bullet.text = fixNarrativeText(bullet.text, truthMap);
+          }
+        }
+      }
+      if (section.events && Array.isArray(section.events)) {
+        for (const event of section.events) {
+          if (event.description && typeof event.description === 'string') {
+            event.description = fixNarrativeText(event.description, truthMap);
+          }
+        }
+      }
+      if (section.content && typeof section.content === 'string') {
+        section.content = fixNarrativeText(section.content, truthMap);
+      }
+    }
+
     return data;
   }, []);
 
@@ -776,7 +882,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         const currentSR = solarReturnCharts
           .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
           .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
-        const corrected = correctPlacementHouses(data, chartForRequest, currentSR);
+        const corrected = correctPlacementData(data, chartForRequest, currentSR);
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
@@ -871,7 +977,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         const currentSR = solarReturnCharts
           .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
           .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
-        const corrected = correctPlacementHouses(data, chartForRequest, currentSR);
+        const corrected = correctPlacementData(data, chartForRequest, currentSR);
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
