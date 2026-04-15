@@ -90,26 +90,26 @@ Return this exact structure:
     },
     {
       "type": "modality_element",
-      "title": "Elemental & Modal Balance",
+      "title": "Natal Elemental & Modal Balance",
       "elements": [
-        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "Strong drive and initiative." },
-        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "Practical grounding." },
-        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "Mental agility." },
-        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "Emotional depth." }
+        { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "1 sentence: what does having 3 fire planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "1 sentence: what does having 2 earth planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Air", "symbol": "💨", "count": 3, "planets": ["Mercury", "Uranus", "Pluto"], "interpretation": "1 sentence: what does having 3 air planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
+        { "name": "Water", "symbol": "💧", "count": 2, "planets": ["Moon", "Neptune"], "interpretation": "1 sentence: what does having 2 water planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." }
       ],
       "modalities": [
-        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "Leadership energy." },
-        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "Persistence and determination." },
-        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "Adaptability." }
+        { "name": "Cardinal", "count": 3, "planets": ["Sun", "Moon", "Saturn"], "interpretation": "1 sentence: what does cardinal dominance mean for how THIS person initiates or responds in the domain of their question? Describe action, not a label." },
+        { "name": "Fixed", "count": 3, "planets": ["Venus", "Mars", "Uranus"], "interpretation": "1 sentence: what does this fixed count mean for how THIS person holds on or lets go in the domain of their question?" },
+        { "name": "Mutable", "count": 4, "planets": ["Mercury", "Jupiter", "Neptune", "Pluto"], "interpretation": "1 sentence: what does mutable dominance mean for how THIS person adapts or avoids decisions in the domain of their question?" }
       ],
       "polarity": [
-        { "name": "Yang (Active)", "symbol": "☀️", "signs": ["Aries", "Gemini", "Leo", "Libra", "Sagittarius", "Aquarius"], "count": 5, "planets": ["Sun", "Mercury", "Mars", "Jupiter", "Pluto"], "interpretation": "Outward-directed energy dominates." },
-        { "name": "Yin (Receptive)", "symbol": "🌙", "signs": ["Taurus", "Cancer", "Virgo", "Scorpio", "Capricorn", "Pisces"], "count": 5, "planets": ["Moon", "Venus", "Saturn", "Uranus", "Neptune"], "interpretation": "Inward-directed energy." }
+        { "name": "Yang (Active)", "symbol": "☀️", "signs": ["Aries", "Gemini", "Leo", "Libra", "Sagittarius", "Aquarius"], "count": 5, "planets": ["Sun", "Mercury", "Mars", "Jupiter", "Pluto"], "interpretation": "1 sentence about how yang dominance shows up in this person's behavior for their question — not a trait word." },
+        { "name": "Yin (Receptive)", "symbol": "🌙", "signs": ["Taurus", "Cancer", "Virgo", "Scorpio", "Capricorn", "Pisces"], "count": 5, "planets": ["Moon", "Venus", "Saturn", "Uranus", "Neptune"], "interpretation": "1 sentence about how yin energy shows up in this person's behavior for their question — not a trait word." }
       ],
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
       "dominant_polarity": "Yang (Active)",
-      "balance_interpretation": "2-3 sentence synthesis that directly answers HOW this elemental/modal/polarity balance helps or hinders the person's specific question. For relationship questions, explain what patterns attract or repel partners and what sustains connection. For career, explain work style strengths and blind spots. Be specific and actionable, not generic."
+      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
     },
     {
       "type": "summary_box",
@@ -236,7 +236,7 @@ Rules:
 - Each transit in timing_section MUST include: the "position" field showing the exact degree AND which natal point it aspects (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer"), plus a "date_range" field with the approximate active period (e.g., "May 8–June 2, 2026"). Never use vague descriptions like "enters Cancer."
 - For transits, also note if the transiting planet is retrograde (R) — this changes interpretation significantly.
 - Include 3 to 6 sections depending on the question — do not pad with empty sections. For categorized reading types (relationship, relocation, career, health, money, spiritual), follow the dedicated section count. For general questions, use the minimum sections needed.
-- Always include a modality_element section BEFORE the summary_box
+- Always include a modality_element section BEFORE the summary_box. Title it "Natal Elemental & Modal Balance". This section analyzes the NATAL chart's elemental and modal distribution ONLY — do not mix in Solar Return placements. Every element/modality interpretation MUST be a behavioral sentence specific to the person's question — NEVER a generic trait label like "Strong drive" or "Practical grounding". If the elemental/modal insight was already covered in earlier narrative sections (Relationship Pattern, Contradiction Patterns, etc.), either compress this section to only what is NEW or note "See above" for repeated insights.
 - ELEMENT/MODALITY/POLARITY COUNTING: Count ONLY the 10 true planets (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto) — exactly 10 bodies. Do NOT count Chiron, Lilith, Juno, North Node, South Node, Ascendant, Midheaven, or any other points/asteroids. Counts must add up to exactly 10 across elements, 10 across modalities, and 10 across polarity. Chiron, Lilith, South Node, and Juno should still appear in the placement_table and be discussed in narrative sections — just NEVER include them in element/modality/polarity tallies. This rule is absolute and applies to ALL reading types.
 - POLARITY SIGNS: Always list ALL 6 Yang signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius) and ALL 6 Yin signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces) in the polarity "signs" array, even if zero planets occupy some of them. Never omit empty signs.
 - For question_type "relationship": Use this EXACT section order — 11 sections total:
@@ -333,7 +333,7 @@ Rules:
 
      COVERAGE RULE: The 12–18 month window must have trigger windows spread across it — not all in one cluster. If the first trigger is in month 2, there must be another trigger or turning point later. The person must always see hope ahead.
      Include at least 1 supportive trigger and 1 challenging trigger. If exact dates are available show them; if approximate, label as approximate.)
-  10. modality_element — "Elemental & Modal Balance"
+  10. modality_element — "Natal Elemental & Modal Balance"
    11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
@@ -482,7 +482,7 @@ SR LOVE ACTIVATION STYLE:
   8. city_comparison — "Top Cities Long-Term" (natal-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation)
   9. city_comparison — "Long-Term Caution Zones" (natal-weighted, 2-3 caution cities)
   10. timing_section — "Timing for a Move" (Transits to Moon, IC, 4th house ruler, 10th house ruler. Eclipses activating 4th/10th axis. Best move windows AND caution windows over next 12-18 months.)
-  11. modality_element — "Elemental & Modal Balance"
+  11. modality_element — "Natal Elemental & Modal Balance"
   12. summary_box — "Strategy Summary" with items: "Best Type of Place Overall", "What to Prioritize When Choosing", "What to Avoid Repeating (Pattern)", "Top Cities This Year", "Top Cities Long-Term", "Ideal Timing Window", "Analysis Mode"
 
   TRADEOFFS RULE (REQUIRED — prevents generic answers):
@@ -547,7 +547,7 @@ SR LOVE ACTIVATION STYLE:
   5. city_comparison — "Best Cities for Career" (at least 4 cities where Sun MC, Jupiter MC, or Venus MC lines fall)
   6. city_comparison — "Caution Zones for Career" (at least 2 cities where Saturn MC, Mars MC, or Pluto MC lines fall)
   7. timing_section — "Career Timing Windows" (transits to MC ruler, 10th house planets, and North Node with exact degrees and date ranges)
-  8. modality_element — "Elemental & Modal Balance"
+  8. modality_element — "Natal Elemental & Modal Balance"
   9. summary_box — "Strategy Summary" with items: "Ideal Field", "Ideal Work Style", "When to Act", "What to Avoid"
 - For question_type "health": Use this EXACT section order:
   1. placement_table — "Key Placements"
@@ -556,7 +556,7 @@ SR LOVE ACTIVATION STYLE:
   4. narrative_section — "Healing & Recovery" (Chiron sign/house for wound-to-gift, Neptune for intuition/spiritual healing, Jupiter for where the body recovers best)
   5. city_comparison — "Best Locations for Wellness" (at least 4 cities where Moon IC, Venus ASC, or Jupiter ASC lines support vitality) — ONLY if astrocartography data is available and location is relevant to the question
   6. timing_section — "Health Timing" (transits to 6th house ruler, Ascendant ruler, and Mars with exact degrees and date ranges; flag challenging transits to health houses)
-  7. modality_element — "Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
+  7. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
   8. summary_box — "Strategy Summary" with items: "Core Strength", "Watch Points", "Best Practices", "Timing"
 - For question_type "money": Use this EXACT section order:
   1. placement_table — "Key Placements"
@@ -565,7 +565,7 @@ SR LOVE ACTIVATION STYLE:
   4. narrative_section — "Career Earnings Potential" (10th house/MC connection to income, Jupiter for abundance/opportunity, Saturn for long-term wealth building)
   5. city_comparison — "Best Cities for Wealth" (at least 4 cities where Jupiter IC, Venus MC, or Sun MC lines support financial growth) — ONLY if astrocartography data is available and location is relevant
   6. timing_section — "Financial Timing Windows" (transits to 2nd/8th house rulers, Venus, and Jupiter with exact degrees and date ranges)
-  7. modality_element — "Elemental & Modal Balance"
+  7. modality_element — "Natal Elemental & Modal Balance"
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
@@ -573,7 +573,7 @@ SR LOVE ACTIVATION STYLE:
   3. narrative_section — "The Inner Teacher" (Saturn sign/house for life lessons, Chiron for wound-to-gift, 12th house for spiritual connection)
   4. narrative_section — "The Awakening Points" (Uranus for breakthroughs, Neptune for spiritual vision, Pluto for deep transformation)
   5. timing_section — "Spiritual Timing" (transits to North Node, Neptune, and 12th house ruler with exact degrees and date ranges)
-  6. modality_element — "Elemental & Modal Balance" (frame interpretations as spiritual temperament)
+  6. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as spiritual temperament)
   7. summary_box — "Strategy Summary" with items: "Soul Purpose", "Key Lesson", "Spiritual Practice", "Timing for Growth"
 - CITY COMPARISON OPTIONAL RULE: Only include city_comparison sections if the reading type inherently involves location as a meaningful factor (relocation, relationship+location). For health, money, and spiritual readings, skip city comparisons UNLESS the user specifically asks about location or the question mentions moving/travel.
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
