@@ -37,7 +37,9 @@ FORMAT your response with clear sections using emoji headers:
 🌿 SUPPORT PROTOCOL (with sub-sections for Vitamins, Herbs, Lifestyle, Emotional)
 
 Be specific about planetary correspondences. Reference medical astrology principles.
-If the symptom could indicate something serious (chest pain, severe headache, etc.), lead with: "⚠️ IMPORTANT: This symptom may require immediate medical attention. Please consult a healthcare provider. Here is the astrological context..."`;
+If the symptom could indicate something serious (chest pain, severe headache, etc.), lead with: "⚠️ IMPORTANT: This symptom may require immediate medical attention. Please consult a healthcare provider. Here is the astrological context..."
+
+REWRITE FOR RECOGNITION: Every explanation must describe what the person actually experiences in their body and daily life. Do not say "energetic imbalance" or "transformative healing process." Instead say things like "you may notice the headaches get worse when you skip meals or push through exhaustion", "this tends to show up as that tight feeling in your chest when you're holding back what you really want to say." The reader should think "yes, that's exactly what happens to me."`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
