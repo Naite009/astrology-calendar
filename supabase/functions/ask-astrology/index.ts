@@ -251,11 +251,29 @@ Rules:
      SIXTH: 8th house — deep intimacy, psychological merging, trust, vulnerability, power dynamics in relationships, shared resources. Include sign on the 8th cusp, ruler's placement, any planets in the 8th. Describe how they handle emotional depth, what makes them feel truly close vs. guarded, and where control or power dynamics show up.
      SEVENTH: Saturn — commitment structure, fears around love, what delays or blocks partnership, where they need to mature. Include Saturn's sign, house, and aspects to Venus/Moon/7th ruler. Describe what makes commitment feel heavy or scary, and what kind of structure they need for a relationship to last.
      EIGHTH: 4th house — living together, building a home, family patterns repeated in relationships, emotional foundation. Include sign on the 4th cusp and ruler. Describe what domestic life and cohabitation look like for this person.
-     NINTH: Nodes — karmic relationship patterns. North Node sign/house shows growth direction in love; South Node shows default patterns they fall back into. Describe the evolution: what they keep repeating vs. what they're learning to do differently.
-     TENTH: Juno — commitment style, what they need in a long-term partner specifically. Include Juno sign, house, and aspects if data is present.
-     ELEVENTH: Lilith — shadow sexuality, raw desire, power dynamics, what they suppress or feel shame about in relationships. ONLY include if Lilith data with valid sign, degree, and house is explicitly present.
-     MUST EXPLICITLY ANSWER: How this person gives love. How they receive love. What makes them feel emotionally safe. What they are drawn to romantically. What they are drawn to sexually. What makes commitment easier. What makes commitment harder. How intimacy works for them. What shadow pattern repeats in love. What kind of partner actually fits long-term. What living together looks like. What early dating feels like vs. deep partnership.
-     COMPRESSION RULE: Do not repeat the same idea in multiple ways. If a concept has been explained clearly, do not restate it unless adding something new. If Venus and 5th house tell the same story, merge them — don't say the same thing twice. Prioritize depth over coverage.)
+     NINTH: 12th house — hidden patterns in love, self-sabotage, what they can't see about themselves in relationships, unconscious attractions, spiritual bonding. Include sign on the 12th cusp, ruler's placement, any planets in the 12th. Describe the blind spot — what they do in love without realizing it.
+     TENTH: 2nd house — self-worth in relationships, what they value, how financial dynamics play into partnership. Include sign on the 2nd cusp and ruler. Describe how self-esteem shapes who they choose and what they tolerate.
+     ELEVENTH: Nodes — karmic relationship patterns. North Node sign/house shows growth direction in love; South Node shows default patterns they fall back into. Describe the evolution: what they keep repeating vs. what they're learning to do differently.
+     TWELFTH: Juno — commitment style, what they need in a long-term partner specifically. Include Juno sign, house, and aspects if data is present.
+     THIRTEENTH: Lilith — shadow sexuality, raw desire, power dynamics, what they suppress or feel shame about in relationships. ONLY include if Lilith data with valid sign, degree, and house is explicitly present.
+
+     SIGNATURE ASPECTS TO FLAG (check all, report those within orb):
+     - Venus-Saturn: fear of rejection, delayed love, high standards, deep loyalty once committed
+     - Venus-Neptune: idealization, fantasy bonds, difficulty seeing partners clearly, rose-colored glasses
+     - Venus-Pluto: obsessive attraction, jealousy, transformative love, all-or-nothing intensity
+     - Venus-Uranus: need for freedom, sudden attractions, unconventional relationship structures
+     - Venus-Mars: how desire and love integrate or split — harmonious = unified, tense = "I want one thing but fall for another"
+     - Moon-Pluto: emotional intensity, control in intimacy, deep bonding or enmeshment
+     - Moon-Saturn: emotional withholding, fear of vulnerability, earned security over time
+     - Moon-Neptune: emotional merging, boundary confusion, caretaking patterns
+     - Mars-Pluto: power struggles, intense sexual energy, dominance dynamics
+     - Sun-Venus: identity tied to partnership, how visible love is in their life
+     - Jupiter to Venus/Moon/7th: expansion, excess, optimism, or overcommitting in love
+     - Uranus to Venus/Moon/Descendant: disruption, liberation, non-traditional relationship needs
+     For each signature aspect found within orb, describe the BEHAVIORAL pattern it creates — not the aspect itself. Example: "You may find yourself drawn to people who are emotionally unavailable at first, then becoming intensely attached once they open up slightly."
+
+     MUST EXPLICITLY ANSWER: How this person gives love. How they receive love. What makes them feel emotionally safe. What they are drawn to romantically. What they are drawn to sexually. What makes commitment easier. What makes commitment harder. How intimacy works for them. What shadow pattern repeats in love. What kind of partner actually fits long-term. What living together looks like. What early dating feels like vs. deep partnership. What their blind spot in love is. How self-worth affects their choices.
+     COMPRESSION RULE: Do not repeat the same idea in multiple ways. If a concept has been explained clearly, do not restate it unless adding something new. If Venus and 5th house tell the same story, merge them — don't say the same thing twice. Prioritize depth over coverage. Not every factor needs a full paragraph — if a house is empty and the ruler doesn't add new insight, one sentence is enough.)
    4. narrative_section — "Your Relationship Pattern" (MANDATORY. NO ASTROLOGY JARGON ALLOWED in this section — zero planet names, sign names, house numbers, or technical terms. Written so a 13-year-old could understand it. Structure:
      - "body": One sentence summarizing the entire relationship pattern. Example: "You want a stable, loyal, emotionally safe relationship, but part of you is pulled toward complicated, mentally stimulating, or less-direct dynamics that can blur clarity."
      - "bullets": 3–5 simple forces that drive the pattern. Each bullet "label" is a short force name (e.g., "The Steady Side", "The Complicated Side", "The Safety Need", "The Freedom Pull", "The Long Game"). Each bullet "text" explains that force in plain human language — what it wants, how it shows up, and what it can cause. Example bullets:
@@ -265,7 +283,7 @@ Rules:
        { "label": "The Long Game", "text": "Long-term partnership matters deeply to you, but getting there requires sorting out the tension between what feels exciting and what actually lasts." }
      - Do NOT reference Venus, Mars, Moon, Saturn, houses, signs, or any astrological terminology. Translate everything into feelings, behaviors, and real-life situations.)
    5. narrative_section — "Relationship Needs Profile" (uses the EXACT format defined in the RELATIONSHIP NEEDS PROFILE section below — arrow labels, one short sentence each, no exceptions)
-  6. narrative_section — "Solar Return Love Activation" (SR Venus sign/house, SR Moon sign/house, SR 5th/7th house cusps and planets, SR Juno if available, SR outer planets aspecting 5th/7th/Venus/Mars/Moon/Descendant. EVERY claim must cite the specific SR placement, e.g. "SR Venus in Aries in the 6th suggests..." — only if that SR data exists. If SR data is partial, say so and limit interpretation.
+   6. narrative_section — "Solar Return Love Activation" (SR Venus sign/house, SR Moon sign/house, SR 5th/7th house cusps and planets, SR Juno if available, SR outer planets aspecting 5th/7th/Venus/Mars/Moon/Descendant. EVERY claim must cite the specific SR placement, e.g. "SR Venus in Aries in the 6th suggests..." — only if that SR data exists. If SR data is partial, say so and limit interpretation.
      RELATIONSHIP EXPERIENCE TRANSLATION (MANDATORY): After the technical SR analysis, the section MUST translate findings into real-life relationship experiences using these 6 required outputs:
      - "What this year FEELS like in relationships" — emotional texture, not abstract themes. BAD: "This year focuses on romance." GOOD: "You are likely to meet people more easily this year."
      - "What kinds of people may appear" — describe the type of person drawn in, not just "new connections." Example: "People who are intellectually sharp but emotionally guarded may show up."
@@ -274,14 +292,20 @@ Rules:
      - "What may feel unstable" — name the discomfort. Example: "Some connections may feel exciting but not immediately stable — timing or availability may be off."
      - "What is being tested or learned" — the growth edge. Example: "You may be learning the difference between chemistry and real compatibility."
      FORBIDDEN: Generic phrases like "this year focuses on romance and creativity", "love is highlighted", "relationships are activated." Every sentence must describe something the person would actually experience or feel.)
-  7. narrative_section — "Natal & Solar Return Overlay" (EXPLICIT cross-chart logic. MANDATORY: Include at least 3–5 explicit cross-chart activations when supported by the data. Do NOT summarize generally or give only 1–2 examples. For each overlay claim, name the SR factor, the natal factor, and the meaning. Required checks: SR Venus aspecting natal Venus/Moon/Mars/Juno/7th house ruler; SR ASC or DSC within 3° of natal Venus/Moon/Mars/Juno/DSC ruler/Saturn-if-7th-ruler; SR 5th ruler aspecting natal relationship indicators; SR 7th ruler aspecting natal relationship indicators; SR planets falling in natal 5th/7th/8th/11th house; SR angles activating natal Venus/Mars/Moon/7th ruler. Format each as: "SR [factor] [aspect] natal [factor] ([orb]°): [meaning]." Example: "SR Venus conjunct natal Mercury (2° orb): attraction is strongly tied to conversation, messaging, and mental connection this year." Example: "SR Saturn square natal Moon-Saturn (1° orb): this year pressure-tests emotional security and exposes where fear or self-protection shapes relationship choices." Synthesize what is triggered this year vs natal baseline.)
-  8. narrative_section — "Relationship Contradiction Patterns" (MANDATORY. Structure as exactly 4 bullets, each addressing one internal conflict:
+   7. narrative_section — "Natal & Solar Return Overlay" (EXPLICIT cross-chart logic. MANDATORY: Include at least 3–5 explicit cross-chart activations when supported by the data. Do NOT summarize generally or give only 1–2 examples. For each overlay claim, name the SR factor, the natal factor, and the meaning. Required checks: SR Venus aspecting natal Venus/Moon/Mars/Juno/7th house ruler; SR ASC or DSC within 3° of natal Venus/Moon/Mars/Juno/DSC ruler/Saturn-if-7th-ruler; SR 5th ruler aspecting natal relationship indicators; SR 7th ruler aspecting natal relationship indicators; SR planets falling in natal 5th/7th/8th/11th house; SR angles activating natal Venus/Mars/Moon/7th ruler. Format each as: "SR [factor] [aspect] natal [factor] ([orb]°): [meaning]." Example: "SR Venus conjunct natal Mercury (2° orb): attraction is strongly tied to conversation, messaging, and mental connection this year." Example: "SR Saturn square natal Moon-Saturn (1° orb): this year pressure-tests emotional security and exposes where fear or self-protection shapes relationship choices." Synthesize what is triggered this year vs natal baseline.)
+   8. narrative_section — "Relationship Contradiction Patterns" (MANDATORY. Structure as exactly 4 bullets, each addressing one internal conflict:
      - bullet 1 — "What part of you wants stability" (derived from Venus, Moon, 4th house, 7th house placements). Use framing: "This part of you wants..."
      - bullet 2 — "What part of you wants excitement or change" (derived from Mars, Uranus, fire/air placements). Use framing: "But another part of you..."
      - bullet 3 — "Where confusion or mixed signals can happen" (derived from 12th house, Neptune, Mercury-Mars dynamics). Use framing: "This can create a pattern where..."
      - bullet 4 — "What can cause relationship patterns to repeat" (derived from South Node, Saturn, 8th house). Use framing: "If not understood, this can lead to..."
      Each bullet must name the specific tension, describe how it shows up in real behavior, and explain what happens if the person doesn't recognize it. Use careful language — differentiate attraction from compatibility, chemistry from durability, relationship opportunity from relationship readiness. Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. The body paragraph should synthesize all four tensions into one clear statement about the person's core relationship contradiction.)
-  9. timing_section — "Relationship Timing Windows" (Minimum 6 transits from Jupiter, Saturn, Uranus, Neptune, Pluto to natal Venus, Mars, Moon, Juno, Descendant, 7th house ruler. For EACH transit, output ALL of these exact fields:
+   9. timing_section — "Relationship Timing Windows" (Minimum 6 transits. Check ALL of these transit combinations:
+     OUTER PLANETS (Pluto, Neptune, Uranus) to: natal Venus, Mars, Moon, Descendant, 7th house ruler, Juno, 5th cusp, 8th cusp
+     SATURN to: natal Venus, Mars, Moon, Descendant, 7th house ruler, Juno, IC
+     JUPITER to: natal Venus, Mars, Moon, Descendant, 7th house ruler, 5th cusp
+     NORTH NODE transiting conjunct: natal Venus, Descendant, 7th ruler — flag as "fated meeting energy"
+     ECLIPSES falling in natal 5th, 7th, or 8th house — flag as "relationship turning points"
+     For EACH transit, output ALL of these exact fields:
      - "planet": transiting planet name
      - "symbol": planet symbol
      - "position": full description with degrees
@@ -293,8 +317,8 @@ Rules:
      - "separating_end_date": when the transit exits effective orb
      - "pass_label": "single pass" OR "Pass 1 — Direct" / "Pass 2 — Retrograde" / "Pass 3 — Final Direct"
      - "date_range": full active period
-     - "tag": one of: meeting / attraction / commitment / test / rupture / healing
-      - "interpretation": plain-language explanation that MUST include one real-life scenario sentence. Example: "This can show up as meeting someone suddenly through conversation or online, where the attraction feels instant but unpredictable." Do NOT write interpretations that only explain the astrology — always add what it looks like in real life.
+     - "tag": one of: meeting / attraction / commitment / test / rupture / healing / turning_point / fated
+     - "interpretation": plain-language explanation that MUST include one real-life scenario sentence. Example: "This can show up as meeting someone suddenly through conversation or online, where the attraction feels instant but unpredictable." Do NOT write interpretations that only explain the astrology — always add what it looks like in real life.
      Do NOT collapse multiple passes into one simplified date range. Each retrograde pass gets its own separate transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
   10. modality_element — "Elemental & Modal Balance"
    11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
