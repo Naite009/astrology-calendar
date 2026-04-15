@@ -807,10 +807,6 @@ serve(async (req) => {
             }
           }
         }
-              }
-            }
-          }
-        }
 
         // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
         if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
