@@ -1,43 +1,52 @@
 
 
-## Plan: Reframe Astrocartography as Travel Guidance + Add Rich Line Breakdown
+# Add Personal Context to Quick Topic Readings
 
-### What's Actually Happening Now
+## The Idea
 
-The calculation engine is already correct — it takes the SR chart planets as-is (not re-casting) and computes where each planet hits ASC/MC/DSC/IC at every city. The problem is twofold:
+Instead of keeping specific questions separate, we incorporate the user's personal context directly into the structured reading prompt. When someone clicks "Love & Relationships," instead of auto-submitting immediately, a small input appears asking: **"Anything specific on your mind?"** — optional, skippable. If they type something like *"I was asked to the movies by someone with earth qualities"*, that context gets woven into the full structured prompt so the AI addresses it within the comprehensive reading.
 
-1. **Wrong framing**: The UI says "Where to Celebrate" (implying birthday relocation). It should say this is about where to **travel this year**.
-2. **No transparency**: When a city is green, you can't see *why* — which planetary lines it's near, at what orb, and how those combine to produce the score.
+This is better than keeping questions separate because:
+- The AI can connect the specific situation to the person's chart patterns
+- It feels like a consultation, not a generic report
+- The structured framework still runs (7th house first, timing layers, etc.) but now with a personal anchor
 
-### Changes
+## How It Works (User Experience)
 
-**File 1: `src/components/solarReturn/AstrocartographyMap.tsx`**
+1. User clicks a Quick Topic button (e.g., "Love & Relationships")
+2. A small modal or inline expansion appears:
+   - **"Anything specific you'd like addressed in this reading?"**
+   - A text input with placeholder: *e.g., "I met someone earthy, should I pursue it?"*
+   - Two buttons: **"Include & Generate"** and **"Skip — General Reading"**
+3. If they add context, it gets prepended to the structured prompt as a `PERSONAL CONTEXT` block
+4. The AI is instructed to weave that context into the relevant sections (not as a separate answer, but integrated)
 
-- Change header from "Astrocartography — Where to Celebrate" to "Astrocartography — Where to Travel This Year"
-- Update the bottom-of-map helper text to reflect travel framing
+## Technical Changes
 
-- **Expand the `CityDetailCard`** with a new "Planetary Lines" section that shows:
-  - Each angular planet with its glyph, the angle it's on (ASC/MC/DSC/IC), the exact orb in degrees
-  - A color-coded benefic/malefic/neutral indicator per line
-  - A "Score Breakdown" mini-table: for each angular planet, show `Planet × Angle = base score`, orb multiplier, and final contribution — so the user can see exactly why Jupiter on MC at 2° produces a green rating while Saturn on DSC at 1° drags it red
-  - A "Lines Near This City" summary sentence like: "This city sits on the ♃ Jupiter MC line (2.1°) and near the ☉ Sun ASC line (5.8°)"
-  - The existing deep interpretation (vibe, bestFor, watchFor, dayToDay) stays as-is beneath each line
+### 1. Update `AskQuickTopics.tsx`
+- Change `onSelect` callback signature to pass both the topic ID and an optional personal context string
+- Instead of immediately calling `onSelect(topic.prompt(...))`, show a small inline dialog below the clicked button
+- Add a state for the active topic and the user's optional input
+- On confirm, call `onSelect` with the full prompt that includes the personal context block
 
-- Add planet symbol mapping (♃ ♀ ☉ ♂ ♄ etc.) to the detail card for visual richness
+### 2. Update each Quick Topic prompt template
+- Add a conditional `PERSONAL CONTEXT` block at the top of each prompt:
+  ```
+  PERSONAL CONTEXT: The person specifically wants to know about: "[user input]"
+  Weave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style).
+  ```
 
-**File 2: `src/lib/solarReturnAstrocartography.ts`**
+### 3. Update `AskView.tsx`
+- Adjust `handleQuickTopic` to accept the final assembled prompt string (no structural change needed since the prompt is already a string)
 
-- Update the `interpretation` string at the bottom to use travel language instead of birthday language
-- No changes to scoring logic, weights, city list, or file name
+### 4. Prompt integration rule
+- The `PERSONAL CONTEXT` block tells the AI: "Address this within the existing framework sections, don't add a new section or answer it separately"
+- For relationships: the earth-quality person would get addressed in the Mars/attraction section, the 5th house dating section, and the timing section
+- For relocation: "I got a job offer in Denver" would get addressed in the career score and timing sections
 
-### Technical Details
-
-- Planet glyphs map: `{ Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂', Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇' }`
-- Score breakdown per angular planet: `baseScore = PLANET_ANGLE_RATING[planet][angle]`, `orbMult = 1 - (orb² / 96)`, `contribution = baseScore × max(orbMult, 0.4)`
-- The CityDetailCard already receives `angularPlanets` with planet, angle, and orb — all data needed is already available, just needs richer display
-
-### What Does NOT Change
-- `solarReturnAstrocartography.ts` scoring logic, weights, orb formulas
-- City list, file names, intention tabs, WORLD_CITIES array
-- Map SVG rendering, dot colors, projection functions
+## What stays the same
+- All 13 relationship factors still run in order
+- The 3-layer timing architecture still generates
+- The structured JSON output format is unchanged
+- Skipping the context field produces the exact same reading as today
 
