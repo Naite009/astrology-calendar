@@ -349,8 +349,8 @@ RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of AL
 CRITICAL: The style examples below are REFERENCE ONLY. Do not copy their content or assume their placements. Apply this same clarity, tone, and explanation depth to whatever chart data is actually provided.
 
 NARRATIVE SECTION FORMAT FOR RELATIONSHIP READINGS:
-- The "body" field of "Natal Relationship Architecture" MUST contain flowing paragraphs — one per placement — NOT a single summary sentence.
-- Each paragraph should be 2-4 sentences covering one placement (Venus, Mars, Moon, 7th house, etc.).
+- The "body" field of "Natal Relationship Architecture" MUST contain flowing paragraphs — NOT a single summary sentence.
+- Focus on the 2–4 placements that most clearly explain this person's relationship behavior. Do not mechanically cover every placement — skip any that would repeat what another placement already said.
 - The "bullets" field is OPTIONAL for this section. If used, bullets should cover synthesis points (love language, shadow pattern, ideal partner) — NOT the placement interpretations themselves.
 - For "Your Relationship Pattern", "Contradiction Patterns", and "SR Love Activation", bullets ARE the primary structure.
 
