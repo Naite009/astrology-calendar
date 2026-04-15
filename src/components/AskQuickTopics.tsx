@@ -1,4 +1,7 @@
-import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export interface QuickTopic {
   id: string;
@@ -160,6 +163,22 @@ Tone: Wise counsel, not a horoscope. Do not overpromise. Differentiate chemistry
   },
 ];
 
+function buildPromptWithContext(
+  topic: QuickTopic,
+  name: string,
+  birthDate: string,
+  birthTime: string,
+  birthLocation: string,
+  personalContext?: string
+): string {
+  const basePrompt = topic.prompt(name, birthDate, birthTime, birthLocation);
+  if (!personalContext?.trim()) return basePrompt;
+
+  const contextBlock = `\n\nPERSONAL CONTEXT: The person specifically wants to know about: "${personalContext.trim()}"\nWeave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style, environmental preferences, career direction). Address their specific situation through the lens of their chart placements.`;
+
+  return basePrompt + contextBlock;
+}
+
 interface AskQuickTopicsProps {
   onSelect: (prompt: string) => void;
   chartName: string;
@@ -170,19 +189,141 @@ interface AskQuickTopicsProps {
 }
 
 export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birthLocation, disabled }: AskQuickTopicsProps) {
+  const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
+  const [personalContext, setPersonalContext] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (activeTopic && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [activeTopic]);
+
+  const handleTopicClick = (topic: QuickTopic) => {
+    if (disabled) return;
+    setActiveTopic(topic);
+    setPersonalContext("");
+  };
+
+  const handleSubmit = (includeContext: boolean) => {
+    if (!activeTopic) return;
+    const prompt = buildPromptWithContext(
+      activeTopic,
+      chartName,
+      birthDate,
+      birthTime,
+      birthLocation,
+      includeContext ? personalContext : undefined
+    );
+    setActiveTopic(null);
+    setPersonalContext("");
+    onSelect(prompt);
+  };
+
+  const handleCancel = () => {
+    setActiveTopic(null);
+    setPersonalContext("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(!!personalContext.trim());
+    }
+    if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
+
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
-      {QUICK_TOPICS.map((topic) => (
-        <button
-          key={topic.id}
-          disabled={disabled}
-          onClick={() => onSelect(topic.prompt(chartName, birthDate, birthTime, birthLocation))}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-sm text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-        >
-          {topic.icon}
-          {topic.label}
-        </button>
-      ))}
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-wrap gap-2 justify-center">
+        {QUICK_TOPICS.map((topic) => (
+          <button
+            key={topic.id}
+            disabled={disabled}
+            onClick={() => handleTopicClick(topic)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-colors disabled:opacity-50 disabled:pointer-events-none ${
+              activeTopic?.id === topic.id
+                ? "border-primary bg-primary/15 text-primary"
+                : "border-border bg-card text-foreground hover:bg-primary/10 hover:border-primary/30"
+            }`}
+          >
+            {topic.icon}
+            {topic.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTopic && (
+        <div className="w-full max-w-md animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="rounded-lg border border-border bg-card p-3 space-y-2.5">
+            <p className="text-sm text-muted-foreground">
+              Anything specific you'd like addressed in this reading?
+            </p>
+            <Textarea
+              ref={textareaRef}
+              value={personalContext}
+              onChange={(e) => setPersonalContext(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                activeTopic.id === "relationship"
+                  ? 'e.g., "I met someone earthy, should I pursue it?"'
+                  : activeTopic.id === "relocation"
+                  ? 'e.g., "I got a job offer in Denver"'
+                  : activeTopic.id === "career"
+                  ? 'e.g., "Thinking about switching to freelance work"'
+                  : activeTopic.id === "health"
+                  ? 'e.g., "I\'ve been having trouble sleeping lately"'
+                  : activeTopic.id === "money"
+                  ? 'e.g., "Considering investing in real estate"'
+                  : 'e.g., "I keep seeing repeating numbers everywhere"'
+              }
+              className="min-h-[60px] text-sm resize-none"
+              rows={2}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancel}
+                className="text-xs"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSubmit(false)}
+                className="text-xs"
+              >
+                Skip — General Reading
+              </Button>
+              {personalContext.trim() && (
+                <Button
+                  size="sm"
+                  onClick={() => handleSubmit(true)}
+                  className="text-xs"
+                >
+                  <Send className="h-3 w-3 mr-1" />
+                  Include & Generate
+                </Button>
+              )}
+              {!personalContext.trim() && (
+                <Button
+                  size="sm"
+                  onClick={() => handleSubmit(false)}
+                  className="text-xs"
+                >
+                  <Send className="h-3 w-3 mr-1" />
+                  Generate Reading
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
