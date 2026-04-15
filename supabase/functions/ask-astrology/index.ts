@@ -789,45 +789,20 @@ serve(async (req) => {
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
 
-        // POST-GENERATION SOLAR RETURN YEAR CORRECTION
-        if (srYearFromContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          const wrongYearPattern = /Solar Return\s+(\d{4})(?:\s*[-–]\s*(\d{4}))?/gi;
+        // POST-GENERATION: Strip any year numbers after "Solar Return"
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const srYearPattern = /Solar Return\s+\d{4}(?:\s*[-–]\s*\d{4})?/gi;
+          const stripYear = (text: string) => text.replace(srYearPattern, 'Solar Return');
           for (const section of parsedContent.sections) {
-            // Fix titles
-            if (typeof section.title === 'string') {
-              section.title = section.title.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                const year1 = parseInt(y1, 10);
-                if (year1 !== srYearFromContext || y2) {
-                  console.warn(`SR year correction in title: "${match}" → "Solar Return ${srYearFromContext}"`);
-                  return `Solar Return ${srYearFromContext}`;
-                }
-                return match;
-              });
-            }
-            // Fix body text
-            if (typeof section.body === 'string') {
-              section.body = section.body.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                const year1 = parseInt(y1, 10);
-                if (year1 !== srYearFromContext || y2) {
-                  console.warn(`SR year correction in body: "${match}" → "Solar Return ${srYearFromContext}"`);
-                  return `Solar Return ${srYearFromContext}`;
-                }
-                return match;
-              });
-            }
-            // Fix bullets
+            if (typeof section.title === 'string') section.title = stripYear(section.title);
+            if (typeof section.body === 'string') section.body = stripYear(section.body);
             if (Array.isArray(section.bullets)) {
               for (const bullet of section.bullets) {
-                if (typeof bullet.text === 'string') {
-                  bullet.text = bullet.text.replace(wrongYearPattern, (match: string, y1: string, y2?: string) => {
-                    const year1 = parseInt(y1, 10);
-                    if (year1 !== srYearFromContext || y2) {
-                      console.warn(`SR year correction in bullet: "${match}" → "Solar Return ${srYearFromContext}"`);
-                      return `Solar Return ${srYearFromContext}`;
-                    }
-                    return match;
-                  });
-                }
+                if (typeof bullet.text === 'string') bullet.text = stripYear(bullet.text);
+              }
+            }
+          }
+        }
               }
             }
           }
