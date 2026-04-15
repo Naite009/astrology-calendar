@@ -299,27 +299,21 @@ Rules:
      - bullet 3 — "Where confusion or mixed signals can happen" (derived from 12th house, Neptune, Mercury-Mars dynamics). Use framing: "This can create a pattern where..."
      - bullet 4 — "What can cause relationship patterns to repeat" (derived from South Node, Saturn, 8th house). Use framing: "If not understood, this can lead to..."
      Each bullet must name the specific tension, describe how it shows up in real behavior, and explain what happens if the person doesn't recognize it. Use careful language — differentiate attraction from compatibility, chemistry from durability, relationship opportunity from relationship readiness. Use "lighter in fixed energy" not "lacking fixed energy" when fixed placements exist. The body paragraph should synthesize all four tensions into one clear statement about the person's core relationship contradiction.)
-   9. timing_section — "Relationship Timing Windows" (Minimum 6 transits. Check ALL of these transit combinations:
+   9. timing_section — "Relationship Timing Windows" (The timing_section object MUST contain a "transits" array. Do NOT send an empty transits array — every timing section must include at least 6 transit entries covering the next 12 to 18 months.
+     Check ALL of these transit combinations:
      OUTER PLANETS (Pluto, Neptune, Uranus) to: natal Venus, Mars, Moon, Descendant, 7th house ruler, Juno, 5th cusp, 8th cusp
      SATURN to: natal Venus, Mars, Moon, Descendant, 7th house ruler, Juno, IC
      JUPITER to: natal Venus, Mars, Moon, Descendant, 7th house ruler, 5th cusp
-     NORTH NODE transiting conjunct: natal Venus, Descendant, 7th ruler — flag as "fated meeting energy"
-     ECLIPSES falling in natal 5th, 7th, or 8th house — flag as "relationship turning points"
-     For EACH transit, output ALL of these exact fields:
-     - "planet": transiting planet name
-     - "symbol": planet symbol
-     - "position": full description with degrees
-     - "aspect": aspect type (conjunction, square, trine, opposition, sextile, quincunx)
-     - "exact_degree": transit planet degree and sign
-     - "natal_point": natal point with degree and sign
-     - "first_applying_date": when the transit first enters effective orb
-     - "exact_hit_date": the exact perfection date (closest orb)
-     - "separating_end_date": when the transit exits effective orb
-     - "pass_label": "single pass" OR "Pass 1 — Direct" / "Pass 2 — Retrograde" / "Pass 3 — Final Direct"
-     - "date_range": full active period
-     - "tag": one of: meeting / attraction / commitment / test / rupture / healing / turning_point / fated
-     - "interpretation": plain-language explanation that MUST include one real-life scenario sentence. Example: "This can show up as meeting someone suddenly through conversation or online, where the attraction feels instant but unpredictable." Do NOT write interpretations that only explain the astrology — always add what it looks like in real life.
-     Do NOT collapse multiple passes into one simplified date range. Each retrograde pass gets its own separate transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
+     NORTH NODE transiting conjunct: natal Venus, Descendant, 7th ruler — tag as "fated"
+     ECLIPSES falling in natal 5th, 7th, or 8th house — tag as "turning_point"
+     Each transit object in the "transits" array MUST have exactly these fields:
+     - "planet" (string): the transiting planet name, e.g. "Jupiter"
+     - "aspect" (string): aspect type, e.g. "Conjunction", "Square", "Trine", "Opposition", "Sextile", "Quincunx"
+     - "natal_point" (string): what it aspects, e.g. "Natal Venus at 15°01' Cancer"
+     - "date_range" (string): the active window, e.g. "June 1 to June 25, 2026"
+     - "tag" (string): one of "meeting", "attraction", "commitment", "test", "rupture", "healing", "turning_point", "fated"
+     - "interpretation" (string): plain-language meaning, 1 to 3 sentences. MUST include one real-life scenario sentence. Example: "This can show up as meeting someone suddenly through conversation or online, where the attraction feels instant but unpredictable." Do NOT write interpretations that only explain the astrology — always add what it looks like in real life.
+     Do NOT collapse multiple retrograde passes into one entry. Each pass gets its own transit entry with distinct dates. Must include at least 1 supportive and 1 challenging transit. If exact dates are available show them; if approximate, label as approximate.)
   10. modality_element — "Elemental & Modal Balance"
    11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
