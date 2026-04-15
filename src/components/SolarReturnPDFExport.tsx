@@ -714,11 +714,11 @@ export function downloadBirthdayJSONStandalone(
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
       solarReturnYear: srChart.solarReturnYear,
-      solarReturnYearSpan: `${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+      solarReturnYearSpan: `${srChart.solarReturnYear}`,
       solarReturnAge: srAge,
       solarReturnLabel: srAge !== null
-        ? `Solar Return Year ${srAge} (${srChart.solarReturnYear}–${srChart.solarReturnYear + 1})`
-        : `Solar Return ${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+        ? `Solar Return Year ${srAge}`
+        : `Solar Return ${srChart.solarReturnYear}`,
       natalSun: natalChart.planets?.Sun?.sign || '',
       natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
       natalMoon: natalChart.planets?.Moon?.sign || '',
@@ -967,11 +967,11 @@ export function buildFullJsonStandalone(
     birthDate: natalChart.birthDate || '',
     birthLocation: natalChart.birthLocation || '',
     solarReturnYear: srChart.solarReturnYear,
-    solarReturnYearSpan: `${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+    solarReturnYearSpan: `${srChart.solarReturnYear}`,
     solarReturnAge: srAge2,
     solarReturnLabel: srAge2 !== null
-      ? `Solar Return Year ${srAge2} (${srChart.solarReturnYear}–${srChart.solarReturnYear + 1})`
-      : `Solar Return ${srChart.solarReturnYear}–${srChart.solarReturnYear + 1}`,
+      ? `Solar Return Year ${srAge2}`
+      : `Solar Return ${srChart.solarReturnYear}`,
     natalSun: natalChart.planets?.Sun?.sign || '',
     natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
     natalMoon: natalChart.planets?.Moon?.sign || '',
