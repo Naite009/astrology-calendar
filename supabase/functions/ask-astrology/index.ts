@@ -345,6 +345,8 @@ SYNTHESIS RULE: After describing each placement's behavior, connect it to at lea
 
 LANGUAGE STYLE: Always translate astrology into natural, human language. Do not make rigid or overly specific claims about behavior (e.g., frequency, exact habits, fixed traits). Describe tendencies, patterns, ways something may show up, and ranges of expression. Use language like "you may…", "this can show up as…", "you might find yourself…", "this often leads to…". The goal is accurate, flexible, recognizable — not absolute or overly literal. Avoid astrology jargon unless immediately explained in behavioral terms.
 
+CLARITY TRANSLATION RULE: Do not describe placements using abstract or trait-based language. Always translate into real-life situations and experiences. When describing a placement, answer: what actually happens, what the person experiences, what situations they get into, what this leads to over time. Avoid phrases like "mentally stimulating", "emotionally complex", "intense dynamics", "psychologically deep", "unclear energy". Instead describe concrete scenarios like "you may find yourself unsure where you stand with someone", "you might get attached before the relationship is clearly defined", "this can lead to mixed signals or inconsistent behavior". Every interpretation should feel like something the reader has actually experienced.
+
 RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of ALL relationship narrative sections):
 
 CRITICAL: The style examples below are REFERENCE ONLY. Do not copy their content or assume their placements. Apply this same clarity, tone, and explanation depth to whatever chart data is actually provided.
