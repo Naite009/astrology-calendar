@@ -691,7 +691,7 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
     const tzName = userTimezone || 'America/New_York';
 
     const formatInstructions = `
-REWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. The reader should think "that's exactly what happens" — not "I wonder what that means." Translate all abstract or symbolic language into concrete, lived experience. Describe what actually happens, what people feel, what situations arise. Avoid trait-based language like "intense dynamics" or "transformative energy" — instead say what the person actually experiences.
+HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why in simple terms. Do not lead with traits alone. Avoid abstract descriptions of personality or "types of people." Each sentence should combine what happens, how it feels, and what pattern it reflects. If a phrase sounds like astrology language, rewrite it into a concrete, real-life scenario. Do not stack multiple abstract descriptors in one sentence. The reader should think "that's exactly what happens" — not "I wonder what that means."
 
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.

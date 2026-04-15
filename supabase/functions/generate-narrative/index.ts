@@ -206,7 +206,7 @@ serve(async (req) => {
       ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich, deepen, and ground your interpretations with authoritative sourced insights. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
       : '';
 
-    const recognitionRule = "\n\nREWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. The reader should think 'that's exactly what happens to me.' Describe what actually happens, what the person feels, what situations they get into. Avoid abstract phrases like 'intense dynamics', 'transformative energy', 'emotionally complex'. Instead describe concrete scenarios people have lived through.";
+    const recognitionRule = "\n\nHYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with a real-life situation or experience — what actually happens. (2) Then describe how it feels. (3) Then briefly explain why in simple terms. Do not lead with traits alone. Avoid abstract descriptions of personality or 'types of people.' Each sentence should combine what happens, how it feels, and what pattern it reflects. If a phrase sounds like astrology language, rewrite it into a concrete, real-life scenario. Do not stack multiple abstract descriptors in one sentence. The reader should think 'that's exactly what happens to me.'";
 
     const systemPrompt = selectedVoice + "\n" + structureBlock + recognitionRule + refBlock;
 
