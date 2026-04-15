@@ -307,6 +307,7 @@ Rules:
   - Do not overstate karmic or fated themes. Differentiate chemistry from compatibility. Differentiate attraction from durability.
 
 RELATIONSHIP READING RULES:
+- SELECTIVITY OVER EXHAUSTIVENESS: Do not list every placement and every aspect. Lead with the chart factors that most clearly explain this person's relationship behavior. If a placement or aspect doesn't add new insight beyond what's already covered, leave it out. A focused reading with 3 strong placements is better than a comprehensive one that dilutes the signal.
 - PLACEMENT TABLES: TWO placement tables required — natal AND solar return. Include Chiron (⚷), Midheaven (MC), Descendant (DSC), IC, and Juno (⚵) in both tables whenever data is available.
 - SOLAR RETURN TRANSPARENCY: Do not write "SR Venus suggests..." unless SR Venus sign, degree, and house are shown in the SR placement table. Every SR claim must be traceable to a visible SR row.
 - OVERLAY AUDITABILITY: Each overlay claim must name three things: the SR factor, the natal factor, and the activation meaning. Example format: "SR Venus conjunct natal Mercury (2° orb): romance activates through communication and messaging." or "SR Descendant within 2° of natal Mercury: relationships become an arena for direct conversation this year."
