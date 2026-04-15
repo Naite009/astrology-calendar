@@ -95,13 +95,13 @@ export async function generatePDFCover(
   doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
   y += 16;
-  // Solar Return age + year (e.g., "YEAR 49  ·  2026")
+  // Solar Return age label (e.g., "YEAR 49")
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(5);
   const yearLabel = srAge !== null
-    ? `YEAR ${srAge}  ·  ${year}`
-    : `${year}`;
+    ? `YEAR ${srAge}`
+    : `SOLAR RETURN`;
   doc.text(yearLabel, pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
 
