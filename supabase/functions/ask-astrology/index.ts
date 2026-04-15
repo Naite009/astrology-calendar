@@ -343,7 +343,7 @@ TRANSLATION EXAMPLE:
 
 SYNTHESIS RULE: After describing each placement's behavior, connect it to at least one other placement. Highlight contradictions between placements. Do not leave placements as isolated meanings. The reader should understand their relationship behavior even if they know nothing about astrology.
 
-LANGUAGE STYLE: Clear, grounded, human, specific. Avoid astrology jargon unless immediately explained in behavioral terms. Goal: the user sees themselves in real situations, not abstract archetypes.
+LANGUAGE STYLE: Always translate astrology into natural, human language. Do not make rigid or overly specific claims about behavior (e.g., frequency, exact habits, fixed traits). Describe tendencies, patterns, ways something may show up, and ranges of expression. Use language like "you may…", "this can show up as…", "you might find yourself…", "this often leads to…". The goal is accurate, flexible, recognizable — not absolute or overly literal. Avoid astrology jargon unless immediately explained in behavioral terms.
 
 RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of ALL relationship narrative sections):
 
