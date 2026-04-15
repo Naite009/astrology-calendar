@@ -344,7 +344,7 @@ ABSOLUTE RULES:
 7. Use the Life Domain Scores, Year Priorities, and Activation Windows data to prioritize what matters most — don't give equal weight to everything.
 8. Mention the 29-year lunar phase cycle position and Metonic echoes if the data includes them.
 9. Still be AGE-APPROPRIATE in practical suggestions even though the language is technical.
-10. REWRITE FOR RECOGNITION: Even in technical mode, every interpretive sentence must describe something the reader can recognize from real life. "SR Mars square natal Pluto" is technical — but the interpretation must land as lived experience: "this often shows up as a period where you're fighting for control in a situation that won't let you have it." No abstract phrases like "intense transformative energy."
+10. HYBRID CLARITY RULE: Even in technical mode, every interpretive sentence must follow this sequence: (1) what actually happens, (2) how it feels, (3) why. "SR Mars square natal Pluto" is technical — but the interpretation must land as: "this often shows up as a period where you're fighting for control in a situation that won't let you have it — it feels frustrating because you know what you want but the path keeps getting blocked."
 
 STRUCTURE (use these exact headers):
 
