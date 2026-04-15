@@ -162,7 +162,7 @@ STRUCTURE:
 8. Deconditioning guidance: Practical steps for living their design${includeShadow ? '\n9. Shadow/Not-Self patterns: Where conditioning pulls them off-track (frame compassionately)' : ''}
 10. Integration: How all the pieces create a coherent picture of who they are
 
-REWRITE FOR RECOGNITION: After writing each key sentence, test: would someone with no Human Design or astrology knowledge recognize this from their real life? If not, rewrite it. The reader should think "that's exactly what happens to me" — not "I wonder what that means." Describe what actually happens: what situations they get into, what they feel, how they behave. Never leave a sentence in abstract form.
+HYBRID CLARITY RULE: For each insight: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Never lead with traits alone. If a phrase sounds like jargon, rewrite it into a concrete scenario the reader has lived through.
 
 Write approximately ${wordCount} words.`;
 

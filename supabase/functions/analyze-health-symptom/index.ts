@@ -39,7 +39,7 @@ FORMAT your response with clear sections using emoji headers:
 Be specific about planetary correspondences. Reference medical astrology principles.
 If the symptom could indicate something serious (chest pain, severe headache, etc.), lead with: "⚠️ IMPORTANT: This symptom may require immediate medical attention. Please consult a healthcare provider. Here is the astrological context..."
 
-REWRITE FOR RECOGNITION: Every explanation must describe what the person actually experiences in their body and daily life. Do not say "energetic imbalance" or "transformative healing process." Instead say things like "you may notice the headaches get worse when you skip meals or push through exhaustion", "this tends to show up as that tight feeling in your chest when you're holding back what you really want to say." The reader should think "yes, that's exactly what happens to me."`;
+HYBRID CLARITY RULE: For each insight, follow this sequence: (1) Start with a real-life situation — what actually happens in the body. (2) Describe how it feels. (3) Briefly explain why. Do not say "energetic imbalance" or "transformative healing process." Instead: "you may notice the headaches get worse when you skip meals or push through exhaustion — it feels like pressure building behind your eyes, because your body is signaling it needs rest before anything else." The reader should think "yes, that's exactly what happens to me."`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
