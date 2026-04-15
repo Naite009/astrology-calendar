@@ -307,11 +307,12 @@ Rules:
   - Do not overstate karmic or fated themes. Differentiate chemistry from compatibility. Differentiate attraction from durability.
 
 RELATIONSHIP READING RULES:
+- SELECTIVITY OVER EXHAUSTIVENESS: Do not list every placement and every aspect. Lead with the chart factors that most clearly explain this person's relationship behavior. If a placement or aspect doesn't add new insight beyond what's already covered, leave it out. A focused reading with 3 strong placements is better than a comprehensive one that dilutes the signal.
 - PLACEMENT TABLES: TWO placement tables required — natal AND solar return. Include Chiron (⚷), Midheaven (MC), Descendant (DSC), IC, and Juno (⚵) in both tables whenever data is available.
 - SOLAR RETURN TRANSPARENCY: Do not write "SR Venus suggests..." unless SR Venus sign, degree, and house are shown in the SR placement table. Every SR claim must be traceable to a visible SR row.
 - OVERLAY AUDITABILITY: Each overlay claim must name three things: the SR factor, the natal factor, and the activation meaning. Example format: "SR Venus conjunct natal Mercury (2° orb): romance activates through communication and messaging." or "SR Descendant within 2° of natal Mercury: relationships become an arena for direct conversation this year."
 - CONTRADICTION PATTERNS: Required section. Name internal tensions honestly — what wants safety vs freedom, what delays commitment, what idealizes, what repeats unconsciously.
-- TIMING TRANSITS: Include ALL major transits affecting Venus, Mars, the 7th house ruler, Juno, and the Descendant — minimum 6 transits. Include outer planet transits (Pluto, Neptune, Uranus) as well as Jupiter and Saturn transits. Each transit must be tagged with one of: meeting, attraction, commitment, test, rupture, healing. Each must include transit degree, natal target degree, and narrowest possible date range.
+- TIMING TRANSITS: Include only transits that genuinely occur within 1° during the 12–18 month window. Do not pad to reach a minimum count — if only 2 real transits exist, report 2. Prioritize outer planet transits (Pluto, Neptune, Uranus) and Saturn over faster-moving Jupiter unless Jupiter makes a notably tight aspect. Each transit must be tagged with one of: meeting, attraction, commitment, test, rupture, healing. Each must include transit degree, natal target degree, and narrowest possible date range.
 - RELATIONSHIP ASPECT ORBS: Conjunction 6°, Opposition 6°, Square 5°, Trine 5°, Sextile 4°, Quincunx 3°. Tight = within 2°. If orb exceeds limit, call it "sign resonance" or "thematic echo" — never a full aspect.
 - LILITH & ASTEROIDS: Interpret Lilith only if sign, degree, and house are explicitly present. Same for Juno. Apply same orb rules to asteroid aspects.
 - TONE: Do not overpromise soulmates or marriage. Do not claim certainty about outcomes. Differentiate chemistry from compatibility. Differentiate attraction from stability. Call out contradiction patterns when present.
@@ -349,8 +350,8 @@ RELATIONSHIP WRITING STYLE GUIDE (MANDATORY — governs tone and structure of AL
 CRITICAL: The style examples below are REFERENCE ONLY. Do not copy their content or assume their placements. Apply this same clarity, tone, and explanation depth to whatever chart data is actually provided.
 
 NARRATIVE SECTION FORMAT FOR RELATIONSHIP READINGS:
-- The "body" field of "Natal Relationship Architecture" MUST contain flowing paragraphs — one per placement — NOT a single summary sentence.
-- Each paragraph should be 2-4 sentences covering one placement (Venus, Mars, Moon, 7th house, etc.).
+- The "body" field of "Natal Relationship Architecture" MUST contain flowing paragraphs — NOT a single summary sentence.
+- Focus on the 2–4 placements that most clearly explain this person's relationship behavior. Do not mechanically cover every placement — skip any that would repeat what another placement already said.
 - The "bullets" field is OPTIONAL for this section. If used, bullets should cover synthesis points (love language, shadow pattern, ideal partner) — NOT the placement interpretations themselves.
 - For "Your Relationship Pattern", "Contradiction Patterns", and "SR Love Activation", bullets ARE the primary structure.
 
