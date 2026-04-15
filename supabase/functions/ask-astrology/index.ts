@@ -573,7 +573,7 @@ SR LOVE ACTIVATION STYLE:
   3. narrative_section — "The Inner Teacher" (Saturn sign/house for life lessons, Chiron for wound-to-gift, 12th house for spiritual connection)
   4. narrative_section — "The Awakening Points" (Uranus for breakthroughs, Neptune for spiritual vision, Pluto for deep transformation)
   5. timing_section — "Spiritual Timing" (transits to North Node, Neptune, and 12th house ruler with exact degrees and date ranges)
-  6. modality_element — "Elemental & Modal Balance" (frame interpretations as spiritual temperament)
+  6. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as spiritual temperament)
   7. summary_box — "Strategy Summary" with items: "Soul Purpose", "Key Lesson", "Spiritual Practice", "Timing for Growth"
 - CITY COMPARISON OPTIONAL RULE: Only include city_comparison sections if the reading type inherently involves location as a meaningful factor (relocation, relationship+location). For health, money, and spiritual readings, skip city comparisons UNLESS the user specifically asks about location or the question mentions moving/travel.
 - For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
