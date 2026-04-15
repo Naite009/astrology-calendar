@@ -805,8 +805,17 @@ serve(async (req) => {
 
         // POST-GENERATION: Strip any year numbers after "Solar Return"
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          // Match "Solar Return" followed by year anywhere, including in parentheses
           const srYearPattern = /Solar Return\s+\d{4}(?:\s*[-–]\s*\d{4})?/gi;
-          const stripYear = (text: string) => text.replace(srYearPattern, 'Solar Return');
+          const srYearParensPattern = /\s*\(\d{4}(?:\s*[-–]\s*\d{4})?\)/g;
+          const stripYear = (text: string) => {
+            let result = text.replace(srYearPattern, 'Solar Return');
+            // Also strip standalone year ranges in parentheses near "Solar Return" or "Key Placements"
+            result = result.replace(/(?:Solar Return|Key Placements)\s*\(\d{4}(?:\s*[-–]\s*\d{4})?\)/gi, (match) => match.replace(srYearParensPattern, ''));
+            // Catch any remaining year parentheses in titles
+            result = result.replace(/\s*\(\d{4}(?:\s*[-–—]\s*\d{4})?\)\s*/g, ' ').trim();
+            return result;
+          };
           for (const section of parsedContent.sections) {
             if (typeof section.title === 'string') section.title = stripYear(section.title);
             if (typeof section.body === 'string') section.body = stripYear(section.body);
