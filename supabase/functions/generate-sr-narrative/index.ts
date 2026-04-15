@@ -172,7 +172,9 @@ serve(async (req) => {
       ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich and ground your Solar Return interpretation. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
       : '';
 
-    const systemPrompt = `You are a master astrologer with 40 years of experience writing a personalized solar return reading. Write in flowing paragraphs with warmth and authority. No bullet points. No section headers inside the narrative. No technical jargon lists. Every sentence must be grounded in the chart data provided. Never invent placements or aspects not in the data.${refBlock}`;
+    const systemPrompt = `You are a master astrologer with 40 years of experience writing a personalized solar return reading. Write in flowing paragraphs with warmth and authority. No bullet points. No section headers inside the narrative. No technical jargon lists. Every sentence must be grounded in the chart data provided. Never invent placements or aspects not in the data.
+
+REWRITE FOR RECOGNITION: After writing each key sentence, internally test: would someone with zero astrology knowledge immediately recognize this from their real life? If not, rewrite until they would. Describe what actually happens, what the person experiences, what situations they get into. Avoid abstract phrases like "intense dynamics", "transformative energy", "emotionally complex", "powerful shifts." Instead describe concrete scenarios: "you may find yourself rethinking your career path", "a relationship that felt stable might suddenly feel uncertain."${refBlock}`;
 
     // Build structured user prompt with interpolated data
     const srAsc = a.yearlyTheme?.ascendantSign || '—';

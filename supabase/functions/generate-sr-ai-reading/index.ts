@@ -293,9 +293,10 @@ ${ageInstructions}
      - Instead of "Pisces Rising" → "You'll come across as more intuitive and gentle this year"
   2. NEVER start with "Dear [Name]", "Dear soul", or any greeting. Jump straight into the content.
   3. NEVER use vague language like "lean into the energy", "doors will open", "embrace the flow", "align with your truth", "the universe is asking you to". Every sentence must answer: WHAT specifically should they DO or EXPECT?
-  4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
-     - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
-     - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
+   4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
+      - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
+      - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
+   4b. REWRITE FOR RECOGNITION: After writing each sentence, test: would someone with no astrology knowledge recognize this from their real life? If not, rewrite it. Describe what actually happens — what situations arise, what the person feels, what they find themselves doing. Avoid "intense energy", "profound shift", "transformative period." Instead: "you may catch yourself rethinking a decision you thought was settled", "the relationship that felt solid might start raising questions you'd been avoiding."
   5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
   6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
   7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
@@ -343,6 +344,7 @@ ABSOLUTE RULES:
 7. Use the Life Domain Scores, Year Priorities, and Activation Windows data to prioritize what matters most — don't give equal weight to everything.
 8. Mention the 29-year lunar phase cycle position and Metonic echoes if the data includes them.
 9. Still be AGE-APPROPRIATE in practical suggestions even though the language is technical.
+10. REWRITE FOR RECOGNITION: Even in technical mode, every interpretive sentence must describe something the reader can recognize from real life. "SR Mars square natal Pluto" is technical — but the interpretation must land as lived experience: "this often shows up as a period where you're fighting for control in a situation that won't let you have it." No abstract phrases like "intense transformative energy."
 
 STRUCTURE (use these exact headers):
 

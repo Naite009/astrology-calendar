@@ -168,32 +168,32 @@ export const calculateSolarArcChart = (
 const getSolarArcInterpretation = (saPlanet: string, natalPlanet: string, aspect: string): string => {
   const interpretations: Record<string, string> = {
     // Venus aspects - relationships, love, money, values
-    'Venus-Sun-conjunction': "Solar Arc Venus conjunct natal Sun = MAJOR relationship or creative breakthrough! Enhanced charm, love opportunities, possible marriage or significant partnership. Your ability to attract love and money is at a peak.",
-    'Venus-Moon-conjunction': "Solar Arc Venus conjunct natal Moon = Deep emotional fulfillment in love. Home becomes beautiful. Strong mother/feminine connections. Possible pregnancy or birth of creative project.",
-    'Venus-Mars-conjunction': "Solar Arc Venus conjunct natal Mars = Passion ignites! New romance, creative fire, sexual awakening. Take initiative in love. Assert your values.",
-    'Venus-Ascendant-conjunction': "Solar Arc Venus conjunct Ascendant = You become magnetic! Physical beauty enhanced, new style, love enters your life visibly. Marriage possible.",
+    'Venus-Sun-conjunction': "Solar Arc Venus conjunct natal Sun = A time when you may meet someone important, fall in love, or finally feel good about who you are. People notice you more. Creative projects click into place. You might redecorate, change your style, or attract opportunities that feel like they found you.",
+    'Venus-Moon-conjunction': "Solar Arc Venus conjunct natal Moon = You may feel more emotionally settled than you have in years. Home starts to feel like a real sanctuary. A close relationship with a woman or mother figure deepens. You might move somewhere beautiful, start nesting, or begin a creative project that comes from a deeply personal place.",
+    'Venus-Mars-conjunction': "Solar Arc Venus conjunct natal Mars = You may suddenly know what you want — in love, in life, in bed. A new attraction shows up, or an existing relationship gets a second wind. You stop waiting for things to happen and start going after what matters to you.",
+    'Venus-Ascendant-conjunction': "Solar Arc Venus conjunct Ascendant = People start treating you differently — you may hear 'you look great' more than usual. A new relationship may begin, or you change your appearance in a way that feels more like the real you. Doors open more easily during this period.",
     
     // Sun aspects - identity, vitality, life direction
-    'Sun-Moon-conjunction': "Solar Arc Sun conjunct natal Moon = New emotional chapter begins. Identity merges with feelings. Major life integration. Women or mother significant.",
-    'Sun-Ascendant-conjunction': "Solar Arc Sun conjunct Ascendant = Major identity shift! You step into leadership. Visibility increases. New life chapter begins.",
-    'Sun-Venus-conjunction': "Solar Arc Sun conjunct natal Venus = Love and creativity flourish. Your core self aligns with pleasure and beauty. Romance, art, or financial blessing.",
+    'Sun-Moon-conjunction': "Solar Arc Sun conjunct natal Moon = A new chapter begins that feels deeply personal. What you want and what you need start to line up. A woman or mother figure may play a key role. You might move, change your living situation, or finally feel at home in your own skin.",
+    'Sun-Ascendant-conjunction': "Solar Arc Sun conjunct Ascendant = You step into a bigger version of yourself. People see you as a leader, or you take charge of something you'd been avoiding. A major new beginning — like starting a business, going public with something, or reinventing yourself.",
+    'Sun-Venus-conjunction': "Solar Arc Sun conjunct natal Venus = A period where love, creativity, and pleasure come more naturally. You may start a romance, finish an art project, or receive money you didn't expect. Things that used to feel like work start to feel like play.",
     
     // Mars aspects - action, energy, assertion
-    'Mars-Sun-conjunction': "Solar Arc Mars conjunct natal Sun = Major drive and ambition activated! Time to go after what you want. Physical energy peaks. Possible surgery or physical challenge.",
-    'Mars-Pluto-square': "Solar Arc Mars square natal Pluto = Power struggles intensify. Transformation through conflict. Channel this intense energy carefully. Major achievement possible through determined effort.",
-    'Mars-Saturn-conjunction': "Solar Arc Mars conjunct natal Saturn = Disciplined action pays off. Hard work recognized. May feel blocked initially, then breakthrough. Patience required.",
+    'Mars-Sun-conjunction': "Solar Arc Mars conjunct natal Sun = You feel a surge of motivation — like suddenly knowing it's time to act. You may take on a physical challenge, start a demanding project, or finally confront a situation you'd been tolerating. Energy is high but you may also feel more impatient than usual.",
+    'Mars-Pluto-square': "Solar Arc Mars square natal Pluto = You may find yourself in a power struggle — at work, in a relationship, or with yourself. Something you've been pushing down demands to be dealt with. It can feel like hitting a wall, but breaking through it changes everything.",
+    'Mars-Saturn-conjunction': "Solar Arc Mars conjunct natal Saturn = Hard work starts paying off, but not without frustration first. You may feel blocked or slowed down before a breakthrough. This is the period where discipline actually gets results — if you can resist quitting early.",
     
     // Jupiter aspects - expansion, luck, growth
-    'Jupiter-Sun-conjunction': "Solar Arc Jupiter conjunct natal Sun = Lucky year! Expansion, optimism, opportunities abound. Travel, education, or publishing success. Confidence soars.",
-    'Jupiter-Ascendant-conjunction': "Solar Arc Jupiter conjunct Ascendant = Major expansion of life circumstances. Weight gain possible! Travel, education, or spiritual growth visible to all.",
+    'Jupiter-Sun-conjunction': "Solar Arc Jupiter conjunct natal Sun = Things expand — your confidence, your opportunities, maybe your waistline. You may travel, go back to school, publish something, or take a leap of faith that works out. Optimism comes naturally and doors seem to open when you show up.",
+    'Jupiter-Ascendant-conjunction': "Solar Arc Jupiter conjunct Ascendant = Your world gets bigger. You may travel, take on a new role, or start something ambitious. People see you as more capable and generous. Weight gain is common. Everything feels like it's growing — for better or worse.",
     
     // Saturn aspects - structure, responsibility, maturation
-    'Saturn-Sun-conjunction': "Solar Arc Saturn conjunct natal Sun = Major responsibility arrives. Career advancement through hard work. Authority tested. Maturation point.",
-    'Saturn-Moon-conjunction': "Solar Arc Saturn conjunct natal Moon = Emotional maturation. Family responsibilities. Possible loss or ending that brings wisdom. Building emotional foundations.",
+    'Saturn-Sun-conjunction': "Solar Arc Saturn conjunct natal Sun = Responsibility lands on your shoulders — a promotion, a loss, a test of character. You may feel the weight of adulting more than usual. This is when you become the person others rely on, whether you asked for it or not.",
+    'Saturn-Moon-conjunction': "Solar Arc Saturn conjunct natal Moon = You may feel emotionally heavier — like carrying something you can't put down. A family responsibility may increase, or a relationship gets more serious. This is when you stop running from difficult feelings and build something solid with them.",
     
     // Pluto aspects - transformation, power, rebirth
-    'Pluto-Sun-conjunction': "Solar Arc Pluto conjunct natal Sun = Complete life transformation! Rebirth of identity. Power dynamics shift. You emerge stronger. Nothing will be the same.",
-    'Pluto-Ascendant-conjunction': "Solar Arc Pluto conjunct Ascendant = Profound personal transformation. Others see you differently. Power and magnetism increase. Possible crisis leads to rebirth.",
+    'Pluto-Sun-conjunction': "Solar Arc Pluto conjunct natal Sun = Something in your life ends so something else can begin. You may leave a job, end a relationship, or completely change how you see yourself. It doesn't happen gently — but you come out of it as a fundamentally different person.",
+    'Pluto-Ascendant-conjunction': "Solar Arc Pluto conjunct Ascendant = Other people start seeing you differently, and you can't quite figure out why until you realize you've changed. You may go through a crisis that strips away the version of yourself that no longer fits. What remains is more honest and more powerful.",
   };
   
   const key = `${saPlanet}-${natalPlanet}-${aspect}`;
