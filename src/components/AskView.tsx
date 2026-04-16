@@ -782,44 +782,64 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       'Lilith', 'Juno', 'Ceres', 'Pallas', 'Vesta', 'Eris',
     ];
 
-    const fixNarrativeText = (text: string, truthMap: Record<string, PlanetTruth>): string => {
-      if (!text || typeof text !== 'string') return text;
-      let fixed = text;
+    const replacePlanetReferences = (
+      input: string,
+      truthMap: Record<string, PlanetTruth>,
+      prefix?: 'SR' | 'Natal'
+    ): string => {
+      let fixed = input;
+      const prefixPattern = prefix ? `${prefix}\\s+` : '(?<!SR\\s)(?<!Natal\\s)';
+      const prefixLabel = prefix ? `${prefix} ` : '';
 
       for (const pName of PLANET_DISPLAY_NAMES) {
         const key = pName.toLowerCase().replace(/\s+/g, '');
         const truth = truthMap[key];
         if (!truth || truth.house === null) continue;
 
-        // Fix "Planet in the Nth house" — match any ordinal
         const housePattern = new RegExp(
-          `(${pName})\\s+in\\s+the\\s+(\\d+(?:st|nd|rd|th))\\s+house`,
+          `${prefixPattern}(${pName})\\s+(?:is\\s+)?in\\s+the\\s+(\\d+(?:st|nd|rd|th))\\s+house`,
           'gi'
         );
-        fixed = fixed.replace(housePattern, (match, planet) => {
-          return `${planet} in the ${ordinal(truth.house!)} house`;
+        fixed = fixed.replace(housePattern, (_match, planet) => {
+          return `${prefixLabel}${planet} in the ${ordinal(truth.house!)} house`;
         });
 
-        // Fix "Planet in Sign" where Sign is wrong (only fix if clearly a zodiac sign)
         for (const wrongSign of ZODIAC) {
           if (wrongSign === truth.sign) continue;
-          // Match "Planet in WrongSign" but not "Planet in the" (house refs)
           const signPattern = new RegExp(
-            `(${pName})\\s+in\\s+(${wrongSign})(?!\\s+(?:the|house|rising|ascendant))`,
+            `${prefixPattern}(${pName})\\s+(?:is\\s+)?in\\s+(${wrongSign})(?!\\s+(?:the|house|rising|ascendant))`,
             'gi'
           );
-          fixed = fixed.replace(signPattern, `$1 in ${truth.sign}`);
+          fixed = fixed.replace(signPattern, (_match, planet) => `${prefixLabel}${planet} in ${truth.sign}`);
         }
       }
+
+      return fixed;
+    };
+
+    const fixNarrativeText = (text: string, truthMap: Record<string, PlanetTruth>): string => {
+      if (!text || typeof text !== 'string') return text;
+
+      let fixed = text;
+
+      if (Object.keys(srTruth).length > 0) {
+        fixed = replacePlanetReferences(fixed, srTruth, 'SR');
+      }
+
+      fixed = replacePlanetReferences(fixed, natalTruth, 'Natal');
+      fixed = replacePlanetReferences(fixed, truthMap);
+
       return fixed;
     };
 
     // Apply narrative fixes to all text sections
     for (const section of data.sections) {
       if (section.type === 'placement_table') continue;
-      // Determine which truth map to use — SR sections use SR truth
-      const isSR = /solar return/i.test(section.title || '');
-      const truthMap = isSR && Object.keys(srTruth).length > 0 ? srTruth : natalTruth;
+      const sectionTitle = (section.title || '').toLowerCase();
+      const isSRFocusedSection =
+        /^solar return\b/.test(sectionTitle) ||
+        /this year|year in love|love activation|current year/.test(sectionTitle);
+      const truthMap = isSRFocusedSection && Object.keys(srTruth).length > 0 ? srTruth : natalTruth;
 
       if (section.body && typeof section.body === 'string') {
         section.body = fixNarrativeText(section.body, truthMap);
