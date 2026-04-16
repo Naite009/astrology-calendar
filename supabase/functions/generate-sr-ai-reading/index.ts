@@ -60,6 +60,20 @@ function buildContext(d: any, age: number | null): string {
   ctx += `SR Moon: ${d.srMoon}\n`;
   ctx += `SR Rising: ${d.srRising}\n\n`;
 
+  // Explicit SR planet positions so the AI never guesses signs
+  if (d.planetPositions?.length > 0) {
+    ctx += `--- SR PLANET POSITIONS (AUTHORITATIVE — do NOT contradict) ---\n`;
+    for (const pp of d.planetPositions) {
+      if (pp.srPosition) {
+        ctx += `SR ${pp.planet}: ${pp.srPosition} in SR house ${pp.srHouse || '—'}`;
+        if (pp.natalPosition) ctx += ` (natal: ${pp.natalPosition} in house ${pp.natalHouse || '—'})`;
+        if (pp.shift && pp.shift !== 'Same sign') ctx += ` [SHIFT: ${pp.shift}]`;
+        ctx += `\n`;
+      }
+    }
+    ctx += `\n`;
+  }
+
   if (d.yearlyTheme) {
     ctx += `--- YEAR THEME ---\n`;
     ctx += `SR Ascendant: ${d.yearlyTheme.ascendantSign}\n`;
@@ -286,6 +300,7 @@ function plainSystemPrompt(ageInstructions: string): string {
 ${ageInstructions}
 
   ABSOLUTE RULES:
+  0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs. NEVER guess or infer a planet's sign from aspects, houses, or other context. If Venus is listed as "Aries 12°", you say Aries — NEVER Taurus.
   1. NEVER use astrological jargon. No planet names, sign names, house numbers, aspects, degrees, dignities, or any technical terms. Translate EVERYTHING into plain life language.
      - Instead of "Sun in the 7th house" → "Your main focus this year is partnerships and close relationships"
      - Instead of "Saturn square Moon" → "You may feel emotionally tested around responsibilities"
@@ -335,6 +350,7 @@ function astroSystemPrompt(ageInstructions: string): string {
 ${ageInstructions}
 
 ABSOLUTE RULES:
+0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs when referencing ANY SR placement. NEVER guess or infer a planet's sign. If Venus is listed as "Aries 12°", cite Aries — NEVER Taurus.
 1. USE full astrological terminology: planet names, sign names, house numbers, aspect names (conjunction, trine, square, opposition, sextile), orbs, dignities (domicile, exaltation, detriment, fall), retrogrades, angular/succedent/cadent, sect, mutual receptions.
 2. Reference SPECIFIC placements. "SR Mars in Libra in the 1st house square natal Pluto at 3.4°" — not "an assertive energy comes through."
 3. NEVER start with "Dear [Name]" or any greeting. Jump straight into the technical synthesis.
