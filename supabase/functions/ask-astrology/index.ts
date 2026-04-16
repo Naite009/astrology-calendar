@@ -790,6 +790,7 @@ serve(async (req) => {
             ...messages,
           ],
           temperature: 0.3,
+          max_tokens: 16384,
         }),
       });
 
