@@ -1,0 +1,112 @@
+# Memory: index.md
+Updated: now
+
+# Project Memory
+
+## Core
+- Date logic MUST use `formatLocalDateKey` & `parseLocalDate` to prevent timezone drift.
+- Use `astronomy-engine` for deterministic calculations. AI is forbidden from doing math.
+- Ascendant source of truth is always `houseCusps.house1`; overwrite unreliable data.
+- Centralize orbs in `aspectOrbs.ts`: Luminaries 10°, Angles 9°, Planets 8°, Points 6°.
+- Inject `EPHEMERIS FACT CHECK` blocks to prevent AI hallucinations. Sign ≠ House.
+- Plain-language only (3rd grade level). Strip jargon, generic fillers, and author citations.
+- `aiReadingPlain` reports: strictly `##` headers, max 80 words/3 sentences per section.
+- Use 37 extended bodies; limit real-time transits to classical + nodes/chiron/asteroids.
+- `ask-astrology` edge functions retry 502/503/504 (max 3), return 200 on error.
+- Use `saveWithRollingBackups` for storage >500KB. Lovable HMR white screen needs full reload.
+- Clarity Translation: describe concrete real-life scenarios, not abstract traits or jargon.
+- Placement-First Openings: every narrative body opens with specific placements (sign+house+ruler), never abstract statements.
+
+## Memories
+- [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
+- [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
+- [Chart Lord Activation](mem://features/astrology/chart-lord-activation-system) — Binary search tracking of outer planet transits to the Sect Light
+- [Local Date Logic](mem://features/astrology/local-date-logic-standard) — formatLocalDateKey and parseLocalDate prevent timezone drift
+- [Core Analysis Features](mem://features/chart-decoder/core-analysis-features) — Mercury team assignment via ahead/behind Sun; avoid Morning/Evening star labels
+- [Relationship Suite](mem://features/astrology/relationship-suite-consolidated) — 5-dimension Focus-Aware synastry with relationship timelines
+- [Narrative System Architecture](mem://features/astrology/narrative-system-architecture) — 0.3 AI temp, strict Placidus cusp grounding for chart narratives
+- [Biorhythm Scoring](mem://features/timing/consolidated-biorhythm-and-power-scoring) — Local date sine waves for biorhythms; peaks usually 97-99
+- [Life Cycle Milestones](mem://features/timing/life-cycle-milestone-precision) — Exact date calculation for transiting planets to natal degrees
+- [Voice Style No Astrology](mem://features/narrative/voice-style-no-astrology) — plain_human voice strictly forbids all astrological jargon and symbols
+- [Best Days Scoring Engine](mem://features/timing/best-days-scoring-engine) — Gatekeeper planet rule for best days with strict 3°/5° orb thresholds
+- [Unified Profile System](mem://features/profiles/unified-profile-system) — Searchable profiles defaulting to primary user; filters out Solar Returns
+- [Narrative Voice Standards](mem://features/narrative/content-and-voice-standards) — 4-field structure, No Diagnosis policy, bold keywords for narratives
+- [Elevated Planet Analysis](mem://features/chart-decoder/elevated-planet-analysis) — Analyzes the Most Elevated Planet (closest to MC) for public visibility
+- [Chart Shape Detection](mem://features/astrology/chart-shape-advanced-detection) — Parallel evaluation for patterns, up to 3 runner-up shapes
+- [Highest Potential Synthesis](mem://features/chart-decoder/highest-potential-behavioral-synthesis) — Shape, Sect, Decan, and Node synthesis for actionable behavioral strategies
+- [Ephemeris Precision Fact Checking](mem://technical/astrology/ephemeris-precision-and-fact-checking) — Astronomy-engine precision and mandatory EPHEMERIS FACT CHECK in prompts
+- [Text Extraction Pipeline](mem://features/documents/text-extraction-pipeline) — Gemini-2.5-flash text extraction from PDFs via Base64
+- [Reference Library Grounding](mem://features/narrative/reference-library-grounding) — Truncates user-uploaded documents to ~12k characters for AI context
+- [Final Directive Synthesis](mem://features/sacred-script/final-directive-synthesis-logic) — Synthesizes Big Three, Saturn, and North Node into a Fortune Cookie takeaway
+- [Pedagogical Philosophy](mem://style/pedagogical-philosophy) — 3rd-grade to dissertation layered UI for astrological accessibility
+- [Aspect Narrative Growth Layers](mem://features/astrology/aspect-narrative-growth-layers) — 3-layer aspect narratives: life meaning, somatic sense, and conscious choice
+- [Retrograde Station Logic](mem://technical/astrology/retrograde-station-detection-logic) — Velocity zero-crossing algorithm for exact retrograde station timing
+- [Cosmic Weather Architecture](mem://features/home/cosmic-weather-narrative-architecture) — Moon-centric daily narrative weaving mythology and somatic language
+- [Outer Planet Precision Tracking](mem://features/timing/outer-planet-precision-tracking) — 3-pass tracking for Pluto/Neptune/Uranus with applying/separating colors
+- [AI Accuracy Enforcement](mem://features/astrology/ai-accuracy-and-deterministic-enforcement) — Deterministic regex post-correction of AI text for accurate ephemeris dates
+- [Planetary Returns System](mem://features/timing/planetary-returns-system) — Sign-specific felt-sense descriptions for precise planetary returns
+- [Modular Report Generator](mem://architecture/pdf/modular-report-generator) — jsPDF layout engine preventing orphans with contextual padding and TOC dot-leaders
+- [Book Integration Strategy](mem://architecture/content/book-integration-strategy) — Strip individual author citations to maintain authoritative application tone
+- [Progressed Lunation Cycle](mem://features/astrology/life-cycles/secondary-progressed-lunation-cycle) — True 29.5-year developmental cycle tracking via day-for-a-year progression
+- [Cosmic Weather PDF Export](mem://features/astrology/cosmic-weather/personalized-pdf-export) — Multi-page personalized PDF export with house cusp verification badges
+- [House Calculation Normalization](mem://technical/astrology/house-calculation-normalization) — normalizeSign converts zodiac glyphs to strings to prevent 0° Aries bugs
+- [Verified Calculation Standards](mem://features/astrology/verified-calculation-standards) — Centralized aspectOrbs.ts rules with traditional rulers and cusp data prioritization
+- [Cosmic Sounds Sonification](mem://features/astrology/cosmic-sounds-sonification) — Web Audio API additive synthesis using a 3-layer singing-bowl profile
+- [Cosmic Context Tracking](mem://features/journal/cosmic-context-tracking) — Auto-tags lunar journal entries with moon phase, eclipses, and Solar Returns
+- [Sign as Practice Engine](mem://features/moon-cycle/sign-as-practice-engine) — Translates technical sign data into embodied prompts and ritual ideas
+- [Somatic Felt Sense](mem://features/astrology/interpretation-standards/somatic-felt-sense) — Physically-grounded somatic interpretations for planetary clusters
+- [Lunation Aspect Depth](mem://features/moon-cycle/lunation-aspect-depth) — 3-part card depth (Identity, Aspect Meaning, Synthesis) for lunation transits
+- [Multi-Profile Isolation](mem://features/journal/multi-profile-isolation) — Forces React remount on profile switch via chart ID + cycle date key
+- [Solar Return Cloud Sync](mem://features/astrology/solar-return/cloud-sync-architecture) — Validates auth session before restoring charts from device_charts
+- [Identity Shift Headlines](mem://style/solar-return/identity-shift-headline-standards) — Strict title-case, active verb standards for birthday headlines
+- [Psychological Profile System](mem://features/astrology/solar-return/psychological-profile-system) — 12-dimension bidirectional scale (60/40 Natal/SR) aliased as solarReturn
+- [Lunation Cycle View](mem://features/moon-cycle/lunation-cycle-view-standards) — Longitudinal tracker with exact local phase dates and natal house mappings
+- [Report Design Vision](mem://style/solar-return/report-design-vision) — Magazine-quality PDF layout with specific callouts for tight orbs
+- [Life Domain Scoring](mem://features/astrology/solar-return/life-domain-scoring-system) — Activity vs Tone scoring using nature weights and retrograde pressure
+- [Solar Return Calculation Anchors](mem://technical/astrology/solar-return-calculation-anchors) — Time-dependent calculations anchored to exact Solar Return date
+- [Solar Return Export Naming](mem://architecture/pdf/solar-return-export-naming-conventions) — Canonical keys (starName, aspectType, solarReturn) for external PDF renderer
+- [Location Coordinate Resolution](mem://technical/astrology/location-coordinate-resolution) — CITY_LATITUDES dictionary resolves city strings to geographic coordinates
+- [Deterministic Calculation Standard](mem://technical/astrology/deterministic-calculation-standard) — Strict use of astronomy-engine for fixed stars, Firdaria, Arabic Parts
+- [Workbook Mechanics & UI](mem://features/moon-cycle/workbook-mechanics-and-ui-standards) — Optimistic updates and jumpToSection setTimeout logic for Lunar Workbook
+- [Ascendant Source of Truth](mem://technical/astrology/ascendant-source-of-truth) — Ascendant explicitly derived from houseCusps.house1 to prevent OCR errors
+- [Tarot Oracle Integration](mem://features/moon-cycle/tarot-oracle-integration) — Persistent AI card readings using full natal chart context in lunar_cycle_journals
+- [Solar Return Data Export](mem://features/astrology/solar-return/export-data-integrity-manifest) — Post-processing cleanup for AI text to ensure professional JSON exports
+- [AI Hallucination Prevention](mem://technical/astrology/ai-hallucination-prevention-standards) — Explicit calcHouse degree-based calculations to prevent sign-house AI guessing
+- [Extended Aspect Engine](mem://technical/astrology/extended-aspect-engine) — Daily aspect detection includes asteroids, Chiron, Eris, Lilith, and Nodes
+- [Intercepted Sign Detection](mem://features/astrology/intercepted-sign-detection-logic) — Auto-detects intercepted and doubled signs on house cusps
+- [Extended Body Manual Entry](mem://features/chart-decoder/extended-body-manual-entry) — Expanded library of 37 celestial bodies used across analysis modules
+- [LocalStorage Quota Management](mem://technical/storage/localstorage-quota-management) — saveWithRollingBackups prevents UI crashes on QuotaExceededError
+- [Preview White Screen HMR](mem://technical/platform/preview-white-screen-hmr) — Lovable Vite HMR timeouts require full page reload for recovery
+- [Astrological Narrative Standards](mem://style/astrological-narrative-standards) — Strict markdown formatting rules (only ##) for plain-language AI readings
+- [Astrocartography Relocation System](mem://features/astrology/solar-return/astrocartography-relocation-system) — 0-10 score travel guidance with quadratic orb decay and intention scaling
+- [Extended Celestial Library](mem://data/astrological-signatures/extended-celestial-library) — Master list of the 37 tracked celestial bodies and usage constraints
+- [Planetary Dominance Engine](mem://features/astrology/planetary-dominance-engine) — 5-factor dominance scoring (Sign, House, Angle, Ruler, Aspect) with roles
+- [Birth Time Uncertainty](mem://features/profiles/birth-time-uncertainty) — Visual warnings on house-dependent data when birth time is approximate
+- [Natal Portrait Interpretive Depth](mem://features/astrology/natal-portrait/interpretive-depth) — Contextual roles map sign to style and house to primary fuel
+- [Solar Return Analysis Standards](mem://features/astrology/solar-return/analysis-engine-standards) — 14-section Life Strategy with lunar flow bridging and weighted aspects
+- [Chart Patterns Body Selection](mem://features/astrology/chart-patterns/body-selection-logic) — Grand Trines and other patterns strictly prioritize the 10 core bodies
+- [Tarot Card Visual Standards](mem://style/tarot/card-visual-standards) — Rider-Waite aesthetic with clearly printed names and matching numbers
+- [Shared Constants Standard](mem://technical/astrology/shared-constants-standard) — Symbols and ordinal helpers centralized in solarReturnConstants.ts
+- [Vision Engine Extraction](mem://features/chart-import/vision-engine-extraction-standards) — parse-chart-image extracts full 37 bodies from Solar Return wheels and tables
+- [Ascendant Ruler Narrative Layers](mem://features/astrology/solar-return/ascendant-ruler-narrative-layers) — Plot (SR chart) vs Setting (Natal chart) dual-layer ruler interpretation
+- [Ask Tab PDF Export](mem://features/ask-tab/pdf-export-standards) — 32pt titles, merged single-document output for Ask Tab PDF reports
+- [Navigation Persistence](mem://features/home/navigation-persistence) — Preserves viewMode via sessionStorage to prevent navigation resets
+- [Natal Astrocartography Engine](mem://features/ask-tab/natal-astrocartography-engine) — 120+ city relocation engine with dual-layer (Long-Term vs This Year) analysis
+- [AI Chart Consultation](mem://features/ask-tab/ai-chart-consultation) — Quick Topic prompts trigger high-depth, auto-submitted AI queries
+- [Ask Session Management](mem://features/ask-tab/session-management) — ask-active-chat persistence with name-based fallback recovery
+- [Aspect Verification Protocol](mem://features/ask-tab/aspect-verification-protocol) — 7-step mandatory aspect validation via absolute ecliptic degrees
+- [Relocation Engine Standards](mem://features/ask-tab/relocation-engine-standards) — Overall Score formula minus risk penalty for relocation guidance
+- [Relationship Engine Standards](mem://features/ask-tab/relationship-engine-standards) — Dual-chart framework enforcing 'Relationship Translation Layer' behavioral language
+- [Timing Precision Standards](mem://features/ask-tab/timing-precision-standards) — Pre-computes up to 15 aspects for multi-pass outer planet precision
+- [Reading Structure Subsections](mem://features/ask-tab/reading-structure-subsections) — Mandatory structures for Needs Profile, Contradiction Patterns, and Strategy Summary
+- [Ask UI Visualization](mem://features/ask-tab/ui-components-and-visualization) — ScorePills, AnalysisModeBanner, and Regenerate button UI standards
+- [Ask AI Persona Prompting](mem://features/ask-tab/ai-persona-and-prompting) — No question echoing; element tallies use integers; honest line vs symbolic labels
+- [Reading Type Architectures](mem://features/ask-tab/reading-type-architectures) — Fixed mandatory section outlines for 6 specific reading types
+- [Behavioral Interpretation](mem://features/ask-tab/behavioral-interpretation-standards) — Direct Answer First; explicitly bans generic trait words in favor of lived behavior
+- [Asteroid Data Gate](mem://features/ask-tab/asteroid-data-gate) — Hard gate prevents interpreting Lilith and Juno without complete degree/sign/house data
+- [Human Design Narrative Standards](mem://features/human-design/engine-and-narrative-standards) — BFS graph logic for types and mathematically enforced incarnation crosses
+- [Eclipse Ecosystem Metadata](mem://features/astrology/eclipse-ecosystem-and-metadata) — 25-event ecosystem with custom metadata, IFX exiles, and 7-step teaching mode
+- [Moon Archetype Nomenclature](mem://features/astrology/moon-archetype-and-nomenclature) — 96 precise archetypes on 45° boundaries with shading and core wounds
+- [Edge Functions Retry Logic](mem://technical/edge-functions/retry-logic) — Exponential backoff retry for 502/503/504 errors on the ask-astrology edge function
+- [Hybrid Clarity Rule](mem://features/ask-tab/clarity-translation-rule) — Lead with real-life situation, then feeling, then why — never traits alone; rewrite until recognizable
+- [Placement-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Every narrative body opens with specific chart placements (sign+house+ruler), never abstract statements
