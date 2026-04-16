@@ -350,6 +350,7 @@ function astroSystemPrompt(ageInstructions: string): string {
 ${ageInstructions}
 
 ABSOLUTE RULES:
+0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs when referencing ANY SR placement. NEVER guess or infer a planet's sign. If Venus is listed as "Aries 12°", cite Aries — NEVER Taurus.
 1. USE full astrological terminology: planet names, sign names, house numbers, aspect names (conjunction, trine, square, opposition, sextile), orbs, dignities (domicile, exaltation, detriment, fall), retrogrades, angular/succedent/cadent, sect, mutual receptions.
 2. Reference SPECIFIC placements. "SR Mars in Libra in the 1st house square natal Pluto at 3.4°" — not "an assertive energy comes through."
 3. NEVER start with "Dear [Name]" or any greeting. Jump straight into the technical synthesis.
