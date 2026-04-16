@@ -790,6 +790,7 @@ serve(async (req) => {
             ...messages,
           ],
           temperature: 0.3,
+          max_tokens: 16384,
         }),
       });
 
@@ -851,6 +852,10 @@ serve(async (req) => {
       });
     }
     const content = data.choices?.[0]?.message?.content || "";
+    const finishReason = data.choices?.[0]?.finish_reason || data.choices?.[0]?.stop_reason || "";
+    if (finishReason === "length" || finishReason === "MAX_TOKENS") {
+      console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+    }
     
     // Try to parse the JSON response to validate it
     let parsedContent;
@@ -1099,6 +1104,22 @@ serve(async (req) => {
               }
               // Remove transits with invalid aspects
               section.transits = section.transits.filter((t: any) => !t._aspect_invalid);
+            }
+          }
+        }
+
+        // POST-GENERATION TIMING EMPTY CHECK: Log if timing_section has empty transits
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'timing_section') {
+              if (!Array.isArray(section.transits) || section.transits.length === 0) {
+                console.warn(`ask-astrology: timing_section "${section.title}" has EMPTY transits array. finish_reason=${finishReason}, content length=${content.length}`);
+              } else {
+                console.log(`ask-astrology: timing_section "${section.title}" has ${section.transits.length} transits ✓`);
+              }
+              if (!Array.isArray(section.windows) || section.windows.length === 0) {
+                console.warn(`ask-astrology: timing_section "${section.title}" has EMPTY windows array.`);
+              }
             }
           }
         }
