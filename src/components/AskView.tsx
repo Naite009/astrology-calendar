@@ -1056,32 +1056,47 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
+  const getReadingsForExport = useCallback((): { chartMeta: any; readings: StructuredReading[] } | null => {
+    // First try current entries
+    const currentReadings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+    if (currentReadings.length > 0 && selectedChart) {
+      return {
+        chartMeta: {
+          name: selectedChart.name,
+          birthDate: selectedChart.birthDate,
+          birthTime: selectedChart.birthTime,
+          birthLocation: selectedChart.birthLocation,
+        },
+        readings: currentReadings,
+      };
+    }
+    // Fallback: load last persisted reading
+    const lastReading = loadLastReading(activeChartId);
+    if (lastReading) {
+      return { chartMeta: lastReading.chart, readings: lastReading.readings };
+    }
+    return null;
+  }, [entries, selectedChart, activeChartId]);
+
   const handleDownloadPdf = () => {
-    if (!selectedChart || entries.length === 0) return;
-    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
-    if (readings.length === 0) {
-      toast.error("No structured readings to export yet.");
+    const exportData = getReadingsForExport();
+    if (!exportData || !selectedChart) {
+      toast.error("No readings available to export. Run a reading first.");
       return;
     }
-    generateAskPdf(selectedChart, readings);
+    generateAskPdf(selectedChart, exportData.readings);
   };
 
   const handleDownloadJson = () => {
-    if (!selectedChart || entries.length === 0) return;
-    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
-    if (readings.length === 0) {
-      toast.error("No structured readings to export yet.");
+    const exportData = getReadingsForExport();
+    if (!exportData) {
+      toast.error("No readings available to export. Run a reading first.");
       return;
     }
     const jsonData = {
-      chart: {
-        name: selectedChart.name,
-        birthDate: selectedChart.birthDate,
-        birthTime: selectedChart.birthTime,
-        birthLocation: selectedChart.birthLocation,
-      },
+      chart: exportData.chartMeta,
       exportedAt: new Date().toISOString(),
-      readings,
+      readings: exportData.readings,
     };
     const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
