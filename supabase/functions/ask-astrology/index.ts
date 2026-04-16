@@ -852,6 +852,10 @@ serve(async (req) => {
       });
     }
     const content = data.choices?.[0]?.message?.content || "";
+    const finishReason = data.choices?.[0]?.finish_reason || data.choices?.[0]?.stop_reason || "";
+    if (finishReason === "length" || finishReason === "MAX_TOKENS") {
+      console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+    }
     
     // Try to parse the JSON response to validate it
     let parsedContent;
