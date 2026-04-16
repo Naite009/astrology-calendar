@@ -923,6 +923,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       saveActiveChat(chartIdForRequest, nextEntries);
       upsertConversationSnapshot(nextEntries, chartIdForRequest, chartNameForRequest);
 
+      // Persist last reading for download even after timeout/reload
+      const newReadings = nextEntries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+      if (newReadings.length > 0 && chartForRequest) {
+        saveLastReading(chartIdForRequest, {
+          name: chartForRequest.name,
+          birthDate: chartForRequest.birthDate,
+          birthTime: chartForRequest.birthTime,
+          birthLocation: chartForRequest.birthLocation,
+        }, newReadings);
+      }
+
       if (activeChartIdRef.current === chartIdForRequest) {
         setEntries(nextEntries);
       }
