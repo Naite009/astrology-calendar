@@ -165,8 +165,10 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
     try {
       const fullJson = buildFullJsonStandalone(analysis, selectedSR, selectedNatal, aiReadings);
 
-      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, () => {});
-      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, () => {});
+      const [plainResult, astroResult] = await Promise.all([
+        fetchReading(fullJson, 'plain', controller.signal, () => {}),
+        fetchReading(fullJson, 'astro', controller.signal, () => {}),
+      ]);
 
       const finalReadings = { plain: plainResult, astro: astroResult };
       setAiReadings(finalReadings);
@@ -181,6 +183,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       }
     } finally {
       setIsGeneratingForExport(false);
+      abortExportRef.current = null;
     }
   }, [analysis, selectedSR, selectedNatal, aiReadings]);
 
