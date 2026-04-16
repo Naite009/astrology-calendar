@@ -98,6 +98,13 @@ Do not describe astrology using generic traits. All interpretations must be tran
 - Real relationship patterns (what dynamics repeat, what they attract)
 - Actual experiences the person will recognize (specific situations, not abstract themes)
 
+PLACEMENT-FIRST OPENING RULE — MANDATORY FOR EVERY narrative_section BODY:
+Every "body" paragraph in every narrative_section MUST open with the specific chart placements that drive the interpretation. The formula:
+- First sentence: name the key placements by sign + house (and ruler if relevant). Example: "Your 7th house cusp is Capricorn, ruled by Saturn, and that Saturn sits in Cancer in your 1st house conjunct your Moon."
+- Second sentence: translate what that specific configuration means for THIS person. Example: "That single line is the blueprint: you need a partner with mature, structural commitment who also feels emotionally like home."
+- Then continue into the broader pattern, shadow dynamics, and lived experience.
+NEVER open a narrative body with an abstract statement like "Your relationship blueprint is built on a contradiction" or "This year brings transformation." The reader must see THEIR chart data in the very first sentence. This rule applies to ALL narrative sections — natal, solar return, cross-references, career, health, money, spiritual — every single one.
+
 FORBIDDEN TRAIT WORDS (never use as standalone descriptions): "intense", "deep", "communicative", "experimental", "passionate", "loyal", "nurturing", "analytical", "intuitive", "transformative", "harmonious", "rebellious"
 
 Instead of traits, ALWAYS explain:
