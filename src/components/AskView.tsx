@@ -9,6 +9,7 @@ import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition } from "@/lib/astrology";
 import { calculateTransitAspects } from "@/lib/transitAspects";
+import { scanFutureTransits, formatFutureTransitsContext } from "@/lib/futureTransitScanner";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
@@ -479,6 +480,22 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           }
         }
       } catch {}
+    } catch {}
+
+    // --- FUTURE TRANSIT WINDOWS (next 18 months) ---
+    try {
+      const natalPositions: { name: string; longitude: number }[] = [];
+      for (const [name, data] of Object.entries(planets)) {
+        if (data && typeof data === 'object' && 'sign' in data) {
+          const pos = data as { sign: string; degree: number; minutes?: number };
+          const lon = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
+          natalPositions.push({ name, longitude: lon });
+        }
+      }
+      const futureWindows = scanFutureTransits(natalPositions, 18);
+      if (futureWindows.length > 0) {
+        context += formatFutureTransitsContext(futureWindows);
+      }
     } catch {}
 
     // --- SOLAR RETURN CONTEXT ---
