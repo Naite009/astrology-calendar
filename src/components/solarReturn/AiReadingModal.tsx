@@ -77,39 +77,42 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
   const [readings, setReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const [activeView, setActiveView] = useState<AiReadingMode>('plain');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingMode, setStreamingMode] = useState<AiReadingMode | null>(null);
+  const [activeStreams, setActiveStreams] = useState<Set<AiReadingMode>>(new Set());
   const [hasStarted, setHasStarted] = useState(false);
-  const [currentStreamText, setCurrentStreamText] = useState('');
+  const [streamTexts, setStreamTexts] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const abortRef = useRef<AbortController | null>(null);
 
   const generateBoth = useCallback(async () => {
     setReadings({ plain: '', astro: '' });
+    setStreamTexts({ plain: '', astro: '' });
     setIsStreaming(true);
     setHasStarted(true);
+    setActiveView('plain');
+    setActiveStreams(new Set(['plain', 'astro']));
 
     const controller = new AbortController();
     abortRef.current = controller;
     const fullJson = buildFullJson();
 
-    try {
-      // Generate plain first
-      setStreamingMode('plain');
-      setActiveView('plain');
-      setCurrentStreamText('');
-      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, (text) => {
-        setCurrentStreamText(text);
+    const runStream = async (mode: AiReadingMode): Promise<string> => {
+      const result = await fetchReading(fullJson, mode, controller.signal, (text) => {
+        setStreamTexts(prev => ({ ...prev, [mode]: text }));
       });
-      setReadings(prev => ({ ...prev, plain: plainResult }));
+      setReadings(prev => ({ ...prev, [mode]: result }));
+      setActiveStreams(prev => {
+        const next = new Set(prev);
+        next.delete(mode);
+        return next;
+      });
+      return result;
+    };
 
-      // Then astro
-      setStreamingMode('astro');
-      setActiveView('astro');
-      setCurrentStreamText('');
-      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, (text) => {
-        setCurrentStreamText(text);
-      });
+    try {
+      const [plainResult, astroResult] = await Promise.all([
+        runStream('plain'),
+        runStream('astro'),
+      ]);
       const final = { plain: plainResult, astro: astroResult };
-      setReadings(final);
       onReadingsUpdate?.(final);
       toast.success('Both readings generated');
     } catch (err: any) {
@@ -119,8 +122,8 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
       }
     } finally {
       setIsStreaming(false);
-      setStreamingMode(null);
-      setCurrentStreamText('');
+      setActiveStreams(new Set());
+      setStreamTexts({ plain: '', astro: '' });
       abortRef.current = null;
     }
   }, [buildFullJson, onReadingsUpdate]);
