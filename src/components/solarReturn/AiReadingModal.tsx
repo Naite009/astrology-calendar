@@ -77,39 +77,42 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
   const [readings, setReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const [activeView, setActiveView] = useState<AiReadingMode>('plain');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingMode, setStreamingMode] = useState<AiReadingMode | null>(null);
+  const [activeStreams, setActiveStreams] = useState<Set<AiReadingMode>>(new Set());
   const [hasStarted, setHasStarted] = useState(false);
-  const [currentStreamText, setCurrentStreamText] = useState('');
+  const [streamTexts, setStreamTexts] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
   const abortRef = useRef<AbortController | null>(null);
 
   const generateBoth = useCallback(async () => {
     setReadings({ plain: '', astro: '' });
+    setStreamTexts({ plain: '', astro: '' });
     setIsStreaming(true);
     setHasStarted(true);
+    setActiveView('plain');
+    setActiveStreams(new Set(['plain', 'astro']));
 
     const controller = new AbortController();
     abortRef.current = controller;
     const fullJson = buildFullJson();
 
-    try {
-      // Generate plain first
-      setStreamingMode('plain');
-      setActiveView('plain');
-      setCurrentStreamText('');
-      const plainResult = await fetchReading(fullJson, 'plain', controller.signal, (text) => {
-        setCurrentStreamText(text);
+    const runStream = async (mode: AiReadingMode): Promise<string> => {
+      const result = await fetchReading(fullJson, mode, controller.signal, (text) => {
+        setStreamTexts(prev => ({ ...prev, [mode]: text }));
       });
-      setReadings(prev => ({ ...prev, plain: plainResult }));
+      setReadings(prev => ({ ...prev, [mode]: result }));
+      setActiveStreams(prev => {
+        const next = new Set(prev);
+        next.delete(mode);
+        return next;
+      });
+      return result;
+    };
 
-      // Then astro
-      setStreamingMode('astro');
-      setActiveView('astro');
-      setCurrentStreamText('');
-      const astroResult = await fetchReading(fullJson, 'astro', controller.signal, (text) => {
-        setCurrentStreamText(text);
-      });
+    try {
+      const [plainResult, astroResult] = await Promise.all([
+        runStream('plain'),
+        runStream('astro'),
+      ]);
       const final = { plain: plainResult, astro: astroResult };
-      setReadings(final);
       onReadingsUpdate?.(final);
       toast.success('Both readings generated');
     } catch (err: any) {
@@ -119,8 +122,8 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
       }
     } finally {
       setIsStreaming(false);
-      setStreamingMode(null);
-      setCurrentStreamText('');
+      setActiveStreams(new Set());
+      setStreamTexts({ plain: '', astro: '' });
       abortRef.current = null;
     }
   }, [buildFullJson, onReadingsUpdate]);
@@ -145,12 +148,17 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
 
   if (!open) return null;
 
-  // What to display in the body
-  const displayText = streamingMode === activeView ? currentStreamText : readings[activeView];
-  const isCurrentlyStreaming = isStreaming && streamingMode === activeView;
-  const otherMode: AiReadingMode = activeView === 'plain' ? 'astro' : 'plain';
-  const otherDone = !!readings[otherMode];
+  // What to display in the body — show live stream text if actively streaming, otherwise final reading
+  const isViewStreaming = activeStreams.has(activeView);
+  const displayText = isViewStreaming ? streamTexts[activeView] : readings[activeView];
+  const isCurrentlyStreaming = isStreaming && isViewStreaming;
   const currentDone = !!readings[activeView];
+
+  // Build status message for parallel generation
+  const streamingModes = Array.from(activeStreams);
+  const streamingLabel = streamingModes.length === 2
+    ? 'Both readings'
+    : streamingModes[0] === 'plain' ? 'Plain Language' : 'Astrology Mind';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -172,7 +180,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">View:</span>
             <div className="flex rounded-full border border-border overflow-hidden">
               <button
-                onClick={() => { if (!isStreaming || streamingMode !== 'plain') setActiveView('plain'); }}
+                onClick={() => setActiveView('plain')}
                 className={`px-3 py-1 text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
                   activeView === 'plain'
                     ? 'bg-primary text-primary-foreground'
@@ -183,7 +191,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
                 {readings.plain && <CheckCircle2 size={10} className={activeView === 'plain' ? 'text-primary-foreground' : 'text-green-500'} />}
               </button>
               <button
-                onClick={() => { if (!isStreaming || streamingMode !== 'astro') setActiveView('astro'); }}
+                onClick={() => setActiveView('astro')}
                 className={`px-3 py-1 text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
                   activeView === 'astro'
                     ? 'bg-primary text-primary-foreground'
@@ -196,8 +204,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
             </div>
             {isStreaming && (
               <span className="text-[10px] text-muted-foreground ml-1">
-                Generating {streamingMode === 'plain' ? 'Plain Language' : 'Astrology Mind'}...
-                {streamingMode === 'plain' ? ' (Astrology Mind is next)' : ''}
+                Generating {streamingLabel}...
               </span>
             )}
           </div>
@@ -226,16 +233,6 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
               <Loader2 size={28} className="animate-spin mx-auto text-primary mb-3" />
               <p className="text-sm text-muted-foreground">
                 Synthesizing {activeView === 'plain' ? 'Plain Language' : 'Astrology Mind'} reading...
-              </p>
-            </div>
-          )}
-
-          {/* Show "waiting" if viewing the mode that hasn't started yet */}
-          {hasStarted && !displayText && !isCurrentlyStreaming && !currentDone && (
-            <div className="text-center py-12">
-              <Loader2 size={28} className="animate-spin mx-auto text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">
-                {activeView === 'astro' ? 'Astrology Mind' : 'Plain Language'} reading will generate next...
               </p>
             </div>
           )}
