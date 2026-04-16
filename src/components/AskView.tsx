@@ -214,6 +214,19 @@ function formatTime12h(time?: string): string {
   return `${h}:${m} ${suffix}`;
 }
 
+function formatSavedAt(savedAt?: string): string {
+  if (!savedAt) return "";
+  const date = new Date(savedAt);
+  if (Number.isNaN(date.getTime())) return savedAt;
+  return date.toLocaleString([], {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialChartId, solarReturnCharts = [] }: AskViewProps) => {
   const initialMetaRef = useRef<AskActiveMeta>(loadActiveMeta());
   const initialAskChartIdRef = useRef<string>(
@@ -1240,9 +1253,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
   }
 
+  const lastSavedReading = loadLastReading(activeChartId);
   const hasAssistantReadings = entries.some(e => e.role === "assistant" && e.reading);
-  const hasLastReading = !hasAssistantReadings && loadLastReading(activeChartId) !== null;
-  const canDownload = hasAssistantReadings || hasLastReading;
+  const hasSavedReading = lastSavedReading !== null;
+  const canDownload = hasAssistantReadings || hasSavedReading;
+  const savedReadingTimestamp = lastSavedReading?.savedAt ? formatSavedAt(lastSavedReading.savedAt) : "";
 
   return (
     <div className="space-y-6">
@@ -1262,16 +1277,23 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
             <div className="flex items-center gap-1">
               {canDownload && (
-                <>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as JSON" : "Download as JSON"}>
-                    <Download className="h-4 w-4 mr-1" />
-                    JSON{hasLastReading ? " (saved)" : ""}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as PDF" : "Download as PDF"}>
-                    <Download className="h-4 w-4 mr-1" />
-                    PDF{hasLastReading ? " (saved)" : ""}
-                  </Button>
-                </>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title={hasSavedReading ? "Download last saved reading as JSON" : "Download as JSON"}>
+                      <Download className="h-4 w-4 mr-1" />
+                      JSON{hasSavedReading ? " (saved)" : ""}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title={hasSavedReading ? "Download last saved reading as PDF" : "Download as PDF"}>
+                      <Download className="h-4 w-4 mr-1" />
+                      PDF{hasSavedReading ? " (saved)" : ""}
+                    </Button>
+                  </div>
+                  {savedReadingTimestamp && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Last saved: {savedReadingTimestamp}
+                    </p>
+                  )}
+                </div>
               )}
               {entries.some(e => e.role === "assistant") && (
                 <Button variant="ghost" size="sm" onClick={regenerateLastAnswer} disabled={isLoading} className="text-muted-foreground" title="Regenerate the last answer with the same question">

@@ -336,6 +336,15 @@ export const useNatalChart = () => {
       selectedChartForTiming === 'user' ||
       savedCharts.some(c => c.id === selectedChartForTiming);
 
+    const waitingForSavedChartsToRestore =
+      selectedChartForTiming !== 'general' &&
+      selectedChartForTiming !== 'user' &&
+      savedCharts.length === 0;
+
+    if (!isValidSelection && waitingForSavedChartsToRestore) {
+      return;
+    }
+
     if (!isValidSelection) {
       const next = userNatalChart ? 'user' : 'general';
       localStorage.setItem('selectedChartForTiming', next);
