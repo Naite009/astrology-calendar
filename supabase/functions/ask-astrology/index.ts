@@ -726,34 +726,65 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // LILITH HARD DATA GATE: Check if chartContext actually contains Lilith data
-    // This is application logic, not a prompt suggestion
-    const lilithDataPresent = typeof chartContext === 'string' && /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
+    const latestUserMessage = Array.isArray(messages)
+      ? [...messages].reverse().find((message: any) => message?.role === "user" && typeof message.content === "string")?.content ?? ""
+      : "";
+    const normalizedQuestion = latestUserMessage.toLowerCase();
+    const isRelationshipQuestion = /\b(relationship|love|dating|romance|partner|marriage)\b/.test(normalizedQuestion);
+    const isLocationQuestion = /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
+    const wantsFocusedReading = /(focused|concise|brief|shorter|relationship-only|do not include any location|better than a long one|prioritize clarity over exhaustiveness)/.test(normalizedQuestion);
+    const compactRelationshipMode = isRelationshipQuestion && wantsFocusedReading;
+
+    let sanitizedChartContext = typeof chartContext === 'string' ? chartContext : '';
+    sanitizedChartContext = sanitizedChartContext
+      .replace(/^- [A-Za-z][A-Za-z\s]*: 0°0'\s{2,}\(House \d+\)\s*$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    if (!isLocationQuestion) {
+      const astrocartographyIndex = sanitizedChartContext.indexOf('ASTROCARTOGRAPHY');
+      if (astrocartographyIndex !== -1) {
+        sanitizedChartContext = sanitizedChartContext.slice(0, astrocartographyIndex).trim();
+      }
+    }
+
+    // LILITH HARD DATA GATE: Check if chart context actually contains Lilith data
+    const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
 
     // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
-    const junoDataPresent = typeof chartContext === 'string' && /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(chartContext);
+    const junoDataPresent = /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
 
     // SOLAR RETURN YEAR EXTRACTION: Parse the actual SR year from chart context for validation
     let srYearFromContext: number | null = null;
-    if (typeof chartContext === 'string') {
-      const srYearMatch = chartContext.match(/SOLAR RETURN\s+(\d{4})/);
-      if (srYearMatch) {
-        srYearFromContext = parseInt(srYearMatch[1], 10);
-      }
+    const srYearMatch = sanitizedChartContext.match(/SOLAR RETURN\s+(\d{4})/);
+    if (srYearMatch) {
+      srYearFromContext = parseInt(srYearMatch[1], 10);
     }
 
     // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
     const chartHouseMap: Record<string, number> = {};
-    if (typeof chartContext === 'string') {
-      const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
-      let hm;
-      while ((hm = houseRegex.exec(chartContext)) !== null) {
-        chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
-      }
+    const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
+    let hm;
+    while ((hm = houseRegex.exec(sanitizedChartContext)) !== null) {
+      chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
     }
+
+    const compactRelationshipInstruction = compactRelationshipMode
+      ? `COMPACT RELATIONSHIP MODE — OVERRIDE THE FULL 11-SECTION TEMPLATE:
+The user asked for a focused relationship-only analysis, so return a compact response with 6 to 7 sections total depending on Solar Return availability:
+1. placement_table — "Natal Key Placements"
+2. placement_table — "Solar Return Key Placements" ONLY if Solar Return data exists
+3. narrative_section — "How This Person Loves"
+4. narrative_section — "This Year in Love"
+5. narrative_section — "Where Natal and Solar Return Connect"
+6. timing_section — "Relationship Timing"
+7. summary_box — "Relationship Strategy"
+Keep each narrative section to one short body paragraph and 2-4 bullets max. In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
+      : null;
 
     const systemMessage = [
       SYSTEM_PROMPT,
+      compactRelationshipInstruction,
       // Inject hard Lilith gate based on actual data presence
       lilithDataPresent
         ? null
@@ -767,7 +798,7 @@ serve(async (req) => {
         ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
         : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
-      chartContext ? `--- CHART DATA ---\n${chartContext}` : null,
+      sanitizedChartContext ? `--- CHART DATA ---\n${sanitizedChartContext}` : null,
     ]
       .filter(Boolean)
       .join("\n\n");
