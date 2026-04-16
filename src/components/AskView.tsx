@@ -54,6 +54,7 @@ const STORAGE_KEY = "ask-conversations";
 const LEGACY_ACTIVE_CHAT_KEY = "ask-active-chat";
 const ACTIVE_CHAT_KEY_PREFIX = "ask-active-chat:";
 const ACTIVE_META_KEY = "ask-active-meta";
+const LAST_READING_KEY_PREFIX = "ask-last-reading:";
 const MAX_SAVED_CONVERSATIONS = 50;
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -165,6 +166,35 @@ function removeActiveChat(chartId: string) {
     localStorage.removeItem(getActiveChatKey(chartId));
   } catch {
     // ignore storage cleanup failures
+  }
+}
+
+function getLastReadingKey(chartId: string) {
+  return `${LAST_READING_KEY_PREFIX}${chartId}`;
+}
+
+function saveLastReading(chartId: string, chartMeta: { name: string; birthDate?: string; birthTime?: string; birthLocation?: string }, readings: StructuredReading[]) {
+  try {
+    const payload = {
+      chart: chartMeta,
+      savedAt: new Date().toISOString(),
+      readings,
+    };
+    localStorage.setItem(getLastReadingKey(chartId), JSON.stringify(payload));
+  } catch (err) {
+    console.error("[AskView] Failed to persist last reading", err);
+  }
+}
+
+function loadLastReading(chartId: string): { chart: any; savedAt: string; readings: StructuredReading[] } | null {
+  try {
+    const raw = localStorage.getItem(getLastReadingKey(chartId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.readings) && parsed.readings.length > 0) return parsed;
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -813,6 +843,72 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     }
 
+    // 3. Fix modality_element section: overwrite element/modality/polarity counts from chart data
+    const ELEMENT_MAP: Record<string, string> = {
+      Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire',
+      Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth',
+      Gemini: 'Air', Libra: 'Air', Aquarius: 'Air',
+      Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water',
+    };
+    const MODALITY_MAP: Record<string, string> = {
+      Aries: 'Cardinal', Cancer: 'Cardinal', Libra: 'Cardinal', Capricorn: 'Cardinal',
+      Taurus: 'Fixed', Leo: 'Fixed', Scorpio: 'Fixed', Aquarius: 'Fixed',
+      Gemini: 'Mutable', Virgo: 'Mutable', Sagittarius: 'Mutable', Pisces: 'Mutable',
+    };
+    const POLARITY_MAP: Record<string, string> = {
+      Aries: 'Masculine', Taurus: 'Feminine', Gemini: 'Masculine', Cancer: 'Feminine',
+      Leo: 'Masculine', Virgo: 'Feminine', Libra: 'Masculine', Scorpio: 'Feminine',
+      Sagittarius: 'Masculine', Capricorn: 'Feminine', Aquarius: 'Masculine', Pisces: 'Feminine',
+    };
+    const CORE_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+
+    for (const section of data.sections) {
+      if (section.type !== 'modality_element') continue;
+      // Recompute from chart data
+      const elemCounts: Record<string, { count: number; planets: string[] }> = { Fire: { count: 0, planets: [] }, Earth: { count: 0, planets: [] }, Air: { count: 0, planets: [] }, Water: { count: 0, planets: [] } };
+      const modCounts: Record<string, { count: number; planets: string[] }> = { Cardinal: { count: 0, planets: [] }, Fixed: { count: 0, planets: [] }, Mutable: { count: 0, planets: [] } };
+      const polCounts: Record<string, { count: number; planets: string[] }> = { Masculine: { count: 0, planets: [] }, Feminine: { count: 0, planets: [] } };
+
+      for (const pName of CORE_PLANETS) {
+        const key = pName.toLowerCase();
+        const truth = natalTruth[key];
+        if (!truth) continue;
+        const el = ELEMENT_MAP[truth.sign];
+        const mod = MODALITY_MAP[truth.sign];
+        const pol = POLARITY_MAP[truth.sign];
+        if (el && elemCounts[el]) { elemCounts[el].count++; elemCounts[el].planets.push(pName); }
+        if (mod && modCounts[mod]) { modCounts[mod].count++; modCounts[mod].planets.push(pName); }
+        if (pol && polCounts[pol]) { polCounts[pol].count++; polCounts[pol].planets.push(pName); }
+      }
+
+      // Overwrite counts/planets on existing entries
+      if (section.elements && Array.isArray(section.elements)) {
+        for (const entry of section.elements) {
+          const data = elemCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      if (section.modalities && Array.isArray(section.modalities)) {
+        for (const entry of section.modalities) {
+          const data = modCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      if (section.polarity && Array.isArray(section.polarity)) {
+        for (const entry of section.polarity) {
+          const data = polCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      // Fix dominant labels
+      const domEl = Object.entries(elemCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      const domMod = Object.entries(modCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      const domPol = Object.entries(polCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      if (domEl) section.dominant_element = domEl[0];
+      if (domMod) section.dominant_modality = domMod[0];
+      if (domPol) section.dominant_polarity = domPol[0];
+    }
+
     return data;
   }, []);
 
@@ -892,6 +988,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const nextEntries = [...requestEntries, assistantEntry];
       saveActiveChat(chartIdForRequest, nextEntries);
       upsertConversationSnapshot(nextEntries, chartIdForRequest, chartNameForRequest);
+
+      // Persist last reading for download even after timeout/reload
+      const newReadings = nextEntries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+      if (newReadings.length > 0 && chartForRequest) {
+        saveLastReading(chartIdForRequest, {
+          name: chartForRequest.name,
+          birthDate: chartForRequest.birthDate,
+          birthTime: chartForRequest.birthTime,
+          birthLocation: chartForRequest.birthLocation,
+        }, newReadings);
+      }
 
       if (activeChartIdRef.current === chartIdForRequest) {
         setEntries(nextEntries);
@@ -993,6 +1100,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       saveActiveChat(chartIdForRequest, nextEntries);
       upsertConversationSnapshot(nextEntries, chartIdForRequest, chartNameForRequest);
 
+      // Persist last reading for download even after timeout/reload
+      const newReadings = nextEntries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+      if (newReadings.length > 0 && chartForRequest) {
+        saveLastReading(chartIdForRequest, {
+          name: chartForRequest.name,
+          birthDate: chartForRequest.birthDate,
+          birthTime: chartForRequest.birthTime,
+          birthLocation: chartForRequest.birthLocation,
+        }, newReadings);
+      }
+
       if (activeChartIdRef.current === chartIdForRequest) {
         setEntries(nextEntries);
       }
@@ -1004,32 +1122,47 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
+  const getReadingsForExport = useCallback((): { chartMeta: any; readings: StructuredReading[] } | null => {
+    // First try current entries
+    const currentReadings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+    if (currentReadings.length > 0 && selectedChart) {
+      return {
+        chartMeta: {
+          name: selectedChart.name,
+          birthDate: selectedChart.birthDate,
+          birthTime: selectedChart.birthTime,
+          birthLocation: selectedChart.birthLocation,
+        },
+        readings: currentReadings,
+      };
+    }
+    // Fallback: load last persisted reading
+    const lastReading = loadLastReading(activeChartId);
+    if (lastReading) {
+      return { chartMeta: lastReading.chart, readings: lastReading.readings };
+    }
+    return null;
+  }, [entries, selectedChart, activeChartId]);
+
   const handleDownloadPdf = () => {
-    if (!selectedChart || entries.length === 0) return;
-    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
-    if (readings.length === 0) {
-      toast.error("No structured readings to export yet.");
+    const exportData = getReadingsForExport();
+    if (!exportData || !selectedChart) {
+      toast.error("No readings available to export. Run a reading first.");
       return;
     }
-    generateAskPdf(selectedChart, readings);
+    generateAskPdf(selectedChart, exportData.readings);
   };
 
   const handleDownloadJson = () => {
-    if (!selectedChart || entries.length === 0) return;
-    const readings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
-    if (readings.length === 0) {
-      toast.error("No structured readings to export yet.");
+    const exportData = getReadingsForExport();
+    if (!exportData) {
+      toast.error("No readings available to export. Run a reading first.");
       return;
     }
     const jsonData = {
-      chart: {
-        name: selectedChart.name,
-        birthDate: selectedChart.birthDate,
-        birthTime: selectedChart.birthTime,
-        birthLocation: selectedChart.birthLocation,
-      },
+      chart: exportData.chartMeta,
       exportedAt: new Date().toISOString(),
-      readings,
+      readings: exportData.readings,
     };
     const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1088,6 +1221,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   }
 
   const hasAssistantReadings = entries.some(e => e.role === "assistant" && e.reading);
+  const hasLastReading = !hasAssistantReadings && loadLastReading(activeChartId) !== null;
+  const canDownload = hasAssistantReadings || hasLastReading;
 
   return (
     <div className="space-y-6">
@@ -1106,15 +1241,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {hasAssistantReadings && (
+              {canDownload && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title="Download as JSON">
+                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as JSON" : "Download as JSON"}>
                     <Download className="h-4 w-4 mr-1" />
-                    JSON
+                    JSON{hasLastReading ? " (saved)" : ""}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download as PDF">
+                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as PDF" : "Download as PDF"}>
                     <Download className="h-4 w-4 mr-1" />
-                    PDF
+                    PDF{hasLastReading ? " (saved)" : ""}
                   </Button>
                 </>
               )}
