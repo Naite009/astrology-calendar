@@ -169,6 +169,35 @@ function removeActiveChat(chartId: string) {
   }
 }
 
+function getLastReadingKey(chartId: string) {
+  return `${LAST_READING_KEY_PREFIX}${chartId}`;
+}
+
+function saveLastReading(chartId: string, chartMeta: { name: string; birthDate?: string; birthTime?: string; birthLocation?: string }, readings: StructuredReading[]) {
+  try {
+    const payload = {
+      chart: chartMeta,
+      savedAt: new Date().toISOString(),
+      readings,
+    };
+    localStorage.setItem(getLastReadingKey(chartId), JSON.stringify(payload));
+  } catch (err) {
+    console.error("[AskView] Failed to persist last reading", err);
+  }
+}
+
+function loadLastReading(chartId: string): { chart: any; savedAt: string; readings: StructuredReading[] } | null {
+  try {
+    const raw = localStorage.getItem(getLastReadingKey(chartId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.readings) && parsed.readings.length > 0) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function displayBirthDate(date?: string) {
   return formatDateMMDDYYYY(date) || date || "";
 }
