@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2, LogIn, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 
 const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ default: m.ChartDecoderView })));
@@ -69,6 +70,7 @@ export const AstroCalendar = () => {
   const [showLegend, setShowLegend] = useState(false);
   const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
+  const { user: authUser, signOut } = useAuth();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
     userNatalChart,
@@ -801,6 +803,25 @@ export const AstroCalendar = () => {
               >
                 <User size={20} />
               </button>
+              {authUser ? (
+                <button
+                  onClick={async () => { await signOut(); window.location.reload(); }}
+                  className="flex h-10 items-center gap-1.5 border border-border bg-transparent px-3 text-xs uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                  title={`Signed in as ${authUser.email}\nClick to sign out`}
+                >
+                  <LogOut size={16} />
+                  <span className="hidden lg:inline">Sign Out</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => window.location.href = '/auth'}
+                  className="flex h-10 items-center gap-1.5 border border-primary bg-primary/10 px-3 text-xs uppercase tracking-widest text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+                  title="Sign in to sync your charts across devices"
+                >
+                  <LogIn size={16} />
+                  <span className="hidden lg:inline">Sign In</span>
+                </button>
+              )}
               <button
                 onClick={() => navigate(-1)}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
