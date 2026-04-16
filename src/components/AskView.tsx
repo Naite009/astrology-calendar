@@ -1175,15 +1175,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {hasAssistantReadings && (
+              {canDownload && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title="Download as JSON">
+                  <Button variant="ghost" size="sm" onClick={handleDownloadJson} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as JSON" : "Download as JSON"}>
                     <Download className="h-4 w-4 mr-1" />
-                    JSON
+                    JSON{hasLastReading ? " (saved)" : ""}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title="Download as PDF">
+                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className="text-muted-foreground" title={hasLastReading ? "Download last saved reading as PDF" : "Download as PDF"}>
                     <Download className="h-4 w-4 mr-1" />
-                    PDF
+                    PDF{hasLastReading ? " (saved)" : ""}
                   </Button>
                 </>
               )}
