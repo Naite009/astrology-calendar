@@ -229,6 +229,12 @@ ASTEROID & OPTIONAL POINT DATA INTEGRITY (MANDATORY — applies to ALL reading t
 - PLACEMENT TABLE EXCEPTION: Lilith and Juno MAY appear in the placement_table rows if their data is present in the chart context. If their data is NOT present, omit them from the placement_table entirely — do NOT include a row with "..." or placeholder values.
 - This rule overrides any other instruction that might suggest including Lilith or Juno. Data presence is the ONLY gate for interpretation.
 
+UNIVERSAL BULLET GROUNDING RULE (MANDATORY — applies to EVERY bullet in EVERY section):
+Every bullet "text" field MUST reference the specific planet(s), sign(s), and house number(s) from the person's chart that support that point. The "label" can stay human-readable, but the "text" must open with a parenthetical citing the exact placements, then explain what it means in plain language. Example:
+BAD: { "label": "The Need for Home", "text": "A huge part of you needs a relationship that feels like a safe harbor." }
+GOOD: { "label": "The Need for Home", "text": "(Moon conjunct Saturn in Cancer, 1st house) Your Moon and Saturn sit together in Cancer in your 1st house. This is why a relationship has to feel like a safe harbor before you can even begin to open up. Cancer is the sign of emotional security, and Saturn here means you won't settle for anything that doesn't feel completely reliable." }
+This applies to narrative_section bullets, summary_box items (where astrologically relevant), timing_section interpretations, and any other bullet or list item. Without this grounding, the reading feels like a horoscope instead of a chart reading. The receipt (planet + sign + house) is what makes it personal.
+
 Rules:
 - HOUSE NUMBER ACCURACY (CRITICAL): Every house number in placement tables MUST be copied EXACTLY from the pre-computed values in the chart context (shown as "(House X)" or "(SR House X)"). NEVER calculate, infer, or guess house numbers from a planet's sign. In Placidus house systems, sign and house are INDEPENDENT — a planet in Aries can be in ANY house (1 through 12) depending on the Ascendant degree. If you see "SR Mercury: 11°26' Pisces (SR House 4)" in the context, the house column MUST say 4, not 11 or 12. This is the #1 source of errors — triple-check every house number against the context before outputting.
 - Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven, South Node — never omit them. Include Lilith and Juno ONLY if their data is explicitly present in the chart context.
@@ -445,12 +451,12 @@ This is a simple, punchy map of how the person loves. SHORT sentences only.
 - "title": "Relationship Needs Profile"
 - "type": "narrative_section"
 - "body": "These are the core forces that shape how you connect, what you need, and what draws you in."
-- "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must be ONE SHORT sentence — maximum 15 words. No filler, no qualifiers, no elaboration. Punchy and instant.
-  { "label": "Venus → what you value in love", "text": "[MAX 15 words. Example: 'You value consistency and relationships that build over time.']" },
-  { "label": "Moon → what you need emotionally", "text": "[MAX 15 words. Example: 'You need emotional safety and reliability to feel secure.']" },
-  { "label": "Mars → what attracts you", "text": "[MAX 15 words. Example: 'You're attracted to intelligence, conversation, and mental stimulation.']" },
-  { "label": "7th house → what long-term partnership requires", "text": "[MAX 15 words. Example: 'Long-term, you need commitment, structure, and a dependable partner.']" }
-- STRICT RULES: No planet names, sign names, or house numbers in bullet text. No sentences longer than 15 words. No words like "intense", "deep", "transformative", "passionate". Each sentence must describe what the person DOES or NEEDS — not what they ARE.
+- "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must lead with the placement in parentheses, then 1-2 sentences translating it to behavior.
+  { "label": "Venus → what you value in love", "text": "(Venus in Capricorn, 7th house) You value consistency and relationships that build over time — you need proof before you invest." },
+  { "label": "Moon → what you need emotionally", "text": "(Moon conjunct Saturn in Cancer, 1st house) You need emotional safety and reliability to feel secure — without it, you shut down." },
+  { "label": "Mars → what attracts you", "text": "(Mars in Gemini, 12th house) You're attracted to intelligence and conversation, but sometimes the attraction stays in your head instead of becoming real." },
+  { "label": "7th house → what long-term partnership requires", "text": "(7th house Capricorn, ruler Saturn in Cancer, 1st house) Long-term, you need commitment, structure, and a dependable partner — your ruler loops back to your own emotional needs." }
+- RULES: Each bullet MUST include the exact planet, sign, and house from the chart in parentheses at the start of the text. Then translate to what the person DOES or NEEDS. No generic trait words.
 - TARGET FEEL: Someone reads this in 10 seconds and says "yes, that's me."
 
 CONTRADICTION PATTERNS STYLE:
