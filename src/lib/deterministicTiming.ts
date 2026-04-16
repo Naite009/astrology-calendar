@@ -1,0 +1,338 @@
+import * as Astronomy from 'astronomy-engine';
+import type { NatalChart } from '@/hooks/useNatalChart';
+import { formatFutureTransitsContext, scanFutureTransits } from './futureTransitScanner';
+import { getPlanetLongitudeExact, normalizeLongitude } from './transitMath';
+
+const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
+};
+
+const TRANSIT_BODIES: Record<string, Astronomy.Body> = {
+  Jupiter: Astronomy.Body.Jupiter,
+  Saturn: Astronomy.Body.Saturn,
+  Uranus: Astronomy.Body.Uranus,
+  Neptune: Astronomy.Body.Neptune,
+  Pluto: 'Pluto' as Astronomy.Body,
+};
+
+const NATAL_THEME_MAP: Record<string, string> = {
+  Sun: 'confidence, visibility, and the direction your life is taking',
+  Moon: 'emotional security, home life, and what makes you feel safe',
+  Mercury: 'conversations, decisions, and the stories you keep replaying',
+  Venus: 'relationships, attraction, closeness, pleasure, and values',
+  Mars: 'desire, action, conflict, and the way you go after what you want',
+};
+
+const TRANSIT_ACTION_MAP: Record<string, string> = {
+  Jupiter: 'opens space, opportunity, and forward movement',
+  Saturn: 'slows things down so something real can be tested or defined',
+  Uranus: 'brings surprise, change, and the need to do something differently',
+  Neptune: 'softens boundaries and can blur what feels certain',
+  Pluto: 'turns up the pressure so something deeper has to change',
+};
+
+const ASPECT_TONE_MAP: Record<string, string> = {
+  conjunction: 'This is a direct activation',
+  sextile: 'This is a helpful opening',
+  square: 'This is a pressure point',
+  trine: 'This is a smoother opening',
+  opposition: 'This is a mirror and turning point',
+};
+
+export interface DeterministicTimingTransit {
+  planet: string;
+  symbol: string;
+  position: string;
+  aspect: string;
+  exact_degree: string;
+  natal_point: string;
+  first_applying_date: string;
+  exact_hit_date: string;
+  separating_end_date: string;
+  pass_label: string;
+  date_range: string;
+  tag: 'meeting' | 'attraction' | 'commitment' | 'test' | 'rupture' | 'healing';
+  interpretation: string;
+}
+
+export interface DeterministicTimingWindow {
+  label: string;
+  description: string;
+}
+
+export interface DeterministicTimingSection {
+  type: 'timing_section';
+  title: string;
+  transits: DeterministicTimingTransit[];
+  windows: DeterministicTimingWindow[];
+}
+
+interface FutureTimingData {
+  context: string;
+  section: DeterministicTimingSection | null;
+}
+
+const clampDegreeParts = (lon: number) => {
+  const normalized = normalizeLongitude(lon);
+  let signIdx = Math.floor(normalized / 30);
+  const signStart = signIdx * 30;
+  const degreeWithFraction = normalized - signStart;
+  let wholeDegrees = Math.floor(degreeWithFraction);
+  let minutes = Math.round((degreeWithFraction - wholeDegrees) * 60);
+
+  if (minutes === 60) {
+    wholeDegrees += 1;
+    minutes = 0;
+  }
+
+  if (wholeDegrees === 30) {
+    wholeDegrees = 0;
+    signIdx = (signIdx + 1) % 12;
+  }
+
+  return {
+    sign: ZODIAC[signIdx],
+    wholeDegrees,
+    minutes,
+  };
+};
+
+const longitudeToSignDegree = (lon: number): string => {
+  const { sign, wholeDegrees, minutes } = clampDegreeParts(lon);
+  return `${wholeDegrees}°${minutes.toString().padStart(2, '0')}' ${sign}`;
+};
+
+const buildNatalPositions = (chart: NatalChart | null): { name: string; longitude: number }[] => {
+  if (!chart?.planets) return [];
+
+  return Object.entries(chart.planets).flatMap(([name, data]) => {
+    if (!data || typeof data !== 'object' || !('sign' in data)) return [];
+    const sign = (data as { sign: string }).sign;
+    const signIdx = ZODIAC.indexOf(sign);
+    if (signIdx < 0) return [];
+
+    const degree = typeof (data as { degree?: number }).degree === 'number' ? (data as { degree: number }).degree : 0;
+    const minutes = typeof (data as { minutes?: number }).minutes === 'number' ? (data as { minutes: number }).minutes : 0;
+
+    return [{ name, longitude: signIdx * 30 + degree + minutes / 60 }];
+  });
+};
+
+const isRetrogradeAtExactHit = (planet: string, exactDate: Date, passLabel: string): boolean => {
+  if (/retrograde/i.test(passLabel)) return true;
+
+  const body = TRANSIT_BODIES[planet];
+  if (!body) return false;
+
+  const before = getPlanetLongitudeExact(body, new Date(exactDate.getTime() - 12 * 60 * 60 * 1000));
+  const after = getPlanetLongitudeExact(body, new Date(exactDate.getTime() + 12 * 60 * 60 * 1000));
+  return normalizeLongitude(after - before + 360) > 180;
+};
+
+const classifyTimingTag = (
+  transitPlanet: string,
+  aspect: string,
+  natalPlanet: string,
+): DeterministicTimingTransit['tag'] => {
+  const supportiveAspect = ['conjunction', 'sextile', 'trine'].includes(aspect);
+
+  if (transitPlanet === 'Jupiter') {
+    if (['Venus', 'Mars'].includes(natalPlanet)) return 'attraction';
+    if (natalPlanet === 'Moon') return 'healing';
+    return 'meeting';
+  }
+
+  if (transitPlanet === 'Saturn') {
+    return supportiveAspect ? 'commitment' : 'test';
+  }
+
+  if (transitPlanet === 'Uranus') {
+    return supportiveAspect ? 'meeting' : 'rupture';
+  }
+
+  if (transitPlanet === 'Neptune') {
+    return supportiveAspect ? 'healing' : 'test';
+  }
+
+  if (transitPlanet === 'Pluto') {
+    return supportiveAspect ? 'healing' : 'test';
+  }
+
+  return 'test';
+};
+
+const buildTransitInterpretation = (params: {
+  transitPlanet: string;
+  aspect: string;
+  natalPlanet: string;
+  natalDegree: string;
+  exactDate: string;
+  dateRange: string;
+  passLabel: string;
+  isRetrograde: boolean;
+}): string => {
+  const {
+    transitPlanet,
+    aspect,
+    natalPlanet,
+    natalDegree,
+    exactDate,
+    dateRange,
+    passLabel,
+    isRetrograde,
+  } = params;
+
+  const aspectTone = ASPECT_TONE_MAP[aspect] ?? 'This is an important activation';
+  const transitAction = TRANSIT_ACTION_MAP[transitPlanet] ?? 'activates';
+  const natalTheme = NATAL_THEME_MAP[natalPlanet] ?? 'a major part of your personal pattern';
+
+  const passSentence =
+    passLabel === 'single pass'
+      ? `The exact hit is ${exactDate}, and the full window runs ${dateRange}.`
+      : `${passLabel} means this story is part of a longer multi-pass cycle; this hit is exact on ${exactDate} within ${dateRange}.`;
+
+  const retrogradeSentence = isRetrograde
+    ? `Because ${transitPlanet} is retrograde on this hit, the situation can come back for review instead of moving in one straight line.`
+    : '';
+
+  return `${transitPlanet} ${aspect} your natal ${natalPlanet} at ${natalDegree}. ${aspectTone}: ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+};
+
+const buildTimingWindowDescription = (window: {
+  transitPlanet: string;
+  aspect: string;
+  natalPlanet: string;
+  natalDegree: string;
+  exactDates: { date: string; label: string }[];
+}): string => {
+  const exactSummary = window.exactDates
+    .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
+    .join('; ');
+
+  return `${window.transitPlanet} ${window.aspect} natal ${window.natalPlanet} at ${window.natalDegree}. Exact hits: ${exactSummary}.`;
+};
+
+export function buildDeterministicTimingData(
+  chart: NatalChart | null,
+  monthsAhead: number = 18,
+  maxTransits: number = 15,
+): FutureTimingData {
+  const natalPositions = buildNatalPositions(chart);
+  if (natalPositions.length === 0) {
+    return { context: '', section: null };
+  }
+
+  const windows = scanFutureTransits(natalPositions, monthsAhead);
+  if (windows.length === 0) {
+    return { context: '', section: null };
+  }
+
+  const transits: DeterministicTimingTransit[] = [];
+  const includedWindows: typeof windows = [];
+
+  for (const window of windows) {
+    if (!Array.isArray(window.exactDates) || window.exactDates.length === 0) continue;
+
+    const windowTransits = window.exactDates.map((exact) => {
+      const exactDate = new Date(exact.date);
+      const exactLongitude = Number.isNaN(exactDate.getTime())
+        ? null
+        : getPlanetLongitudeExact(TRANSIT_BODIES[window.transitPlanet], exactDate);
+      const exactDegree = exactLongitude === null ? window.natalDegree : longitudeToSignDegree(exactLongitude);
+      const retrograde = Number.isNaN(exactDate.getTime())
+        ? /retrograde/i.test(exact.label) || window.isRetrograde
+        : isRetrogradeAtExactHit(window.transitPlanet, exactDate, exact.label);
+      const exactDegreeLabel = retrograde ? `${exactDegree} (R)` : exactDegree;
+      const natalPoint = `${window.natalPlanet} at ${window.natalDegree}`;
+      const passSuffix = exact.label === 'single pass' ? '' : ` (${exact.label})`;
+
+      return {
+        planet: window.transitPlanet,
+        symbol: PLANET_SYMBOLS[window.transitPlanet] ?? '',
+        position: `${window.transitPlanet} at ${exactDegreeLabel} ${window.aspect} natal ${natalPoint}${passSuffix}`,
+        aspect: window.aspect,
+        exact_degree: exactDegreeLabel,
+        natal_point: natalPoint,
+        first_applying_date: window.enterDate,
+        exact_hit_date: exact.date,
+        separating_end_date: window.exitDate,
+        pass_label: exact.label,
+        date_range: window.dateRange,
+        tag: classifyTimingTag(window.transitPlanet, window.aspect, window.natalPlanet),
+        interpretation: buildTransitInterpretation({
+          transitPlanet: window.transitPlanet,
+          aspect: window.aspect,
+          natalPlanet: window.natalPlanet,
+          natalDegree: window.natalDegree,
+          exactDate: exact.date,
+          dateRange: window.dateRange,
+          passLabel: exact.label,
+          isRetrograde: retrograde,
+        }),
+      } satisfies DeterministicTimingTransit;
+    });
+
+    if (windowTransits.length === 0) continue;
+
+    includedWindows.push(window);
+    transits.push(...windowTransits);
+
+    if (transits.length >= maxTransits) {
+      break;
+    }
+  }
+
+  const limitedTransits = transits.slice(0, maxTransits);
+  if (limitedTransits.length === 0) {
+    return {
+      context: formatFutureTransitsContext(windows),
+      section: null,
+    };
+  }
+
+  return {
+    context: formatFutureTransitsContext(windows),
+    section: {
+      type: 'timing_section',
+      title: 'Timing Windows',
+      transits: limitedTransits,
+      windows: includedWindows.map((window) => ({
+        label: window.dateRange,
+        description: buildTimingWindowDescription(window),
+      })),
+    },
+  };
+}
+
+export function mergeDeterministicTimingSection(data: any, timingSection: DeterministicTimingSection | null) {
+  if (!data || typeof data !== 'object' || !Array.isArray(data.sections) || !timingSection) {
+    return data;
+  }
+
+  const timingIndex = data.sections.findIndex((section: { type?: string }) => section?.type === 'timing_section');
+
+  if (timingIndex >= 0) {
+    data.sections[timingIndex] = {
+      ...data.sections[timingIndex],
+      title: data.sections[timingIndex].title || timingSection.title,
+      transits: timingSection.transits,
+      windows: timingSection.windows,
+    };
+    return data;
+  }
+
+  const summaryIndex = data.sections.findIndex((section: { type?: string }) => section?.type === 'summary_box');
+  if (summaryIndex >= 0) {
+    data.sections.splice(summaryIndex, 0, timingSection);
+    return data;
+  }
+
+  data.sections.push(timingSection);
+  return data;
+}
