@@ -22,27 +22,27 @@ const TRANSIT_BODIES: Record<string, Astronomy.Body> = {
 };
 
 const NATAL_THEME_MAP: Record<string, string> = {
-  Sun: 'confidence, visibility, and the direction your life is taking',
-  Moon: 'emotional security, home life, and what makes you feel safe',
-  Mercury: 'conversations, decisions, and the stories you keep replaying',
-  Venus: 'relationships, attraction, closeness, pleasure, and values',
-  Mars: 'desire, action, conflict, and the way you go after what you want',
+  Sun: 'how you show up in the relationship — your confidence, ego, and sense of being seen by your partner',
+  Moon: 'your emotional safety, what you need to feel held, and how you behave at home with the person closest to you',
+  Mercury: 'the way you talk, listen, and make decisions with a partner — the conversations you keep replaying',
+  Venus: 'attraction, closeness, affection, what you value in love, and how easy it is to receive it',
+  Mars: 'desire, sex, conflict, and how directly you go after — or argue for — what you want from someone',
 };
 
 const TRANSIT_ACTION_MAP: Record<string, string> = {
-  Jupiter: 'opens space, opportunity, and forward movement',
-  Saturn: 'slows things down so something real can be tested or defined',
-  Uranus: 'brings surprise, change, and the need to do something differently',
-  Neptune: 'softens boundaries and can blur what feels certain',
-  Pluto: 'turns up the pressure so something deeper has to change',
+  Jupiter: 'expands the relationship — more opportunity, more confidence, sometimes meeting someone new or going to the next level',
+  Saturn: 'gets serious — something has to be defined, committed to, or honestly admitted; lukewarm dynamics get tested',
+  Uranus: 'shakes the relationship loose — sudden attraction, sudden distance, or a sharp need for more space and freedom',
+  Neptune: 'blurs the picture — fantasy, idealization, longing, or confusion about what the connection actually is',
+  Pluto: 'turns the heat up underneath — power dynamics, intensity, jealousy, or a deep transformation in how you relate',
 };
 
 const ASPECT_TONE_MAP: Record<string, string> = {
-  conjunction: 'This is a direct activation',
-  sextile: 'This is a helpful opening',
-  square: 'This is a pressure point',
-  trine: 'This is a smoother opening',
-  opposition: 'This is a mirror and turning point',
+  conjunction: 'A direct activation — the theme is right on top of you and hard to ignore',
+  sextile: 'A helpful opening — things flow if you make a move, but it will not force itself',
+  square: 'A pressure point — friction, frustration, or an old pattern coming up to be changed',
+  trine: 'A smoother window — the energy is supportive and easier to receive than usual',
+  opposition: 'A mirror — the dynamic shows up through another person and asks for a turning point',
 };
 
 export interface DeterministicTimingTransit {
@@ -194,14 +194,14 @@ const buildTransitInterpretation = (params: {
 
   const passSentence =
     passLabel === 'single pass'
-      ? `The exact hit is ${exactDate}, and the full window runs ${dateRange}.`
-      : `${passLabel} means this story is part of a longer multi-pass cycle; this hit is exact on ${exactDate} within ${dateRange}.`;
+      ? `The story peaks on ${exactDate} and the full felt-sense window runs ${dateRange} — meaning the theme builds, peaks, then settles inside that range.`
+      : `${passLabel} — this is part of a longer multi-pass cycle, so the same theme will revisit. This pass peaks on ${exactDate} inside ${dateRange}.`;
 
   const retrogradeSentence = isRetrograde
-    ? `Because ${transitPlanet} is retrograde on this hit, the situation can come back for review instead of moving in one straight line.`
+    ? `Because ${transitPlanet} is retrograde on this hit, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
     : '';
 
-  return `${transitPlanet} ${aspect} your natal ${natalPlanet} at ${natalDegree}. ${aspectTone}: ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+  return `${aspectTone}. In your relationship world, ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
 };
 
 const buildTimingWindowDescription = (window: {
@@ -215,7 +215,11 @@ const buildTimingWindowDescription = (window: {
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
-  return `${window.transitPlanet} ${window.aspect} natal ${window.natalPlanet} at ${window.natalDegree}. Exact hits: ${exactSummary}.`;
+  const aspectTone = ASPECT_TONE_MAP[window.aspect] ?? 'An important activation';
+  const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
+  const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
+
+  return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}. Technical: ${window.transitPlanet} ${window.aspect} natal ${window.natalPlanet} at ${window.natalDegree}.`;
 };
 
 export function buildDeterministicTimingData(
