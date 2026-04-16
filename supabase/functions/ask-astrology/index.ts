@@ -451,12 +451,12 @@ This is a simple, punchy map of how the person loves. SHORT sentences only.
 - "title": "Relationship Needs Profile"
 - "type": "narrative_section"
 - "body": "These are the core forces that shape how you connect, what you need, and what draws you in."
-- "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must be ONE SHORT sentence — maximum 15 words. No filler, no qualifiers, no elaboration. Punchy and instant.
-  { "label": "Venus → what you value in love", "text": "[MAX 15 words. Example: 'You value consistency and relationships that build over time.']" },
-  { "label": "Moon → what you need emotionally", "text": "[MAX 15 words. Example: 'You need emotional safety and reliability to feel secure.']" },
-  { "label": "Mars → what attracts you", "text": "[MAX 15 words. Example: 'You're attracted to intelligence, conversation, and mental stimulation.']" },
-  { "label": "7th house → what long-term partnership requires", "text": "[MAX 15 words. Example: 'Long-term, you need commitment, structure, and a dependable partner.']" }
-- STRICT RULES: No planet names, sign names, or house numbers in bullet text. No sentences longer than 15 words. No words like "intense", "deep", "transformative", "passionate". Each sentence must describe what the person DOES or NEEDS — not what they ARE.
+- "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must lead with the placement in parentheses, then 1-2 sentences translating it to behavior.
+  { "label": "Venus → what you value in love", "text": "(Venus in Capricorn, 7th house) You value consistency and relationships that build over time — you need proof before you invest." },
+  { "label": "Moon → what you need emotionally", "text": "(Moon conjunct Saturn in Cancer, 1st house) You need emotional safety and reliability to feel secure — without it, you shut down." },
+  { "label": "Mars → what attracts you", "text": "(Mars in Gemini, 12th house) You're attracted to intelligence and conversation, but sometimes the attraction stays in your head instead of becoming real." },
+  { "label": "7th house → what long-term partnership requires", "text": "(7th house Capricorn, ruler Saturn in Cancer, 1st house) Long-term, you need commitment, structure, and a dependable partner — your ruler loops back to your own emotional needs." }
+- RULES: Each bullet MUST include the exact planet, sign, and house from the chart in parentheses at the start of the text. Then translate to what the person DOES or NEEDS. No generic trait words.
 - TARGET FEEL: Someone reads this in 10 seconds and says "yes, that's me."
 
 CONTRADICTION PATTERNS STYLE:
