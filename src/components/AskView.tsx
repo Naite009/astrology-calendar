@@ -9,6 +9,7 @@ import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition } from "@/lib/astrology";
 import { calculateTransitAspects } from "@/lib/transitAspects";
+import { scanFutureTransits, formatFutureTransitsContext } from "@/lib/futureTransitScanner";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
