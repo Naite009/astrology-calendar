@@ -843,6 +843,72 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     }
 
+    // 3. Fix modality_element section: overwrite element/modality/polarity counts from chart data
+    const ELEMENT_MAP: Record<string, string> = {
+      Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire',
+      Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth',
+      Gemini: 'Air', Libra: 'Air', Aquarius: 'Air',
+      Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water',
+    };
+    const MODALITY_MAP: Record<string, string> = {
+      Aries: 'Cardinal', Cancer: 'Cardinal', Libra: 'Cardinal', Capricorn: 'Cardinal',
+      Taurus: 'Fixed', Leo: 'Fixed', Scorpio: 'Fixed', Aquarius: 'Fixed',
+      Gemini: 'Mutable', Virgo: 'Mutable', Sagittarius: 'Mutable', Pisces: 'Mutable',
+    };
+    const POLARITY_MAP: Record<string, string> = {
+      Aries: 'Masculine', Taurus: 'Feminine', Gemini: 'Masculine', Cancer: 'Feminine',
+      Leo: 'Masculine', Virgo: 'Feminine', Libra: 'Masculine', Scorpio: 'Feminine',
+      Sagittarius: 'Masculine', Capricorn: 'Feminine', Aquarius: 'Masculine', Pisces: 'Feminine',
+    };
+    const CORE_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+
+    for (const section of data.sections) {
+      if (section.type !== 'modality_element') continue;
+      // Recompute from chart data
+      const elemCounts: Record<string, { count: number; planets: string[] }> = { Fire: { count: 0, planets: [] }, Earth: { count: 0, planets: [] }, Air: { count: 0, planets: [] }, Water: { count: 0, planets: [] } };
+      const modCounts: Record<string, { count: number; planets: string[] }> = { Cardinal: { count: 0, planets: [] }, Fixed: { count: 0, planets: [] }, Mutable: { count: 0, planets: [] } };
+      const polCounts: Record<string, { count: number; planets: string[] }> = { Masculine: { count: 0, planets: [] }, Feminine: { count: 0, planets: [] } };
+
+      for (const pName of CORE_PLANETS) {
+        const key = pName.toLowerCase();
+        const truth = natalTruth[key];
+        if (!truth) continue;
+        const el = ELEMENT_MAP[truth.sign];
+        const mod = MODALITY_MAP[truth.sign];
+        const pol = POLARITY_MAP[truth.sign];
+        if (el && elemCounts[el]) { elemCounts[el].count++; elemCounts[el].planets.push(pName); }
+        if (mod && modCounts[mod]) { modCounts[mod].count++; modCounts[mod].planets.push(pName); }
+        if (pol && polCounts[pol]) { polCounts[pol].count++; polCounts[pol].planets.push(pName); }
+      }
+
+      // Overwrite counts/planets on existing entries
+      if (section.elements && Array.isArray(section.elements)) {
+        for (const entry of section.elements) {
+          const data = elemCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      if (section.modalities && Array.isArray(section.modalities)) {
+        for (const entry of section.modalities) {
+          const data = modCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      if (section.polarity && Array.isArray(section.polarity)) {
+        for (const entry of section.polarity) {
+          const data = polCounts[entry.name];
+          if (data) { entry.count = data.count; entry.planets = data.planets; }
+        }
+      }
+      // Fix dominant labels
+      const domEl = Object.entries(elemCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      const domMod = Object.entries(modCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      const domPol = Object.entries(polCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      if (domEl) section.dominant_element = domEl[0];
+      if (domMod) section.dominant_modality = domMod[0];
+      if (domPol) section.dominant_polarity = domPol[0];
+    }
+
     return data;
   }, []);
 
