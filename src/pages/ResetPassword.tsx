@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -13,22 +13,82 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [isCheckingLink, setIsCheckingLink] = useState(true);
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    let isMounted = true;
+
+    const finalize = (canReset: boolean) => {
+      if (!isMounted) return;
+      setIsRecovery(canReset);
+      setIsCheckingLink(false);
+    };
+
+    const initializeRecovery = async () => {
+      const url = new URL(window.location.href);
+      const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+      const hashParams = new URLSearchParams(hash);
+      const searchParams = url.searchParams;
+
+      const code = searchParams.get('code');
+      const tokenHash = searchParams.get('token_hash');
+      const recoveryType = searchParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+
+      try {
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        } else if (tokenHash && recoveryType) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+          });
+          if (error) throw error;
+        } else if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+        }
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (code || tokenHash || accessToken || refreshToken || hash) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        finalize(Boolean(session));
+      } catch (error) {
+        console.error('Password reset initialization failed:', error);
+        if (code || tokenHash || accessToken || refreshToken || recoveryType) {
+          toast.error('This password reset link is invalid or expired. Please request a new one.');
+        }
+        finalize(false);
+      }
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && !!session)) {
         setIsRecovery(true);
+        setIsCheckingLink(false);
       }
     });
 
-    // Also check hash for recovery token
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
-      setIsRecovery(true);
-    }
+    initializeRecovery();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +122,17 @@ export default function ResetPassword() {
     }
   };
 
+  if (isCheckingLink) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center space-y-4">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Checking your password reset link…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isRecovery) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -70,7 +141,7 @@ export default function ResetPassword() {
             Password Reset
           </h1>
           <p className="text-muted-foreground">
-            Check your email for a password reset link, then click it to set a new password.
+            This reset link is missing or expired. Go back and request a fresh password reset email.
           </p>
           <Button variant="outline" onClick={() => navigate('/auth')}>
             ← Back to Sign In
