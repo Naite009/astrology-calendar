@@ -1155,6 +1155,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   }
 
   const hasAssistantReadings = entries.some(e => e.role === "assistant" && e.reading);
+  const hasLastReading = !hasAssistantReadings && loadLastReading(activeChartId) !== null;
+  const canDownload = hasAssistantReadings || hasLastReading;
 
   return (
     <div className="space-y-6">
