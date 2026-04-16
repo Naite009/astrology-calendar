@@ -60,6 +60,20 @@ function buildContext(d: any, age: number | null): string {
   ctx += `SR Moon: ${d.srMoon}\n`;
   ctx += `SR Rising: ${d.srRising}\n\n`;
 
+  // Explicit SR planet positions so the AI never guesses signs
+  if (d.planetPositions?.length > 0) {
+    ctx += `--- SR PLANET POSITIONS (AUTHORITATIVE — do NOT contradict) ---\n`;
+    for (const pp of d.planetPositions) {
+      if (pp.srPosition) {
+        ctx += `SR ${pp.planet}: ${pp.srPosition} in SR house ${pp.srHouse || '—'}`;
+        if (pp.natalPosition) ctx += ` (natal: ${pp.natalPosition} in house ${pp.natalHouse || '—'})`;
+        if (pp.shift && pp.shift !== 'Same sign') ctx += ` [SHIFT: ${pp.shift}]`;
+        ctx += `\n`;
+      }
+    }
+    ctx += `\n`;
+  }
+
   if (d.yearlyTheme) {
     ctx += `--- YEAR THEME ---\n`;
     ctx += `SR Ascendant: ${d.yearlyTheme.ascendantSign}\n`;
