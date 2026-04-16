@@ -1107,6 +1107,22 @@ serve(async (req) => {
             }
           }
         }
+
+        // POST-GENERATION TIMING EMPTY CHECK: Log if timing_section has empty transits
+        if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          for (const section of parsedContent.sections) {
+            if (section.type === 'timing_section') {
+              if (!Array.isArray(section.transits) || section.transits.length === 0) {
+                console.warn(`ask-astrology: timing_section "${section.title}" has EMPTY transits array. finish_reason=${finishReason}, content length=${content.length}`);
+              } else {
+                console.log(`ask-astrology: timing_section "${section.title}" has ${section.transits.length} transits ✓`);
+              }
+              if (!Array.isArray(section.windows) || section.windows.length === 0) {
+                console.warn(`ask-astrology: timing_section "${section.title}" has EMPTY windows array.`);
+              }
+            }
+          }
+        }
       }
     } catch (parseError) {
       // Log the actual parsing error for debugging
