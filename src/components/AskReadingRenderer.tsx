@@ -235,11 +235,11 @@ function TimingCard({ section }: { section: TimingSection }) {
         )}
         {section.windows?.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Key Dates</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Key Dates — What They Mean</p>
             {section.windows.map((w, i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <span className="text-sm font-semibold text-primary shrink-0 min-w-[100px]">{w.label}</span>
-                <span className="text-sm text-foreground/80">{w.description}</span>
+              <div key={i} className="rounded-md border border-border bg-card/40 p-3">
+                <div className="text-sm font-semibold text-primary mb-1">{w.label}</div>
+                <p className="text-sm text-foreground/85 leading-relaxed">{w.description}</p>
               </div>
             ))}
           </div>
