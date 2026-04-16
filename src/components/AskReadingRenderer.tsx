@@ -233,7 +233,7 @@ function TimingCard({ section }: { section: TimingSection }) {
             ))}
           </div>
         )}
-        {section.windows.length > 0 && (
+        {section.windows?.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Key Dates</p>
             {section.windows.map((w, i) => (
