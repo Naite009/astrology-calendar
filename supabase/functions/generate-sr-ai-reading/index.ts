@@ -300,6 +300,7 @@ function plainSystemPrompt(ageInstructions: string): string {
 ${ageInstructions}
 
   ABSOLUTE RULES:
+  0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs. NEVER guess or infer a planet's sign from aspects, houses, or other context. If Venus is listed as "Aries 12°", you say Aries — NEVER Taurus.
   1. NEVER use astrological jargon. No planet names, sign names, house numbers, aspects, degrees, dignities, or any technical terms. Translate EVERYTHING into plain life language.
      - Instead of "Sun in the 7th house" → "Your main focus this year is partnerships and close relationships"
      - Instead of "Saturn square Moon" → "You may feel emotionally tested around responsibilities"
