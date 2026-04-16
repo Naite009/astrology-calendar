@@ -218,7 +218,7 @@ function TimingCard({ section }: { section: TimingSection }) {
     <Card className="border-border">
       <CardContent className="pt-5 pb-4 space-y-4">
         <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
-        {section.transits.length > 0 && (
+        {section.transits?.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Active Transits</p>
             {section.transits.map((t, i) => (
@@ -233,7 +233,7 @@ function TimingCard({ section }: { section: TimingSection }) {
             ))}
           </div>
         )}
-        {section.windows.length > 0 && (
+        {section.windows?.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Key Dates</p>
             {section.windows.map((w, i) => (
