@@ -54,6 +54,7 @@ const STORAGE_KEY = "ask-conversations";
 const LEGACY_ACTIVE_CHAT_KEY = "ask-active-chat";
 const ACTIVE_CHAT_KEY_PREFIX = "ask-active-chat:";
 const ACTIVE_META_KEY = "ask-active-meta";
+const LAST_READING_KEY_PREFIX = "ask-last-reading:";
 const MAX_SAVED_CONVERSATIONS = 50;
 
 function readStorage<T>(key: string, fallback: T): T {
