@@ -79,6 +79,8 @@ Cover each of the following as its own section:
 
 SECTION 1: HOW THIS PERSON LOVES
 
+OPENING RULE: The body paragraph MUST open with the specific chart placements that define this person's love style. First sentence names Venus sign+house, 7th house cusp sign, and the 7th house ruler's position. Second sentence translates what that configuration means for THIS person. Then continue into the portrait. NEVER open with an abstract statement like "Your relationship blueprint is built on a contradiction."
+
 Lead with the 2–4 most important relationship placements in this chart — the ones that actually explain how this person operates in love. Always include Venus and the 7th house ruler. For Venus, Mars, and Moon: cover sign, house, and major aspects within valid orb only. Include Moon, Mars, North Node, 5th/8th house rulers, Juno, or Lilith ONLY if they add something the other placements don't already say. Do not list every placement mechanically — weave them into a portrait.
 
 Then distill into these synthesis points (skip any that would be redundant or generic — only include points where the chart says something specific):
@@ -92,6 +94,8 @@ Then distill into these synthesis points (skip any that would be redundant or ge
 
 SECTION 2: THIS YEAR IN LOVE (SOLAR RETURN)
 
+OPENING RULE: The body paragraph MUST open by naming SR Venus sign+house and the SR 7th house cusp sign before any interpretation. Example: "SR Venus is in Scorpio in your 5th house, and the SR 7th house cusp is Pisces with its ruler Neptune in the 10th." Then translate what that means for THIS year.
+
 Focus on only the SR placements that meaningfully activate relationship themes. Always cover SR Venus and the SR 7th house. Include SR Moon, SR 5th house, SR Juno, SR North Node, or SR outer planets ONLY if they make a direct aspect to a relationship indicator or fall in a relationship house. Skip anything inactive.
 
 Synthesize into:
@@ -102,6 +106,8 @@ Synthesize into:
 ---
 
 SECTION 3: WHERE NATAL AND SOLAR RETURN CONNECT
+
+OPENING RULE: The body paragraph MUST open by naming the specific SR-to-natal overlap (e.g., "SR Mars at 12° Gemini lands exactly on your natal Mars in the 12th house"). Then explain what that activation means. NEVER open with "The Solar Return activates..." or similar abstractions.
 
 Only include cross-references where a SR placement falls within 3° of a natal relationship point. Do not manufacture connections. If there are few genuine overlaps, say so — that itself is meaningful.
 
