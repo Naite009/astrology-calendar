@@ -70,6 +70,7 @@ export const AstroCalendar = () => {
   const [showLegend, setShowLegend] = useState(false);
   const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
+  const { user: authUser, signOut } = useAuth();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
     userNatalChart,
