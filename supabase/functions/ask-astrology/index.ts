@@ -13,6 +13,85 @@ const getCurrentDateKey = (value?: string) => {
   return new Date().toISOString().slice(0, 10);
 };
 
+const sanitizeDeterministicTiming = (input: any) => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return null;
+  }
+
+  const cleanString = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+
+  const transits = Array.isArray(input.transits)
+    ? input.transits
+        .map((transit: any) => ({
+          planet: cleanString(transit?.planet),
+          symbol: cleanString(transit?.symbol),
+          position: cleanString(transit?.position),
+          aspect: cleanString(transit?.aspect),
+          exact_degree: cleanString(transit?.exact_degree),
+          natal_point: cleanString(transit?.natal_point),
+          first_applying_date: cleanString(transit?.first_applying_date),
+          exact_hit_date: cleanString(transit?.exact_hit_date),
+          separating_end_date: cleanString(transit?.separating_end_date),
+          pass_label: cleanString(transit?.pass_label),
+          date_range: cleanString(transit?.date_range),
+          tag: cleanString(transit?.tag),
+          interpretation: cleanString(transit?.interpretation),
+        }))
+        .filter((transit: any) => transit.planet && transit.position && transit.interpretation)
+        .slice(0, 15)
+    : [];
+
+  const windows = Array.isArray(input.windows)
+    ? input.windows
+        .map((window: any) => ({
+          label: cleanString(window?.label),
+          description: cleanString(window?.description),
+        }))
+        .filter((window: any) => window.label && window.description)
+    : [];
+
+  if (transits.length === 0 && windows.length === 0) {
+    return null;
+  }
+
+  return {
+    type: "timing_section",
+    title: cleanString(input.title) || "Timing Windows",
+    transits,
+    windows,
+  };
+};
+
+const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
+  if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
+    return;
+  }
+
+  if (!Array.isArray(parsedContent.sections)) {
+    return;
+  }
+
+  const timingIndex = parsedContent.sections.findIndex((section: any) => section?.type === "timing_section");
+
+  if (timingIndex >= 0) {
+    parsedContent.sections[timingIndex] = {
+      ...parsedContent.sections[timingIndex],
+      title: parsedContent.sections[timingIndex]?.title || deterministicTiming.title,
+      transits: deterministicTiming.transits,
+      windows: deterministicTiming.windows,
+    };
+    return;
+  }
+
+  const summaryIndex = parsedContent.sections.findIndex((section: any) => section?.type === "summary_box");
+  if (summaryIndex >= 0) {
+    parsedContent.sections.splice(summaryIndex, 0, deterministicTiming);
+    return;
+  }
+
+  parsedContent.sections.push(deterministicTiming);
+};
+
 const SYSTEM_PROMPT = `CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
 Do not describe astrology using generic traits. All interpretations must be translated into:
 - Real-life behavior (what the person actually does, how they act)
@@ -718,8 +797,9 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, chartContext, currentDate } = await req.json();
+    const { messages, chartContext, currentDate, deterministicTiming } = await req.json();
     const effectiveCurrentDate = getCurrentDateKey(currentDate);
+    const safeDeterministicTiming = sanitizeDeterministicTiming(deterministicTiming);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -1143,6 +1223,10 @@ Keep each narrative section to one short body paragraph and 2-4 bullets max. In 
               section.transits = section.transits.filter((t: any) => !t._aspect_invalid);
             }
           }
+        }
+
+        if (safeDeterministicTiming) {
+          mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
         // POST-GENERATION TIMING EMPTY CHECK: Log if timing_section has empty transits

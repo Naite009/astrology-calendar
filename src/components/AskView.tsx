@@ -9,7 +9,7 @@ import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { toast } from "sonner";
 import { getPlanetaryPositions, isPlanetRetrograde, getDetailedJunoPosition } from "@/lib/astrology";
 import { calculateTransitAspects } from "@/lib/transitAspects";
-import { scanFutureTransits, formatFutureTransitsContext } from "@/lib/futureTransitScanner";
+import { buildDeterministicTimingData, mergeDeterministicTimingSection } from "@/lib/deterministicTiming";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
@@ -347,7 +347,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   }, [entries]);
 
-  const buildChartContext = (chart: NatalChart | null): string => {
+  const buildChartContext = (chart: NatalChart | null, timingContext: string = ""): string => {
     if (!chart) return "No chart data available.";
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
@@ -482,21 +482,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       } catch {}
     } catch {}
 
-    // --- FUTURE TRANSIT WINDOWS (next 18 months) ---
-    try {
-      const natalPositions: { name: string; longitude: number }[] = [];
-      for (const [name, data] of Object.entries(planets)) {
-        if (data && typeof data === 'object' && 'sign' in data) {
-          const pos = data as { sign: string; degree: number; minutes?: number };
-          const lon = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
-          natalPositions.push({ name, longitude: lon });
-        }
-      }
-      const futureWindows = scanFutureTransits(natalPositions, 18);
-      if (futureWindows.length > 0) {
-        context += formatFutureTransitsContext(futureWindows);
-      }
-    } catch {}
+    if (timingContext) {
+      context += timingContext;
+    }
 
     // --- SOLAR RETURN CONTEXT ---
     const natalId = chart.id || "";
@@ -844,7 +832,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setIsLoading(true);
 
     try {
-      const chartContext = buildChartContext(chartForRequest);
+      const timingData = buildDeterministicTimingData(chartForRequest, 18);
+      const chartContext = buildChartContext(chartForRequest, timingData.context);
       const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
@@ -859,6 +848,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
+          deterministicTiming: timingData.section,
         }),
       });
 
@@ -888,7 +878,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         const currentSR = solarReturnCharts
           .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
           .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
-        const corrected = correctPlacementData(data, chartForRequest, currentSR);
+        const corrected = mergeDeterministicTimingSection(
+          correctPlacementData(data, chartForRequest, currentSR),
+          timingData.section,
+        );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
@@ -953,7 +946,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartForRequest = selectedChart;
       const chartIdForRequest = activeChartId;
       const chartNameForRequest = chartForRequest?.name || "Unknown";
-      const chartContext = buildChartContext(chartForRequest);
+      const timingData = buildDeterministicTimingData(chartForRequest, 18);
+      const chartContext = buildChartContext(chartForRequest, timingData.context);
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
@@ -968,6 +962,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
+          deterministicTiming: timingData.section,
         }),
       });
 
@@ -983,7 +978,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         const currentSR = solarReturnCharts
           .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
           .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
-        const corrected = correctPlacementData(data, chartForRequest, currentSR);
+        const corrected = mergeDeterministicTimingSection(
+          correctPlacementData(data, chartForRequest, currentSR),
+          timingData.section,
+        );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
       } else if (data.raw) {
         assistantEntry = { role: "assistant", content: data.raw };
