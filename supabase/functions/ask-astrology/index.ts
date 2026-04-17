@@ -1346,6 +1346,43 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               }
             }
           }
+
+          // POST-GENERATION SECTION COUNT CHECK: Verify all required sections are present
+          const qType = parsedContent.question_type;
+          const requiredByType: Record<string, { type: string; titleHint: string }[]> = {
+            relationship: [
+              { type: 'placement_table', titleHint: 'Natal Key Placements' },
+              { type: 'placement_table', titleHint: 'Solar Return Key Placements' },
+              { type: 'narrative_section', titleHint: 'Direct Answer' },
+              { type: 'narrative_section', titleHint: 'Your Relationship Pattern' },
+              { type: 'narrative_section', titleHint: 'Relationship Lived Translation' },
+              { type: 'narrative_section', titleHint: 'Relationship Needs Profile' },
+              { type: 'narrative_section', titleHint: 'Solar Return Love Activation' },
+              { type: 'narrative_section', titleHint: 'Natal & Solar Return Overlay' },
+              { type: 'narrative_section', titleHint: 'Relationship Contradiction Patterns' },
+              { type: 'timing_section', titleHint: 'Relationship Timing Windows' },
+              { type: 'modality_element', titleHint: 'Natal Elemental & Modal Balance' },
+              { type: 'summary_box', titleHint: 'Relationship Strategy Summary' },
+            ],
+          };
+          const required = requiredByType[qType];
+          if (required) {
+            const present = parsedContent.sections.map((s: any) => `${s?.type}::${(s?.title || '').toLowerCase()}`);
+            const missing = required.filter((r) => {
+              return !present.some((p: string) =>
+                p.startsWith(`${r.type}::`) && p.includes(r.titleHint.toLowerCase())
+              );
+            });
+            if (missing.length > 0) {
+              console.warn(
+                `ask-astrology: question_type=${qType} MISSING ${missing.length} required section(s): ` +
+                  missing.map((m) => `${m.type} "${m.titleHint}"`).join(', ') +
+                  `. Got ${parsedContent.sections.length} sections total.`
+              );
+            } else {
+              console.log(`ask-astrology: question_type=${qType} all ${required.length} required sections present ✓`);
+            }
+          }
         }
       }
     } catch (parseError) {
