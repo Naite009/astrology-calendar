@@ -37,12 +37,105 @@ const TRANSIT_ACTION_MAP: Record<string, string> = {
   Pluto: 'turns the heat up underneath — power dynamics, intensity, jealousy, or a deep transformation in how you relate',
 };
 
-const ASPECT_TONE_MAP: Record<string, string> = {
-  conjunction: 'A direct activation — the theme is right on top of you and hard to ignore',
-  sextile: 'A helpful opening — things flow if you make a move, but it will not force itself',
-  square: 'A pressure point — friction, frustration, or an old pattern coming up to be changed',
-  trine: 'A smoother window — the energy is supportive and easier to receive than usual',
-  opposition: 'A mirror — the dynamic shows up through another person and asks for a turning point',
+const buildSpecificOpener = (
+  transitPlanet: string,
+  aspect: string,
+  natalPlanet: string
+): string => {
+  const key = `${transitPlanet}_${aspect}_${natalPlanet}`;
+  const openers: Record<string, string> = {
+    // Saturn transits
+    'Saturn_conjunction_Sun': 'Saturn is sitting directly on your Sun right now — this is a year that asks you to get honest about who you actually are in relationships, not who you perform yourself to be',
+    'Saturn_conjunction_Moon': 'Saturn conjuncting your Moon means emotional safety is being tested — situations will arise that ask whether you are choosing partners from genuine readiness or from fear of being alone',
+    'Saturn_conjunction_Venus': 'Saturn on your Venus slows love down on purpose — this is not a window for casual, and anything that starts now will carry real weight',
+    'Saturn_conjunction_Mars': 'Saturn conjuncting your Mars puts friction on desire — what you want and what you can actually have may not align yet, and the lesson is patience over force',
+    'Saturn_square_Sun': 'Saturn squaring your Sun creates pressure around how you show up — in relationships, this often surfaces the gap between who you want to be seen as and who you actually are',
+    'Saturn_square_Moon': 'Saturn squaring your Moon means your emotional self-protection is being tested directly — the question is whether the caution that has kept you safe is now the thing keeping you from what you want',
+    'Saturn_square_Venus': 'Saturn squaring your Venus is a reality check on what you value — connections that lack real substance will feel that lack more acutely now',
+    'Saturn_opposition_Moon': 'Saturn opposing your Moon brings a relationship reality check — something about how you have been handling emotional closeness is asking to be examined honestly',
+    // Jupiter transits
+    'Jupiter_conjunction_Sun': 'Jupiter on your Sun opens a window of confidence and visibility — in love, this is when you are most likely to attract someone who sees you clearly and responds to who you actually are',
+    'Jupiter_conjunction_Moon': 'Jupiter conjuncting your Moon softens emotional guardedness — you may find it genuinely easier than usual to let someone in, and that openness is worth acting on',
+    'Jupiter_conjunction_Venus': 'Jupiter on your Venus is the warmest romantic window of the year — chemistry feels louder, new people are more likely to arrive, and existing connections have room to deepen',
+    'Jupiter_conjunction_Mars': 'Jupiter conjuncting your Mars amplifies desire and confidence — you are more likely to pursue what you want and more likely to get a genuine response',
+    'Jupiter_trine_Sun': 'Jupiter trining your Sun creates a natural ease around how you present yourself — in relationships, you come across more openly and attract people who respond to your real self',
+    'Jupiter_trine_Moon': 'Jupiter trining your Moon is a genuinely warm emotional window — connection feels less effortful than usual, and this is a good time to reach toward something you have been holding back from',
+    'Jupiter_trine_Venus': 'Jupiter trining your Venus opens the most natural romantic window of this period — attraction is more available, social ease is higher, and new people are more likely to arrive through ordinary life',
+    'Jupiter_trine_Mars': 'Jupiter trining your Mars gives desire real momentum — if you have been hesitating about something or someone, this window supports moving toward it',
+    'Jupiter_sextile_Sun': 'Jupiter sextiling your Sun creates an opening for confidence in how you show up — say yes to invitations and introductions you would normally skip',
+    'Jupiter_sextile_Moon': 'Jupiter sextiling your Moon offers a moment of emotional warmth and openness — a softer window to repair something, reach out, or let someone closer than usual',
+    'Jupiter_sextile_Venus': 'Jupiter sextiling your Venus is the clearest opening for new connection in this window — the energy supports warmth, attraction, and social ease if you make a move',
+    'Jupiter_sextile_Mars': 'Jupiter sextiling your Mars gives a helpful push to desire — if you have been uncertain about pursuing something, this is a window where the risk is lower and the momentum is real',
+    'Jupiter_sextile_Mercury': 'Jupiter sextiling your Mercury opens social doors through conversation — new people are more likely to enter through unexpected introductions or exchanges',
+    'Jupiter_square_Sun': 'Jupiter squaring your Sun creates pressure around identity and confidence — in love, this can feel like being pushed to show up more fully than feels comfortable',
+    'Jupiter_square_Venus': 'Jupiter squaring your Venus amplifies attraction and optimism together — the risk is that chemistry outpaces compatibility, so let two weeks pass before deciding what something means',
+    'Jupiter_square_Mars': 'Jupiter squaring your Mars makes desire loud and impatient — attraction can feel urgent and real, but the square asks you to check whether what you want is actually available',
+    'Jupiter_square_Mercury': 'Jupiter squaring your Mercury opens unexpected doors through conversation and connection — say yes to introductions you would normally decline',
+    // Neptune transits
+    'Neptune_conjunction_Moon': 'Neptune on your Moon softens the boundary between what you feel and what is actually there — this is a period where emotional clarity is genuinely harder to find, and idealization is a real risk',
+    'Neptune_conjunction_Venus': 'Neptune conjuncting your Venus is beautiful and blurring at the same time — connections that arrive now can feel fated or soulmate-level, but require careful reality-checking over time',
+    'Neptune_opposition_Moon': 'Neptune opposing your Moon means your emotional read on relationships is softer and less reliable than usual — do not make permanent decisions at the peak of this transit',
+    'Neptune_square_Moon': 'Neptune squaring your Moon means the clarity you normally rely on to assess people is running softer than usual — you may feel certain about someone before you actually know them well enough to be certain',
+    'Neptune_square_Venus': 'Neptune squaring your Venus blurs what you want and who you are drawn to — this is a window for idealization, and what feels like the right person may need more time to reveal itself clearly',
+    'Neptune_sextile_Mars': 'Neptune sextiling your Mars softens how desire works — you may feel drawn toward someone in a searching, intuitive way rather than with clear intention, which can be genuinely opening if you stay grounded',
+    // Pluto transits
+    'Pluto_conjunction_Moon': 'Pluto conjuncting your Moon is a slow and deep transformation of your emotional world — how you handle closeness, vulnerability, and what you need from a relationship is being fundamentally reorganized',
+    'Pluto_conjunction_Venus': 'Pluto on your Venus intensifies everything about attraction and love — connections that arrive now are not casual, and this period can produce either deep transformation or obsessive dynamics depending on awareness',
+    'Pluto_trine_Moon': 'Pluto trining your Moon is a quieter but powerful invitation to emotional depth — this window supports genuine intimacy, real vulnerability, and conversations that actually change something',
+    'Pluto_trine_Venus': 'Pluto trining your Venus deepens what is possible in love — this is not a dramatic transit but a slow one, and the relationships that develop or deepen now have real staying power',
+    'Pluto_trine_Mars': 'Pluto trining your Mars is gradually loosening old patterns around desire and pursuit — you may find yourself more willing to act on what you want, more direct than usual, and more aware of what you have been keeping private',
+    'Pluto_square_Venus': 'Pluto squaring your Venus surfaces power dynamics in love — attractions now can feel consuming or transformative, and the work is staying conscious of the difference between depth and intensity',
+    // Uranus transits
+    'Uranus_conjunction_Venus': 'Uranus on your Venus is the most electrically charged transit for your love life in years — something changes faster than expected, a person arrives unexpectedly, or a need for freedom suddenly becomes impossible to ignore',
+    'Uranus_conjunction_Mars': 'Uranus conjuncting your Mars shakes loose old patterns around desire and pursuit — sudden attraction, a sharp need for space, or a relationship dynamic that shifts without warning',
+    'Uranus_opposition_Venus': 'Uranus opposing your Venus means something in your relationship world is shifting whether you are ready or not — resist forcing anything back to how it was',
+    'Uranus_trine_Moon': 'Uranus trining your Moon brings welcome change to your emotional world — something new arrives through unexpected doors, and this is a window where saying yes to unfamiliar invitations actually leads somewhere',
+    'Uranus_trine_Venus': 'Uranus trining your Venus opens surprising romantic possibilities — something arrives through an unexpected route, and the attraction that shows up now has a quality of genuine aliveness to it',
+    'Uranus_square_Venus': 'Uranus squaring your Venus is disrupting what you thought you wanted in love — this can feel unsettling but it is also clarifying, showing you what you have outgrown',
+  };
+
+  // Fall back to a planet-specific opener if exact key not found
+  const planetFallbacks: Record<string, Record<string, string>> = {
+    Saturn: {
+      conjunction: 'Saturn is sitting directly on your natal point — something has to be defined, committed to, or honestly faced',
+      square: 'Saturn is squaring your natal point — a reality check is active, and lukewarm situations will feel the pressure',
+      opposition: 'Saturn is opposing your natal point — a relationship reality check is asking you to see something clearly',
+      trine: 'Saturn trining your natal point offers a chance to build something real — the structure is available if you do the work',
+      sextile: 'Saturn sextiling your natal point creates a useful opening for commitment and clarity',
+    },
+    Jupiter: {
+      conjunction: 'Jupiter is expanding this part of your chart directly — opportunity and openness are higher than usual',
+      trine: 'Jupiter trining this part of your chart creates a natural opening — warmth and forward movement are available',
+      sextile: 'Jupiter sextiling this part of your chart offers a helpful opening — things flow if you make a move',
+      square: 'Jupiter squaring this part of your chart amplifies energy and appetite — the risk is overreaching or overcommitting',
+      opposition: 'Jupiter opposing this part of your chart brings expansion through relationship — someone else may be the catalyst',
+    },
+    Neptune: {
+      conjunction: 'Neptune is dissolving boundaries around this part of your chart — clarity is harder to find, and openness and idealization are both more available',
+      square: 'Neptune squaring this part of your chart means your usual read on this area of life is softer than normal — go slowly',
+      opposition: 'Neptune opposing this part of your chart blurs what feels certain — do not make permanent decisions at the peak',
+      trine: 'Neptune trining this part of your chart softens defenses in a genuinely opening way — emotional porousness can be healing here',
+      sextile: 'Neptune sextiling this part of your chart adds an intuitive, feeling-led quality to this area of life',
+    },
+    Pluto: {
+      conjunction: 'Pluto is sitting on this part of your chart — a slow and deep transformation is underway that will not be rushed',
+      trine: 'Pluto trining this part of your chart is a quiet but powerful invitation to go deeper — transformation is available without force',
+      square: 'Pluto squaring this part of your chart brings intensity and power dynamics to the surface — awareness is the work',
+      opposition: 'Pluto opposing this part of your chart surfaces what has been underneath — power dynamics and depth are unavoidable now',
+      sextile: 'Pluto sextiling this part of your chart gives quiet momentum to real change',
+    },
+    Uranus: {
+      conjunction: 'Uranus is sitting directly on this part of your chart — sudden shifts, unexpected arrivals, and the need for freedom are all active',
+      trine: 'Uranus trining this part of your chart opens surprising possibilities — something new arrives through an unexpected route',
+      square: 'Uranus squaring this part of your chart is disrupting the old pattern — what you thought you wanted may be shifting',
+      opposition: 'Uranus opposing this part of your chart means change is coming through relationship — resist forcing the old shape back',
+      sextile: 'Uranus sextiling this part of your chart brings a helpful dose of the unexpected — be open to arrivals that don\'t fit the usual pattern',
+    },
+  };
+
+  if (openers[key]) return openers[key];
+  if (planetFallbacks[transitPlanet]?.[aspect]) return planetFallbacks[transitPlanet][aspect];
+  return `${transitPlanet} is activating this part of your chart`;
 };
 
 const TAG_ACTION_MAP: Record<string, { label: string; watch: string }> = {
@@ -215,7 +308,7 @@ const buildTransitInterpretation = (params: {
     isRetrograde,
   } = params;
 
-  const aspectTone = ASPECT_TONE_MAP[aspect] ?? 'This is an important activation';
+  const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[transitPlanet] ?? 'activates';
   const natalTheme = NATAL_THEME_MAP[natalPlanet] ?? 'a major part of your personal pattern';
 
@@ -242,7 +335,7 @@ const buildTimingWindowDescription = (window: {
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
-  const aspectTone = ASPECT_TONE_MAP[window.aspect] ?? 'An important activation';
+  const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
   const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
 
