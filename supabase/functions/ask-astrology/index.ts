@@ -831,9 +831,10 @@ serve(async (req) => {
     const effectiveCurrentDate = getCurrentDateKey(currentDate);
     const safeDeterministicTiming = sanitizeDeterministicTiming(deterministicTiming);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
     const latestUserMessage = Array.isArray(messages)
