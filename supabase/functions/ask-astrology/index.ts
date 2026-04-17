@@ -1076,9 +1076,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         if (finishReason === "max_tokens" || finishReason === "length") {
           console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
         }
-    
-    // Try to parse the JSON response to validate it
-    let parsedContent;
+
+        // ===== POST-PROCESSING (runs inside stream so we can emit final result) =====
+        let parsedContent;
     try {
       // Strip any markdown code fences if present
       let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
