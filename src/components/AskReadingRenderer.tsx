@@ -35,6 +35,16 @@ export interface TimingTransit {
   symbol: string;
   position: string;
   interpretation: string;
+  // Rich fields from deterministic timing (optional for backward compatibility)
+  aspect?: string;
+  exact_degree?: string;
+  natal_point?: string;
+  first_applying_date?: string;
+  exact_hit_date?: string;
+  separating_end_date?: string;
+  pass_label?: string;
+  date_range?: string;
+  tag?: string;
 }
 
 export interface TimingWindow {
@@ -48,6 +58,15 @@ export interface TimingSection {
   transits: TimingTransit[];
   windows: TimingWindow[];
 }
+
+const TAG_DETAILS: Record<string, { label: string; tone: string; watch: string }> = {
+  meeting:    { label: "Meeting energy",          tone: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30", watch: "Say yes to invitations and introductions you'd normally skip — this is when new people enter through unexpected doors." },
+  attraction: { label: "Attraction spike",        tone: "bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-500/30",             watch: "Chemistry feels louder than usual. Notice who you keep thinking about, but wait two weeks before deciding if it's real connection or just heat." },
+  commitment: { label: "Define-the-relationship", tone: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",             watch: "This is the window for the honest conversation — what are we, where is this going, what do I actually need? Lukewarm answers are an answer." },
+  test:       { label: "Pressure test",           tone: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",         watch: "Old patterns and unspoken doubts surface. Don't make permanent decisions in the heat of it — let it show you what's true, then act." },
+  rupture:    { label: "Sudden shift",            tone: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30",                 watch: "Something changes faster than expected — a person leaves, a feeling flips, a need for space gets loud. Resist forcing it back." },
+  healing:    { label: "Repair window",           tone: "bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/30",     watch: "A softer opening to repair, forgive, or be vulnerable. Reach out to the person you've been avoiding the conversation with." },
+};
 
 export interface SummaryItem {
   label: string;
@@ -214,30 +233,109 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
 }
 
 function TimingCard({ section }: { section: TimingSection }) {
+  // Group multi-pass transits (same planet + aspect + natal_point) so users see the whole cycle as one chapter
+  const grouped = (section.transits ?? []).reduce<Record<string, TimingTransit[]>>((acc, t) => {
+    const key = `${t.planet}|${t.aspect ?? ""}|${t.natal_point ?? t.position}`;
+    (acc[key] ||= []).push(t);
+    return acc;
+  }, {});
+
   return (
     <Card className="border-border">
-      <CardContent className="pt-5 pb-4 space-y-4">
-        <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
-        {section.transits?.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Active Transits</p>
-            {section.transits.map((t, i) => (
-              <div key={i} className="rounded-md bg-muted/40 p-3">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-primary">{t.symbol}</span>
-                  <span className="text-sm font-medium text-foreground">{t.planet}</span>
-                  <span className="text-xs text-muted-foreground ml-1">{t.position}</span>
+      <CardContent className="pt-5 pb-4 space-y-5">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Each window below is a real moment in your relationship world. The dates are calculated from your chart — not guessed. Read the tag, the date range, and the "what to watch for" line together.
+          </p>
+        </div>
+
+        {Object.values(grouped).length > 0 && (
+          <div className="space-y-4">
+            {Object.values(grouped).map((passes, gi) => {
+              const head = passes[0];
+              const tagInfo = head.tag ? TAG_DETAILS[head.tag] : null;
+              const isMultiPass = passes.length > 1;
+
+              return (
+                <div key={gi} className="rounded-lg border border-border bg-card/40 overflow-hidden">
+                  {/* Header: planet · aspect · natal target · tag chip */}
+                  <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
+                    <span className="text-primary text-base">{head.symbol}</span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {head.planet}
+                      {head.aspect ? <span className="text-muted-foreground font-normal"> {head.aspect} </span> : " "}
+                      {head.natal_point ? <span className="text-foreground/80">natal {head.natal_point}</span> : null}
+                    </span>
+                    {tagInfo && (
+                      <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full border font-medium ${tagInfo.tone}`}>
+                        {tagInfo.label}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Each pass */}
+                  <div className="divide-y divide-border">
+                    {passes.map((t, i) => (
+                      <div key={i} className="px-3 py-3 space-y-2">
+                        {/* Date strip */}
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                          {t.date_range && (
+                            <span className="text-sm font-semibold text-primary">{t.date_range}</span>
+                          )}
+                          {isMultiPass && t.pass_label && t.pass_label !== "single pass" && (
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                              {t.pass_label}
+                            </span>
+                          )}
+                          {/retrograde|\bR\b|\(R\)/i.test(t.exact_degree ?? "") && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold">
+                              Retrograde
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Applying → Exact → Separating timeline */}
+                        {(t.first_applying_date || t.exact_hit_date || t.separating_end_date) && (
+                          <div className="grid grid-cols-3 gap-2 text-[11px]">
+                            <div>
+                              <div className="text-muted-foreground uppercase tracking-wider text-[9px]">Builds</div>
+                              <div className="text-foreground/85">{t.first_applying_date || "—"}</div>
+                            </div>
+                            <div>
+                              <div className="text-primary uppercase tracking-wider text-[9px] font-semibold">Peaks</div>
+                              <div className="text-foreground font-medium">{t.exact_hit_date || "—"}</div>
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground uppercase tracking-wider text-[9px]">Settles</div>
+                              <div className="text-foreground/85">{t.separating_end_date || "—"}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Felt-sense interpretation */}
+                        <p className="text-sm text-foreground/90 leading-relaxed">{t.interpretation}</p>
+
+                        {/* What to watch for — actionable, derived from tag */}
+                        {tagInfo?.watch && (
+                          <div className="text-[12px] text-foreground/80 bg-muted/40 rounded px-2.5 py-2 border-l-2 border-primary/50">
+                            <span className="font-semibold text-primary">What to watch for:</span> {tagInfo.watch}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-sm text-foreground/80">{t.interpretation}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+
         {section.windows?.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Key Dates — What They Mean</p>
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Window Overview</p>
             {section.windows.map((w, i) => (
-              <div key={i} className="rounded-md border border-border bg-card/40 p-3">
+              <div key={i} className="rounded-md bg-muted/30 p-3">
                 <div className="text-sm font-semibold text-primary mb-1">{w.label}</div>
                 <p className="text-sm text-foreground/85 leading-relaxed">{w.description}</p>
               </div>
