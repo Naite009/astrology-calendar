@@ -925,6 +925,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     let response: Response | null = null;
     let lastError = "";
 
+    const sanitizedMessages = messages.filter((m: any) => m.role !== "system");
+
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       if (attempt > 0) {
         // Exponential backoff: 2s, 4s
@@ -942,11 +944,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
           system: systemMessage,
-          messages: messages,
+          messages: sanitizedMessages,
           temperature: 0.3,
           max_tokens: 16384,
         }),
       });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Anthropic API error:", response.status, errorBody);
+        throw new Error(`Anthropic API error ${response.status}: ${errorBody}`);
+      }
 
       if (response.ok) break;
 
