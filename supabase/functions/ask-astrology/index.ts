@@ -1223,6 +1223,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         }
 
+        // Merge deterministic timing FIRST so subsequent verification passes operate on verified data
+        // (prevents empty-transit bugs when AI uses non-planet natal_point names like "4th house ruler")
+        if (safeDeterministicTiming) {
+          mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
+        }
+
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           // Extract known natal planet names from chart data
@@ -1328,9 +1334,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         }
 
-        if (safeDeterministicTiming) {
-          mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
-        }
+        // (deterministic timing was already merged before verification — see above)
 
         // POST-GENERATION TIMING EMPTY CHECK: Log if timing_section has empty transits
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
