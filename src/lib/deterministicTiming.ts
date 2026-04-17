@@ -21,7 +21,14 @@ const TRANSIT_BODIES: Record<string, Astronomy.Body> = {
   Pluto: 'Pluto' as Astronomy.Body,
 };
 
-export type TimingReadingType = 'relationship' | 'relocation' | 'general';
+export type TimingReadingType =
+  | 'relationship'
+  | 'relocation'
+  | 'career'
+  | 'health'
+  | 'money'
+  | 'spiritual'
+  | 'general';
 
 const NATAL_THEME_MAP: Record<string, string> = {
   Sun: 'how you show up in the relationship — your confidence, ego, and sense of being seen by your partner',
@@ -41,6 +48,46 @@ const NATAL_THEME_MAP_RELOCATION: Record<string, string> = {
   Saturn: 'commitment, structure, and what you are willing to build in a new place',
 };
 
+const NATAL_THEME_MAP_CAREER: Record<string, string> = {
+  Sun: 'your identity, visibility, and sense of purpose in your career',
+  Moon: 'your emotional relationship to work, what makes you feel secure professionally, and how your inner state affects your output',
+  Mercury: 'communication, decisions, and the mental demands of your work',
+  Venus: 'your values, what work feels rewarding, and how you relate to colleagues and collaborators',
+  Mars: 'your drive, ambition, conflict at work, and how directly you go after what you want professionally',
+  Jupiter: 'opportunity, expansion, and growth in your professional life',
+  Saturn: 'structure, discipline, career limits, and what you are being asked to build or prove',
+};
+
+const NATAL_THEME_MAP_HEALTH: Record<string, string> = {
+  Sun: 'vitality, immune resilience, and your overall life force',
+  Moon: 'emotional patterns that affect your physical body, stress responses, and what you need to feel restored',
+  Mercury: 'the nervous system, mental load, and how overthinking affects the body',
+  Venus: 'pleasure, rest, and the lifestyle habits that either nourish or drain you',
+  Mars: 'physical energy, inflammation, overexertion, and how you use and deplete your body',
+  Jupiter: 'excess, expansion, and where the body may need moderation',
+  Saturn: 'chronic patterns, structural health, bones, skin, and what requires long-term management',
+};
+
+const NATAL_THEME_MAP_MONEY: Record<string, string> = {
+  Sun: 'financial identity, how visible your earnings are, and your sense of worth',
+  Moon: 'emotional spending, financial security, and what money means to you at a feeling level',
+  Mercury: 'financial decisions, contracts, and the information you act on',
+  Venus: 'what you value, how you spend, and where money flows most naturally toward',
+  Mars: 'financial drive, risk-taking, and how aggressively you pursue income',
+  Jupiter: 'financial opportunity, expansion, and where abundance or excess is most likely',
+  Saturn: 'financial discipline, debt, long-term building, and what requires patient investment',
+};
+
+const NATAL_THEME_MAP_SPIRITUAL: Record<string, string> = {
+  Sun: 'soul purpose, identity beyond ego, and what you are here to express',
+  Moon: 'emotional depth, intuition, and what nourishes your inner life',
+  Mercury: "the mind's role in spiritual practice, discernment, and inner knowing",
+  Venus: 'beauty, devotion, and what connects you to something larger than yourself',
+  Mars: 'spiritual will, practice, and what drives your inner search',
+  Jupiter: 'faith, meaning, expansion of consciousness, and what opens you spiritually',
+  Saturn: 'spiritual discipline, karmic patterns, and what demands honest inner work',
+};
+
 const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
   Sun: 'your identity, vitality, and sense of purpose',
   Moon: 'your emotional needs, inner life, and what makes you feel safe',
@@ -51,16 +98,31 @@ const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
   Saturn: 'where you commit, build structure, and face responsibility',
 };
 
+const THEME_MAPS: Record<TimingReadingType, Record<string, string>> = {
+  relationship: NATAL_THEME_MAP,
+  relocation: NATAL_THEME_MAP_RELOCATION,
+  career: NATAL_THEME_MAP_CAREER,
+  health: NATAL_THEME_MAP_HEALTH,
+  money: NATAL_THEME_MAP_MONEY,
+  spiritual: NATAL_THEME_MAP_SPIRITUAL,
+  general: NATAL_THEME_MAP_GENERAL,
+};
+
 const getNatalThemeMap = (readingType: TimingReadingType): Record<string, string> => {
-  if (readingType === 'relocation') return NATAL_THEME_MAP_RELOCATION;
-  if (readingType === 'general') return NATAL_THEME_MAP_GENERAL;
-  return NATAL_THEME_MAP;
+  return THEME_MAPS[readingType] ?? NATAL_THEME_MAP_GENERAL;
 };
 
 const getContextPhrase = (readingType: TimingReadingType): string => {
-  if (readingType === 'relocation') return 'In terms of your environment and direction,';
-  if (readingType === 'general') return 'In your life right now,';
-  return 'In your relationship world,';
+  const phrases: Record<TimingReadingType, string> = {
+    relationship: 'In your relationship world,',
+    relocation: "In terms of where you live and where you're headed,",
+    career: 'In your career and public life,',
+    health: 'In terms of your physical energy and wellbeing,',
+    money: 'In your financial life,',
+    spiritual: 'In your inner and spiritual life,',
+    general: 'In your life overall,',
+  };
+  return phrases[readingType] ?? 'In your life,';
 };
 
 const TRANSIT_ACTION_MAP: Record<string, string> = {

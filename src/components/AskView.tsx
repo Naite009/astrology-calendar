@@ -1027,13 +1027,27 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return data;
   }, []);
 
-  const detectReadingType = (question: string): 'relationship' | 'relocation' | 'general' => {
+  const detectReadingType = (
+    question: string,
+  ): 'relationship' | 'relocation' | 'career' | 'health' | 'money' | 'spiritual' | 'general' => {
     const q = question.toLowerCase();
-    if (/\b(relocat|move to|moving to|best cit(y|ies)|where should i live|astrocartograph|new city|new place|city for|relocation)\b/.test(q)) {
+    if (/\b(relocat|move to|moving to|best cit(y|ies)|where should i live|astrocartograph|new city|new place|city for)\b/.test(q)) {
       return 'relocation';
     }
-    if (/\b(relationship|partner|love|romance|dating|marriage|breakup|ex|crush|attraction|synastry)\b/.test(q)) {
+    if (/\b(relationship|partner|love|romance|dating|marriage|breakup|divorce|ex|crush|attraction|synastry|spouse|husband|wife|girlfriend|boyfriend)\b/.test(q)) {
       return 'relationship';
+    }
+    if (/\b(career|job|work|promotion|business|boss|coworker|profession|vocation|industry|workplace|fired|hired|interview)\b/.test(q)) {
+      return 'career';
+    }
+    if (/\b(health|body|illness|sick|wellness|fitness|energy levels|sleep|nervous system|chronic|symptom|healing)\b/.test(q)) {
+      return 'health';
+    }
+    if (/\b(money|finance|financial|income|salary|debt|invest|wealth|earn|budget|cash|savings)\b/.test(q)) {
+      return 'money';
+    }
+    if (/\b(spiritual|soul|meditation|practice|awakening|enlighten|divine|consciousness|inner work|purpose|meaning of life|faith)\b/.test(q)) {
+      return 'spiritual';
     }
     return 'general';
   };
