@@ -1214,7 +1214,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartForRequest = selectedChart;
       const chartIdForRequest = activeChartId;
       const chartNameForRequest = chartForRequest?.name || "Unknown";
-      const timingData = buildDeterministicTimingData(chartForRequest, 18);
+      const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
+      const readingType = detectReadingType(lastUserQuestion);
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       const chartContext = buildChartContext(chartForRequest, timingData.context);
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
