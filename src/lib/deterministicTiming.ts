@@ -390,6 +390,7 @@ export function buildDeterministicTimingData(
   chart: NatalChart | null,
   monthsAhead: number = 18,
   maxTransits: number = 15,
+  readingType: TimingReadingType = 'relationship',
 ): FutureTimingData {
   const natalPositions = buildNatalPositions(chart);
   if (natalPositions.length === 0) {
@@ -442,6 +443,7 @@ export function buildDeterministicTimingData(
           dateRange: window.dateRange,
           passLabel: exact.label,
           isRetrograde: retrograde,
+          readingType,
         }),
       } satisfies DeterministicTimingTransit;
     });
@@ -472,7 +474,7 @@ export function buildDeterministicTimingData(
       transits: limitedTransits,
       windows: includedWindows.map((window) => ({
         label: window.dateRange,
-        description: buildTimingWindowDescription(window),
+        description: buildTimingWindowDescription(window, readingType),
       })),
     },
   };
