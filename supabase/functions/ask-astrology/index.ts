@@ -451,7 +451,7 @@ Rules:
      Include at least 1 supportive trigger and 1 challenging trigger. If exact dates are available show them; if approximate, label as approximate.
 
      TIMING INTERPRETATION OPENING RULE (MANDATORY): Each transit "interpretation" string must OPEN with a sentence specific to what THIS planet transiting THIS natal point actually means for THIS person — NEVER with a templated opener like "A direct activation — the theme is right on top of you and hard to ignore" or "A helpful opening — things flow if you make a move." Example of correct opening: "Saturn conjuncting your natal Sun in Aries is asking you to get real about how you show up in relationships — whether you're being seen for who you actually are, or performing a version of yourself." If you want to label the aspect type ("direct activation", "helpful opening", "test", "turning point"), it can appear as a short label AFTER the specific interpretation, never before it.)
-   11. modality_element — "Natal Elemental & Modal Balance"
+   11. modality_element — "Natal Elemental & Modal Balance" (NON-NEGOTIABLE — this section MUST appear between the timing_section and the summary_box. It is the 11th section of 12. It uses type "modality_element" with the EXACT structure shown in the schema example: elements[], modalities[], polarity[], dominant_element, dominant_modality, dominant_polarity, balance_interpretation. Do NOT skip it. Do NOT merge it into another section. Do NOT replace it with a narrative_section. If you only output 11 sections instead of 12, the most common reason is that you skipped THIS section — do not skip it.)
    12. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
@@ -1344,6 +1344,43 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               if (!Array.isArray(section.windows) || section.windows.length === 0) {
                 console.warn(`ask-astrology: timing_section "${section.title}" has EMPTY windows array.`);
               }
+            }
+          }
+
+          // POST-GENERATION SECTION COUNT CHECK: Verify all required sections are present
+          const qType = parsedContent.question_type;
+          const requiredByType: Record<string, { type: string; titleHint: string }[]> = {
+            relationship: [
+              { type: 'placement_table', titleHint: 'Natal Key Placements' },
+              { type: 'placement_table', titleHint: 'Solar Return Key Placements' },
+              { type: 'narrative_section', titleHint: 'Direct Answer' },
+              { type: 'narrative_section', titleHint: 'Your Relationship Pattern' },
+              { type: 'narrative_section', titleHint: 'Relationship Lived Translation' },
+              { type: 'narrative_section', titleHint: 'Relationship Needs Profile' },
+              { type: 'narrative_section', titleHint: 'Solar Return Love Activation' },
+              { type: 'narrative_section', titleHint: 'Natal & Solar Return Overlay' },
+              { type: 'narrative_section', titleHint: 'Relationship Contradiction Patterns' },
+              { type: 'timing_section', titleHint: 'Relationship Timing Windows' },
+              { type: 'modality_element', titleHint: 'Natal Elemental & Modal Balance' },
+              { type: 'summary_box', titleHint: 'Relationship Strategy Summary' },
+            ],
+          };
+          const required = requiredByType[qType];
+          if (required) {
+            const present = parsedContent.sections.map((s: any) => `${s?.type}::${(s?.title || '').toLowerCase()}`);
+            const missing = required.filter((r) => {
+              return !present.some((p: string) =>
+                p.startsWith(`${r.type}::`) && p.includes(r.titleHint.toLowerCase())
+              );
+            });
+            if (missing.length > 0) {
+              console.warn(
+                `ask-astrology: question_type=${qType} MISSING ${missing.length} required section(s): ` +
+                  missing.map((m) => `${m.type} "${m.titleHint}"`).join(', ') +
+                  `. Got ${parsedContent.sections.length} sections total.`
+              );
+            } else {
+              console.log(`ask-astrology: question_type=${qType} all ${required.length} required sections present ✓`);
             }
           }
         }
