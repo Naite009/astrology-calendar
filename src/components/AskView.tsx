@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"; // deterministic correction v2
-import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw } from "lucide-react";
+import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -240,6 +240,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const [threadIds, setThreadIds] = useState<Record<string, string>>(threadIdsRef.current);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+      toast.info("Generation stopped.");
+    }
+  };
   const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -1661,18 +1670,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               className="min-h-[60px] resize-none"
               disabled={isLoading}
             />
-            <Button
-              onClick={handleSubmit}
-              disabled={!input.trim() || isLoading}
-              className="shrink-0"
-              size="icon"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
+            {isLoading ? (
+              <Button
+                onClick={handleStopGeneration}
+                variant="destructive"
+                className="shrink-0"
+                size="icon"
+                title="Stop generation"
+              >
+                <Square className="h-4 w-4 fill-current" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={!input.trim()}
+                className="shrink-0"
+                size="icon"
+              >
                 <Send className="h-4 w-4" />
-              )}
-            </Button>
+              </Button>
+            )}
           </div>
 
           {!selectedChart && (
