@@ -901,10 +901,61 @@ export function buildDeterministicTimingData(
     return { context: '', section: null };
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // PRIORITY SORT — applied BEFORE the maxTransits cap so headline transits
+  // (Jupiter→Sun, Jupiter→MC, returns, Saturn→Sun, etc.) are never silently
+  // dropped just because they happen later in the date window than 15 other
+  // smaller transits. Lower priorityScore = higher priority = scanned first.
+  // ─────────────────────────────────────────────────────────────────────────
+  const tenthHousePlanets = new Set<string>();
+  const eleventhHousePlanets = new Set<string>();
+  if (chart?.planets) {
+    for (const [name, data] of Object.entries(chart.planets)) {
+      const house = (data as { house?: number })?.house;
+      if (house === 10) tenthHousePlanets.add(name);
+      if (house === 11) eleventhHousePlanets.add(name);
+    }
+  }
+
+  const transitPlanetWeight: Record<string, number> = {
+    Pluto: 0, Neptune: 1, Uranus: 2, Saturn: 3, Jupiter: 4,
+  };
+  const natalPointWeight = (name: string): number => {
+    if (name === 'Sun') return 0;
+    if (name === 'Moon') return 1;
+    if (name === 'Ascendant' || name === 'ASC') return 1;
+    if (name === 'Midheaven' || name === 'MC') return 1;
+    if (tenthHousePlanets.has(name)) return 2;
+    if (eleventhHousePlanets.has(name)) return 3;
+    if (name === 'NorthNode' || name === 'North Node') return 3;
+    if (['Mercury', 'Venus', 'Mars'].includes(name)) return 4;
+    return 6;
+  };
+  const aspectWeight: Record<string, number> = {
+    conjunction: 0, opposition: 1, square: 2, trine: 2, sextile: 3,
+  };
+
+  const priorityScore = (w: typeof windows[number]): number => {
+    const tp = transitPlanetWeight[w.transitPlanet] ?? 5;
+    const np = natalPointWeight(w.natalPlanet);
+    const asp = aspectWeight[w.aspect] ?? 4;
+    // Mandatory headline floor: ANY Jupiter aspect to Sun, MC, or a 10th-house
+    // planet is treated as top-tier so it survives the 15-cap regardless of date.
+    const isJupiterCareerHeadline =
+      w.transitPlanet === 'Jupiter' &&
+      (w.natalPlanet === 'Sun' ||
+        w.natalPlanet === 'Midheaven' || w.natalPlanet === 'MC' ||
+        tenthHousePlanets.has(w.natalPlanet));
+    if (isJupiterCareerHeadline) return -100 + asp;
+    return tp * 10 + np * 2 + asp;
+  };
+
+  const prioritizedWindows = [...windows].sort((a, b) => priorityScore(a) - priorityScore(b));
+
   const transits: DeterministicTimingTransit[] = [];
   const includedWindows: typeof windows = [];
 
-  for (const window of windows) {
+  for (const window of prioritizedWindows) {
     if (!Array.isArray(window.exactDates) || window.exactDates.length === 0) continue;
 
     // Compute per-pass details once so we can both group them and detect any retrograde pass
@@ -988,6 +1039,16 @@ export function buildDeterministicTimingData(
 
     if (transits.length >= maxTransits) break;
   }
+
+  // After the priority cap, re-sort the kept transits chronologically so the
+  // reader sees them in date order in the final output.
+  const chronoCompare = (a: DeterministicTimingTransit, b: DeterministicTimingTransit) => {
+    const aDate = new Date(a.first_applying_date.replace(/\s+to\s+.*$/, '')).getTime();
+    const bDate = new Date(b.first_applying_date.replace(/\s+to\s+.*$/, '')).getTime();
+    if (Number.isNaN(aDate) || Number.isNaN(bDate)) return 0;
+    return aDate - bDate;
+  };
+  transits.sort(chronoCompare);
 
   // Final dedup safety net keyed on (planet, aspect, natal_point)
   const seen = new Set<string>();
