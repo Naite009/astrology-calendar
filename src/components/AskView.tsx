@@ -1190,10 +1190,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       if (activeChartIdRef.current === chartIdForRequest) {
         setEntries(nextEntries);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === "AbortError") {
+        // User stopped intentionally — handled in handleStopGeneration
+        return;
+      }
       console.error("Ask error:", error);
       toast.error("Failed to get response. Please try again.");
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
   };
@@ -1339,10 +1344,14 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       if (activeChartIdRef.current === chartIdForRequest) {
         setEntries(nextEntries);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === "AbortError") {
+        return;
+      }
       console.error("Regenerate error:", error);
       toast.error("Failed to regenerate. Please try again.");
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
   };
