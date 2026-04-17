@@ -57,14 +57,20 @@ export const useCloudBackup = (
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialCheckDoneRef = useRef(false);
   const hasShownRestoreToastRef = useRef(false);
-  
+  // Gate: don't run the initial cloud check until we've actually resolved
+  // whether there's a session. Otherwise we race getSession() and end up
+  // querying by device_id even though the user IS signed in — which makes
+  // their profiles appear to vanish on every reload.
+  const [authChecked, setAuthChecked] = useState(false);
+
   // Listen for auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
         setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
-        
+        setAuthChecked(true);
+
         // When user logs in, trigger a sync to fetch their charts
         if (event === 'SIGNED_IN' && session?.user) {
           initialCheckDoneRef.current = false; // Reset to allow re-check
@@ -75,6 +81,7 @@ export const useCloudBackup = (
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+      setAuthChecked(true);
     });
 
     return () => subscription.unsubscribe();
@@ -383,8 +390,12 @@ export const useCloudBackup = (
     }
   }, [userNatalChart, savedCharts, saveUserNatalChart, setSavedCharts]);
 
-  // Initial check on mount - restore from cloud if local is empty
+  // Initial check on mount - restore from cloud if local is empty.
+  // CRITICAL: wait until authChecked === true so we query by user_id (not device_id)
+  // when the user is actually signed in. Otherwise their profiles appear to vanish
+  // on every reload because we fetch the wrong scope.
   useEffect(() => {
+    if (!authChecked) return;
     if (initialCheckDoneRef.current) return;
     initialCheckDoneRef.current = true;
 
@@ -395,7 +406,7 @@ export const useCloudBackup = (
       const localSavedCount = savedCharts.length;
       
       // Always check cloud to see if there are more charts than local
-      console.log('[CloudBackup] Checking cloud for charts...');
+      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? 'device' });
       const cloudCharts = await fetchCloudCharts();
       
       // Count non-user charts in cloud
@@ -420,7 +431,7 @@ export const useCloudBackup = (
     };
 
     checkAndRestore();
-  }, [userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
+  }, [authChecked, user?.id, userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
 
   // Sync whenever charts change
   useEffect(() => {
