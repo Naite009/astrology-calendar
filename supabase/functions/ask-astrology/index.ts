@@ -997,8 +997,8 @@ Keep each narrative section to one short body paragraph and 2-4 bullets max. In 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const content = data.choices?.[0]?.message?.content || "";
-    const finishReason = data.choices?.[0]?.finish_reason || data.choices?.[0]?.stop_reason || "";
+    const content = data.content?.[0]?.text || "";
+    const finishReason = data.stop_reason || "";
     if (finishReason === "length" || finishReason === "MAX_TOKENS") {
       console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
     }
