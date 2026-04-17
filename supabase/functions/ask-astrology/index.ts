@@ -924,7 +924,6 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       .join("\n\n");
 
     const MAX_RETRIES = 2;
-    const REQUEST_TIMEOUT_MS = 130_000; // 130s — leaves headroom under 150s edge timeout
     let response: Response | null = null;
     let lastError = "";
 
@@ -932,15 +931,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       if (attempt > 0) {
-        // Short backoff only — we cannot afford long waits inside 150s edge timeout
         await new Promise(r => setTimeout(r, 1500));
         console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
       try {
+        // STREAMING: keeps connection alive, bypasses 150s idle timeout
         response = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
@@ -953,28 +949,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            max_tokens: 12288,
+            max_tokens: 16384,
+            stream: true,
           }),
-          signal: controller.signal,
         });
       } catch (fetchErr: any) {
-        clearTimeout(timeoutId);
-        const isAbort = fetchErr?.name === "AbortError";
-        console.error(`Anthropic fetch ${isAbort ? "TIMED OUT" : "failed"} on attempt ${attempt + 1}:`, fetchErr?.message);
-        lastError = isAbort ? "Anthropic request timed out" : String(fetchErr?.message || fetchErr);
+        console.error(`Anthropic fetch failed on attempt ${attempt + 1}:`, fetchErr?.message);
+        lastError = String(fetchErr?.message || fetchErr);
         if (attempt < MAX_RETRIES - 1) continue;
-        return new Response(JSON.stringify({ error: "The reading took too long to generate. Please try again — the model is sometimes faster on a second pass." }), {
+        return new Response(JSON.stringify({ error: "Network error reaching the AI. Please try again." }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
-      }
-      clearTimeout(timeoutId);
-
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Anthropic API error:", response.status, errorBody);
-        throw new Error(`Anthropic API error ${response.status}: ${errorBody}`);
       }
 
       if (response.ok) break;
@@ -992,14 +978,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         });
       }
 
-      // Retry on 502/503/504 (transient gateway errors)
       if ([502, 503, 504].includes(response.status) && attempt < MAX_RETRIES - 1) {
         lastError = await response.text();
         console.warn(`Transient gateway error ${response.status}, will retry...`);
         continue;
       }
 
-      // Non-retryable error
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
       return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
@@ -1008,7 +992,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       });
     }
 
-    if (!response || !response.ok) {
+    if (!response || !response.ok || !response.body) {
       console.error("All retries exhausted. Last error:", lastError);
       return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
         status: 200,
@@ -1016,26 +1000,64 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       });
     }
 
-    let data;
+    // Consume the SSE stream and assemble the full text
+    let content = "";
+    let finishReason = "";
     try {
-      const responseText = await response.text();
-      if (!responseText || responseText.trim().length === 0) {
-        console.error("ask-astrology error: Empty response body from AI gateway");
-        return new Response(JSON.stringify({ error: "AI returned an empty response. Please try again." }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // SSE events are separated by \n\n
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+
+        for (const event of events) {
+          const dataLine = event.split("\n").find(l => l.startsWith("data: "));
+          if (!dataLine) continue;
+          const payload = dataLine.slice(6).trim();
+          if (!payload || payload === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(payload);
+            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+              content += evt.delta.text || "";
+            } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
+              finishReason = evt.delta.stop_reason;
+            } else if (evt.type === "message_stop") {
+              // done
+            } else if (evt.type === "error") {
+              console.error("Anthropic stream error event:", evt);
+              throw new Error(evt.error?.message || "Stream error");
+            }
+          } catch (e) {
+            // Skip malformed event chunks
+          }
+        }
       }
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("ask-astrology error: Failed to parse AI response JSON:", parseError);
-      return new Response(JSON.stringify({ error: "AI returned an invalid response. Please try again." }), {
+    } catch (streamErr: any) {
+      console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
+      return new Response(JSON.stringify({ error: "The reading was interrupted. Please try again." }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const content = data.content?.[0]?.text || "";
-    const finishReason = data.stop_reason || "";
+
+    if (!content || content.trim().length === 0) {
+      console.error("ask-astrology error: Empty content from stream");
+      return new Response(JSON.stringify({ error: "AI returned an empty response. Please try again." }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (finishReason === "max_tokens" || finishReason === "length") {
+      console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+    }
     if (finishReason === "length" || finishReason === "MAX_TOKENS") {
       console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
     }
