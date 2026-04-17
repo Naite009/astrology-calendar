@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Using built-in Deno.serve (no external std import needed)
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -823,7 +823,7 @@ Before finalizing output, verify ALL of the following. If ANY check fails, the r
 5. Strategy summary: Includes decisive directives — who to move toward, early warning signs, pattern to break, what this year is best for.
 6. Mars in Gemini in the 12th behavioral explanation, contradiction patterns, "what this year feels like" format, and one-sentence relationship pattern summary are all preserved when applicable.`;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
