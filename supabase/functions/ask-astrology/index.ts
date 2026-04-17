@@ -92,18 +92,18 @@ const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming
   parsedContent.sections.push(deterministicTiming);
 };
 
-const SYSTEM_PROMPT = `CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
+const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
+
+COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
+
+CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
 Do not describe astrology using generic traits. All interpretations must be translated into:
 - Real-life behavior (what the person actually does, how they act)
 - Real relationship patterns (what dynamics repeat, what they attract)
 - Actual experiences the person will recognize (specific situations, not abstract themes)
 
-PLACEMENT-FIRST OPENING RULE — MANDATORY FOR EVERY narrative_section BODY:
-Every "body" paragraph in every narrative_section MUST open with the specific chart placements that drive the interpretation. The formula:
-- First sentence: name the key placements by sign + house (and ruler if relevant). Example: "Your 7th house cusp is Capricorn, ruled by Saturn, and that Saturn sits in Cancer in your 1st house conjunct your Moon."
-- Second sentence: translate what that specific configuration means for THIS person. Example: "That single line is the blueprint: you need a partner with mature, structural commitment who also feels emotionally like home."
-- Then continue into the broader pattern, shadow dynamics, and lived experience.
-NEVER open a narrative body with an abstract statement like "Your relationship blueprint is built on a contradiction" or "This year brings transformation." The reader must see THEIR chart data in the very first sentence. This rule applies to ALL narrative sections — natal, solar return, cross-references, career, health, money, spiritual — every single one.
+BEHAVIOR-FIRST, PLACEMENT-AS-REASON RULE — MANDATORY FOR EVERY narrative_section BODY:
+Every narrative body paragraph must open with the lived behavior or pattern first, then name the placement that causes it in the second sentence. Example: "You're not drawn to chaos or drama as a baseline — and that comes from your Capricorn 7th house ruled by Saturn in Cancer in your 1st." NEVER open with "Your 7th house is..." or "Your Venus in..." as the first sentence. The reader must feel recognized in sentence 1, then learn the astrology in sentence 2. After those two sentences, continue into the broader pattern, shadow dynamics, and lived experience. This rule applies to ALL narrative sections — natal, solar return, cross-references, relationship, career, health, money, spiritual — every single one.
 
 RULER CHAIN MANDATE — USE THE PRE-COMPUTED DATA, DO NOT GUESS:
 The chart context now includes three pre-computed blocks you MUST use as your raw material:
@@ -448,7 +448,9 @@ Rules:
      - "interpretation" (string): plain-language meaning, 1 to 3 sentences. MUST describe something the person can picture happening in real life. Do NOT write interpretations that only explain astrology.
 
      COVERAGE RULE: The 12–18 month window must have trigger windows spread across it — not all in one cluster. If the first trigger is in month 2, there must be another trigger or turning point later. The person must always see hope ahead.
-     Include at least 1 supportive trigger and 1 challenging trigger. If exact dates are available show them; if approximate, label as approximate.)
+     Include at least 1 supportive trigger and 1 challenging trigger. If exact dates are available show them; if approximate, label as approximate.
+
+     TIMING INTERPRETATION OPENING RULE (MANDATORY): Each transit "interpretation" string must OPEN with a sentence specific to what THIS planet transiting THIS natal point actually means for THIS person — NEVER with a templated opener like "A direct activation — the theme is right on top of you and hard to ignore" or "A helpful opening — things flow if you make a move." Example of correct opening: "Saturn conjuncting your natal Sun in Aries is asking you to get real about how you show up in relationships — whether you're being seen for who you actually are, or performing a version of yourself." If you want to label the aspect type ("direct activation", "helpful opening", "test", "turning point"), it can appear as a short label AFTER the specific interpretation, never before it.)
   10. modality_element — "Natal Elemental & Modal Balance"
    11. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
@@ -885,12 +887,17 @@ serve(async (req) => {
 The user asked for a focused relationship-only analysis, so return a compact response with 6 to 7 sections total depending on Solar Return availability:
 1. placement_table — "Natal Key Placements"
 2. placement_table — "Solar Return Key Placements" ONLY if Solar Return data exists
-3. narrative_section — "How This Person Loves"
+3. narrative_section — "How You Love"
 4. narrative_section — "This Year in Love"
 5. narrative_section — "Where Natal and Solar Return Connect"
 6. timing_section — "Relationship Timing"
 7. summary_box — "Relationship Strategy"
-Keep each narrative section to one short body paragraph and 2-4 bullets max. In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
+
+PROSE-OVER-BULLETS RULE (MANDATORY in compact mode): For "How You Love", "This Year in Love", "Where Natal and Solar Return Connect", and the prose portion of "Relationship Strategy", DO NOT use the "bullets" array. Set "bullets" to an empty array []. The "body" field MUST be continuous prose paragraphs (2–4 paragraphs per section, separated by line breaks). Inside the prose, use NAMED TRANSITION LINES inline as labels followed by a colon and a sentence — they are NOT separate bullet items. The allowed inline transitions are: "What you're attracted to vs. what you actually need:", "Early vs. committed:", "Shadow pattern:", "The core contradiction:", "What would actually work long-term:", "The emotional tone:", "What's shifting:", "What this year is for:", "Best timing windows:", "The one shadow pattern most worth breaking:", "How to work with this chart:". Example of correct usage inside body prose: "...you keep gravitating toward people who feel mentally electric. Shadow pattern: the same wit that hooks you also keeps you from asking the boring practical questions early enough. What would actually work long-term: someone who is steady AND can hold a real conversation — you don't have to choose."
+
+SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When checking SR-to-natal overlaps, if a connection is outside the 3° orb or does not genuinely exist, say so in one sentence and move on. Example: "SR Venus at 27° Aries lands near natal Mercury at 27° Aries — that's a real overlap worth noting. SR Jupiter at 15° Cancer doesn't make a tight aspect to any natal relationship point, so I won't manufacture one." This honesty is what makes the reading feel trustworthy. Never invent a connection to fill space.
+
+In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
     const systemMessage = [

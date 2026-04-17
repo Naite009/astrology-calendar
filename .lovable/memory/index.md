@@ -114,3 +114,5 @@ Updated: now
 - [Placement-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Every narrative body opens with specific chart placements (sign+house+ruler), never abstract statements
 - [Ruler Chain Enrichment](mem://features/ask-tab/ruler-chain-enrichment) — Pre-computed cusp→ruler→position→tight-aspect blocks fed to Ask AI for placement-rich relational depth
 - [Essence Opening Mandate](mem://features/ask-tab/essence-opening-mandate) — Every Ask reading opens with a jargon-free "Essence" paragraph capturing the whole pattern in recognizable human language
+- [Prose Voice & Banned Phrases](mem://features/ask-tab/prose-voice-and-banned-phrases) — Hard banned-phrase list and named inline transition lines replacing bullets in compact relationship mode
+- [Behavior-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Sentence 1 = lived behavior, sentence 2 = the placement that causes it (supersedes placement-first)
