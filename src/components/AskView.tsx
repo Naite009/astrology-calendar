@@ -1027,6 +1027,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return data;
   }, []);
 
+  const detectReadingType = (question: string): 'relationship' | 'relocation' | 'general' => {
+    const q = question.toLowerCase();
+    if (/\b(relocat|move to|moving to|best cit(y|ies)|where should i live|astrocartograph|new city|new place|city for|relocation)\b/.test(q)) {
+      return 'relocation';
+    }
+    if (/\b(relationship|partner|love|romance|dating|marriage|breakup|ex|crush|attraction|synastry)\b/.test(q)) {
+      return 'relationship';
+    }
+    return 'general';
+  };
+
   const handleSubmitDirect = async (directQuestion?: string) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
@@ -1043,7 +1054,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setIsLoading(true);
 
     try {
-      const timingData = buildDeterministicTimingData(chartForRequest, 18);
+      const readingType = detectReadingType(question);
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       const chartContext = buildChartContext(chartForRequest, timingData.context);
       const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
@@ -1202,7 +1214,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartForRequest = selectedChart;
       const chartIdForRequest = activeChartId;
       const chartNameForRequest = chartForRequest?.name || "Unknown";
-      const timingData = buildDeterministicTimingData(chartForRequest, 18);
+      const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
+      const readingType = detectReadingType(lastUserQuestion);
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       const chartContext = buildChartContext(chartForRequest, timingData.context);
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")

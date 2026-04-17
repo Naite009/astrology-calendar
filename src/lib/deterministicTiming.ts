@@ -21,12 +21,46 @@ const TRANSIT_BODIES: Record<string, Astronomy.Body> = {
   Pluto: 'Pluto' as Astronomy.Body,
 };
 
+export type TimingReadingType = 'relationship' | 'relocation' | 'general';
+
 const NATAL_THEME_MAP: Record<string, string> = {
   Sun: 'how you show up in the relationship — your confidence, ego, and sense of being seen by your partner',
   Moon: 'your emotional safety, what you need to feel held, and how you behave at home with the person closest to you',
   Mercury: 'the way you talk, listen, and make decisions with a partner — the conversations you keep replaying',
   Venus: 'attraction, closeness, affection, what you value in love, and how easy it is to receive it',
   Mars: 'desire, sex, conflict, and how directly you go after — or argue for — what you want from someone',
+};
+
+const NATAL_THEME_MAP_RELOCATION: Record<string, string> = {
+  Sun: 'your visibility, identity, and sense of purpose in a new city',
+  Moon: 'your sense of home, belonging, and what makes a place feel emotionally safe and settled',
+  Mercury: 'communication, community, and mental stimulation in your daily environment',
+  Venus: 'the aesthetic, social, and lifestyle quality of your environment',
+  Mars: 'your energy, drive, and how much effort daily life in a new place requires',
+  Jupiter: 'expansion, opportunity, and whether a place opens doors or closes them',
+  Saturn: 'commitment, structure, and what you are willing to build in a new place',
+};
+
+const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
+  Sun: 'your identity, vitality, and sense of purpose',
+  Moon: 'your emotional needs, inner life, and what makes you feel safe',
+  Mercury: 'how you think, communicate, and process information',
+  Venus: 'what you value, how you connect, and what brings you pleasure',
+  Mars: 'your drive, desire, and how you go after what you want',
+  Jupiter: 'where you grow, expand, and find opportunity',
+  Saturn: 'where you commit, build structure, and face responsibility',
+};
+
+const getNatalThemeMap = (readingType: TimingReadingType): Record<string, string> => {
+  if (readingType === 'relocation') return NATAL_THEME_MAP_RELOCATION;
+  if (readingType === 'general') return NATAL_THEME_MAP_GENERAL;
+  return NATAL_THEME_MAP;
+};
+
+const getContextPhrase = (readingType: TimingReadingType): string => {
+  if (readingType === 'relocation') return 'In terms of your environment and direction,';
+  if (readingType === 'general') return 'In your life right now,';
+  return 'In your relationship world,';
 };
 
 const TRANSIT_ACTION_MAP: Record<string, string> = {
@@ -296,6 +330,7 @@ const buildTransitInterpretation = (params: {
   dateRange: string;
   passLabel: string;
   isRetrograde: boolean;
+  readingType: TimingReadingType;
 }): string => {
   const {
     transitPlanet,
@@ -306,11 +341,14 @@ const buildTransitInterpretation = (params: {
     dateRange,
     passLabel,
     isRetrograde,
+    readingType,
   } = params;
 
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[transitPlanet] ?? 'activates';
-  const natalTheme = NATAL_THEME_MAP[natalPlanet] ?? 'a major part of your personal pattern';
+  const themeMap = getNatalThemeMap(readingType);
+  const natalTheme = themeMap[natalPlanet] ?? 'a major part of your personal pattern';
+  const contextPhrase = getContextPhrase(readingType);
 
   const passSentence =
     passLabel === 'single pass'
@@ -321,7 +359,7 @@ const buildTransitInterpretation = (params: {
     ? `Because ${transitPlanet} is retrograde on this hit, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
     : '';
 
-  return `${aspectTone}. In your relationship world, ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+  return `${aspectTone}. ${contextPhrase} ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
 };
 
 const buildTimingWindowDescription = (window: {
@@ -330,14 +368,15 @@ const buildTimingWindowDescription = (window: {
   natalPlanet: string;
   natalDegree: string;
   exactDates: { date: string; label: string }[];
-}): string => {
+}, readingType: TimingReadingType): string => {
   const exactSummary = window.exactDates
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
   const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
-  const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
+  const themeMap = getNatalThemeMap(readingType);
+  const natalTheme = themeMap[window.natalPlanet] ?? 'a major part of your personal pattern';
 
   return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
@@ -351,6 +390,7 @@ export function buildDeterministicTimingData(
   chart: NatalChart | null,
   monthsAhead: number = 18,
   maxTransits: number = 15,
+  readingType: TimingReadingType = 'relationship',
 ): FutureTimingData {
   const natalPositions = buildNatalPositions(chart);
   if (natalPositions.length === 0) {
@@ -403,6 +443,7 @@ export function buildDeterministicTimingData(
           dateRange: window.dateRange,
           passLabel: exact.label,
           isRetrograde: retrograde,
+          readingType,
         }),
       } satisfies DeterministicTimingTransit;
     });
@@ -433,7 +474,7 @@ export function buildDeterministicTimingData(
       transits: limitedTransits,
       windows: includedWindows.map((window) => ({
         label: window.dateRange,
-        description: buildTimingWindowDescription(window),
+        description: buildTimingWindowDescription(window, readingType),
       })),
     },
   };
