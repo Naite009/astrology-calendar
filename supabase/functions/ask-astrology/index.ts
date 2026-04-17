@@ -845,7 +845,7 @@ Deno.serve(async (req) => {
     const normalizedQuestion = latestUserMessage.toLowerCase();
     const isRelationshipQuestion = /\b(relationship|love|dating|romance|partner|marriage)\b/.test(normalizedQuestion);
     const isLocationQuestion = /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
-    const wantsFocusedReading = /(focused|concise|brief|shorter|relationship-only|do not include any location|better than a long one|prioritize clarity over exhaustiveness)/.test(normalizedQuestion);
+    const wantsFocusedReading = /(compact mode|please be brief|keep it short|relationship-only compact)/.test(normalizedQuestion);
     const compactRelationshipMode = isRelationshipQuestion && wantsFocusedReading;
 
     let sanitizedChartContext = typeof chartContext === 'string' ? chartContext : '';
