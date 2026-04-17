@@ -35,6 +35,16 @@ export interface TimingTransit {
   symbol: string;
   position: string;
   interpretation: string;
+  // Rich fields from deterministic timing (optional for backward compatibility)
+  aspect?: string;
+  exact_degree?: string;
+  natal_point?: string;
+  first_applying_date?: string;
+  exact_hit_date?: string;
+  separating_end_date?: string;
+  pass_label?: string;
+  date_range?: string;
+  tag?: string;
 }
 
 export interface TimingWindow {
@@ -48,6 +58,15 @@ export interface TimingSection {
   transits: TimingTransit[];
   windows: TimingWindow[];
 }
+
+const TAG_DETAILS: Record<string, { label: string; tone: string; watch: string }> = {
+  meeting:    { label: "Meeting energy",          tone: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30", watch: "Say yes to invitations and introductions you'd normally skip — this is when new people enter through unexpected doors." },
+  attraction: { label: "Attraction spike",        tone: "bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-500/30",             watch: "Chemistry feels louder than usual. Notice who you keep thinking about, but wait two weeks before deciding if it's real connection or just heat." },
+  commitment: { label: "Define-the-relationship", tone: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",             watch: "This is the window for the honest conversation — what are we, where is this going, what do I actually need? Lukewarm answers are an answer." },
+  test:       { label: "Pressure test",           tone: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",         watch: "Old patterns and unspoken doubts surface. Don't make permanent decisions in the heat of it — let it show you what's true, then act." },
+  rupture:    { label: "Sudden shift",            tone: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30",                 watch: "Something changes faster than expected — a person leaves, a feeling flips, a need for space gets loud. Resist forcing it back." },
+  healing:    { label: "Repair window",           tone: "bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/30",     watch: "A softer opening to repair, forgive, or be vulnerable. Reach out to the person you've been avoiding the conversation with." },
+};
 
 export interface SummaryItem {
   label: string;
