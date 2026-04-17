@@ -924,18 +924,17 @@ Keep each narrative section to one short body paragraph and 2-4 bullets max. In 
         console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
       }
 
-      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
-          messages: [
-            { role: "system", content: systemMessage },
-            ...messages,
-          ],
+          model: "claude-sonnet-4-6",
+          system: systemMessage,
+          messages: messages,
           temperature: 0.3,
           max_tokens: 16384,
         }),
