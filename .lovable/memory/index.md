@@ -16,8 +16,10 @@ Updated: now
 - Use `saveWithRollingBackups` for storage >500KB. Lovable HMR white screen needs full reload.
 - Clarity Translation: describe concrete real-life scenarios, not abstract traits or jargon.
 - Placement-First Openings: every narrative body opens with specific placements (sign+house+ruler), never abstract statements.
+- NEVER sign the user out. No idle timeouts, no auto-logout. Only an explicit Sign-out click may call `signOut()`.
 
 ## Memories
+- [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely
 - [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
 - [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
 - [Chart Lord Activation](mem://features/astrology/chart-lord-activation-system) — Binary search tracking of outer planet transits to the Sect Light
