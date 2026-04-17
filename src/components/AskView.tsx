@@ -434,30 +434,112 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         context += "\n";
       }
     });
-    if (Object.keys(houseCusps).length > 0) {
-      context += "\nHouse Cusps:\n";
-      Object.entries(houseCusps).forEach(([house, data]) => {
-        if (data && typeof data === 'object' && 'sign' in data) {
-          const pos = data as { sign: string; degree: number };
-          const houseNum = house.replace('house', '');
-          context += `- House ${houseNum}: ${pos.degree}° ${pos.sign}\n`;
-        }
-      });
-    }
-
-    // --- KEY RELATIONSHIP POINTS ---
     const TRADITIONAL_RULERS: Record<string, string> = {
       Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
       Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
       Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
     };
+
+    // Helper: compute absolute degree for any planet
+    const planetAbsDeg = (name: string): number | null => {
+      const p = (planets as any)[name];
+      if (!p || typeof p !== 'object' || !('sign' in p)) return null;
+      return ZODIAC.indexOf(p.sign) * 30 + p.degree + (p.minutes || 0) / 60;
+    };
+
+    // Helper: aspects between two planets (used for ruler-chain aspects)
+    const ASPECTS: Array<{ name: string; symbol: string; angle: number; orb: number }> = [
+      { name: 'conjunct', symbol: '☌', angle: 0, orb: 8 },
+      { name: 'sextile', symbol: '⚹', angle: 60, orb: 5 },
+      { name: 'square', symbol: '□', angle: 90, orb: 7 },
+      { name: 'trine', symbol: '△', angle: 120, orb: 7 },
+      { name: 'opposition', symbol: '☍', angle: 180, orb: 8 },
+    ];
+    const aspectBetween = (a: number, b: number) => {
+      let diff = Math.abs(a - b) % 360;
+      if (diff > 180) diff = 360 - diff;
+      for (const asp of ASPECTS) {
+        const orb = Math.abs(diff - asp.angle);
+        if (orb <= asp.orb) return { ...asp, orb: orb.toFixed(2) };
+      }
+      return null;
+    };
+
+    if (Object.keys(houseCusps).length > 0) {
+      context += "\nHouse Cusps (with traditional rulers):\n";
+      for (let i = 1; i <= 12; i++) {
+        const cusp = (houseCusps as any)[`house${i}`];
+        if (cusp && 'sign' in cusp) {
+          const ruler = TRADITIONAL_RULERS[cusp.sign] || 'Unknown';
+          context += `- House ${i}: ${cusp.degree}° ${cusp.sign} — ruled by ${ruler}\n`;
+        }
+      }
+    }
+
+    // --- PLANETS GROUPED BY HOUSE (so AI never has to guess what's in each house) ---
+    if (cuspLongitudes.length === 12) {
+      const planetsByHouse: Record<number, string[]> = {};
+      for (let h = 1; h <= 12; h++) planetsByHouse[h] = [];
+      Object.entries(planets).forEach(([name, data]) => {
+        if (data && typeof data === 'object' && 'sign' in data) {
+          const p = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+          const abs = ZODIAC.indexOf(p.sign) * 30 + p.degree + (p.minutes || 0) / 60;
+          const h = calcHouse(abs);
+          if (h) planetsByHouse[h].push(`${name} ${p.degree}°${p.minutes || 0}' ${p.sign}${p.isRetrograde ? ' R' : ''}`);
+        }
+      });
+      context += "\nPlanets In Each House:\n";
+      for (let h = 1; h <= 12; h++) {
+        const list = planetsByHouse[h];
+        context += `- House ${h}: ${list.length ? list.join('; ') : '(empty)'}\n`;
+      }
+    }
+
+    // --- RULER CHAINS for relationship-relevant houses (1, 4, 5, 7, 8, 12) ---
+    // For each, resolve: cusp sign → its ruler → the ruler's sign/house → tight aspects to relational bodies.
+    const RELATIONAL_HOUSES = [1, 4, 5, 7, 8, 12];
+    const RELATIONAL_BODIES = ['Sun', 'Moon', 'Venus', 'Mars', 'Saturn', 'Jupiter', 'Mercury', 'Pluto', 'Neptune', 'Uranus', 'Chiron', 'Juno'];
+    if (cuspLongitudes.length === 12) {
+      context += "\nRuler Chains (cusp sign → ruler → where ruler lives → tight aspects):\n";
+      for (const h of RELATIONAL_HOUSES) {
+        const cusp = (houseCusps as any)[`house${h}`];
+        if (!cusp || !('sign' in cusp)) continue;
+        const cuspSign = cusp.sign;
+        const ruler = TRADITIONAL_RULERS[cuspSign];
+        const rulerData = (planets as any)[ruler];
+        if (!rulerData || !('sign' in rulerData)) {
+          context += `- House ${h} cusp: ${cuspSign} → ruler ${ruler} (position not available)\n`;
+          continue;
+        }
+        const rulerAbs = ZODIAC.indexOf(rulerData.sign) * 30 + rulerData.degree + (rulerData.minutes || 0) / 60;
+        const rulerHouse = calcHouse(rulerAbs);
+        const retro = rulerData.isRetrograde ? ' R' : '';
+        let line = `- House ${h} cusp: ${cusp.degree}° ${cuspSign} → ruler ${ruler} sits in ${rulerData.degree}°${rulerData.minutes || 0}' ${rulerData.sign}${retro}`;
+        if (rulerHouse) line += ` (House ${rulerHouse})`;
+        // Tight aspects from this ruler to relational bodies
+        const tight: string[] = [];
+        for (const body of RELATIONAL_BODIES) {
+          if (body === ruler) continue;
+          const otherAbs = planetAbsDeg(body);
+          if (otherAbs == null) continue;
+          const asp = aspectBetween(rulerAbs, otherAbs);
+          if (asp && parseFloat(asp.orb) <= 4) {
+            tight.push(`${asp.symbol} ${body} (orb ${asp.orb}°)`);
+          }
+        }
+        if (tight.length) line += ` — tight aspects: ${tight.join(', ')}`;
+        context += line + "\n";
+      }
+    }
+
+    // --- KEY RELATIONSHIP POINTS (Descendant headline) ---
     const house7Cusp = houseCusps.house7 as { sign: string; degree: number } | undefined;
     if (house7Cusp) {
       const dscSign = house7Cusp.sign;
       const ruler7 = TRADITIONAL_RULERS[dscSign] || 'Unknown';
       context += `\nKey Relationship Points:\n`;
       context += `- Descendant (7th house cusp): ${house7Cusp.degree}° ${dscSign}\n`;
-      context += `- 7th House Ruler: ${ruler7} (rules ${dscSign})\n`;
+      context += `- 7th House Ruler: ${ruler7} (rules ${dscSign}) — see Ruler Chains above for where Saturn/this ruler actually sits and what it touches\n`;
     }
 
     // --- JUNO & LILITH (if available in chart data) ---
