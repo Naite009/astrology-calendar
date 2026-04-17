@@ -335,7 +335,7 @@ const buildTimingWindowDescription = (window: {
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
-  const aspectTone = ASPECT_TONE_MAP[window.aspect] ?? 'An important activation';
+  const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
   const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
 
