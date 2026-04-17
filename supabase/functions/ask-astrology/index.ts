@@ -1000,64 +1000,82 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       });
     }
 
-    // Consume the SSE stream and assemble the full text
-    let content = "";
-    let finishReason = "";
-    try {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+    // STREAM TO CLIENT WITH KEEPALIVES.
+    // The edge runtime kills "idle" connections at 150s. By immediately returning
+    // a streaming response and emitting keepalive bytes every few seconds while
+    // we consume Anthropic's SSE stream, we keep the client connection active
+    // until we have the full content. The final assembled JSON is sent as the
+    // last SSE event with `event: result`.
+    const anthropicResponse = response;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        const send = (line: string) => controller.enqueue(encoder.encode(line));
 
-        // SSE events are separated by \n\n
-        const events = buffer.split("\n\n");
-        buffer = events.pop() || "";
+        // Initial flush so the client sees response headers + first byte immediately
+        send(": connected\n\n");
 
-        for (const event of events) {
-          const dataLine = event.split("\n").find(l => l.startsWith("data: "));
-          if (!dataLine) continue;
-          const payload = dataLine.slice(6).trim();
-          if (!payload || payload === "[DONE]") continue;
-          try {
-            const evt = JSON.parse(payload);
-            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
-              content += evt.delta.text || "";
-            } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
-              finishReason = evt.delta.stop_reason;
-            } else if (evt.type === "message_stop") {
-              // done
-            } else if (evt.type === "error") {
-              console.error("Anthropic stream error event:", evt);
-              throw new Error(evt.error?.message || "Stream error");
+        const keepalive = setInterval(() => {
+          try { send(`: keepalive ${Date.now()}\n\n`); } catch { /* noop */ }
+        }, 5000);
+
+        let content = "";
+        let finishReason = "";
+
+        try {
+          const reader = anthropicResponse.body!.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const events = buffer.split("\n\n");
+            buffer = events.pop() || "";
+
+            for (const event of events) {
+              const dataLine = event.split("\n").find(l => l.startsWith("data: "));
+              if (!dataLine) continue;
+              const payload = dataLine.slice(6).trim();
+              if (!payload || payload === "[DONE]") continue;
+              try {
+                const evt = JSON.parse(payload);
+                if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+                  content += evt.delta.text || "";
+                } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
+                  finishReason = evt.delta.stop_reason;
+                } else if (evt.type === "error") {
+                  console.error("Anthropic stream error event:", evt);
+                  throw new Error(evt.error?.message || "Stream error");
+                }
+              } catch {
+                // Skip malformed event chunks
+              }
             }
-          } catch (e) {
-            // Skip malformed event chunks
           }
+        } catch (streamErr: any) {
+          console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
+          clearInterval(keepalive);
+          send(`event: result\ndata: ${JSON.stringify({ error: "The reading was interrupted. Please try again." })}\n\n`);
+          controller.close();
+          return;
         }
-      }
-    } catch (streamErr: any) {
-      console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
-      return new Response(JSON.stringify({ error: "The reading was interrupted. Please try again." }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    if (!content || content.trim().length === 0) {
-      console.error("ask-astrology error: Empty content from stream");
-      return new Response(JSON.stringify({ error: "AI returned an empty response. Please try again." }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+        clearInterval(keepalive);
 
-    if (finishReason === "max_tokens" || finishReason === "length") {
-      console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
-    }
+        if (!content || content.trim().length === 0) {
+          console.error("ask-astrology error: Empty content from stream");
+          send(`event: result\ndata: ${JSON.stringify({ error: "AI returned an empty response. Please try again." })}\n\n`);
+          controller.close();
+          return;
+        }
+
+        if (finishReason === "max_tokens" || finishReason === "length") {
+          console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+        }
     
     // Try to parse the JSON response to validate it
     let parsedContent;
