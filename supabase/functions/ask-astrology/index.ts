@@ -217,7 +217,7 @@ Return this exact structure:
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
       "dominant_polarity": "Yang (Active)",
-      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
+      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' STRICT VOCABULARY RULE: You may ONLY refer to the four real elements (Fire, Earth, Air, Water) and three real modalities (Cardinal, Fixed, Mutable) and two polarities (Yang, Yin). NEVER invent fuzzy hybrid categories like 'water-adjacent', 'fire-leaning', 'earth-flavored', 'air-tinged', 'quasi-cardinal', 'water-and-water-adjacent', 'mostly-mutable-with-fixed-undertones', etc. If you want to describe a mix, name each element with its actual count separately (e.g., 'three Water and two Earth') — do NOT merge them into invented categories. Numbers must match the counts in the elements/modalities arrays exactly. Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
     },
     {
       "type": "summary_box",
