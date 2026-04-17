@@ -1084,6 +1084,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -1097,6 +1099,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
         }),
+        signal: controller.signal,
       });
 
       if (resp.status === 429) {
@@ -1245,6 +1248,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -1258,6 +1263,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
         }),
+        signal: controller.signal,
       });
 
       if (resp.status === 429) { toast.error("Rate limit exceeded."); setIsLoading(false); return; }
