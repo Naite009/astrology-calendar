@@ -923,7 +923,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       .filter(Boolean)
       .join("\n\n");
 
-    const MAX_RETRIES = 3;
+    const MAX_RETRIES = 2;
+    const REQUEST_TIMEOUT_MS = 130_000; // 130s — leaves headroom under 150s edge timeout
     let response: Response | null = null;
     let lastError = "";
 
@@ -931,26 +932,44 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       if (attempt > 0) {
-        // Exponential backoff: 2s, 4s
-        await new Promise(r => setTimeout(r, 2000 * attempt));
+        // Short backoff only — we cannot afford long waits inside 150s edge timeout
+        await new Promise(r => setTimeout(r, 1500));
         console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
       }
 
-      response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          system: systemMessage,
-          messages: sanitizedMessages,
-          temperature: 0.3,
-          max_tokens: 16384,
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+      try {
+        response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            system: systemMessage,
+            messages: sanitizedMessages,
+            temperature: 0.3,
+            max_tokens: 12288,
+          }),
+          signal: controller.signal,
+        });
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        const isAbort = fetchErr?.name === "AbortError";
+        console.error(`Anthropic fetch ${isAbort ? "TIMED OUT" : "failed"} on attempt ${attempt + 1}:`, fetchErr?.message);
+        lastError = isAbort ? "Anthropic request timed out" : String(fetchErr?.message || fetchErr);
+        if (attempt < MAX_RETRIES - 1) continue;
+        return new Response(JSON.stringify({ error: "The reading took too long to generate. Please try again — the model is sometimes faster on a second pass." }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      clearTimeout(timeoutId);
+
 
       if (!response.ok) {
         const errorBody = await response.text();
