@@ -111,3 +111,4 @@ Updated: now
 - [Hybrid Clarity Rule](mem://features/ask-tab/clarity-translation-rule) — Lead with real-life situation, then feeling, then why — never traits alone; rewrite until recognizable
 - [Placement-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Every narrative body opens with specific chart placements (sign+house+ruler), never abstract statements
 - [Ruler Chain Enrichment](mem://features/ask-tab/ruler-chain-enrichment) — Pre-computed cusp→ruler→position→tight-aspect blocks fed to Ask AI for placement-rich relational depth
+- [Essence Opening Mandate](mem://features/ask-tab/essence-opening-mandate) — Every Ask reading opens with a jargon-free "Essence" paragraph capturing the whole pattern in recognizable human language
