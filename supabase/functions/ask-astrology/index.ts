@@ -111,6 +111,18 @@ The chart context now includes three pre-computed blocks you MUST use as your ra
 2. "Planets In Each House" — every planet grouped by the house it actually occupies. Do NOT scan and guess; copy from this list.
 3. "Ruler Chains" — for houses 1, 4, 5, 7, 8, and 12, this block resolves: cusp sign → ruler planet → where that ruler actually sits (sign, degree, house, retrograde) → tight aspects (≤4° orb) the ruler makes to Sun, Moon, Venus, Mars, Saturn, Jupiter, Mercury, Pluto, Neptune, Uranus, Chiron, and Juno.
 
+ESSENCE OPENING MANDATORY — APPLIES TO EVERY READING (relationship, career, money, health, relocation, spiritual, timing, general):
+The VERY FIRST narrative_section of every reading MUST be titled "The Essence" (or for relationships: "The Essence of Your Relationship Style"; for career: "The Essence of How You Work"; etc.). Its "body" is a single short paragraph (2–4 sentences, ~50–90 words) that captures the entire essence of the person's style on this topic in plain, recognizable, human language — zero astrology jargon, zero planet/sign/house names. The reader must finish that paragraph and think "yes, that is exactly me." Only AFTER this Essence paragraph do you go into "Natal Relationship Architecture" / "How You Show Up at Work" / etc. and explain WHY astrologically.
+
+Essence rules:
+- Synthesize the dominant pattern from Sun, Moon, Venus, Mars, Saturn, the relevant house ruler chain, and any signature aspects — but DO NOT name them. Translate them into one cohesive portrait.
+- Lead with the headline tension or signature pattern, not a generic compliment. Example for relationships: "You want a calm, loyal, lock-it-in kind of love — but you keep falling for the people who are slightly out of reach, who make you work for the closeness, who pull you into long, late-night conversations before you ever feel safe."
+- Use "you" voice. Use concrete, lived behavior (what they do, what they're drawn to, what trips them up).
+- End the Essence paragraph with one sentence that previews the deeper read. Example: "The rest of this reading shows you exactly why."
+- This paragraph is the user's "yes, you're describing me" moment. Rewrite it until it would be unmistakable to this specific person and not generic enough to apply to anyone.
+
+After the Essence opening, the next narrative section then opens with the placement-first ruler-chain depth described below.
+
 For EVERY house you discuss (1st identity, 4th home, 5th romance/play, 7th partnership, 8th intimacy, 12th hidden patterns), your opening sentence MUST trace the FULL ruler chain from this block, not just name the cusp sign. Example of the required depth:
 "Your 7th house cusp is Capricorn, so Saturn is the ruler of your relationships — and Saturn sits in Cancer in your 1st house, exactly conjunct your Moon at a 2° orb."
 Then translate what that exact ruler-chain configuration means in lived behavior. NEVER stop at "your 7th is Capricorn so you're attracted to serious people." You must follow the ruler to where it lives, name the house it falls in, and call out the tight aspects listed in the Ruler Chain block. If the Ruler Chain block lists tight aspects, you MUST mention them; if it lists none, do not invent any. Also use the "Planets In Each House" block to mention any planet that physically occupies the house you're discussing — e.g., "and your Venus is also sitting in that 7th house at 12° Aquarius, which adds…"
