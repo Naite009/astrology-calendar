@@ -330,6 +330,7 @@ const buildTransitInterpretation = (params: {
   dateRange: string;
   passLabel: string;
   isRetrograde: boolean;
+  readingType: TimingReadingType;
 }): string => {
   const {
     transitPlanet,
@@ -340,11 +341,14 @@ const buildTransitInterpretation = (params: {
     dateRange,
     passLabel,
     isRetrograde,
+    readingType,
   } = params;
 
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[transitPlanet] ?? 'activates';
-  const natalTheme = NATAL_THEME_MAP[natalPlanet] ?? 'a major part of your personal pattern';
+  const themeMap = getNatalThemeMap(readingType);
+  const natalTheme = themeMap[natalPlanet] ?? 'a major part of your personal pattern';
+  const contextPhrase = getContextPhrase(readingType);
 
   const passSentence =
     passLabel === 'single pass'
@@ -355,7 +359,7 @@ const buildTransitInterpretation = (params: {
     ? `Because ${transitPlanet} is retrograde on this hit, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
     : '';
 
-  return `${aspectTone}. In your relationship world, ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+  return `${aspectTone}. ${contextPhrase} ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSentence}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
 };
 
 const buildTimingWindowDescription = (window: {
@@ -364,14 +368,15 @@ const buildTimingWindowDescription = (window: {
   natalPlanet: string;
   natalDegree: string;
   exactDates: { date: string; label: string }[];
-}): string => {
+}, readingType: TimingReadingType): string => {
   const exactSummary = window.exactDates
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
   const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet);
   const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
-  const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
+  const themeMap = getNatalThemeMap(readingType);
+  const natalTheme = themeMap[window.natalPlanet] ?? 'a major part of your personal pattern';
 
   return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
