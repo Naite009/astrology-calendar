@@ -246,8 +246,13 @@ const buildTimingWindowDescription = (window: {
   const transitAction = TRANSIT_ACTION_MAP[window.transitPlanet] ?? 'activates';
   const natalTheme = NATAL_THEME_MAP[window.natalPlanet] ?? 'a major part of your personal pattern';
 
-  return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}. Technical: ${window.transitPlanet} ${window.aspect} natal ${window.natalPlanet} at ${window.natalDegree}.`;
+  return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
+
+export const getTimingTagDetails = (tag: string) => {
+  return TAG_ACTION_MAP[tag] ?? { label: tag, watch: '' };
+};
+
 
 export function buildDeterministicTimingData(
   chart: NatalChart | null,
