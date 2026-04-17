@@ -38,7 +38,7 @@ const sanitizeDeterministicTiming = (input: any) => {
           interpretation: cleanString(transit?.interpretation),
         }))
         .filter((transit: any) => transit.planet && transit.position && transit.interpretation)
-        .slice(0, 15)
+        .slice(0, 20)
     : [];
 
   const windows = Array.isArray(input.windows)
