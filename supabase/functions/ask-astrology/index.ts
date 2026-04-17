@@ -931,7 +931,7 @@ Keep each narrative section to one short body paragraph and 2-4 bullets max. In 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          model: "claude-sonnet-4-6",
           messages: [
             { role: "system", content: systemMessage },
             ...messages,
