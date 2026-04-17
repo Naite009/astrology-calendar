@@ -390,8 +390,12 @@ export const useCloudBackup = (
     }
   }, [userNatalChart, savedCharts, saveUserNatalChart, setSavedCharts]);
 
-  // Initial check on mount - restore from cloud if local is empty
+  // Initial check on mount - restore from cloud if local is empty.
+  // CRITICAL: wait until authChecked === true so we query by user_id (not device_id)
+  // when the user is actually signed in. Otherwise their profiles appear to vanish
+  // on every reload because we fetch the wrong scope.
   useEffect(() => {
+    if (!authChecked) return;
     if (initialCheckDoneRef.current) return;
     initialCheckDoneRef.current = true;
 
@@ -402,7 +406,7 @@ export const useCloudBackup = (
       const localSavedCount = savedCharts.length;
       
       // Always check cloud to see if there are more charts than local
-      console.log('[CloudBackup] Checking cloud for charts...');
+      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? 'device' });
       const cloudCharts = await fetchCloudCharts();
       
       // Count non-user charts in cloud
@@ -427,7 +431,7 @@ export const useCloudBackup = (
     };
 
     checkAndRestore();
-  }, [userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
+  }, [authChecked, user?.id, userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
 
   // Sync whenever charts change
   useEffect(() => {
