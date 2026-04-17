@@ -45,6 +45,33 @@ const ASPECT_TONE_MAP: Record<string, string> = {
   opposition: 'A mirror — the dynamic shows up through another person and asks for a turning point',
 };
 
+const TAG_ACTION_MAP: Record<string, { label: string; watch: string }> = {
+  meeting: {
+    label: 'Meeting energy',
+    watch: 'Say yes to invitations, introductions, and one-off events you would normally skip — this is when new people enter through unexpected doors.',
+  },
+  attraction: {
+    label: 'Attraction spike',
+    watch: 'Chemistry feels louder than usual. Notice who you keep thinking about, but wait two weeks before deciding if it is real connection or just heat.',
+  },
+  commitment: {
+    label: 'Define-the-relationship',
+    watch: 'This is the window for the honest conversation — what are we, where is this going, what do I actually need? Lukewarm answers are an answer.',
+  },
+  test: {
+    label: 'Pressure test',
+    watch: 'Old patterns and unspoken doubts surface. Do not make permanent decisions in the heat of it — let it show you what is actually true, then act.',
+  },
+  rupture: {
+    label: 'Sudden shift',
+    watch: 'Something changes faster than you expected — a person leaves, a feeling flips, a need for space gets loud. Resist the urge to force it back.',
+  },
+  healing: {
+    label: 'Repair window',
+    watch: 'A softer opening to repair, forgive, or be vulnerable. Reach out to the person you have been avoiding the conversation with.',
+  },
+};
+
 export interface DeterministicTimingTransit {
   planet: string;
   symbol: string;
