@@ -21,12 +21,46 @@ const TRANSIT_BODIES: Record<string, Astronomy.Body> = {
   Pluto: 'Pluto' as Astronomy.Body,
 };
 
+export type TimingReadingType = 'relationship' | 'relocation' | 'general';
+
 const NATAL_THEME_MAP: Record<string, string> = {
   Sun: 'how you show up in the relationship — your confidence, ego, and sense of being seen by your partner',
   Moon: 'your emotional safety, what you need to feel held, and how you behave at home with the person closest to you',
   Mercury: 'the way you talk, listen, and make decisions with a partner — the conversations you keep replaying',
   Venus: 'attraction, closeness, affection, what you value in love, and how easy it is to receive it',
   Mars: 'desire, sex, conflict, and how directly you go after — or argue for — what you want from someone',
+};
+
+const NATAL_THEME_MAP_RELOCATION: Record<string, string> = {
+  Sun: 'your visibility, identity, and sense of purpose in a new city',
+  Moon: 'your sense of home, belonging, and what makes a place feel emotionally safe and settled',
+  Mercury: 'communication, community, and mental stimulation in your daily environment',
+  Venus: 'the aesthetic, social, and lifestyle quality of your environment',
+  Mars: 'your energy, drive, and how much effort daily life in a new place requires',
+  Jupiter: 'expansion, opportunity, and whether a place opens doors or closes them',
+  Saturn: 'commitment, structure, and what you are willing to build in a new place',
+};
+
+const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
+  Sun: 'your identity, vitality, and sense of purpose',
+  Moon: 'your emotional needs, inner life, and what makes you feel safe',
+  Mercury: 'how you think, communicate, and process information',
+  Venus: 'what you value, how you connect, and what brings you pleasure',
+  Mars: 'your drive, desire, and how you go after what you want',
+  Jupiter: 'where you grow, expand, and find opportunity',
+  Saturn: 'where you commit, build structure, and face responsibility',
+};
+
+const getNatalThemeMap = (readingType: TimingReadingType): Record<string, string> => {
+  if (readingType === 'relocation') return NATAL_THEME_MAP_RELOCATION;
+  if (readingType === 'general') return NATAL_THEME_MAP_GENERAL;
+  return NATAL_THEME_MAP;
+};
+
+const getContextPhrase = (readingType: TimingReadingType): string => {
+  if (readingType === 'relocation') return 'In terms of your environment and direction,';
+  if (readingType === 'general') return 'In your life right now,';
+  return 'In your relationship world,';
 };
 
 const TRANSIT_ACTION_MAP: Record<string, string> = {
