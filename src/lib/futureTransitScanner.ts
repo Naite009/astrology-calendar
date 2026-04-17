@@ -19,7 +19,16 @@ const OUTER_PLANETS: { name: string; body: Astronomy.Body }[] = [
   { name: 'Pluto', body: 'Pluto' as Astronomy.Body },
 ];
 
-const NATAL_TARGETS = ['Sun','Moon','Mercury','Venus','Mars'];
+// Personal planets + chart angles + slow planets + nodes + Chiron.
+// Including outer planets here lets us catch Jupiter Returns, Saturn Returns,
+// Jupiter→Saturn, Jupiter→MC, transits to the Node, etc. — all of which
+// were previously invisible because only the 5 personal planets were scanned.
+const NATAL_TARGETS = [
+  'Sun', 'Moon', 'Mercury', 'Venus', 'Mars',
+  'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+  'Chiron', 'NorthNode', 'North Node', 'SouthNode', 'South Node',
+  'Ascendant', 'ASC', 'Midheaven', 'MC', 'Descendant', 'DSC', 'IC',
+];
 
 const MAJOR_ASPECTS = [
   { name: 'conjunction', angle: 0, orb: 3 },
