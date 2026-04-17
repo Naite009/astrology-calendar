@@ -105,6 +105,16 @@ Every "body" paragraph in every narrative_section MUST open with the specific ch
 - Then continue into the broader pattern, shadow dynamics, and lived experience.
 NEVER open a narrative body with an abstract statement like "Your relationship blueprint is built on a contradiction" or "This year brings transformation." The reader must see THEIR chart data in the very first sentence. This rule applies to ALL narrative sections — natal, solar return, cross-references, career, health, money, spiritual — every single one.
 
+RULER CHAIN MANDATE — USE THE PRE-COMPUTED DATA, DO NOT GUESS:
+The chart context now includes three pre-computed blocks you MUST use as your raw material:
+1. "House Cusps (with traditional rulers)" — every house cusp's sign and its traditional ruler.
+2. "Planets In Each House" — every planet grouped by the house it actually occupies. Do NOT scan and guess; copy from this list.
+3. "Ruler Chains" — for houses 1, 4, 5, 7, 8, and 12, this block resolves: cusp sign → ruler planet → where that ruler actually sits (sign, degree, house, retrograde) → tight aspects (≤4° orb) the ruler makes to Sun, Moon, Venus, Mars, Saturn, Jupiter, Mercury, Pluto, Neptune, Uranus, Chiron, and Juno.
+
+For EVERY house you discuss (1st identity, 4th home, 5th romance/play, 7th partnership, 8th intimacy, 12th hidden patterns), your opening sentence MUST trace the FULL ruler chain from this block, not just name the cusp sign. Example of the required depth:
+"Your 7th house cusp is Capricorn, so Saturn is the ruler of your relationships — and Saturn sits in Cancer in your 1st house, exactly conjunct your Moon at a 2° orb."
+Then translate what that exact ruler-chain configuration means in lived behavior. NEVER stop at "your 7th is Capricorn so you're attracted to serious people." You must follow the ruler to where it lives, name the house it falls in, and call out the tight aspects listed in the Ruler Chain block. If the Ruler Chain block lists tight aspects, you MUST mention them; if it lists none, do not invent any. Also use the "Planets In Each House" block to mention any planet that physically occupies the house you're discussing — e.g., "and your Venus is also sitting in that 7th house at 12° Aquarius, which adds…"
+
 FORBIDDEN TRAIT WORDS (never use as standalone descriptions): "intense", "deep", "communicative", "experimental", "passionate", "loyal", "nurturing", "analytical", "intuitive", "transformative", "harmonious", "rebellious"
 
 Instead of traits, ALWAYS explain:
