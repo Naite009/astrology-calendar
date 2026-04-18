@@ -936,6 +936,124 @@ const isRetrogradeAtExactHit = (planet: string, exactDate: Date, passLabel: stri
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Bug 3 — Developmental milestone overrides
+// Some transits are not "just transits" — they are once-or-twice-in-a-lifetime
+// developmental thresholds. When transit X aspects natal X (the same body), we
+// are looking at a generational cycle hitting an individual: Uranus opp Uranus
+// at ~40 (mid-life), Uranus square Uranus at ~21 (early-adult identity quake)
+// and ~63, Saturn return at ~29/~58, Jupiter return every ~12 yrs, Chiron
+// return at ~50, Nodal return at ~18.6 / ~37 / ~56. These must be named for
+// what they actually are — generic "urge to change environment" copy is wrong.
+// ─────────────────────────────────────────────────────────────────────────────
+const getDevelopmentalMilestoneInterpretation = (
+  transitPlanet: string,
+  aspect: string,
+  natalPlanet: string,
+  readingType: TimingReadingType,
+  passSummary: string,
+  isRetrograde: boolean,
+): string | null => {
+  const retroLine = isRetrograde
+    ? ' Because the transit is retrograde on at least one pass, the theme revisits in waves rather than landing all at once.'
+    : '';
+
+  // Helper to assemble final paragraph using the chosen developmental opener
+  // followed by a reading-type lens line and the timing summary.
+  const wrap = (developmentalOpener: string, lensLine: string): string =>
+    `${developmentalOpener} ${lensLine} ${passSummary}${retroLine}`;
+
+  // ── Uranus → natal Uranus ────────────────────────────────────────────────
+  // The Uranus generational cycle: square (~21), opposition (~40), square (~63),
+  // return (~84). These are the most well-known developmental quakes in the chart.
+  if (transitPlanet === 'Uranus' && natalPlanet === 'Uranus') {
+    if (aspect === 'square') {
+      const opener =
+        'This is a Uranus square Uranus — one of the defining developmental transits of early adulthood (it lands around age 21 and again around age 63). It is not a generic "change of scenery" — it is the moment your inherited identity stops fitting and an unmistakable, more authentic version of you tries to break through. Generic restlessness is the surface; the real event is the rejection of a life that was someone else\'s plan.';
+      const lens: Record<TimingReadingType, string> = {
+        relationship: 'In love, this surfaces as either suddenly outgrowing a partner you committed to too early, or finally meeting someone who actually fits the version of you that is emerging. Old loyalties fall away.',
+        relocation: 'A move at this age is rarely just a move — it is the body looking for an environment that matches who you are becoming, not who you were when you left home.',
+        career: 'Whatever path was chosen by parents, school, or default starts to crack. The job, major, or career track you adopted before you knew yourself is being honestly questioned for the first time.',
+        health: 'The nervous system runs hot — sleep, energy and focus may all destabilize as the body refuses the old container.',
+        money: 'Financial habits set up by a younger version of you stop working — earning, spending and saving all need a more honest, more autonomous structure.',
+        spiritual: 'Inherited beliefs are tested directly. What you were taught is no longer enough; first-hand experience is the only currency now.',
+        general: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
+      };
+      return wrap(opener, lens[readingType] ?? lens.general);
+    }
+    if (aspect === 'opposition') {
+      const opener =
+        'This is the Uranus opposition — the classical mid-life crisis transit (around age 40). It is not a marketing cliché; it is the chart asking, point-blank, whether the life you have built is actually yours. Restlessness, sudden urges to leave, attraction to younger or freer people, and an itch to throw it all out are all expressions of one underlying question.';
+      const lens: Record<TimingReadingType, string> = {
+        relationship: 'Long-term relationships either deepen into something more real or are honestly examined. Affairs, sudden departures, and new attractions at this age are rarely about the other person — they are about a self trying to be felt again.',
+        relocation: 'Moving now can be liberating or escapist. The question is whether the new place lets you live more honestly or just lets you avoid yourself somewhere prettier.',
+        career: 'The career you built in your 20s and 30s is being audited. What was achievement may now feel like a cage; what felt unrealistic may now feel non-negotiable.',
+        health: 'The body insists on being heard — sleep, blood pressure, and stress symptoms become the cost of any life that is not actually yours.',
+        money: 'Money is being asked to serve a more honest life, not maintain an old image.',
+        spiritual: 'Meaning becomes a survival question. Spiritual bypass stops working; only first-hand depth holds now.',
+        general: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
+      };
+      return wrap(opener, lens[readingType] ?? lens.general);
+    }
+    if (aspect === 'conjunction') {
+      const opener =
+        'This is the Uranus return — a once-in-a-lifetime threshold around age 84. The full Uranus cycle is complete: a moment of genuine elder vantage, when the soul looks back at the whole arc.';
+      return wrap(opener, 'Whatever the lens, the work here is integration and transmission — not new ambition.');
+    }
+  }
+
+  // ── Saturn return ────────────────────────────────────────────────────────
+  if (transitPlanet === 'Saturn' && natalPlanet === 'Saturn' && aspect === 'conjunction') {
+    const opener =
+      'This is a Saturn return — the classic ~29-year (and again ~58-year) coming-of-age transit. Anything built on a shaky or borrowed foundation gets stress-tested; anything genuinely yours gets locked into structure. It is rarely comfortable, and it is almost always clarifying.';
+    const lens: Record<TimingReadingType, string> = {
+      relationship: 'Relationships either deepen into adult commitment or end honestly. Lukewarm versions of love do not survive this transit.',
+      relocation: 'Where you live becomes a real question — not a fantasy. The Saturn return often coincides with finally settling somewhere on purpose, or finally leaving a place you have only been tolerating.',
+      career: 'Career structures crystallize. What you have actually built shows what it can hold; what was performance falls away.',
+      health: 'The body asks for sustainable rhythms. Habits that worked in your 20s often stop working here.',
+      money: 'Adult financial structure becomes non-negotiable — debt, savings, and long-term commitments come into focus.',
+      spiritual: 'Practice over performance. Whatever spiritual life you actually live (not the one you talk about) is what holds.',
+      general: 'The threshold into adult selfhood. What gets built here tends to last.',
+    };
+    return wrap(opener, lens[readingType] ?? lens.general);
+  }
+
+  // ── Saturn opposite Saturn / Saturn square Saturn ────────────────────────
+  if (transitPlanet === 'Saturn' && natalPlanet === 'Saturn' && (aspect === 'opposition' || aspect === 'square')) {
+    const opener =
+      `This is a Saturn ${aspect} natal Saturn — a ${aspect === 'opposition' ? 'mid-cycle (~14/~44 yrs)' : 'quarter-cycle (~7/~21/~36/~50 yrs)'} structural review. Whatever you have been building either holds under pressure or shows where it cannot. This is structural honesty, not punishment.`;
+    return wrap(opener, 'The work is to face what is real and adjust the structure accordingly.');
+  }
+
+  // ── Jupiter return ───────────────────────────────────────────────────────
+  if (transitPlanet === 'Jupiter' && natalPlanet === 'Jupiter' && aspect === 'conjunction') {
+    const opener =
+      'This is a Jupiter return — the ~12-year renewal of how you grow, what you believe, and where you take risks. Often a fresh chapter begins here: a new vision of what is possible opens, and old contractions loosen.';
+    return wrap(opener, 'The window favors planting seeds whose harvest will come over the next 12 years.');
+  }
+
+  // ── Chiron return ────────────────────────────────────────────────────────
+  if (transitPlanet === 'Chiron' && natalPlanet === 'Chiron' && aspect === 'conjunction') {
+    const opener =
+      'This is the Chiron return — a once-in-a-lifetime transit around age ~50. The original wound surfaces in a final way, and the work is to meet it as the elder, not the patient. What you have learned to hold in yourself becomes what you can offer others.';
+    return wrap(opener, 'It is a threshold from personal healing into authentic teaching.');
+  }
+
+  // ── Nodal return / opposition ────────────────────────────────────────────
+  // Transiting Nodes return to natal Node position every ~18.6 years.
+  if (
+    (transitPlanet === 'NorthNode' || transitPlanet === 'North Node') &&
+    (natalPlanet === 'NorthNode' || natalPlanet === 'North Node') &&
+    aspect === 'conjunction'
+  ) {
+    const opener =
+      'This is a Nodal return — every ~18.6 years the transiting North Node lands on its natal place. It marks a recommitment to the direction your life is genuinely growing toward. Old patterns surface so you can choose them again or choose differently, this time on purpose.';
+    return wrap(opener, 'It is a doorway moment for the larger life direction.');
+  }
+
+  return null; // No developmental override → fall back to standard transit copy.
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Interpretation builders (now reading-type aware)
 // ─────────────────────────────────────────────────────────────────────────────
 const buildTransitInterpretation = (params: {
