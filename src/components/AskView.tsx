@@ -289,6 +289,93 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     saveActiveChat(activeChartId, entries);
   }, [entries, activeChartId]);
 
+  // Auto-resume an in-flight job after page reload, tab-switch, or HMR.
+  // If localStorage has an `ask-active-job:<chartId>` entry, silently poll
+  // it. When complete, append the assistant entry — exactly as if the
+  // original request had finished.
+  useEffect(() => {
+    const jobId = readActiveJobId(activeChartId);
+    if (!jobId || isLoading) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setIsLoading(true);
+    window.__askInFlight = true;
+    console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
+    toast.info("Resuming your previous reading…");
+
+    const chartForRequest = selectedChart;
+    const chartIdForRequest = activeChartId;
+    const chartNameForRequest = chartForRequest?.name || "Unknown";
+
+    pollAskJob(jobId, {
+      chartId: activeChartId,
+      signal: controller.signal,
+      onProgress: (status) => console.log(`[AskView resume] Job status: ${status}`),
+    })
+      .then((job) => {
+        if (cancelled) return;
+        if (job.status === "failed") {
+          toast.error(job.error_message || "Previous reading failed.");
+          return;
+        }
+        const data: any = job.result || {};
+        if (data.error) { toast.error(data.error); return; }
+
+        let assistantEntry: ChatEntry;
+        if (data.sections) {
+          const currentSR = solarReturnCharts
+            .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+            .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+          const corrected = mergeDeterministicTimingSection(
+            correctPlacementData(data, chartForRequest, currentSR),
+            null,
+          );
+          assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
+        } else if (data.raw) {
+          assistantEntry = { role: "assistant", content: data.raw };
+        } else {
+          assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+        }
+
+        if (activeChartIdRef.current !== chartIdForRequest) return;
+        setEntries((prev) => {
+          const next = [...prev, assistantEntry];
+          saveActiveChat(chartIdForRequest, next);
+          upsertConversationSnapshot(next, chartIdForRequest, chartNameForRequest);
+          if (assistantEntry.reading && chartForRequest) {
+            saveLastReading(chartIdForRequest, {
+              name: chartForRequest.name,
+              birthDate: chartForRequest.birthDate,
+              birthTime: chartForRequest.birthTime,
+              birthLocation: chartForRequest.birthLocation,
+            }, [assistantEntry.reading]);
+          }
+          return next;
+        });
+        toast.success("Your reading is ready.");
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.error("[AskView] Resume poll error:", err);
+        // Drop the stale jobId so we don't loop forever
+        writeActiveJobId(activeChartId, null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+        window.__askInFlight = false;
+        abortControllerRef.current = null;
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChartId]);
+
   const chartOptions = useMemo(() => {
     const others = savedCharts
       .filter(c => c.id !== userNatalChart?.id && !(c as any).isSolarReturn)
