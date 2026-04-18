@@ -119,6 +119,18 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
       // ── Rule 2 & 3: window required fields + dedup ─────────────────
       const windows = Array.isArray(s.windows) ? s.windows : [];
       const merged = new Map<string, { label: string; description: string; mergedCount: number }>();
+
+      // Diagnostic: log every raw window label + computed dedup key BEFORE merging.
+      // eslint-disable-next-line no-console
+      console.info(
+        `[preExportValidator] Section ${sectionIndex} (reading ${readingIndex}) raw windows BEFORE dedup:`,
+        windows.map((w, i) => {
+          const o = (w && typeof w === 'object') ? (w as Record<string, unknown>) : {};
+          const lbl = typeof o.label === 'string' ? o.label : '';
+          return { i, label: lbl, key: lbl ? normalizeLabelKey(lbl) : '(empty)' };
+        }),
+      );
+
       windows.forEach((entry, entryIndex) => {
         if (!entry || typeof entry !== 'object') {
           failures.push({
@@ -153,19 +165,26 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
           existing.mergedCount += 1;
           // eslint-disable-next-line no-console
           console.info(
-            `[preExportValidator] Merged duplicate-label window "${label}" (reading ${readingIndex}, section ${sectionIndex}); total merged: ${existing.mergedCount}`,
+            `[preExportValidator] ✅ MERGED duplicate window. Label="${label}" key="${key}" (reading ${readingIndex}, section ${sectionIndex}); merged count now: ${existing.mergedCount}`,
           );
         } else {
           merged.set(key, { label, description, mergedCount: 1 });
         }
       });
 
-      // Replace the windows array with the deduped version. This is the
-      // ONLY mutation we make — nothing exports two same-labeled windows.
-      s.windows = Array.from(merged.values()).map(({ label, description }) => ({
+      const finalWindows = Array.from(merged.values()).map(({ label, description }) => ({
         label,
         description,
       }));
+
+      // Diagnostic: log final deduped windows that will actually be exported.
+      // eslint-disable-next-line no-console
+      console.info(
+        `[preExportValidator] Section ${sectionIndex} (reading ${readingIndex}) FINAL windows AFTER dedup (${finalWindows.length} of ${windows.length}):`,
+        finalWindows.map((w) => w.label),
+      );
+
+      s.windows = finalWindows;
     });
   });
 
