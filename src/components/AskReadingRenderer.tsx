@@ -206,7 +206,38 @@ function PlacementTable({ section }: { section: PlacementTableSection }) {
   );
 }
 
+// ─── Shared "is this string actually meaningful?" guard ───────────────
+// Used by every renderer that displays AI-generated text. Catches blanks,
+// whitespace-only strings, NBSP/zero-width chars, lone punctuation/dashes
+// ("—", "..."), and common filler placeholders ("n/a", "tbd", etc.).
+function isEffectivelyEmpty(raw?: string | null): boolean {
+  if (!raw) return true;
+  const cleaned = raw
+    .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length === 0) return true;
+  const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
+  if (stripped.length < 3) return true;
+  const lower = cleaned.toLowerCase();
+  const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "...", "tba", "none"];
+  if (fillers.includes(lower)) return true;
+  return false;
+}
+
 function NarrativeCard({ section }: { section: NarrativeSection }) {
+  const validBullets = (section.bullets ?? []).filter((b) => {
+    if (isEffectivelyEmpty(b.text)) {
+      console.warn("[NarrativeCard] Suppressing empty bullet", { label: b.label, text: b.text });
+      return false;
+    }
+    return true;
+  });
+  const hasBody = !isEffectivelyEmpty(section.body);
+  if (!hasBody && validBullets.length === 0) {
+    console.warn("[NarrativeCard] Suppressing empty section", { title: section.title });
+    return null;
+  }
   return (
     <Card className="border-border">
       <CardContent className="pt-5 pb-4 space-y-3">
@@ -216,10 +247,12 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
             <p className="text-xs text-muted-foreground mt-0.5">{section.subtitle}</p>
           )}
         </div>
-        <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
-        {section.bullets.length > 0 && (
+        {hasBody && (
+          <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
+        )}
+        {validBullets.length > 0 && (
           <div className="space-y-2 pt-1">
-            {section.bullets.map((b, i) => (
+            {validBullets.map((b, i) => (
               <div key={i} className="flex gap-2">
                 <span className="text-primary font-semibold text-sm shrink-0">{b.label}:</span>
                 <span className="text-sm text-foreground/80">{b.text}</span>
@@ -234,28 +267,8 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
 
 function TimingCard({ section }: { section: TimingSection }) {
   // Bug 1 — defensive client-side guard: skip any transit entry that has no
-  // *meaningful* interpretation body OR no natal target. A blank entry is
-  // worse than a missing one. We normalize whitespace (incl. non-breaking
-  // spaces, zero-width chars) and strip lone punctuation/dashes/ellipses so
-  // strings like "—", "...", " " never render as a header-only card.
-  const isEffectivelyEmpty = (raw?: string | null) => {
-    if (!raw) return true;
-    // Normalize NBSP, zero-width spaces, and collapse whitespace
-    const cleaned = raw
-      .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (cleaned.length === 0) return true;
-    // Strip lone punctuation/dashes/ellipses — if nothing alphanumeric remains, treat as empty
-    const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
-    if (stripped.length < 3) return true;
-    // Common filler placeholders
-    const lower = cleaned.toLowerCase();
-    const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "..."];
-    if (fillers.includes(lower)) return true;
-    return false;
-  };
-
+  // *meaningful* interpretation body OR no natal target. Uses the shared
+  // isEffectivelyEmpty util defined at module scope.
   const validTransits = (section.transits ?? []).filter((t) => {
     const hasBody = !isEffectivelyEmpty(t.interpretation);
     const hasNatalTarget = !!t.natal_point && t.natal_point.trim().length > 0;
@@ -271,12 +284,31 @@ function TimingCard({ section }: { section: TimingSection }) {
     return true;
   });
 
+  // Same guard for the "Window Overview" cards at the bottom — a label
+  // without a real description is just a dangling header.
+  const validWindows = (section.windows ?? []).filter((w) => {
+    const hasLabel = !!w.label && w.label.trim().length > 0;
+    const hasDesc = !isEffectivelyEmpty(w.description);
+    if (!hasLabel || !hasDesc) {
+      console.warn("[TimingCard] Suppressing empty window", { label: w.label, description: w.description });
+      return false;
+    }
+    return true;
+  });
+
   // Group multi-pass transits (same planet + aspect + natal_point) so users see the whole cycle as one chapter
   const grouped = validTransits.reduce<Record<string, TimingTransit[]>>((acc, t) => {
     const key = `${t.planet}|${t.aspect ?? ""}|${t.natal_point ?? t.position}`;
     (acc[key] ||= []).push(t);
     return acc;
   }, {});
+
+  // If both transits and windows are empty, suppress the entire timing card
+  if (Object.keys(grouped).length === 0 && validWindows.length === 0) {
+    console.warn("[TimingCard] Suppressing empty timing section", { title: section.title });
+    return null;
+  }
+
 
   return (
     <Card className="border-border">
@@ -369,10 +401,10 @@ function TimingCard({ section }: { section: TimingSection }) {
           </div>
         )}
 
-        {section.windows?.length > 0 && (
+        {validWindows.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Window Overview</p>
-            {section.windows.map((w, i) => (
+            {validWindows.map((w, i) => (
               <div key={i} className="rounded-md bg-muted/30 p-3">
                 <div className="text-sm font-semibold text-primary mb-1">{w.label}</div>
                 <p className="text-sm text-foreground/85 leading-relaxed">{w.description}</p>
@@ -386,11 +418,22 @@ function TimingCard({ section }: { section: TimingSection }) {
 }
 
 function SummaryBox({ section }: { section: SummaryBoxSection }) {
+  const validItems = (section.items ?? []).filter((item) => {
+    if (isEffectivelyEmpty(item.value)) {
+      console.warn("[SummaryBox] Suppressing empty item", { label: item.label, value: item.value });
+      return false;
+    }
+    return true;
+  });
+  if (validItems.length === 0) {
+    console.warn("[SummaryBox] Suppressing empty summary box", { title: section.title });
+    return null;
+  }
   return (
     <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
       <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
       <div className="space-y-2">
-        {section.items.map((item, i) => (
+        {validItems.map((item, i) => (
           <div key={i} className="flex gap-3">
             <span className="text-sm font-bold text-primary shrink-0 min-w-[60px]">{item.label}</span>
             <span className="text-sm text-foreground">{item.value}</span>
