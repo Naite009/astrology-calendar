@@ -16,6 +16,63 @@ const getServiceClient = () => createClient(
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
+// Best-effort repair for JSON truncated mid-string by max_tokens.
+// Closes any open string and balances open arrays/objects so the
+// partial reading is still usable instead of being thrown away.
+function repairTruncatedJson(input: string): any | null {
+  if (!input || typeof input !== "string") return null;
+  let s = input;
+  let inStr = false;
+  let escape = false;
+  const stack: string[] = [];
+  let lastSafeIdx = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\") { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") stack.push(c);
+    else if (c === "}" || c === "]") {
+      stack.pop();
+      if (stack.length >= 2 && stack[stack.length - 1] === "[") {
+        lastSafeIdx = i + 1;
+      }
+    }
+  }
+  if (lastSafeIdx > 0 && lastSafeIdx < s.length) {
+    s = s.substring(0, lastSafeIdx);
+  } else if (inStr) {
+    if (s.endsWith("\\")) s = s.slice(0, -1);
+    s = s + '"';
+  }
+  inStr = false; escape = false;
+  const stack2: string[] = [];
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\") { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") stack2.push(c);
+    else if (c === "}" || c === "]") stack2.pop();
+  }
+  if (inStr) {
+    if (s.endsWith("\\")) s = s.slice(0, -1);
+    s = s + '"';
+  }
+  s = s.replace(/,\s*$/, "");
+  while (stack2.length > 0) {
+    const opener = stack2.pop();
+    s += opener === "{" ? "}" : "]";
+  }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return value;
