@@ -1393,10 +1393,39 @@ export function buildDeterministicTimingData(
     windowEntries.push({ label, description });
   }
 
-  // Diagnostic: log every window that survives so we can trace the "Feb 1 to Oct 17, 2027" bug
-  console.info('[buildDeterministicTimingData] Final windows array', {
-    count: windowEntries.length,
-    windows: windowEntries.map((w) => ({
+  // ───────────────────────────────────────────────────────────────────────
+  // DEDUPLICATION BY LABEL
+  // When two transits share the same date range (e.g. Neptune square Moon
+  // and Neptune sextile Mars both spanning Feb 1 to Oct 17, 2027), the
+  // downstream renderer (Replit PDF) drops or corrupts the duplicate label,
+  // producing a blank card. Merge same-label windows into a single entry
+  // with descriptions joined by a blank line.
+  // ───────────────────────────────────────────────────────────────────────
+  const mergedWindowsMap = new Map<string, { label: string; description: string; mergedCount: number }>();
+  for (const entry of windowEntries) {
+    const key = entry.label.trim().toLowerCase();
+    const existing = mergedWindowsMap.get(key);
+    if (existing) {
+      existing.description = `${existing.description}\n\n${entry.description}`;
+      existing.mergedCount += 1;
+      console.info('[buildDeterministicTimingData] Merged duplicate-label window', {
+        label: entry.label,
+        mergedCount: existing.mergedCount,
+      });
+    } else {
+      mergedWindowsMap.set(key, { label: entry.label, description: entry.description, mergedCount: 1 });
+    }
+  }
+  const dedupedWindowEntries = Array.from(mergedWindowsMap.values()).map(({ label, description }) => ({
+    label,
+    description,
+  }));
+
+  // Diagnostic: log every window that survives so we can trace blank-card bugs
+  console.info('[buildDeterministicTimingData] Final windows array (post-dedup)', {
+    rawCount: windowEntries.length,
+    finalCount: dedupedWindowEntries.length,
+    windows: dedupedWindowEntries.map((w) => ({
       label: w.label,
       descLen: w.description.length,
       descPreview: w.description.slice(0, 80),
