@@ -1326,13 +1326,6 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
     // ===== POST-PROCESSING =====
     let parsedContent;
-
-        if (finishReason === "max_tokens" || finishReason === "length") {
-          console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
-        }
-
-        // ===== POST-PROCESSING (runs inside stream so we can emit final result) =====
-        let parsedContent;
     try {
       // Strip any markdown code fences if present
       let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
@@ -1650,30 +1643,21 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       parsedContent = { raw: content, _parse_error: parseError instanceof Error ? parseError.message : 'Unknown parse error' };
     }
 
-        // Emit final assembled result through the stream and close.
-        try {
-          send(`event: result\ndata: ${JSON.stringify(parsedContent)}\n\n`);
-        } catch (e) {
-          console.error("Failed to send final result event:", e);
-        }
-        controller.close();
-      },
+    // Persist final result to the ask_jobs row. The client (which may have
+    // disconnected, switched tabs, or fully reloaded) will pick this up via
+    // polling on its activeJobId.
+    await updateJob({
+      status: "completed",
+      result: parsedContent,
+      completed_at: new Date().toISOString(),
     });
-
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no",
-      },
-    });
+    console.log(`[ask-astrology] Job ${jobId} completed (content length=${content.length})`);
   } catch (error) {
-    console.error("ask-astrology error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.error(`[ask-astrology] processJob ${jobId} failed:`, error);
+    await updateJob({
+      status: "failed",
+      error_message: error instanceof Error ? error.message : "Unknown error",
+      completed_at: new Date().toISOString(),
     });
   }
-});
+}
