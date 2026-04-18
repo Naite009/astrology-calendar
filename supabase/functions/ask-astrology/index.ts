@@ -975,13 +975,130 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const body = await req.json();
+    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId } = body;
+
+    // === STATUS POLL: client polls GET-style POST with { jobId } only ===
+    if (existingJobId && !messages) {
+      const svc = getServiceClient();
+      const { data: job, error: jobErr } = await svc
+        .from("ask_jobs")
+        .select("id,status,result,error_message,created_at,completed_at")
+        .eq("id", existingJobId)
+        .maybeSingle();
+      if (jobErr || !job) {
+        return new Response(JSON.stringify({ error: "Job not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(job), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === SUBMIT JOB ===
+    // Resolve user from JWT (best-effort — anonymous fallback supported)
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      try {
+        const tmp = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
+          { global: { headers: { Authorization: authHeader } } },
+        );
+        const { data: { user } } = await tmp.auth.getUser(token);
+        userId = user?.id ?? null;
+      } catch { /* ignore — anonymous fallback */ }
+    }
+
+    const latestUserMessage = Array.isArray(messages)
+      ? [...messages].reverse().find((m: any) => m?.role === "user" && typeof m.content === "string")?.content ?? ""
+      : "";
+
+    const svc = getServiceClient();
+    const { data: jobRow, error: insertErr } = await svc
+      .from("ask_jobs")
+      .insert({
+        user_id: userId,
+        chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+        status: "queued",
+        prompt: latestUserMessage.slice(0, 4000),
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !jobRow) {
+      console.error("[ask-astrology] Failed to insert job row:", insertErr);
+      return new Response(JSON.stringify({ error: "Could not queue request. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const jobId = jobRow.id as string;
+    console.log(`[ask-astrology] Queued job ${jobId} for chart ${chartId} (user=${userId ?? "anon"})`);
+
+    // Kick off background processing — survives client disconnect / tab switch / HMR
+    // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming }));
+
+    return new Response(JSON.stringify({ jobId, status: "queued" }), {
+      status: 202,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("[ask-astrology] Submit handler error:", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+// ===================================================================
+// processJob — runs in background via EdgeRuntime.waitUntil. Contains
+// all original AI + post-processing logic, writes parsed result back to
+// the ask_jobs row. Survives client disconnect.
+// ===================================================================
+async function processJob(args: {
+  jobId: string;
+  messages: any;
+  chartContext: any;
+  currentDate: any;
+  deterministicTiming: any;
+}) {
+  const { jobId, messages, chartContext, currentDate, deterministicTiming } = args;
+  const svc = getServiceClient();
+
+  const updateJob = async (patch: Record<string, any>) => {
+    try {
+      await svc.from("ask_jobs").update(patch).eq("id", jobId);
+    } catch (e) {
+      console.error(`[ask-astrology] Failed to update job ${jobId}:`, e);
+    }
+  };
+
+  await updateJob({ status: "processing", started_at: new Date().toISOString() });
+
+  try {
+    const effectiveCurrentDate = getCurrentDateKey(currentDate);
+    const safeDeterministicTiming = sanitizeDeterministicTiming(deterministicTiming);
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+
     if (!ANTHROPIC_API_KEY) {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    const latestUserMessage = Array.isArray(messages)
-      ? [...messages].reverse().find((message: any) => message?.role === "user" && typeof message.content === "string")?.content ?? ""
-      : "";
     const normalizedQuestion = latestUserMessage.toLowerCase();
     const isRelationshipQuestion = /\b(relationship|love|dating|romance|partner|marriage)\b/.test(normalizedQuestion);
     const isLocationQuestion = /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
