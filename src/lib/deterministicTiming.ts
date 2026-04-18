@@ -1112,28 +1112,52 @@ const buildTimingWindowDescription = (
   },
   readingType: TimingReadingType,
 ): string => {
-  const exactSummary = window.exactDates
+  // ROOT-CAUSE FIX: Hard-validate every input field. Any missing field guarantees
+  // a malformed body, so we return empty here and the caller is required to drop
+  // the entire window.
+  const tp = (window.transitPlanet ?? '').trim();
+  const asp = (window.aspect ?? '').trim();
+  const np = (window.natalPlanet ?? '').trim();
+  const exactDates = Array.isArray(window.exactDates) ? window.exactDates : [];
+  if (!tp || !asp || !np || exactDates.length === 0) {
+    // eslint-disable-next-line no-console
+    console.error('[buildTimingWindowDescription] MISSING FIELDS — dropping window', {
+      transitPlanet: tp, aspect: asp, natalPlanet: np, exactDatesCount: exactDates.length,
+    });
+    return '';
+  }
+
+  const exactSummary = exactDates
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
+    .filter((s) => s && s.trim().length > 0)
     .join('; ');
+
+  if (!exactSummary) {
+    console.error('[buildTimingWindowDescription] EMPTY exactSummary — dropping window', { tp, asp, np });
+    return '';
+  }
 
   // Bug 3 — developmental override for the short window description as well.
   const devOverride = getDevelopmentalMilestoneInterpretation(
-    window.transitPlanet,
-    window.aspect,
-    window.natalPlanet,
-    readingType,
-    `Peaks: ${exactSummary}.`,
-    false,
+    tp, asp, np, readingType, `Peaks: ${exactSummary}.`, false,
   );
-  if (devOverride) return devOverride;
+  if (devOverride && devOverride.trim().length > 0) return devOverride;
 
-  const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet, readingType);
-  const transitAction = getTransitAction(readingType, window.transitPlanet);
+  const aspectTone = (buildSpecificOpener(tp, asp, np, readingType) ?? '').trim();
+  const transitAction = (getTransitAction(readingType, tp) ?? '').trim();
   const themeMap = getNatalThemeMap(readingType);
-  // Bug 2 — name the planet explicitly when no theme is available.
-  const natalTheme = themeMap[window.natalPlanet] ?? buildPlanetNamedFallback(window.natalPlanet, readingType);
+  const natalTheme = (themeMap[np] ?? buildPlanetNamedFallback(np, readingType) ?? '').trim();
 
-  return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
+  // Hard guard: any required component empty => return '' so the window is dropped.
+  if (!aspectTone || !transitAction || !natalTheme) {
+    console.error('[buildTimingWindowDescription] EMPTY component — dropping window', {
+      tp, asp, np, readingType,
+      hasAspectTone: !!aspectTone, hasTransitAction: !!transitAction, hasNatalTheme: !!natalTheme,
+    });
+    return '';
+  }
+
+  return `${aspectTone}. ${tp} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
 
 export const getTimingTagDetails = (tag: string) => {
