@@ -1268,6 +1268,33 @@ export function buildDeterministicTimingData(
       ? `This is a multi-pass cycle covering ${passDetails.length} exact hits (${passesPositionSummary}); the full felt-sense window runs ${humanizedRange}.`
       : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange} — meaning the theme builds, peaks, then settles inside that range.`;
 
+    const interpretationText = buildTransitInterpretation({
+      transitPlanet: window.transitPlanet,
+      aspect: window.aspect,
+      natalPlanet: window.natalPlanet,
+      natalDegree: window.natalDegree,
+      passSummary,
+      isRetrograde: anyRetrograde,
+      readingType,
+    });
+
+    // Bug 1 — never push a transit with an empty body. A blank entry is worse
+    // than a missing one. If for any reason the interpretation pipeline returns
+    // empty/whitespace text, OR the natal target is missing, drop the entry.
+    const hasNatalTarget = !!window.natalPlanet && window.natalPlanet.trim().length > 0;
+    const hasBody = !!interpretationText && interpretationText.trim().length > 0;
+    if (!hasNatalTarget || !hasBody) {
+      // eslint-disable-next-line no-console
+      console.warn('[deterministicTiming] Dropping malformed transit entry', {
+        transitPlanet: window.transitPlanet,
+        aspect: window.aspect,
+        natalPlanet: window.natalPlanet,
+        hasNatalTarget,
+        hasBody,
+      });
+      continue;
+    }
+
     const consolidatedTransit: DeterministicTimingTransit = {
       planet: window.transitPlanet,
       symbol: PLANET_SYMBOLS[window.transitPlanet] ?? '',
@@ -1281,15 +1308,7 @@ export function buildDeterministicTimingData(
       pass_label: passLabel,
       date_range: humanizedRange,
       tag: classifyTimingTag(window.transitPlanet, window.aspect, window.natalPlanet, readingType),
-      interpretation: buildTransitInterpretation({
-        transitPlanet: window.transitPlanet,
-        aspect: window.aspect,
-        natalPlanet: window.natalPlanet,
-        natalDegree: window.natalDegree,
-        passSummary,
-        isRetrograde: anyRetrograde,
-        readingType,
-      }),
+      interpretation: interpretationText,
     };
 
     includedWindows.push(window);

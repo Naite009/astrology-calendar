@@ -233,8 +233,18 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
 }
 
 function TimingCard({ section }: { section: TimingSection }) {
+  // Bug 1 — defensive client-side guard: skip any transit entry that has no
+  // interpretation body OR no natal target. A blank entry is worse than a
+  // missing one. The data builder already drops these, but keep this so a
+  // malformed AI-merged entry can never render as an empty header.
+  const validTransits = (section.transits ?? []).filter((t) => {
+    const hasBody = !!t.interpretation && t.interpretation.trim().length > 0;
+    const hasNatalTarget = !!t.natal_point && t.natal_point.trim().length > 0;
+    return hasBody && hasNatalTarget;
+  });
+
   // Group multi-pass transits (same planet + aspect + natal_point) so users see the whole cycle as one chapter
-  const grouped = (section.transits ?? []).reduce<Record<string, TimingTransit[]>>((acc, t) => {
+  const grouped = validTransits.reduce<Record<string, TimingTransit[]>>((acc, t) => {
     const key = `${t.planet}|${t.aspect ?? ""}|${t.natal_point ?? t.position}`;
     (acc[key] ||= []).push(t);
     return acc;
