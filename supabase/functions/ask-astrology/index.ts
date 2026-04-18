@@ -1,4 +1,5 @@
 // Using built-in Deno.serve (no external std import needed)
+import { dedupWindows } from "../_shared/timingWindowDedup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,47 +97,31 @@ const sanitizeDeterministicTiming = (input: any) => {
     : [];
 
   // ─────────────────────────────────────────────────────────────────────
-  // DEDUPE BY NORMALIZED LABEL — mirrors buildDeterministicTimingData and
-  // the client-side preExportValidator. Two windows with the same date
-  // range (e.g. Neptune square Moon + Neptune sextile Mars sharing
-  // "Feb 1 to Oct 17, 2027") are merged into a single entry with their
-  // descriptions joined by a blank line. Replit/PDF renderer never sees
-  // duplicate labels regardless of which path produced this section.
+  // DEDUPE BY NORMALIZED LABEL — single source of truth.
+  // Imports `dedupWindows` from ../_shared/timingWindowDedup.ts, which is
+  // a byte-identical mirror of src/lib/timingWindowDedup.ts. The same
+  // helper is used by buildDeterministicTimingData (client) and the
+  // pre-export validator. Two windows representing the same date range
+  // (e.g. Neptune square Moon + Neptune sextile Mars sharing
+  // "Feb 1 to Oct 17, 2027") are merged into ONE entry.
   // ─────────────────────────────────────────────────────────────────────
-  const monthMap: Record<string, string> = {
-    january: "jan", february: "feb", march: "mar", april: "apr",
-    may: "may", june: "jun", july: "jul", august: "aug",
-    september: "sep", sept: "sep", october: "oct", november: "nov", december: "dec",
-  };
-  const normalizeLabelKey = (label: string): string => {
-    let s = label.toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ").trim();
-    s = s.replace(
-      /\b(january|february|march|april|may|june|july|august|september|sept|october|november|december)\b/g,
-      (m) => monthMap[m] ?? m,
-    );
-    s = s.replace(/\bto\b/g, "-").replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
-    return s;
-  };
-  const mergedMap = new Map<string, { label: string; description: string; mergedCount: number }>();
-  for (const w of rawWindows) {
-    const key = normalizeLabelKey(w.label);
-    const existing = mergedMap.get(key);
-    if (existing) {
-      existing.description = `${existing.description}\n\n${w.description}`;
-      existing.mergedCount += 1;
+  const dedupResult = dedupWindows(
+    rawWindows.map((w: any) => ({
+      label: w.label,
+      description: w.description,
+      dateRange: w.dateRange ?? w.date_range,
+    })),
+  );
+  for (const stat of dedupResult.mergeStats) {
+    if (stat.mergedCount > 1) {
       console.info("[ask-astrology] Merged duplicate-label window in sanitizer", {
-        label: w.label,
-        normalizedKey: key,
-        mergedCount: existing.mergedCount,
+        label: stat.label,
+        normalizedKey: stat.key,
+        mergedCount: stat.mergedCount,
       });
-    } else {
-      mergedMap.set(key, { label: w.label, description: w.description, mergedCount: 1 });
     }
   }
-  const windows = Array.from(mergedMap.values()).map(({ label, description }) => ({
-    label,
-    description,
-  }));
+  const windows = dedupResult.windows;
 
   console.info("[ask-astrology] sanitizeDeterministicTiming: kept", {
     transits: transits.length,
