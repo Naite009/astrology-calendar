@@ -969,18 +969,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, chartContext, currentDate, deterministicTiming } = await req.json();
-    const effectiveCurrentDate = getCurrentDateKey(currentDate);
-    const safeDeterministicTiming = sanitizeDeterministicTiming(deterministicTiming);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
     const body = await req.json();
     const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId } = body;
 
