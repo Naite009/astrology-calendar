@@ -1,10 +1,20 @@
 // Using built-in Deno.serve (no external std import needed)
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Service-role client used by the background worker to update job rows
+// without being blocked by RLS (the row's user_id is set on insert, so
+// the user's own SELECT policy still controls who can read it).
+const getServiceClient = () => createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  { auth: { persistSession: false, autoRefreshToken: false } },
+);
 
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -959,12 +969,120 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, chartContext, currentDate, deterministicTiming } = await req.json();
+    const body = await req.json();
+    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId } = body;
+
+    // === STATUS POLL: client polls GET-style POST with { jobId } only ===
+    if (existingJobId && !messages) {
+      const svc = getServiceClient();
+      const { data: job, error: jobErr } = await svc
+        .from("ask_jobs")
+        .select("id,status,result,error_message,created_at,completed_at")
+        .eq("id", existingJobId)
+        .maybeSingle();
+      if (jobErr || !job) {
+        return new Response(JSON.stringify({ error: "Job not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(job), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === SUBMIT JOB ===
+    // Resolve user from JWT (best-effort — anonymous fallback supported)
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      try {
+        const tmp = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
+          { global: { headers: { Authorization: authHeader } } },
+        );
+        const { data: { user } } = await tmp.auth.getUser(token);
+        userId = user?.id ?? null;
+      } catch { /* ignore — anonymous fallback */ }
+    }
+
+    const latestUserMessage = Array.isArray(messages)
+      ? [...messages].reverse().find((m: any) => m?.role === "user" && typeof m.content === "string")?.content ?? ""
+      : "";
+
+    const svc = getServiceClient();
+    const { data: jobRow, error: insertErr } = await svc
+      .from("ask_jobs")
+      .insert({
+        user_id: userId,
+        chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+        status: "queued",
+        prompt: latestUserMessage.slice(0, 4000),
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !jobRow) {
+      console.error("[ask-astrology] Failed to insert job row:", insertErr);
+      return new Response(JSON.stringify({ error: "Could not queue request. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const jobId = jobRow.id as string;
+    console.log(`[ask-astrology] Queued job ${jobId} for chart ${chartId} (user=${userId ?? "anon"})`);
+
+    // Kick off background processing — survives client disconnect / tab switch / HMR
+    // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming }));
+
+    return new Response(JSON.stringify({ jobId, status: "queued" }), {
+      status: 202,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("[ask-astrology] Submit handler error:", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+// ===================================================================
+// processJob — runs in background via EdgeRuntime.waitUntil. Contains
+// all original AI + post-processing logic, writes parsed result back to
+// the ask_jobs row. Survives client disconnect.
+// ===================================================================
+async function processJob(args: {
+  jobId: string;
+  messages: any;
+  chartContext: any;
+  currentDate: any;
+  deterministicTiming: any;
+}) {
+  const { jobId, messages, chartContext, currentDate, deterministicTiming } = args;
+  const svc = getServiceClient();
+
+  const updateJob = async (patch: Record<string, any>) => {
+    try {
+      await svc.from("ask_jobs").update(patch).eq("id", jobId);
+    } catch (e) {
+      console.error(`[ask-astrology] Failed to update job ${jobId}:`, e);
+    }
+  };
+
+  await updateJob({ status: "processing", started_at: new Date().toISOString() });
+
+  try {
     const effectiveCurrentDate = getCurrentDateKey(currentDate);
     const safeDeterministicTiming = sanitizeDeterministicTiming(deterministicTiming);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    
+
     if (!ANTHROPIC_API_KEY) {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
@@ -1130,85 +1248,72 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       });
     }
 
-    // STREAM TO CLIENT WITH KEEPALIVES.
-    // The edge runtime kills "idle" connections at 150s. By immediately returning
-    // a streaming response and emitting keepalive bytes every few seconds while
-    // we consume Anthropic's SSE stream, we keep the client connection active
-    // until we have the full content. The final assembled JSON is sent as the
-    // last SSE event with `event: result`.
+    // CONSUME ANTHROPIC STREAM into a single `content` string.
+    // Background job: no client connection to keep alive — we just collect
+    // the full text and write the parsed result to the ask_jobs row.
     const anthropicResponse = response;
+    let content = "";
+    let finishReason = "";
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
-        const send = (line: string) => controller.enqueue(encoder.encode(line));
+    try {
+      const reader = anthropicResponse.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-        // Initial flush so the client sees response headers + first byte immediately
-        send(": connected\n\n");
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
-        const keepalive = setInterval(() => {
-          try { send(`: keepalive ${Date.now()}\n\n`); } catch { /* noop */ }
-        }, 5000);
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
 
-        let content = "";
-        let finishReason = "";
-
-        try {
-          const reader = anthropicResponse.body!.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-
-            const events = buffer.split("\n\n");
-            buffer = events.pop() || "";
-
-            for (const event of events) {
-              const dataLine = event.split("\n").find(l => l.startsWith("data: "));
-              if (!dataLine) continue;
-              const payload = dataLine.slice(6).trim();
-              if (!payload || payload === "[DONE]") continue;
-              try {
-                const evt = JSON.parse(payload);
-                if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
-                  content += evt.delta.text || "";
-                } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
-                  finishReason = evt.delta.stop_reason;
-                } else if (evt.type === "error") {
-                  console.error("Anthropic stream error event:", evt);
-                  throw new Error(evt.error?.message || "Stream error");
-                }
-              } catch {
-                // Skip malformed event chunks
-              }
+        for (const event of events) {
+          const dataLine = event.split("\n").find(l => l.startsWith("data: "));
+          if (!dataLine) continue;
+          const payload = dataLine.slice(6).trim();
+          if (!payload || payload === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(payload);
+            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+              content += evt.delta.text || "";
+            } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
+              finishReason = evt.delta.stop_reason;
+            } else if (evt.type === "error") {
+              console.error("Anthropic stream error event:", evt);
+              throw new Error(evt.error?.message || "Stream error");
             }
+          } catch {
+            // Skip malformed event chunks
           }
-        } catch (streamErr: any) {
-          console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
-          clearInterval(keepalive);
-          send(`event: result\ndata: ${JSON.stringify({ error: "The reading was interrupted. Please try again." })}\n\n`);
-          controller.close();
-          return;
         }
+      }
+    } catch (streamErr: any) {
+      console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
+      await updateJob({
+        status: "failed",
+        error_message: "The reading was interrupted. Please try again.",
+        completed_at: new Date().toISOString(),
+      });
+      return;
+    }
 
-        clearInterval(keepalive);
+    if (!content || content.trim().length === 0) {
+      console.error("ask-astrology error: Empty content from stream");
+      await updateJob({
+        status: "failed",
+        error_message: "AI returned an empty response. Please try again.",
+        completed_at: new Date().toISOString(),
+      });
+      return;
+    }
 
-        if (!content || content.trim().length === 0) {
-          console.error("ask-astrology error: Empty content from stream");
-          send(`event: result\ndata: ${JSON.stringify({ error: "AI returned an empty response. Please try again." })}\n\n`);
-          controller.close();
-          return;
-        }
+    if (finishReason === "max_tokens" || finishReason === "length") {
+      console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+    }
 
-        if (finishReason === "max_tokens" || finishReason === "length") {
-          console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
-        }
-
-        // ===== POST-PROCESSING (runs inside stream so we can emit final result) =====
-        let parsedContent;
+    // ===== POST-PROCESSING =====
+    let parsedContent;
     try {
       // Strip any markdown code fences if present
       let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
@@ -1526,30 +1631,21 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       parsedContent = { raw: content, _parse_error: parseError instanceof Error ? parseError.message : 'Unknown parse error' };
     }
 
-        // Emit final assembled result through the stream and close.
-        try {
-          send(`event: result\ndata: ${JSON.stringify(parsedContent)}\n\n`);
-        } catch (e) {
-          console.error("Failed to send final result event:", e);
-        }
-        controller.close();
-      },
+    // Persist final result to the ask_jobs row. The client (which may have
+    // disconnected, switched tabs, or fully reloaded) will pick this up via
+    // polling on its activeJobId.
+    await updateJob({
+      status: "completed",
+      result: parsedContent,
+      completed_at: new Date().toISOString(),
     });
-
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no",
-      },
-    });
+    console.log(`[ask-astrology] Job ${jobId} completed (content length=${content.length})`);
   } catch (error) {
-    console.error("ask-astrology error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.error(`[ask-astrology] processJob ${jobId} failed:`, error);
+    await updateJob({
+      status: "failed",
+      error_message: error instanceof Error ? error.message : "Unknown error",
+      completed_at: new Date().toISOString(),
     });
   }
-});
+}

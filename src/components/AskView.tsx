@@ -18,6 +18,7 @@ import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
+import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId } from "@/lib/askJobClient";
 import {
   Popover,
   PopoverContent,
@@ -287,6 +288,93 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     saveActiveChat(activeChartId, entries);
   }, [entries, activeChartId]);
+
+  // Auto-resume an in-flight job after page reload, tab-switch, or HMR.
+  // If localStorage has an `ask-active-job:<chartId>` entry, silently poll
+  // it. When complete, append the assistant entry — exactly as if the
+  // original request had finished.
+  useEffect(() => {
+    const jobId = readActiveJobId(activeChartId);
+    if (!jobId || isLoading) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setIsLoading(true);
+    window.__askInFlight = true;
+    console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
+    toast.info("Resuming your previous reading…");
+
+    const chartForRequest = selectedChart;
+    const chartIdForRequest = activeChartId;
+    const chartNameForRequest = chartForRequest?.name || "Unknown";
+
+    pollAskJob(jobId, {
+      chartId: activeChartId,
+      signal: controller.signal,
+      onProgress: (status) => console.log(`[AskView resume] Job status: ${status}`),
+    })
+      .then((job) => {
+        if (cancelled) return;
+        if (job.status === "failed") {
+          toast.error(job.error_message || "Previous reading failed.");
+          return;
+        }
+        const data: any = job.result || {};
+        if (data.error) { toast.error(data.error); return; }
+
+        let assistantEntry: ChatEntry;
+        if (data.sections) {
+          const currentSR = solarReturnCharts
+            .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+            .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+          const corrected = mergeDeterministicTimingSection(
+            correctPlacementData(data, chartForRequest, currentSR),
+            null,
+          );
+          assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
+        } else if (data.raw) {
+          assistantEntry = { role: "assistant", content: data.raw };
+        } else {
+          assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+        }
+
+        if (activeChartIdRef.current !== chartIdForRequest) return;
+        setEntries((prev) => {
+          const next = [...prev, assistantEntry];
+          saveActiveChat(chartIdForRequest, next);
+          upsertConversationSnapshot(next, chartIdForRequest, chartNameForRequest);
+          if (assistantEntry.reading && chartForRequest) {
+            saveLastReading(chartIdForRequest, {
+              name: chartForRequest.name,
+              birthDate: chartForRequest.birthDate,
+              birthTime: chartForRequest.birthTime,
+              birthLocation: chartForRequest.birthLocation,
+            }, [assistantEntry.reading]);
+          }
+          return next;
+        });
+        toast.success("Your reading is ready.");
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.error("[AskView] Resume poll error:", err);
+        // Drop the stale jobId so we don't loop forever
+        writeActiveJobId(activeChartId, null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+        window.__askInFlight = false;
+        abortControllerRef.current = null;
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChartId]);
 
   const chartOptions = useMemo(() => {
     const others = savedCharts
@@ -1091,68 +1179,33 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
+
+      // Async job: submit returns immediately with jobId, then we poll the
+      // ask_jobs row. Survives tab-switch, HMR reload, and full page reload
+      // because the jobId is persisted to localStorage in submitAskJob.
+      const job = await runAskJob(
+        {
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
-        }),
-        signal: controller.signal,
-      });
+          chartId: chartIdForRequest,
+        },
+        {
+          signal: controller.signal,
+          onProgress: (status) => {
+            console.log(`[AskView] Job status: ${status}`);
+          },
+        },
+      );
 
-      if (resp.status === 429) {
-        toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      if (job.status === "failed") {
+        toast.error(job.error_message || "Reading failed. Please try again.");
         setIsLoading(false);
         return;
       }
-      if (resp.status === 402) {
-        toast.error("AI credits exhausted. Please add credits to continue.");
-        setIsLoading(false);
-        return;
-      }
-      if (!resp.ok || !resp.body) throw new Error("Failed to get response");
 
-      // Read SSE stream: keepalive comments arrive while AI generates,
-      // final payload arrives as `event: result\ndata: {...}\n\n`.
-      const contentType = resp.headers.get("content-type") || "";
-      let data: any = null;
-
-      if (contentType.includes("text/event-stream")) {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let resultPayload: string | null = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-
-          for (const ev of events) {
-            const lines = ev.split("\n");
-            const isResultEvent = lines.some(l => l.trim() === "event: result");
-            if (!isResultEvent) continue;
-            const dataLine = lines.find(l => l.startsWith("data: "));
-            if (dataLine) resultPayload = dataLine.slice(6);
-          }
-        }
-
-        if (!resultPayload) throw new Error("Stream ended without result");
-        data = JSON.parse(resultPayload);
-      } else {
-        // Fallback: legacy JSON response
-        data = await resp.json();
-      }
+      const data: any = job.result || {};
 
       if (data.error) {
         toast.error(data.error);
@@ -1202,7 +1255,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
       console.error("Ask error:", error);
-      toast.error("Failed to get response. Please try again.");
+      const msg = String(error?.message || "");
+      if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
+      else toast.error("Failed to get response. Please try again.");
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
@@ -1263,59 +1319,29 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
+
+      // Async job (same path as handleSubmitDirect)
+      const job = await runAskJob(
+        {
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
-        }),
-        signal: controller.signal,
-      });
+          chartId: chartIdForRequest,
+        },
+        {
+          signal: controller.signal,
+          onProgress: (status) => console.log(`[AskView regen] Job status: ${status}`),
+        },
+      );
 
-      if (resp.status === 429) { toast.error("Rate limit exceeded."); setIsLoading(false); return; }
-      if (resp.status === 402) { toast.error("AI credits exhausted."); setIsLoading(false); return; }
-      if (!resp.ok || !resp.body) throw new Error("Failed to get response");
-
-      // Read SSE stream (keepalive comments + final `event: result` payload)
-      const contentType = resp.headers.get("content-type") || "";
-      let data: any = null;
-
-      if (contentType.includes("text/event-stream")) {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let resultPayload: string | null = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-
-          for (const ev of events) {
-            const lines = ev.split("\n");
-            const isResultEvent = lines.some(l => l.trim() === "event: result");
-            if (!isResultEvent) continue;
-            const dataLine = lines.find(l => l.startsWith("data: "));
-            if (dataLine) resultPayload = dataLine.slice(6);
-          }
-        }
-
-        if (!resultPayload) throw new Error("Stream ended without result");
-        data = JSON.parse(resultPayload);
-      } else {
-        data = await resp.json();
+      if (job.status === "failed") {
+        toast.error(job.error_message || "Reading failed. Please try again.");
+        setIsLoading(false);
+        return;
       }
 
+      const data: any = job.result || {};
       if (data.error) { toast.error(data.error); setIsLoading(false); return; }
 
       let assistantEntry: ChatEntry;

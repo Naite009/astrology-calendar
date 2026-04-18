@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ask_jobs: {
+        Row: {
+          chart_id: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          prompt: string
+          result: Json | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          chart_id: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          prompt: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          chart_id?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          prompt?: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       astrology_documents: {
         Row: {
           created_at: string | null
