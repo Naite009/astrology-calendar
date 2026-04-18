@@ -956,10 +956,25 @@ const buildTransitInterpretation = (params: {
     readingType,
   } = params;
 
+  // Bug 3 — developmental milestone interpretations override generic transit copy.
+  // (Uranus opp Uranus = age ~40, Uranus square Uranus = age ~21 / ~63, Saturn return,
+  // Jupiter return, Chiron return, Nodal return, etc.) Returned text is final.
+  const developmentalOverride = getDevelopmentalMilestoneInterpretation(
+    transitPlanet,
+    aspect,
+    natalPlanet,
+    readingType,
+    passSummary,
+    isRetrograde,
+  );
+  if (developmentalOverride) return developmentalOverride;
+
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, transitPlanet);
   const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = themeMap[natalPlanet] ?? 'a major part of your personal pattern';
+  // Bug 2 — never emit the generic "a major part of your personal pattern" line.
+  // If the planet/point is missing from the theme map, name it explicitly.
+  const natalTheme = themeMap[natalPlanet] ?? buildPlanetNamedFallback(natalPlanet, readingType);
   const contextPhrase = getContextPhrase(readingType);
 
   const retrogradeSentence = isRetrograde
@@ -983,10 +998,22 @@ const buildTimingWindowDescription = (
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
+  // Bug 3 — developmental override for the short window description as well.
+  const devOverride = getDevelopmentalMilestoneInterpretation(
+    window.transitPlanet,
+    window.aspect,
+    window.natalPlanet,
+    readingType,
+    `Peaks: ${exactSummary}.`,
+    false,
+  );
+  if (devOverride) return devOverride;
+
   const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, window.transitPlanet);
   const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = themeMap[window.natalPlanet] ?? 'a major part of your personal pattern';
+  // Bug 2 — name the planet explicitly when no theme is available.
+  const natalTheme = themeMap[window.natalPlanet] ?? buildPlanetNamedFallback(window.natalPlanet, readingType);
 
   return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
