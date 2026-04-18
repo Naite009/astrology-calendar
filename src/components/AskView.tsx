@@ -329,7 +329,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           toast.error(job.error_message || "Previous reading failed.");
           return;
         }
-        const data: any = job.result || {};
+        const data: any = normalizeAskResult(job.result || {});
         if (data.error) { toast.error(data.error); return; }
 
         let assistantEntry: ChatEntry;
@@ -1225,7 +1225,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
 
-      const data: any = job.result || {};
+      const data: any = normalizeAskResult(job.result || {});
 
       if (data.error) {
         toast.error(data.error);
@@ -1378,7 +1378,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
 
-      const data: any = job.result || {};
+      const data: any = normalizeAskResult(job.result || {});
       if (data.error) { toast.error(data.error); setIsLoading(false); return; }
 
       let assistantEntry: ChatEntry;
