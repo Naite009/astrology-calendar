@@ -173,7 +173,16 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
 
   function renderPlacementTable(section: { title: string; rows: any[] }) {
-    pdf.addPage();
+    // Only force a new page if the current page already has content. Otherwise
+    // we get a blank page (e.g., when the previous section ended exactly at a
+    // page break and the cursor is already at the top of a fresh page — the
+    // unconditional addPage would then leave the prior page empty except for
+    // whatever symbol/divider was last drawn on it).
+    if (y > MARGIN) {
+      addFooter();
+      pdf.addPage();
+      pageNum++;
+    }
     y = MARGIN;
 
     // Title
@@ -464,7 +473,18 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(9);
       pdf.setTextColor(...COLORS.muted);
-      pdf.text(city.theme || "", MARGIN + 6, y);
+      // Render-side fallback: if the AI omitted the `theme` summary line for
+      // a city (LA was hitting this), synthesize one from supports/tags so the
+      // card never appears blank below the city name.
+      let themeLine: string = (typeof city.theme === 'string' ? city.theme.trim() : '') || '';
+      if (!themeLine) {
+        const supports = typeof city.supports === 'string' ? city.supports.trim() : '';
+        const tags = Array.isArray(city.tags) ? city.tags.filter(Boolean).slice(0, 3).join(' · ') : '';
+        themeLine = supports || tags || 'Supportive overall match';
+        // eslint-disable-next-line no-console
+        console.warn(`[askPdfExport] missing theme for city "${city.name}", using fallback: "${themeLine}"`);
+      }
+      pdf.text(themeLine, MARGIN + 6, y);
       y += 5;
 
       if (city.lines?.length) {

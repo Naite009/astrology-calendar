@@ -972,6 +972,7 @@ CITY COMPARISON FIELD RULES:
   * If mode is "Astrology-Based": use chart symbolism reasoning (e.g., "Moon in Cancer favors nurturing coastal communities", "4th house ruler in Pisces supports waterfront living"). These are INTERPRETIVE INFERENCES, not measured line positions. NEVER use phrases like "Venus line", "Jupiter MC line", "on the X line", "near the Y line", or any language implying calculated planetary map lines.
 - "supports": 2-4 life areas this city is strongest for
 - "cautions": 1-2 potential downsides or tradeoffs
+- "theme": REQUIRED short 4-8 word descriptor that appears as the summary line beneath the city name in the PDF (e.g., "Warm community hub with double benefic activation", "Balanced coastal renewal", "High-intensity career launchpad"). EVERY city object MUST include a non-empty "theme" string — no exceptions, no blank values, no omissions. If you cannot think of a theme, write a literal description of the city's primary chart-based strength (e.g., "Lunar nurturing match" or "Career-forward Sun activation"). NEVER skip this field for any city.
 - "explanation": 2-3 sentence paragraph explaining WHY this city fits, connecting chart placements to city characteristics. In Astrology-Based mode, explain using house/sign/aspect symbolism. NEVER reference "lines" or "angular positions" in Astrology-Based mode.
 - All sub-scores (home_score, career_score, love_score, healing_score, vitality_score, risk_score) are REQUIRED for every city in relocation readings
 
