@@ -1444,7 +1444,7 @@ export function buildDeterministicTimingData(
     'transits',
   );
   const windowValidation = validateEntries(
-    windowEntries as unknown as Record<string, unknown>[],
+    dedupedWindowEntries as unknown as Record<string, unknown>[],
     TimingWindowSchema as never,
     'windows',
   );
