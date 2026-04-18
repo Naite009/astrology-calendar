@@ -24,7 +24,20 @@ const buildReloadUrl = () => {
   return url.toString();
 };
 
+// Global flag set by AskView (and any other long-running operation) to block
+// auto-reloads while a critical request is in flight. Prevents tab-switch HMR
+// errors from killing a 60-180s AI generation.
+declare global {
+  interface Window {
+    __askInFlight?: boolean;
+  }
+}
+
 const triggerAutoReload = (reason: string) => {
+  if (window.__askInFlight) {
+    console.warn(`[main] Skipping auto-reload (${reason}) — Ask generation in flight`);
+    return false;
+  }
   if (!canAutoReload()) return false;
 
   const attempts = readSessionNumber(AUTO_RELOAD_ATTEMPTS_KEY) + 1;

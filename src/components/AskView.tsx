@@ -1077,6 +1077,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setInput("");
     setIsLoading(true);
 
+    // Block auto-reload during long Ask generations (prevents tab-switch HMR
+    // errors from killing the streaming response and discarding the result).
+    window.__askInFlight = true;
+
     try {
       const readingType = detectReadingType(question);
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
@@ -1194,6 +1198,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } catch (error: any) {
       if (error?.name === "AbortError") {
         // User stopped intentionally — handled in handleStopGeneration
+        window.__askInFlight = false;
         return;
       }
       console.error("Ask error:", error);
@@ -1201,6 +1206,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      window.__askInFlight = false;
     }
   };
 
@@ -1241,6 +1247,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     setEntries(trimmedEntries);
     setIsLoading(true);
+    window.__askInFlight = true;
 
     try {
       const chartForRequest = selectedChart;
@@ -1347,6 +1354,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     } catch (error: any) {
       if (error?.name === "AbortError") {
+        window.__askInFlight = false;
         return;
       }
       console.error("Regenerate error:", error);
@@ -1354,6 +1362,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      window.__askInFlight = false;
     }
   };
 
