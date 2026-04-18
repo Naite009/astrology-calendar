@@ -231,6 +231,21 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
 
   function renderNarrative(section: { title: string; subtitle?: string; body: string; bullets: any[] }) {
+    // Filter blank bullets up-front using the shared normalizer so the PDF
+    // matches the on-screen renderer (which already drops empty bullets).
+    const safeBullets = (section.bullets ?? [])
+      .map((b) => normalizeBullet(b))
+      .filter((b): b is { label?: string; text?: string } => b != null);
+    const hasBody = !isBlank(section.body);
+
+    // If the section has nothing meaningful to show, skip it entirely
+    // rather than printing an orphan title with empty space below.
+    if (!hasBody && safeBullets.length === 0) {
+      // eslint-disable-next-line no-console
+      console.warn(`[askPdfExport.renderNarrative] skipping empty section "${section.title}"`);
+      return;
+    }
+
     ensureSpace(40);
     y += 4;
 
@@ -249,29 +264,30 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       y += 5;
     }
 
-    // Body
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(11);
-    pdf.setTextColor(...COLORS.body);
-    const bodyLines = pdf.splitTextToSize(section.body, CONTENT_W);
-    for (const line of bodyLines) {
-      ensureSpace(6);
-      pdf.text(line, MARGIN, y);
-      y += 6;
+    if (hasBody) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...COLORS.body);
+      const bodyLines = pdf.splitTextToSize(section.body, CONTENT_W);
+      for (const line of bodyLines) {
+        ensureSpace(6);
+        pdf.text(line, MARGIN, y);
+        y += 6;
+      }
+      y += 3;
     }
-    y += 3;
 
-    // Bullets
-    for (const bullet of section.bullets) {
+    for (const bullet of safeBullets) {
       ensureSpace(12);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.accent);
-      pdf.text(`${bullet.label}:`, MARGIN + 3, y);
-      const labelW = pdf.getTextWidth(`${bullet.label}: `);
+      const label = bullet.label || "Note";
+      pdf.text(`${label}:`, MARGIN + 3, y);
+      const labelW = pdf.getTextWidth(`${label}: `);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(...COLORS.body);
-      const bulletLines = pdf.splitTextToSize(bullet.text, CONTENT_W - labelW - 6);
+      const bulletLines = pdf.splitTextToSize(bullet.text || "", CONTENT_W - labelW - 6);
       pdf.text(bulletLines[0] || "", MARGIN + 3 + labelW, y);
       y += 6;
       for (let i = 1; i < bulletLines.length; i++) {
@@ -282,7 +298,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   function renderTiming(section: { title: string; transits: any[]; windows: any[] }) {
     ensureSpace(30);
     y += 4;
