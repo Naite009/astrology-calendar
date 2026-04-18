@@ -993,20 +993,28 @@ Deno.serve(async (req) => {
     }
 
     // === SUBMIT JOB ===
-    // Resolve user from JWT (best-effort — anonymous fallback supported)
+    // Resolve user from JWT (best-effort — anonymous fallback supported).
+    // CRITICAL: use the SERVICE ROLE client to call auth.getUser(token) so
+    // it works regardless of which anon/publishable env var is set. If this
+    // returns null for an authenticated user, RLS will block them from
+    // reading their own job row → infinite empty polls.
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
       try {
-        const tmp = createClient(
-          Deno.env.get("SUPABASE_URL")!,
-          Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
-          { global: { headers: { Authorization: authHeader } } },
-        );
-        const { data: { user } } = await tmp.auth.getUser(token);
-        userId = user?.id ?? null;
-      } catch { /* ignore — anonymous fallback */ }
+        const svcAuth = getServiceClient();
+        const { data: userData, error: userErr } = await svcAuth.auth.getUser(token);
+        if (userErr) {
+          console.warn("[ask-astrology] auth.getUser error:", userErr.message);
+        }
+        userId = userData?.user?.id ?? null;
+        console.log(`[ask-astrology] Resolved user from JWT: ${userId ?? "ANON"}`);
+      } catch (e) {
+        console.warn("[ask-astrology] JWT decode failed, falling back to anon:", e instanceof Error ? e.message : e);
+      }
+    } else {
+      console.log("[ask-astrology] No Authorization header — anonymous request");
     }
 
     const latestUserMessage = Array.isArray(messages)
