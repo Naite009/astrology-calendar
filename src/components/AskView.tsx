@@ -1365,7 +1365,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             console.log(`[AskView regen] Job status: ${status}`);
             if (status === "queued" || status === "processing") {
               setJobStatus(status);
-              if (status === "processing") setLoadingStartedAt(Date.now());
+              // Do NOT reset the timer on queued → processing; keep
+              // wall-clock elapsed honest from submission time.
             }
           },
         },
