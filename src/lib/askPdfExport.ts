@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { NatalChart } from "@/hooks/useNatalChart";
 import type { StructuredReading, ReadingSection } from "@/components/AskReadingRenderer";
+import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
 
 const COLORS = {
   bg: [255, 255, 255] as [number, number, number],
@@ -230,6 +231,21 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
 
   function renderNarrative(section: { title: string; subtitle?: string; body: string; bullets: any[] }) {
+    // Filter blank bullets up-front using the shared normalizer so the PDF
+    // matches the on-screen renderer (which already drops empty bullets).
+    const safeBullets = (section.bullets ?? [])
+      .map((b) => normalizeBullet(b))
+      .filter((b): b is { label?: string; text?: string } => b != null);
+    const hasBody = !isBlank(section.body);
+
+    // If the section has nothing meaningful to show, skip it entirely
+    // rather than printing an orphan title with empty space below.
+    if (!hasBody && safeBullets.length === 0) {
+      // eslint-disable-next-line no-console
+      console.warn(`[askPdfExport.renderNarrative] skipping empty section "${section.title}"`);
+      return;
+    }
+
     ensureSpace(40);
     y += 4;
 
@@ -248,29 +264,30 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       y += 5;
     }
 
-    // Body
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(11);
-    pdf.setTextColor(...COLORS.body);
-    const bodyLines = pdf.splitTextToSize(section.body, CONTENT_W);
-    for (const line of bodyLines) {
-      ensureSpace(6);
-      pdf.text(line, MARGIN, y);
-      y += 6;
+    if (hasBody) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...COLORS.body);
+      const bodyLines = pdf.splitTextToSize(section.body, CONTENT_W);
+      for (const line of bodyLines) {
+        ensureSpace(6);
+        pdf.text(line, MARGIN, y);
+        y += 6;
+      }
+      y += 3;
     }
-    y += 3;
 
-    // Bullets
-    for (const bullet of section.bullets) {
+    for (const bullet of safeBullets) {
       ensureSpace(12);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.accent);
-      pdf.text(`${bullet.label}:`, MARGIN + 3, y);
-      const labelW = pdf.getTextWidth(`${bullet.label}: `);
+      const label = bullet.label || "Note";
+      pdf.text(`${label}:`, MARGIN + 3, y);
+      const labelW = pdf.getTextWidth(`${label}: `);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(...COLORS.body);
-      const bulletLines = pdf.splitTextToSize(bullet.text, CONTENT_W - labelW - 6);
+      const bulletLines = pdf.splitTextToSize(bullet.text || "", CONTENT_W - labelW - 6);
       pdf.text(bulletLines[0] || "", MARGIN + 3 + labelW, y);
       y += 6;
       for (let i = 1; i < bulletLines.length; i++) {
@@ -281,7 +298,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   function renderTiming(section: { title: string; transits: any[]; windows: any[] }) {
     ensureSpace(30);
     y += 4;
@@ -398,14 +414,26 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
 
   function renderSummary(section: { title: string; items: any[] }) {
+    // Run every item through the shared normalizer so a missing value
+    // can never produce a bare label with empty space after it.
+    const safeItems = (section.items ?? [])
+      .map((it) => normalizeSummaryItem(it))
+      .filter((it): it is { label?: string; value?: string } => it != null);
+
+    if (safeItems.length === 0) {
+      // eslint-disable-next-line no-console
+      console.warn(`[askPdfExport.renderSummary] skipping empty summary "${section.title}"`);
+      return;
+    }
+
     ensureSpace(20);
     y += 4;
 
     // Gold-bordered summary box
     const itemLines: string[][] = [];
     let totalH = 14;
-    for (const item of section.items) {
-      const lines = pdf.splitTextToSize(item.value, CONTENT_W - 30);
+    for (const item of safeItems) {
+      const lines = pdf.splitTextToSize(item.value || "", CONTENT_W - 30);
       itemLines.push(lines);
       totalH += 6 + lines.length * 5 + 2;
     }
@@ -424,11 +452,11 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN + 8, y);
     y += 8;
 
-    for (let i = 0; i < section.items.length; i++) {
+    for (let i = 0; i < safeItems.length; i++) {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.accent);
-      pdf.text(section.items[i].label, MARGIN + 8, y);
+      pdf.text(safeItems[i].label || "Note", MARGIN + 8, y);
       y += 5;
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(...COLORS.body);
@@ -440,7 +468,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   function renderCityComparison(section: { title: string; cities: any[] }) {
     ensureSpace(30);
     y += 4;
@@ -451,43 +478,40 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN, y);
     y += 8;
 
-    for (const city of section.cities) {
+    // Run every city through the shared normalizer — same helper the
+    // on-screen renderer uses, so a missing AI field produces an
+    // identical fallback in both surfaces.
+    const safeCities = (section.cities ?? []).map((c) => normalizeCity(c) as any);
+
+    for (const city of safeCities) {
       ensureSpace(20);
       pdf.setFillColor(...COLORS.card);
       pdf.setDrawColor(...COLORS.cardBorder);
       pdf.setLineWidth(0.3);
-      const cityH = 22 + Math.ceil(city.lines?.length / 3) * 6;
+      const linesLen = Array.isArray(city.lines) ? city.lines.length : 0;
+      const cityH = 22 + Math.ceil(linesLen / 3) * 6;
       pdf.roundedRect(MARGIN, y - 3, CONTENT_W, cityH, 1.5, 1.5, "FD");
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(11);
       pdf.setTextColor(...COLORS.heading);
-      pdf.text(city.name, MARGIN + 4, y + 2);
+      pdf.text(city.name || "Unnamed city", MARGIN + 4, y + 2);
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.gold);
-      pdf.text(`${city.score}/10`, PAGE_W - MARGIN - 4, y + 2, { align: "right" });
+      const scoreLabel = typeof city.score === 'number' ? `${city.score}/10` : '–';
+      pdf.text(scoreLabel, PAGE_W - MARGIN - 4, y + 2, { align: "right" });
 
       y += 7;
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(9);
       pdf.setTextColor(...COLORS.muted);
-      // Render-side fallback: if the AI omitted the `theme` summary line for
-      // a city (LA was hitting this), synthesize one from supports/tags so the
-      // card never appears blank below the city name.
-      let themeLine: string = (typeof city.theme === 'string' ? city.theme.trim() : '') || '';
-      if (!themeLine) {
-        const supports = typeof city.supports === 'string' ? city.supports.trim() : '';
-        const tags = Array.isArray(city.tags) ? city.tags.filter(Boolean).slice(0, 3).join(' · ') : '';
-        themeLine = supports || tags || 'Supportive overall match';
-        // eslint-disable-next-line no-console
-        console.warn(`[askPdfExport] missing theme for city "${city.name}", using fallback: "${themeLine}"`);
-      }
-      pdf.text(themeLine, MARGIN + 6, y);
+      // theme is guaranteed non-blank by normalizeCity().
+      pdf.text(city.theme || "Overall match", MARGIN + 6, y);
       y += 5;
 
-      if (city.lines?.length) {
+      if (Array.isArray(city.lines) && city.lines.length > 0) {
         pdf.setTextColor(...COLORS.body);
         pdf.text(city.lines.join("  ·  "), MARGIN + 6, y);
         y += 5;
@@ -496,7 +520,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   addFooter();
   const safeName = (chart.name || "chart").replace(/[^a-zA-Z0-9]/g, "_");
   pdf.save(`${safeName}_reading_${new Date().toISOString().slice(0, 10)}.pdf`);
