@@ -1403,14 +1403,51 @@ export function buildDeterministicTimingData(
     })),
   });
 
+  // ───────────────────────────────────────────────────────────────────────
+  // HARD SCHEMA VALIDATION CONTRACT — every transit and window must satisfy
+  // the strict schema before we hand the section to the renderer/edge fn.
+  // Any failure is logged with the full offending object and dropped here.
+  // The renderer remains a safety net but should never see a malformed entry.
+  // ───────────────────────────────────────────────────────────────────────
+  const transitValidation = validateEntries(
+    limitedTransits as unknown as Record<string, unknown>[],
+    TimingTransitSchema as never,
+    'transits',
+  );
+  const windowValidation = validateEntries(
+    windowEntries as unknown as Record<string, unknown>[],
+    TimingWindowSchema as never,
+    'windows',
+  );
+
+  if (transitValidation.failures.length > 0 || windowValidation.failures.length > 0) {
+    console.error('[buildDeterministicTimingData] Schema violations dropped', {
+      transitFailures: transitValidation.failures.length,
+      windowFailures: windowValidation.failures.length,
+    });
+  }
+
+  const finalSection = {
+    type: 'timing_section' as const,
+    title: 'Timing Windows',
+    transits: transitValidation.kept as unknown as DeterministicTimingTransit[],
+    windows: windowValidation.kept as unknown as DeterministicTimingWindow[],
+  };
+
+  // Belt-and-braces: re-run the assertion so any future code path that
+  // mutates the section after validation is caught at the boundary.
+  assertTimingSectionIsClean(finalSection);
+
+  if (finalSection.transits.length === 0 && finalSection.windows.length === 0) {
+    return {
+      context: formatFutureTransitsContext(windows),
+      section: null,
+    };
+  }
+
   return {
     context: formatFutureTransitsContext(windows),
-    section: {
-      type: 'timing_section',
-      title: 'Timing Windows',
-      transits: limitedTransits,
-      windows: windowEntries,
-    },
+    section: finalSection,
   };
 }
 
