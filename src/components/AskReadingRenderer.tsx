@@ -206,7 +206,38 @@ function PlacementTable({ section }: { section: PlacementTableSection }) {
   );
 }
 
+// ─── Shared "is this string actually meaningful?" guard ───────────────
+// Used by every renderer that displays AI-generated text. Catches blanks,
+// whitespace-only strings, NBSP/zero-width chars, lone punctuation/dashes
+// ("—", "..."), and common filler placeholders ("n/a", "tbd", etc.).
+function isEffectivelyEmpty(raw?: string | null): boolean {
+  if (!raw) return true;
+  const cleaned = raw
+    .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length === 0) return true;
+  const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
+  if (stripped.length < 3) return true;
+  const lower = cleaned.toLowerCase();
+  const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "...", "tba", "none"];
+  if (fillers.includes(lower)) return true;
+  return false;
+}
+
 function NarrativeCard({ section }: { section: NarrativeSection }) {
+  const validBullets = (section.bullets ?? []).filter((b) => {
+    if (isEffectivelyEmpty(b.text)) {
+      console.warn("[NarrativeCard] Suppressing empty bullet", { label: b.label, text: b.text });
+      return false;
+    }
+    return true;
+  });
+  const hasBody = !isEffectivelyEmpty(section.body);
+  if (!hasBody && validBullets.length === 0) {
+    console.warn("[NarrativeCard] Suppressing empty section", { title: section.title });
+    return null;
+  }
   return (
     <Card className="border-border">
       <CardContent className="pt-5 pb-4 space-y-3">
@@ -216,10 +247,12 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
             <p className="text-xs text-muted-foreground mt-0.5">{section.subtitle}</p>
           )}
         </div>
-        <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
-        {section.bullets.length > 0 && (
+        {hasBody && (
+          <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
+        )}
+        {validBullets.length > 0 && (
           <div className="space-y-2 pt-1">
-            {section.bullets.map((b, i) => (
+            {validBullets.map((b, i) => (
               <div key={i} className="flex gap-2">
                 <span className="text-primary font-semibold text-sm shrink-0">{b.label}:</span>
                 <span className="text-sm text-foreground/80">{b.text}</span>
