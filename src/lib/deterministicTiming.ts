@@ -2,6 +2,12 @@ import * as Astronomy from 'astronomy-engine';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import { formatFutureTransitsContext, scanFutureTransits } from './futureTransitScanner';
 import { getPlanetLongitudeExact, normalizeLongitude } from './transitMath';
+import {
+  TimingTransitSchema,
+  TimingWindowSchema,
+  validateEntries,
+  assertTimingSectionIsClean,
+} from './timingEntryValidator';
 
 const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
