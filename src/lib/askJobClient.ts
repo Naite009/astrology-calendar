@@ -165,8 +165,8 @@ export function normalizeAskResult(result: any): any {
   if (typeof result.raw === "string") {
     const parsed = tryParseRawReading(result.raw);
     if (parsed) {
-      // Promote parsed fields, keep raw for debugging
-      return { ...parsed, ...result, ...parsed, raw: result.raw };
+      // Merge: keep original result fields, but let parsed reading fields win
+      return { ...result, ...parsed, raw: result.raw };
     }
   }
   return result;
