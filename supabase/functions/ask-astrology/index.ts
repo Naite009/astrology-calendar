@@ -13,6 +13,25 @@ const getCurrentDateKey = (value?: string) => {
   return new Date().toISOString().slice(0, 10);
 };
 
+// Mirrors the client-side guard in AskReadingRenderer.tsx — catches blanks,
+// whitespace-only strings, NBSP/zero-width chars, lone punctuation/dashes,
+// and common filler placeholders so the AI can never sneak an empty entry
+// past the server boundary.
+const isEffectivelyEmpty = (raw: unknown): boolean => {
+  if (typeof raw !== "string") return true;
+  const cleaned = raw
+    .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length === 0) return true;
+  const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
+  if (stripped.length < 3) return true;
+  const lower = cleaned.toLowerCase();
+  const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "...", "tba", "none"];
+  if (fillers.includes(lower)) return true;
+  return false;
+};
+
 const sanitizeDeterministicTiming = (input: any) => {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     return null;
@@ -37,7 +56,23 @@ const sanitizeDeterministicTiming = (input: any) => {
           tag: cleanString(transit?.tag),
           interpretation: cleanString(transit?.interpretation),
         }))
-        .filter((transit: any) => transit.planet && transit.position && transit.interpretation)
+        .filter((transit: any) => {
+          // Hard requirements: planet, position, natal_point, AND a meaningful interpretation
+          const ok =
+            !!transit.planet &&
+            !!transit.position &&
+            !!transit.natal_point &&
+            !isEffectivelyEmpty(transit.interpretation);
+          if (!ok) {
+            console.warn("[ask-astrology] Dropping malformed transit at sanitize step", {
+              planet: transit.planet,
+              natal_point: transit.natal_point,
+              date_range: transit.date_range,
+              has_interpretation: !isEffectivelyEmpty(transit.interpretation),
+            });
+          }
+          return ok;
+        })
         .slice(0, 20)
     : [];
 
@@ -47,7 +82,7 @@ const sanitizeDeterministicTiming = (input: any) => {
           label: cleanString(window?.label),
           description: cleanString(window?.description),
         }))
-        .filter((window: any) => window.label && window.description)
+        .filter((window: any) => !!window.label && !isEffectivelyEmpty(window.description))
     : [];
 
   if (transits.length === 0 && windows.length === 0) {
