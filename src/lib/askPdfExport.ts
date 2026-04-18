@@ -478,43 +478,40 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN, y);
     y += 8;
 
-    for (const city of section.cities) {
+    // Run every city through the shared normalizer — same helper the
+    // on-screen renderer uses, so a missing AI field produces an
+    // identical fallback in both surfaces.
+    const safeCities = (section.cities ?? []).map((c) => normalizeCity(c) as any);
+
+    for (const city of safeCities) {
       ensureSpace(20);
       pdf.setFillColor(...COLORS.card);
       pdf.setDrawColor(...COLORS.cardBorder);
       pdf.setLineWidth(0.3);
-      const cityH = 22 + Math.ceil(city.lines?.length / 3) * 6;
+      const linesLen = Array.isArray(city.lines) ? city.lines.length : 0;
+      const cityH = 22 + Math.ceil(linesLen / 3) * 6;
       pdf.roundedRect(MARGIN, y - 3, CONTENT_W, cityH, 1.5, 1.5, "FD");
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(11);
       pdf.setTextColor(...COLORS.heading);
-      pdf.text(city.name, MARGIN + 4, y + 2);
+      pdf.text(city.name || "Unnamed city", MARGIN + 4, y + 2);
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.gold);
-      pdf.text(`${city.score}/10`, PAGE_W - MARGIN - 4, y + 2, { align: "right" });
+      const scoreLabel = typeof city.score === 'number' ? `${city.score}/10` : '–';
+      pdf.text(scoreLabel, PAGE_W - MARGIN - 4, y + 2, { align: "right" });
 
       y += 7;
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(9);
       pdf.setTextColor(...COLORS.muted);
-      // Render-side fallback: if the AI omitted the `theme` summary line for
-      // a city (LA was hitting this), synthesize one from supports/tags so the
-      // card never appears blank below the city name.
-      let themeLine: string = (typeof city.theme === 'string' ? city.theme.trim() : '') || '';
-      if (!themeLine) {
-        const supports = typeof city.supports === 'string' ? city.supports.trim() : '';
-        const tags = Array.isArray(city.tags) ? city.tags.filter(Boolean).slice(0, 3).join(' · ') : '';
-        themeLine = supports || tags || 'Supportive overall match';
-        // eslint-disable-next-line no-console
-        console.warn(`[askPdfExport] missing theme for city "${city.name}", using fallback: "${themeLine}"`);
-      }
-      pdf.text(themeLine, MARGIN + 6, y);
+      // theme is guaranteed non-blank by normalizeCity().
+      pdf.text(city.theme || "Overall match", MARGIN + 6, y);
       y += 5;
 
-      if (city.lines?.length) {
+      if (Array.isArray(city.lines) && city.lines.length > 0) {
         pdf.setTextColor(...COLORS.body);
         pdf.text(city.lines.join("  ·  "), MARGIN + 6, y);
         y += 5;
@@ -523,7 +520,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   addFooter();
   const safeName = (chart.name || "chart").replace(/[^a-zA-Z0-9]/g, "_");
   pdf.save(`${safeName}_reading_${new Date().toISOString().slice(0, 10)}.pdf`);
