@@ -1232,6 +1232,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       sanitizedChartContext ? `--- CHART DATA ---\n${sanitizedChartContext}` : null,
+      // HARD LENGTH CAP — prevents 60KB+ outputs that hit max_tokens and take 8-10 min.
+      // Total target: under 22,000 output tokens (~88KB) so generation finishes in ~3-4 min
+      // and never truncates. Density over volume.
+      `ABSOLUTE LENGTH CAPS (NON-NEGOTIABLE — apply to EVERY reading type):
+- Each narrative_section "body" field: MAXIMUM 180 words. Aim for 120-150. Tight, behavioral, no filler.
+- Each city_comparison entry "summary": MAXIMUM 60 words.
+- Each placement_table row "interpretation": MAXIMUM 25 words.
+- summary_box "key_takeaway": MAXIMUM 100 words.
+- Total response across all sections: TARGET under 18,000 words. If you feel yourself padding or repeating a concept already named earlier, STOP and move to the next section.
+- NEVER restate the same insight in two sections. Cross-reference with a brief phrase ("see Relationship Pattern above") instead of re-explaining.
+- Density over length. A reader recognizing themselves in 150 tight words beats 400 words of generic elaboration.`,
     ]
       .filter(Boolean)
       .join("\n\n");
