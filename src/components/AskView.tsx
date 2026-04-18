@@ -18,7 +18,7 @@ import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
-import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId } from "@/lib/askJobClient";
+import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import {
   Popover,
