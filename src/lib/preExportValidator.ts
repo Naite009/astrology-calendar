@@ -27,8 +27,29 @@ const REQUIRED_TRANSIT_FIELDS = [
 const isNonEmptyString = (v: unknown): boolean =>
   typeof v === 'string' && v.trim().length > 0;
 
-const normalizeLabelKey = (label: string): string =>
-  label.toLowerCase().replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
+const MONTH_MAP: Record<string, string> = {
+  january: 'jan', february: 'feb', march: 'mar', april: 'apr',
+  may: 'may', june: 'jun', july: 'jul', august: 'aug',
+  september: 'sep', sept: 'sep', october: 'oct', november: 'nov', december: 'dec',
+};
+
+/**
+ * Aggressive label normalization so two windows representing the same
+ * date range hash to the same key regardless of cosmetic formatting:
+ *   - lowercase, trim, collapse whitespace
+ *   - strip commas and periods
+ *   - normalize month names → 3-letter abbrev (february → feb)
+ *   - normalize range separators ("to", "–", "—", "-") → "-"
+ *   - strip ordinal suffixes (1st → 1, 2nd → 2)
+ */
+const normalizeLabelKey = (label: string): string => {
+  let s = label.toLowerCase().replace(/[,.]/g, ' ').replace(/\s+/g, ' ').trim();
+  s = s.replace(/\b(january|february|march|april|may|june|july|august|september|sept|october|november|december)\b/g, (m) => MONTH_MAP[m] ?? m);
+  s = s.replace(/\b(\d+)(st|nd|rd|th)\b/g, '$1');
+  s = s.replace(/\s*[–—-]\s*/g, '-').replace(/\s+to\s+/g, '-');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+};
 
 export type PreExportFailure = {
   scope: 'transit' | 'window';
