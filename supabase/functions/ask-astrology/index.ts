@@ -1215,9 +1215,26 @@ SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When check
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
-    const systemMessage = [
-      SYSTEM_PROMPT,
-      compactRelationshipInstruction,
+    // ============================================================
+    // ANTHROPIC PROMPT CACHING — 2 cache breakpoints
+    // ============================================================
+    // Cache hits cut latency by ~80% and cost by ~90% on repeated
+    // questions for the same chart. Cache key is byte-for-byte exact
+    // prefix match, so block ORDER is critical:
+    //   Block 1 (CACHED): SYSTEM_PROMPT — identical for every user,
+    //     every chart, every question. Stable until prompt is edited.
+    //   Block 2 (CACHED): Chart-derived gates + chart data — identical
+    //     for every question on this specific chart.
+    //   Block 3 (UNCACHED): Per-question / per-day content — compact
+    //     mode flag + current date. Changes too often to cache.
+    //
+    // Min cacheable size: 1024 input tokens (Sonnet). SYSTEM_PROMPT
+    // alone is well above that; chart block is also typically >1024.
+    // Default TTL: 5 minutes. Cache writes cost 1.25x base; reads
+    // cost 0.1x base. Break-even after ~2 hits within 5 min.
+    // ============================================================
+
+    const chartScopedRules = [
       // Inject hard Lilith gate based on actual data presence
       lilithDataPresent
         ? null
@@ -1230,11 +1247,41 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       srYearFromContext
         ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
         : null,
-      `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       sanitizedChartContext ? `--- CHART DATA ---\n${sanitizedChartContext}` : null,
     ]
       .filter(Boolean)
       .join("\n\n");
+
+    const perQuestionTail = [
+      compactRelationshipInstruction,
+      `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    // Build system as an ARRAY of blocks. Anthropic only caches blocks
+    // marked with cache_control. Order = Block1, Block2, Block3 (prefix
+    // match). Skip empty blocks so we never send "" to the API.
+    const systemBlocks: Array<Record<string, any>> = [
+      {
+        type: "text",
+        text: SYSTEM_PROMPT,
+        cache_control: { type: "ephemeral" },
+      },
+    ];
+    if (chartScopedRules) {
+      systemBlocks.push({
+        type: "text",
+        text: chartScopedRules,
+        cache_control: { type: "ephemeral" },
+      });
+    }
+    if (perQuestionTail) {
+      systemBlocks.push({
+        type: "text",
+        text: perQuestionTail,
+      });
+    }
 
     const MAX_RETRIES = 2;
     let response: Response | null = null;
@@ -1264,7 +1311,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             // The async job pattern means the client polls the DB, so even
             // 8-10 min Sonnet generations complete safely in the background.
             model: "claude-sonnet-4-6",
-            system: systemMessage,
+            system: systemBlocks,
             messages: sanitizedMessages,
             temperature: 0.3,
             // 32000 to fully accommodate long relocation/relationship reports
