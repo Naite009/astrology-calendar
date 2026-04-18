@@ -118,6 +118,61 @@ export async function pollAskJob(
 }
 
 /**
+ * Try to extract a structured reading object from a raw string. Some model
+ * runs return the reading as a JSON string in `result.raw` instead of as
+ * structured `result.sections`. We attempt:
+ *   1. Direct JSON.parse
+ *   2. Strip ```json ... ``` fences then parse
+ *   3. Slice from first "{" to last "}" then parse
+ * Returns the parsed object only if it looks like a reading (has `sections`
+ * or `headline`/`title` fields). Otherwise returns null.
+ */
+function tryParseRawReading(raw: unknown): any | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  const candidates: string[] = [trimmed];
+  // Strip ```json ... ``` or ``` ... ``` fences
+  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenceMatch?.[1]) candidates.push(fenceMatch[1].trim());
+  // Slice from first { to last }
+  const first = trimmed.indexOf("{");
+  const last = trimmed.lastIndexOf("}");
+  if (first !== -1 && last > first) candidates.push(trimmed.slice(first, last + 1));
+
+  for (const c of candidates) {
+    try {
+      const parsed = JSON.parse(c);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        if (Array.isArray(parsed.sections) || parsed.headline || parsed.title) {
+          return parsed;
+        }
+      }
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
+/**
+ * Normalize an ask_jobs.result payload so the UI always sees structured
+ * `sections` when the model produced them, even if the edge function stored
+ * the reading as a stringified JSON in `raw`. Mutates a shallow copy.
+ */
+export function normalizeAskResult(result: any): any {
+  if (!result || typeof result !== "object") return result;
+  if (result.sections) return result; // already structured
+  if (typeof result.raw === "string") {
+    const parsed = tryParseRawReading(result.raw);
+    if (parsed) {
+      // Merge: keep original result fields, but let parsed reading fields win
+      return { ...result, ...parsed, raw: result.raw };
+    }
+  }
+  return result;
+}
+
+/**
  * Convenience: submit + poll in one call.
  */
 export async function runAskJob(
