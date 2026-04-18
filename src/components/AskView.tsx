@@ -1174,6 +1174,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     saveActiveChat(chartIdForRequest, requestEntries);
     setInput("");
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("queued");
 
     // Block auto-reload during long Ask generations (prevents tab-switch HMR
     // errors from killing the streaming response and discarding the result).
@@ -1205,6 +1207,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           signal: controller.signal,
           onProgress: (status) => {
             console.log(`[AskView] Job status: ${status}`);
+            if (status === "queued" || status === "processing") setJobStatus(status);
           },
         },
       );
@@ -1272,6 +1275,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       window.__askInFlight = false;
     }
   };
@@ -1313,6 +1318,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     setEntries(trimmedEntries);
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("queued");
     window.__askInFlight = true;
 
     try {
@@ -1341,7 +1348,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         },
         {
           signal: controller.signal,
-          onProgress: (status) => console.log(`[AskView regen] Job status: ${status}`),
+          onProgress: (status) => {
+            console.log(`[AskView regen] Job status: ${status}`);
+            if (status === "queued" || status === "processing") setJobStatus(status);
+          },
         },
       );
 
@@ -1398,6 +1408,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       window.__askInFlight = false;
     }
   };
