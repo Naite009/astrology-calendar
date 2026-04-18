@@ -48,6 +48,23 @@ const NATAL_THEME_MAP: Record<string, string> = {
   Mercury: 'the way you talk, listen, and make decisions with a partner — the conversations you keep replaying',
   Venus: 'attraction, closeness, affection, what you value in love, and how easy it is to receive it',
   Mars: 'desire, sex, conflict, and how directly you go after — or argue for — what you want from someone',
+  Jupiter: 'where you let yourself believe a relationship can grow — your appetite for more, and the risk of overpromising or overlooking real flags',
+  Saturn: 'how seriously you take commitment — the rules you have set for love, the walls you have built, and what you are actually willing to build with someone',
+  Uranus: 'your need for space, freedom, and surprise inside intimacy — the part of you that pulls away the moment things get too defined',
+  Neptune: 'your tendency to idealize a partner, fall in love with potential, and lose your own outline inside someone else',
+  Pluto: 'the deepest power dynamics in your love life — control, intensity, jealousy, fear of being known, and the patterns that repeat until they are seen',
+  Chiron: 'the old wound that gets touched in close relationships — the place where love lands on something already tender',
+  NorthNode: 'the kind of partnership you are growing toward — the relational experience your life is asking you to step into',
+  'North Node': 'the kind of partnership you are growing toward — the relational experience your life is asking you to step into',
+  SouthNode: 'the relational pattern you keep defaulting to — comfortable, familiar, and quietly outgrown',
+  'South Node': 'the relational pattern you keep defaulting to — comfortable, familiar, and quietly outgrown',
+  Ascendant: 'the version of you the other person meets first — the front door of your personality in any relationship',
+  ASC: 'the version of you the other person meets first — the front door of your personality in any relationship',
+  Descendant: 'the kind of partner you keep attracting and the qualities you keep meeting through other people',
+  DSC: 'the kind of partner you keep attracting and the qualities you keep meeting through other people',
+  Midheaven: 'how your public life and direction interact with your relationship — what you are building out in the world that a partner has to make room for',
+  MC: 'how your public life and direction interact with your relationship — what you are building out in the world that a partner has to make room for',
+  IC: 'your private inner life and what you need at home — the part of you only the closest person ever sees',
 };
 
 const NATAL_THEME_MAP_RELOCATION: Record<string, string> = {
@@ -68,6 +85,21 @@ const NATAL_THEME_MAP_CAREER: Record<string, string> = {
   Mars: 'your drive, ambition, conflict at work, and how directly you go after what you want professionally',
   Jupiter: 'opportunity, expansion, and growth in your professional life',
   Saturn: 'structure, discipline, career limits, and what you are being asked to build or prove',
+  Uranus: 'your appetite for professional disruption — innovation, sudden pivots, and the pull to break from a role that has become too defined',
+  Neptune: 'professional vision and direction — where inspiration is real and where idealism could blur a clean read on the work',
+  Pluto: 'the deeper power dynamics of your work — authority, influence, control, and the work you are meant to do at depth',
+  Chiron: 'the place at work that touches an old professional wound — competence, recognition, or being taken seriously',
+  NorthNode: 'the professional direction your life is genuinely pulling you toward, even when it is uncomfortable',
+  'North Node': 'the professional direction your life is genuinely pulling you toward, even when it is uncomfortable',
+  SouthNode: 'the kind of work you can do in your sleep — easy, familiar, and possibly no longer the right fit',
+  'South Node': 'the kind of work you can do in your sleep — easy, familiar, and possibly no longer the right fit',
+  Ascendant: 'how you present professionally and the first impression you make in any work context',
+  ASC: 'how you present professionally and the first impression you make in any work context',
+  Midheaven: 'your public role, career direction, and what the world recognizes you for',
+  MC: 'your public role, career direction, and what the world recognizes you for',
+  IC: 'the private foundation underneath your career — what makes work sustainable from the inside',
+  Descendant: 'work partnerships, clients, and the kinds of professional others you keep meeting',
+  DSC: 'work partnerships, clients, and the kinds of professional others you keep meeting',
 };
 
 const NATAL_THEME_MAP_HEALTH: Record<string, string> = {
@@ -78,6 +110,21 @@ const NATAL_THEME_MAP_HEALTH: Record<string, string> = {
   Mars: 'physical energy, inflammation, overexertion, and how you use and deplete your body',
   Jupiter: 'excess, expansion, and where the body may need moderation',
   Saturn: 'chronic patterns, structural health, bones, skin, and what requires long-term management',
+  Uranus: 'sudden shifts in the body — sleep, energy spikes, electrical or nervous-system flares',
+  Neptune: 'the diffuse, hard-to-pin-down side of health — sensitivity, allergies, immunity, and the risk of self-medicating',
+  Pluto: 'the deepest patterns in the body — what has been buried, suppressed, or asking for true regeneration',
+  Chiron: 'the chronic place in the body that you have learned to manage — the wound that also teaches',
+  NorthNode: 'the way of caring for yourself you are growing into',
+  'North Node': 'the way of caring for yourself you are growing into',
+  SouthNode: 'the health habits you default to — easy, familiar, and possibly past their usefulness',
+  'South Node': 'the health habits you default to — easy, familiar, and possibly past their usefulness',
+  Ascendant: 'the body itself — physical presence, vitality, and overall constitution',
+  ASC: 'the body itself — physical presence, vitality, and overall constitution',
+  Midheaven: 'how stress from public life and career lands in the body',
+  MC: 'how stress from public life and career lands in the body',
+  IC: 'your private rest, recovery, and the home environment as a healing space',
+  Descendant: 'how relationship dynamics show up in the body',
+  DSC: 'how relationship dynamics show up in the body',
 };
 
 const NATAL_THEME_MAP_MONEY: Record<string, string> = {
@@ -88,6 +135,21 @@ const NATAL_THEME_MAP_MONEY: Record<string, string> = {
   Mars: 'financial drive, risk-taking, and how aggressively you pursue income',
   Jupiter: 'financial opportunity, expansion, and where abundance or excess is most likely',
   Saturn: 'financial discipline, debt, long-term building, and what requires patient investment',
+  Uranus: 'sudden financial shifts — windfalls, losses, or unconventional income streams',
+  Neptune: 'where money gets foggy — investments, fantasies, generosity, and the risk of being financially naive',
+  Pluto: 'the deepest power dynamics around money — debt, inheritance, shared resources, and control',
+  Chiron: 'the old wound around money, scarcity, or worth that keeps shaping financial decisions',
+  NorthNode: 'the financial direction your life is genuinely pulling you toward',
+  'North Node': 'the financial direction your life is genuinely pulling you toward',
+  SouthNode: 'the financial pattern you default to — comfortable but possibly past its usefulness',
+  'South Node': 'the financial pattern you default to — comfortable but possibly past its usefulness',
+  Ascendant: 'how you project worth and value in the world',
+  ASC: 'how you project worth and value in the world',
+  Midheaven: 'income tied to your public role and career direction',
+  MC: 'income tied to your public role and career direction',
+  IC: 'your private financial foundation and sense of security at home',
+  Descendant: 'shared finances, partnerships, and money tied to other people',
+  DSC: 'shared finances, partnerships, and money tied to other people',
 };
 
 const NATAL_THEME_MAP_SPIRITUAL: Record<string, string> = {
@@ -98,6 +160,21 @@ const NATAL_THEME_MAP_SPIRITUAL: Record<string, string> = {
   Mars: 'spiritual will, practice, and what drives your inner search',
   Jupiter: 'faith, meaning, expansion of consciousness, and what opens you spiritually',
   Saturn: 'spiritual discipline, karmic patterns, and what demands honest inner work',
+  Uranus: 'sudden insight, awakening, and the parts of your spirituality that refuse to fit any tradition',
+  Neptune: 'mystical experience, dissolution of self, and the porous edge between you and the larger field',
+  Pluto: 'the most transformative inner work — what dies in you so something truer can emerge',
+  Chiron: 'the spiritual wound that becomes the source of your real teaching',
+  NorthNode: 'the inner direction your soul is growing toward in this life',
+  'North Node': 'the inner direction your soul is growing toward in this life',
+  SouthNode: 'the spiritual gifts and patterns you arrived with — already known, sometimes leaned on too long',
+  'South Node': 'the spiritual gifts and patterns you arrived with — already known, sometimes leaned on too long',
+  Ascendant: 'the way your inner life shows through your outer presence',
+  ASC: 'the way your inner life shows through your outer presence',
+  Midheaven: 'how your spiritual orientation shapes your purpose in the world',
+  MC: 'how your spiritual orientation shapes your purpose in the world',
+  IC: 'your most private spiritual life — what only you and the dark know',
+  Descendant: 'spiritual learning that comes through other people',
+  DSC: 'spiritual learning that comes through other people',
 };
 
 const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
@@ -108,6 +185,21 @@ const NATAL_THEME_MAP_GENERAL: Record<string, string> = {
   Mars: 'your drive, desire, and how you go after what you want',
   Jupiter: 'where you grow, expand, and find opportunity',
   Saturn: 'where you commit, build structure, and face responsibility',
+  Uranus: 'your need for freedom, originality, and the part of you that breaks from convention',
+  Neptune: 'your imagination, sensitivity, and the place where self dissolves into something larger',
+  Pluto: 'the deepest layer of yourself — power, transformation, and what is being remade at the root',
+  Chiron: 'the old wound that becomes your source of compassion and skill',
+  NorthNode: 'the direction your life is genuinely pulling you toward',
+  'North Node': 'the direction your life is genuinely pulling you toward',
+  SouthNode: 'the patterns and gifts you arrived with — already familiar, sometimes outgrown',
+  'South Node': 'the patterns and gifts you arrived with — already familiar, sometimes outgrown',
+  Ascendant: 'the way you show up in the world and the body that carries you through it',
+  ASC: 'the way you show up in the world and the body that carries you through it',
+  Midheaven: 'your public role, direction, and what the world is asking you to step into',
+  MC: 'your public role, direction, and what the world is asking you to step into',
+  IC: 'your private inner life, home, and roots',
+  Descendant: 'the people you keep meeting and what they reflect back to you',
+  DSC: 'the people you keep meeting and what they reflect back to you',
 };
 
 const THEME_MAPS: Record<TimingReadingType, Record<string, string>> = {
@@ -118,6 +210,27 @@ const THEME_MAPS: Record<TimingReadingType, Record<string, string>> = {
   money: NATAL_THEME_MAP_MONEY,
   spiritual: NATAL_THEME_MAP_SPIRITUAL,
   general: NATAL_THEME_MAP_GENERAL,
+};
+
+// Per-reading-type fallback that ALWAYS names the actual planet/point.
+// Used when a planet/point is not in the theme map (so the user never sees
+// generic "a major part of your personal pattern" copy).
+const buildPlanetNamedFallback = (
+  natalPlanet: string,
+  readingType: TimingReadingType,
+): string => {
+  const lensByType: Record<TimingReadingType, string> = {
+    relationship: 'as it expresses inside your relationship life',
+    relocation: 'as it expresses through where you live and where you are headed',
+    career: 'as it expresses in your career and professional identity',
+    health: 'as it lives in your body and physical patterns',
+    money: 'as it expresses in your financial life',
+    spiritual: 'as it expresses in your inner and spiritual life',
+    general: 'as it expresses in your life right now',
+  };
+  const lens = lensByType[readingType] ?? lensByType.general;
+  // Always names the natal planet/point explicitly — never a generic phrase.
+  return `your natal ${natalPlanet} ${lens}`;
 };
 
 const getNatalThemeMap = (readingType: TimingReadingType): Record<string, string> => {
@@ -823,6 +936,124 @@ const isRetrogradeAtExactHit = (planet: string, exactDate: Date, passLabel: stri
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Bug 3 — Developmental milestone overrides
+// Some transits are not "just transits" — they are once-or-twice-in-a-lifetime
+// developmental thresholds. When transit X aspects natal X (the same body), we
+// are looking at a generational cycle hitting an individual: Uranus opp Uranus
+// at ~40 (mid-life), Uranus square Uranus at ~21 (early-adult identity quake)
+// and ~63, Saturn return at ~29/~58, Jupiter return every ~12 yrs, Chiron
+// return at ~50, Nodal return at ~18.6 / ~37 / ~56. These must be named for
+// what they actually are — generic "urge to change environment" copy is wrong.
+// ─────────────────────────────────────────────────────────────────────────────
+const getDevelopmentalMilestoneInterpretation = (
+  transitPlanet: string,
+  aspect: string,
+  natalPlanet: string,
+  readingType: TimingReadingType,
+  passSummary: string,
+  isRetrograde: boolean,
+): string | null => {
+  const retroLine = isRetrograde
+    ? ' Because the transit is retrograde on at least one pass, the theme revisits in waves rather than landing all at once.'
+    : '';
+
+  // Helper to assemble final paragraph using the chosen developmental opener
+  // followed by a reading-type lens line and the timing summary.
+  const wrap = (developmentalOpener: string, lensLine: string): string =>
+    `${developmentalOpener} ${lensLine} ${passSummary}${retroLine}`;
+
+  // ── Uranus → natal Uranus ────────────────────────────────────────────────
+  // The Uranus generational cycle: square (~21), opposition (~40), square (~63),
+  // return (~84). These are the most well-known developmental quakes in the chart.
+  if (transitPlanet === 'Uranus' && natalPlanet === 'Uranus') {
+    if (aspect === 'square') {
+      const opener =
+        'This is a Uranus square Uranus — one of the defining developmental transits of early adulthood (it lands around age 21 and again around age 63). It is not a generic "change of scenery" — it is the moment your inherited identity stops fitting and an unmistakable, more authentic version of you tries to break through. Generic restlessness is the surface; the real event is the rejection of a life that was someone else\'s plan.';
+      const lens: Record<TimingReadingType, string> = {
+        relationship: 'In love, this surfaces as either suddenly outgrowing a partner you committed to too early, or finally meeting someone who actually fits the version of you that is emerging. Old loyalties fall away.',
+        relocation: 'A move at this age is rarely just a move — it is the body looking for an environment that matches who you are becoming, not who you were when you left home.',
+        career: 'Whatever path was chosen by parents, school, or default starts to crack. The job, major, or career track you adopted before you knew yourself is being honestly questioned for the first time.',
+        health: 'The nervous system runs hot — sleep, energy and focus may all destabilize as the body refuses the old container.',
+        money: 'Financial habits set up by a younger version of you stop working — earning, spending and saving all need a more honest, more autonomous structure.',
+        spiritual: 'Inherited beliefs are tested directly. What you were taught is no longer enough; first-hand experience is the only currency now.',
+        general: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
+      };
+      return wrap(opener, lens[readingType] ?? lens.general);
+    }
+    if (aspect === 'opposition') {
+      const opener =
+        'This is the Uranus opposition — the classical mid-life crisis transit (around age 40). It is not a marketing cliché; it is the chart asking, point-blank, whether the life you have built is actually yours. Restlessness, sudden urges to leave, attraction to younger or freer people, and an itch to throw it all out are all expressions of one underlying question.';
+      const lens: Record<TimingReadingType, string> = {
+        relationship: 'Long-term relationships either deepen into something more real or are honestly examined. Affairs, sudden departures, and new attractions at this age are rarely about the other person — they are about a self trying to be felt again.',
+        relocation: 'Moving now can be liberating or escapist. The question is whether the new place lets you live more honestly or just lets you avoid yourself somewhere prettier.',
+        career: 'The career you built in your 20s and 30s is being audited. What was achievement may now feel like a cage; what felt unrealistic may now feel non-negotiable.',
+        health: 'The body insists on being heard — sleep, blood pressure, and stress symptoms become the cost of any life that is not actually yours.',
+        money: 'Money is being asked to serve a more honest life, not maintain an old image.',
+        spiritual: 'Meaning becomes a survival question. Spiritual bypass stops working; only first-hand depth holds now.',
+        general: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
+      };
+      return wrap(opener, lens[readingType] ?? lens.general);
+    }
+    if (aspect === 'conjunction') {
+      const opener =
+        'This is the Uranus return — a once-in-a-lifetime threshold around age 84. The full Uranus cycle is complete: a moment of genuine elder vantage, when the soul looks back at the whole arc.';
+      return wrap(opener, 'Whatever the lens, the work here is integration and transmission — not new ambition.');
+    }
+  }
+
+  // ── Saturn return ────────────────────────────────────────────────────────
+  if (transitPlanet === 'Saturn' && natalPlanet === 'Saturn' && aspect === 'conjunction') {
+    const opener =
+      'This is a Saturn return — the classic ~29-year (and again ~58-year) coming-of-age transit. Anything built on a shaky or borrowed foundation gets stress-tested; anything genuinely yours gets locked into structure. It is rarely comfortable, and it is almost always clarifying.';
+    const lens: Record<TimingReadingType, string> = {
+      relationship: 'Relationships either deepen into adult commitment or end honestly. Lukewarm versions of love do not survive this transit.',
+      relocation: 'Where you live becomes a real question — not a fantasy. The Saturn return often coincides with finally settling somewhere on purpose, or finally leaving a place you have only been tolerating.',
+      career: 'Career structures crystallize. What you have actually built shows what it can hold; what was performance falls away.',
+      health: 'The body asks for sustainable rhythms. Habits that worked in your 20s often stop working here.',
+      money: 'Adult financial structure becomes non-negotiable — debt, savings, and long-term commitments come into focus.',
+      spiritual: 'Practice over performance. Whatever spiritual life you actually live (not the one you talk about) is what holds.',
+      general: 'The threshold into adult selfhood. What gets built here tends to last.',
+    };
+    return wrap(opener, lens[readingType] ?? lens.general);
+  }
+
+  // ── Saturn opposite Saturn / Saturn square Saturn ────────────────────────
+  if (transitPlanet === 'Saturn' && natalPlanet === 'Saturn' && (aspect === 'opposition' || aspect === 'square')) {
+    const opener =
+      `This is a Saturn ${aspect} natal Saturn — a ${aspect === 'opposition' ? 'mid-cycle (~14/~44 yrs)' : 'quarter-cycle (~7/~21/~36/~50 yrs)'} structural review. Whatever you have been building either holds under pressure or shows where it cannot. This is structural honesty, not punishment.`;
+    return wrap(opener, 'The work is to face what is real and adjust the structure accordingly.');
+  }
+
+  // ── Jupiter return ───────────────────────────────────────────────────────
+  if (transitPlanet === 'Jupiter' && natalPlanet === 'Jupiter' && aspect === 'conjunction') {
+    const opener =
+      'This is a Jupiter return — the ~12-year renewal of how you grow, what you believe, and where you take risks. Often a fresh chapter begins here: a new vision of what is possible opens, and old contractions loosen.';
+    return wrap(opener, 'The window favors planting seeds whose harvest will come over the next 12 years.');
+  }
+
+  // ── Chiron return ────────────────────────────────────────────────────────
+  if (transitPlanet === 'Chiron' && natalPlanet === 'Chiron' && aspect === 'conjunction') {
+    const opener =
+      'This is the Chiron return — a once-in-a-lifetime transit around age ~50. The original wound surfaces in a final way, and the work is to meet it as the elder, not the patient. What you have learned to hold in yourself becomes what you can offer others.';
+    return wrap(opener, 'It is a threshold from personal healing into authentic teaching.');
+  }
+
+  // ── Nodal return / opposition ────────────────────────────────────────────
+  // Transiting Nodes return to natal Node position every ~18.6 years.
+  if (
+    (transitPlanet === 'NorthNode' || transitPlanet === 'North Node') &&
+    (natalPlanet === 'NorthNode' || natalPlanet === 'North Node') &&
+    aspect === 'conjunction'
+  ) {
+    const opener =
+      'This is a Nodal return — every ~18.6 years the transiting North Node lands on its natal place. It marks a recommitment to the direction your life is genuinely growing toward. Old patterns surface so you can choose them again or choose differently, this time on purpose.';
+    return wrap(opener, 'It is a doorway moment for the larger life direction.');
+  }
+
+  return null; // No developmental override → fall back to standard transit copy.
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Interpretation builders (now reading-type aware)
 // ─────────────────────────────────────────────────────────────────────────────
 const buildTransitInterpretation = (params: {
@@ -843,10 +1074,25 @@ const buildTransitInterpretation = (params: {
     readingType,
   } = params;
 
+  // Bug 3 — developmental milestone interpretations override generic transit copy.
+  // (Uranus opp Uranus = age ~40, Uranus square Uranus = age ~21 / ~63, Saturn return,
+  // Jupiter return, Chiron return, Nodal return, etc.) Returned text is final.
+  const developmentalOverride = getDevelopmentalMilestoneInterpretation(
+    transitPlanet,
+    aspect,
+    natalPlanet,
+    readingType,
+    passSummary,
+    isRetrograde,
+  );
+  if (developmentalOverride) return developmentalOverride;
+
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, transitPlanet);
   const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = themeMap[natalPlanet] ?? 'a major part of your personal pattern';
+  // Bug 2 — never emit the generic "a major part of your personal pattern" line.
+  // If the planet/point is missing from the theme map, name it explicitly.
+  const natalTheme = themeMap[natalPlanet] ?? buildPlanetNamedFallback(natalPlanet, readingType);
   const contextPhrase = getContextPhrase(readingType);
 
   const retrogradeSentence = isRetrograde
@@ -870,10 +1116,22 @@ const buildTimingWindowDescription = (
     .map((exact) => `${exact.date}${exact.label !== 'single pass' ? ` (${exact.label})` : ''}`)
     .join('; ');
 
+  // Bug 3 — developmental override for the short window description as well.
+  const devOverride = getDevelopmentalMilestoneInterpretation(
+    window.transitPlanet,
+    window.aspect,
+    window.natalPlanet,
+    readingType,
+    `Peaks: ${exactSummary}.`,
+    false,
+  );
+  if (devOverride) return devOverride;
+
   const aspectTone = buildSpecificOpener(window.transitPlanet, window.aspect, window.natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, window.transitPlanet);
   const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = themeMap[window.natalPlanet] ?? 'a major part of your personal pattern';
+  // Bug 2 — name the planet explicitly when no theme is available.
+  const natalTheme = themeMap[window.natalPlanet] ?? buildPlanetNamedFallback(window.natalPlanet, readingType);
 
   return `${aspectTone}. ${window.transitPlanet} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
 };
@@ -1010,6 +1268,33 @@ export function buildDeterministicTimingData(
       ? `This is a multi-pass cycle covering ${passDetails.length} exact hits (${passesPositionSummary}); the full felt-sense window runs ${humanizedRange}.`
       : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange} — meaning the theme builds, peaks, then settles inside that range.`;
 
+    const interpretationText = buildTransitInterpretation({
+      transitPlanet: window.transitPlanet,
+      aspect: window.aspect,
+      natalPlanet: window.natalPlanet,
+      natalDegree: window.natalDegree,
+      passSummary,
+      isRetrograde: anyRetrograde,
+      readingType,
+    });
+
+    // Bug 1 — never push a transit with an empty body. A blank entry is worse
+    // than a missing one. If for any reason the interpretation pipeline returns
+    // empty/whitespace text, OR the natal target is missing, drop the entry.
+    const hasNatalTarget = !!window.natalPlanet && window.natalPlanet.trim().length > 0;
+    const hasBody = !!interpretationText && interpretationText.trim().length > 0;
+    if (!hasNatalTarget || !hasBody) {
+      // eslint-disable-next-line no-console
+      console.warn('[deterministicTiming] Dropping malformed transit entry', {
+        transitPlanet: window.transitPlanet,
+        aspect: window.aspect,
+        natalPlanet: window.natalPlanet,
+        hasNatalTarget,
+        hasBody,
+      });
+      continue;
+    }
+
     const consolidatedTransit: DeterministicTimingTransit = {
       planet: window.transitPlanet,
       symbol: PLANET_SYMBOLS[window.transitPlanet] ?? '',
@@ -1023,15 +1308,7 @@ export function buildDeterministicTimingData(
       pass_label: passLabel,
       date_range: humanizedRange,
       tag: classifyTimingTag(window.transitPlanet, window.aspect, window.natalPlanet, readingType),
-      interpretation: buildTransitInterpretation({
-        transitPlanet: window.transitPlanet,
-        aspect: window.aspect,
-        natalPlanet: window.natalPlanet,
-        natalDegree: window.natalDegree,
-        passSummary,
-        isRetrograde: anyRetrograde,
-        readingType,
-      }),
+      interpretation: interpretationText,
     };
 
     includedWindows.push(window);
