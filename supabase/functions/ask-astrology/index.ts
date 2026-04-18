@@ -1215,9 +1215,26 @@ SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When check
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
-    const systemMessage = [
-      SYSTEM_PROMPT,
-      compactRelationshipInstruction,
+    // ============================================================
+    // ANTHROPIC PROMPT CACHING — 2 cache breakpoints
+    // ============================================================
+    // Cache hits cut latency by ~80% and cost by ~90% on repeated
+    // questions for the same chart. Cache key is byte-for-byte exact
+    // prefix match, so block ORDER is critical:
+    //   Block 1 (CACHED): SYSTEM_PROMPT — identical for every user,
+    //     every chart, every question. Stable until prompt is edited.
+    //   Block 2 (CACHED): Chart-derived gates + chart data — identical
+    //     for every question on this specific chart.
+    //   Block 3 (UNCACHED): Per-question / per-day content — compact
+    //     mode flag + current date. Changes too often to cache.
+    //
+    // Min cacheable size: 1024 input tokens (Sonnet). SYSTEM_PROMPT
+    // alone is well above that; chart block is also typically >1024.
+    // Default TTL: 5 minutes. Cache writes cost 1.25x base; reads
+    // cost 0.1x base. Break-even after ~2 hits within 5 min.
+    // ============================================================
+
+    const chartScopedRules = [
       // Inject hard Lilith gate based on actual data presence
       lilithDataPresent
         ? null
@@ -1230,11 +1247,41 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       srYearFromContext
         ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
         : null,
-      `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       sanitizedChartContext ? `--- CHART DATA ---\n${sanitizedChartContext}` : null,
     ]
       .filter(Boolean)
       .join("\n\n");
+
+    const perQuestionTail = [
+      compactRelationshipInstruction,
+      `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    // Build system as an ARRAY of blocks. Anthropic only caches blocks
+    // marked with cache_control. Order = Block1, Block2, Block3 (prefix
+    // match). Skip empty blocks so we never send "" to the API.
+    const systemBlocks: Array<Record<string, any>> = [
+      {
+        type: "text",
+        text: SYSTEM_PROMPT,
+        cache_control: { type: "ephemeral" },
+      },
+    ];
+    if (chartScopedRules) {
+      systemBlocks.push({
+        type: "text",
+        text: chartScopedRules,
+        cache_control: { type: "ephemeral" },
+      });
+    }
+    if (perQuestionTail) {
+      systemBlocks.push({
+        type: "text",
+        text: perQuestionTail,
+      });
+    }
 
     const MAX_RETRIES = 2;
     let response: Response | null = null;
@@ -1264,7 +1311,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             // The async job pattern means the client polls the DB, so even
             // 8-10 min Sonnet generations complete safely in the background.
             model: "claude-sonnet-4-6",
-            system: systemMessage,
+            system: systemBlocks,
             messages: sanitizedMessages,
             temperature: 0.3,
             // 32000 to fully accommodate long relocation/relationship reports
@@ -1326,6 +1373,14 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     const anthropicResponse = response;
     let content = "";
     let finishReason = "";
+    // Cache telemetry — proves prompt caching is actually hitting in prod.
+    // cache_read = tokens served from cache (90% cheaper, near-zero latency).
+    // cache_creation = tokens written to cache on this call (1.25x cost).
+    let cacheReadTokens = 0;
+    let cacheCreationTokens = 0;
+    let regularInputTokens = 0;
+    let outputTokens = 0;
+    const aiCallStartedAt = Date.now();
 
     try {
       const reader = anthropicResponse.body!.getReader();
@@ -1349,8 +1404,22 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             const evt = JSON.parse(payload);
             if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
               content += evt.delta.text || "";
-            } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
-              finishReason = evt.delta.stop_reason;
+            } else if (evt.type === "message_start") {
+              // Initial usage block: includes cache read/creation counts
+              const usage = evt.message?.usage;
+              if (usage) {
+                cacheReadTokens = usage.cache_read_input_tokens ?? 0;
+                cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
+                regularInputTokens = usage.input_tokens ?? 0;
+              }
+            } else if (evt.type === "message_delta") {
+              if (evt.delta?.stop_reason) {
+                finishReason = evt.delta.stop_reason;
+              }
+              // Final usage update — output tokens land here
+              if (evt.usage?.output_tokens) {
+                outputTokens = evt.usage.output_tokens;
+              }
             } else if (evt.type === "error") {
               console.error("Anthropic stream error event:", evt);
               throw new Error(evt.error?.message || "Stream error");
@@ -1369,6 +1438,20 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       });
       return;
     }
+
+    // Log cache + token telemetry. cache_hit_rate near 0% on first call
+    // (cache write); should be 80-95% on subsequent calls within 5 min TTL.
+    const aiCallDurationSec = Math.round((Date.now() - aiCallStartedAt) / 1000);
+    const totalInput = cacheReadTokens + cacheCreationTokens + regularInputTokens;
+    const cacheHitRate = totalInput > 0
+      ? Math.round((cacheReadTokens / totalInput) * 100)
+      : 0;
+    console.log(
+      `[ask-astrology] AI call done in ${aiCallDurationSec}s | ` +
+      `cache_read=${cacheReadTokens} cache_write=${cacheCreationTokens} ` +
+      `regular_input=${regularInputTokens} output=${outputTokens} ` +
+      `cache_hit_rate=${cacheHitRate}% finish=${finishReason || "stop"}`
+    );
 
     if (!content || content.trim().length === 0) {
       console.error("ask-astrology error: Empty content from stream");
