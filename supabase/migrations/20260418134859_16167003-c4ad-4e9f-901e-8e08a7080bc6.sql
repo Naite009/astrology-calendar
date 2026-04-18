@@ -1,0 +1,1 @@
+UPDATE public.ask_jobs SET user_id = '3e9acc54-1a54-4150-b3c1-c578bda91fb7' WHERE id = 'd4834731-cf5e-43d5-a069-603988e67c50' AND user_id IS NULL;
