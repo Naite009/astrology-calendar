@@ -45,11 +45,18 @@ interface SubmitArgs {
  * Submit a new Ask job. Returns the jobId (already persisted to localStorage).
  */
 export async function submitAskJob(args: SubmitArgs): Promise<string> {
+  // CRITICAL: Use the user's session JWT (not the publishable key) so the
+  // edge function can resolve auth.uid() and stamp the job's user_id.
+  // Without this, jobs are created with user_id=NULL and RLS later blocks
+  // the authenticated client from reading them — UI gets stuck on "Queued".
+  const { data: { session } } = await supabase.auth.getSession();
+  const bearer = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${bearer}`,
     },
     body: JSON.stringify(args),
   });
