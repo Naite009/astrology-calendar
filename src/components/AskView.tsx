@@ -1232,59 +1232,29 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
+
+      // Async job (same path as handleSubmitDirect)
+      const job = await runAskJob(
+        {
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
-        }),
-        signal: controller.signal,
-      });
+          chartId: chartIdForRequest,
+        },
+        {
+          signal: controller.signal,
+          onProgress: (status) => console.log(`[AskView regen] Job status: ${status}`),
+        },
+      );
 
-      if (resp.status === 429) { toast.error("Rate limit exceeded."); setIsLoading(false); return; }
-      if (resp.status === 402) { toast.error("AI credits exhausted."); setIsLoading(false); return; }
-      if (!resp.ok || !resp.body) throw new Error("Failed to get response");
-
-      // Read SSE stream (keepalive comments + final `event: result` payload)
-      const contentType = resp.headers.get("content-type") || "";
-      let data: any = null;
-
-      if (contentType.includes("text/event-stream")) {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let resultPayload: string | null = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-
-          for (const ev of events) {
-            const lines = ev.split("\n");
-            const isResultEvent = lines.some(l => l.trim() === "event: result");
-            if (!isResultEvent) continue;
-            const dataLine = lines.find(l => l.startsWith("data: "));
-            if (dataLine) resultPayload = dataLine.slice(6);
-          }
-        }
-
-        if (!resultPayload) throw new Error("Stream ended without result");
-        data = JSON.parse(resultPayload);
-      } else {
-        data = await resp.json();
+      if (job.status === "failed") {
+        toast.error(job.error_message || "Reading failed. Please try again.");
+        setIsLoading(false);
+        return;
       }
 
+      const data: any = job.result || {};
       if (data.error) { toast.error(data.error); setIsLoading(false); return; }
 
       let assistantEntry: ChatEntry;
