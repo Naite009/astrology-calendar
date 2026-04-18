@@ -359,7 +359,18 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       y += 6;
 
       for (const w of safeWindows) {
-        ensureSpace(10);
+        // Pre-measure the entire card (label + all wrapped description lines)
+        // and reserve space for it as a single unit. Without this, the label
+        // can render at the bottom of a page and the description gets pushed
+        // to the next page — producing what looks like a "blank card" with
+        // only a date range and no body text. This was the actual cause of
+        // the "Feb 2 to Oct 18, 2027" empty-card bug, NOT empty data.
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        const dLines = pdf.splitTextToSize(w.description, CONTENT_W - 6);
+        const cardHeight = 5 /* label */ + dLines.length * 5 + 3 /* trailing gap */;
+        ensureSpace(cardHeight);
+
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
         pdf.setTextColor(...COLORS.accent);
@@ -367,9 +378,7 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
         y += 5;
         pdf.setFont("helvetica", "normal");
         pdf.setTextColor(...COLORS.body);
-        const dLines = pdf.splitTextToSize(w.description, CONTENT_W - 6);
         for (const dl of dLines) {
-          ensureSpace(6);
           pdf.text(dl, MARGIN + 6, y);
           y += 5;
         }
