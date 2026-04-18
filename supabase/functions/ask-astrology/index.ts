@@ -1,10 +1,20 @@
 // Using built-in Deno.serve (no external std import needed)
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Service-role client used by the background worker to update job rows
+// without being blocked by RLS (the row's user_id is set on insert, so
+// the user's own SELECT policy still controls who can read it).
+const getServiceClient = () => createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  { auth: { persistSession: false, autoRefreshToken: false } },
+);
 
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
