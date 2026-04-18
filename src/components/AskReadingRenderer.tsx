@@ -882,16 +882,16 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
 
   // Available regions from data
   const regions = useMemo(() => {
-    const r = new Set(section.cities.map(c => c.region).filter(Boolean) as string[]);
+    const r = new Set(normalizedCities.map(c => c.region).filter(Boolean) as string[]);
     return ["All", ...Array.from(r).sort()];
-  }, [section.cities]);
+  }, [normalizedCities]);
 
   // Available tags from data
   const availableTags = useMemo(() => {
     const t = new Set<string>();
-    section.cities.forEach(c => c.tags?.forEach(tag => t.add(tag)));
+    normalizedCities.forEach(c => c.tags?.forEach(tag => t.add(tag)));
     return ALL_TAGS.filter(tag => t.has(tag));
-  }, [section.cities]);
+  }, [normalizedCities]);
 
   const toggleTag = useCallback((tag: string) => {
     setSelectedTags(prev => {
