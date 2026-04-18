@@ -18,6 +18,7 @@ import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
+import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId } from "@/lib/askJobClient";
 import {
   Popover,
   PopoverContent,
@@ -1091,68 +1092,33 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
+
+      // Async job: submit returns immediately with jobId, then we poll the
+      // ask_jobs row. Survives tab-switch, HMR reload, and full page reload
+      // because the jobId is persisted to localStorage in submitAskJob.
+      const job = await runAskJob(
+        {
           messages: apiMessages,
           chartContext,
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
-        }),
-        signal: controller.signal,
-      });
+          chartId: chartIdForRequest,
+        },
+        {
+          signal: controller.signal,
+          onProgress: (status) => {
+            console.log(`[AskView] Job status: ${status}`);
+          },
+        },
+      );
 
-      if (resp.status === 429) {
-        toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      if (job.status === "failed") {
+        toast.error(job.error_message || "Reading failed. Please try again.");
         setIsLoading(false);
         return;
       }
-      if (resp.status === 402) {
-        toast.error("AI credits exhausted. Please add credits to continue.");
-        setIsLoading(false);
-        return;
-      }
-      if (!resp.ok || !resp.body) throw new Error("Failed to get response");
 
-      // Read SSE stream: keepalive comments arrive while AI generates,
-      // final payload arrives as `event: result\ndata: {...}\n\n`.
-      const contentType = resp.headers.get("content-type") || "";
-      let data: any = null;
-
-      if (contentType.includes("text/event-stream")) {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let resultPayload: string | null = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-
-          for (const ev of events) {
-            const lines = ev.split("\n");
-            const isResultEvent = lines.some(l => l.trim() === "event: result");
-            if (!isResultEvent) continue;
-            const dataLine = lines.find(l => l.startsWith("data: "));
-            if (dataLine) resultPayload = dataLine.slice(6);
-          }
-        }
-
-        if (!resultPayload) throw new Error("Stream ended without result");
-        data = JSON.parse(resultPayload);
-      } else {
-        // Fallback: legacy JSON response
-        data = await resp.json();
-      }
+      const data: any = job.result || {};
 
       if (data.error) {
         toast.error(data.error);
