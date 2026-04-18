@@ -234,13 +234,41 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
 
 function TimingCard({ section }: { section: TimingSection }) {
   // Bug 1 — defensive client-side guard: skip any transit entry that has no
-  // interpretation body OR no natal target. A blank entry is worse than a
-  // missing one. The data builder already drops these, but keep this so a
-  // malformed AI-merged entry can never render as an empty header.
+  // *meaningful* interpretation body OR no natal target. A blank entry is
+  // worse than a missing one. We normalize whitespace (incl. non-breaking
+  // spaces, zero-width chars) and strip lone punctuation/dashes/ellipses so
+  // strings like "—", "...", " " never render as a header-only card.
+  const isEffectivelyEmpty = (raw?: string | null) => {
+    if (!raw) return true;
+    // Normalize NBSP, zero-width spaces, and collapse whitespace
+    const cleaned = raw
+      .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (cleaned.length === 0) return true;
+    // Strip lone punctuation/dashes/ellipses — if nothing alphanumeric remains, treat as empty
+    const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
+    if (stripped.length < 3) return true;
+    // Common filler placeholders
+    const lower = cleaned.toLowerCase();
+    const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "..."];
+    if (fillers.includes(lower)) return true;
+    return false;
+  };
+
   const validTransits = (section.transits ?? []).filter((t) => {
-    const hasBody = !!t.interpretation && t.interpretation.trim().length > 0;
+    const hasBody = !isEffectivelyEmpty(t.interpretation);
     const hasNatalTarget = !!t.natal_point && t.natal_point.trim().length > 0;
-    return hasBody && hasNatalTarget;
+    if (!hasBody || !hasNatalTarget) {
+      console.warn("[TimingCard] Suppressing empty transit entry", {
+        planet: t.planet,
+        natal_point: t.natal_point,
+        date_range: t.date_range,
+        interpretation: t.interpretation,
+      });
+      return false;
+    }
+    return true;
   });
 
   // Group multi-pass transits (same planet + aspect + natal_point) so users see the whole cycle as one chapter
