@@ -8,6 +8,7 @@ import {
   validateEntries,
   assertTimingSectionIsClean,
 } from './timingEntryValidator';
+import { dedupWindows } from './timingWindowDedup';
 
 const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -1398,51 +1399,21 @@ export function buildDeterministicTimingData(
   }
 
   // ───────────────────────────────────────────────────────────────────────
-  // RULE #2 — NORMALIZED DEDUPLICATION
-  // Compare the underlying date range (ISO start/end) when available, falling
-  // back to a normalized label string (lowercase, comma-stripped, month
-  // abbreviations standardized) so two windows representing the same period
-  // always merge regardless of formatting differences.
+  // RULE #2 — NORMALIZED DEDUPLICATION (shared helper)
+  // Delegates to `dedupWindows` from `./timingWindowDedup` — the single
+  // source of truth used identically by the edge function sanitizer and
+  // the pre-export validator. Uses ISO date-range when available, falling
+  // back to the normalized label key.
   // ───────────────────────────────────────────────────────────────────────
-  const monthMap: Record<string, string> = {
-    january: 'jan', february: 'feb', march: 'mar', april: 'apr',
-    may: 'may', june: 'jun', july: 'jul', august: 'aug',
-    september: 'sep', sept: 'sep', october: 'oct', november: 'nov', december: 'dec',
-  };
-  const normalizeLabelForKey = (label: string): string => {
-    let s = label.toLowerCase().replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
-    s = s.replace(/\b(january|february|march|april|may|june|july|august|september|sept|october|november|december)\b/g,
-      (m) => monthMap[m] ?? m);
-    s = s.replace(/\bto\b/g, '-').replace(/\s*-\s*/g, '-').replace(/\s+/g, ' ').trim();
-    return s;
-  };
-  const dateRangeKey = (dr: unknown): string | null => {
-    if (!dr || typeof dr !== 'object') return null;
-    const obj = dr as { start?: unknown; end?: unknown };
-    const start = typeof obj.start === 'string' ? obj.start.slice(0, 10) : '';
-    const end = typeof obj.end === 'string' ? obj.end.slice(0, 10) : '';
-    if (!start || !end) return null;
-    return `${start}__${end}`;
-  };
-
-  const mergedWindowsMap = new Map<string, { label: string; description: string; mergedCount: number }>();
-  for (const entry of windowEntries) {
-    const key = dateRangeKey(entry.dateRange) ?? `label:${normalizeLabelForKey(entry.label)}`;
-    const existing = mergedWindowsMap.get(key);
-    if (existing) {
-      existing.description = `${existing.description}\n\n${entry.description}`;
-      existing.mergedCount += 1;
+  const dedupResult = dedupWindows(windowEntries);
+  for (const stat of dedupResult.mergeStats) {
+    if (stat.mergedCount > 1) {
       console.info('[buildDeterministicTimingData] Merged duplicate window', {
-        key, label: entry.label, mergedCount: existing.mergedCount,
+        key: stat.key, label: stat.label, mergedCount: stat.mergedCount,
       });
-    } else {
-      mergedWindowsMap.set(key, { label: entry.label, description: entry.description, mergedCount: 1 });
     }
   }
-  const dedupedWindowEntries = Array.from(mergedWindowsMap.values()).map(({ label, description }) => ({
-    label,
-    description,
-  }));
+  const dedupedWindowEntries = dedupResult.windows;
 
   // ───────────────────────────────────────────────────────────────────────
   // RULE #3 — FRAGMENT DETECTION
