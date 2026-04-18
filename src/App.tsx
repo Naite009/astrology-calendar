@@ -10,6 +10,12 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import { startSessionKeepAlive } from "./lib/sessionKeepAlive";
+
+// Boot the forever-retrying refresh + IndexedDB session backup as early as
+// possible. Per `.lovable/memory/preferences/never-sign-out.md`, this module
+// will NEVER call signOut — it only retries refreshes and restores sessions.
+startSessionKeepAlive();
 
 const queryClient = new QueryClient();
 
