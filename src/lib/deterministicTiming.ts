@@ -48,6 +48,23 @@ const NATAL_THEME_MAP: Record<string, string> = {
   Mercury: 'the way you talk, listen, and make decisions with a partner — the conversations you keep replaying',
   Venus: 'attraction, closeness, affection, what you value in love, and how easy it is to receive it',
   Mars: 'desire, sex, conflict, and how directly you go after — or argue for — what you want from someone',
+  Jupiter: 'where you let yourself believe a relationship can grow — your appetite for more, and the risk of overpromising or overlooking real flags',
+  Saturn: 'how seriously you take commitment — the rules you have set for love, the walls you have built, and what you are actually willing to build with someone',
+  Uranus: 'your need for space, freedom, and surprise inside intimacy — the part of you that pulls away the moment things get too defined',
+  Neptune: 'your tendency to idealize a partner, fall in love with potential, and lose your own outline inside someone else',
+  Pluto: 'the deepest power dynamics in your love life — control, intensity, jealousy, fear of being known, and the patterns that repeat until they are seen',
+  Chiron: 'the old wound that gets touched in close relationships — the place where love lands on something already tender',
+  NorthNode: 'the kind of partnership you are growing toward — the relational experience your life is asking you to step into',
+  'North Node': 'the kind of partnership you are growing toward — the relational experience your life is asking you to step into',
+  SouthNode: 'the relational pattern you keep defaulting to — comfortable, familiar, and quietly outgrown',
+  'South Node': 'the relational pattern you keep defaulting to — comfortable, familiar, and quietly outgrown',
+  Ascendant: 'the version of you the other person meets first — the front door of your personality in any relationship',
+  ASC: 'the version of you the other person meets first — the front door of your personality in any relationship',
+  Descendant: 'the kind of partner you keep attracting and the qualities you keep meeting through other people',
+  DSC: 'the kind of partner you keep attracting and the qualities you keep meeting through other people',
+  Midheaven: 'how your public life and direction interact with your relationship — what you are building out in the world that a partner has to make room for',
+  MC: 'how your public life and direction interact with your relationship — what you are building out in the world that a partner has to make room for',
+  IC: 'your private inner life and what you need at home — the part of you only the closest person ever sees',
 };
 
 const NATAL_THEME_MAP_RELOCATION: Record<string, string> = {
