@@ -94,9 +94,8 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
         }
       });
 
-      // ── Rule 2 & 3: window required fields + dedup ─────────────────
+      // ── Rule 2 & 3: window required fields + dedup (shared helper) ─
       const windows = Array.isArray(s.windows) ? s.windows : [];
-      const merged = new Map<string, { label: string; description: string; mergedCount: number }>();
 
       // Diagnostic: log every raw window label + computed dedup key BEFORE merging.
       // eslint-disable-next-line no-console
@@ -109,6 +108,9 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
         }),
       );
 
+      // First pass — record validation failures for missing/empty fields.
+      // (Dedup happens in a second pass via the shared helper.)
+      const cleanForDedup: Array<{ label: string; description: string; dateRange?: unknown }> = [];
       windows.forEach((entry, entryIndex) => {
         if (!entry || typeof entry !== 'object') {
           failures.push({
@@ -133,27 +135,25 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
           });
         }
         if (!labelOk || !descOk) return;
-
-        const label = (obj.label as string).trim();
-        const description = (obj.description as string).trim();
-        const key = normalizeLabelKey(label);
-        const existing = merged.get(key);
-        if (existing) {
-          existing.description = `${existing.description}\n\n${description}`;
-          existing.mergedCount += 1;
-          // eslint-disable-next-line no-console
-          console.info(
-            `[preExportValidator] ✅ MERGED duplicate window. Label="${label}" key="${key}" (reading ${readingIndex}, section ${sectionIndex}); merged count now: ${existing.mergedCount}`,
-          );
-        } else {
-          merged.set(key, { label, description, mergedCount: 1 });
-        }
+        cleanForDedup.push({
+          label: (obj.label as string).trim(),
+          description: (obj.description as string).trim(),
+          dateRange: obj.dateRange ?? obj.date_range,
+        });
       });
 
-      const finalWindows = Array.from(merged.values()).map(({ label, description }) => ({
-        label,
-        description,
-      }));
+      // Single source of truth for dedup — same helper used by the
+      // deterministic builder and the edge function sanitizer.
+      const dedupResult = dedupWindows(cleanForDedup);
+      for (const stat of dedupResult.mergeStats) {
+        if (stat.mergedCount > 1) {
+          // eslint-disable-next-line no-console
+          console.info(
+            `[preExportValidator] ✅ MERGED duplicate window. Label="${stat.label}" key="${stat.key}" (reading ${readingIndex}, section ${sectionIndex}); merged count: ${stat.mergedCount}`,
+          );
+        }
+      }
+      const finalWindows = dedupResult.windows;
 
       // Diagnostic: log final deduped windows that will actually be exported.
       // eslint-disable-next-line no-console
