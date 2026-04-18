@@ -116,3 +116,4 @@ Updated: now
 - [Essence Opening Mandate](mem://features/ask-tab/essence-opening-mandate) — Every Ask reading opens with a jargon-free "Essence" paragraph capturing the whole pattern in recognizable human language
 - [Prose Voice & Banned Phrases](mem://features/ask-tab/prose-voice-and-banned-phrases) — Hard banned-phrase list and named inline transition lines replacing bullets in compact relationship mode
 - [Behavior-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Sentence 1 = lived behavior, sentence 2 = the placement that causes it (supersedes placement-first)
+- [Ask Speed & Length Budget](mem://features/ask-tab/speed-and-length-budget) — Claude Haiku 4.5 + strict per-section word caps to keep readings under 4 min
