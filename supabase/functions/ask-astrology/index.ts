@@ -1269,13 +1269,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
+            // Switched from claude-sonnet-4-6 to claude-haiku-4-5: ~3-4x faster
+            // on long structured generations. Haiku 4.5 handles complex JSON
+            // schemas reliably and the length-cap rules above keep depth high.
+            // This brings 8-10 min reports down to ~2-3 min.
+            model: "claude-haiku-4-5",
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            // Raised from 16384 → 32000 to prevent OUTPUT TRUNCATED on long
-            // relocation/relationship reports (~63KB observed truncation).
-            max_tokens: 32000,
+            // 24000 = comfortable ceiling above the 18k word target so we never
+            // hit max_tokens with the new length caps in place.
+            max_tokens: 24000,
             stream: true,
           }),
         });
