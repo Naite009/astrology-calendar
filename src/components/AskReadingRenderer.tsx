@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
 
 // Types for structured reading
 export interface PlacementRow {
@@ -866,9 +867,18 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [regionFilter, setRegionFilter] = useState("All");
 
+  // Run every city through the shared normalizer so that a missing AI
+  // field (theme, supports, explanation, lines, ...) can never produce a
+  // blank slot in the card or table. Same helper feeds the PDF exporter,
+  // so on-screen and printed output stay in sync.
+  const normalizedCities = useMemo<CityEntry[]>(
+    () => (section.cities ?? []).map((c) => normalizeCity(c) as CityEntry),
+    [section.cities],
+  );
+
   const isCautionSection = /caution/i.test(section.title);
-  const hasSubScores = section.cities.some(c => c.home_score != null);
-  const sectionMode = section.cities[0]?.mode || "Astrology-Based";
+  const hasSubScores = normalizedCities.some(c => c.home_score != null);
+  const sectionMode = normalizedCities[0]?.mode || "Astrology-Based";
 
   // Available regions from data
   const regions = useMemo(() => {
