@@ -267,28 +267,8 @@ function NarrativeCard({ section }: { section: NarrativeSection }) {
 
 function TimingCard({ section }: { section: TimingSection }) {
   // Bug 1 — defensive client-side guard: skip any transit entry that has no
-  // *meaningful* interpretation body OR no natal target. A blank entry is
-  // worse than a missing one. We normalize whitespace (incl. non-breaking
-  // spaces, zero-width chars) and strip lone punctuation/dashes/ellipses so
-  // strings like "—", "...", " " never render as a header-only card.
-  const isEffectivelyEmpty = (raw?: string | null) => {
-    if (!raw) return true;
-    // Normalize NBSP, zero-width spaces, and collapse whitespace
-    const cleaned = raw
-      .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (cleaned.length === 0) return true;
-    // Strip lone punctuation/dashes/ellipses — if nothing alphanumeric remains, treat as empty
-    const stripped = cleaned.replace(/[\s\-–—•·.,:;…"'`*_()[\]{}]/g, "");
-    if (stripped.length < 3) return true;
-    // Common filler placeholders
-    const lower = cleaned.toLowerCase();
-    const fillers = ["n/a", "tbd", "todo", "placeholder", "—", "..."];
-    if (fillers.includes(lower)) return true;
-    return false;
-  };
-
+  // *meaningful* interpretation body OR no natal target. Uses the shared
+  // isEffectivelyEmpty util defined at module scope.
   const validTransits = (section.transits ?? []).filter((t) => {
     const hasBody = !isEffectivelyEmpty(t.interpretation);
     const hasNatalTarget = !!t.natal_point && t.natal_point.trim().length > 0;
@@ -304,12 +284,31 @@ function TimingCard({ section }: { section: TimingSection }) {
     return true;
   });
 
+  // Same guard for the "Window Overview" cards at the bottom — a label
+  // without a real description is just a dangling header.
+  const validWindows = (section.windows ?? []).filter((w) => {
+    const hasLabel = !!w.label && w.label.trim().length > 0;
+    const hasDesc = !isEffectivelyEmpty(w.description);
+    if (!hasLabel || !hasDesc) {
+      console.warn("[TimingCard] Suppressing empty window", { label: w.label, description: w.description });
+      return false;
+    }
+    return true;
+  });
+
   // Group multi-pass transits (same planet + aspect + natal_point) so users see the whole cycle as one chapter
   const grouped = validTransits.reduce<Record<string, TimingTransit[]>>((acc, t) => {
     const key = `${t.planet}|${t.aspect ?? ""}|${t.natal_point ?? t.position}`;
     (acc[key] ||= []).push(t);
     return acc;
   }, {});
+
+  // If both transits and windows are empty, suppress the entire timing card
+  if (Object.keys(grouped).length === 0 && validWindows.length === 0) {
+    console.warn("[TimingCard] Suppressing empty timing section", { title: section.title });
+    return null;
+  }
+
 
   return (
     <Card className="border-border">
