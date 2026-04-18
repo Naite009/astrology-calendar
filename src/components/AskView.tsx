@@ -1247,6 +1247,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     setEntries(trimmedEntries);
     setIsLoading(true);
+    window.__askInFlight = true;
 
     try {
       const chartForRequest = selectedChart;
@@ -1353,6 +1354,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
     } catch (error: any) {
       if (error?.name === "AbortError") {
+        window.__askInFlight = false;
         return;
       }
       console.error("Regenerate error:", error);
@@ -1360,6 +1362,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      window.__askInFlight = false;
     }
   };
 
