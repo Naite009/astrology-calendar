@@ -1371,16 +1371,39 @@ export function buildDeterministicTimingData(
     };
   }
 
+  // Build windows array, dropping any whose description came back empty (the
+  // hard guards inside buildTimingWindowDescription return '' for malformed inputs).
+  const windowEntries: { label: string; description: string }[] = [];
+  for (const w of includedWindows) {
+    const label = humanizeDateRange(w.dateRange);
+    const description = buildTimingWindowDescription(w, readingType);
+    if (!label || !label.trim() || !description || !description.trim()) {
+      console.warn('[buildDeterministicTimingData] DROPPING window with empty label/description', {
+        transitPlanet: w.transitPlanet, aspect: w.aspect, natalPlanet: w.natalPlanet,
+        dateRange: w.dateRange, label, descriptionLength: description?.length ?? 0,
+      });
+      continue;
+    }
+    windowEntries.push({ label, description });
+  }
+
+  // Diagnostic: log every window that survives so we can trace the "Feb 1 to Oct 17, 2027" bug
+  console.info('[buildDeterministicTimingData] Final windows array', {
+    count: windowEntries.length,
+    windows: windowEntries.map((w) => ({
+      label: w.label,
+      descLen: w.description.length,
+      descPreview: w.description.slice(0, 80),
+    })),
+  });
+
   return {
     context: formatFutureTransitsContext(windows),
     section: {
       type: 'timing_section',
       title: 'Timing Windows',
       transits: limitedTransits,
-      windows: includedWindows.map((window) => ({
-        label: humanizeDateRange(window.dateRange),
-        description: buildTimingWindowDescription(window, readingType),
-      })),
+      windows: windowEntries,
     },
   };
 }
