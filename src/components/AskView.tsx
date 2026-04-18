@@ -242,12 +242,18 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const [threadIds, setThreadIds] = useState<Record<string, string>>(threadIdsRef.current);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // Track when generation started + latest job status so we can show an
+  // elapsed-time counter and stage messages during the 4-7 min wait.
+  const [loadingStartedAt, setLoadingStartedAt] = useState<number | null>(null);
+  const [jobStatus, setJobStatus] = useState<"queued" | "processing" | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const handleStopGeneration = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       toast.info("Generation stopped.");
     }
   };
