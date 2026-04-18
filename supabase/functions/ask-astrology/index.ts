@@ -1232,17 +1232,6 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         : null,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
       sanitizedChartContext ? `--- CHART DATA ---\n${sanitizedChartContext}` : null,
-      // HARD LENGTH CAP — prevents 60KB+ outputs that hit max_tokens and take 8-10 min.
-      // Total target: under 22,000 output tokens (~88KB) so generation finishes in ~3-4 min
-      // and never truncates. Density over volume.
-      `ABSOLUTE LENGTH CAPS (NON-NEGOTIABLE — apply to EVERY reading type):
-- Each narrative_section "body" field: MAXIMUM 180 words. Aim for 120-150. Tight, behavioral, no filler.
-- Each city_comparison entry "summary": MAXIMUM 60 words.
-- Each placement_table row "interpretation": MAXIMUM 25 words.
-- summary_box "key_takeaway": MAXIMUM 100 words.
-- Total response across all sections: TARGET under 18,000 words. If you feel yourself padding or repeating a concept already named earlier, STOP and move to the next section.
-- NEVER restate the same insight in two sections. Cross-reference with a brief phrase ("see Relationship Pattern above") instead of re-explaining.
-- Density over length. A reader recognizing themselves in 150 tight words beats 400 words of generic elaboration.`,
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -1269,17 +1258,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            // Switched from claude-sonnet-4-6 to claude-haiku-4-5: ~3-4x faster
-            // on long structured generations. Haiku 4.5 handles complex JSON
-            // schemas reliably and the length-cap rules above keep depth high.
-            // This brings 8-10 min reports down to ~2-3 min.
-            model: "claude-haiku-4-5",
+            // Sonnet 4.6 is non-negotiable for interpretation quality.
+            // Streaming (stream: true) keeps the Anthropic <-> edge function
+            // connection alive indefinitely — no timeout while tokens flow.
+            // The async job pattern means the client polls the DB, so even
+            // 8-10 min Sonnet generations complete safely in the background.
+            model: "claude-sonnet-4-6",
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            // 24000 = comfortable ceiling above the 18k word target so we never
-            // hit max_tokens with the new length caps in place.
-            max_tokens: 24000,
+            // 32000 to fully accommodate long relocation/relationship reports
+            // without hitting max_tokens truncation.
+            max_tokens: 32000,
             stream: true,
           }),
         });
