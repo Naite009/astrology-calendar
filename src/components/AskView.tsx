@@ -307,6 +307,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("processing"); // already in flight from a prior session
     window.__askInFlight = true;
     console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
     toast.info("Resuming your previous reading…");
@@ -318,7 +320,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     pollAskJob(jobId, {
       chartId: activeChartId,
       signal: controller.signal,
-      onProgress: (status) => console.log(`[AskView resume] Job status: ${status}`),
+      onProgress: (status) => setJobStatus(status === "completed" || status === "failed" ? null : status),
     })
       .then((job) => {
         if (cancelled) return;
@@ -371,6 +373,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       .finally(() => {
         if (cancelled) return;
         setIsLoading(false);
+        setLoadingStartedAt(null);
+        setJobStatus(null);
         window.__askInFlight = false;
         abortControllerRef.current = null;
       });
