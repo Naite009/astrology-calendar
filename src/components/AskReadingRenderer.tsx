@@ -418,11 +418,22 @@ function TimingCard({ section }: { section: TimingSection }) {
 }
 
 function SummaryBox({ section }: { section: SummaryBoxSection }) {
+  const validItems = (section.items ?? []).filter((item) => {
+    if (isEffectivelyEmpty(item.value)) {
+      console.warn("[SummaryBox] Suppressing empty item", { label: item.label, value: item.value });
+      return false;
+    }
+    return true;
+  });
+  if (validItems.length === 0) {
+    console.warn("[SummaryBox] Suppressing empty summary box", { title: section.title });
+    return null;
+  }
   return (
     <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
       <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
       <div className="space-y-2">
-        {section.items.map((item, i) => (
+        {validItems.map((item, i) => (
           <div key={i} className="flex gap-3">
             <span className="text-sm font-bold text-primary shrink-0 min-w-[60px]">{item.label}</span>
             <span className="text-sm text-foreground">{item.value}</span>
