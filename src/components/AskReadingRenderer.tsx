@@ -911,7 +911,7 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
   }, [sortBy]);
 
   const filteredCities = useMemo(() => {
-    let result = section.cities;
+    let result = normalizedCities;
 
     // Search
     if (searchQuery.trim()) {
@@ -937,7 +937,7 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
     }
 
     return sortCities(result, sortBy, sortDir);
-  }, [section.cities, searchQuery, regionFilter, selectedTags, sortBy, sortDir]);
+  }, [normalizedCities, searchQuery, regionFilter, selectedTags, sortBy, sortDir]);
 
   return (
     <Card className={`border-border ${isCautionSection ? "border-destructive/20" : ""}`}>
