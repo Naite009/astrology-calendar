@@ -116,3 +116,4 @@ Updated: now
 - [Essence Opening Mandate](mem://features/ask-tab/essence-opening-mandate) — Every Ask reading opens with a jargon-free "Essence" paragraph capturing the whole pattern in recognizable human language
 - [Prose Voice & Banned Phrases](mem://features/ask-tab/prose-voice-and-banned-phrases) — Hard banned-phrase list and named inline transition lines replacing bullets in compact relationship mode
 - [Behavior-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Sentence 1 = lived behavior, sentence 2 = the placement that causes it (supersedes placement-first)
+- [Anthropic Prompt Caching](mem://features/ask-tab/anthropic-prompt-caching) — 2-block ephemeral cache (SYSTEM_PROMPT + chart context) cuts repeat-question latency ~80%
