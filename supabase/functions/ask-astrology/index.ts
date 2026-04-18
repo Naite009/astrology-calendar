@@ -1439,6 +1439,20 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       return;
     }
 
+    // Log cache + token telemetry. cache_hit_rate near 0% on first call
+    // (cache write); should be 80-95% on subsequent calls within 5 min TTL.
+    const aiCallDurationSec = Math.round((Date.now() - aiCallStartedAt) / 1000);
+    const totalInput = cacheReadTokens + cacheCreationTokens + regularInputTokens;
+    const cacheHitRate = totalInput > 0
+      ? Math.round((cacheReadTokens / totalInput) * 100)
+      : 0;
+    console.log(
+      `[ask-astrology] AI call done in ${aiCallDurationSec}s | ` +
+      `cache_read=${cacheReadTokens} cache_write=${cacheCreationTokens} ` +
+      `regular_input=${regularInputTokens} output=${outputTokens} ` +
+      `cache_hit_rate=${cacheHitRate}% finish=${finishReason || "stop"}`
+    );
+
     if (!content || content.trim().length === 0) {
       console.error("ask-astrology error: Empty content from stream");
       await updateJob({
