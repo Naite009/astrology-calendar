@@ -1377,40 +1377,63 @@ export function buildDeterministicTimingData(
     };
   }
 
-  // Build windows array, dropping any whose description came back empty (the
-  // hard guards inside buildTimingWindowDescription return '' for malformed inputs).
-  const windowEntries: { label: string; description: string }[] = [];
+  // Build windows array, dropping any whose label or description is missing
+  // or empty after trimming. This is rule #1 — incomplete entries never enter
+  // the array in the first place.
+  type RawWindowEntry = { label: string; description: string; dateRange: unknown };
+  const windowEntries: RawWindowEntry[] = [];
   for (const w of includedWindows) {
-    const label = humanizeDateRange(w.dateRange);
-    const description = buildTimingWindowDescription(w, readingType);
-    if (!label || !label.trim() || !description || !description.trim()) {
+    const rawLabel = humanizeDateRange(w.dateRange);
+    const rawDescription = buildTimingWindowDescription(w, readingType);
+    const label = typeof rawLabel === 'string' ? rawLabel.trim() : '';
+    const description = typeof rawDescription === 'string' ? rawDescription.trim() : '';
+    if (!label || !description) {
       console.warn('[buildDeterministicTimingData] DROPPING window with empty label/description', {
         transitPlanet: w.transitPlanet, aspect: w.aspect, natalPlanet: w.natalPlanet,
-        dateRange: w.dateRange, label, descriptionLength: description?.length ?? 0,
+        dateRange: w.dateRange, label, descriptionLength: description.length,
       });
       continue;
     }
-    windowEntries.push({ label, description });
+    windowEntries.push({ label, description, dateRange: w.dateRange });
   }
 
   // ───────────────────────────────────────────────────────────────────────
-  // DEDUPLICATION BY LABEL
-  // When two transits share the same date range (e.g. Neptune square Moon
-  // and Neptune sextile Mars both spanning Feb 1 to Oct 17, 2027), the
-  // downstream renderer (Replit PDF) drops or corrupts the duplicate label,
-  // producing a blank card. Merge same-label windows into a single entry
-  // with descriptions joined by a blank line.
+  // RULE #2 — NORMALIZED DEDUPLICATION
+  // Compare the underlying date range (ISO start/end) when available, falling
+  // back to a normalized label string (lowercase, comma-stripped, month
+  // abbreviations standardized) so two windows representing the same period
+  // always merge regardless of formatting differences.
   // ───────────────────────────────────────────────────────────────────────
+  const monthMap: Record<string, string> = {
+    january: 'jan', february: 'feb', march: 'mar', april: 'apr',
+    may: 'may', june: 'jun', july: 'jul', august: 'aug',
+    september: 'sep', sept: 'sep', october: 'oct', november: 'nov', december: 'dec',
+  };
+  const normalizeLabelForKey = (label: string): string => {
+    let s = label.toLowerCase().replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
+    s = s.replace(/\b(january|february|march|april|may|june|july|august|september|sept|october|november|december)\b/g,
+      (m) => monthMap[m] ?? m);
+    s = s.replace(/\bto\b/g, '-').replace(/\s*-\s*/g, '-').replace(/\s+/g, ' ').trim();
+    return s;
+  };
+  const dateRangeKey = (dr: unknown): string | null => {
+    if (!dr || typeof dr !== 'object') return null;
+    const obj = dr as { start?: unknown; end?: unknown };
+    const start = typeof obj.start === 'string' ? obj.start.slice(0, 10) : '';
+    const end = typeof obj.end === 'string' ? obj.end.slice(0, 10) : '';
+    if (!start || !end) return null;
+    return `${start}__${end}`;
+  };
+
   const mergedWindowsMap = new Map<string, { label: string; description: string; mergedCount: number }>();
   for (const entry of windowEntries) {
-    const key = entry.label.trim().toLowerCase();
+    const key = dateRangeKey(entry.dateRange) ?? `label:${normalizeLabelForKey(entry.label)}`;
     const existing = mergedWindowsMap.get(key);
     if (existing) {
       existing.description = `${existing.description}\n\n${entry.description}`;
       existing.mergedCount += 1;
-      console.info('[buildDeterministicTimingData] Merged duplicate-label window', {
-        label: entry.label,
-        mergedCount: existing.mergedCount,
+      console.info('[buildDeterministicTimingData] Merged duplicate window', {
+        key, label: entry.label, mergedCount: existing.mergedCount,
       });
     } else {
       mergedWindowsMap.set(key, { label: entry.label, description: entry.description, mergedCount: 1 });
@@ -1420,6 +1443,20 @@ export function buildDeterministicTimingData(
     label,
     description,
   }));
+
+  // ───────────────────────────────────────────────────────────────────────
+  // RULE #3 — FRAGMENT DETECTION
+  // After dedup, log any window whose description is shorter than 20 chars.
+  // These usually indicate a partial generation failure that produced a
+  // fragment instead of real interpretive content.
+  // ───────────────────────────────────────────────────────────────────────
+  for (const w of dedupedWindowEntries) {
+    if (w.description.trim().length < 20) {
+      console.error('[buildDeterministicTimingData] SUSPICIOUSLY SHORT window description (<20 chars)', {
+        label: w.label, descriptionLength: w.description.trim().length, description: w.description,
+      });
+    }
+  }
 
   // Diagnostic: log every window that survives so we can trace blank-card bugs
   console.info('[buildDeterministicTimingData] Final windows array (post-dedup)', {
