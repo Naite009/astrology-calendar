@@ -1210,10 +1210,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             console.log(`[AskView] Job status: ${status}`);
             if (status === "queued" || status === "processing") {
               setJobStatus(status);
-              // When the worker actually starts, reset the timer so the
-              // displayed elapsed reflects real generation time, not the
-              // queue wait.
-              if (status === "processing") setLoadingStartedAt(Date.now());
+              // Do NOT reset loadingStartedAt here — the visible timer must
+              // reflect total wall-clock wait from submission so the user
+              // doesn't think the job restarted when it transitions from
+              // queued → processing.
             }
           },
         },
@@ -1365,7 +1365,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             console.log(`[AskView regen] Job status: ${status}`);
             if (status === "queued" || status === "processing") {
               setJobStatus(status);
-              if (status === "processing") setLoadingStartedAt(Date.now());
+              // Do NOT reset the timer on queued → processing; keep
+              // wall-clock elapsed honest from submission time.
             }
           },
         },
