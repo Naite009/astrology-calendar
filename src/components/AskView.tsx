@@ -1168,7 +1168,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
       console.error("Ask error:", error);
-      toast.error("Failed to get response. Please try again.");
+      const msg = String(error?.message || "");
+      if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
+      else toast.error("Failed to get response. Please try again.");
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
