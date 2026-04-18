@@ -16,6 +16,63 @@ const getServiceClient = () => createClient(
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
+// Best-effort repair for JSON truncated mid-string by max_tokens.
+// Closes any open string and balances open arrays/objects so the
+// partial reading is still usable instead of being thrown away.
+function repairTruncatedJson(input: string): any | null {
+  if (!input || typeof input !== "string") return null;
+  let s = input;
+  let inStr = false;
+  let escape = false;
+  const stack: string[] = [];
+  let lastSafeIdx = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\") { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") stack.push(c);
+    else if (c === "}" || c === "]") {
+      stack.pop();
+      if (stack.length >= 2 && stack[stack.length - 1] === "[") {
+        lastSafeIdx = i + 1;
+      }
+    }
+  }
+  if (lastSafeIdx > 0 && lastSafeIdx < s.length) {
+    s = s.substring(0, lastSafeIdx);
+  } else if (inStr) {
+    if (s.endsWith("\\")) s = s.slice(0, -1);
+    s = s + '"';
+  }
+  inStr = false; escape = false;
+  const stack2: string[] = [];
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\") { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") stack2.push(c);
+    else if (c === "}" || c === "]") stack2.pop();
+  }
+  if (inStr) {
+    if (s.endsWith("\\")) s = s.slice(0, -1);
+    s = s + '"';
+  }
+  s = s.replace(/,\s*$/, "");
+  while (stack2.length > 0) {
+    const opener = stack2.pop();
+    s += opener === "{" ? "}" : "]";
+  }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return value;
@@ -993,20 +1050,28 @@ Deno.serve(async (req) => {
     }
 
     // === SUBMIT JOB ===
-    // Resolve user from JWT (best-effort — anonymous fallback supported)
+    // Resolve user from JWT (best-effort — anonymous fallback supported).
+    // CRITICAL: use the SERVICE ROLE client to call auth.getUser(token) so
+    // it works regardless of which anon/publishable env var is set. If this
+    // returns null for an authenticated user, RLS will block them from
+    // reading their own job row → infinite empty polls.
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
       try {
-        const tmp = createClient(
-          Deno.env.get("SUPABASE_URL")!,
-          Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
-          { global: { headers: { Authorization: authHeader } } },
-        );
-        const { data: { user } } = await tmp.auth.getUser(token);
-        userId = user?.id ?? null;
-      } catch { /* ignore — anonymous fallback */ }
+        const svcAuth = getServiceClient();
+        const { data: userData, error: userErr } = await svcAuth.auth.getUser(token);
+        if (userErr) {
+          console.warn("[ask-astrology] auth.getUser error:", userErr.message);
+        }
+        userId = userData?.user?.id ?? null;
+        console.log(`[ask-astrology] Resolved user from JWT: ${userId ?? "ANON"}`);
+      } catch (e) {
+        console.warn("[ask-astrology] JWT decode failed, falling back to anon:", e instanceof Error ? e.message : e);
+      }
+    } else {
+      console.log("[ask-astrology] No Authorization header — anonymous request");
     }
 
     const latestUserMessage = Array.isArray(messages)
@@ -1197,7 +1262,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            max_tokens: 16384,
+            // Raised from 16384 → 32000 to prevent OUTPUT TRUNCATED on long
+            // relocation/relationship reports (~63KB observed truncation).
+            max_tokens: 32000,
             stream: true,
           }),
         });
@@ -1314,6 +1381,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
     // ===== POST-PROCESSING =====
     let parsedContent;
+    let wasTruncated = finishReason === "max_tokens" || finishReason === "length";
     try {
       // Strip any markdown code fences if present
       let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
@@ -1326,8 +1394,26 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           cleaned = cleaned.substring(firstBrace, lastBrace + 1);
         }
       }
-      
-      parsedContent = JSON.parse(cleaned);
+
+      try {
+        parsedContent = JSON.parse(cleaned);
+      } catch (firstErr) {
+        // TRUNCATION REPAIR: When max_tokens hits, the JSON ends mid-string.
+        // Try progressively shorter prefixes that close cleanly.
+        if (wasTruncated) {
+          console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
+          parsedContent = repairTruncatedJson(cleaned);
+          if (parsedContent) {
+            parsedContent._truncated = true;
+            parsedContent._truncation_notice = "This reading was very long and may be missing the final sections. Try regenerating if anything important looks cut off.";
+            console.log("[ask-astrology] JSON repair SUCCEEDED — preserved partial reading");
+          } else {
+            throw firstErr;
+          }
+        } else {
+          throw firstErr;
+        }
+      }
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
