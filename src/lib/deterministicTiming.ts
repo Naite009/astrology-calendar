@@ -1397,14 +1397,53 @@ export function buildDeterministicTimingData(
     })),
   });
 
+  // ───────────────────────────────────────────────────────────────────────
+  // HARD SCHEMA VALIDATION CONTRACT
+  // Every transit and window MUST satisfy the strict schema before leaving
+  // this function. Anything that fails is logged with the full offending
+  // object and dropped at source. The renderer never sees malformed data.
+  // ───────────────────────────────────────────────────────────────────────
+  const transitValidation = validateEntries(
+    limitedTransits as unknown as Record<string, unknown>[],
+    TimingTransitSchema as never,
+    'transits',
+  );
+  const windowValidation = validateEntries(
+    windowEntries as unknown as Record<string, unknown>[],
+    TimingWindowSchema as never,
+    'windows',
+  );
+
+  if (transitValidation.failures.length > 0 || windowValidation.failures.length > 0) {
+    console.error('[buildDeterministicTimingData] Schema violations dropped at source', {
+      transitFailures: transitValidation.failures.length,
+      windowFailures: windowValidation.failures.length,
+      transitFailureDetail: transitValidation.failures,
+      windowFailureDetail: windowValidation.failures,
+    });
+  }
+
+  const finalSection: DeterministicTimingSection = {
+    type: 'timing_section',
+    title: 'Timing Windows',
+    transits: transitValidation.kept as unknown as DeterministicTimingTransit[],
+    windows: windowValidation.kept as unknown as DeterministicTimingWindow[],
+  };
+
+  // Belt-and-braces: re-assert. Throws in dev so any future code path that
+  // bypasses validation is caught at the boundary instead of in production.
+  assertTimingSectionIsClean(finalSection);
+
+  if (finalSection.transits.length === 0 && finalSection.windows.length === 0) {
+    return {
+      context: formatFutureTransitsContext(windows),
+      section: null,
+    };
+  }
+
   return {
     context: formatFutureTransitsContext(windows),
-    section: {
-      type: 'timing_section',
-      title: 'Timing Windows',
-      transits: limitedTransits,
-      windows: windowEntries,
-    },
+    section: finalSection,
   };
 }
 
