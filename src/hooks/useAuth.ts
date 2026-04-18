@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { claimAnonymousChartsForUser } from '@/lib/claimAnonymousCharts';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,6 +15,13 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+
+        // The moment we have a user, attach any anonymous charts on this
+        // device to their account so charts persist across devices forever.
+        // Fire-and-forget — never await inside onAuthStateChange.
+        if (session?.user?.id) {
+          void claimAnonymousChartsForUser(session.user.id);
+        }
       }
     );
 
@@ -22,6 +30,10 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
+
+      if (session?.user?.id) {
+        void claimAnonymousChartsForUser(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
