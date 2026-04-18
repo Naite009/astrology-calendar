@@ -1404,10 +1404,10 @@ export function buildDeterministicTimingData(
   });
 
   // ───────────────────────────────────────────────────────────────────────
-  // HARD SCHEMA VALIDATION CONTRACT — every transit and window must satisfy
-  // the strict schema before we hand the section to the renderer/edge fn.
-  // Any failure is logged with the full offending object and dropped here.
-  // The renderer remains a safety net but should never see a malformed entry.
+  // HARD SCHEMA VALIDATION CONTRACT
+  // Every transit and window MUST satisfy the strict schema before leaving
+  // this function. Anything that fails is logged with the full offending
+  // object and dropped at source. The renderer never sees malformed data.
   // ───────────────────────────────────────────────────────────────────────
   const transitValidation = validateEntries(
     limitedTransits as unknown as Record<string, unknown>[],
@@ -1421,21 +1421,23 @@ export function buildDeterministicTimingData(
   );
 
   if (transitValidation.failures.length > 0 || windowValidation.failures.length > 0) {
-    console.error('[buildDeterministicTimingData] Schema violations dropped', {
+    console.error('[buildDeterministicTimingData] Schema violations dropped at source', {
       transitFailures: transitValidation.failures.length,
       windowFailures: windowValidation.failures.length,
+      transitFailureDetail: transitValidation.failures,
+      windowFailureDetail: windowValidation.failures,
     });
   }
 
-  const finalSection = {
-    type: 'timing_section' as const,
+  const finalSection: DeterministicTimingSection = {
+    type: 'timing_section',
     title: 'Timing Windows',
     transits: transitValidation.kept as unknown as DeterministicTimingTransit[],
     windows: windowValidation.kept as unknown as DeterministicTimingWindow[],
   };
 
-  // Belt-and-braces: re-run the assertion so any future code path that
-  // mutates the section after validation is caught at the boundary.
+  // Belt-and-braces: re-assert. Throws in dev so any future code path that
+  // bypasses validation is caught at the boundary instead of in production.
   assertTimingSectionIsClean(finalSection);
 
   if (finalSection.transits.length === 0 && finalSection.windows.length === 0) {

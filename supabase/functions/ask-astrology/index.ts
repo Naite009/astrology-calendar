@@ -57,23 +57,21 @@ const sanitizeDeterministicTiming = (input: any) => {
           interpretation: cleanString(transit?.interpretation),
         }))
         .filter((transit: any) => {
-          // STRICT SCHEMA — must match src/lib/timingEntryValidator.ts
-          // Required: planet, aspect, natal_point, date_range, meaningful interpretation
-          const reasons: string[] = [];
-          if (!transit.planet) reasons.push("planet missing");
-          if (!transit.aspect) reasons.push("aspect missing");
-          if (!transit.position) reasons.push("position missing");
-          if (!transit.natal_point) reasons.push("natal_point missing");
-          if (!transit.date_range) reasons.push("date_range missing");
-          if (isEffectivelyEmpty(transit.interpretation)) reasons.push("interpretation empty/whitespace");
-          if (reasons.length > 0) {
+          // Hard requirements: planet, position, natal_point, AND a meaningful interpretation
+          const ok =
+            !!transit.planet &&
+            !!transit.position &&
+            !!transit.natal_point &&
+            !isEffectivelyEmpty(transit.interpretation);
+          if (!ok) {
             console.warn("[ask-astrology] Dropping malformed transit at sanitize step", {
-              reasons,
-              entry: transit,
+              planet: transit.planet,
+              natal_point: transit.natal_point,
+              date_range: transit.date_range,
+              has_interpretation: !isEffectivelyEmpty(transit.interpretation),
             });
-            return false;
           }
-          return true;
+          return ok;
         })
         .slice(0, 20)
     : [];
