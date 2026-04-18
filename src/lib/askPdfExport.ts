@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { NatalChart } from "@/hooks/useNatalChart";
 import type { StructuredReading, ReadingSection } from "@/components/AskReadingRenderer";
+import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
 
 const COLORS = {
   bg: [255, 255, 255] as [number, number, number],
