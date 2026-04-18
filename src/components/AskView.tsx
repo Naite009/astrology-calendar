@@ -1384,7 +1384,14 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       toast.error("No readings available to export. Run a reading first.");
       return;
     }
-    generateAskPdf(selectedChart, exportData.readings);
+    try {
+      const validated = validateAndPrepareReadingsForExport(exportData.readings as any[]);
+      generateAskPdf(selectedChart, validated as StructuredReading[]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[handleDownloadPdf] Export blocked by validator", err);
+      toast.error(`Export blocked: ${msg}`);
+    }
   };
 
   const handleDownloadJson = () => {
@@ -1393,16 +1400,25 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       toast.error("No readings available to export. Run a reading first.");
       return;
     }
+    let validatedReadings: StructuredReading[];
+    try {
+      validatedReadings = validateAndPrepareReadingsForExport(exportData.readings as any[]) as StructuredReading[];
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[handleDownloadJson] Export blocked by validator", err);
+      toast.error(`Export blocked: ${msg}`);
+      return;
+    }
     const jsonData = {
       chart: exportData.chartMeta,
       exportedAt: new Date().toISOString(),
-      readings: exportData.readings,
+      readings: validatedReadings,
     };
     const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selectedChart.name.replace(/\s+/g, "-").toLowerCase()}-readings.json`;
+    a.download = `${selectedChart!.name.replace(/\s+/g, "-").toLowerCase()}-readings.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
