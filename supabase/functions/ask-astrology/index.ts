@@ -1205,7 +1205,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            max_tokens: 16384,
+            // Raised from 16384 → 32000 to prevent OUTPUT TRUNCATED on long
+            // relocation/relationship reports (~63KB observed truncation).
+            max_tokens: 32000,
             stream: true,
           }),
         });
