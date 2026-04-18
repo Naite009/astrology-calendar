@@ -19,6 +19,7 @@ import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId } from "@/lib/askJobClient";
+import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import {
   Popover,
   PopoverContent,
@@ -242,12 +243,18 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const [threadIds, setThreadIds] = useState<Record<string, string>>(threadIdsRef.current);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // Track when generation started + latest job status so we can show an
+  // elapsed-time counter and stage messages during the 4-7 min wait.
+  const [loadingStartedAt, setLoadingStartedAt] = useState<number | null>(null);
+  const [jobStatus, setJobStatus] = useState<"queued" | "processing" | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const handleStopGeneration = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       toast.info("Generation stopped.");
     }
   };
@@ -301,6 +308,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("processing"); // already in flight from a prior session
     window.__askInFlight = true;
     console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
     toast.info("Resuming your previous reading…");
@@ -312,7 +321,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     pollAskJob(jobId, {
       chartId: activeChartId,
       signal: controller.signal,
-      onProgress: (status) => console.log(`[AskView resume] Job status: ${status}`),
+      onProgress: (status) => setJobStatus(status === "completed" || status === "failed" ? null : status),
     })
       .then((job) => {
         if (cancelled) return;
@@ -365,6 +374,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       .finally(() => {
         if (cancelled) return;
         setIsLoading(false);
+        setLoadingStartedAt(null);
+        setJobStatus(null);
         window.__askInFlight = false;
         abortControllerRef.current = null;
       });
@@ -1164,6 +1175,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     saveActiveChat(chartIdForRequest, requestEntries);
     setInput("");
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("queued");
 
     // Block auto-reload during long Ask generations (prevents tab-switch HMR
     // errors from killing the streaming response and discarding the result).
@@ -1195,6 +1208,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           signal: controller.signal,
           onProgress: (status) => {
             console.log(`[AskView] Job status: ${status}`);
+            if (status === "queued" || status === "processing") setJobStatus(status);
           },
         },
       );
@@ -1262,6 +1276,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       window.__askInFlight = false;
     }
   };
@@ -1303,6 +1319,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     setEntries(trimmedEntries);
     setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    setJobStatus("queued");
     window.__askInFlight = true;
 
     try {
@@ -1331,7 +1349,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         },
         {
           signal: controller.signal,
-          onProgress: (status) => console.log(`[AskView regen] Job status: ${status}`),
+          onProgress: (status) => {
+            console.log(`[AskView regen] Job status: ${status}`);
+            if (status === "queued" || status === "processing") setJobStatus(status);
+          },
         },
       );
 
@@ -1388,6 +1409,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
+      setLoadingStartedAt(null);
+      setJobStatus(null);
       window.__askInFlight = false;
     }
   };
@@ -1714,15 +1737,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               ))}
 
               {isLoading && (
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Reading the chart...</span>
-                  </div>
-                </div>
+                <AskGenerationStatus
+                  startedAt={loadingStartedAt ?? Date.now()}
+                  jobStatus={jobStatus}
+                />
               )}
             </div>
           </ScrollArea>
