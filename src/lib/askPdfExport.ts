@@ -414,14 +414,26 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
 
   function renderSummary(section: { title: string; items: any[] }) {
+    // Run every item through the shared normalizer so a missing value
+    // can never produce a bare label with empty space after it.
+    const safeItems = (section.items ?? [])
+      .map((it) => normalizeSummaryItem(it))
+      .filter((it): it is { label?: string; value?: string } => it != null);
+
+    if (safeItems.length === 0) {
+      // eslint-disable-next-line no-console
+      console.warn(`[askPdfExport.renderSummary] skipping empty summary "${section.title}"`);
+      return;
+    }
+
     ensureSpace(20);
     y += 4;
 
     // Gold-bordered summary box
     const itemLines: string[][] = [];
     let totalH = 14;
-    for (const item of section.items) {
-      const lines = pdf.splitTextToSize(item.value, CONTENT_W - 30);
+    for (const item of safeItems) {
+      const lines = pdf.splitTextToSize(item.value || "", CONTENT_W - 30);
       itemLines.push(lines);
       totalH += 6 + lines.length * 5 + 2;
     }
@@ -440,11 +452,11 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN + 8, y);
     y += 8;
 
-    for (let i = 0; i < section.items.length; i++) {
+    for (let i = 0; i < safeItems.length; i++) {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(...COLORS.accent);
-      pdf.text(section.items[i].label, MARGIN + 8, y);
+      pdf.text(safeItems[i].label || "Note", MARGIN + 8, y);
       y += 5;
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(...COLORS.body);
@@ -456,7 +468,6 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     }
     y += 4;
   }
-
   function renderCityComparison(section: { title: string; cities: any[] }) {
     ensureSpace(30);
     y += 4;
