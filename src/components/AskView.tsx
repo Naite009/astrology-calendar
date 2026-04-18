@@ -1293,6 +1293,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   const clearChat = () => {
     clearThreadId(activeChartId);
+    // Clear any stale active job id so the resume-poll effect doesn't
+    // immediately re-attach to a ghost in-flight reading.
+    writeActiveJobId(activeChartId, null);
     setEntries([]);
     setInput("");
   };
@@ -1302,6 +1305,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "Unknown");
     }
     clearThreadId(activeChartId);
+    // Clear any stale active job id so clicking "New" never auto-resumes
+    // a previous (or ghost) generation and starts the timer on its own.
+    writeActiveJobId(activeChartId, null);
     setEntries([]);
     setInput("");
   };
