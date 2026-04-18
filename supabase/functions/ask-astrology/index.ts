@@ -1324,6 +1324,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
     // ===== POST-PROCESSING =====
     let parsedContent;
+    let wasTruncated = finishReason === "max_tokens" || finishReason === "length";
     try {
       // Strip any markdown code fences if present
       let cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
@@ -1336,8 +1337,26 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           cleaned = cleaned.substring(firstBrace, lastBrace + 1);
         }
       }
-      
-      parsedContent = JSON.parse(cleaned);
+
+      try {
+        parsedContent = JSON.parse(cleaned);
+      } catch (firstErr) {
+        // TRUNCATION REPAIR: When max_tokens hits, the JSON ends mid-string.
+        // Try progressively shorter prefixes that close cleanly.
+        if (wasTruncated) {
+          console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
+          parsedContent = repairTruncatedJson(cleaned);
+          if (parsedContent) {
+            parsedContent._truncated = true;
+            parsedContent._truncation_notice = "This reading was very long and may be missing the final sections. Try regenerating if anything important looks cut off.";
+            console.log("[ask-astrology] JSON repair SUCCEEDED — preserved partial reading");
+          } else {
+            throw firstErr;
+          }
+        } else {
+          throw firstErr;
+        }
+      }
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
