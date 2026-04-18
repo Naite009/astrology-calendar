@@ -1208,7 +1208,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           signal: controller.signal,
           onProgress: (status) => {
             console.log(`[AskView] Job status: ${status}`);
-            if (status === "queued" || status === "processing") setJobStatus(status);
+            if (status === "queued" || status === "processing") {
+              setJobStatus(status);
+              // When the worker actually starts, reset the timer so the
+              // displayed elapsed reflects real generation time, not the
+              // queue wait.
+              if (status === "processing") setLoadingStartedAt(Date.now());
+            }
           },
         },
       );
@@ -1357,7 +1363,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           signal: controller.signal,
           onProgress: (status) => {
             console.log(`[AskView regen] Job status: ${status}`);
-            if (status === "queued" || status === "processing") setJobStatus(status);
+            if (status === "queued" || status === "processing") {
+              setJobStatus(status);
+              if (status === "processing") setLoadingStartedAt(Date.now());
+            }
           },
         },
       );
