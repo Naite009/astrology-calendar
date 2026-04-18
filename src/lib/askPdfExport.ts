@@ -21,6 +21,73 @@ const MARGIN = 22;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
 export function generateAskPdf(chart: NatalChart, readings: StructuredReading[]) {
+  // ─────────────────────────────────────────────────────────────────────────
+  // FULL PAYLOAD LOGGING — captures the exact JSON used to render every PDF.
+  // This is the equivalent of the "request body" you'd see if a remote PDF
+  // server existed. The PDF is rendered locally by jsPDF, so this object IS
+  // the source of truth for what gets printed on the page.
+  // ─────────────────────────────────────────────────────────────────────────
+  try {
+    // eslint-disable-next-line no-console
+    console.groupCollapsed(
+      `%c[askPdfExport] PDF payload for ${chart?.name ?? 'unknown'}`,
+      'color:#a08232;font-weight:bold;',
+    );
+    // eslint-disable-next-line no-console
+    console.log('chart.name:', chart?.name);
+    // eslint-disable-next-line no-console
+    console.log('readings count:', readings?.length ?? 0);
+    // eslint-disable-next-line no-console
+    console.log('FULL readings JSON:', JSON.parse(JSON.stringify(readings)));
+
+    // Surface every timing_section explicitly with its transits/windows so
+    // empty-card sources are obvious without expanding the whole tree.
+    readings?.forEach((r, ri) => {
+      r.sections?.forEach((s: ReadingSection, si: number) => {
+        if ((s as { type?: string }).type === 'timing_section') {
+          const ts = s as { title: string; transits: unknown[]; windows: unknown[] };
+          // eslint-disable-next-line no-console
+          console.log(
+            `  timing_section [reading ${ri} / section ${si}] "${ts.title}" — ` +
+            `${ts.transits?.length ?? 0} transits, ${ts.windows?.length ?? 0} windows`,
+            { transits: ts.transits, windows: ts.windows },
+          );
+          (ts.windows ?? []).forEach((w, wi) => {
+            const win = w as { label?: unknown; description?: unknown };
+            const labelStr = typeof win.label === 'string' ? win.label : '';
+            const descStr = typeof win.description === 'string' ? win.description : '';
+            const labelEmpty = !labelStr.trim();
+            const descEmpty = !descStr.trim();
+            if (labelEmpty || descEmpty) {
+              // eslint-disable-next-line no-console
+              console.error(
+                `    🚨 EMPTY WINDOW at reading[${ri}].sections[${si}].windows[${wi}] — ` +
+                `labelEmpty=${labelEmpty}, descEmpty=${descEmpty}`,
+                JSON.parse(JSON.stringify(win)),
+              );
+            }
+          });
+          (ts.transits ?? []).forEach((t, ti) => {
+            const tr = t as { interpretation?: unknown; planet?: unknown; date_range?: unknown };
+            const interpStr = typeof tr.interpretation === 'string' ? tr.interpretation : '';
+            if (!interpStr.trim()) {
+              // eslint-disable-next-line no-console
+              console.error(
+                `    🚨 EMPTY TRANSIT at reading[${ri}].sections[${si}].transits[${ti}]`,
+                JSON.parse(JSON.stringify(tr)),
+              );
+            }
+          });
+        }
+      });
+    });
+    // eslint-disable-next-line no-console
+    console.groupEnd();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('[askPdfExport] payload logging failed', err);
+  }
+
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   let y = 0;
   let pageNum = 0;
@@ -216,14 +283,27 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN, y);
     y += 8;
 
-    if (section.transits?.length) {
+    // Render-side safety net: drop any transit whose interpretation is empty
+    // after trimming. The real fix lives in the data builder, but this
+    // guarantees a malformed entry can never produce a blank card on the page.
+    const safeTransits = (section.transits ?? []).filter((t) => {
+      const interp = typeof t?.interpretation === 'string' ? t.interpretation.trim() : '';
+      if (!interp) {
+        // eslint-disable-next-line no-console
+        console.error('[askPdfExport.renderTiming] DROPPING transit with empty interpretation', t);
+        return false;
+      }
+      return true;
+    });
+
+    if (safeTransits.length) {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
       pdf.setTextColor(...COLORS.muted);
       pdf.text("ACTIVE TRANSITS", MARGIN, y);
       y += 6;
 
-      for (const t of section.transits) {
+      for (const t of safeTransits) {
         ensureSpace(16);
         // Highlighted box
         const interpLines = pdf.splitTextToSize(t.interpretation, CONTENT_W - 12);
@@ -253,7 +333,24 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       }
     }
 
-    if (section.windows?.length) {
+    // Same safety net for windows: skip any window where label OR description
+    // is empty/whitespace. This is what was producing the "Feb 1 to Oct 17,
+    // 2027" blank card on page 11.
+    const safeWindows = (section.windows ?? []).filter((w) => {
+      const label = typeof w?.label === 'string' ? w.label.trim() : '';
+      const desc = typeof w?.description === 'string' ? w.description.trim() : '';
+      if (!label || !desc) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[askPdfExport.renderTiming] DROPPING empty window — labelEmpty=${!label}, descEmpty=${!desc}`,
+          w,
+        );
+        return false;
+      }
+      return true;
+    });
+
+    if (safeWindows.length) {
       ensureSpace(10);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
@@ -261,7 +358,7 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       pdf.text("KEY DATES", MARGIN, y);
       y += 6;
 
-      for (const w of section.windows) {
+      for (const w of safeWindows) {
         ensureSpace(10);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
