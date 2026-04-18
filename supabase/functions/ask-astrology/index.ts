@@ -82,8 +82,24 @@ const sanitizeDeterministicTiming = (input: any) => {
           label: cleanString(window?.label),
           description: cleanString(window?.description),
         }))
-        .filter((window: any) => !!window.label && !isEffectivelyEmpty(window.description))
+        .filter((window: any) => {
+          const ok = !!window.label && !isEffectivelyEmpty(window.description);
+          if (!ok) {
+            console.warn("[ask-astrology] Dropping malformed timing WINDOW at sanitize step", {
+              label: window.label,
+              hasDescription: !isEffectivelyEmpty(window.description),
+              descriptionPreview: (window.description || "").slice(0, 60),
+            });
+          }
+          return ok;
+        })
     : [];
+
+  console.info("[ask-astrology] sanitizeDeterministicTiming: kept", {
+    transits: transits.length,
+    windows: windows.length,
+    windowLabels: windows.map((w: any) => w.label),
+  });
 
   if (transits.length === 0 && windows.length === 0) {
     return null;
