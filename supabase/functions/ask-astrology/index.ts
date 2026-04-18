@@ -1269,17 +1269,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            // Switched from claude-sonnet-4-6 to claude-haiku-4-5: ~3-4x faster
-            // on long structured generations. Haiku 4.5 handles complex JSON
-            // schemas reliably and the length-cap rules above keep depth high.
-            // This brings 8-10 min reports down to ~2-3 min.
-            model: "claude-haiku-4-5",
+            // Sonnet 4.6 is non-negotiable for interpretation quality.
+            // Streaming (stream: true) keeps the Anthropic <-> edge function
+            // connection alive indefinitely — no timeout while tokens flow.
+            // The async job pattern means the client polls the DB, so even
+            // 8-10 min Sonnet generations complete safely in the background.
+            model: "claude-sonnet-4-6",
             system: systemMessage,
             messages: sanitizedMessages,
             temperature: 0.3,
-            // 24000 = comfortable ceiling above the 18k word target so we never
-            // hit max_tokens with the new length caps in place.
-            max_tokens: 24000,
+            // 32000 to fully accommodate long relocation/relationship reports
+            // without hitting max_tokens truncation.
+            max_tokens: 32000,
             stream: true,
           }),
         });
