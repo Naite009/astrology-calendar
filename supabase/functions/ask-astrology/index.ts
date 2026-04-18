@@ -1373,6 +1373,14 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     const anthropicResponse = response;
     let content = "";
     let finishReason = "";
+    // Cache telemetry — proves prompt caching is actually hitting in prod.
+    // cache_read = tokens served from cache (90% cheaper, near-zero latency).
+    // cache_creation = tokens written to cache on this call (1.25x cost).
+    let cacheReadTokens = 0;
+    let cacheCreationTokens = 0;
+    let regularInputTokens = 0;
+    let outputTokens = 0;
+    const aiCallStartedAt = Date.now();
 
     try {
       const reader = anthropicResponse.body!.getReader();
@@ -1396,8 +1404,22 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             const evt = JSON.parse(payload);
             if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
               content += evt.delta.text || "";
-            } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
-              finishReason = evt.delta.stop_reason;
+            } else if (evt.type === "message_start") {
+              // Initial usage block: includes cache read/creation counts
+              const usage = evt.message?.usage;
+              if (usage) {
+                cacheReadTokens = usage.cache_read_input_tokens ?? 0;
+                cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
+                regularInputTokens = usage.input_tokens ?? 0;
+              }
+            } else if (evt.type === "message_delta") {
+              if (evt.delta?.stop_reason) {
+                finishReason = evt.delta.stop_reason;
+              }
+              // Final usage update — output tokens land here
+              if (evt.usage?.output_tokens) {
+                outputTokens = evt.usage.output_tokens;
+              }
             } else if (evt.type === "error") {
               console.error("Anthropic stream error event:", evt);
               throw new Error(evt.error?.message || "Stream error");
