@@ -401,10 +401,10 @@ function TimingCard({ section }: { section: TimingSection }) {
           </div>
         )}
 
-        {section.windows?.length > 0 && (
+        {validWindows.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Window Overview</p>
-            {section.windows.map((w, i) => (
+            {validWindows.map((w, i) => (
               <div key={i} className="rounded-md bg-muted/30 p-3">
                 <div className="text-sm font-semibold text-primary mb-1">{w.label}</div>
                 <p className="text-sm text-foreground/85 leading-relaxed">{w.description}</p>
