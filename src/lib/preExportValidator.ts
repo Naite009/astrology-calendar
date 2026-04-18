@@ -2,16 +2,21 @@
  * Pre-export validation pass.
  *
  * Runs over the FULL readings payload right before any export (JSON or PDF)
- * leaves Lovable. Enforces three hard rules:
+ * leaves Lovable. Enforces these rules:
  *
  *   1. Every transit must have: planet, aspect, natal_point, date_range,
  *      interpretation, symbol, tag — all non-empty after trimming.
- *   2. Every window must have a non-empty label and non-empty description.
- *   3. No two windows in the same timing section may share a label. Duplicates
- *      are merged in place (descriptions joined by a blank line) before export.
+ *      → On failure: THROW (these are critical and indicate generation broke).
  *
- * On rule 1 or 2 failure, throws a visible Error so the caller can surface it
- * via toast and abort the export. Rule 3 is auto-fixed (merge) and logged.
+ *   2. Every window must have a non-empty label AND non-empty description.
+ *      Description is checked against `description`, `body`, `text`, and
+ *      `content` (some AI outputs use alternate field names).
+ *      → On failure: SILENTLY DROP the window and log loudly. We never throw
+ *      because a single empty window should not block the entire export —
+ *      that produces a worse user experience than a slightly shorter report.
+ *
+ *   3. No two windows in the same timing section may share a label.
+ *      Duplicates are merged in place (descriptions joined by a blank line).
  */
 
 const REQUIRED_TRANSIT_FIELDS = [
@@ -108,39 +113,90 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
         }),
       );
 
-      // First pass — record validation failures for missing/empty fields.
-      // (Dedup happens in a second pass via the shared helper.)
+      // First pass — drop any window with empty label/description. We log
+      // every drop with the full raw entry so we can diagnose alternate field
+      // names or whitespace-only payloads (e.g. "Feb 2 to Oct 18, 2027" with
+      // an empty body that previously slipped past).
       const cleanForDedup: Array<{ label: string; description: string; dateRange?: unknown }> = [];
+      let droppedCount = 0;
       windows.forEach((entry, entryIndex) => {
         if (!entry || typeof entry !== 'object') {
-          failures.push({
-            scope: 'window', readingIndex, sectionIndex, entryIndex,
-            field: '(root)', entry,
-          });
+          droppedCount += 1;
+          // eslint-disable-next-line no-console
+          console.error(
+            `[preExportValidator] 🛑 DROPPED window #${entryIndex} (reading ${readingIndex}, section ${sectionIndex}) — entry is not an object`,
+            { entry },
+          );
           return;
         }
         const obj = entry as Record<string, unknown>;
-        const labelOk = isNonEmptyString(obj.label);
-        const descOk = isNonEmptyString(obj.description);
-        if (!labelOk) {
-          failures.push({
-            scope: 'window', readingIndex, sectionIndex, entryIndex,
-            field: 'label', entry,
-          });
+
+        // Pull label.
+        const rawLabel = typeof obj.label === 'string' ? obj.label.trim() : '';
+
+        // Pull description from any of the known field names. We accept
+        // `description`, `body`, `text`, `content` — whichever is non-empty
+        // wins. This guards against AI variants that rename the field.
+        const descCandidates: Array<[string, unknown]> = [
+          ['description', obj.description],
+          ['body', obj.body],
+          ['text', obj.text],
+          ['content', obj.content],
+        ];
+        let resolvedDesc = '';
+        let resolvedDescField = '';
+        for (const [field, val] of descCandidates) {
+          if (typeof val === 'string' && val.trim().length > 0) {
+            resolvedDesc = val.trim();
+            resolvedDescField = field;
+            break;
+          }
         }
-        if (!descOk) {
-          failures.push({
-            scope: 'window', readingIndex, sectionIndex, entryIndex,
-            field: 'description', entry,
-          });
+
+        const labelOk = rawLabel.length > 0;
+        const descOk = resolvedDesc.length > 0;
+
+        if (!labelOk || !descOk) {
+          droppedCount += 1;
+          // eslint-disable-next-line no-console
+          console.error(
+            `[preExportValidator] 🛑 DROPPED empty window #${entryIndex} (reading ${readingIndex}, section ${sectionIndex})`,
+            {
+              labelEmpty: !labelOk,
+              descEmpty: !descOk,
+              rawLabel: obj.label,
+              rawDescription: obj.description,
+              rawBody: obj.body,
+              rawText: obj.text,
+              rawContent: obj.content,
+              dateRange: obj.dateRange ?? obj.date_range,
+              allKeys: Object.keys(obj),
+              entry,
+            },
+          );
+          return;
         }
-        if (!labelOk || !descOk) return;
+
+        if (resolvedDescField !== 'description') {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `[preExportValidator] ⚠️ window #${entryIndex} description was resolved from "${resolvedDescField}" instead of "description". Normalizing.`,
+          );
+        }
+
         cleanForDedup.push({
-          label: (obj.label as string).trim(),
-          description: (obj.description as string).trim(),
+          label: rawLabel,
+          description: resolvedDesc,
           dateRange: obj.dateRange ?? obj.date_range,
         });
       });
+
+      if (droppedCount > 0) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[preExportValidator] Section ${sectionIndex} (reading ${readingIndex}): dropped ${droppedCount} empty window(s) before dedup.`,
+        );
+      }
 
       // Single source of truth for dedup — same helper used by the
       // deterministic builder and the edge function sanitizer.
