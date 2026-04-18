@@ -19,6 +19,7 @@ import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
+import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import {
   Popover,
@@ -306,79 +307,123 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     let cancelled = false;
     const controller = new AbortController();
-    abortControllerRef.current = controller;
-    setIsLoading(true);
-    setLoadingStartedAt(Date.now());
-    setJobStatus("processing"); // already in flight from a prior session
-    window.__askInFlight = true;
-    console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
-    toast.info("Resuming your previous reading…");
 
     const chartForRequest = selectedChart;
     const chartIdForRequest = activeChartId;
     const chartNameForRequest = chartForRequest?.name || "Unknown";
 
-    pollAskJob(jobId, {
-      chartId: activeChartId,
-      signal: controller.signal,
-      onProgress: (status) => setJobStatus(status === "completed" || status === "failed" ? null : status),
-    })
-      .then((job) => {
+    // Helper to apply a completed job's result to the chat.
+    const applyCompletedJob = (job: any) => {
+      if (job.status === "failed") {
+        toast.error(job.error_message || "Previous reading failed.");
+        return;
+      }
+      const data: any = normalizeAskResult(job.result || {});
+      if (data.error) { toast.error(data.error); return; }
+
+      let assistantEntry: ChatEntry;
+      if (data.sections) {
+        const currentSR = solarReturnCharts
+          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
+          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const corrected = mergeDeterministicTimingSection(
+          correctPlacementData(data, chartForRequest, currentSR),
+          null,
+        );
+        assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
+      } else if (data.raw) {
+        assistantEntry = { role: "assistant", content: data.raw };
+      } else {
+        assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+      }
+
+      if (activeChartIdRef.current !== chartIdForRequest) return;
+      setEntries((prev) => {
+        const next = [...prev, assistantEntry];
+        saveActiveChat(chartIdForRequest, next);
+        upsertConversationSnapshot(next, chartIdForRequest, chartNameForRequest);
+        if (assistantEntry.reading && chartForRequest) {
+          saveLastReading(chartIdForRequest, {
+            name: chartForRequest.name,
+            birthDate: chartForRequest.birthDate,
+            birthTime: chartForRequest.birthTime,
+            birthLocation: chartForRequest.birthLocation,
+          }, [assistantEntry.reading]);
+        }
+        return next;
+      });
+      toast.success("Your reading is ready.");
+    };
+
+    // STEP 1: Probe the job status BEFORE showing any "resuming" UI.
+    // If the job is already completed/failed, attach the result silently.
+    // If it's stale (older than 15 min and still queued/processing), drop it.
+    // Only show the "Resuming…" indicator if the job is genuinely in flight.
+    (async () => {
+      try {
+        const { data: row, error } = await supabase
+          .from("ask_jobs")
+          .select("id,status,result,error_message,created_at,completed_at")
+          .eq("id", jobId)
+          .maybeSingle();
+
         if (cancelled) return;
-        if (job.status === "failed") {
-          toast.error(job.error_message || "Previous reading failed.");
+
+        if (error || !row) {
+          // Job row gone or unreadable — clear the stale key, do nothing.
+          writeActiveJobId(activeChartId, null);
           return;
         }
-        const data: any = normalizeAskResult(job.result || {});
-        if (data.error) { toast.error(data.error); return; }
 
-        let assistantEntry: ChatEntry;
-        if (data.sections) {
-          const currentSR = solarReturnCharts
-            .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
-            .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
-          const corrected = mergeDeterministicTimingSection(
-            correctPlacementData(data, chartForRequest, currentSR),
-            null,
-          );
-          assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
-        } else if (data.raw) {
-          assistantEntry = { role: "assistant", content: data.raw };
-        } else {
-          assistantEntry = { role: "assistant", content: JSON.stringify(data, null, 2) };
+        // Terminal states: apply immediately, no toast/timer.
+        if (row.status === "completed" || row.status === "failed") {
+          writeActiveJobId(activeChartId, null);
+          applyCompletedJob(row);
+          return;
         }
 
-        if (activeChartIdRef.current !== chartIdForRequest) return;
-        setEntries((prev) => {
-          const next = [...prev, assistantEntry];
-          saveActiveChat(chartIdForRequest, next);
-          upsertConversationSnapshot(next, chartIdForRequest, chartNameForRequest);
-          if (assistantEntry.reading && chartForRequest) {
-            saveLastReading(chartIdForRequest, {
-              name: chartForRequest.name,
-              birthDate: chartForRequest.birthDate,
-              birthTime: chartForRequest.birthTime,
-              birthLocation: chartForRequest.birthLocation,
-            }, [assistantEntry.reading]);
-          }
-          return next;
-        });
-        toast.success("Your reading is ready.");
-      })
-      .catch((err) => {
-        if (err?.name === "AbortError") return;
-        console.error("[AskView] Resume poll error:", err);
-        // Drop the stale jobId so we don't loop forever
+        // Still in-flight. Sanity check: drop if too old (server side cap is 10 min).
+        const ageMs = Date.now() - new Date(row.created_at).getTime();
+        if (ageMs > 15 * 60 * 1000) {
+          console.warn(`[AskView] Dropping stale active job ${jobId} (age ${Math.round(ageMs / 1000)}s)`);
+          writeActiveJobId(activeChartId, null);
+          return;
+        }
+
+        // Genuinely in-flight — show resume UI and start polling.
+        abortControllerRef.current = controller;
+        setIsLoading(true);
+        setLoadingStartedAt(new Date(row.created_at).getTime());
+        setJobStatus(row.status as any);
+        window.__askInFlight = true;
+        console.log(`[AskView] Resuming in-flight job ${jobId} for chart ${activeChartId}`);
+        toast.info("Resuming your previous reading…");
+
+        try {
+          const job = await pollAskJob(jobId, {
+            chartId: activeChartId,
+            signal: controller.signal,
+            onProgress: (status) => setJobStatus(status === "completed" || status === "failed" ? null : status),
+          });
+          if (cancelled) return;
+          applyCompletedJob(job);
+        } catch (err: any) {
+          if (err?.name === "AbortError") return;
+          console.error("[AskView] Resume poll error:", err);
+          writeActiveJobId(activeChartId, null);
+        } finally {
+          if (cancelled) return;
+          setIsLoading(false);
+          setLoadingStartedAt(null);
+          setJobStatus(null);
+          window.__askInFlight = false;
+          abortControllerRef.current = null;
+        }
+      } catch (err) {
+        console.error("[AskView] Resume probe error:", err);
         writeActiveJobId(activeChartId, null);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setIsLoading(false);
-        setLoadingStartedAt(null);
-        setJobStatus(null);
-        window.__askInFlight = false;
-        abortControllerRef.current = null;
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
