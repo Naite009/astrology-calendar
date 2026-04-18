@@ -70,7 +70,7 @@ export function AskGenerationStatus({ startedAt, jobStatus }: AskGenerationStatu
           </p>
         )}
         {showLongHint && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 pl-6">
+          <p className="text-xs text-destructive pl-6">
             This is taking longer than usual ({formatElapsed(elapsedMs)}). It will still finish — but if it passes 10 minutes, refresh the page; the result is saved on the server and will load when ready.
           </p>
         )}
