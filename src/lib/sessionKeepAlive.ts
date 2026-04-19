@@ -33,8 +33,41 @@ const IDB_KEY = "current";
 
 const REFRESH_INITIAL_DELAY_MS = 2_000;
 const REFRESH_MAX_DELAY_MS = 60_000;
+const INITIAL_RESTORE_TIMEOUT_MS = 15_000;
+const INITIAL_RESTORE_MAX_ATTEMPTS = 4;
+const INITIAL_RESTORE_MAX_DELAY_MS = 15_000;
 
 let started = false;
+let initialRestoreResolved = false;
+let resolveInitialRestore: (() => void) | null = null;
+let initialRestorePromise: Promise<void> | null = null;
+
+const ensureInitialRestorePromise = () => {
+  if (!initialRestorePromise) {
+    initialRestorePromise = new Promise<void>((resolve) => {
+      resolveInitialRestore = () => {
+        if (initialRestoreResolved) return;
+        initialRestoreResolved = true;
+        resolve();
+      };
+    });
+  }
+  return initialRestorePromise;
+};
+
+const finishInitialRestore = () => {
+  resolveInitialRestore?.();
+};
+
+export const waitForInitialSessionRestore = async (
+  timeoutMs = INITIAL_RESTORE_TIMEOUT_MS,
+): Promise<void> => {
+  if (!initialRestorePromise) return;
+  await Promise.race([
+    initialRestorePromise,
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+};
 
 // ─────────────────────────────────────────────────────────────────────────
 // IndexedDB helpers (zero deps, tiny wrapper)
@@ -190,6 +223,65 @@ const refreshWithRetry = async (reason: string): Promise<void> => {
   return refreshInFlight;
 };
 
+const restoreSessionFromBackupWithRetry = async (
+  backup: { access_token?: string; refresh_token?: string },
+  reason: string,
+): Promise<boolean> => {
+  if (!backup.access_token || !backup.refresh_token) return false;
+
+  let attempt = 0;
+  let delay = REFRESH_INITIAL_DELAY_MS;
+
+  while (attempt < INITIAL_RESTORE_MAX_ATTEMPTS) {
+    attempt += 1;
+    try {
+      const { error } = await supabase.auth.setSession({
+        access_token: backup.access_token,
+        refresh_token: backup.refresh_token,
+      });
+
+      if (!error) {
+        console.info(
+          `[sessionKeepAlive] ✅ session restored from IndexedDB backup on attempt ${attempt} (reason: ${reason})`,
+        );
+        return true;
+      }
+
+      if (isMissingSessionError(error)) {
+        console.info(
+          `[sessionKeepAlive] backup session missing/expired (reason: ${reason}); stopping restore attempts`,
+        );
+        return false;
+      }
+
+      console.warn(
+        `[sessionKeepAlive] backup restore attempt ${attempt} failed (reason: ${reason}); retrying in ${delay}ms`,
+        error,
+      );
+    } catch (err) {
+      if (isMissingSessionError(err)) {
+        console.info(
+          `[sessionKeepAlive] backup session missing/expired (reason: ${reason}); stopping restore attempts`,
+        );
+        return false;
+      }
+
+      console.warn(
+        `[sessionKeepAlive] backup restore attempt ${attempt} threw (reason: ${reason}); retrying in ${delay}ms`,
+        err,
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    delay = Math.min(delay * 2, INITIAL_RESTORE_MAX_DELAY_MS);
+  }
+
+  console.warn(
+    `[sessionKeepAlive] giving up backup restore after ${INITIAL_RESTORE_MAX_ATTEMPTS} attempts (reason: ${reason})`,
+  );
+  return false;
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Public entry point
 // ─────────────────────────────────────────────────────────────────────────
@@ -197,13 +289,13 @@ const refreshWithRetry = async (reason: string): Promise<void> => {
 export const startSessionKeepAlive = () => {
   if (started || typeof window === "undefined") return;
   started = true;
+  ensureInitialRestorePromise();
 
   // 1. Mirror every auth state change into IndexedDB as a backup.
   supabase.auth.onAuthStateChange((event, session) => {
     if (session) {
       void idbPut({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
+        ...session,
         savedAt: Date.now(),
       });
     }
@@ -221,32 +313,25 @@ export const startSessionKeepAlive = () => {
   //    to restore it via setSession(). This protects against localStorage
   //    being wiped (e.g. preview sandbox URL change).
   void (async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) return; // already signed in, nothing to do
-
-    const backup = (await idbGet()) as
-      | { access_token?: string; refresh_token?: string }
-      | null;
-    if (!backup?.access_token || !backup?.refresh_token) return;
-
-    console.info("[sessionKeepAlive] localStorage empty but IDB backup found — restoring session");
     try {
-      const { error } = await supabase.auth.setSession({
-        access_token: backup.access_token,
-        refresh_token: backup.refresh_token,
-      });
-      if (error) {
-        console.warn(
-          "[sessionKeepAlive] setSession from backup failed; will retry refresh forever (no signOut)",
-          error,
-        );
+      const { data } = await supabase.auth.getSession();
+      if (data.session) return;
+
+      const backup = (await idbGet()) as
+        | { access_token?: string; refresh_token?: string }
+        | null;
+      if (!backup?.access_token || !backup?.refresh_token) return;
+
+      console.info("[sessionKeepAlive] localStorage empty but IDB backup found — restoring session");
+      const restored = await restoreSessionFromBackupWithRetry(backup, "boot");
+      if (!restored) {
         void refreshWithRetry("idb-restore-failed");
-      } else {
-        console.info("[sessionKeepAlive] ✅ session restored from IndexedDB backup");
       }
     } catch (err) {
       console.warn("[sessionKeepAlive] setSession threw; retrying refresh forever", err);
       void refreshWithRetry("idb-restore-threw");
+    } finally {
+      finishInitialRestore();
     }
   })();
 
