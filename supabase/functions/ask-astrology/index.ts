@@ -1738,8 +1738,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
-        // Deterministically correct any mismatched count words in modality_element.balance_interpretation
-        correctModalityElementCounts(parsedContent);
+        // (Legacy single-field count corrector removed — validateReading() at the
+        // end of this block now handles balance_interpretation along with every
+        // other string field in the reading. Keeping both would double-log fixes.)
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
