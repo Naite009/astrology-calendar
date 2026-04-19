@@ -461,60 +461,8 @@ const transformString = (text: string, ctx: Ctx): string => {
   return out;
 };
 
-// ── Walk every string field in a section, applying the transforms ──
-const STRING_FIELDS_TO_VALIDATE = [
-  "body", "interpretation", "balance_interpretation", "summary",
-  "description", "content", "text", "answer", "intro", "outro",
-];
-
-const walkAndTransformSection = (section: any, ctx: Ctx) => {
-  if (!section || typeof section !== "object") return;
-
-  // Direct string fields
-  for (const key of STRING_FIELDS_TO_VALIDATE) {
-    if (typeof section[key] === "string") {
-      section[key] = transformString(section[key], ctx);
-    }
-  }
-
-  // Bullet arrays (string[])
-  for (const key of ["bullets", "highlights", "key_points", "takeaways"]) {
-    if (Array.isArray(section[key])) {
-      section[key] = section[key].map((b: any) =>
-        typeof b === "string" ? transformString(b, ctx) : b,
-      );
-    }
-  }
-
-  // Per-element/modality/polarity rows have their own interpretation strings
-  for (const arrKey of ["elements", "modalities", "polarity"]) {
-    if (Array.isArray(section[arrKey])) {
-      for (const item of section[arrKey]) {
-        if (item && typeof item.interpretation === "string") {
-          item.interpretation = transformString(item.interpretation, ctx);
-        }
-      }
-    }
-  }
-
-  // Generic nested objects/arrays — recurse one level for things like
-  // narrative_section.subsections[].body
-  for (const k of Object.keys(section)) {
-    const v = section[k];
-    if (Array.isArray(v)) {
-      for (const child of v) {
-        if (child && typeof child === "object" && !Array.isArray(child)) {
-          // only recurse if it looks like a sub-block
-          for (const fkey of STRING_FIELDS_TO_VALIDATE) {
-            if (typeof child[fkey] === "string") {
-              child[fkey] = transformString(child[fkey], ctx);
-            }
-          }
-        }
-      }
-    }
-  }
-};
+// (Legacy shallow walker removed — deepWalkAndTransform below covers
+// every nested field including subsections, scenes, cities, etc.)
 
 // Keys we should NEVER walk into — they hold structured data the AI didn't write
 // in narrative form (counts, raw planet objects, the validation report itself).
