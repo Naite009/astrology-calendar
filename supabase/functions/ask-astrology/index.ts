@@ -1,6 +1,7 @@
 // Using built-in Deno.serve (no external std import needed)
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { validateReading } from "./validateReading.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1894,10 +1895,21 @@ In the timing section, include only the 2-4 strongest verified windows over the 
                   missing.map((m) => `${m.type} "${m.titleHint}"`).join(', ') +
                   `. Got ${parsedContent.sections.length} sections total.`
               );
-            } else {
+          } else {
               console.log(`ask-astrology: question_type=${qType} all ${required.length} required sections present ✓`);
             }
           }
+        }
+
+        // FINAL UNIVERSAL VALIDATOR PASS — runs on every reading right
+        // before persistence. Catches AI mis-quoting of counts/aspects/
+        // dates/planets in narrative prose. Auto-fixes counts in place;
+        // strips bad aspect/date/planet sentences. Logs everything to
+        // parsedContent._validation for the UI banner.
+        try {
+          validateReading(parsedContent, typeof chartContext === "string" ? chartContext : undefined);
+        } catch (validationErr) {
+          console.error("[ask-astrology] validateReading threw:", validationErr);
         }
       }
     } catch (parseError) {

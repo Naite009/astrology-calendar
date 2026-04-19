@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
+import { DriftBanner } from "./DriftBanner";
 
 // Types for structured reading
 export interface PlacementRow {
@@ -170,6 +171,13 @@ export interface StructuredReading {
   question_asked: string;
   generated_date: string;
   sections: ReadingSection[];
+  _validation?: {
+    fixed_counts?: Array<{ section: string; from: string; to: string }>;
+    stripped_aspects?: Array<{ section: string; phrase: string; reason?: string }>;
+    stripped_dates?: Array<{ section: string; phrase: string }>;
+    stripped_planets?: Array<{ section: string; phrase: string }>;
+    drift_count?: number;
+  };
 }
 
 function PlacementTable({ section }: { section: PlacementTableSection }) {
@@ -1135,9 +1143,18 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
   );
 }
 
-export function ReadingRenderer({ reading }: { reading: StructuredReading }) {
+export function ReadingRenderer({
+  reading,
+  onRegenerate,
+}: {
+  reading: StructuredReading;
+  onRegenerate?: () => void;
+}) {
   return (
     <div className="space-y-4">
+      {/* Drift banner — only renders if validator caught issues */}
+      <DriftBanner report={reading._validation} onRegenerate={onRegenerate} />
+
       {/* Header */}
       <div className="text-center space-y-1 pb-2">
         <p className="text-xs text-muted-foreground">{reading.birth_info}</p>
