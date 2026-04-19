@@ -58,6 +58,7 @@ export const useCloudBackup = (
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialCheckDoneRef = useRef(false);
   const hasShownRestoreToastRef = useRef(false);
+  const restorePendingRef = useRef(true);
   // Gate: don't run the initial cloud check until we've actually resolved
   // whether there's a session. Otherwise we race getSession() and end up
   // querying by device_id even though the user IS signed in — which makes
@@ -68,7 +69,7 @@ export const useCloudBackup = (
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (!session?.user && !authChecked) {
+        if (!session?.user && restorePendingRef.current) {
           return;
         }
 
@@ -85,6 +86,7 @@ export const useCloudBackup = (
 
     void (async () => {
       await waitForInitialSessionRestore();
+      restorePendingRef.current = false;
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
