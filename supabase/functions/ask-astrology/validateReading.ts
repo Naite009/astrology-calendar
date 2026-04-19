@@ -94,6 +94,17 @@ const emptyReport = (): ValidationReport => ({
   drift_count: 0,
 });
 
+export const listAllowedNatalAspects = (chartContext: string | undefined): string[] => {
+  const facts = buildFactsMap(chartContext);
+  const out: string[] = [];
+  for (const key of facts.aspectSet) {
+    const [p1, aspect, p2] = key.split("|");
+    if (!p1 || !p2 || !aspect) continue;
+    out.push(`${p1} ${aspect} ${p2}`);
+  }
+  return out;
+};
+
 const stripPlural = (cat: string): string => {
   const lower = cat.toLowerCase();
   if (KNOWN_CATEGORIES.has(lower)) return lower;
