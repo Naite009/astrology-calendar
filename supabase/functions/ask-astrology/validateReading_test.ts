@@ -310,6 +310,107 @@ Deno.test("report: drift_count equals sum of all four buckets", () => {
   assert(v.drift_count >= 2, "expected at least one count-fix and one strip");
 });
 
+// ── Yang/Yin polarity counts (Replit flagged as missing — verify ours works) ──
+Deno.test("polarity: rewrites mismatched Yang count from polarity[] array", () => {
+  const reading = {
+    sections: [
+      {
+        type: "modality_element",
+        title: "Balance",
+        polarity: [
+          { name: "Yang (Active)", count: 6 },
+          { name: "Yin (Receptive)", count: 4 },
+        ],
+        balance_interpretation: "You have five Yang planets and five Yin planets.",
+      },
+    ],
+  };
+  validateReading(reading, "");
+  const fixed = (reading.sections[0] as any).balance_interpretation;
+  assert(fixed.includes("six Yang"), `expected "six Yang", got: ${fixed}`);
+  assert(fixed.includes("four Yin"), `expected "four Yin", got: ${fixed}`);
+  assertEquals((reading as any)._validation.fixed_counts.length, 2);
+});
+
+Deno.test("polarity: also handles Active/Receptive synonyms", () => {
+  const reading = {
+    sections: [
+      {
+        type: "modality_element",
+        polarity: [
+          { name: "Active", count: 7 },
+          { name: "Receptive", count: 3 },
+        ],
+        balance_interpretation: "You have four Active and six Receptive placements.",
+      },
+    ],
+  };
+  validateReading(reading, "");
+  const fixed = (reading.sections[0] as any).balance_interpretation;
+  assert(fixed.includes("seven Active"), `got: ${fixed}`);
+  assert(fixed.includes("three Receptive"), `got: ${fixed}`);
+});
+
+// ── Angle aspects (Replit flagged as unchecked — verify ours strips fakes) ──
+Deno.test("angles: strips fake 'Mars conjunct Ascendant' when separation too wide", () => {
+  // Mars at 15° Aries (=15), Ascendant at 0° Cancer (=90) → sep 75°, NOT conjunct
+  const chartContext = `
+    Mars: 15°00' Aries
+    Ascendant: 0°00' Cancer
+    Midheaven: 0°00' Aries
+  `;
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        body: "Your Mars conjunct Ascendant brings raw drive. The next sentence stays.",
+      },
+    ],
+  };
+  validateReading(reading, chartContext);
+  const body = (reading.sections[0] as any).body;
+  assert(!body.includes("Mars conjunct Ascendant"), `should strip, got: ${body}`);
+  assert(body.includes("next sentence stays"), "preserves valid prose");
+  assertEquals((reading as any)._validation.stripped_aspects.length, 1);
+});
+
+Deno.test("angles: keeps a valid 'Sun conjunct Midheaven' (tight orb)", () => {
+  // Sun at 2° Aries (=2), MC at 0° Aries (=0) → sep 2°, conjunct ✅
+  const chartContext = `
+    Sun: 2°00' Aries
+    Midheaven: 0°00' Aries
+  `;
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        body: "Your Sun conjunct Midheaven puts your identity center stage.",
+      },
+    ],
+  };
+  validateReading(reading, chartContext);
+  const body = (reading.sections[0] as any).body;
+  assert(body.includes("Sun conjunct Midheaven"), `should keep valid aspect, got: ${body}`);
+  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
+});
+
+Deno.test("angles: does NOT over-strip when Ascendant degree is missing from context", () => {
+  // No Ascendant degree given → cannot verify → leaves sentence alone (not over-strip)
+  const chartContext = `Mars: 15°00' Aries`;
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        body: "Your Mars conjunct Ascendant brings raw drive.",
+      },
+    ],
+  };
+  validateReading(reading, chartContext);
+  const body = (reading.sections[0] as any).body;
+  assert(body.includes("Mars conjunct Ascendant"), `should keep when unverifiable, got: ${body}`);
+  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
+});
+
 // ── Defensive: malformed inputs don't throw ────────────────────────
 Deno.test("defensive: empty reading doesn't throw", () => {
   const reading = {};
