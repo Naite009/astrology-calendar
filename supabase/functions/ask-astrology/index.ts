@@ -1781,12 +1781,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // other string field in the reading. Keeping both would double-log fixes.)
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
-        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+        // Bug C fix: use sanitizedChartContext (matches what AI saw) instead of raw chartContext.
+        if (sanitizedChartContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           // Extract known natal planet names from chart data
           const knownNatalPoints = new Set<string>();
           const natalPointRegex = /^(\w[\w\s]*?):\s*\d+°/gm;
           let npm;
-          while ((npm = natalPointRegex.exec(chartContext)) !== null) {
+          while ((npm = natalPointRegex.exec(sanitizedChartContext)) !== null) {
             knownNatalPoints.add(npm[1].trim());
           }
           // Also add common aliases
@@ -1797,16 +1798,25 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           knownNatalPoints.add('Descendant'); knownNatalPoints.add('DSC'); knownNatalPoints.add('DC');
           knownNatalPoints.add('IC');
 
+          // Bug D fix: word-boundary match instead of substring. Previously
+          // "Sun" matched "South Node" via .includes(), causing false-positive
+          // "valid" classifications. Sort longer names first so "North Node"
+          // is tested before "Node".
+          const sortedPoints = Array.from(knownNatalPoints).sort((a, b) => b.length - a.length);
+          const matchesKnownPoint = (ref: string): boolean => {
+            for (const pt of sortedPoints) {
+              const re = new RegExp(`\\b${pt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+              if (re.test(ref)) return true;
+            }
+            return false;
+          };
+
           for (const section of parsedContent.sections) {
             if (section.type === 'timing_section' && Array.isArray(section.transits)) {
               const validTransits: any[] = [];
               for (const transit of section.transits) {
-                // Check if the natal_point references a known planet/point
                 const natalRef = transit.natal_point || transit.position || '';
-                const referencesKnownPoint = Array.from(knownNatalPoints).some(
-                  (pt) => natalRef.includes(pt)
-                );
-                if (referencesKnownPoint) {
+                if (matchesKnownPoint(natalRef)) {
                   validTransits.push(transit);
                 } else {
                   console.warn(`Transit verification: removed transit referencing unknown natal point: "${natalRef}"`);
@@ -1818,8 +1828,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         }
 
         // POST-GENERATION ASPECT VERIFICATION: Degree-based math check for claimed aspects
-        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          // Parse natal planet degrees from chart data: "Planet: DD°MM' Sign (House N)"
+        // Bug C fix: use sanitizedChartContext for parsing degrees too.
+        if (sanitizedChartContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           const signIndex: Record<string, number> = {
             'Aries': 0, 'Taurus': 1, 'Gemini': 2, 'Cancer': 3, 'Leo': 4, 'Virgo': 5,
             'Libra': 6, 'Scorpio': 7, 'Sagittarius': 8, 'Capricorn': 9, 'Aquarius': 10, 'Pisces': 11
@@ -1827,7 +1837,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           const natalDegrees: Record<string, number> = {};
           const degRegex = /(\w[\w\s]*?):\s*(\d+)°(\d+)'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/g;
           let dm;
-          while ((dm = degRegex.exec(chartContext)) !== null) {
+          while ((dm = degRegex.exec(sanitizedChartContext)) !== null) {
             const planet = dm[1].trim();
             const deg = parseInt(dm[2], 10);
             const min = parseInt(dm[3], 10);
@@ -1842,6 +1852,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             'conjunction': 8, 'opposition': 8, 'trine': 7, 'square': 7, 'sextile': 5, 'quincunx': 3
           };
 
+          // Bug D fix: longest-name-first word-boundary lookup so "Sun" never
+          // matches "South Node" and "MC" never matches "Mercury".
+          const sortedNatalNames = Object.keys(natalDegrees).sort((a, b) => b.length - a.length);
+          const findNatalName = (ref: string): string | undefined => {
+            for (const name of sortedNatalNames) {
+              const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+              if (re.test(ref)) return name;
+            }
+            return undefined;
+          };
+
           for (const section of parsedContent.sections) {
             // Check timing_section transits for aspect validity
             if (section.type === 'timing_section' && Array.isArray(section.transits)) {
@@ -1850,7 +1871,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
                   // Try to parse transit degree from exact_degree field
                   const transitMatch = transit.exact_degree.match(/(\d+)°(\d+)?'?\s*(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/i);
                   // Try to find the natal point's degree
-                  const natalName = Object.keys(natalDegrees).find(p => transit.natal_point.includes(p));
+                  const natalName = findNatalName(transit.natal_point);
                   
                   if (transitMatch && natalName) {
                     const tDeg = (signIndex[transitMatch[3]] || 0) * 30 + parseInt(transitMatch[1], 10) + (parseInt(transitMatch[2] || '0', 10)) / 60;
@@ -1946,7 +1967,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // strips bad aspect/date/planet sentences. Logs everything to
         // parsedContent._validation for the UI banner.
         try {
-          validateReading(parsedContent, typeof chartContext === "string" ? chartContext : undefined);
+          validateReading(parsedContent, sanitizedChartContext || undefined);
         } catch (validationErr) {
           console.error("[ask-astrology] validateReading threw:", validationErr);
         }
