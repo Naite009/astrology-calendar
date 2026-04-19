@@ -341,6 +341,8 @@ const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCE
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
 
+NO META SENTENCES — HARD RULE: Every sentence must make a claim about the chart, the person, or a concrete recommendation. Do NOT write introductory, transitional, or self-referential sentences about the document itself. FORBIDDEN sentence patterns include (non-exhaustive): "This reading will explore...", "In this section we'll look at...", "Below, we break down...", "Let's dive into...", "First, let's consider...", "To summarize the above...", "As we'll see in the next section...", "This analysis covers...", "The following addresses...", "Now turning to...", "Before we continue...", "In conclusion,...", "To wrap up,...", "Here's what your chart says about...". If a sentence is only scaffolding and would still be true if you swapped this person's chart for someone else's, DELETE IT. Open every section directly with substance — lived behavior in sentence 1, placement in sentence 2 (per the behavior-first rule). Close every section on the last real claim, not on a meta summary.
+
 CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
 Do not describe astrology using generic traits. All interpretations must be translated into:
 - Real-life behavior (what the person actually does, how they act)
