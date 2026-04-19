@@ -167,6 +167,18 @@ const buildCountsMapFromFacts = (facts: ValidationFacts | null): Record<string, 
  * so the validator does not strip legitimate transit references that the AI
  * was explicitly given as ground truth.
  */
+// Local lookup that doesn't depend on canonicalPlanet (declared later).
+const localPlanetLookup = (token: string): string | null => {
+  if (!token) return null;
+  const symMatch = PLANET_SYMBOLS[token.trim()];
+  if (symMatch) return symMatch;
+  const norm = token.replace(/\s+/g, " ").trim().toLowerCase();
+  for (const p of PLANET_NAMES) {
+    if (p.toLowerCase() === norm) return p;
+  }
+  return null;
+};
+
 const collectTransitAspects = (chartContext: string | undefined, aspectSet: Set<string>) => {
   if (typeof chartContext !== "string" || !chartContext) return;
   const lines = chartContext.split("\n");
@@ -179,8 +191,8 @@ const collectTransitAspects = (chartContext: string | undefined, aspectSet: Set<
   for (const line of lines) {
     const m = line.match(re);
     if (!m) continue;
-    const p1 = canonicalPlanet(m[1].trim());
-    const p2 = canonicalPlanet(m[2].trim());
+    const p1 = localPlanetLookup(m[1].trim());
+    const p2 = localPlanetLookup(m[2].trim());
     const aspect = ASPECT_ALIASES[m[3].toLowerCase()];
     if (!p1 || !p2 || !aspect) continue;
     const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
@@ -190,14 +202,12 @@ const collectTransitAspects = (chartContext: string | undefined, aspectSet: Set<
 
 /**
  * Parse Solar Return / Progressed / Synastry sections that may also list
- * planet positions or aspects in plain text. For now we treat any pre-computed
- * "X aspect Y" claim found near these section headers as authoritative.
+ * planet positions or aspects in plain text. Any "X aspect Y" claim found
+ * inside those headed blocks is treated as authoritative.
  */
 const collectSecondaryChartAspects = (chartContext: string | undefined, aspectSet: Set<string>) => {
   if (typeof chartContext !== "string" || !chartContext) return;
   const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
-  // Generic line of the form "<Planet> <aspect> <Planet>" appearing AFTER a
-  // header that mentions Solar Return, Progressed, Synastry or Composite.
   const sections = chartContext.split(/^---\s+/m);
   for (const block of sections) {
     if (!/SOLAR RETURN|PROGRESSED|SYNASTRY|COMPOSITE|DAVISON/i.test(block)) continue;
@@ -207,8 +217,8 @@ const collectSecondaryChartAspects = (chartContext: string | undefined, aspectSe
     );
     let m: RegExpExecArray | null;
     while ((m = re.exec(block)) !== null) {
-      const p1 = canonicalPlanet(m[1].trim());
-      const p2 = canonicalPlanet(m[3].trim());
+      const p1 = localPlanetLookup(m[1].trim());
+      const p2 = localPlanetLookup(m[3].trim());
       const aspect = ASPECT_ALIASES[m[2].toLowerCase()];
       if (!p1 || !p2 || !aspect) continue;
       const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
