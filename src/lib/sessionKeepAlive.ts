@@ -108,14 +108,47 @@ const idbGet = async (): Promise<unknown> => {
 
 let refreshInFlight: Promise<void> | null = null;
 
+// "AuthSessionMissingError" / "Auth session missing!" means there is literally
+// no refresh token in storage — retrying cannot fix this, it just hammers the
+// auth server every minute and (worse) every retry call into the Supabase SDK
+// can wipe the in-memory session, causing currently-running queries to 401.
+//
+// We treat this as a TERMINAL "go quiet" state: stop the loop, do NOT signOut,
+// do NOT clear tokens. If the user later signs back in, onAuthStateChange will
+// repopulate everything and the next refreshWithRetry call will succeed.
+const isMissingSessionError = (err: unknown): boolean => {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { name?: string; message?: string; __isAuthError?: boolean };
+  if (e.name === "AuthSessionMissingError") return true;
+  if (typeof e.message === "string" && e.message.toLowerCase().includes("auth session missing")) {
+    return true;
+  }
+  return false;
+};
+
 const refreshWithRetry = async (reason: string): Promise<void> => {
   if (refreshInFlight) return refreshInFlight;
+
+  // Cheap pre-check: if there's no session in storage at all, don't even call
+  // refreshSession() — it will just throw AuthSessionMissingError. This is the
+  // single most important guard against the runaway refresh loop.
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      console.info(
+        `[sessionKeepAlive] no session in storage (reason: ${reason}); skipping refresh`,
+      );
+      return;
+    }
+  } catch {
+    // getSession should never throw, but if it does, fall through to refresh.
+  }
 
   refreshInFlight = (async () => {
     let attempt = 0;
     let delay = REFRESH_INITIAL_DELAY_MS;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    const MAX_ATTEMPTS = 8; // ~ couple of minutes of backoff, then give up quietly
+    while (attempt < MAX_ATTEMPTS) {
       attempt += 1;
       try {
         const { data, error } = await supabase.auth.refreshSession();
@@ -132,15 +165,24 @@ const refreshWithRetry = async (reason: string): Promise<void> => {
         );
         return;
       } catch (err) {
+        // TERMINAL: no refresh token to refresh. Stop the loop. Do NOT signOut.
+        if (isMissingSessionError(err)) {
+          console.info(
+            `[sessionKeepAlive] auth session missing (reason: ${reason}); stopping refresh loop (no signOut)`,
+          );
+          return;
+        }
         console.warn(
           `[sessionKeepAlive] refresh attempt ${attempt} failed (reason: ${reason}); retrying in ${delay}ms`,
           err,
         );
         await new Promise((r) => setTimeout(r, delay));
         delay = Math.min(delay * 2, REFRESH_MAX_DELAY_MS);
-        // Loop forever — never give up, never sign out.
       }
     }
+    console.info(
+      `[sessionKeepAlive] giving up refresh loop after ${MAX_ATTEMPTS} attempts (reason: ${reason}); will retry on next visibility/online event`,
+    );
   })().finally(() => {
     refreshInFlight = null;
   });
