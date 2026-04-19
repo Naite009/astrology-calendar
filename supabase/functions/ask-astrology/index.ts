@@ -1,7 +1,7 @@
 // Using built-in Deno.serve (no external std import needed)
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { validateReading } from "./validateReading.ts";
+import { validateReading, listAllowedNatalAspects } from "./validateReading.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
