@@ -285,30 +285,92 @@ const fixCountsInString = (text: string, ctx: Ctx): string => {
   });
 };
 
+// Returns the canonical case-correct planet name for a token like "sun" -> "Sun".
+const canonicalPlanet = (token: string): string | null => {
+  const norm = token.replace(/\s+/g, " ").trim().toLowerCase();
+  for (const p of PLANET_NAMES) {
+    if (p.toLowerCase() === norm) return p;
+  }
+  return null;
+};
+
+const checkAspectPair = (
+  rawP1: string,
+  rawAspect: string,
+  rawP2: string,
+  ctx: Ctx,
+): { bad: boolean; phrase?: string; reason?: string } => {
+  const p1 = canonicalPlanet(rawP1);
+  const p2 = canonicalPlanet(rawP2);
+  const aw = rawAspect.toLowerCase();
+  if (!p1 || !p2 || !ASPECT_WORDS[aw]) return { bad: false };
+  if (p1 === p2) return { bad: false };
+  const phrase = `${p1} ${aw} ${p2}`;
+  const d1 = ctx.facts.degrees[p1];
+  const d2 = ctx.facts.degrees[p2];
+  if (typeof d1 !== "number" || typeof d2 !== "number") return { bad: false };
+  const cfg = ASPECT_WORDS[aw];
+  const sep = aspectSeparation(d1, d2);
+  const orb = Math.abs(sep - cfg.angle);
+  if (orb > cfg.orb) {
+    return { bad: true, phrase, reason: `actual orb ${orb.toFixed(1)}° exceeds max ${cfg.orb}°` };
+  }
+  return { bad: false };
+};
+
 const sentenceClaimsBadAspect = (
   sentence: string,
   ctx: Ctx,
 ): { bad: boolean; phrase?: string; reason?: string } => {
   const planetsAlt = PLANET_NAMES.map((p) => p.replace(/\s/g, "\\s")).join("|");
   const aspectsAlt = Object.keys(ASPECT_WORDS).join("|");
-  const re = new RegExp(`\\b(${planetsAlt})\\s+(${aspectsAlt})\\s+(${planetsAlt})\\b`, "gi");
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(sentence)) !== null) {
-    const p1 = match[1].replace(/\s+/g, " ");
-    const aw = match[2].toLowerCase();
-    const p2 = match[3].replace(/\s+/g, " ");
-    const phrase = `${p1} ${aw} ${p2}`;
-    const d1 = ctx.facts.degrees[p1];
-    const d2 = ctx.facts.degrees[p2];
-    if (typeof d1 !== "number" || typeof d2 !== "number") {
-      // Can't verify because we don't have degrees — be lenient, don't strip.
-      continue;
-    }
-    const cfg = ASPECT_WORDS[aw];
-    const sep = aspectSeparation(d1, d2);
-    const orb = Math.abs(sep - cfg.angle);
-    if (orb > cfg.orb) {
-      return { bad: true, phrase, reason: `actual orb ${orb.toFixed(1)}° exceeds max ${cfg.orb}°` };
+
+  // Pattern A: "Sun square Moon" / "Sun is square Moon" / "Sun, square Moon"
+  // Pattern B: "Sun's square to the Moon" / "Sun's trine with Moon" (possessive)
+  // Pattern C: "Sun-Moon square" / "Sun/Moon trine" (hyphen / slash pair)
+  // Pattern D: "square between Sun and Moon" (reversed order)
+  // Pattern E: "Sun in square to Moon" / "Sun in trine with the Moon"
+  const patterns: Array<{ re: RegExp; map: (m: RegExpExecArray) => [string, string, string] }> = [
+    {
+      // A: planet [optional connector] aspect planet
+      re: new RegExp(
+        `\\b(${planetsAlt})(?:'s|\\s+is|\\s+sits|\\s*,)?\\s+(${aspectsAlt})\\s+(?:to|with|the\\s+)?\\s*(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[2], m[3]],
+    },
+    {
+      // C: hyphen/slash pair followed by aspect word
+      re: new RegExp(
+        `\\b(${planetsAlt})\\s*[-/]\\s*(${planetsAlt})\\s+(${aspectsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[3], m[2]],
+    },
+    {
+      // D: aspect between P1 and P2
+      re: new RegExp(
+        `\\b(${aspectsAlt})\\s+between\\s+(?:the\\s+)?(${planetsAlt})\\s+and\\s+(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[2], m[1], m[3]],
+    },
+    {
+      // E: P1 in aspect to/with P2
+      re: new RegExp(
+        `\\b(${planetsAlt})\\s+in\\s+(?:a\\s+|an\\s+)?(${aspectsAlt})\\s+(?:to|with)\\s+(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[2], m[3]],
+    },
+  ];
+
+  for (const { re, map } of patterns) {
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(sentence)) !== null) {
+      const [rawP1, rawAspect, rawP2] = map(match);
+      const result = checkAspectPair(rawP1, rawAspect, rawP2, ctx);
+      if (result.bad) return result;
     }
   }
   return { bad: false };
