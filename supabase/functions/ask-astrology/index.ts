@@ -2211,6 +2211,38 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         } catch (validationErr) {
           console.error("[ask-astrology] validateReading threw:", validationErr);
         }
+
+        // ONE-SHOT regen-on-drift: if the validator stripped invented
+        // aspects, ask the model to rewrite just those sections using only
+        // real natal aspects, then re-validate ONCE. Never loop.
+        try {
+          const initialReport = parsedContent?._validation;
+          const aspectDrift = initialReport?.stripped_aspects?.length ?? 0;
+          if (aspectDrift > 0 && ANTHROPIC_API_KEY) {
+            console.log(`[ask-astrology] regen-on-drift triggered (${aspectDrift} stripped aspect(s))`);
+            const result = await regenerateAffectedSections(
+              parsedContent,
+              sanitizedChartContext || undefined,
+              systemBlocks,
+              ANTHROPIC_API_KEY,
+            );
+            if (result.regenerated > 0) {
+              try {
+                validateReading(parsedContent, sanitizedChartContext || undefined);
+                console.log(
+                  `[ask-astrology] regen-on-drift complete (rewrote ${result.regenerated} field(s)); ` +
+                    `final drift_count=${parsedContent?._validation?.drift_count ?? "?"}`,
+                );
+              } catch (revalidateErr) {
+                console.error("[ask-astrology] re-validate after regen threw:", revalidateErr);
+              }
+            } else {
+              console.warn("[ask-astrology] regen-on-drift produced no rewrites; keeping stripped output");
+            }
+          }
+        } catch (regenErr) {
+          console.error("[ask-astrology] regen-on-drift threw:", regenErr);
+        }
       }
     } catch (parseError) {
       // Log the actual parsing error for debugging
