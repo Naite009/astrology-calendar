@@ -444,3 +444,58 @@ Deno.test("report: drift_count equals sum of all buckets", () => {
   assertEquals(v.drift_count, sum);
   assert(v.drift_count >= 3, "expected count fix plus aspect/date strips");
 });
+
+// ---------------------------------------------------------------------------
+// REGRESSION: aspects in the prose that match a pre-computed transit-to-natal
+// aspect (injected by AskView) must NOT be stripped, even though they aren't
+// natal aspects. This is the "Jupiter square Sun" / "Jupiter conjunct Saturn"
+// Career Strategy bug the user hit.
+// ---------------------------------------------------------------------------
+
+const CHART_CONTEXT_WITH_TRANSITS = `
+${CHART_CONTEXT}
+
+--- ACTIVE TRANSIT ASPECTS TO NATAL CHART ---
+- Transiting Jupiter 0.5° Aries ☐ Natal Sun 0.0° Aries (orb: 0.5°) — square
+- Transiting Jupiter 6.1° Cancer ☌ Natal Saturn 6.4° Cancer (orb: 0.3°) — conjunct
+- Transiting Pluto 2.0° Aquarius △ Natal Mars 0.0° Libra (orb: 2.0°) — trine
+`;
+
+Deno.test("aspects: keeps transit-to-natal aspects that are pre-computed in chartContext", () => {
+  const reading = {
+    sections: [
+      {
+        type: "summary_box",
+        title: "Career Strategy Summary",
+        body: "Jupiter square Sun this spring opens a confidence window. Jupiter conjunct Saturn later in the year locks in commitments.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT_WITH_TRANSITS);
+  const body = (reading.sections[0] as any).body;
+  assert(
+    body.includes("Jupiter square Sun"),
+    `transit aspect should be kept, got: ${body}`,
+  );
+  assert(
+    body.includes("Jupiter conjunct Saturn"),
+    `transit aspect should be kept, got: ${body}`,
+  );
+  const stripped = (reading as any)._validation.stripped_aspects;
+  assertEquals(stripped.length, 0, `no aspects should be stripped, got: ${JSON.stringify(stripped)}`);
+});
+
+Deno.test("aspects: still strips aspects that are NOT in natal_aspects AND NOT in pre-computed transits", () => {
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "Made-up",
+        body: "Your Mars conjunct Mercury fuels the strategy.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT_WITH_TRANSITS);
+  const stripped = (reading as any)._validation.stripped_aspects;
+  assert(stripped.length >= 1, `fake aspect should still be stripped, got drift=${stripped.length}`);
+});
