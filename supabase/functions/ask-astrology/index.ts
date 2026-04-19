@@ -1630,54 +1630,88 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         }
 
-        // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
-        if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            // Strip Lilith rows from placement tables
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              section.rows = section.rows.filter((row: any) => 
-                !(row.planet && row.planet.toLowerCase().includes('lilith'))
-              );
-            }
-            // Strip Lilith mentions from narrative body text
-            if (section.type === 'narrative_section' && typeof section.body === 'string') {
-              // Remove sentences containing "Lilith"
-              section.body = section.body
+        // POST-GENERATION LILITH/JUNO STRIPPING — universal walker.
+        // Bug B fix: previously only walked narrative_section.body and bullets[],
+        // collapsed paragraph breaks ("\n\n") into spaces, and missed
+        // summary_box items, subsection bodies, city pros/cons, etc.
+        // Now: paragraph-aware sentence strip + recursive walk over every
+        // string field, skipping structured/identifier keys.
+        const STRIP_PARENT_SKIP_KEYS = new Set([
+          "_validation", "_validation_warning", "type", "title", "label",
+          "name", "planet", "aspect", "natal_point", "symbol", "tag",
+          "count", "house", "degrees", "sign", "generated_date",
+          "date_range", "dateRange", "exact_degree", "first_applying_date",
+          "exact_hit_date", "separating_end_date", "pass_label",
+        ]);
+        const stripBodyMentions = (text: string, term: string): string => {
+          if (!text || typeof text !== "string" || !text.includes(term)) return text;
+          // Preserve paragraph breaks: split on double newline, process each
+          // paragraph independently, rejoin with the original separator.
+          return text
+            .split(/(\n\s*\n)/g)
+            .map((chunk) => {
+              if (/^\s*\n/.test(chunk)) return chunk; // separator, keep as-is
+              return chunk
                 .split(/(?<=[.!?])\s+/)
-                .filter((s: string) => !s.includes('Lilith'))
-                .join(' ');
+                .filter((s: string) => !s.includes(term))
+                .join(" ");
+            })
+            .join("");
+        };
+        const stripTermDeep = (node: any, term: string) => {
+          if (node === null || node === undefined) return;
+          if (Array.isArray(node)) {
+            // Drop array entries that are strings entirely about this term,
+            // and recurse into objects.
+            for (let i = node.length - 1; i >= 0; i--) {
+              const child = node[i];
+              if (typeof child === "string") {
+                if (child.includes(term)) {
+                  node[i] = stripBodyMentions(child, term);
+                  if (!node[i].trim()) node.splice(i, 1);
+                }
+              } else if (child && typeof child === "object") {
+                // Special-case bullets/items shaped like {label,text,value}:
+                // drop the whole entry if the visible text mentions the term.
+                const visible = (child.text || child.value || child.label || "");
+                if (typeof visible === "string" && visible.includes(term)) {
+                  node.splice(i, 1);
+                  continue;
+                }
+                stripTermDeep(child, term);
+              }
             }
-            // Strip from bullets
-            if (Array.isArray(section.bullets)) {
-              section.bullets = section.bullets.filter((b: any) => {
-                const text = typeof b === 'string' ? b : (b.text || b.label || '');
-                return !text.includes('Lilith');
-              });
+            return;
+          }
+          if (typeof node === "object") {
+            for (const key of Object.keys(node)) {
+              if (STRIP_PARENT_SKIP_KEYS.has(key)) continue;
+              const v = node[key];
+              if (typeof v === "string") {
+                node[key] = stripBodyMentions(v, term);
+              } else if (v && typeof v === "object") {
+                stripTermDeep(v, term);
+              }
             }
           }
+        };
+        const stripPlacementRows = (term: string) => {
+          if (!Array.isArray(parsedContent.sections)) return;
+          for (const section of parsedContent.sections) {
+            if (section?.type === "placement_table" && Array.isArray(section.rows)) {
+              section.rows = section.rows.filter(
+                (row: any) => !(row?.planet && String(row.planet).toLowerCase().includes(term.toLowerCase())),
+              );
+            }
+          }
+        };
+        if (!lilithDataPresent) {
+          stripPlacementRows("Lilith");
+          stripTermDeep(parsedContent, "Lilith");
         }
-
-        // POST-GENERATION JUNO STRIPPING: If Juno was not in chart data, remove from output
-        if (!junoDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              section.rows = section.rows.filter((row: any) => 
-                !(row.planet && row.planet.toLowerCase().includes('juno'))
-              );
-            }
-            if (section.type === 'narrative_section' && typeof section.body === 'string') {
-              section.body = section.body
-                .split(/(?<=[.!?])\s+/)
-                .filter((s: string) => !s.includes('Juno'))
-                .join(' ');
-            }
-            if (Array.isArray(section.bullets)) {
-              section.bullets = section.bullets.filter((b: any) => {
-                const text = typeof b === 'string' ? b : (b.text || b.label || '');
-                return !text.includes('Juno');
-              });
-            }
-          }
+        if (!junoDataPresent) {
+          stripPlacementRows("Juno");
+          stripTermDeep(parsedContent, "Juno");
         }
 
         // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
