@@ -208,6 +208,74 @@ const sanitizeDeterministicTiming = (input: any) => {
   };
 };
 
+// Deterministic post-correction for the modality_element section.
+// The AI sometimes writes count words in `balance_interpretation` that do not match the
+// integers in elements[]/modalities[]/polarity[]. We rewrite the prose so the words match.
+const NUMBER_WORDS: Record<number, string> = {
+  0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+  6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+};
+const WORD_TO_NUMBER: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+};
+
+const correctModalityElementCounts = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "modality_element") continue;
+    const text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
+    if (!text) continue;
+
+    // Build a lookup: lowercased category name -> actual count from arrays
+    const counts: Record<string, number> = {};
+    const collect = (arr: any) => {
+      if (!Array.isArray(arr)) return;
+      for (const item of arr) {
+        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+        // "Yang (Active)" -> also register "yang"
+        const lower = item.name.toLowerCase();
+        counts[lower] = item.count;
+        const firstWord = lower.split(/[\s(]/)[0];
+        if (firstWord) counts[firstWord] = item.count;
+      }
+    };
+    collect(section.elements);
+    collect(section.modalities);
+    collect(section.polarity);
+
+    if (Object.keys(counts).length === 0) continue;
+
+    let corrected = text;
+    let changed = false;
+
+    // Match "<numberword> <Category>" (case-insensitive on the number, preserve case of category)
+    const pattern = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten)(\s+)([A-Za-z]+)\b/gi;
+    corrected = corrected.replace(pattern, (match, numWord: string, gap: string, category: string) => {
+      const catKey = category.toLowerCase();
+      const actual = counts[catKey];
+      if (typeof actual !== "number") return match;
+      const stated = WORD_TO_NUMBER[numWord.toLowerCase()];
+      if (stated === actual) return match;
+      const replacementWord = NUMBER_WORDS[actual] ?? String(actual);
+      // Preserve original capitalization of the number word
+      const isCapitalized = numWord[0] === numWord[0].toUpperCase();
+      const finalWord = isCapitalized
+        ? replacementWord[0].toUpperCase() + replacementWord.slice(1)
+        : replacementWord;
+      changed = true;
+      console.info("[ask-astrology] balance_interpretation count corrected", {
+        category, stated, actual,
+      });
+      return `${finalWord}${gap}${category}`;
+    });
+
+    if (changed) {
+      section.balance_interpretation = corrected;
+    }
+  }
+};
+
 const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
@@ -1638,6 +1706,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         if (safeDeterministicTiming) {
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
+
+        // Deterministically correct any mismatched count words in modality_element.balance_interpretation
+        correctModalityElementCounts(parsedContent);
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
