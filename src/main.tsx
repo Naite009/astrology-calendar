@@ -58,12 +58,24 @@ const triggerAutoReload = (reason: string) => {
   }
   if (!canAutoReload()) return false;
 
+  const target = buildReloadUrl();
+
+  // CRITICAL: never reload to a different origin. The Lovable preview iframe
+  // can switch sandbox hosts (lovableproject.com ↔ lovable.app), and Supabase
+  // sessions are stored in origin-scoped localStorage. A cross-origin reload
+  // = the user gets signed out. Skip the reload and let the recovery screen
+  // (or simply the existing app state) handle it.
+  if (!isSafeSameOriginReload(target)) {
+    console.warn(`[main] Skipping auto-reload (${reason}) — would cross origin`);
+    return false;
+  }
+
   const attempts = readSessionNumber(AUTO_RELOAD_ATTEMPTS_KEY) + 1;
   sessionStorage.setItem(AUTO_RELOAD_ATTEMPTS_KEY, String(attempts));
   sessionStorage.setItem(AUTO_RELOAD_KEY, String(Date.now()));
 
   console.warn(`Auto-reloading app (${attempts}/${MAX_AUTO_RELOADS}) due to: ${reason}`);
-  window.location.replace(buildReloadUrl());
+  window.location.replace(target);
   return true;
 };
 
