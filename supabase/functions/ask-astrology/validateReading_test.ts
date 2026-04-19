@@ -261,6 +261,107 @@ Deno.test("dates: keeps bare-month claim that overlaps a structured window", () 
   assert(body.includes("March 2027"), `should keep covered bare-month, got: ${body}`);
 });
 
+// ─────────────────────────────────────────────────────────────────────────
+// Range-parser regression tests — these are the formats Lovable's parser
+// was missing in the wild, causing valid bare-month claims to be stripped.
+// ─────────────────────────────────────────────────────────────────────────
+
+Deno.test("dates: single-year-endpoint range covers a bare-month inside it ('Apr 19 to May 24, 2026' covers May 2026)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "timing_section",
+        title: "Windows",
+        transits: [],
+        windows: [{ label: "Apr 19 to May 24, 2026", description: "Active band." }],
+      },
+      {
+        type: "summary_box",
+        title: "Strategy Summary",
+        value: "May 2026 is the right time to act.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const value = (reading.sections[1] as any).value;
+  assert(value.includes("May 2026"), `should keep May 2026 covered by 'Apr 19 to May 24, 2026', got: ${value}`);
+});
+
+Deno.test("dates: en-dash range without spaces covers bare-month ('Feb 1–Apr 20, 2026' covers Mar 2026)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "timing_section",
+        title: "Windows",
+        transits: [{
+          planet: "Pluto", aspect: "square", natal_point: "Moon",
+          date_range: "Feb 1–Apr 20, 2026",
+          interpretation: "Pass 1.",
+        }],
+        windows: [],
+      },
+      {
+        type: "narrative_section",
+        title: "Spring",
+        body: "March 2026 is when things shift.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const body = (reading.sections[1] as any).body;
+  assert(body.includes("March 2026"), `should keep March 2026 covered by 'Feb 1–Apr 20, 2026', got: ${body}`);
+});
+
+Deno.test("dates: year-rollover range parses correctly ('Nov 15 to Feb 10, 2027' covers Dec 2026 AND Jan 2027)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "timing_section",
+        title: "Windows",
+        transits: [],
+        windows: [{ label: "Nov 15 to Feb 10, 2027", description: "Cross-year band." }],
+      },
+      {
+        type: "summary_box",
+        title: "Strategy Summary",
+        value: "Plan for Dec 2026. Also Jan 2027.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const value = (reading.sections[1] as any).value;
+  assert(value.includes("Dec 2026"), `should keep Dec 2026 in year-rollover window, got: ${value}`);
+  assert(value.includes("Jan 2027"), `should keep Jan 2027 in year-rollover window, got: ${value}`);
+});
+
+Deno.test("dates: applying→separating endpoints synthesize a coverage range when date_range is missing", () => {
+  const reading = {
+    sections: [
+      {
+        type: "timing_section",
+        title: "Windows",
+        transits: [{
+          planet: "Jupiter", aspect: "conjunct", natal_point: "Venus",
+          first_applying_date: "May 8, 2026",
+          exact_hit_date: "May 18, 2026",
+          separating_end_date: "Jun 2, 2026",
+          interpretation: "Single pass.",
+          // NOTE: no date_range field — must be synthesized.
+        }],
+        windows: [],
+      },
+      {
+        type: "summary_box",
+        title: "Strategy",
+        value: "May 2026 is the window.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const value = (reading.sections[1] as any).value;
+  assert(value.includes("May 2026"), `should keep May 2026 from synthesized applying→separating range, got: ${value}`);
+});
+
 Deno.test("nested: validates strings inside subsections[].body", () => {
   const reading = {
     sections: [
