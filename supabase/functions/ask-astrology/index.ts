@@ -1707,6 +1707,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
+        // Deterministically correct any mismatched count words in modality_element.balance_interpretation
+        correctModalityElementCounts(parsedContent);
+
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           // Extract known natal planet names from chart data
