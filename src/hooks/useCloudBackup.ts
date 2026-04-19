@@ -277,8 +277,45 @@ export const useCloudBackup = (
       }
 
       const deduped = Array.from(byChartId.values());
-      const restoredSavedCharts: NatalChart[] = [];
-      const seenNames = new Set<string>();
+
+      // CRITICAL: read the LATEST local saved charts directly from storage.
+      // Reading from the `savedCharts` closure variable risks wiping a chart
+      // the user just added (e.g., between auth-check and cloud-fetch) because
+      // the closure captures a stale value. Storage is the source of truth.
+      let localCharts: NatalChart[] = [];
+      try {
+        const raw = localStorage.getItem('savedCharts');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) localCharts = parsed.filter(c => c && c.name);
+        }
+      } catch {
+        localCharts = savedCharts;
+      }
+
+      // Build a merged map keyed by normalized name. Local-only charts are
+      // preserved; cloud charts fill in missing names; if both exist, prefer
+      // the entry with more planet data (otherwise the cloud copy).
+      const mergedByName = new Map<string, NatalChart>();
+
+      const planetCount = (c: NatalChart): number => {
+        if (!c?.planets) return 0;
+        try {
+          return Object.values(c.planets).filter((p: any) => p && p.sign).length;
+        } catch {
+          return 0;
+        }
+      };
+
+      // Seed with local saved charts first so they survive even if cloud
+      // dedup would otherwise drop them.
+      for (const lc of localCharts) {
+        if ((lc as any).solarReturnYear) continue;
+        if (lc.id?.startsWith('hd_')) continue;
+        const key = (lc.name || '').toLowerCase().trim();
+        if (!key) continue;
+        mergedByName.set(key, lc);
+      }
 
       for (const cloudChart of deduped) {
         const chartData = cloudChart.chart_data as unknown as NatalChart;
@@ -290,20 +327,30 @@ export const useCloudBackup = (
 
         if (cloudChart.chart_id === 'user') {
           saveUserNatalChart(chartData);
-          seenNames.add((chartData.name || '').toLowerCase().trim());
           restoredCount++;
-        } else {
-          // Deduplicate by normalized name - keep the one with more planet data
-          const normName = (chartData.name || '').toLowerCase().trim();
-          if (seenNames.has(normName)) continue;
-          seenNames.add(normName);
-          restoredSavedCharts.push({
-            ...chartData,
-            id: cloudChart.chart_id,
-          });
-          restoredCount++;
+          continue;
         }
+
+        const normName = (chartData.name || '').toLowerCase().trim();
+        if (!normName) continue;
+
+        const cloudVersion: NatalChart = {
+          ...chartData,
+          id: cloudChart.chart_id,
+        };
+
+        const existing = mergedByName.get(normName);
+        if (!existing) {
+          mergedByName.set(normName, cloudVersion);
+          restoredCount++;
+        } else if (planetCount(cloudVersion) > planetCount(existing)) {
+          // Cloud has richer data — prefer it.
+          mergedByName.set(normName, cloudVersion);
+        }
+        // else: keep local copy (preserves locally-added charts not yet synced)
       }
+
+      const restoredSavedCharts = Array.from(mergedByName.values());
 
       if (restoredSavedCharts.length > 0) {
         setSavedCharts(restoredSavedCharts);
