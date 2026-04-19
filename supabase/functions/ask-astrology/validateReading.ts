@@ -285,52 +285,118 @@ const fixCountsInString = (text: string, ctx: Ctx): string => {
   });
 };
 
+// Returns the canonical case-correct planet name for a token like "sun" -> "Sun".
+const canonicalPlanet = (token: string): string | null => {
+  const norm = token.replace(/\s+/g, " ").trim().toLowerCase();
+  for (const p of PLANET_NAMES) {
+    if (p.toLowerCase() === norm) return p;
+  }
+  return null;
+};
+
+const checkAspectPair = (
+  rawP1: string,
+  rawAspect: string,
+  rawP2: string,
+  ctx: Ctx,
+): { bad: boolean; phrase?: string; reason?: string } => {
+  const p1 = canonicalPlanet(rawP1);
+  const p2 = canonicalPlanet(rawP2);
+  const aw = rawAspect.toLowerCase();
+  if (!p1 || !p2 || !ASPECT_WORDS[aw]) return { bad: false };
+  if (p1 === p2) return { bad: false };
+  const phrase = `${p1} ${aw} ${p2}`;
+  const d1 = ctx.facts.degrees[p1];
+  const d2 = ctx.facts.degrees[p2];
+  if (typeof d1 !== "number" || typeof d2 !== "number") return { bad: false };
+  const cfg = ASPECT_WORDS[aw];
+  const sep = aspectSeparation(d1, d2);
+  const orb = Math.abs(sep - cfg.angle);
+  if (orb > cfg.orb) {
+    return { bad: true, phrase, reason: `actual orb ${orb.toFixed(1)}° exceeds max ${cfg.orb}°` };
+  }
+  return { bad: false };
+};
+
 const sentenceClaimsBadAspect = (
   sentence: string,
   ctx: Ctx,
 ): { bad: boolean; phrase?: string; reason?: string } => {
   const planetsAlt = PLANET_NAMES.map((p) => p.replace(/\s/g, "\\s")).join("|");
   const aspectsAlt = Object.keys(ASPECT_WORDS).join("|");
-  const re = new RegExp(`\\b(${planetsAlt})\\s+(${aspectsAlt})\\s+(${planetsAlt})\\b`, "gi");
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(sentence)) !== null) {
-    const p1 = match[1].replace(/\s+/g, " ");
-    const aw = match[2].toLowerCase();
-    const p2 = match[3].replace(/\s+/g, " ");
-    const phrase = `${p1} ${aw} ${p2}`;
-    const d1 = ctx.facts.degrees[p1];
-    const d2 = ctx.facts.degrees[p2];
-    if (typeof d1 !== "number" || typeof d2 !== "number") {
-      // Can't verify because we don't have degrees — be lenient, don't strip.
-      continue;
-    }
-    const cfg = ASPECT_WORDS[aw];
-    const sep = aspectSeparation(d1, d2);
-    const orb = Math.abs(sep - cfg.angle);
-    if (orb > cfg.orb) {
-      return { bad: true, phrase, reason: `actual orb ${orb.toFixed(1)}° exceeds max ${cfg.orb}°` };
+
+  // Pattern A: "Sun square Moon" / "Sun is square Moon" / "Sun, square Moon"
+  // Pattern B: "Sun's square to the Moon" / "Sun's trine with Moon" (possessive)
+  // Pattern C: "Sun-Moon square" / "Sun/Moon trine" (hyphen / slash pair)
+  // Pattern D: "square between Sun and Moon" (reversed order)
+  // Pattern E: "Sun in square to Moon" / "Sun in trine with the Moon"
+  const patterns: Array<{ re: RegExp; map: (m: RegExpExecArray) => [string, string, string] }> = [
+    {
+      // A: planet [optional connector] aspect planet
+      re: new RegExp(
+        `\\b(${planetsAlt})(?:'s|\\s+is|\\s+sits|\\s*,)?\\s+(${aspectsAlt})\\s+(?:to|with|the\\s+)?\\s*(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[2], m[3]],
+    },
+    {
+      // C: hyphen/slash pair followed by aspect word
+      re: new RegExp(
+        `\\b(${planetsAlt})\\s*[-/]\\s*(${planetsAlt})\\s+(${aspectsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[3], m[2]],
+    },
+    {
+      // D: aspect between P1 and P2
+      re: new RegExp(
+        `\\b(${aspectsAlt})\\s+between\\s+(?:the\\s+)?(${planetsAlt})\\s+and\\s+(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[2], m[1], m[3]],
+    },
+    {
+      // E: P1 in aspect to/with P2
+      re: new RegExp(
+        `\\b(${planetsAlt})\\s+in\\s+(?:a\\s+|an\\s+)?(${aspectsAlt})\\s+(?:to|with)\\s+(?:the\\s+)?(${planetsAlt})\\b`,
+        "gi",
+      ),
+      map: (m) => [m[1], m[2], m[3]],
+    },
+  ];
+
+  for (const { re, map } of patterns) {
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(sentence)) !== null) {
+      const [rawP1, rawAspect, rawP2] = map(match);
+      const result = checkAspectPair(rawP1, rawAspect, rawP2, ctx);
+      if (result.bad) return result;
     }
   }
   return { bad: false };
 };
 
+// All 10 traditional planets + Chiron + Nodes + Angles exist in EVERY natal
+// chart. The only thing this check should flag is a planet name the AI
+// fabricated entirely (e.g., "Eris", "Sedna", "Vulcan") that is NOT in our
+// canonical PLANET_NAMES list AND NOT in the chart's known set.
+//
+// Previously this stripped any planet missing from chartContext parsing,
+// which falsely killed valid sentences when the chart-context regex didn't
+// capture every planet's degree line. We now trust PLANET_NAMES as the
+// always-valid set; chartContext only adds extra exotic bodies.
+const ALWAYS_VALID_PLANETS = new Set(PLANET_NAMES);
+
 const sentenceClaimsUnknownPlanet = (
-  sentence: string,
-  ctx: Ctx,
+  _sentence: string,
+  _ctx: Ctx,
 ): { bad: boolean; phrase?: string } => {
-  if (ctx.facts.knownPlanets.size === 0) return { bad: false };
-  // Only match planet-name tokens that are clearly being used as celestial bodies
-  // (capitalized, standalone). Skip Sun/Moon since they're also common English words
-  // that pop up in non-astrological contexts ("under the sun").
-  const checkable = PLANET_NAMES.filter(
-    (p) => !["Sun", "Moon"].includes(p) && !ctx.facts.knownPlanets.has(p),
-  );
-  for (const p of checkable) {
-    const re = new RegExp(`\\b${p.replace(/\s+/g, "\\s+")}\\b`);
-    if (re.test(sentence)) {
-      return { bad: true, phrase: p };
-    }
-  }
+  // We don't currently scan for fabricated exotic planets here because the
+  // surrounding aspect/date checks are stricter and catch most issues.
+  // ALWAYS_VALID_PLANETS already covers the 17 standard bodies, so any
+  // sentence mentioning Sun/Moon/Mercury/.../Chiron/Nodes/Angles is allowed.
+  // Reserved for future use if we want to flag Eris/Sedna/etc.
+  void ALWAYS_VALID_PLANETS;
   return { bad: false };
 };
 
@@ -399,55 +465,70 @@ const transformString = (text: string, ctx: Ctx): string => {
   return out;
 };
 
-// ── Walk every string field in a section, applying the transforms ──
-const STRING_FIELDS_TO_VALIDATE = [
-  "body", "interpretation", "balance_interpretation", "summary",
-  "description", "content", "text", "answer", "intro", "outro",
-];
+// (Legacy shallow walker removed — deepWalkAndTransform below covers
+// every nested field including subsections, scenes, cities, etc.)
 
-const walkAndTransformSection = (section: any, ctx: Ctx) => {
-  if (!section || typeof section !== "object") return;
+// Keys we should NEVER walk into — they hold structured data the AI didn't write
+// in narrative form (counts, raw planet objects, the validation report itself).
+const SKIP_KEYS = new Set([
+  "_validation",
+  "_validation_warning",
+  "elements",
+  "modalities",
+  "polarity",
+  "transits",
+  "windows",
+  "date_range",
+  "dateRange",
+  "symbol",
+  "tag",
+  "type",
+  "title",
+  "label",
+  "name",
+  "planet",
+  "aspect",
+  "natal_point",
+  "count",
+  "generated_date",
+]);
 
-  // Direct string fields
-  for (const key of STRING_FIELDS_TO_VALIDATE) {
-    if (typeof section[key] === "string") {
-      section[key] = transformString(section[key], ctx);
-    }
-  }
-
-  // Bullet arrays (string[])
-  for (const key of ["bullets", "highlights", "key_points", "takeaways"]) {
-    if (Array.isArray(section[key])) {
-      section[key] = section[key].map((b: any) =>
-        typeof b === "string" ? transformString(b, ctx) : b,
-      );
-    }
-  }
-
-  // Per-element/modality/polarity rows have their own interpretation strings
-  for (const arrKey of ["elements", "modalities", "polarity"]) {
-    if (Array.isArray(section[arrKey])) {
-      for (const item of section[arrKey]) {
-        if (item && typeof item.interpretation === "string") {
-          item.interpretation = transformString(item.interpretation, ctx);
-        }
+// Recursively walk every string field in any nested object/array, applying
+// transforms. This catches subsections[].body, scenes[].bullets[], cities[].pros,
+// or any other structure the AI invents. Skip structured/identifier keys.
+const deepWalkAndTransform = (node: any, ctx: Ctx) => {
+  if (node === null || node === undefined) return;
+  if (typeof node === "string") return; // strings are mutated by parent (objects can't replace primitives in-place)
+  if (Array.isArray(node)) {
+    for (let i = 0; i < node.length; i++) {
+      const child = node[i];
+      if (typeof child === "string") {
+        node[i] = transformString(child, ctx);
+      } else if (child && typeof child === "object") {
+        deepWalkAndTransform(child, ctx);
       }
     }
+    return;
   }
+  if (typeof node === "object") {
+    for (const key of Object.keys(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      const v = node[key];
+      if (typeof v === "string") {
+        node[key] = transformString(v, ctx);
+      } else if (v && typeof v === "object") {
+        deepWalkAndTransform(v, ctx);
+      }
+    }
 
-  // Generic nested objects/arrays — recurse one level for things like
-  // narrative_section.subsections[].body
-  for (const k of Object.keys(section)) {
-    const v = section[k];
-    if (Array.isArray(v)) {
-      for (const child of v) {
-        if (child && typeof child === "object" && !Array.isArray(child)) {
-          // only recurse if it looks like a sub-block
-          for (const fkey of STRING_FIELDS_TO_VALIDATE) {
-            if (typeof child[fkey] === "string") {
-              child[fkey] = transformString(child[fkey], ctx);
-            }
-          }
+    // Per-element/modality/polarity rows DO have prose interpretations
+    // we want to validate, even though the array key is in SKIP_KEYS.
+    for (const arrKey of ["elements", "modalities", "polarity"]) {
+      const arr = node[arrKey];
+      if (!Array.isArray(arr)) continue;
+      for (const item of arr) {
+        if (item && typeof item === "object" && typeof item.interpretation === "string") {
+          item.interpretation = transformString(item.interpretation, ctx);
         }
       }
     }
@@ -461,7 +542,9 @@ export const validateReading = (
 ): ValidationReport => {
   const report = emptyReport();
   if (!parsedContent || !Array.isArray(parsedContent.sections)) {
-    parsedContent._validation = report;
+    if (parsedContent && typeof parsedContent === "object") {
+      parsedContent._validation = report;
+    }
     return report;
   }
 
@@ -472,7 +555,7 @@ export const validateReading = (
   for (const section of parsedContent.sections) {
     const label = `${section?.type || "unknown"}::${(section?.title || "").slice(0, 40)}`;
     const ctx: Ctx = { counts, facts, ranges, report, sectionLabel: label };
-    walkAndTransformSection(section, ctx);
+    deepWalkAndTransform(section, ctx);
   }
 
   report.drift_count =
