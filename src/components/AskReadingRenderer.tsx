@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
+import { DriftBanner } from "./DriftBanner";
 
 // Types for structured reading
 export interface PlacementRow {
