@@ -243,6 +243,40 @@ const findDateCoverage = (d: Date, ranges: DateRange[], pad = 30): { covered: bo
   };
 };
 
+/**
+ * Bare-month references (e.g., "May 2026") must be backed by a structured
+ * timing window that actually intersects that calendar month. We deliberately
+ * do NOT apply the ±30-day pad here — otherwise a window like "Apr 1–30, 2026"
+ * would falsely cover "May 2026". A pure month claim is only valid when at
+ * least one structured window overlaps any day in that month.
+ */
+const findMonthCoverage = (
+  year: number,
+  monthIdx: number,
+  ranges: DateRange[],
+): { covered: boolean; reason: string } => {
+  const monthStart = new Date(year, monthIdx, 1);
+  const monthEnd = new Date(year, monthIdx + 1, 0);
+  for (const r of ranges) {
+    if (r.start <= monthEnd && r.end >= monthStart) {
+      return { covered: true, reason: `month overlaps timing window \"${r.source}\"` };
+    }
+  }
+  if (ranges.length === 0) {
+    return { covered: false, reason: "no timing windows were available to verify this month" };
+  }
+  const nearest = [...ranges].sort((a, b) => {
+    const mid = new Date(year, monthIdx, 15).getTime();
+    const aDist = Math.min(Math.abs(mid - a.start.getTime()), Math.abs(mid - a.end.getTime()));
+    const bDist = Math.min(Math.abs(mid - b.start.getTime()), Math.abs(mid - b.end.getTime()));
+    return aDist - bDist;
+  })[0];
+  return {
+    covered: false,
+    reason: `bare-month claim not backed by any timing window; nearest structured window is \"${nearest.source}\"`,
+  };
+};
+
 const splitSentences = (text: string): string[] => text.split(/(?<=[.!?])\s+(?=[A-Z"])/g);
 
 type Ctx = {
@@ -368,9 +402,21 @@ const sentenceClaimsBadDate = (
     const monthName = m[1];
     const dayPart = m[2]?.replace(/[,\s]/g, "");
     const year = m[3];
-    const day = dayPart ? parseInt(dayPart, 10) : 15;
     const monthIdx = [...MONTH_NAMES, ...MONTH_ABBR].indexOf(monthName) % 12;
-    const d = new Date(parseInt(year, 10), monthIdx, day);
+    const yearNum = parseInt(year, 10);
+
+    // Bare-month claim ("May 2026") — must overlap a structured window
+    // strictly within that calendar month, no ±30-day pad.
+    if (!dayPart) {
+      const coverage = findMonthCoverage(yearNum, monthIdx, ctx.ranges);
+      if (!coverage.covered) {
+        return { bad: true, phrase: m[0], reason: coverage.reason };
+      }
+      continue;
+    }
+
+    // Full date claim ("May 24, 2026") — allow ±30-day window padding.
+    const d = new Date(yearNum, monthIdx, parseInt(dayPart, 10));
     if (isNaN(d.getTime())) continue;
     const coverage = findDateCoverage(d, ctx.ranges);
     if (!coverage.covered) {

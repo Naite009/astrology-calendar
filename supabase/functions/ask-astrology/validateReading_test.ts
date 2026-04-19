@@ -223,6 +223,44 @@ Deno.test("dates: strips unsupported date and logs the nearest structured window
   assert(stripped.reason.includes("nearest structured window"), `expected explicit reason, got: ${stripped.reason}`);
 });
 
+Deno.test("dates: strips bare-month claim (e.g. 'May 2026') outside any structured window", () => {
+  const reading = {
+    sections: [
+      baseTimingSection(),
+      {
+        type: "summary_box",
+        title: "Strategy Summary",
+        value: "Consider relocating in May 2026, Jun 2026, or Aug 2026 for best results. This sentence is unrelated.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const value = (reading.sections[1] as any).value;
+  assert(!value.includes("May 2026"), `should strip bare-month May 2026, got: ${value}`);
+  const stripped = (reading as any)._validation.stripped_dates;
+  assert(stripped.length >= 1, `expected at least 1 strip, got ${stripped.length}`);
+  assert(
+    stripped[0].reason.includes("bare-month") || stripped[0].reason.includes("nearest structured window"),
+    `expected bare-month reason, got: ${stripped[0].reason}`,
+  );
+});
+
+Deno.test("dates: keeps bare-month claim that overlaps a structured window", () => {
+  const reading = {
+    sections: [
+      baseTimingSection(),
+      {
+        type: "narrative_section",
+        title: "Year Ahead",
+        body: "March 2027 is when things shift for you.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const body = (reading.sections[1] as any).body;
+  assert(body.includes("March 2027"), `should keep covered bare-month, got: ${body}`);
+});
+
 Deno.test("nested: validates strings inside subsections[].body", () => {
   const reading = {
     sections: [
