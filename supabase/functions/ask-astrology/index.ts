@@ -1524,8 +1524,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               console.error("Anthropic stream error event:", evt);
               throw new Error(evt.error?.message || "Stream error");
             }
-          } catch {
-            // Skip malformed event chunks
+          } catch (parseEvtErr) {
+            // Log once per stream that we hit a malformed event so future
+            // Anthropic shape changes don't fail silently.
+            console.warn("[ask-astrology] Skipped malformed stream event:", parseEvtErr instanceof Error ? parseEvtErr.message : parseEvtErr);
           }
         }
       }
@@ -1591,11 +1593,21 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         if (wasTruncated) {
           console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
           parsedContent = repairTruncatedJson(cleaned);
-          if (parsedContent) {
+          // Bug F fix: only accept the repair if it produced a usable
+          // structure (object with at least one section). Otherwise fall
+          // through to the outer parse-error path so the user sees a clean
+          // failure instead of a silently empty "completed" reading.
+          const repairLooksUsable =
+            parsedContent &&
+            typeof parsedContent === "object" &&
+            Array.isArray(parsedContent.sections) &&
+            parsedContent.sections.length > 0;
+          if (repairLooksUsable) {
             parsedContent._truncated = true;
             parsedContent._truncation_notice = "This reading was very long and may be missing the final sections. Try regenerating if anything important looks cut off.";
-            console.log("[ask-astrology] JSON repair SUCCEEDED — preserved partial reading");
+            console.log(`[ask-astrology] JSON repair SUCCEEDED — preserved ${parsedContent.sections.length} section(s)`);
           } else {
+            console.error("[ask-astrology] JSON repair returned unusable structure — failing job");
             throw firstErr;
           }
         } else {
@@ -1630,54 +1642,88 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         }
 
-        // POST-GENERATION LILITH STRIPPING: If Lilith was not in chart data, remove from output
-        if (!lilithDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            // Strip Lilith rows from placement tables
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              section.rows = section.rows.filter((row: any) => 
-                !(row.planet && row.planet.toLowerCase().includes('lilith'))
-              );
-            }
-            // Strip Lilith mentions from narrative body text
-            if (section.type === 'narrative_section' && typeof section.body === 'string') {
-              // Remove sentences containing "Lilith"
-              section.body = section.body
+        // POST-GENERATION LILITH/JUNO STRIPPING — universal walker.
+        // Bug B fix: previously only walked narrative_section.body and bullets[],
+        // collapsed paragraph breaks ("\n\n") into spaces, and missed
+        // summary_box items, subsection bodies, city pros/cons, etc.
+        // Now: paragraph-aware sentence strip + recursive walk over every
+        // string field, skipping structured/identifier keys.
+        const STRIP_PARENT_SKIP_KEYS = new Set([
+          "_validation", "_validation_warning", "type", "title", "label",
+          "name", "planet", "aspect", "natal_point", "symbol", "tag",
+          "count", "house", "degrees", "sign", "generated_date",
+          "date_range", "dateRange", "exact_degree", "first_applying_date",
+          "exact_hit_date", "separating_end_date", "pass_label",
+        ]);
+        const stripBodyMentions = (text: string, term: string): string => {
+          if (!text || typeof text !== "string" || !text.includes(term)) return text;
+          // Preserve paragraph breaks: split on double newline, process each
+          // paragraph independently, rejoin with the original separator.
+          return text
+            .split(/(\n\s*\n)/g)
+            .map((chunk) => {
+              if (/^\s*\n/.test(chunk)) return chunk; // separator, keep as-is
+              return chunk
                 .split(/(?<=[.!?])\s+/)
-                .filter((s: string) => !s.includes('Lilith'))
-                .join(' ');
+                .filter((s: string) => !s.includes(term))
+                .join(" ");
+            })
+            .join("");
+        };
+        const stripTermDeep = (node: any, term: string) => {
+          if (node === null || node === undefined) return;
+          if (Array.isArray(node)) {
+            // Drop array entries that are strings entirely about this term,
+            // and recurse into objects.
+            for (let i = node.length - 1; i >= 0; i--) {
+              const child = node[i];
+              if (typeof child === "string") {
+                if (child.includes(term)) {
+                  node[i] = stripBodyMentions(child, term);
+                  if (!node[i].trim()) node.splice(i, 1);
+                }
+              } else if (child && typeof child === "object") {
+                // Special-case bullets/items shaped like {label,text,value}:
+                // drop the whole entry if the visible text mentions the term.
+                const visible = (child.text || child.value || child.label || "");
+                if (typeof visible === "string" && visible.includes(term)) {
+                  node.splice(i, 1);
+                  continue;
+                }
+                stripTermDeep(child, term);
+              }
             }
-            // Strip from bullets
-            if (Array.isArray(section.bullets)) {
-              section.bullets = section.bullets.filter((b: any) => {
-                const text = typeof b === 'string' ? b : (b.text || b.label || '');
-                return !text.includes('Lilith');
-              });
+            return;
+          }
+          if (typeof node === "object") {
+            for (const key of Object.keys(node)) {
+              if (STRIP_PARENT_SKIP_KEYS.has(key)) continue;
+              const v = node[key];
+              if (typeof v === "string") {
+                node[key] = stripBodyMentions(v, term);
+              } else if (v && typeof v === "object") {
+                stripTermDeep(v, term);
+              }
             }
           }
+        };
+        const stripPlacementRows = (term: string) => {
+          if (!Array.isArray(parsedContent.sections)) return;
+          for (const section of parsedContent.sections) {
+            if (section?.type === "placement_table" && Array.isArray(section.rows)) {
+              section.rows = section.rows.filter(
+                (row: any) => !(row?.planet && String(row.planet).toLowerCase().includes(term.toLowerCase())),
+              );
+            }
+          }
+        };
+        if (!lilithDataPresent) {
+          stripPlacementRows("Lilith");
+          stripTermDeep(parsedContent, "Lilith");
         }
-
-        // POST-GENERATION JUNO STRIPPING: If Juno was not in chart data, remove from output
-        if (!junoDataPresent && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              section.rows = section.rows.filter((row: any) => 
-                !(row.planet && row.planet.toLowerCase().includes('juno'))
-              );
-            }
-            if (section.type === 'narrative_section' && typeof section.body === 'string') {
-              section.body = section.body
-                .split(/(?<=[.!?])\s+/)
-                .filter((s: string) => !s.includes('Juno'))
-                .join(' ');
-            }
-            if (Array.isArray(section.bullets)) {
-              section.bullets = section.bullets.filter((b: any) => {
-                const text = typeof b === 'string' ? b : (b.text || b.label || '');
-                return !text.includes('Juno');
-              });
-            }
-          }
+        if (!junoDataPresent) {
+          stripPlacementRows("Juno");
+          stripTermDeep(parsedContent, "Juno");
         }
 
         // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
@@ -1698,37 +1744,29 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         }
 
         // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
+        // Bug A fix: previously wrote to section._validation_warning which the
+        // UI never reads. Now we attach a top-level _count_sum_warnings array
+        // and log to console. We do NOT auto-rebalance counts (that would
+        // silently invent data); we only flag for the drift banner.
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const countWarnings: string[] = [];
           for (const section of parsedContent.sections) {
-            if (section.type === 'modality_element') {
-              // Validate elements sum to 10
-              if (Array.isArray(section.elements)) {
-                const elemSum = section.elements.reduce((sum: number, e: any) => sum + (e.count || 0), 0);
-                if (elemSum !== 10) {
-                  console.warn(`Element count validation: sum was ${elemSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Element counts sum to ${elemSum} instead of 10`);
-                }
+            if (section.type !== 'modality_element') continue;
+            const checkSum = (arr: any, label: string, expected: number) => {
+              if (!Array.isArray(arr)) return;
+              const sum = arr.reduce((s: number, e: any) => s + (Number(e?.count) || 0), 0);
+              if (sum !== expected) {
+                const msg = `${label} counts sum to ${sum} instead of ${expected}`;
+                console.warn(`[ask-astrology] ${msg}`);
+                countWarnings.push(msg);
               }
-              // Validate modalities sum to 10
-              if (Array.isArray(section.modalities)) {
-                const modSum = section.modalities.reduce((sum: number, m: any) => sum + (m.count || 0), 0);
-                if (modSum !== 10) {
-                  console.warn(`Modality count validation: sum was ${modSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Modality counts sum to ${modSum} instead of 10`);
-                }
-              }
-              // Validate polarity sums to 10
-              if (Array.isArray(section.polarity)) {
-                const polSum = section.polarity.reduce((sum: number, p: any) => sum + (p.count || 0), 0);
-                if (polSum !== 10) {
-                  console.warn(`Polarity count validation: sum was ${polSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Polarity counts sum to ${polSum} instead of 10`);
-                }
-              }
-            }
+            };
+            checkSum(section.elements, 'Element', 10);
+            checkSum(section.modalities, 'Modality', 10);
+            checkSum(section.polarity, 'Polarity', 10);
+          }
+          if (countWarnings.length > 0) {
+            (parsedContent as any)._count_sum_warnings = countWarnings;
           }
         }
 
@@ -1743,12 +1781,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // other string field in the reading. Keeping both would double-log fixes.)
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
-        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
+        // Bug C fix: use sanitizedChartContext (matches what AI saw) instead of raw chartContext.
+        if (sanitizedChartContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           // Extract known natal planet names from chart data
           const knownNatalPoints = new Set<string>();
           const natalPointRegex = /^(\w[\w\s]*?):\s*\d+°/gm;
           let npm;
-          while ((npm = natalPointRegex.exec(chartContext)) !== null) {
+          while ((npm = natalPointRegex.exec(sanitizedChartContext)) !== null) {
             knownNatalPoints.add(npm[1].trim());
           }
           // Also add common aliases
@@ -1759,16 +1798,25 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           knownNatalPoints.add('Descendant'); knownNatalPoints.add('DSC'); knownNatalPoints.add('DC');
           knownNatalPoints.add('IC');
 
+          // Bug D fix: word-boundary match instead of substring. Previously
+          // "Sun" matched "South Node" via .includes(), causing false-positive
+          // "valid" classifications. Sort longer names first so "North Node"
+          // is tested before "Node".
+          const sortedPoints = Array.from(knownNatalPoints).sort((a, b) => b.length - a.length);
+          const matchesKnownPoint = (ref: string): boolean => {
+            for (const pt of sortedPoints) {
+              const re = new RegExp(`\\b${pt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+              if (re.test(ref)) return true;
+            }
+            return false;
+          };
+
           for (const section of parsedContent.sections) {
             if (section.type === 'timing_section' && Array.isArray(section.transits)) {
               const validTransits: any[] = [];
               for (const transit of section.transits) {
-                // Check if the natal_point references a known planet/point
                 const natalRef = transit.natal_point || transit.position || '';
-                const referencesKnownPoint = Array.from(knownNatalPoints).some(
-                  (pt) => natalRef.includes(pt)
-                );
-                if (referencesKnownPoint) {
+                if (matchesKnownPoint(natalRef)) {
                   validTransits.push(transit);
                 } else {
                   console.warn(`Transit verification: removed transit referencing unknown natal point: "${natalRef}"`);
@@ -1780,8 +1828,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         }
 
         // POST-GENERATION ASPECT VERIFICATION: Degree-based math check for claimed aspects
-        if (typeof chartContext === 'string' && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          // Parse natal planet degrees from chart data: "Planet: DD°MM' Sign (House N)"
+        // Bug C fix: use sanitizedChartContext for parsing degrees too.
+        if (sanitizedChartContext && parsedContent.sections && Array.isArray(parsedContent.sections)) {
           const signIndex: Record<string, number> = {
             'Aries': 0, 'Taurus': 1, 'Gemini': 2, 'Cancer': 3, 'Leo': 4, 'Virgo': 5,
             'Libra': 6, 'Scorpio': 7, 'Sagittarius': 8, 'Capricorn': 9, 'Aquarius': 10, 'Pisces': 11
@@ -1789,7 +1837,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           const natalDegrees: Record<string, number> = {};
           const degRegex = /(\w[\w\s]*?):\s*(\d+)°(\d+)'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/g;
           let dm;
-          while ((dm = degRegex.exec(chartContext)) !== null) {
+          while ((dm = degRegex.exec(sanitizedChartContext)) !== null) {
             const planet = dm[1].trim();
             const deg = parseInt(dm[2], 10);
             const min = parseInt(dm[3], 10);
@@ -1804,6 +1852,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             'conjunction': 8, 'opposition': 8, 'trine': 7, 'square': 7, 'sextile': 5, 'quincunx': 3
           };
 
+          // Bug D fix: longest-name-first word-boundary lookup so "Sun" never
+          // matches "South Node" and "MC" never matches "Mercury".
+          const sortedNatalNames = Object.keys(natalDegrees).sort((a, b) => b.length - a.length);
+          const findNatalName = (ref: string): string | undefined => {
+            for (const name of sortedNatalNames) {
+              const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+              if (re.test(ref)) return name;
+            }
+            return undefined;
+          };
+
           for (const section of parsedContent.sections) {
             // Check timing_section transits for aspect validity
             if (section.type === 'timing_section' && Array.isArray(section.transits)) {
@@ -1812,7 +1871,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
                   // Try to parse transit degree from exact_degree field
                   const transitMatch = transit.exact_degree.match(/(\d+)°(\d+)?'?\s*(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/i);
                   // Try to find the natal point's degree
-                  const natalName = Object.keys(natalDegrees).find(p => transit.natal_point.includes(p));
+                  const natalName = findNatalName(transit.natal_point);
                   
                   if (transitMatch && natalName) {
                     const tDeg = (signIndex[transitMatch[3]] || 0) * 30 + parseInt(transitMatch[1], 10) + (parseInt(transitMatch[2] || '0', 10)) / 60;
@@ -1881,6 +1940,52 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               { type: 'modality_element', titleHint: 'Natal Elemental & Modal Balance' },
               { type: 'summary_box', titleHint: 'Relationship Strategy Summary' },
             ],
+            // Bug E fix: previously only relationship had a completeness check.
+            // Now every categorized question type gets the same visibility so
+            // we catch silent gaps in career/health/money/relocation/etc.
+            career: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Career' },
+              { type: 'timing_section', titleHint: 'Career Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            health: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Vitality' },
+              { type: 'timing_section', titleHint: 'Health Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            money: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Earning' },
+              { type: 'timing_section', titleHint: 'Financial Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            spiritual: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Soul' },
+              { type: 'timing_section', titleHint: 'Spiritual Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            relocation: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: '' }, // at least one narrative
+              { type: 'city_comparison', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
+            timing: [
+              { type: 'timing_section', titleHint: '' },
+              { type: 'narrative_section', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
+            general: [
+              { type: 'narrative_section', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
           };
           const required = requiredByType[qType];
           if (required) {
@@ -1908,7 +2013,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // strips bad aspect/date/planet sentences. Logs everything to
         // parsedContent._validation for the UI banner.
         try {
-          validateReading(parsedContent, typeof chartContext === "string" ? chartContext : undefined);
+          validateReading(parsedContent, sanitizedChartContext || undefined);
         } catch (validationErr) {
           console.error("[ask-astrology] validateReading threw:", validationErr);
         }
