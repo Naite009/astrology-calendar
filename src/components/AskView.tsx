@@ -16,6 +16,7 @@ import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
+import { buildAskValidationFactsBlock } from "@/lib/askValidationFacts";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
@@ -760,6 +761,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       } catch {}
     } catch {}
+
+    context += buildAskValidationFactsBlock(chart);
 
     if (timingContext) {
       context += timingContext;
