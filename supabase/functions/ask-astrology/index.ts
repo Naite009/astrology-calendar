@@ -1732,37 +1732,29 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         }
 
         // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
+        // Bug A fix: previously wrote to section._validation_warning which the
+        // UI never reads. Now we attach a top-level _count_sum_warnings array
+        // and log to console. We do NOT auto-rebalance counts (that would
+        // silently invent data); we only flag for the drift banner.
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
+          const countWarnings: string[] = [];
           for (const section of parsedContent.sections) {
-            if (section.type === 'modality_element') {
-              // Validate elements sum to 10
-              if (Array.isArray(section.elements)) {
-                const elemSum = section.elements.reduce((sum: number, e: any) => sum + (e.count || 0), 0);
-                if (elemSum !== 10) {
-                  console.warn(`Element count validation: sum was ${elemSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Element counts sum to ${elemSum} instead of 10`);
-                }
+            if (section.type !== 'modality_element') continue;
+            const checkSum = (arr: any, label: string, expected: number) => {
+              if (!Array.isArray(arr)) return;
+              const sum = arr.reduce((s: number, e: any) => s + (Number(e?.count) || 0), 0);
+              if (sum !== expected) {
+                const msg = `${label} counts sum to ${sum} instead of ${expected}`;
+                console.warn(`[ask-astrology] ${msg}`);
+                countWarnings.push(msg);
               }
-              // Validate modalities sum to 10
-              if (Array.isArray(section.modalities)) {
-                const modSum = section.modalities.reduce((sum: number, m: any) => sum + (m.count || 0), 0);
-                if (modSum !== 10) {
-                  console.warn(`Modality count validation: sum was ${modSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Modality counts sum to ${modSum} instead of 10`);
-                }
-              }
-              // Validate polarity sums to 10
-              if (Array.isArray(section.polarity)) {
-                const polSum = section.polarity.reduce((sum: number, p: any) => sum + (p.count || 0), 0);
-                if (polSum !== 10) {
-                  console.warn(`Polarity count validation: sum was ${polSum}, expected 10. Flagging.`);
-                  section._validation_warning = section._validation_warning || [];
-                  section._validation_warning.push(`Polarity counts sum to ${polSum} instead of 10`);
-                }
-              }
-            }
+            };
+            checkSum(section.elements, 'Element', 10);
+            checkSum(section.modalities, 'Modality', 10);
+            checkSum(section.polarity, 'Polarity', 10);
+          }
+          if (countWarnings.length > 0) {
+            (parsedContent as any)._count_sum_warnings = countWarnings;
           }
         }
 
