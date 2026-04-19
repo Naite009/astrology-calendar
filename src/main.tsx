@@ -19,9 +19,27 @@ const canAutoReload = () => {
 };
 
 const buildReloadUrl = () => {
+  // Use the CURRENT window.location to build the reload URL — never substitute
+  // a different origin. The Lovable preview can run on multiple sandbox origins
+  // (lovableproject.com, lovable.app, *.sandbox.lovable.dev) and Supabase
+  // sessions are stored in localStorage which is origin-scoped. If we reload
+  // to a different origin we lose the session and the user gets signed out.
   const url = new URL(window.location.href);
   url.searchParams.set("__recover", String(Date.now()));
   return url.toString();
+};
+
+// Belt-and-suspenders: verify the reload target shares the current origin.
+// If for any reason it doesn't, we abort the auto-reload and show the manual
+// recovery screen instead — never silently bounce the user across origins
+// (which would wipe their Supabase session from localStorage).
+const isSafeSameOriginReload = (target: string): boolean => {
+  try {
+    const targetUrl = new URL(target, window.location.href);
+    return targetUrl.origin === window.location.origin;
+  } catch {
+    return false;
+  }
 };
 
 // Global flag set by AskView (and any other long-running operation) to block
