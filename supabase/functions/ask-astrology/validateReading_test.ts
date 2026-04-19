@@ -154,6 +154,22 @@ Deno.test("aspects: keeps real Moon conjunct Saturn from natal_aspects source-of
   assertEquals((reading as any)._validation.stripped_aspects.length, 0);
 });
 
+Deno.test("aspects: keeps real glyph aspect ☽☌♄ from natal_aspects source-of-truth", () => {
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "The Essence",
+        body: "That emotional gravity is right there in ☽☌♄.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const body = (reading.sections[0] as any).body;
+  assert(body.includes("☽☌♄"), `should keep real glyph aspect, got: ${body}`);
+  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
+});
+
 Deno.test("aspects: strips fake Mars conjunct Ascendant when not present in natal_aspects", () => {
   const reading = {
     sections: [
@@ -243,6 +259,24 @@ Deno.test("dates: strips bare-month claim (e.g. 'May 2026') outside any structur
     stripped[0].reason.includes("bare-month") || stripped[0].reason.includes("nearest structured window"),
     `expected bare-month reason, got: ${stripped[0].reason}`,
   );
+});
+
+Deno.test("dates: logs every stripped month when one sentence contains multiple unsupported month claims", () => {
+  const reading = {
+    sections: [
+      baseTimingSection(),
+      {
+        type: "summary_box",
+        title: "Strategy Summary",
+        value: "Consider relocating in May 2026, Jun 2026, or Aug 2026 for best results.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const stripped = (reading as any)._validation.stripped_dates;
+  assertEquals(stripped.length, 3);
+  assertEquals(stripped.map((item: any) => item.phrase), ["May 2026", "Jun 2026", "Aug 2026"]);
+  assert(stripped.every((item: any) => item.reason.includes("bare-month") || item.reason.includes("timing window")));
 });
 
 Deno.test("dates: keeps bare-month claim that overlaps a structured window", () => {
