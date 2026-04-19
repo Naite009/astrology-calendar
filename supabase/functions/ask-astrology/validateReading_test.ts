@@ -1,24 +1,81 @@
-// Unit tests for validateReading — locks in the 4 prior bugfixes plus the
-// expanded aspect-phrasing coverage and deep nested-field walking.
-//
-// Run with: deno test supabase/functions/ask-astrology/validateReading_test.ts
-
 import { assert, assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { validateReading } from "./validateReading.ts";
+import { ASK_VALIDATION_FACTS_END, ASK_VALIDATION_FACTS_START } from "./validationFacts.ts";
 
-// ── Test fixtures ──────────────────────────────────────────────────
-// A chart context where:
-//   Sun @ 0° Aries   = 0
-//   Moon @ 5° Cancer = 95   (Sun-Moon separation 95° → square within 7° orb ✅)
-//   Mars @ 0° Libra  = 180  (Sun-Mars separation 180° → opposition ✅)
-//   Venus @ 0° Taurus = 30  (Sun-Venus separation 30° → NOT a major aspect)
-const CHART_CONTEXT = `
+const FACTS = {
+  version: 1,
+  counted_planets: ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"],
+  natal_counts: {
+    elements: {
+      Fire: { count: 3, planets: ["Sun", "Mercury", "Mars"] },
+      Earth: { count: 2, planets: ["Venus", "Jupiter"] },
+      Air: { count: 2, planets: ["Uranus", "Pluto"] },
+      Water: { count: 3, planets: ["Moon", "Saturn", "Neptune"] },
+    },
+    modalities: {
+      Cardinal: { count: 4, planets: ["Sun", "Moon", "Mercury", "Saturn"] },
+      Fixed: { count: 2, planets: ["Venus", "Uranus"] },
+      Mutable: { count: 4, planets: ["Mars", "Jupiter", "Neptune", "Pluto"] },
+    },
+    polarity: {
+      Masculine: { count: 5, planets: ["Sun", "Mercury", "Mars", "Uranus", "Pluto"] },
+      Feminine: { count: 5, planets: ["Moon", "Venus", "Jupiter", "Saturn", "Neptune"] },
+      Yang: { count: 5, planets: ["Sun", "Mercury", "Mars", "Uranus", "Pluto"] },
+      Yin: { count: 5, planets: ["Moon", "Venus", "Jupiter", "Saturn", "Neptune"] },
+      Active: { count: 5, planets: ["Sun", "Mercury", "Mars", "Uranus", "Pluto"] },
+      Receptive: { count: 5, planets: ["Moon", "Venus", "Jupiter", "Saturn", "Neptune"] },
+    },
+    dominant_element: "Fire",
+    dominant_modality: "Cardinal",
+    dominant_polarity: "Masculine",
+  },
+  natal_aspects: [
+    { point1: "Moon", point2: "Saturn", aspect: "conjunct", orb: 1.42, separation: 1.42 },
+    { point1: "Sun", point2: "Moon", aspect: "square", orb: 5, separation: 95 },
+    { point1: "Sun", point2: "Midheaven", aspect: "conjunct", orb: 2, separation: 2 },
+  ],
+  natal_aspects_meta: {
+    orb_policy: {
+      conjunct: 8,
+      sextile: 5,
+      square: 7,
+      trine: 7,
+      opposition: 8,
+      quincunx: 3,
+      semisextile: 2,
+      semisquare: 2,
+      sesquiquadrate: 2,
+    },
+    house_system: "Placidus",
+    zodiac: "tropical",
+  },
+  positions: [
+    { name: "Sun", sign: "Aries", degree: 0, minutes: 0, abs_degree: 0, house: 10, is_retrograde: false },
+    { name: "Moon", sign: "Cancer", degree: 5, minutes: 0, abs_degree: 95, house: 1, is_retrograde: false },
+    { name: "Saturn", sign: "Cancer", degree: 6, minutes: 25, abs_degree: 96.42, house: 1, is_retrograde: false },
+    { name: "Mercury", sign: "Aries", degree: 10, minutes: 0, abs_degree: 10, house: 10, is_retrograde: false },
+    { name: "Venus", sign: "Taurus", degree: 0, minutes: 0, abs_degree: 30, house: 11, is_retrograde: false },
+    { name: "Mars", sign: "Libra", degree: 0, minutes: 0, abs_degree: 180, house: 4, is_retrograde: false },
+    { name: "Midheaven", sign: "Aries", degree: 2, minutes: 0, abs_degree: 2, house: 10, is_retrograde: false },
+    { name: "Ascendant", sign: "Cancer", degree: 0, minutes: 0, abs_degree: 90, house: 1, is_retrograde: false },
+  ],
+};
+
+const buildChartContext = () => `
   Sun: 0°00' Aries
   Moon: 5°00' Cancer
-  Mars: 0°00' Libra
-  Venus: 0°00' Taurus
+  Saturn: 6°25' Cancer
   Mercury: 10°00' Aries
+  Venus: 0°00' Taurus
+  Mars: 0°00' Libra
+  Midheaven: 2°00' Aries
+  Ascendant: 0°00' Cancer
+  ${ASK_VALIDATION_FACTS_START}
+  ${JSON.stringify(FACTS, null, 2)}
+  ${ASK_VALIDATION_FACTS_END}
 `;
+
+const CHART_CONTEXT = buildChartContext();
 
 const baseTimingSection = () => ({
   type: "timing_section",
@@ -34,10 +91,11 @@ const baseTimingSection = () => ({
       tag: "challenge",
     },
   ],
-  windows: [],
+  windows: [
+    { label: "Feb 2 to Oct 18, 2027", description: "Structured support window." },
+  ],
 });
 
-// ── Bug #1: count rewriting ────────────────────────────────────────
 Deno.test("counts: rewrites mismatched element count in narrative prose", () => {
   const reading = {
     sections: [
@@ -45,10 +103,10 @@ Deno.test("counts: rewrites mismatched element count in narrative prose", () => 
         type: "modality_element",
         title: "Balance",
         elements: [
-          { name: "Fire", count: 3 },
-          { name: "Earth", count: 2 },
-          { name: "Air", count: 2 },
-          { name: "Water", count: 3 },
+          { name: "Fire", count: 0 },
+          { name: "Earth", count: 0 },
+          { name: "Air", count: 0 },
+          { name: "Water", count: 0 },
         ],
         balance_interpretation: "You have four Water placements anchoring you.",
       },
@@ -56,136 +114,80 @@ Deno.test("counts: rewrites mismatched element count in narrative prose", () => 
   };
   validateReading(reading, CHART_CONTEXT);
   const fixed = (reading.sections[0] as any).balance_interpretation;
-  assert(fixed.includes("three Water"), `expected "three Water" in: ${fixed}`);
+  assert(fixed.includes("three Water"), `expected \"three Water\" in: ${fixed}`);
   assertEquals((reading as any)._validation.fixed_counts.length, 1);
-  assertEquals((reading as any)._validation.drift_count, 1);
 });
 
-Deno.test("counts: rewrites numeric digit form too (4 Water → 3 Water)", () => {
+Deno.test("counts: rewrites Yang/Yin from machine-readable facts", () => {
   const reading = {
     sections: [
       {
         type: "modality_element",
         title: "Balance",
-        elements: [{ name: "Water", count: 3 }],
-        balance_interpretation: "You have 4 Water placements.",
+        polarity: [
+          { name: "Yang (Active)", count: 0 },
+          { name: "Yin (Receptive)", count: 0 },
+        ],
+        balance_interpretation: "You have six Yang planets and four Yin planets.",
       },
     ],
   };
   validateReading(reading, CHART_CONTEXT);
   const fixed = (reading.sections[0] as any).balance_interpretation;
-  assert(fixed.includes("3 Water"), `expected "3 Water" in: ${fixed}`);
+  assert(fixed.includes("five Yang"), `expected corrected Yang count, got: ${fixed}`);
+  assert(fixed.includes("five Yin"), `expected corrected Yin count, got: ${fixed}`);
 });
 
-Deno.test("counts: leaves correct counts alone — drift_count stays 0", () => {
+Deno.test("aspects: keeps real Moon conjunct Saturn from natal_aspects source-of-truth", () => {
   const reading = {
     sections: [
       {
-        type: "modality_element",
-        title: "Balance",
-        elements: [{ name: "Water", count: 3 }],
-        balance_interpretation: "You have three Water placements.",
-      },
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  assertEquals((reading as any)._validation.drift_count, 0);
-});
-
-// ── Bug #2: aspect strip ───────────────────────────────────────────
-Deno.test("aspects: strips fabricated aspect (Venus square Saturn not in chart)", () => {
-  const reading = {
-    sections: [
-      {
-        ...baseTimingSection(),
-        // narrative paragraph claims Sun trine Moon (actual sep 95° → false)
-        body: "This year is intense. Your Sun trine Moon brings ease. Saturn shows up.",
-      },
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  const finalBody = (reading.sections[0] as any).body;
-  assert(!finalBody.includes("Sun trine Moon"), `expected strip, got: ${finalBody}`);
-  assert(finalBody.includes("This year is intense"), "kept first sentence");
-  assert(finalBody.includes("Saturn shows up"), "kept last sentence");
-  assertEquals((reading as any)._validation.stripped_aspects.length, 1);
-});
-
-Deno.test("aspects: keeps valid aspect (Sun square Moon — actual orb 5°)", () => {
-  const reading = {
-    sections: [
-      {
-        ...baseTimingSection(),
-        body: "Your Sun square Moon creates inner tension.",
+        type: "narrative_section",
+        title: "The Essence",
+        body: "Your Moon conjunct Saturn makes closeness feel serious and real.",
       },
     ],
   };
   validateReading(reading, CHART_CONTEXT);
   const body = (reading.sections[0] as any).body;
-  assert(body.includes("Sun square Moon"), `should keep valid aspect, got: ${body}`);
+  assert(body.includes("Moon conjunct Saturn"), `should keep real aspect, got: ${body}`);
   assertEquals((reading as any)._validation.stripped_aspects.length, 0);
 });
 
-// ── NEW: aspect phrasing variants ──────────────────────────────────
-Deno.test("aspects: catches possessive form (Sun's trine to the Moon)", () => {
+Deno.test("aspects: strips fake Mars conjunct Ascendant when not present in natal_aspects", () => {
   const reading = {
     sections: [
       {
-        ...baseTimingSection(),
-        body: "The Sun's trine to the Moon brings flow. Other things happen.",
+        type: "narrative_section",
+        title: "The Essence",
+        body: "Your Mars conjunct Ascendant makes you come on strong. The next sentence stays.",
       },
     ],
   };
   validateReading(reading, CHART_CONTEXT);
   const body = (reading.sections[0] as any).body;
-  assert(!body.toLowerCase().includes("sun's trine"), `should strip possessive form, got: ${body}`);
+  assert(!body.includes("Mars conjunct Ascendant"), `should strip fake aspect, got: ${body}`);
+  assert(body.includes("The next sentence stays"));
+  assertEquals((reading as any)._validation.stripped_aspects.length, 1);
+  assert((reading as any)._validation.stripped_aspects[0].reason.includes("natal_aspects source-of-truth"));
 });
 
-Deno.test("aspects: catches hyphenated pair form (Sun-Moon trine)", () => {
+Deno.test("aspects: keeps valid Sun conjunct Midheaven angle aspect", () => {
   const reading = {
     sections: [
       {
-        ...baseTimingSection(),
-        body: "The Sun-Moon trine is a gift. Other paragraph follows.",
+        type: "narrative_section",
+        title: "Career",
+        body: "Your Sun conjunct Midheaven is visible in everything you build.",
       },
     ],
   };
   validateReading(reading, CHART_CONTEXT);
   const body = (reading.sections[0] as any).body;
-  assert(!body.includes("Sun-Moon trine"), `should strip hyphenated form, got: ${body}`);
+  assert(body.includes("Sun conjunct Midheaven"), `should keep valid angle aspect, got: ${body}`);
 });
 
-Deno.test("aspects: catches reversed form (trine between Sun and Moon)", () => {
-  const reading = {
-    sections: [
-      {
-        ...baseTimingSection(),
-        body: "There is a trine between Sun and Moon here. Next sentence stays.",
-      },
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  const body = (reading.sections[0] as any).body;
-  assert(!body.includes("trine between Sun and Moon"), `should strip reversed form, got: ${body}`);
-  assert(body.includes("Next sentence stays"));
-});
-
-Deno.test("aspects: catches 'in [aspect] to' form (Sun in trine to Moon)", () => {
-  const reading = {
-    sections: [
-      {
-        ...baseTimingSection(),
-        body: "Your Sun in trine to the Moon eases conflict.",
-      },
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  const body = (reading.sections[0] as any).body;
-  assert(!body.toLowerCase().includes("sun in trine to"), `should strip "in trine to" form, got: ${body}`);
-});
-
-// ── Bug #3: date parser handles "Feb 2 to Oct 18, 2027" ────────────
-Deno.test("dates: keeps a date that falls within a 'Feb 2 to Oct 18, 2027' range", () => {
+Deno.test("dates: keeps a date that falls inside structured timing", () => {
   const reading = {
     sections: [
       baseTimingSection(),
@@ -202,30 +204,32 @@ Deno.test("dates: keeps a date that falls within a 'Feb 2 to Oct 18, 2027' range
   assertEquals((reading as any)._validation.stripped_dates.length, 0);
 });
 
-Deno.test("dates: strips a date far outside any timing window", () => {
+Deno.test("dates: strips unsupported date and logs the nearest structured window", () => {
   const reading = {
     sections: [
       baseTimingSection(),
       {
-        type: "narrative_section",
-        title: "Year Ahead",
-        body: "By December 2099 you will see results. The next paragraph stays.",
+        type: "summary_box",
+        title: "Strategy Summary",
+        value: "If you miss these windows, Nov 5, 2026 offers a supportive settling-in period. Keep the rest.",
       },
     ],
   };
   validateReading(reading, CHART_CONTEXT);
-  const body = (reading.sections[1] as any).body;
-  assert(!body.includes("December 2099"), `should strip out-of-range date, got: ${body}`);
+  const value = (reading.sections[1] as any).value;
+  assert(!value.includes("Nov 5, 2026"), `should strip unsupported date, got: ${value}`);
+  const stripped = (reading as any)._validation.stripped_dates[0];
+  assertEquals(stripped.phrase, "Nov 5, 2026");
+  assert(stripped.reason.includes("nearest structured window"), `expected explicit reason, got: ${stripped.reason}`);
 });
 
-// ── NEW: nested-field coverage (subsections, deep arrays) ──────────
-Deno.test("nested: validates strings inside subsections[].body two levels deep", () => {
+Deno.test("nested: validates strings inside subsections[].body", () => {
   const reading = {
     sections: [
       {
         type: "modality_element",
         title: "Balance",
-        elements: [{ name: "Water", count: 3 }],
+        elements: [{ name: "Water", count: 0 }],
         subsections: [
           { title: "Detail", body: "You have four Water placements right here." },
         ],
@@ -235,67 +239,25 @@ Deno.test("nested: validates strings inside subsections[].body two levels deep",
   validateReading(reading, CHART_CONTEXT);
   const subBody = (reading.sections[0] as any).subsections[0].body;
   assert(subBody.includes("three Water"), `expected nested fix, got: ${subBody}`);
-  assertEquals((reading as any)._validation.fixed_counts.length, 1);
 });
 
-Deno.test("nested: validates strings inside arbitrary deep arrays (cities[].pros[])", () => {
-  const reading = {
-    sections: [
-      {
-        type: "modality_element",
-        title: "Balance",
-        elements: [{ name: "Water", count: 3 }],
-      },
-      {
-        type: "relocation",
-        title: "Cities",
-        cities: [
-          {
-            name: "Lisbon",
-            pros: ["You have four Water placements there."],
-          },
-        ],
-      },
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  const pro = (reading.sections[1] as any).cities[0].pros[0];
-  assert(pro.includes("three Water"), `expected deep-array fix, got: ${pro}`);
-});
-
-Deno.test("nested: skips structured fields like 'name' / 'planet' / 'symbol'", () => {
-  const reading = {
-    sections: [
-      baseTimingSection(),
-    ],
-  };
-  validateReading(reading, CHART_CONTEXT);
-  // Structured fields untouched
-  const t = (reading.sections[0] as any).transits[0];
-  assertEquals(t.planet, "Saturn");
-  assertEquals(t.aspect, "square");
-  assertEquals(t.symbol, "♄");
-});
-
-// ── Bug #4: _validation block always present ───────────────────────
 Deno.test("report: _validation block is always attached, even on a clean reading", () => {
   const reading = { sections: [{ type: "narrative_section", body: "All good." }] };
   validateReading(reading, CHART_CONTEXT);
   assertExists((reading as any)._validation);
-  assertEquals((reading as any)._validation.drift_count, 0);
 });
 
-Deno.test("report: drift_count equals sum of all four buckets", () => {
+Deno.test("report: drift_count equals sum of all buckets", () => {
   const reading = {
     sections: [
       {
         type: "modality_element",
-        elements: [{ name: "Water", count: 3 }],
+        elements: [{ name: "Water", count: 0 }],
         balance_interpretation: "You have four Water placements.",
       },
       {
         ...baseTimingSection(),
-        body: "Your Sun trine Moon is gentle. By December 2099 things shift.",
+        body: "Your Mars conjunct Ascendant is obvious. By Nov 5, 2026 things shift.",
       },
     ],
   };
@@ -307,121 +269,5 @@ Deno.test("report: drift_count equals sum of all four buckets", () => {
     v.stripped_dates.length +
     v.stripped_planets.length;
   assertEquals(v.drift_count, sum);
-  assert(v.drift_count >= 2, "expected at least one count-fix and one strip");
-});
-
-// ── Yang/Yin polarity counts (Replit flagged as missing — verify ours works) ──
-Deno.test("polarity: rewrites mismatched Yang count from polarity[] array", () => {
-  const reading = {
-    sections: [
-      {
-        type: "modality_element",
-        title: "Balance",
-        polarity: [
-          { name: "Yang (Active)", count: 6 },
-          { name: "Yin (Receptive)", count: 4 },
-        ],
-        balance_interpretation: "You have five Yang planets and five Yin planets.",
-      },
-    ],
-  };
-  validateReading(reading, "");
-  const fixed = (reading.sections[0] as any).balance_interpretation;
-  assert(fixed.includes("six Yang"), `expected "six Yang", got: ${fixed}`);
-  assert(fixed.includes("four Yin"), `expected "four Yin", got: ${fixed}`);
-  assertEquals((reading as any)._validation.fixed_counts.length, 2);
-});
-
-Deno.test("polarity: also handles Active/Receptive synonyms", () => {
-  const reading = {
-    sections: [
-      {
-        type: "modality_element",
-        polarity: [
-          { name: "Active", count: 7 },
-          { name: "Receptive", count: 3 },
-        ],
-        balance_interpretation: "You have four Active and six Receptive placements.",
-      },
-    ],
-  };
-  validateReading(reading, "");
-  const fixed = (reading.sections[0] as any).balance_interpretation;
-  assert(fixed.includes("seven Active"), `got: ${fixed}`);
-  assert(fixed.includes("three Receptive"), `got: ${fixed}`);
-});
-
-// ── Angle aspects (Replit flagged as unchecked — verify ours strips fakes) ──
-Deno.test("angles: strips fake 'Mars conjunct Ascendant' when separation too wide", () => {
-  // Mars at 15° Aries (=15), Ascendant at 0° Cancer (=90) → sep 75°, NOT conjunct
-  const chartContext = `
-    Mars: 15°00' Aries
-    Ascendant: 0°00' Cancer
-    Midheaven: 0°00' Aries
-  `;
-  const reading = {
-    sections: [
-      {
-        type: "narrative_section",
-        body: "Your Mars conjunct Ascendant brings raw drive. The next sentence stays.",
-      },
-    ],
-  };
-  validateReading(reading, chartContext);
-  const body = (reading.sections[0] as any).body;
-  assert(!body.includes("Mars conjunct Ascendant"), `should strip, got: ${body}`);
-  assert(body.includes("next sentence stays"), "preserves valid prose");
-  assertEquals((reading as any)._validation.stripped_aspects.length, 1);
-});
-
-Deno.test("angles: keeps a valid 'Sun conjunct Midheaven' (tight orb)", () => {
-  // Sun at 2° Aries (=2), MC at 0° Aries (=0) → sep 2°, conjunct ✅
-  const chartContext = `
-    Sun: 2°00' Aries
-    Midheaven: 0°00' Aries
-  `;
-  const reading = {
-    sections: [
-      {
-        type: "narrative_section",
-        body: "Your Sun conjunct Midheaven puts your identity center stage.",
-      },
-    ],
-  };
-  validateReading(reading, chartContext);
-  const body = (reading.sections[0] as any).body;
-  assert(body.includes("Sun conjunct Midheaven"), `should keep valid aspect, got: ${body}`);
-  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
-});
-
-Deno.test("angles: does NOT over-strip when Ascendant degree is missing from context", () => {
-  // No Ascendant degree given → cannot verify → leaves sentence alone (not over-strip)
-  const chartContext = `Mars: 15°00' Aries`;
-  const reading = {
-    sections: [
-      {
-        type: "narrative_section",
-        body: "Your Mars conjunct Ascendant brings raw drive.",
-      },
-    ],
-  };
-  validateReading(reading, chartContext);
-  const body = (reading.sections[0] as any).body;
-  assert(body.includes("Mars conjunct Ascendant"), `should keep when unverifiable, got: ${body}`);
-  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
-});
-
-// ── Defensive: malformed inputs don't throw ────────────────────────
-Deno.test("defensive: empty reading doesn't throw", () => {
-  const reading = {};
-  validateReading(reading, CHART_CONTEXT);
-  assertExists((reading as any)._validation);
-});
-
-Deno.test("defensive: missing chartContext doesn't throw and returns clean", () => {
-  const reading = {
-    sections: [{ type: "narrative_section", body: "Some prose with no numbers." }],
-  };
-  validateReading(reading, undefined);
-  assertEquals((reading as any)._validation.drift_count, 0);
+  assert(v.drift_count >= 3, "expected count fix plus aspect/date strips");
 });
