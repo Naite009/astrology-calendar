@@ -337,6 +337,198 @@ const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming
   parsedContent.sections.push(deterministicTiming);
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// REGENERATE-ON-DRIFT (one-shot)
+// When validateReading() strips invented aspect claims (e.g. "Jupiter
+// square Sun" when no such natal aspect exists), the surrounding prose
+// can read with a small gap. This helper does exactly ONE focused rewrite
+// of just the affected sections, with a hard allowlist of real natal
+// aspects, then re-validates. If the second pass still has drift on the
+// same sections, we leave the validator's output as-is — never loop.
+// ─────────────────────────────────────────────────────────────────────────
+
+const collectSectionsWithDrift = (parsedContent: any, report: any): Set<string> => {
+  const labels = new Set<string>();
+  const stripped = [
+    ...(report?.stripped_aspects ?? []),
+    ...(report?.stripped_dates ?? []),
+    ...(report?.stripped_planets ?? []),
+  ];
+  for (const entry of stripped) {
+    if (entry?.section) labels.add(entry.section);
+  }
+  return labels;
+};
+
+const sectionLabel = (section: any): string => {
+  return `${section?.type || "unknown"}::${(section?.title || "").slice(0, 40)}`;
+};
+
+const regenerateAffectedSections = async (
+  parsedContent: any,
+  chartContext: string | undefined,
+  systemBlocks: Array<Record<string, any>>,
+  ANTHROPIC_API_KEY: string,
+): Promise<{ regenerated: number; skipped: boolean }> => {
+  const report = parsedContent?._validation;
+  if (!report || (report.stripped_aspects?.length ?? 0) === 0) {
+    return { regenerated: 0, skipped: true };
+  }
+
+  const driftLabels = collectSectionsWithDrift(parsedContent, report);
+  if (driftLabels.size === 0) return { regenerated: 0, skipped: true };
+
+  const sectionsToRewrite = (parsedContent?.sections || []).filter((s: any) =>
+    driftLabels.has(sectionLabel(s)),
+  );
+  if (sectionsToRewrite.length === 0) return { regenerated: 0, skipped: true };
+
+  const allowedAspects = listAllowedNatalAspects(chartContext);
+  if (allowedAspects.length === 0) return { regenerated: 0, skipped: true };
+
+  // Build a compact instruction listing the original section titles +
+  // bodies, the aspect claims that were stripped, and the strict allowlist
+  // of real natal aspects. Ask for JSON-only output keyed by section title
+  // with the rewritten `body` (and `bullets[].text` / `items[].value` when
+  // present). The model is told to remove gaps left by stripped phrases
+  // and never invent new aspects.
+  const sectionPayload = sectionsToRewrite.map((s: any) => ({
+    title: s?.title || "",
+    type: s?.type || "",
+    body: typeof s?.body === "string" ? s.body : undefined,
+    bullets: Array.isArray(s?.bullets)
+      ? s.bullets.map((b: any, i: number) => ({
+          index: i,
+          text: typeof b?.text === "string" ? b.text : "",
+        }))
+      : undefined,
+    items: Array.isArray(s?.items)
+      ? s.items.map((it: any, i: number) => ({
+          index: i,
+          label: it?.label || "",
+          value: typeof it?.value === "string" ? it.value : "",
+        }))
+      : undefined,
+  }));
+
+  const strippedSummary = (report.stripped_aspects ?? [])
+    .filter((s: any) => driftLabels.has(s?.section))
+    .map((s: any) => `- "${s.phrase}" (in ${s.section}) — ${s.reason}`)
+    .join("\n");
+
+  const userMessage = [
+    "Some sentences in the following sections were removed because they referenced aspects that do NOT exist in this chart's natal aspect list.",
+    "Rewrite the affected sections so they read smoothly without the removed claims.",
+    "",
+    "REMOVED CLAIMS:",
+    strippedSummary,
+    "",
+    "ALLOWED NATAL ASPECTS (the ONLY aspects you may reference in the rewrite — do not name any aspect not in this list):",
+    allowedAspects.map((a) => `- ${a}`).join("\n"),
+    "",
+    "RULES:",
+    "- Output JSON ONLY. No prose, no markdown fences.",
+    "- Output shape: { \"sections\": [ { \"title\": string, \"body\"?: string, \"bullets\"?: [{ \"index\": number, \"text\": string }], \"items\"?: [{ \"index\": number, \"value\": string }] } ] }",
+    "- Keep section titles EXACTLY as given.",
+    "- Preserve the same length and tone — do not add new conclusions, predictions, or new aspect names.",
+    "- Replace gaps left by removed sentences with smooth bridging language that uses ONLY claims supported by the allowed natal aspects above, or non-aspect observations already present.",
+    "- Do NOT invent new transit dates, new planets, or new aspects.",
+    "",
+    "ORIGINAL SECTIONS:",
+    JSON.stringify(sectionPayload, null, 2),
+  ].join("\n");
+
+  let regenResponse: Response | null = null;
+  try {
+    regenResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: systemBlocks,
+        messages: [{ role: "user", content: userMessage }],
+        temperature: 0.2,
+        max_tokens: 6000,
+      }),
+    });
+  } catch (fetchErr) {
+    console.warn("[ask-astrology] regen-on-drift fetch failed:", (fetchErr as any)?.message);
+    return { regenerated: 0, skipped: true };
+  }
+
+  if (!regenResponse?.ok) {
+    console.warn("[ask-astrology] regen-on-drift non-OK:", regenResponse?.status);
+    return { regenerated: 0, skipped: true };
+  }
+
+  let regenJson: any = null;
+  try {
+    regenJson = await regenResponse.json();
+  } catch {
+    return { regenerated: 0, skipped: true };
+  }
+
+  const regenText: string = regenJson?.content?.[0]?.text || "";
+  if (!regenText) return { regenerated: 0, skipped: true };
+
+  let parsed: any = null;
+  try {
+    const cleaned = regenText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const first = regenText.indexOf("{");
+    const last = regenText.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      try {
+        parsed = JSON.parse(regenText.slice(first, last + 1));
+      } catch {
+        return { regenerated: 0, skipped: true };
+      }
+    }
+  }
+
+  if (!parsed || !Array.isArray(parsed?.sections)) {
+    return { regenerated: 0, skipped: true };
+  }
+
+  let regenerated = 0;
+  for (const rewrite of parsed.sections) {
+    if (!rewrite?.title) continue;
+    const target = (parsedContent.sections || []).find(
+      (s: any) => (s?.title || "") === rewrite.title,
+    );
+    if (!target) continue;
+    if (typeof rewrite.body === "string" && rewrite.body.trim()) {
+      target.body = rewrite.body;
+      regenerated++;
+    }
+    if (Array.isArray(rewrite.bullets) && Array.isArray(target.bullets)) {
+      for (const b of rewrite.bullets) {
+        if (typeof b?.index !== "number" || typeof b?.text !== "string") continue;
+        if (target.bullets[b.index]) {
+          target.bullets[b.index].text = b.text;
+          regenerated++;
+        }
+      }
+    }
+    if (Array.isArray(rewrite.items) && Array.isArray(target.items)) {
+      for (const it of rewrite.items) {
+        if (typeof it?.index !== "number" || typeof it?.value !== "string") continue;
+        if (target.items[it.index]) {
+          target.items[it.index].value = it.value;
+          regenerated++;
+        }
+      }
+    }
+  }
+
+  return { regenerated, skipped: false };
+};
+
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
