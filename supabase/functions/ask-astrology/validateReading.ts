@@ -21,6 +21,24 @@ const PLANET_NAMES = [
   "Juno", "Lilith", "Ascendant", "Midheaven", "Descendant", "IC",
 ];
 
+const PLANET_SYMBOLS: Record<string, string> = {
+  "☉": "Sun",
+  "☽": "Moon",
+  "☿": "Mercury",
+  "♀": "Venus",
+  "♂": "Mars",
+  "♃": "Jupiter",
+  "♄": "Saturn",
+  "♅": "Uranus",
+  "♆": "Neptune",
+  "♇": "Pluto",
+  "⚷": "Chiron",
+  "☊": "North Node",
+  "☋": "South Node",
+  "⚵": "Juno",
+  "⚸": "Lilith",
+};
+
 const ASPECT_ALIASES: Record<string, string> = {
   conjunct: "conjunct",
   conjunction: "conjunct",
@@ -33,6 +51,15 @@ const ASPECT_ALIASES: Record<string, string> = {
   semisextile: "semisextile",
   semisquare: "semisquare",
   sesquiquadrate: "sesquiquadrate",
+};
+
+const ASPECT_SYMBOLS: Record<string, string> = {
+  "☌": "conjunct",
+  "⚹": "sextile",
+  "□": "square",
+  "△": "trine",
+  "☍": "opposition",
+  "⚻": "quincunx",
 };
 
 const MONTH_NAMES = [
