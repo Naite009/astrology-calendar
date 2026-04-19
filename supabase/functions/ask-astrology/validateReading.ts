@@ -402,9 +402,21 @@ const sentenceClaimsBadDate = (
     const monthName = m[1];
     const dayPart = m[2]?.replace(/[,\s]/g, "");
     const year = m[3];
-    const day = dayPart ? parseInt(dayPart, 10) : 15;
     const monthIdx = [...MONTH_NAMES, ...MONTH_ABBR].indexOf(monthName) % 12;
-    const d = new Date(parseInt(year, 10), monthIdx, day);
+    const yearNum = parseInt(year, 10);
+
+    // Bare-month claim ("May 2026") — must overlap a structured window
+    // strictly within that calendar month, no ±30-day pad.
+    if (!dayPart) {
+      const coverage = findMonthCoverage(yearNum, monthIdx, ctx.ranges);
+      if (!coverage.covered) {
+        return { bad: true, phrase: m[0], reason: coverage.reason };
+      }
+      continue;
+    }
+
+    // Full date claim ("May 24, 2026") — allow ±30-day window padding.
+    const d = new Date(yearNum, monthIdx, parseInt(dayPart, 10));
     if (isNaN(d.getTime())) continue;
     const coverage = findDateCoverage(d, ctx.ranges);
     if (!coverage.covered) {
