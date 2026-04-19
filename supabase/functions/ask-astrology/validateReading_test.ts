@@ -260,6 +260,8 @@ Deno.test("dates: keeps bare-month claim that overlaps a structured window", () 
   const body = (reading.sections[1] as any).body;
   assert(body.includes("March 2027"), `should keep covered bare-month, got: ${body}`);
 });
+
+Deno.test("nested: validates strings inside subsections[].body", () => {
   const reading = {
     sections: [
       {
