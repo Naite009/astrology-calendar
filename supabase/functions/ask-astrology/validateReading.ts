@@ -145,75 +145,158 @@ const buildFactsMap = (chartContext: string | undefined): ValidationFactsMap => 
   return { counts, aspectSet, positions, orbPolicy, knownPlanets };
 };
 
+/**
+ * Parse a single date-range string into a {start, end} pair.
+ *
+ * Handles every format the AI emits in practice:
+ *   - "Apr 19 to May 24, 2026"            (single year at end)
+ *   - "Apr 19, 2026 to Oct 19, 2027"      (year on both sides)
+ *   - "May 8–June 2, 2026"                (en-dash, no spaces)
+ *   - "Feb 1–Apr 20, 2026"                (abbrev + en-dash)
+ *   - "Nov 15 to Feb 10, 2027"            (YEAR ROLLOVER — start is prev year)
+ *   - "Aug 7, 2026"                       (single date — treated as 1-day range)
+ *
+ * Year-rollover rule: if the first endpoint has NO explicit year and its
+ * month is GREATER than the second endpoint's month, the range crosses a
+ * year boundary, so the start year is (end year - 1).
+ */
+const MONTH_FULL_ALT = MONTH_NAMES.join("|");
+const MONTH_ABBR_ALT = MONTH_ABBR.join("|");
+const MONTH_DAY_REGEX = new RegExp(
+  `\\b(${MONTH_FULL_ALT}|${MONTH_ABBR_ALT})(?:\\s+(\\d{1,2}))?(?:,?\\s+(\\d{4}))?\\b`,
+  "g",
+);
+const ALL_MONTH_TOKENS = [...MONTH_NAMES, ...MONTH_ABBR];
+
+const parseSingleRangeString = (raw: string): { start: Date; end: Date } | null => {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  const years = Array.from(raw.matchAll(/\b(20\d{2})\b/g)).map((m) => parseInt(m[1], 10));
+  if (years.length === 0) return null;
+  const minYear = Math.min(...years);
+  const maxYear = Math.max(...years);
+
+  const dayMatches: Array<{ monthIdx: number; day: number; year?: number }> = [];
+  const monthIdxs: number[] = [];
+  const re = new RegExp(MONTH_DAY_REGEX.source, "g");
+  let mm: RegExpExecArray | null;
+  while ((mm = re.exec(raw)) !== null) {
+    const monthIdx = ALL_MONTH_TOKENS.indexOf(mm[1]) % 12;
+    monthIdxs.push(monthIdx);
+    if (mm[2]) {
+      dayMatches.push({
+        monthIdx,
+        day: parseInt(mm[2], 10),
+        year: mm[3] ? parseInt(mm[3], 10) : undefined,
+      });
+    }
+  }
+
+  let startMonth = monthIdxs.length > 0 ? Math.min(...monthIdxs) : 0;
+  let startDay = 1;
+  let startYear = minYear;
+  const firstDay = dayMatches[0];
+  if (firstDay) {
+    startMonth = firstDay.monthIdx;
+    startDay = firstDay.day;
+    startYear = firstDay.year ?? minYear;
+  }
+
+  let endMonth = monthIdxs.length > 0 ? Math.max(...monthIdxs) : 11;
+  let endDay = 28;
+  let endYear = maxYear;
+  const lastDay = dayMatches[dayMatches.length - 1];
+  if (lastDay) {
+    endMonth = lastDay.monthIdx;
+    endDay = lastDay.day;
+    endYear = lastDay.year ?? maxYear;
+  }
+
+  // YEAR-ROLLOVER FIX: if the first endpoint had no explicit year AND its
+  // month is greater than the last endpoint's month, the range crossed a
+  // year boundary — start year is (end year - 1). Example: "Nov 15 to
+  // Feb 10, 2027" → start = Nov 15 2026, end = Feb 10 2027.
+  if (firstDay && firstDay.year === undefined && lastDay && firstDay.monthIdx > lastDay.monthIdx) {
+    startYear = endYear - 1;
+  }
+
+  const start = new Date(startYear, startMonth, startDay);
+  const end = new Date(endYear, endMonth, endDay);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+  return { start, end };
+};
+
+/**
+ * Build the "covered ranges" set from EVERY date-bearing field in the
+ * timing section — not just `windows[].label`. Sources, in order:
+ *   1. `transits[].date_range`        (the canonical AI field)
+ *   2. `transits[].first_applying_date` → `transits[].separating_end_date`
+ *      (synthesized range when `date_range` is missing or unparseable)
+ *   3. `transits[].exact_hit_date`    (single-day range fallback)
+ *   4. `windows[].label`              (most authoritative source for months)
+ *   5. `windows[].dateRange.{start,end}` (structured ISO range when present)
+ *
+ * If we ONLY harvested `exact_hit_date`, bare-month claims like "May 2026"
+ * would never line up with a single-day point and would always be stripped.
+ * That was the original Paul-Howell bug.
+ */
 const parseDateRangesFromTimingSections = (parsedContent: any): DateRange[] => {
   const ranges: DateRange[] = [];
   if (!Array.isArray(parsedContent?.sections)) return ranges;
 
-  const monthFullAlt = MONTH_NAMES.join("|");
-  const monthAbbrAlt = MONTH_ABBR.join("|");
-  const monthDayRegex = new RegExp(
-    `\\b(${monthFullAlt}|${monthAbbrAlt})(?:\\s+(\\d{1,2}))?(?:,?\\s+(\\d{4}))?\\b`,
-    "g",
-  );
+  const pushRange = (start: Date, end: Date, source: string) => {
+    if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+      ranges.push({ start, end, source });
+    }
+  };
+
+  const harvestRangeString = (raw: unknown, source: string) => {
+    if (typeof raw !== "string" || !raw.trim()) return false;
+    const parsed = parseSingleRangeString(raw);
+    if (parsed) {
+      pushRange(parsed.start, parsed.end, source);
+      return true;
+    }
+    return false;
+  };
 
   for (const section of parsedContent.sections) {
     if (section?.type !== "timing_section") continue;
-    const collect = (arr: any) => {
-      if (!Array.isArray(arr)) return;
-      for (const item of arr) {
-        const raw = item?.date_range || item?.dateRange || item?.label;
-        if (typeof raw !== "string" || !raw.trim()) continue;
 
-        const years = Array.from(raw.matchAll(/\b(20\d{2})\b/g)).map((m) => parseInt(m[1], 10));
-        if (years.length === 0) continue;
-        const minYear = Math.min(...years);
-        const maxYear = Math.max(...years);
-
-        const monthIdxs: number[] = [];
-        const dayMatches: Array<{ monthIdx: number; day: number; year?: number }> = [];
-        let mm: RegExpExecArray | null;
-        while ((mm = monthDayRegex.exec(raw)) !== null) {
-          const monthIdx = [...MONTH_NAMES, ...MONTH_ABBR].indexOf(mm[1]) % 12;
-          monthIdxs.push(monthIdx);
-          if (mm[2]) {
-            dayMatches.push({
-              monthIdx,
-              day: parseInt(mm[2], 10),
-              year: mm[3] ? parseInt(mm[3], 10) : undefined,
-            });
+    if (Array.isArray(section.transits)) {
+      for (const t of section.transits) {
+        if (!t) continue;
+        const got = harvestRangeString(t.date_range || t.dateRange, t.date_range || t.dateRange || "(transit date_range)");
+        if (!got) {
+          // Synthesize a range from applying/separating endpoints.
+          const synth = `${t.first_applying_date ?? ""} to ${t.separating_end_date ?? ""}`.trim();
+          if (t.first_applying_date && t.separating_end_date) {
+            harvestRangeString(synth, synth);
           }
         }
-
-        let startMonth = monthIdxs.length > 0 ? Math.min(...monthIdxs) : 0;
-        let startDay = 1;
-        let startYear = minYear;
-        const firstDay = dayMatches[0];
-        if (firstDay) {
-          startMonth = firstDay.monthIdx;
-          startDay = firstDay.day;
-          startYear = firstDay.year ?? minYear;
-        }
-
-        let endMonth = monthIdxs.length > 0 ? Math.max(...monthIdxs) : 11;
-        let endDay = 28;
-        let endYear = maxYear;
-        const lastDay = dayMatches[dayMatches.length - 1];
-        if (lastDay) {
-          endMonth = lastDay.monthIdx;
-          endDay = lastDay.day;
-          endYear = lastDay.year ?? maxYear;
-        }
-
-        const start = new Date(startYear, startMonth, startDay);
-        const end = new Date(endYear, endMonth, endDay);
-        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-          ranges.push({ start, end, source: raw });
+        // ALSO register the exact hit as a 1-day point (covers narrow prose).
+        if (typeof t.exact_hit_date === "string" && t.exact_hit_date.trim()) {
+          const point = parseSingleRangeString(t.exact_hit_date);
+          if (point) pushRange(point.start, point.end, t.exact_hit_date);
         }
       }
-    };
+    }
 
-    collect(section.transits);
-    collect(section.windows);
+    if (Array.isArray(section.windows)) {
+      for (const w of section.windows) {
+        if (!w) continue;
+        // Prefer structured ISO range when present.
+        const dr = w.dateRange ?? w.date_range;
+        if (dr && typeof dr === "object" && typeof dr.start === "string" && typeof dr.end === "string") {
+          const start = new Date(dr.start);
+          const end = new Date(dr.end);
+          if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            pushRange(start, end, `${dr.start}..${dr.end}`);
+            continue;
+          }
+        }
+        harvestRangeString(w.label, w.label || "(window label)");
+      }
+    }
   }
   return ranges;
 };
