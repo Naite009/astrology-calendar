@@ -45,13 +45,17 @@ const FACT_POINTS = [
   "IC",
 ] as const;
 
+// Match the project's centralized orb policy in aspectOrbs.ts:
+// Luminaries 10°, Angles 9°, Planets 8°, Points 6°. We use the widest
+// applicable orb (Luminary case) here so we don't strip legitimate wide
+// natal aspects involving the Sun or Moon.
 const ASPECTS = [
-  { aspect: "conjunct", angle: 0, orb: 8 },
-  { aspect: "sextile", angle: 60, orb: 5 },
-  { aspect: "square", angle: 90, orb: 7 },
-  { aspect: "trine", angle: 120, orb: 7 },
+  { aspect: "conjunct", angle: 0, orb: 10 },
+  { aspect: "sextile", angle: 60, orb: 6 },
+  { aspect: "square", angle: 90, orb: 9 },
+  { aspect: "trine", angle: 120, orb: 9 },
   { aspect: "quincunx", angle: 150, orb: 3 },
-  { aspect: "opposition", angle: 180, orb: 8 },
+  { aspect: "opposition", angle: 180, orb: 10 },
   { aspect: "semisextile", angle: 30, orb: 2 },
   { aspect: "semisquare", angle: 45, orb: 2 },
   { aspect: "sesquiquadrate", angle: 135, orb: 2 },

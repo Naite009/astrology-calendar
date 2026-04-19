@@ -159,6 +159,74 @@ const buildCountsMapFromFacts = (facts: ValidationFacts | null): Record<string, 
   return counts;
 };
 
+/**
+ * Parse free-text "ACTIVE TRANSIT ASPECTS TO NATAL CHART" lines that AskView
+ * injects into chartContext. Lines look like:
+ *   "- Transiting Jupiter 12.4° Cancer ☌ Natal Sun 13.1° Cancer (orb: 0.7°) — conjunct"
+ * We add every (transitPlanet, aspect, natalPlanet) pair to the allowlist
+ * so the validator does not strip legitimate transit references that the AI
+ * was explicitly given as ground truth.
+ */
+// Local lookup that doesn't depend on canonicalPlanet (declared later).
+const localPlanetLookup = (token: string): string | null => {
+  if (!token) return null;
+  const symMatch = PLANET_SYMBOLS[token.trim()];
+  if (symMatch) return symMatch;
+  const norm = token.replace(/\s+/g, " ").trim().toLowerCase();
+  for (const p of PLANET_NAMES) {
+    if (p.toLowerCase() === norm) return p;
+  }
+  return null;
+};
+
+const collectTransitAspects = (chartContext: string | undefined, aspectSet: Set<string>) => {
+  if (typeof chartContext !== "string" || !chartContext) return;
+  const lines = chartContext.split("\n");
+  const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
+  // Pattern: "Transiting <Planet> ... Natal <Planet> ... — <aspect>"
+  const re = new RegExp(
+    `Transiting\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?Natal\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?(?:—|--|-)\\s*(${aspectsAlt})\\b`,
+    "i",
+  );
+  for (const line of lines) {
+    const m = line.match(re);
+    if (!m) continue;
+    const p1 = localPlanetLookup(m[1].trim());
+    const p2 = localPlanetLookup(m[2].trim());
+    const aspect = ASPECT_ALIASES[m[3].toLowerCase()];
+    if (!p1 || !p2 || !aspect) continue;
+    const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
+    aspectSet.add(`${pair[0]}|${aspect}|${pair[1]}`);
+  }
+};
+
+/**
+ * Parse Solar Return / Progressed / Synastry sections that may also list
+ * planet positions or aspects in plain text. Any "X aspect Y" claim found
+ * inside those headed blocks is treated as authoritative.
+ */
+const collectSecondaryChartAspects = (chartContext: string | undefined, aspectSet: Set<string>) => {
+  if (typeof chartContext !== "string" || !chartContext) return;
+  const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
+  const sections = chartContext.split(/^---\s+/m);
+  for (const block of sections) {
+    if (!/SOLAR RETURN|PROGRESSED|SYNASTRY|COMPOSITE|DAVISON/i.test(block)) continue;
+    const re = new RegExp(
+      `\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(${aspectsAlt})\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\b`,
+      "gi",
+    );
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(block)) !== null) {
+      const p1 = localPlanetLookup(m[1].trim());
+      const p2 = localPlanetLookup(m[3].trim());
+      const aspect = ASPECT_ALIASES[m[2].toLowerCase()];
+      if (!p1 || !p2 || !aspect) continue;
+      const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
+      aspectSet.add(`${pair[0]}|${aspect}|${pair[1]}`);
+    }
+  }
+};
+
 const buildFactsMap = (chartContext: string | undefined): ValidationFactsMap => {
   const parsed = extractValidationFacts(chartContext);
   const counts = buildCountsMapFromFacts(parsed);
@@ -179,6 +247,11 @@ const buildFactsMap = (chartContext: string | undefined): ValidationFactsMap => 
     const pair = [aspect.point1, aspect.point2].sort((a, b) => a.localeCompare(b));
     aspectSet.add(`${pair[0]}|${canonicalAspect}|${pair[1]}`);
   }
+
+  // Extend the allowlist with transit-to-natal aspects (pre-computed by AskView)
+  // and any Solar Return / Progressed / Synastry aspects mentioned in headers.
+  collectTransitAspects(chartContext, aspectSet);
+  collectSecondaryChartAspects(chartContext, aspectSet);
 
   return { counts, aspectSet, positions, orbPolicy, knownPlanets };
 };
