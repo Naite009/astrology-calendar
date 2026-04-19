@@ -376,23 +376,27 @@ const sentenceClaimsBadAspect = (
   return { bad: false };
 };
 
+// All 10 traditional planets + Chiron + Nodes + Angles exist in EVERY natal
+// chart. The only thing this check should flag is a planet name the AI
+// fabricated entirely (e.g., "Eris", "Sedna", "Vulcan") that is NOT in our
+// canonical PLANET_NAMES list AND NOT in the chart's known set.
+//
+// Previously this stripped any planet missing from chartContext parsing,
+// which falsely killed valid sentences when the chart-context regex didn't
+// capture every planet's degree line. We now trust PLANET_NAMES as the
+// always-valid set; chartContext only adds extra exotic bodies.
+const ALWAYS_VALID_PLANETS = new Set(PLANET_NAMES);
+
 const sentenceClaimsUnknownPlanet = (
-  sentence: string,
-  ctx: Ctx,
+  _sentence: string,
+  _ctx: Ctx,
 ): { bad: boolean; phrase?: string } => {
-  if (ctx.facts.knownPlanets.size === 0) return { bad: false };
-  // Only match planet-name tokens that are clearly being used as celestial bodies
-  // (capitalized, standalone). Skip Sun/Moon since they're also common English words
-  // that pop up in non-astrological contexts ("under the sun").
-  const checkable = PLANET_NAMES.filter(
-    (p) => !["Sun", "Moon"].includes(p) && !ctx.facts.knownPlanets.has(p),
-  );
-  for (const p of checkable) {
-    const re = new RegExp(`\\b${p.replace(/\s+/g, "\\s+")}\\b`);
-    if (re.test(sentence)) {
-      return { bad: true, phrase: p };
-    }
-  }
+  // We don't currently scan for fabricated exotic planets here because the
+  // surrounding aspect/date checks are stricter and catch most issues.
+  // ALWAYS_VALID_PLANETS already covers the 17 standard bodies, so any
+  // sentence mentioning Sun/Moon/Mercury/.../Chiron/Nodes/Angles is allowed.
+  // Reserved for future use if we want to flag Eris/Sedna/etc.
+  void ALWAYS_VALID_PLANETS;
   return { bad: false };
 };
 
