@@ -516,6 +516,73 @@ const walkAndTransformSection = (section: any, ctx: Ctx) => {
   }
 };
 
+// Keys we should NEVER walk into — they hold structured data the AI didn't write
+// in narrative form (counts, raw planet objects, the validation report itself).
+const SKIP_KEYS = new Set([
+  "_validation",
+  "_validation_warning",
+  "elements",
+  "modalities",
+  "polarity",
+  "transits",
+  "windows",
+  "date_range",
+  "dateRange",
+  "symbol",
+  "tag",
+  "type",
+  "title",
+  "label",
+  "name",
+  "planet",
+  "aspect",
+  "natal_point",
+  "count",
+  "generated_date",
+]);
+
+// Recursively walk every string field in any nested object/array, applying
+// transforms. This catches subsections[].body, scenes[].bullets[], cities[].pros,
+// or any other structure the AI invents. Skip structured/identifier keys.
+const deepWalkAndTransform = (node: any, ctx: Ctx) => {
+  if (node === null || node === undefined) return;
+  if (typeof node === "string") return; // strings are mutated by parent (objects can't replace primitives in-place)
+  if (Array.isArray(node)) {
+    for (let i = 0; i < node.length; i++) {
+      const child = node[i];
+      if (typeof child === "string") {
+        node[i] = transformString(child, ctx);
+      } else if (child && typeof child === "object") {
+        deepWalkAndTransform(child, ctx);
+      }
+    }
+    return;
+  }
+  if (typeof node === "object") {
+    for (const key of Object.keys(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      const v = node[key];
+      if (typeof v === "string") {
+        node[key] = transformString(v, ctx);
+      } else if (v && typeof v === "object") {
+        deepWalkAndTransform(v, ctx);
+      }
+    }
+
+    // Per-element/modality/polarity rows DO have prose interpretations
+    // we want to validate, even though the array key is in SKIP_KEYS.
+    for (const arrKey of ["elements", "modalities", "polarity"]) {
+      const arr = node[arrKey];
+      if (!Array.isArray(arr)) continue;
+      for (const item of arr) {
+        if (item && typeof item === "object" && typeof item.interpretation === "string") {
+          item.interpretation = transformString(item.interpretation, ctx);
+        }
+      }
+    }
+  }
+};
+
 // ── Public entry point ──────────────────────────────────────────────
 export const validateReading = (
   parsedContent: any,
@@ -523,7 +590,9 @@ export const validateReading = (
 ): ValidationReport => {
   const report = emptyReport();
   if (!parsedContent || !Array.isArray(parsedContent.sections)) {
-    parsedContent._validation = report;
+    if (parsedContent && typeof parsedContent === "object") {
+      parsedContent._validation = report;
+    }
     return report;
   }
 
@@ -534,7 +603,7 @@ export const validateReading = (
   for (const section of parsedContent.sections) {
     const label = `${section?.type || "unknown"}::${(section?.title || "").slice(0, 40)}`;
     const ctx: Ctx = { counts, facts, ranges, report, sectionLabel: label };
-    walkAndTransformSection(section, ctx);
+    deepWalkAndTransform(section, ctx);
   }
 
   report.drift_count =
