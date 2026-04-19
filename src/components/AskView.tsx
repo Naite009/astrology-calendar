@@ -1549,7 +1549,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selectedChart!.name.replace(/\s+/g, "-").toLowerCase()}-readings.json`;
+
+    // Filename: <person-name>_<reading-type>_<timestamp>.json
+    const slug = (s: string) =>
+      (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const personSlug = slug(selectedChart!.name) || "chart";
+    const types = Array.from(
+      new Set(
+        validatedReadings
+          .map(r => slug(r.question_type || ""))
+          .filter(Boolean)
+      )
+    );
+    const typeSlug =
+      types.length === 0 ? "reading" : types.length === 1 ? types[0] : "multi-reading";
+    const ts = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .replace("T", "_")
+      .replace(/-\d{3}Z$/, "Z"); // 2026-04-19_14-32-05Z
+    a.download = `${personSlug}_${typeSlug}_${ts}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
