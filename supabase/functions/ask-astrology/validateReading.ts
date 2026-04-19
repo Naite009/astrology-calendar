@@ -397,6 +397,11 @@ type Ctx = {
   sectionLabel: string;
 };
 
+type StripIssue = {
+  phrase: string;
+  reason: string;
+};
+
 const fixCountsInString = (text: string, ctx: Ctx): string => {
   if (!text || Object.keys(ctx.counts).length === 0) return text;
   const pattern = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|\d{1,2})(\s+)([A-Za-z]+)\b/gi;
@@ -416,6 +421,8 @@ const fixCountsInString = (text: string, ctx: Ctx): string => {
 };
 
 const canonicalPlanet = (token: string): string | null => {
+  const symbolMatch = PLANET_SYMBOLS[token.trim()];
+  if (symbolMatch) return symbolMatch;
   const norm = token.replace(/\s+/g, " ").trim().toLowerCase();
   for (const p of ctxSafePlanetNames) {
     if (p.toLowerCase() === norm) return p;
@@ -450,12 +457,14 @@ const checkAspectPair = (
   return { bad: false };
 };
 
-const sentenceClaimsBadAspect = (
+const collectBadAspectClaims = (
   sentence: string,
   ctx: Ctx,
-): { bad: boolean; phrase?: string; reason?: string } => {
+): StripIssue[] => {
   const planetsAlt = ctxSafePlanetNames.map((p) => p.replace(/\s/g, "\\s")).join("|");
   const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
+  const symbolPlanetsAlt = Object.keys(PLANET_SYMBOLS).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const symbolAspectsAlt = Object.keys(ASPECT_SYMBOLS).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const patterns: Array<{ re: RegExp; map: (m: RegExpExecArray) => [string, string, string] }> = [
     {
       re: new RegExp(
@@ -485,28 +494,42 @@ const sentenceClaimsBadAspect = (
       ),
       map: (m) => [m[1], m[2], m[3]],
     },
+    {
+      re: new RegExp(`(${symbolPlanetsAlt})\\s*(${symbolAspectsAlt})\\s*(${symbolPlanetsAlt})`, "g"),
+      map: (m) => [m[1], ASPECT_SYMBOLS[m[2]] ?? m[2], m[3]],
+    },
   ];
 
+  const issues: StripIssue[] = [];
+  const seen = new Set<string>();
   for (const { re, map } of patterns) {
     let match: RegExpExecArray | null;
     while ((match = re.exec(sentence)) !== null) {
       const [rawP1, rawAspect, rawP2] = map(match);
       const result = checkAspectPair(rawP1, rawAspect, rawP2, ctx);
-      if (result.bad) return result;
+      if (result.bad && result.phrase && result.reason) {
+        const key = `${result.phrase}::${result.reason}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          issues.push({ phrase: result.phrase, reason: result.reason });
+        }
+      }
     }
   }
-  return { bad: false };
+  return issues;
 };
 
 const sentenceClaimsUnknownPlanet = (_sentence: string, _ctx: Ctx): { bad: boolean; phrase?: string } => ({ bad: false });
 
-const sentenceClaimsBadDate = (
+const collectBadDateClaims = (
   sentence: string,
   ctx: Ctx,
-): { bad: boolean; phrase?: string; reason?: string } => {
-  if (ctx.ranges.length === 0) return { bad: false };
+): StripIssue[] => {
+  if (ctx.ranges.length === 0) return [];
   const monthAlt = [...MONTH_NAMES, ...MONTH_ABBR].join("|");
   const re = new RegExp(`\\b(${monthAlt})\\s+(\\d{1,2},?\\s+)?(\\d{4})\\b`, "g");
+  const issues: StripIssue[] = [];
+  const seen = new Set<string>();
   let m: RegExpExecArray | null;
   while ((m = re.exec(sentence)) !== null) {
     const monthName = m[1];
@@ -520,7 +543,11 @@ const sentenceClaimsBadDate = (
     if (!dayPart) {
       const coverage = findMonthCoverage(yearNum, monthIdx, ctx.ranges);
       if (!coverage.covered) {
-        return { bad: true, phrase: m[0], reason: coverage.reason };
+        const key = `${m[0]}::${coverage.reason}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          issues.push({ phrase: m[0], reason: coverage.reason });
+        }
       }
       continue;
     }
@@ -530,10 +557,14 @@ const sentenceClaimsBadDate = (
     if (isNaN(d.getTime())) continue;
     const coverage = findDateCoverage(d, ctx.ranges);
     if (!coverage.covered) {
-      return { bad: true, phrase: m[0], reason: coverage.reason };
+      const key = `${m[0]}::${coverage.reason}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        issues.push({ phrase: m[0], reason: coverage.reason });
+      }
     }
   }
-  return { bad: false };
+  return issues;
 };
 
 const filterSentencesInString = (text: string, ctx: Ctx): string => {
@@ -541,13 +572,15 @@ const filterSentencesInString = (text: string, ctx: Ctx): string => {
   const sentences = splitSentences(text);
   const kept: string[] = [];
   for (const s of sentences) {
-    const aspectCheck = sentenceClaimsBadAspect(s, ctx);
-    if (aspectCheck.bad) {
-      ctx.report.stripped_aspects.push({
-        section: ctx.sectionLabel,
-        phrase: aspectCheck.phrase!,
-        reason: aspectCheck.reason!,
-      });
+    const aspectIssues = collectBadAspectClaims(s, ctx);
+    if (aspectIssues.length > 0) {
+      ctx.report.stripped_aspects.push(
+        ...aspectIssues.map((issue) => ({
+          section: ctx.sectionLabel,
+          phrase: issue.phrase,
+          reason: issue.reason,
+        })),
+      );
       continue;
     }
     const planetCheck = sentenceClaimsUnknownPlanet(s, ctx);
@@ -558,13 +591,15 @@ const filterSentencesInString = (text: string, ctx: Ctx): string => {
       });
       continue;
     }
-    const dateCheck = sentenceClaimsBadDate(s, ctx);
-    if (dateCheck.bad) {
-      ctx.report.stripped_dates.push({
-        section: ctx.sectionLabel,
-        phrase: dateCheck.phrase!,
-        reason: dateCheck.reason!,
-      });
+    const dateIssues = collectBadDateClaims(s, ctx);
+    if (dateIssues.length > 0) {
+      ctx.report.stripped_dates.push(
+        ...dateIssues.map((issue) => ({
+          section: ctx.sectionLabel,
+          phrase: issue.phrase,
+          reason: issue.reason,
+        })),
+      );
       continue;
     }
     kept.push(s);
