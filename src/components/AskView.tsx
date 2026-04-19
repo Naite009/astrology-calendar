@@ -16,6 +16,7 @@ import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
+import { buildAskValidationFactsBlock } from "@/lib/askValidationFacts";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
@@ -761,6 +762,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       } catch {}
     } catch {}
 
+    context += buildAskValidationFactsBlock(chart);
+
     if (timingContext) {
       context += timingContext;
     }
@@ -1133,10 +1136,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     for (const section of data.sections) {
       if (section.type !== 'modality_element') continue;
-      // Recompute from chart data
       const elemCounts: Record<string, { count: number; planets: string[] }> = { Fire: { count: 0, planets: [] }, Earth: { count: 0, planets: [] }, Air: { count: 0, planets: [] }, Water: { count: 0, planets: [] } };
       const modCounts: Record<string, { count: number; planets: string[] }> = { Cardinal: { count: 0, planets: [] }, Fixed: { count: 0, planets: [] }, Mutable: { count: 0, planets: [] } };
-      const polCounts: Record<string, { count: number; planets: string[] }> = { Masculine: { count: 0, planets: [] }, Feminine: { count: 0, planets: [] } };
+      const polCounts: Record<string, { count: number; planets: string[] }> = {
+        Masculine: { count: 0, planets: [] },
+        Feminine: { count: 0, planets: [] },
+      };
 
       for (const pName of CORE_PLANETS) {
         const key = pName.toLowerCase();
@@ -1150,32 +1155,38 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         if (pol && polCounts[pol]) { polCounts[pol].count++; polCounts[pol].planets.push(pName); }
       }
 
-      // Overwrite counts/planets on existing entries
       if (section.elements && Array.isArray(section.elements)) {
         for (const entry of section.elements) {
-          const data = elemCounts[entry.name];
-          if (data) { entry.count = data.count; entry.planets = data.planets; }
+          const sectionData = elemCounts[entry.name];
+          if (sectionData) { entry.count = sectionData.count; entry.planets = sectionData.planets; }
         }
       }
       if (section.modalities && Array.isArray(section.modalities)) {
         for (const entry of section.modalities) {
-          const data = modCounts[entry.name];
-          if (data) { entry.count = data.count; entry.planets = data.planets; }
+          const sectionData = modCounts[entry.name];
+          if (sectionData) { entry.count = sectionData.count; entry.planets = sectionData.planets; }
         }
       }
       if (section.polarity && Array.isArray(section.polarity)) {
         for (const entry of section.polarity) {
-          const data = polCounts[entry.name];
-          if (data) { entry.count = data.count; entry.planets = data.planets; }
+          const lowerName = String(entry.name || '').toLowerCase();
+          const isMasculine = lowerName.includes('yang') || lowerName.includes('active') || lowerName.includes('masculine');
+          const isFeminine = lowerName.includes('yin') || lowerName.includes('receptive') || lowerName.includes('feminine');
+          if (isMasculine) {
+            entry.count = polCounts.Masculine.count;
+            entry.planets = polCounts.Masculine.planets;
+          } else if (isFeminine) {
+            entry.count = polCounts.Feminine.count;
+            entry.planets = polCounts.Feminine.planets;
+          }
         }
       }
-      // Fix dominant labels
       const domEl = Object.entries(elemCounts).sort((a, b) => b[1].count - a[1].count)[0];
       const domMod = Object.entries(modCounts).sort((a, b) => b[1].count - a[1].count)[0];
-      const domPol = Object.entries(polCounts).sort((a, b) => b[1].count - a[1].count)[0];
+      const domPol = polCounts.Masculine.count >= polCounts.Feminine.count ? 'Masculine' : 'Feminine';
       if (domEl) section.dominant_element = domEl[0];
       if (domMod) section.dominant_modality = domMod[0];
-      if (domPol) section.dominant_polarity = domPol[0];
+      section.dominant_polarity = domPol;
     }
 
     return data;
