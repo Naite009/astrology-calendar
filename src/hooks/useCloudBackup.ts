@@ -92,7 +92,7 @@ export const useCloudBackup = (
     })();
 
     return () => subscription.unsubscribe();
-  }, [authChecked]);
+  }, []);
 
   // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {

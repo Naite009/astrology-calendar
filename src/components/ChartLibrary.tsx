@@ -1078,7 +1078,9 @@ export const ChartLibrary = ({
         <div className="mb-6 flex flex-col gap-3 rounded-sm border border-border bg-secondary/50 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {cloudBackup.isAuthenticated ? (
+              {cloudBackup.isLoading ? (
+                <RefreshCw size={16} className="animate-spin text-primary" />
+              ) : cloudBackup.isAuthenticated ? (
                 <User size={16} className="text-primary" />
               ) : cloudBackup.isSyncing ? (
                 <RefreshCw size={16} className="animate-spin text-primary" />
@@ -1088,7 +1090,9 @@ export const ChartLibrary = ({
                 <CloudOff size={16} className="text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {cloudBackup.isAuthenticated 
+                {cloudBackup.isLoading
+                  ? 'Reconnecting to your account...'
+                  : cloudBackup.isAuthenticated 
                   ? 'Signed in — charts sync across all devices'
                   : cloudBackup.isSyncing 
                     ? 'Syncing...' 
@@ -1112,7 +1116,7 @@ export const ChartLibrary = ({
                 <RefreshCw size={12} />
                 Sync Now
               </button>
-              {!cloudBackup.isAuthenticated ? (
+              {cloudBackup.isLoading ? null : !cloudBackup.isAuthenticated ? (
                 <button
                   onClick={() => navigate('/auth')}
                   className="flex items-center gap-1.5 border border-primary bg-primary px-3 py-1.5 text-[10px] uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 rounded-sm"
@@ -1135,7 +1139,7 @@ export const ChartLibrary = ({
               )}
             </div>
           </div>
-          {!cloudBackup.isAuthenticated ? (
+          {cloudBackup.isLoading ? null : !cloudBackup.isAuthenticated ? (
             <p className="text-xs text-muted-foreground">
               Your charts are currently saved to this device only. Sign in to access them from any computer.
             </p>
