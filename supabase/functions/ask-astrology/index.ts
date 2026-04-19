@@ -249,25 +249,55 @@ const correctModalityElementCounts = (parsedContent: any) => {
     let corrected = text;
     let changed = false;
 
-    // Match "<numberword> <Category>" (case-insensitive on the number, preserve case of category)
-    const pattern = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten)(\s+)([A-Za-z]+)\b/gi;
-    corrected = corrected.replace(pattern, (match, numWord: string, gap: string, category: string) => {
-      const catKey = category.toLowerCase();
-      const actual = counts[catKey];
+    // Known category roots we will rewrite. Plurals (Waters, Fires) are stripped to root.
+    const KNOWN_CATEGORIES = new Set([
+      "fire", "earth", "air", "water",
+      "cardinal", "fixed", "mutable",
+      "yang", "yin", "active", "receptive", "masculine", "feminine",
+    ]);
+
+    const stripPlural = (cat: string): string => {
+      const lower = cat.toLowerCase();
+      if (KNOWN_CATEGORIES.has(lower)) return lower;
+      // Try removing trailing 's' (Waters -> water, Fires -> fire)
+      if (lower.endsWith("s") && KNOWN_CATEGORIES.has(lower.slice(0, -1))) {
+        return lower.slice(0, -1);
+      }
+      return lower;
+    };
+
+    const resolveActual = (categoryRaw: string): number | undefined => {
+      const root = stripPlural(categoryRaw);
+      if (typeof counts[root] === "number") return counts[root];
+      if (typeof counts[categoryRaw.toLowerCase()] === "number") return counts[categoryRaw.toLowerCase()];
+      return undefined;
+    };
+
+    const formatReplacement = (originalNum: string, actual: number): string => {
+      // If original was a digit, keep digit form. Otherwise use word form matching capitalization.
+      if (/^\d+$/.test(originalNum)) return String(actual);
+      const word = NUMBER_WORDS[actual] ?? String(actual);
+      const isCapitalized = originalNum[0] === originalNum[0].toUpperCase();
+      return isCapitalized ? word[0].toUpperCase() + word.slice(1) : word;
+    };
+
+    // Pattern 1: "<number> [optional 'planets'/'signs' filler skipped] <Category>"
+    // We allow an optional intervening word like "planets" being AFTER the category, so we just
+    // match "<number> <Category>" directly. Handles both word numbers and digits.
+    const pattern = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|\d{1,2})(\s+)([A-Za-z]+)\b/gi;
+    corrected = corrected.replace(pattern, (match, numToken: string, gap: string, category: string) => {
+      const actual = resolveActual(category);
       if (typeof actual !== "number") return match;
-      const stated = WORD_TO_NUMBER[numWord.toLowerCase()];
+      const stated = /^\d+$/.test(numToken)
+        ? parseInt(numToken, 10)
+        : WORD_TO_NUMBER[numToken.toLowerCase()];
       if (stated === actual) return match;
-      const replacementWord = NUMBER_WORDS[actual] ?? String(actual);
-      // Preserve original capitalization of the number word
-      const isCapitalized = numWord[0] === numWord[0].toUpperCase();
-      const finalWord = isCapitalized
-        ? replacementWord[0].toUpperCase() + replacementWord.slice(1)
-        : replacementWord;
+      const replacement = formatReplacement(numToken, actual);
       changed = true;
       console.info("[ask-astrology] balance_interpretation count corrected", {
-        category, stated, actual,
+        category, stated, actual, original: match,
       });
-      return `${finalWord}${gap}${category}`;
+      return `${replacement}${gap}${category}`;
     });
 
     if (changed) {
