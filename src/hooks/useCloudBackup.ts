@@ -3,6 +3,7 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart } from './useNatalChart';
 import { toast } from 'sonner';
+import { waitForInitialSessionRestore } from '@/lib/sessionKeepAlive';
 
 const DEVICE_ID_KEY = 'astro_device_id';
 const LAST_SYNC_KEY = 'astro_last_cloud_sync';
@@ -67,6 +68,10 @@ export const useCloudBackup = (
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!session?.user && !authChecked) {
+          return;
+        }
+
         setUser(session?.user ?? null);
         setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
         setAuthChecked(true);
@@ -78,14 +83,16 @@ export const useCloudBackup = (
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void (async () => {
+      await waitForInitialSessionRestore();
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
       setAuthChecked(true);
-    });
+    })();
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [authChecked]);
 
   // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {

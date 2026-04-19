@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2, LogIn, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2, LogIn, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 
@@ -70,7 +70,7 @@ export const AstroCalendar = () => {
   const [showLegend, setShowLegend] = useState(false);
   const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
-  const { user: authUser, signOut } = useAuth();
+  const { user: authUser, signOut, isLoading: authLoading } = useAuth();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
     userNatalChart,
@@ -803,7 +803,15 @@ export const AstroCalendar = () => {
               >
                 <User size={20} />
               </button>
-              {authUser ? (
+              {authLoading ? (
+                <div
+                  className="flex h-10 items-center gap-1.5 border border-border bg-transparent px-3 text-xs uppercase tracking-widest text-muted-foreground"
+                  title="Restoring session"
+                >
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="hidden lg:inline">Reconnecting</span>
+                </div>
+              ) : authUser ? (
                 <button
                   onClick={async () => { await signOut(); window.location.reload(); }}
                   className="flex h-10 items-center gap-1.5 border border-border bg-transparent px-3 text-xs uppercase tracking-widest text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
