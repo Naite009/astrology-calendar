@@ -169,20 +169,71 @@ const parseDateRangesFromTimingSections = (parsedContent: any): DateRange[] => {
     const collect = (arr: any) => {
       if (!Array.isArray(arr)) return;
       for (const item of arr) {
+        // Accept both snake_case and camelCase to handle AI variants.
         const dr = item?.date_range || item?.dateRange;
-        if (typeof dr !== "string") continue;
-        // crude: extract every "Mon D, YYYY" or "Month D, YYYY" or "YYYY-MM-DD"
-        const dateRegex = /(\d{4}-\d{2}-\d{2})|((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})/g;
-        const found: Date[] = [];
+        if (typeof dr !== "string" || !dr.trim()) continue;
+
+        // Strategy: pull out every year mentioned, every month-name token,
+        // and every "MonthName Day" pair. Then build the widest plausible
+        // bounding range. Handles formats like:
+        //   "Feb 2 to Oct 18, 2027"
+        //   "March 2026 – November 2026"
+        //   "2027-02-02 to 2027-10-18"
+        //   "Throughout 2027"
+        //   "Mar 14, 2027"
+        const years = Array.from(dr.matchAll(/\b(20\d{2})\b/g)).map((m) => parseInt(m[1], 10));
+        if (years.length === 0) continue;
+        const minYear = Math.min(...years);
+        const maxYear = Math.max(...years);
+
+        const monthIdxs: number[] = [];
+        const dayMatches: Array<{ monthIdx: number; day: number; year?: number }> = [];
+        const monthFullAlt = MONTH_NAMES.join("|");
+        const monthAbbrAlt = MONTH_ABBR.join("|");
+        const monthDayRegex = new RegExp(
+          `\\b(${monthFullAlt}|${monthAbbrAlt})(?:\\s+(\\d{1,2}))?(?:,?\\s+(\\d{4}))?\\b`,
+          "g",
+        );
         let mm: RegExpExecArray | null;
-        while ((mm = dateRegex.exec(dr)) !== null) {
-          const d = new Date(mm[0]);
-          if (!isNaN(d.getTime())) found.push(d);
+        while ((mm = monthDayRegex.exec(dr)) !== null) {
+          const monthIdx =
+            [...MONTH_NAMES, ...MONTH_ABBR].indexOf(mm[1]) % 12;
+          monthIdxs.push(monthIdx);
+          if (mm[2]) {
+            dayMatches.push({
+              monthIdx,
+              day: parseInt(mm[2], 10),
+              year: mm[3] ? parseInt(mm[3], 10) : undefined,
+            });
+          }
         }
-        if (found.length === 1) {
-          ranges.push({ start: found[0], end: found[0] });
-        } else if (found.length >= 2) {
-          ranges.push({ start: found[0], end: found[found.length - 1] });
+
+        // Build start
+        let startMonth = monthIdxs.length > 0 ? Math.min(...monthIdxs) : 0;
+        let startDay = 1;
+        let startYear = minYear;
+        const firstDay = dayMatches[0];
+        if (firstDay) {
+          startMonth = firstDay.monthIdx;
+          startDay = firstDay.day;
+          startYear = firstDay.year ?? minYear;
+        }
+
+        // Build end
+        let endMonth = monthIdxs.length > 0 ? Math.max(...monthIdxs) : 11;
+        let endDay = 28;
+        let endYear = maxYear;
+        const lastDay = dayMatches[dayMatches.length - 1];
+        if (lastDay) {
+          endMonth = lastDay.monthIdx;
+          endDay = lastDay.day;
+          endYear = lastDay.year ?? maxYear;
+        }
+
+        const start = new Date(startYear, startMonth, startDay);
+        const end = new Date(endYear, endMonth, endDay);
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+          ranges.push({ start, end });
         }
       }
     };
