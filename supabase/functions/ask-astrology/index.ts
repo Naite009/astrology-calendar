@@ -1940,6 +1940,52 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               { type: 'modality_element', titleHint: 'Natal Elemental & Modal Balance' },
               { type: 'summary_box', titleHint: 'Relationship Strategy Summary' },
             ],
+            // Bug E fix: previously only relationship had a completeness check.
+            // Now every categorized question type gets the same visibility so
+            // we catch silent gaps in career/health/money/relocation/etc.
+            career: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Career' },
+              { type: 'timing_section', titleHint: 'Career Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            health: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Vitality' },
+              { type: 'timing_section', titleHint: 'Health Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            money: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Earning' },
+              { type: 'timing_section', titleHint: 'Financial Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            spiritual: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: 'Soul' },
+              { type: 'timing_section', titleHint: 'Spiritual Timing' },
+              { type: 'modality_element', titleHint: 'Balance' },
+              { type: 'summary_box', titleHint: 'Strategy' },
+            ],
+            relocation: [
+              { type: 'placement_table', titleHint: 'Key Placements' },
+              { type: 'narrative_section', titleHint: '' }, // at least one narrative
+              { type: 'city_comparison', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
+            timing: [
+              { type: 'timing_section', titleHint: '' },
+              { type: 'narrative_section', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
+            general: [
+              { type: 'narrative_section', titleHint: '' },
+              { type: 'summary_box', titleHint: '' },
+            ],
           };
           const required = requiredByType[qType];
           if (required) {
