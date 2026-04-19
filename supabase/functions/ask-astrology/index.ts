@@ -1524,8 +1524,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
               console.error("Anthropic stream error event:", evt);
               throw new Error(evt.error?.message || "Stream error");
             }
-          } catch {
-            // Skip malformed event chunks
+          } catch (parseEvtErr) {
+            // Log once per stream that we hit a malformed event so future
+            // Anthropic shape changes don't fail silently.
+            console.warn("[ask-astrology] Skipped malformed stream event:", parseEvtErr instanceof Error ? parseEvtErr.message : parseEvtErr);
           }
         }
       }
@@ -1591,11 +1593,21 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         if (wasTruncated) {
           console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
           parsedContent = repairTruncatedJson(cleaned);
-          if (parsedContent) {
+          // Bug F fix: only accept the repair if it produced a usable
+          // structure (object with at least one section). Otherwise fall
+          // through to the outer parse-error path so the user sees a clean
+          // failure instead of a silently empty "completed" reading.
+          const repairLooksUsable =
+            parsedContent &&
+            typeof parsedContent === "object" &&
+            Array.isArray(parsedContent.sections) &&
+            parsedContent.sections.length > 0;
+          if (repairLooksUsable) {
             parsedContent._truncated = true;
             parsedContent._truncation_notice = "This reading was very long and may be missing the final sections. Try regenerating if anything important looks cut off.";
-            console.log("[ask-astrology] JSON repair SUCCEEDED — preserved partial reading");
+            console.log(`[ask-astrology] JSON repair SUCCEEDED — preserved ${parsedContent.sections.length} section(s)`);
           } else {
+            console.error("[ask-astrology] JSON repair returned unusable structure — failing job");
             throw firstErr;
           }
         } else {
