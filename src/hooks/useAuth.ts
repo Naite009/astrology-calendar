@@ -1,17 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { claimAnonymousChartsForUser } from '@/lib/claimAnonymousCharts';
+import { waitForInitialSessionRestore } from '@/lib/sessionKeepAlive';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const restorePendingRef = useRef(true);
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!session?.user && restorePendingRef.current) {
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
@@ -26,7 +32,11 @@ export const useAuth = () => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void (async () => {
+      await waitForInitialSessionRestore();
+      restorePendingRef.current = false;
+
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -34,7 +44,7 @@ export const useAuth = () => {
       if (session?.user?.id) {
         void claimAnonymousChartsForUser(session.user.id);
       }
-    });
+    })();
 
     return () => subscription.unsubscribe();
   }, []);
