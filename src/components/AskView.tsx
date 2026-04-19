@@ -1785,7 +1785,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       </div>
                       <div className="flex-1 max-w-[90%]">
                         {entry.reading ? (
-                          <ReadingRenderer reading={entry.reading} />
+                          <ReadingRenderer reading={entry.reading} onRegenerate={regenerateLastAnswer} />
                         ) : (
                           <div className="rounded-lg px-4 py-3 bg-muted">
                             <p className="text-sm whitespace-pre-wrap">{entry.content}</p>
