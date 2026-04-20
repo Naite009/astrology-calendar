@@ -854,18 +854,71 @@ const splitIntoSentences = (text: string): string[] => {
   return parts.map((s) => s.trim()).filter((s) => s.length > 0);
 };
 
+// A sentence is considered a "fragment or dangling reference" if it:
+//  1. Is too short to stand alone (< 4 words after trimming punctuation), OR
+//  2. Begins with a referential opener (This/That/These/Those/It/Such/Which/
+//     Here/There + verb) that almost certainly points at content we just
+//     removed, OR
+//  3. Starts with a coordinating conjunction that needs a prior clause
+//     (And/But/So/Yet/Or/Nor/Because/Therefore/Thus/Hence/Also/Plus) — but
+//     only when the previous sentence in the original text was removed,
+//     because otherwise the conjunction may legitimately link to kept text.
+//  4. Is missing a verb entirely (no recognizable verb token) → fragment.
+const REFERENTIAL_OPENER_RE =
+  /^(this|that|these|those|it|such|which|here|there)\b\s+\w+/i;
+const CONJUNCTION_OPENER_RE =
+  /^(and|but|so|yet|or|nor|because|therefore|thus|hence|also|plus|moreover|furthermore)\b/i;
+const VERB_HINT_RE =
+  /\b(is|are|was|were|be|been|being|am|do|does|did|has|have|had|will|would|shall|should|can|could|may|might|must|brings?|shows?|means?|makes?|gives?|takes?|moves?|points?|opens?|closes?|asks?|tells?|happens?|comes?|goes?|sits?|feels?|wants?|needs?|tries?|tends?|likes?|loves?|hates?|works?|rests?|grows?|builds?|breaks?|shifts?|turns?|holds?|keeps?|leaves?|stays?|gets?|lets?|seems?|appears?|looks?|sounds?|carries?|creates?|signals?|forces?|invites?|favors?|rewards?|teaches?|reveals?)\b/i;
+
+const isFragmentOrDangling = (
+  sentence: string,
+  prevWasRemoved: boolean,
+): boolean => {
+  const trimmed = sentence.replace(/[.!?"'\s]+$/g, "").trim();
+  if (!trimmed) return true;
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
+  if (wordCount < 4) return true;
+  if (REFERENTIAL_OPENER_RE.test(trimmed)) return true;
+  if (prevWasRemoved && CONJUNCTION_OPENER_RE.test(trimmed)) return true;
+  if (!VERB_HINT_RE.test(trimmed)) return true;
+  return false;
+};
+
 const stripAspectSentences = (text: string, re: RegExp): { cleaned: string; removed: string[] } => {
   if (!text || typeof text !== "string") return { cleaned: text, removed: [] };
   const sentences = splitIntoSentences(text);
-  const kept: string[] = [];
+  // First pass: remove sentences that contain an aspect phrase.
+  // Track which original positions were removed so the coherence pass
+  // can detect sentences that referred to a now-deleted neighbor.
   const removed: string[] = [];
-  for (const s of sentences) {
+  const firstPass: Array<{ text: string; wasRemoved: boolean }> = sentences.map((s) => {
     if (re.test(s)) {
       removed.push(s);
-    } else {
-      kept.push(s);
+      return { text: s, wasRemoved: true };
     }
+    return { text: s, wasRemoved: false };
+  });
+
+  // Second pass (coherence check, applied as part of the same strip pass):
+  // walk the surviving sentences in order. If a survivor is a fragment or
+  // its opener clearly references a sentence we just removed, drop it too.
+  // A shorter clean paragraph is better than a paragraph with broken prose.
+  const kept: string[] = [];
+  for (let i = 0; i < firstPass.length; i++) {
+    const entry = firstPass[i];
+    if (entry.wasRemoved) continue;
+    const prevWasRemoved = i > 0 && firstPass[i - 1].wasRemoved;
+    if (isFragmentOrDangling(entry.text, prevWasRemoved)) {
+      removed.push(entry.text);
+      // Mark this position as removed too so a chain of dangling
+      // references after a stripped sentence all get pruned together.
+      firstPass[i] = { text: entry.text, wasRemoved: true };
+      continue;
+    }
+    kept.push(entry.text);
   }
+
   return { cleaned: kept.join(" ").trim(), removed };
 };
 
