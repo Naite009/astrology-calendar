@@ -125,10 +125,10 @@ export default function Auth() {
   };
 
   const handleMagicLink = async () => {
-    const target = (rememberedEmail || email).trim();
+    const target = (email || rememberedEmail || '').trim();
     const emailResult = emailSchema.safeParse(target);
     if (!emailResult.success) {
-      toast.error('Enter a valid email first');
+      toast.error('Enter your email above first');
       return;
     }
     setIsSendingMagicLink(true);
