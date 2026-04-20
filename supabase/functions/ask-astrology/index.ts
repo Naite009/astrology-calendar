@@ -440,10 +440,11 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   for (const section of parsedContent.sections) {
     if (!section || section.type !== "modality_element") continue;
-    let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    if (!text) text = "";
-
+    const text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
     const lowerText = text.toLowerCase();
+
+    // Identify any non-zero element/modality/polarity that the AI's
+    // original text fails to name.
     const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
       if (!Array.isArray(arr)) return [];
       const missing: Array<{ name: string; count: number }> = [];
@@ -451,7 +452,6 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
         if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
         if (item.count < 1) continue;
         const root = item.name.split(/[\s(]/)[0].toLowerCase();
-        // Match either the singular ("water") or plural ("waters") form, case-insensitive.
         const re = new RegExp(`\\b${root}s?\\b`, "i");
         if (!re.test(lowerText)) missing.push({ name: item.name, count: item.count });
       }
@@ -461,76 +461,81 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const missingElements = collectMissing(section.elements);
     const missingModalities = collectMissing(section.modalities);
     const missingPolarities = collectMissing(section.polarity);
+    const anyMissing =
+      missingElements.length > 0 ||
+      missingModalities.length > 0 ||
+      missingPolarities.length > 0;
 
-    const fragments: string[] = [];
-    const formatList = (items: Array<{ name: string; count: number }>): string =>
-      items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(" and ");
-    if (missingElements.length > 0) {
-      fragments.push(`Also present: ${formatList(missingElements)} planet${missingElements.reduce((a, b) => a + b.count, 0) === 1 ? "" : "s"}.`);
-    }
-    if (missingModalities.length > 0) {
-      fragments.push(`Modal balance also includes ${formatList(missingModalities)}.`);
-    }
-    if (missingPolarities.length > 0) {
-      fragments.push(`Polarity also includes ${formatList(missingPolarities)}.`);
-    }
-
-    if (fragments.length > 0) {
-      const trimmed = text.trim().replace(/\s+$/, "");
-      const sep = trimmed.length === 0 ? "" : (/[.!?]$/.test(trimmed) ? " " : ". ");
-      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`.trim();
-      console.info("[ask-astrology] balance_interpretation coverage enforced", {
-        added_elements: missingElements.map((i) => i.name),
-        added_modalities: missingModalities.map((i) => i.name),
-        added_polarities: missingPolarities.map((i) => i.name),
-      });
-    }
-
-    // FINAL VERIFICATION (point 2 — universal rule): after the append, if
-    // ANY non-zero element/modality/polarity is STILL missing by name (e.g.
-    // because the appended fragment itself was stripped or didn't render
-    // for some reason), do a deterministic LOCAL REWRITE of just this
-    // field that explicitly names every non-zero entry. This never
-    // triggers a full JSON regeneration.
-    const allCovered = (arr: any, currentText: string): boolean => {
-      if (!Array.isArray(arr)) return true;
-      const lt = currentText.toLowerCase();
-      for (const item of arr) {
-        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
-        if (item.count < 1) continue;
-        const root = item.name.split(/[\s(]/)[0].toLowerCase();
-        const re = new RegExp(`\\b${root}s?\\b`, "i");
-        if (!re.test(lt)) return false;
-      }
-      return true;
-    };
-    const finalText: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    const stillMissing =
-      !allCovered(section.elements, finalText) ||
-      !allCovered(section.modalities, finalText) ||
-      !allCovered(section.polarity, finalText);
-    if (stillMissing) {
-      const namedList = (arr: any, kind: string): string => {
-        if (!Array.isArray(arr)) return "";
-        const items: Array<{ name: string; count: number }> = [];
-        for (const it of arr) {
-          if (!it || typeof it.name !== "string" || typeof it.count !== "number") continue;
-          if (it.count < 1) continue;
-          items.push({ name: it.name.split(/[\s(]/)[0], count: it.count });
+    // FIX #3 (option A — INTEGRATED REWRITE):
+    // The append approach always produces afterthoughts because it's
+    // additive by design. The only way to get every non-zero category
+    // treated as equal is to throw away the AI's text whenever ANY
+    // non-zero category is missing and emit a single integrated
+    // paragraph that names every category up front in one breath.
+    if (anyMissing) {
+      const collectAll = (arr: any): Array<{ name: string; count: number }> => {
+        if (!Array.isArray(arr)) return [];
+        const out: Array<{ name: string; count: number }> = [];
+        for (const item of arr) {
+          if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+          if (item.count < 1) continue;
+          out.push({ name: item.name.split(/[\s(]/)[0], count: item.count });
         }
-        if (items.length === 0) return "";
-        const phrases = items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`);
-        return `${kind}: ${phrases.join(", ")}`;
+        // Sort by descending count so the dominant category is named first.
+        out.sort((a, b) => b.count - a.count);
+        return out;
       };
-      const parts = [
-        namedList(section.elements, "Elemental balance"),
-        namedList(section.modalities, "Modal balance"),
-        namedList(section.polarity, "Polarity"),
-      ].filter(Boolean);
-      if (parts.length > 0) {
-        section.balance_interpretation = `${parts.join(". ")}.`;
-        console.info("[ask-astrology] balance_interpretation rewritten locally to cover every non-zero category", {
+
+      const elementsAll = collectAll(section.elements);
+      const modalitiesAll = collectAll(section.modalities);
+      const polaritiesAll = collectAll(section.polarity);
+
+      const formatList = (items: Array<{ name: string; count: number }>): string =>
+        items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(", ");
+
+      const sentences: string[] = [];
+
+      if (elementsAll.length > 0) {
+        const dominant = elementsAll[0];
+        const rest = elementsAll.slice(1);
+        const dominantClause = `${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} anchor${dominant.count === 1 ? "s" : ""} this chart's elemental tone`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, balanced by ${formatList(rest)} — every active element shapes how this person processes experience.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (modalitiesAll.length > 0) {
+        const dominant = modalitiesAll[0];
+        const rest = modalitiesAll.slice(1);
+        const dominantClause = `Modally, ${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} set${dominant.count === 1 ? "s" : ""} the rhythm`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, with ${formatList(rest)} adding their own pace.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (polaritiesAll.length > 0) {
+        const dominant = polaritiesAll[0];
+        const rest = polaritiesAll.slice(1);
+        const dominantClause = `Polarity leans ${dominant.name.toLowerCase()} (${NUMBER_WORDS[dominant.count] ?? dominant.count} planet${dominant.count === 1 ? "" : "s"})`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, tempered by ${formatList(rest)}.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (sentences.length > 0) {
+        section.balance_interpretation = sentences.join(" ");
+        console.info("[ask-astrology] balance_interpretation full deterministic rewrite (option A)", {
           section_title: section.title,
+          missing_elements: missingElements.map((i) => i.name),
+          missing_modalities: missingModalities.map((i) => i.name),
+          missing_polarities: missingPolarities.map((i) => i.name),
+          rewrite_preview: sentences.join(" ").slice(0, 160),
         });
       }
     }
@@ -655,8 +660,24 @@ const buildEmptySummaryFallback = (
 
   // Filter by tone — soft transits for positive labels, hard for caution.
   const matching = allTransits.filter((t) => (tone.positive ? t.is_soft : t.is_hard));
-  // Fall back to all transits if the tone-filter found nothing, so we
-  // never produce a blank card just because tone matching failed.
+
+  // CRITICAL (fix #2): Caution Windows must NEVER recycle the Best
+  // Windows pool. If the negative-tone filter produced zero matches,
+  // emit a deterministic "no major challenging transits" sentence
+  // rather than falling back to soft transits. Otherwise Best and
+  // Caution end up with identical date ranges.
+  if (matching.length === 0) {
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
+    // For positive labels, falling back to all transits is acceptable —
+    // a soft window labeled "Best" can still cite a neutral transit
+    // when no clearly soft ones exist.
+  }
+
+  // For positive tone: use matching if available, otherwise fall back
+  // to all transits. For negative tone: matching is non-empty here
+  // (handled above).
   const pool = matching.length > 0 ? matching : allTransits;
 
   // Pick up to 2 distinct date ranges (dedupe by normalized range string).
@@ -671,7 +692,13 @@ const buildEmptySummaryFallback = (
     if (phrases.length >= 2) break;
   }
 
-  if (phrases.length === 0) return null;
+  if (phrases.length === 0) {
+    // Negative tone with no transits at all — still emit a tone-appropriate sentence.
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
+    return null;
+  }
 
   const joined = phrases.length === 1 ? phrases[0] : `${phrases[0]} and ${phrases[1]}`;
   const verb = tone.positive
@@ -776,6 +803,112 @@ const overrideTimingSummaryItems = (parsedContent: any) => {
     console.info("[ask-astrology] summary_box timing items deterministically rebuilt", {
       overridden,
       blanked_for_needs_review: blanked,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// NON-TIMING SUMMARY ITEM ASPECT-STRIP (PERMANENT — DRIFT FIX)
+// The four strategy items in a Relationship Strategy Summary
+// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break",
+// "What This Year Is Best For") are behavioral advice — they should
+// NEVER name specific aspects (e.g., "Jupiter trine Venus"). The model
+// keeps sneaking transit/aspect references into them, which the
+// natal-aspect validator then strips, producing drift_count > 0 even
+// after regen-on-drift.
+//
+// This pass runs AFTER overrideTimingSummaryItems and BEFORE
+// validateReading is called the second time. It deterministically
+// removes any sentence in a non-timing summary_box item that contains
+// a "<Planet> <aspect> <Planet>" phrase, regardless of whether the
+// aspect is real or hallucinated. Aspect names have no place in
+// strategy text — the timing items already cover transit timing.
+// ─────────────────────────────────────────────────────────────────────────
+const SUMMARY_PLANET_NAMES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+  "Uranus", "Neptune", "Pluto", "Chiron", "North Node", "South Node",
+  "Juno", "Lilith", "Ascendant", "Midheaven", "Descendant", "IC", "MC",
+];
+const SUMMARY_ASPECT_WORDS = [
+  "conjunct", "conjunction", "sextile", "square", "trine",
+  "opposite", "opposition", "quincunx", "semisextile", "semisquare",
+  "sesquiquadrate",
+];
+
+const buildAspectPhraseRegex = (): RegExp => {
+  const planetCore = SUMMARY_PLANET_NAMES.map((p) => p.replace(/\s/g, "\\s")).join("|");
+  const prefixAlt = "(?:SR|Solar\\s+Return|Transiting|Transit|Progressed|Composite|Davison|Synastry|Partner|Natal|the|your|my|his|her|their)\\s+";
+  const planetsAlt = `(?:${prefixAlt})?(?:${planetCore})`;
+  const aspectsAlt = SUMMARY_ASPECT_WORDS.join("|");
+  // Match "<Planet> <aspect> [to|with|the] <Planet>" anywhere in a sentence.
+  return new RegExp(
+    `\\b(${planetsAlt})(?:'s|\\s+is|\\s+sits|\\s*,)?\\s+(${aspectsAlt})\\s+(?:to|with|the\\s+)?\\s*(?:the\\s+)?(${planetsAlt})\\b`,
+    "i",
+  );
+};
+
+const splitIntoSentences = (text: string): string[] => {
+  if (!text || typeof text !== "string") return [];
+  // Split on sentence terminators while preserving them on the preceding chunk.
+  const parts = text.split(/(?<=[.!?])\s+(?=[A-Z"'(])/);
+  return parts.map((s) => s.trim()).filter((s) => s.length > 0);
+};
+
+const stripAspectSentences = (text: string, re: RegExp): { cleaned: string; removed: string[] } => {
+  if (!text || typeof text !== "string") return { cleaned: text, removed: [] };
+  const sentences = splitIntoSentences(text);
+  const kept: string[] = [];
+  const removed: string[] = [];
+  for (const s of sentences) {
+    if (re.test(s)) {
+      removed.push(s);
+    } else {
+      kept.push(s);
+    }
+  }
+  return { cleaned: kept.join(" ").trim(), removed };
+};
+
+const stripAspectPhrasesFromNonTimingSummaryItems = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const re = buildAspectPhraseRegex();
+  let stripped = 0;
+  let itemsTouched = 0;
+  let itemsBlanked = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box") continue;
+    const items = Array.isArray(section.items) ? section.items : null;
+    if (!items) continue;
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const label: string = typeof item.label === "string" ? item.label : "";
+      // Skip TIMING items — they were already deterministically rebuilt
+      // by overrideTimingSummaryItems and do not need aspect-stripping.
+      if (isTimingLabel(label)) continue;
+      const valueKey = typeof item.value === "string" ? "value"
+        : typeof item.text === "string" ? "text"
+        : "value";
+      const current: unknown = item[valueKey];
+      if (typeof current !== "string" || !current.trim()) continue;
+      const { cleaned, removed } = stripAspectSentences(current, re);
+      if (removed.length === 0) continue;
+      stripped += removed.length;
+      itemsTouched++;
+      // If stripping leaves nothing, blank the field so the export guard
+      // can flag it [needs review] rather than ship a hollow card.
+      if (!cleaned) {
+        item[valueKey] = "";
+        itemsBlanked++;
+      } else {
+        item[valueKey] = cleaned;
+      }
+    }
+  }
+  if (stripped > 0) {
+    console.info("[ask-astrology] non-timing summary items: aspect phrases stripped", {
+      sentences_removed: stripped,
+      items_touched: itemsTouched,
+      items_blanked: itemsBlanked,
     });
   }
 };
@@ -2771,6 +2904,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // item from transits[] BEFORE the empty-fallback runs. The model
           // is no longer permitted to author these fields.
           overrideTimingSummaryItems(parsedContent);
+          // Strip any "<Planet> <aspect> <Planet>" sentences from the
+          // four behavioral strategy items (Who to Move Toward, Early
+          // Warning Signs, Pattern to Break, What This Year Is Best For).
+          // These items must never name aspects — that's what the timing
+          // items are for. Runs BEFORE the empty-fallback so blanked
+          // items still get filled or flagged [needs review].
+          stripAspectPhrasesFromNonTimingSummaryItems(parsedContent);
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
