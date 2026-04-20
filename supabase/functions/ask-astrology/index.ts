@@ -2877,6 +2877,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // item from transits[] BEFORE the empty-fallback runs. The model
           // is no longer permitted to author these fields.
           overrideTimingSummaryItems(parsedContent);
+          // Strip any "<Planet> <aspect> <Planet>" sentences from the
+          // four behavioral strategy items (Who to Move Toward, Early
+          // Warning Signs, Pattern to Break, What This Year Is Best For).
+          // These items must never name aspects — that's what the timing
+          // items are for. Runs BEFORE the empty-fallback so blanked
+          // items still get filled or flagged [needs review].
+          stripAspectPhrasesFromNonTimingSummaryItems(parsedContent);
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
