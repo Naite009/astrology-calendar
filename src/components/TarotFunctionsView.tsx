@@ -22,6 +22,7 @@ import kingPentacles from "@/assets/court-cards/king-pentacles.png";
 import { ChartSelector } from "./ChartSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { InteractiveTarotReading, type FunctionProfile } from "./tarot/InteractiveTarotReading";
 
 const COURT_CARD_IMAGES: Record<string, string> = {
   "Page of Wands": pageWands, "Knight of Wands": knightWands, "Queen of Wands": queenWands, "King of Wands": kingWands,
@@ -1098,6 +1099,23 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Interactive Reading — live spread, user-selected cards, AI interpretation */}
+          <InteractiveTarotReading
+            profile={{
+              superiorFunction: result.superiorFunction,
+              superiorSuit: result.superiorSuit,
+              superiorElement: result.superiorElement,
+              inferiorFunction: result.inferiorFunction,
+              inferiorSuit: result.inferiorSuit,
+              inferiorElement: result.inferiorElement,
+              auxiliaryElements: result.auxiliaryElements,
+              sunSign: result.sunSign,
+              ruler: result.ruler,
+              rulerSign: result.rulerSign,
+              chartName: chart?.name,
+            } satisfies FunctionProfile}
+          />
 
           {/* Example Spread Walkthrough */}
           <Card>
