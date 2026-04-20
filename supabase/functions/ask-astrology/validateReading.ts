@@ -183,20 +183,35 @@ const collectTransitAspects = (chartContext: string | undefined, aspectSet: Set<
   if (typeof chartContext !== "string" || !chartContext) return;
   const lines = chartContext.split("\n");
   const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
-  // Pattern: "Transiting <Planet> ... Natal <Planet> ... — <aspect>"
-  const re = new RegExp(
-    `Transiting\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?Natal\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?(?:—|--|-)\\s*(${aspectsAlt})\\b`,
-    "i",
-  );
+  // Pattern A: "Transiting <Planet> ... Natal <Planet> ... — <aspect>"
+  // Pattern B: "SR <Planet> ... Natal <Planet> ... — <aspect>"
+  // Pattern C: "Progressed <Planet> ... Natal <Planet> ... — <aspect>"
+  const patterns = [
+    new RegExp(
+      `Transiting\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?Natal\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?(?:—|--|-)\\s*(${aspectsAlt})\\b`,
+      "i",
+    ),
+    new RegExp(
+      `\\bSR\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?Natal\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?(?:—|--|-)\\s*(${aspectsAlt})\\b`,
+      "i",
+    ),
+    new RegExp(
+      `Progressed\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?Natal\\s+([A-Z][A-Za-z ]+?)\\s+[\\d.]+.*?(?:—|--|-)\\s*(${aspectsAlt})\\b`,
+      "i",
+    ),
+  ];
   for (const line of lines) {
-    const m = line.match(re);
-    if (!m) continue;
-    const p1 = localPlanetLookup(m[1].trim());
-    const p2 = localPlanetLookup(m[2].trim());
-    const aspect = ASPECT_ALIASES[m[3].toLowerCase()];
-    if (!p1 || !p2 || !aspect) continue;
-    const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
-    aspectSet.add(`${pair[0]}|${aspect}|${pair[1]}`);
+    for (const re of patterns) {
+      const m = line.match(re);
+      if (!m) continue;
+      const p1 = localPlanetLookup(m[1].trim());
+      const p2 = localPlanetLookup(m[2].trim());
+      const aspect = ASPECT_ALIASES[m[3].toLowerCase()];
+      if (!p1 || !p2 || !aspect) break;
+      const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
+      aspectSet.add(`${pair[0]}|${aspect}|${pair[1]}`);
+      break;
+    }
   }
 };
 
