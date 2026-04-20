@@ -428,6 +428,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 };
 
 
+const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
   }
