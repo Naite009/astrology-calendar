@@ -33,7 +33,7 @@ const IDB_KEY = "current";
 
 const REFRESH_INITIAL_DELAY_MS = 2_000;
 const REFRESH_MAX_DELAY_MS = 60_000;
-const INITIAL_RESTORE_TIMEOUT_MS = 15_000;
+const INITIAL_RESTORE_TIMEOUT_MS = 90_000;
 const INITIAL_RESTORE_MAX_ATTEMPTS = 4;
 const INITIAL_RESTORE_MAX_DELAY_MS = 15_000;
 
@@ -62,7 +62,7 @@ const finishInitialRestore = () => {
 export const waitForInitialSessionRestore = async (
   timeoutMs = INITIAL_RESTORE_TIMEOUT_MS,
 ): Promise<void> => {
-  if (!initialRestorePromise) return;
+  if (!initialRestorePromise || initialRestoreResolved) return;
   await Promise.race([
     initialRestorePromise,
     new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
