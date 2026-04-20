@@ -166,6 +166,42 @@ export default function Auth() {
         </div>
         
         <div className="border border-border bg-card p-8 rounded-sm">
+          {isLogin && rememberedEmail && (
+            <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-sm space-y-3">
+              <div className="flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="text-foreground font-medium">Welcome back</p>
+                  <p className="text-muted-foreground text-xs mt-0.5 break-all">
+                    {rememberedEmail}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleMagicLink}
+                disabled={isSendingMagicLink || isLoading}
+              >
+                {isSendingMagicLink ? (
+                  <>
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    Sending magic link...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-3 w-3" />
+                    Email me a sign-in link
+                  </>
+                )}
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center uppercase tracking-widest">
+                Or enter your password below
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
