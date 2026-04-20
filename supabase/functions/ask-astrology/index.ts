@@ -2375,6 +2375,11 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             );
             if (result.regenerated > 0) {
               try {
+                // Re-run deterministic cleanups on the rewritten output so any
+                // duplicated paragraphs or missing element coverage in the
+                // regenerated text get fixed before final validation.
+                dedupeTimingInterpretations(parsedContent);
+                enforceNonZeroCoverage(parsedContent);
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
                   `[ask-astrology] regen-on-drift complete (rewrote ${result.regenerated} field(s)); ` +
