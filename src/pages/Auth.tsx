@@ -124,6 +124,35 @@ export default function Auth() {
     }
   };
 
+  const handleMagicLink = async () => {
+    const target = (rememberedEmail || email).trim();
+    const emailResult = emailSchema.safeParse(target);
+    if (!emailResult.success) {
+      toast.error('Enter a valid email first');
+      return;
+    }
+    setIsSendingMagicLink(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: target,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          shouldCreateUser: false,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      rememberLastEmail(target);
+      toast.success(`Magic link sent to ${target}. Check your email.`);
+    } catch (err) {
+      toast.error('Could not send magic link');
+    } finally {
+      setIsSendingMagicLink(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
