@@ -349,7 +349,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             name: chartForRequest.name,
             birthDate: chartForRequest.birthDate,
             birthTime: chartForRequest.birthTime,
-            birthLocation: chartForRequest.birthLocation,
+            birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
           }, [assistantEntry.reading]);
         }
         return next;
@@ -1446,7 +1446,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: chartForRequest.name,
           birthDate: chartForRequest.birthDate,
           birthTime: chartForRequest.birthTime,
-          birthLocation: chartForRequest.birthLocation,
+          birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
         }, newReadings);
       }
 
@@ -1593,7 +1593,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: chartForRequest.name,
           birthDate: chartForRequest.birthDate,
           birthTime: chartForRequest.birthTime,
-          birthLocation: chartForRequest.birthLocation,
+          birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
         }, newReadings);
       }
 
@@ -1625,7 +1625,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: selectedChart.name,
           birthDate: selectedChart.birthDate,
           birthTime: selectedChart.birthTime,
-          birthLocation: selectedChart.birthLocation,
+          birthLocation: formatLocationTitleCase(selectedChart.birthLocation || ""),
         },
         readings: currentReadings,
       };
