@@ -655,8 +655,24 @@ const buildEmptySummaryFallback = (
 
   // Filter by tone — soft transits for positive labels, hard for caution.
   const matching = allTransits.filter((t) => (tone.positive ? t.is_soft : t.is_hard));
-  // Fall back to all transits if the tone-filter found nothing, so we
-  // never produce a blank card just because tone matching failed.
+
+  // CRITICAL (fix #2): Caution Windows must NEVER recycle the Best
+  // Windows pool. If the negative-tone filter produced zero matches,
+  // emit a deterministic "no major challenging transits" sentence
+  // rather than falling back to soft transits. Otherwise Best and
+  // Caution end up with identical date ranges.
+  if (matching.length === 0) {
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
+    // For positive labels, falling back to all transits is acceptable —
+    // a soft window labeled "Best" can still cite a neutral transit
+    // when no clearly soft ones exist.
+  }
+
+  // For positive tone: use matching if available, otherwise fall back
+  // to all transits. For negative tone: matching is non-empty here
+  // (handled above).
   const pool = matching.length > 0 ? matching : allTransits;
 
   // Pick up to 2 distinct date ranges (dedupe by normalized range string).
@@ -671,7 +687,13 @@ const buildEmptySummaryFallback = (
     if (phrases.length >= 2) break;
   }
 
-  if (phrases.length === 0) return null;
+  if (phrases.length === 0) {
+    // Negative tone with no transits at all — still emit a tone-appropriate sentence.
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
+    return null;
+  }
 
   const joined = phrases.length === 1 ? phrases[0] : `${phrases[0]} and ${phrases[1]}`;
   const verb = tone.positive
