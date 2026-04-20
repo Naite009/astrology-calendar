@@ -680,6 +680,73 @@ const fillEmptySummaryItems = (parsedContent: any) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// DETERMINISTIC SUMMARY_BOX TIMING OVERRIDE (PERMANENT — POINT 3)
+// The model is NOT allowed to write timing fields in summary_box.
+// Any summary_box item whose label matches a timing pattern is replaced
+// (unconditionally, not just when empty) with a deterministic plain-prose
+// summary built from this reading's transits[] array. This makes Jupiter
+// (or any other) aspect hallucination in summary_box timing fields
+// literally impossible — drift can only come from real transits[] data.
+// Runs BEFORE fillEmptySummaryItems so any non-timing items that ended up
+// blank still get the fallback or the [needs review] flag.
+// ─────────────────────────────────────────────────────────────────────────
+const TIMING_LABEL_PATTERNS: RegExp[] = [
+  /best\s+windows?/i,
+  /caution\s+windows?/i,
+  /when\s+to\s+act/i,
+  /extra\s+care\s+windows?/i,
+  /restorative\s+windows?/i,
+  /ideal\s+timing\s+window/i,
+  /best\s+timing/i,
+  /^timing$/i,
+  /timing\s+windows?/i,
+  /top\s+cities?\s+timing/i,
+  /key\s+windows?/i,
+  /strongest\s+windows?/i,
+];
+
+const isTimingLabel = (label: string): boolean => {
+  if (!label || typeof label !== "string") return false;
+  return TIMING_LABEL_PATTERNS.some((p) => p.test(label));
+};
+
+const overrideTimingSummaryItems = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let overridden = 0;
+  let blanked = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box") continue;
+    const items = Array.isArray(section.items) ? section.items : null;
+    if (!items) continue;
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const label: string = typeof item.label === "string" ? item.label : "";
+      if (!isTimingLabel(label)) continue;
+      const valueKey = typeof item.value === "string" ? "value"
+        : typeof item.text === "string" ? "text"
+        : "value";
+      const fallback = buildEmptySummaryFallback(parsedContent, label);
+      if (fallback) {
+        item[valueKey] = fallback;
+        overridden++;
+      } else {
+        // No transits available — clear the model's text so the export
+        // guard tags it [needs review] instead of letting hallucinated
+        // aspect names through.
+        item[valueKey] = "";
+        blanked++;
+      }
+    }
+  }
+  if (overridden > 0 || blanked > 0) {
+    console.info("[ask-astrology] summary_box timing items deterministically rebuilt", {
+      overridden,
+      blanked_for_needs_review: blanked,
+    });
+  }
+};
+
 const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
@@ -2667,6 +2734,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // No aspect names — only date ranges + plain outcome wording.
         // Prevents blank PDF cards regardless of what was stripped.
         try {
+          // PERMANENT: Strip and rebuild any TIMING-labeled summary_box
+          // item from transits[] BEFORE the empty-fallback runs. The model
+          // is no longer permitted to author these fields.
+          overrideTimingSummaryItems(parsedContent);
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
