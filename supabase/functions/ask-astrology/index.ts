@@ -307,6 +307,127 @@ const correctModalityElementCounts = (parsedContent: any) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// Deterministic dedupe of duplicated paragraphs inside a single timing
+// entry's `interpretation` field. The AI sometimes emits the same paragraph
+// twice in a row (or the same sentence twice) within one transit entry —
+// most often on multi-pass Pluto/Saturn windows where the model copy-pastes.
+// We collapse exact and near-duplicate consecutive paragraphs/sentences.
+// ─────────────────────────────────────────────────────────────────────────
+const normalizeForCompare = (s: string): string =>
+  s.toLowerCase().replace(/\s+/g, " ").replace(/[\u2018\u2019]/g, "'").trim();
+
+const dedupeText = (text: string): string => {
+  if (typeof text !== "string" || text.length === 0) return text;
+  // First, collapse repeated paragraphs (split on blank lines).
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const seenParas = new Set<string>();
+  const dedupedParas: string[] = [];
+  for (const para of paragraphs) {
+    const key = normalizeForCompare(para);
+    if (key && !seenParas.has(key)) {
+      seenParas.add(key);
+      dedupedParas.push(para);
+    }
+  }
+  // Then, within each remaining paragraph, collapse immediate repeated sentences.
+  const cleaned = dedupedParas.map((para) => {
+    const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
+    const out: string[] = [];
+    let prev = "";
+    for (const raw of sentences) {
+      const norm = normalizeForCompare(raw);
+      if (norm && norm === prev) continue;
+      out.push(raw);
+      prev = norm;
+    }
+    return out.join("").trim();
+  });
+  return cleaned.join("\n\n");
+};
+
+const dedupeTimingInterpretations = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+    if (!Array.isArray(section.transits)) continue;
+    for (const transit of section.transits) {
+      if (!transit || typeof transit.interpretation !== "string") continue;
+      const before = transit.interpretation;
+      const after = dedupeText(before);
+      if (after !== before) {
+        console.info("[ask-astrology] timing interpretation deduplicated", {
+          planet: transit.planet,
+          aspect: transit.aspect,
+          natal_point: transit.natal_point,
+          before_len: before.length,
+          after_len: after.length,
+        });
+        transit.interpretation = after;
+      }
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enforce that balance_interpretation mentions every element/modality/
+// polarity with count≥1. If the AI omitted a non-zero category, append a
+// short, deterministic clause naming the missing categories so the reader
+// always sees full coverage. We do NOT touch zero-count categories.
+// ─────────────────────────────────────────────────────────────────────────
+const enforceNonZeroCoverage = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "modality_element") continue;
+    let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
+    if (!text) continue;
+
+    const lowerText = text.toLowerCase();
+    const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
+      if (!Array.isArray(arr)) return [];
+      const missing: Array<{ name: string; count: number }> = [];
+      for (const item of arr) {
+        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+        if (item.count < 1) continue;
+        const root = item.name.split(/[\s(]/)[0].toLowerCase();
+        // Match either the singular ("water") or plural ("waters") form, case-insensitive.
+        const re = new RegExp(`\\b${root}s?\\b`, "i");
+        if (!re.test(lowerText)) missing.push({ name: item.name, count: item.count });
+      }
+      return missing;
+    };
+
+    const missingElements = collectMissing(section.elements);
+    const missingModalities = collectMissing(section.modalities);
+    const missingPolarities = collectMissing(section.polarity);
+
+    const fragments: string[] = [];
+    const formatList = (items: Array<{ name: string; count: number }>): string =>
+      items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(" and ");
+    if (missingElements.length > 0) {
+      fragments.push(`Also present: ${formatList(missingElements)} planet${missingElements.reduce((a, b) => a + b.count, 0) === 1 ? "" : "s"}.`);
+    }
+    if (missingModalities.length > 0) {
+      fragments.push(`Modal balance also includes ${formatList(missingModalities)}.`);
+    }
+    if (missingPolarities.length > 0) {
+      fragments.push(`Polarity also includes ${formatList(missingPolarities)}.`);
+    }
+
+    if (fragments.length > 0) {
+      const trimmed = text.trim().replace(/\s+$/, "");
+      const sep = /[.!?]$/.test(trimmed) ? " " : ". ";
+      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`;
+      console.info("[ask-astrology] balance_interpretation coverage enforced", {
+        added_elements: missingElements.map((i) => i.name),
+        added_modalities: missingModalities.map((i) => i.name),
+        added_polarities: missingPolarities.map((i) => i.name),
+      });
+    }
+  }
+};
+
+
 const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
@@ -656,7 +777,7 @@ Return this exact structure:
       "dominant_element": "Fire",
       "dominant_modality": "Mutable",
       "dominant_polarity": "Yang (Active)",
-      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' STRICT VOCABULARY RULE: You may ONLY refer to the four real elements (Fire, Earth, Air, Water) and three real modalities (Cardinal, Fixed, Mutable) and two polarities (Yang, Yin). NEVER invent fuzzy hybrid categories like 'water-adjacent', 'fire-leaning', 'earth-flavored', 'air-tinged', 'quasi-cardinal', 'water-and-water-adjacent', 'mostly-mutable-with-fixed-undertones', etc. If you want to describe a mix, name each element with its actual count separately (e.g., 'three Water and two Earth') — do NOT merge them into invented categories. ABSOLUTE COUNT-MATCHING RULE (NON-NEGOTIABLE): Every numeric word in this paragraph (one, two, three, four, five, six, seven, eight, nine, ten) MUST match the integer count in the corresponding elements[] / modalities[] / polarity[] array entry EXACTLY. Before writing this paragraph, re-read the count fields you just wrote in elements[] and modalities[] above, and write only those numbers as words. Example of FORBIDDEN error: writing 'Five Water planets and five Mutable planets' when the elements array shows Water count=3 and modalities array shows Mutable count=4. If you catch yourself writing a number that does not match the array, STOP and rewrite using the correct count. ELEMENT COVERAGE RULE (NON-NEGOTIABLE): Mention ONLY elements with a count of 1 or more. Do NOT name an element whose count=0 (do not say 'no Earth planets' or 'a Water absence' — just leave that element unmentioned). Mentioning all four elements explicitly is NOT required; only the present ones are. The same rule applies to modalities and polarities: only name those with count≥1. Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
+      "balance_interpretation": "This is the ONLY paragraph the reader will remember. 2-3 sentences naming the specific tension or strength this balance creates. Example: 'Your heavy Water and Earth make you need proof before you trust, but your Mutable dominance means you keep giving chances to people who haven't earned them yet.' STRICT VOCABULARY RULE: You may ONLY refer to the four real elements (Fire, Earth, Air, Water) and three real modalities (Cardinal, Fixed, Mutable) and two polarities (Yang, Yin). NEVER invent fuzzy hybrid categories like 'water-adjacent', 'fire-leaning', 'earth-flavored', 'air-tinged', 'quasi-cardinal', 'water-and-water-adjacent', 'mostly-mutable-with-fixed-undertones', etc. If you want to describe a mix, name each element with its actual count separately (e.g., 'three Water and two Earth') — do NOT merge them into invented categories. ABSOLUTE COUNT-MATCHING RULE (NON-NEGOTIABLE): Every numeric word in this paragraph (one, two, three, four, five, six, seven, eight, nine, ten) MUST match the integer count in the corresponding elements[] / modalities[] / polarity[] array entry EXACTLY. Before writing this paragraph, re-read the count fields you just wrote in elements[] and modalities[] above, and write only those numbers as words. Example of FORBIDDEN error: writing 'Five Water planets and five Mutable planets' when the elements array shows Water count=3 and modalities array shows Mutable count=4. If you catch yourself writing a number that does not match the array, STOP and rewrite using the correct count. ELEMENT COVERAGE RULE (NON-NEGOTIABLE — TWO PARTS): (a) Mention ONLY elements with count≥1; do NOT name an element whose count=0 (do not say 'no Earth planets' or 'a Water absence'). (b) You MUST mention EVERY element whose count≥1 by name at least once in this paragraph — if Fire=3, Earth=2, Air=4, and Water=2, then Fire AND Earth AND Air AND Water must all appear by name. Omitting a non-zero element is FORBIDDEN even if it feels secondary; pair smaller counts with larger ones in a single clause if needed (e.g., '…anchored by two Earth and two Water planets'). Before finalizing, re-read elements[] and confirm every entry with count≥1 appears as a word in this paragraph. The same coverage requirement applies to modalities and polarities: every entry with count≥1 must be named. Do NOT write generic element descriptions. If elemental/modal insights were already covered in earlier sections, reference only what is NEW here."
     },
     {
       "type": "summary_box",
@@ -1987,9 +2108,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
+        // Deterministic dedupe of duplicated paragraphs/sentences inside any
+        // timing entry's `interpretation` field (Pluto multi-pass copy-paste bug).
+        dedupeTimingInterpretations(parsedContent);
+
+        // Enforce that balance_interpretation mentions every non-zero element /
+        // modality / polarity. Appends a short coverage clause if the AI omitted any.
+        enforceNonZeroCoverage(parsedContent);
+
         // (Legacy single-field count corrector removed — validateReading() at the
         // end of this block now handles balance_interpretation along with every
         // other string field in the reading. Keeping both would double-log fixes.)
+
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         // Bug C fix: use sanitizedChartContext (matches what AI saw) instead of raw chartContext.
@@ -2245,6 +2375,11 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             );
             if (result.regenerated > 0) {
               try {
+                // Re-run deterministic cleanups on the rewritten output so any
+                // duplicated paragraphs or missing element coverage in the
+                // regenerated text get fixed before final validation.
+                dedupeTimingInterpretations(parsedContent);
+                enforceNonZeroCoverage(parsedContent);
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
                   `[ask-astrology] regen-on-drift complete (rewrote ${result.regenerated} field(s)); ` +
