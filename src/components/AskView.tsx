@@ -17,6 +17,7 @@ import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { buildAskValidationFactsBlock } from "@/lib/askValidationFacts";
+import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
@@ -348,7 +349,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             name: chartForRequest.name,
             birthDate: chartForRequest.birthDate,
             birthTime: chartForRequest.birthTime,
-            birthLocation: chartForRequest.birthLocation,
+            birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
           }, [assistantEntry.reading]);
         }
         return next;
@@ -552,7 +553,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     let context = `Chart for ${chart.name}:\n`;
     context += `Birth: ${displayBirthDate(chart.birthDate)}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
-    if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
+    if (chart.birthLocation) context += ` in ${formatLocationTitleCase(chart.birthLocation)}`;
     context += "\n\nNATAL Planetary Positions (with calculated house placements):\n";
     const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     const cuspLongitudes: number[] = [];
@@ -1445,7 +1446,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: chartForRequest.name,
           birthDate: chartForRequest.birthDate,
           birthTime: chartForRequest.birthTime,
-          birthLocation: chartForRequest.birthLocation,
+          birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
         }, newReadings);
       }
 
@@ -1592,7 +1593,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: chartForRequest.name,
           birthDate: chartForRequest.birthDate,
           birthTime: chartForRequest.birthTime,
-          birthLocation: chartForRequest.birthLocation,
+          birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
         }, newReadings);
       }
 
@@ -1624,7 +1625,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           name: selectedChart.name,
           birthDate: selectedChart.birthDate,
           birthTime: selectedChart.birthTime,
-          birthLocation: selectedChart.birthLocation,
+          birthLocation: formatLocationTitleCase(selectedChart.birthLocation || ""),
         },
         readings: currentReadings,
       };

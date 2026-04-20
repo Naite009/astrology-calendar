@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import { NatalChart } from "@/hooks/useNatalChart";
 import type { StructuredReading, ReadingSection } from "@/components/AskReadingRenderer";
 import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
+import { formatLocationTitleCase } from "@/lib/locationFormat";
 
 const COLORS = {
   bg: [255, 255, 255] as [number, number, number],
@@ -137,7 +138,7 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   const birthInfo: string[] = [];
   if (chart.birthDate) birthInfo.push(chart.birthDate);
   if (chart.birthTime) birthInfo.push(chart.birthTime);
-  if (chart.birthLocation) birthInfo.push(chart.birthLocation);
+  if (chart.birthLocation) birthInfo.push(formatLocationTitleCase(chart.birthLocation));
   pdf.text(birthInfo.join("  ·  "), PAGE_W / 2, 88, { align: "center" });
 
   pdf.setFontSize(9);

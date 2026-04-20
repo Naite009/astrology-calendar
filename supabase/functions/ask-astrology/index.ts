@@ -82,6 +82,67 @@ const getCurrentDateKey = (value?: string) => {
   return new Date().toISOString().slice(0, 10);
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// LOCATION TITLE-CASE NORMALIZER (PERMANENT, UNIVERSAL)
+// Mirrors src/lib/locationFormat.ts. Edge functions cannot import from
+// src/, so the rule is duplicated here. ANY birth/relocation location
+// string that touches the AI prompt or the final JSON output MUST be
+// pushed through this normalizer first. Examples:
+//   "washington, dc"  → "Washington, DC"
+//   "new york, ny"    → "New York, NY"
+//   "LOS ANGELES, ca" → "Los Angeles, CA"
+// ─────────────────────────────────────────────────────────────────────────
+const LOC_LOWERCASE_CONNECTORS = new Set(["of", "the", "and", "de", "del", "la", "le", "y"]);
+const LOC_SHORT_UPPERCASE = new Set(["DC", "DR", "ST", "MT", "PT", "FT", "USA", "UK", "UAE"]);
+
+const normalizeLocationToken = (token: string, isFirstInPart: boolean): string => {
+  if (!token) return token;
+  const stripped = token.replace(/[^A-Za-z]/g, "");
+  if (stripped.length === 2) return token.toUpperCase();
+  if (stripped.length === 3 && LOC_SHORT_UPPERCASE.has(stripped.toUpperCase())) return token.toUpperCase();
+  const lower = token.toLowerCase();
+  if (!isFirstInPart && LOC_LOWERCASE_CONNECTORS.has(lower)) return lower;
+  return token.replace(/[A-Za-z]+/g, (run) => {
+    if (run.length === 2) return run.toUpperCase();
+    return run.charAt(0).toUpperCase() + run.slice(1).toLowerCase();
+  });
+};
+
+const formatLocationTitleCase = (raw: unknown): string => {
+  if (typeof raw !== "string") return "";
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  return trimmed
+    .split(",")
+    .map((part) => {
+      const tokens = part.trim().split(/\s+/);
+      return tokens.map((tok, i) => normalizeLocationToken(tok, i === 0)).join(" ");
+    })
+    .join(", ");
+};
+
+/**
+ * Normalize the `birth_info` string in the AI's JSON output. Format the
+ * AI emits is "Date · Time · Location" (or any sequence of fields joined
+ * by middle dots). The location is the LAST segment when present. We
+ * title-case ONLY the location token to avoid touching the date/time.
+ */
+const normalizeBirthInfoString = (birthInfo: unknown): string => {
+  if (typeof birthInfo !== "string" || !birthInfo.trim()) return "";
+  const parts = birthInfo.split(/\s*[·•|]\s*/);
+  if (parts.length === 0) return birthInfo;
+  // Heuristic: any part that contains a comma or only letters (no digits)
+  // is the location segment. Date and time segments contain digits.
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const looksLikeDateOrTime = /\d/.test(part);
+    if (!looksLikeDateOrTime) {
+      parts[i] = formatLocationTitleCase(part);
+    }
+  }
+  return parts.join(" · ");
+};
+
 // Mirrors the client-side guard in AskReadingRenderer.tsx — catches blanks,
 // whitespace-only strings, NBSP/zero-width chars, lone punctuation/dashes,
 // and common filler placeholders so the AI can never sneak an empty entry
@@ -380,7 +441,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
   for (const section of parsedContent.sections) {
     if (!section || section.type !== "modality_element") continue;
     let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    if (!text) continue;
+    if (!text) text = "";
 
     const lowerText = text.toLowerCase();
     const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
@@ -416,13 +477,62 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 
     if (fragments.length > 0) {
       const trimmed = text.trim().replace(/\s+$/, "");
-      const sep = /[.!?]$/.test(trimmed) ? " " : ". ";
-      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`;
+      const sep = trimmed.length === 0 ? "" : (/[.!?]$/.test(trimmed) ? " " : ". ");
+      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`.trim();
       console.info("[ask-astrology] balance_interpretation coverage enforced", {
         added_elements: missingElements.map((i) => i.name),
         added_modalities: missingModalities.map((i) => i.name),
         added_polarities: missingPolarities.map((i) => i.name),
       });
+    }
+
+    // FINAL VERIFICATION (point 2 — universal rule): after the append, if
+    // ANY non-zero element/modality/polarity is STILL missing by name (e.g.
+    // because the appended fragment itself was stripped or didn't render
+    // for some reason), do a deterministic LOCAL REWRITE of just this
+    // field that explicitly names every non-zero entry. This never
+    // triggers a full JSON regeneration.
+    const allCovered = (arr: any, currentText: string): boolean => {
+      if (!Array.isArray(arr)) return true;
+      const lt = currentText.toLowerCase();
+      for (const item of arr) {
+        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+        if (item.count < 1) continue;
+        const root = item.name.split(/[\s(]/)[0].toLowerCase();
+        const re = new RegExp(`\\b${root}s?\\b`, "i");
+        if (!re.test(lt)) return false;
+      }
+      return true;
+    };
+    const finalText: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
+    const stillMissing =
+      !allCovered(section.elements, finalText) ||
+      !allCovered(section.modalities, finalText) ||
+      !allCovered(section.polarity, finalText);
+    if (stillMissing) {
+      const namedList = (arr: any, kind: string): string => {
+        if (!Array.isArray(arr)) return "";
+        const items: Array<{ name: string; count: number }> = [];
+        for (const it of arr) {
+          if (!it || typeof it.name !== "string" || typeof it.count !== "number") continue;
+          if (it.count < 1) continue;
+          items.push({ name: it.name.split(/[\s(]/)[0], count: it.count });
+        }
+        if (items.length === 0) return "";
+        const phrases = items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`);
+        return `${kind}: ${phrases.join(", ")}`;
+      };
+      const parts = [
+        namedList(section.elements, "Elemental balance"),
+        namedList(section.modalities, "Modal balance"),
+        namedList(section.polarity, "Polarity"),
+      ].filter(Boolean);
+      if (parts.length > 0) {
+        section.balance_interpretation = `${parts.join(". ")}.`;
+        console.info("[ask-astrology] balance_interpretation rewritten locally to cover every non-zero category", {
+          section_title: section.title,
+        });
+      }
     }
   }
 };
@@ -686,6 +796,12 @@ const regenerateAffectedSections = async (
     "REMOVED CLAIMS:",
     strippedSummary,
     "",
+    "EXPLICIT NEGATIVE CONSTRAINTS — NEVER USE THESE PHRASES:",
+    ((report.stripped_aspects ?? [])
+      .filter((s: any) => driftLabels.has(s?.section))
+      .map((s: any) => `- Do NOT reference "${s.phrase}" — this aspect is not present in this chart.`)
+      .join("\n") || "(none)"),
+    "",
     "ALLOWED NATAL ASPECTS (the ONLY aspects you may reference in the rewrite — do not name any aspect not in this list):",
     allowedAspects.map((a) => `- ${a}`).join("\n"),
     "",
@@ -793,6 +909,9 @@ const regenerateAffectedSections = async (
 };
 
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
+
+SUMMARY_BOX TIMING SOURCE OF TRUTH (NON-NEGOTIABLE — APPLIES TO EVERY READING):
+Any timing field inside a summary_box — including but not limited to "Best Windows", "Caution Windows", "When to Act", "Extra Care Windows", "Restorative Windows", "Ideal Timing Window", "Best Timing", "Top Cities Timing", or any other label that names a date range or month — MUST be selected and summarized EXCLUSIVELY from the transits[] array already written in this same JSON's timing_section. You may NOT introduce a new aspect name, planet pairing, exact_hit_date, date_range, or month that does not already appear in transits[]. Before writing any summary_box timing field, re-read the transits[] array you just wrote and copy the relevant date_range strings verbatim (or summarize them in plain prose). If you cannot back a claim with a row from transits[], do NOT make the claim. This rule prevents the validator from stripping invented windows after the fact.
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
 
@@ -2551,6 +2670,42 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
+        }
+
+        // PERMANENT EXPORT GUARD (point 5): never export a JSON with any
+        // summary_box item value that is still empty after fallback. Flag
+        // them explicitly so the UI can surface a warning before send.
+        try {
+          const emptySummaryFlags: Array<{ section: string; label: string }> = [];
+          for (const section of parsedContent.sections || []) {
+            if (section?.type !== "summary_box") continue;
+            const items = Array.isArray(section.items) ? section.items : [];
+            for (const item of items) {
+              const valueKey = typeof item?.value === "string" ? "value"
+                : typeof item?.text === "string" ? "text"
+                : "value";
+              if (isEffectivelyEmpty(item?.[valueKey])) {
+                item[valueKey] = "[needs review — no transit data available to fill this window]";
+                emptySummaryFlags.push({
+                  section: String(section.title || ""),
+                  label: String(item?.label || ""),
+                });
+              }
+            }
+          }
+          if (emptySummaryFlags.length > 0) {
+            (parsedContent as any)._empty_summary_flags = emptySummaryFlags;
+            console.warn("[ask-astrology] EXPORT GUARD: empty summary_box items remained after fallback", emptySummaryFlags);
+          }
+        } catch (guardErr) {
+          console.error("[ask-astrology] export guard threw:", guardErr);
+        }
+
+        // PERMANENT BIRTH_INFO TITLE-CASE (point 1): normalize the
+        // location segment of birth_info before persistence so the JSON
+        // shipped to Replit always has correct capitalization.
+        if (typeof parsedContent.birth_info === "string") {
+          parsedContent.birth_info = normalizeBirthInfoString(parsedContent.birth_info);
         }
       }
     } catch (parseError) {
