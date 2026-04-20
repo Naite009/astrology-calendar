@@ -1166,6 +1166,8 @@ SR LOVE ACTIVATION STYLE:
   6. timing_section — "Health Timing" (transits to 6th house ruler, Ascendant ruler, and Mars with exact degrees and date ranges; flag challenging transits to health houses)
   7. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
   8. summary_box — "Strategy Summary" with items: "Core Strength", "Watch Points", "Best Practices", "Timing"
+
+  HEALTH SUMMARY TRANSIT REFERENCE RULE (MANDATORY): The "Timing", "Best Practices", "Watch Points", "Extra Care Windows", and "Restorative Windows" items in the Health Strategy Summary may ONLY name transits / aspects / planets / dates that already appear (a) as named entries in the Health Timing timing_section above, or (b) in the pre-computed "UPCOMING TRANSIT WINDOWS" / "ACTIVE TRANSIT ASPECTS TO NATAL CHART" blocks of the chart context. Do NOT invent aspects like "Jupiter sextile Moon" or "Saturn square Sun" unless that exact aspect is literally present in the source data above. Select from the precomputed transit list — do not generate freehand. If no suitable transit exists for an item, write a generic non-astrological line instead of fabricating one.
 - For question_type "money": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Earning Style" (2nd house cusp, its ruler, Venus sign/house for values and income)
