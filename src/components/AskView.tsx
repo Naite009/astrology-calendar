@@ -760,6 +760,63 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           }
         }
       } catch {}
+
+      // --- PRE-COMPUTED JUPITER RETURN WINDOW (deterministic — never let AI guess) ---
+      // Jupiter returns to natal position every ~12 years and is the single
+      // most significant wealth/expansion window in the chart. We compute the
+      // exact next return date(s) and a ±2-month opportunity window so the AI
+      // (especially in money/career readings) can cite it without hallucinating.
+      try {
+        const natalJ = (chart.planets || {})['Jupiter'] as
+          | { sign: string; degree: number; minutes?: number; isRetrograde?: boolean }
+          | undefined;
+        if (natalJ && typeof natalJ.degree === 'number') {
+          const ZODIAC_J = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+          const natalJupAbs = (ZODIAC_J.indexOf(natalJ.sign) * 30 + natalJ.degree + (natalJ.minutes || 0) / 60) % 360;
+          const ecLongJupiter = (date: Date): number => {
+            const ev = Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Jupiter, date, true));
+            return ((ev.elon % 360) + 360) % 360;
+          };
+          const signedDelta = (a: number, b: number): number => {
+            // Returns shortest signed delta from a to b in (-180, 180]
+            return ((b - a + 540) % 360) - 180;
+          };
+          const startMs = now.getTime();
+          const horizonMs = startMs + 13 * 365.25 * 86400 * 1000;
+          const stepMs = 7 * 86400 * 1000;
+          let prevT = startMs;
+          let prevD = signedDelta(ecLongJupiter(new Date(prevT)), natalJupAbs);
+          const returns: Date[] = [];
+          for (let t = startMs + stepMs; t <= horizonMs && returns.length < 2; t += stepMs) {
+            const curD = signedDelta(ecLongJupiter(new Date(t)), natalJupAbs);
+            if (prevD * curD < 0 && Math.abs(prevD) < 90 && Math.abs(curD) < 90) {
+              // Bisect to ~1-hour precision
+              let lo = prevT, hi = t;
+              let loD = prevD;
+              for (let i = 0; i < 36; i++) {
+                const mid = (lo + hi) / 2;
+                const mD = signedDelta(ecLongJupiter(new Date(mid)), natalJupAbs);
+                if (mD * loD < 0) { hi = mid; } else { lo = mid; loD = mD; }
+              }
+              returns.push(new Date((lo + hi) / 2));
+            }
+            prevT = t;
+            prevD = curD;
+          }
+          if (returns.length > 0) {
+            context += "\n--- NATAL JUPITER RETURN WINDOWS (deterministic) ---\n";
+            context += `Natal Jupiter: ${natalJ.degree}°${natalJ.minutes || 0}' ${natalJ.sign}${natalJ.isRetrograde ? ' (R)' : ''}\n`;
+            context += "USE THESE for any money/career/expansion timing claims about Jupiter returns. Do NOT compute or estimate Jupiter return dates yourself — cite only the dates below.\n";
+            const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const fmtMonth = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+            for (const r of returns) {
+              const opens = new Date(r.getTime() - 60 * 86400 * 1000);
+              const closes = new Date(r.getTime() + 60 * 86400 * 1000);
+              context += `- Jupiter Return exact on ${fmtDate(r)} (opportunity window approximately ${fmtMonth(opens)} through ${fmtMonth(closes)}); transiting Jupiter conjunct natal Jupiter at ${natalJ.degree}° ${natalJ.sign}.\n`;
+            }
+          }
+        }
+      } catch {}
     } catch {}
 
     context += buildAskValidationFactsBlock(chart);
