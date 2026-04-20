@@ -428,6 +428,148 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 };
 
 
+// ─────────────────────────────────────────────────────────────────────────
+// EMPTY SUMMARY ITEM FALLBACK
+// After validation strips invented aspect claims, a summary_box item's
+// `value` (or `text`) can end up as an empty / whitespace-only string.
+// Blank cards in the PDF look broken. Replace any empty summary item with
+// a deterministic plain-language window summary derived from the timing
+// section's transits. NEVER reference aspect names — only date ranges and
+// plain outcomes appropriate to the item's label.
+// ─────────────────────────────────────────────────────────────────────────
+const SUMMARY_LABEL_TONE: Array<{
+  pattern: RegExp;
+  positive: boolean;
+  outcome: string;
+}> = [
+  { pattern: /caution|extra care|warning|risk|avoid|protect/i, positive: false, outcome: "extra care, slower decisions, and protective rest" },
+  { pattern: /restorative|rest|recovery|recharge|reset/i, positive: true, outcome: "restoration, recovery, and grounding routines" },
+  { pattern: /best window|when to act|launch|opportunity|growth|expansion|act now|move forward|green light/i, positive: true, outcome: "forward action, opportunity, and visible momentum" },
+  { pattern: /connect|relationship|love|romance|partner|emotional|open/i, positive: true, outcome: "new connection and emotional openness" },
+  { pattern: /money|wealth|finance|income|abundance/i, positive: true, outcome: "financial growth and earning opportunity" },
+  { pattern: /career|work|professional|recognition|visibility/i, positive: true, outcome: "career visibility and professional progress" },
+  { pattern: /health|body|wellness|vitality/i, positive: true, outcome: "healthy routines and steady vitality" },
+  { pattern: /timing|window|period/i, positive: true, outcome: "supportive timing and forward movement" },
+];
+
+// Hard transits that signal "extra care" rather than opportunity. We use
+// these to bias which transits get cited under negative-tone labels.
+const HARD_TRANSIT_PLANETS = new Set(["Saturn", "Pluto", "Mars", "Chiron"]);
+const HARD_ASPECTS = new Set(["square", "opposition", "conjunct"]);
+const SOFT_ASPECTS = new Set(["trine", "sextile"]);
+const SOFT_TRANSIT_PLANETS = new Set(["Jupiter", "Venus", "Sun", "Moon", "Mercury", "Neptune", "Uranus"]);
+
+const formatWindowPhrase = (raw: string): string => {
+  if (!raw || typeof raw !== "string") return "";
+  // Normalize en/em dashes and "to" wording.
+  return raw
+    .replace(/\s*[\u2013\u2014]\s*/g, " through ")
+    .replace(/\bto\b/gi, "through")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const buildEmptySummaryFallback = (
+  parsedContent: any,
+  label: string,
+): string | null => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return null;
+
+  // Decide tone (positive vs negative) and outcome wording from the label.
+  let tone: { positive: boolean; outcome: string } = { positive: true, outcome: "supportive timing and forward movement" };
+  for (const entry of SUMMARY_LABEL_TONE) {
+    if (entry.pattern.test(label)) {
+      tone = { positive: entry.positive, outcome: entry.outcome };
+      break;
+    }
+  }
+
+  // Pull all transits from every timing_section in this reading.
+  const allTransits: Array<{
+    planet: string;
+    aspect: string;
+    natal_point: string;
+    date_range: string;
+    is_soft: boolean;
+    is_hard: boolean;
+  }> = [];
+
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "timing_section" || !Array.isArray(section.transits)) continue;
+    for (const t of section.transits) {
+      const planet = (t?.planet || "").trim();
+      const aspect = (t?.aspect || "").trim().toLowerCase();
+      const natalPoint = (t?.natal_point || "").trim();
+      const dateRange = (t?.date_range || "").trim();
+      if (!dateRange) continue;
+      const is_soft = SOFT_ASPECTS.has(aspect) || (aspect === "conjunct" && SOFT_TRANSIT_PLANETS.has(planet));
+      const is_hard = (HARD_ASPECTS.has(aspect) && HARD_TRANSIT_PLANETS.has(planet)) || aspect === "square" || aspect === "opposition";
+      allTransits.push({ planet, aspect, natal_point: natalPoint, date_range: dateRange, is_soft, is_hard });
+    }
+  }
+
+  if (allTransits.length === 0) return null;
+
+  // Filter by tone — soft transits for positive labels, hard for caution.
+  const matching = allTransits.filter((t) => (tone.positive ? t.is_soft : t.is_hard));
+  // Fall back to all transits if the tone-filter found nothing, so we
+  // never produce a blank card just because tone matching failed.
+  const pool = matching.length > 0 ? matching : allTransits;
+
+  // Pick up to 2 distinct date ranges (dedupe by normalized range string).
+  const seen = new Set<string>();
+  const phrases: string[] = [];
+  for (const t of pool) {
+    const phrase = formatWindowPhrase(t.date_range);
+    const key = phrase.toLowerCase();
+    if (!phrase || seen.has(key)) continue;
+    seen.add(key);
+    phrases.push(phrase);
+    if (phrases.length >= 2) break;
+  }
+
+  if (phrases.length === 0) return null;
+
+  const joined = phrases.length === 1 ? phrases[0] : `${phrases[0]} and ${phrases[1]}`;
+  const verb = tone.positive
+    ? "are the strongest windows for"
+    : "are the periods that call for";
+  return `${joined} ${verb} ${tone.outcome} based on current transits.`;
+};
+
+const fillEmptySummaryItems = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box") continue;
+
+    // Most summary_box shapes use `items: [{label, value}]`. Some legacy
+    // shapes use `items: [{label, text}]` or a single `value` string.
+    const items = Array.isArray(section.items) ? section.items : null;
+    if (!items) continue;
+
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const label: string = typeof item.label === "string" ? item.label : "";
+      const valueKey = typeof item.value === "string" ? "value"
+        : typeof item.text === "string" ? "text"
+        : "value";
+      const currentRaw: unknown = item[valueKey];
+
+      if (!isEffectivelyEmpty(currentRaw)) continue;
+
+      const fallback = buildEmptySummaryFallback(parsedContent, label);
+      if (fallback) {
+        item[valueKey] = fallback;
+        console.info("[ask-astrology] empty summary_box item filled with timing-window fallback", {
+          section_title: section.title,
+          item_label: label,
+          fallback_preview: fallback.slice(0, 120),
+        });
+      }
+    }
+  }
+};
+
 const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
