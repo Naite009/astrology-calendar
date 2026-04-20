@@ -796,6 +796,12 @@ const regenerateAffectedSections = async (
     "REMOVED CLAIMS:",
     strippedSummary,
     "",
+    "EXPLICIT NEGATIVE CONSTRAINTS — NEVER USE THESE PHRASES:",
+    ((report.stripped_aspects ?? [])
+      .filter((s: any) => driftLabels.has(s?.section))
+      .map((s: any) => `- Do NOT reference "${s.phrase}" — this aspect is not present in this chart.`)
+      .join("\n") || "(none)"),
+    "",
     "ALLOWED NATAL ASPECTS (the ONLY aspects you may reference in the rewrite — do not name any aspect not in this list):",
     allowedAspects.map((a) => `- ${a}`).join("\n"),
     "",
@@ -2661,6 +2667,42 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
+        }
+
+        // PERMANENT EXPORT GUARD (point 5): never export a JSON with any
+        // summary_box item value that is still empty after fallback. Flag
+        // them explicitly so the UI can surface a warning before send.
+        try {
+          const emptySummaryFlags: Array<{ section: string; label: string }> = [];
+          for (const section of parsedContent.sections || []) {
+            if (section?.type !== "summary_box") continue;
+            const items = Array.isArray(section.items) ? section.items : [];
+            for (const item of items) {
+              const valueKey = typeof item?.value === "string" ? "value"
+                : typeof item?.text === "string" ? "text"
+                : "value";
+              if (isEffectivelyEmpty(item?.[valueKey])) {
+                item[valueKey] = "[needs review — no transit data available to fill this window]";
+                emptySummaryFlags.push({
+                  section: String(section.title || ""),
+                  label: String(item?.label || ""),
+                });
+              }
+            }
+          }
+          if (emptySummaryFlags.length > 0) {
+            (parsedContent as any)._empty_summary_flags = emptySummaryFlags;
+            console.warn("[ask-astrology] EXPORT GUARD: empty summary_box items remained after fallback", emptySummaryFlags);
+          }
+        } catch (guardErr) {
+          console.error("[ask-astrology] export guard threw:", guardErr);
+        }
+
+        // PERMANENT BIRTH_INFO TITLE-CASE (point 1): normalize the
+        // location segment of birth_info before persistence so the JSON
+        // shipped to Replit always has correct capitalization.
+        if (typeof parsedContent.birth_info === "string") {
+          parsedContent.birth_info = normalizeBirthInfoString(parsedContent.birth_info);
         }
       }
     } catch (parseError) {
