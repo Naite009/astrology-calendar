@@ -27,6 +27,7 @@ import {
 } from "@/lib/tarotDeck";
 import { Loader2, Shuffle, Sparkles, RotateCw } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 export interface FunctionProfile {
   superiorFunction: string;
@@ -311,8 +312,8 @@ export function InteractiveTarotReading({ profile }: Props) {
         {interpretation && (
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-5 space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
             <p className="text-xs uppercase tracking-widest text-primary/70">Your Personalized Reading</p>
-            <article className="prose prose-sm max-w-none text-foreground prose-headings:font-serif prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground whitespace-pre-wrap">
-              {interpretation}
+            <article className="prose prose-sm max-w-none text-foreground prose-headings:font-serif prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-h2:text-base prose-h2:mt-4 prose-h3:text-sm prose-h3:mt-3">
+              <ReactMarkdown>{interpretation}</ReactMarkdown>
             </article>
           </div>
         )}
