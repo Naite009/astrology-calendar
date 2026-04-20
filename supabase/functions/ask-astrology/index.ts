@@ -958,7 +958,7 @@ const stripAspectPhrasesFromNonTimingSummaryItems = (parsedContent: any) => {
     }
   }
   if (stripped > 0) {
-    console.info("[ask-astrology] non-timing summary items: aspect phrases stripped", {
+    console.info("[ask-astrology] non-timing summary items: aspect phrases + dangling sentences stripped", {
       sentences_removed: stripped,
       items_touched: itemsTouched,
       items_blanked: itemsBlanked,
