@@ -9,6 +9,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const restorePendingRef = useRef(true);
+  const explicitSignOutRef = useRef(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -18,9 +19,15 @@ export const useAuth = () => {
           return;
         }
 
+        if (!session?.user && !explicitSignOutRef.current) {
+          console.info('[useAuth] Ignoring transient null session event', event);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        explicitSignOutRef.current = false;
 
         // The moment we have a user, attach any anonymous charts on this
         // device to their account so charts persist across devices forever.
@@ -50,6 +57,7 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
+    explicitSignOutRef.current = true;
     await supabase.auth.signOut();
   };
 
