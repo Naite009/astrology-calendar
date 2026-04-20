@@ -618,7 +618,40 @@ const buildEmptySummaryFallback = (
     }
   }
 
-  if (allTransits.length === 0) return null;
+  // SECONDARY SOURCE: when transit verification has emptied transits[],
+  // fall back to the timing_section's windows[] (label = date range,
+  // description = soft prose). This prevents [needs review] from
+  // appearing when we still have valid window date data.
+  if (allTransits.length === 0) {
+    const windowDateRanges: string[] = [];
+    for (const section of parsedContent.sections) {
+      if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
+      for (const w of section.windows) {
+        const lbl = (w?.label || "").trim();
+        if (!lbl) continue;
+        // Only treat labels that look like date ranges (contain a year).
+        if (!/\d{4}/.test(lbl)) continue;
+        windowDateRanges.push(lbl);
+      }
+    }
+    if (windowDateRanges.length === 0) return null;
+    const seenW = new Set<string>();
+    const phrasesW: string[] = [];
+    for (const dr of windowDateRanges) {
+      const phrase = formatWindowPhrase(dr);
+      const key = phrase.toLowerCase();
+      if (!phrase || seenW.has(key)) continue;
+      seenW.add(key);
+      phrasesW.push(phrase);
+      if (phrasesW.length >= 2) break;
+    }
+    if (phrasesW.length === 0) return null;
+    const joinedW = phrasesW.length === 1 ? phrasesW[0] : `${phrasesW[0]} and ${phrasesW[1]}`;
+    const verbW = tone.positive
+      ? "are the strongest windows for"
+      : "are the periods that call for";
+    return `${joinedW} ${verbW} ${tone.outcome} based on current transits.`;
+  }
 
   // Filter by tone — soft transits for positive labels, hard for caution.
   const matching = allTransits.filter((t) => (tone.positive ? t.is_soft : t.is_hard));
@@ -677,6 +710,73 @@ const fillEmptySummaryItems = (parsedContent: any) => {
         });
       }
     }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// DETERMINISTIC SUMMARY_BOX TIMING OVERRIDE (PERMANENT — POINT 3)
+// The model is NOT allowed to write timing fields in summary_box.
+// Any summary_box item whose label matches a timing pattern is replaced
+// (unconditionally, not just when empty) with a deterministic plain-prose
+// summary built from this reading's transits[] array. This makes Jupiter
+// (or any other) aspect hallucination in summary_box timing fields
+// literally impossible — drift can only come from real transits[] data.
+// Runs BEFORE fillEmptySummaryItems so any non-timing items that ended up
+// blank still get the fallback or the [needs review] flag.
+// ─────────────────────────────────────────────────────────────────────────
+const TIMING_LABEL_PATTERNS: RegExp[] = [
+  /best\s+windows?/i,
+  /caution\s+windows?/i,
+  /when\s+to\s+act/i,
+  /extra\s+care\s+windows?/i,
+  /restorative\s+windows?/i,
+  /ideal\s+timing\s+window/i,
+  /best\s+timing/i,
+  /^timing$/i,
+  /timing\s+windows?/i,
+  /top\s+cities?\s+timing/i,
+  /key\s+windows?/i,
+  /strongest\s+windows?/i,
+];
+
+const isTimingLabel = (label: string): boolean => {
+  if (!label || typeof label !== "string") return false;
+  return TIMING_LABEL_PATTERNS.some((p) => p.test(label));
+};
+
+const overrideTimingSummaryItems = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let overridden = 0;
+  let blanked = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box") continue;
+    const items = Array.isArray(section.items) ? section.items : null;
+    if (!items) continue;
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const label: string = typeof item.label === "string" ? item.label : "";
+      if (!isTimingLabel(label)) continue;
+      const valueKey = typeof item.value === "string" ? "value"
+        : typeof item.text === "string" ? "text"
+        : "value";
+      const fallback = buildEmptySummaryFallback(parsedContent, label);
+      if (fallback) {
+        item[valueKey] = fallback;
+        overridden++;
+      } else {
+        // No transits available — clear the model's text so the export
+        // guard tags it [needs review] instead of letting hallucinated
+        // aspect names through.
+        item[valueKey] = "";
+        blanked++;
+      }
+    }
+  }
+  if (overridden > 0 || blanked > 0) {
+    console.info("[ask-astrology] summary_box timing items deterministically rebuilt", {
+      overridden,
+      blanked_for_needs_review: blanked,
+    });
   }
 };
 
@@ -2667,6 +2767,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // No aspect names — only date ranges + plain outcome wording.
         // Prevents blank PDF cards regardless of what was stripped.
         try {
+          // PERMANENT: Strip and rebuild any TIMING-labeled summary_box
+          // item from transits[] BEFORE the empty-fallback runs. The model
+          // is no longer permitted to author these fields.
+          overrideTimingSummaryItems(parsedContent);
           fillEmptySummaryItems(parsedContent);
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
