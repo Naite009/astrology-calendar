@@ -1295,9 +1295,10 @@ SR LOVE ACTIVATION STYLE:
   3. narrative_section — "Shared Resources & Investments" (8th house cusp, its ruler, Pluto for transformation of wealth, any planets in 8th)
   4. narrative_section — "Career Earnings Potential" (10th house/MC connection to income, Jupiter for abundance/opportunity, Saturn for long-term wealth building)
   5. city_comparison — "Best Cities for Wealth" (at least 4 cities where Jupiter IC, Venus MC, or Sun MC lines support financial growth) — ONLY if astrocartography data is available and location is relevant
-  6. timing_section — "Financial Timing Windows" (transits to 2nd/8th house rulers, Venus, and Jupiter with exact degrees and date ranges)
+  6. timing_section — "Financial Timing Windows" (transits to 2nd/8th house rulers, Venus, and Jupiter with exact degrees and date ranges). Include Jupiter return timing if applicable — Jupiter returns to natal position approximately every 12 years and is the single most significant wealth expansion window in the chart. Calculate where Jupiter is in its current cycle relative to its natal degree and name the next return window with date range.
   7. modality_element — "Natal Elemental & Modal Balance"
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
+  MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Soul's Blueprint" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
