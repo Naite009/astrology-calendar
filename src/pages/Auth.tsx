@@ -88,7 +88,9 @@ export default function Auth() {
           return;
         }
         
+        
         toast.success('Welcome back!');
+        rememberLastEmail(email);
       } else {
         const redirectUrl = `${window.location.origin}/`;
         
@@ -113,6 +115,7 @@ export default function Auth() {
         }
         
         toast.success('Account created! You are now logged in.');
+        rememberLastEmail(email);
       }
     } catch (err) {
       toast.error('An unexpected error occurred');
