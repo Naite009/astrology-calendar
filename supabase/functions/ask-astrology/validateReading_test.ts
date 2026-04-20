@@ -499,3 +499,97 @@ Deno.test("aspects: still strips aspects that are NOT in natal_aspects AND NOT i
   const stripped = (reading as any)._validation.stripped_aspects;
   assert(stripped.length >= 1, `fake aspect should still be stripped, got drift=${stripped.length}`);
 });
+
+// ---------------------------------------------------------------------------
+// REGRESSION: aspects with explicit non-natal prefixes ("SR", "Solar Return",
+// "Transiting", "Progressed") must NEVER be stripped — those are upstream-
+// computed claims, not natal claims. The user hit this with "SR Mars trine
+// natal Venus" being silently stripped because the validator dropped the
+// prefix and treated it as a natal claim about Mars-trine-Venus.
+// ---------------------------------------------------------------------------
+
+const CHART_CONTEXT_WITH_SR = `
+${CHART_CONTEXT}
+
+--- SOLAR RETURN 2026 ---
+SR Planetary Positions:
+- SR Mars: 12°00' Taurus (SR House 2)
+- SR Jupiter: 5°00' Cancer (SR House 4)
+
+--- ACTIVE SOLAR RETURN-TO-NATAL ASPECTS (this year) ---
+- SR Mars 12.0° Taurus △ Natal Sun 0.0° Aries (orb: 2.0°) — trine
+- SR Jupiter 5.0° Cancer ☌ Natal Moon 5.0° Cancer (orb: 0.0°) — conjunct
+`;
+
+Deno.test("aspects: keeps 'SR Mars trine natal Venus' style prose (non-natal prefix)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "This Year",
+        body: "Your SR Mars trine natal Venus opens a window. SR Jupiter conjunct natal Moon supports it.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT_WITH_SR);
+  const body = (reading.sections[0] as any).body;
+  assert(body.includes("SR Mars trine natal Venus"), `SR aspect should be kept, got: ${body}`);
+  assert(body.includes("SR Jupiter conjunct natal Moon"), `SR aspect should be kept, got: ${body}`);
+  const stripped = (reading as any)._validation.stripped_aspects;
+  assertEquals(stripped.length, 0, `no SR aspects should be stripped, got: ${JSON.stringify(stripped)}`);
+});
+
+Deno.test("aspects: keeps 'Transiting Saturn square natal Mercury' (transiting prefix)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "Now",
+        body: "Transiting Saturn square natal Mercury this month is the pressure point.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const body = (reading.sections[0] as any).body;
+  assert(
+    body.includes("Transiting Saturn square natal Mercury"),
+    `transiting prefix aspect should be kept, got: ${body}`,
+  );
+  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
+});
+
+Deno.test("aspects: keeps 'Progressed Moon trine natal Venus' (progressed prefix)", () => {
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "Inner Cycle",
+        body: "Progressed Moon trine natal Venus softens the late spring.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT);
+  const body = (reading.sections[0] as any).body;
+  assert(
+    body.includes("Progressed Moon trine natal Venus"),
+    `progressed prefix aspect should be kept, got: ${body}`,
+  );
+  assertEquals((reading as any)._validation.stripped_aspects.length, 0);
+});
+
+Deno.test("aspects: pre-computed SR-to-natal block is parsed into the allowlist", () => {
+  // Even WITHOUT the "SR " prefix in prose, an aspect that matches a
+  // pre-computed SR-to-natal pair should be allowed.
+  const reading = {
+    sections: [
+      {
+        type: "narrative_section",
+        title: "Year Theme",
+        body: "Mars trine Sun is the headline of your year.",
+      },
+    ],
+  };
+  validateReading(reading, CHART_CONTEXT_WITH_SR);
+  const body = (reading.sections[0] as any).body;
+  assert(body.includes("Mars trine Sun"), `pre-computed SR aspect should be kept, got: ${body}`);
+});
