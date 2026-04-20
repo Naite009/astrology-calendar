@@ -825,6 +825,77 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           }
         });
       }
+
+      // --- PRE-COMPUTED SR-TO-NATAL ASPECTS ---
+      // Same pattern as transit-to-natal, but using SR planet longitudes vs.
+      // natal planet longitudes. Anything in this block is authoritative — the
+      // validator must NOT strip claims like "SR Mars trine natal Venus".
+      try {
+        const SR_NATAL_ASPECTS = [
+          { name: 'conjunct', angle: 0, orb: 8, symbol: '☌' },
+          { name: 'opposition', angle: 180, orb: 8, symbol: '☍' },
+          { name: 'trine', angle: 120, orb: 7, symbol: '△' },
+          { name: 'square', angle: 90, orb: 7, symbol: '□' },
+          { name: 'sextile', angle: 60, orb: 5, symbol: '⚹' },
+        ] as const;
+        const natalLongs: Array<{ name: string; sign: string; degree: number; abs: number }> = [];
+        const pushNatal = (name: string, pos: any) => {
+          if (!pos || typeof pos !== 'object' || !('sign' in pos)) return;
+          const p = pos as { sign: string; degree: number; minutes?: number };
+          if (!ZODIAC.includes(p.sign)) return;
+          natalLongs.push({
+            name,
+            sign: p.sign,
+            degree: p.degree,
+            abs: ZODIAC.indexOf(p.sign) * 30 + p.degree + (p.minutes || 0) / 60,
+          });
+        };
+        // Use corrected Ascendant from houseCusps.house1 (per project rule).
+        const h1 = chart.houseCusps?.house1;
+        if (h1?.sign) pushNatal('Ascendant', h1);
+        const h10 = chart.houseCusps?.house10;
+        if (h10?.sign) pushNatal('Midheaven', h10);
+        Object.entries(chart.planets || {}).forEach(([name, pos]) => {
+          if (name === 'Ascendant' || name === 'Midheaven') return;
+          pushNatal(name, pos);
+        });
+
+        const srLongs: Array<{ name: string; sign: string; degree: number; abs: number }> = [];
+        Object.entries(srPlanets).forEach(([planet, data]) => {
+          if (!data || typeof data !== 'object' || !('sign' in data)) return;
+          const p = data as { sign: string; degree: number; minutes?: number };
+          if (!ZODIAC.includes(p.sign)) return;
+          srLongs.push({
+            name: planet,
+            sign: p.sign,
+            degree: p.degree,
+            abs: ZODIAC.indexOf(p.sign) * 30 + p.degree + (p.minutes || 0) / 60,
+          });
+        });
+
+        const srNatalAspects: Array<{ sr: typeof srLongs[number]; nat: typeof natalLongs[number]; aspect: typeof SR_NATAL_ASPECTS[number]; orb: number }> = [];
+        for (const sr of srLongs) {
+          for (const nat of natalLongs) {
+            let diff = Math.abs(sr.abs - nat.abs) % 360;
+            if (diff > 180) diff = 360 - diff;
+            for (const a of SR_NATAL_ASPECTS) {
+              const orb = Math.abs(diff - a.angle);
+              if (orb <= a.orb) {
+                srNatalAspects.push({ sr, nat, aspect: a, orb });
+                break;
+              }
+            }
+          }
+        }
+
+        if (srNatalAspects.length > 0) {
+          context += "\n--- ACTIVE SOLAR RETURN-TO-NATAL ASPECTS (this year) ---\n";
+          const sorted = srNatalAspects.sort((a, b) => a.orb - b.orb).slice(0, 25);
+          for (const sa of sorted) {
+            context += `- SR ${sa.sr.name} ${sa.sr.degree.toFixed(1)}° ${sa.sr.sign} ${sa.aspect.symbol} Natal ${sa.nat.name} ${sa.nat.degree.toFixed(1)}° ${sa.nat.sign} (orb: ${sa.orb.toFixed(1)}°) — ${sa.aspect.name}\n`;
+          }
+        }
+      } catch {}
     }
 
     // --- NATAL ASTROCARTOGRAPHY (deterministic, long-term) ---
