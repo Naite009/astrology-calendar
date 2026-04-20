@@ -440,10 +440,11 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   for (const section of parsedContent.sections) {
     if (!section || section.type !== "modality_element") continue;
-    let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    if (!text) text = "";
-
+    const text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
     const lowerText = text.toLowerCase();
+
+    // Identify any non-zero element/modality/polarity that the AI's
+    // original text fails to name.
     const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
       if (!Array.isArray(arr)) return [];
       const missing: Array<{ name: string; count: number }> = [];
@@ -451,7 +452,6 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
         if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
         if (item.count < 1) continue;
         const root = item.name.split(/[\s(]/)[0].toLowerCase();
-        // Match either the singular ("water") or plural ("waters") form, case-insensitive.
         const re = new RegExp(`\\b${root}s?\\b`, "i");
         if (!re.test(lowerText)) missing.push({ name: item.name, count: item.count });
       }
@@ -461,76 +461,81 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const missingElements = collectMissing(section.elements);
     const missingModalities = collectMissing(section.modalities);
     const missingPolarities = collectMissing(section.polarity);
+    const anyMissing =
+      missingElements.length > 0 ||
+      missingModalities.length > 0 ||
+      missingPolarities.length > 0;
 
-    const fragments: string[] = [];
-    const formatList = (items: Array<{ name: string; count: number }>): string =>
-      items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(" and ");
-    if (missingElements.length > 0) {
-      fragments.push(`Also present: ${formatList(missingElements)} planet${missingElements.reduce((a, b) => a + b.count, 0) === 1 ? "" : "s"}.`);
-    }
-    if (missingModalities.length > 0) {
-      fragments.push(`Modal balance also includes ${formatList(missingModalities)}.`);
-    }
-    if (missingPolarities.length > 0) {
-      fragments.push(`Polarity also includes ${formatList(missingPolarities)}.`);
-    }
-
-    if (fragments.length > 0) {
-      const trimmed = text.trim().replace(/\s+$/, "");
-      const sep = trimmed.length === 0 ? "" : (/[.!?]$/.test(trimmed) ? " " : ". ");
-      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`.trim();
-      console.info("[ask-astrology] balance_interpretation coverage enforced", {
-        added_elements: missingElements.map((i) => i.name),
-        added_modalities: missingModalities.map((i) => i.name),
-        added_polarities: missingPolarities.map((i) => i.name),
-      });
-    }
-
-    // FINAL VERIFICATION (point 2 — universal rule): after the append, if
-    // ANY non-zero element/modality/polarity is STILL missing by name (e.g.
-    // because the appended fragment itself was stripped or didn't render
-    // for some reason), do a deterministic LOCAL REWRITE of just this
-    // field that explicitly names every non-zero entry. This never
-    // triggers a full JSON regeneration.
-    const allCovered = (arr: any, currentText: string): boolean => {
-      if (!Array.isArray(arr)) return true;
-      const lt = currentText.toLowerCase();
-      for (const item of arr) {
-        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
-        if (item.count < 1) continue;
-        const root = item.name.split(/[\s(]/)[0].toLowerCase();
-        const re = new RegExp(`\\b${root}s?\\b`, "i");
-        if (!re.test(lt)) return false;
-      }
-      return true;
-    };
-    const finalText: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    const stillMissing =
-      !allCovered(section.elements, finalText) ||
-      !allCovered(section.modalities, finalText) ||
-      !allCovered(section.polarity, finalText);
-    if (stillMissing) {
-      const namedList = (arr: any, kind: string): string => {
-        if (!Array.isArray(arr)) return "";
-        const items: Array<{ name: string; count: number }> = [];
-        for (const it of arr) {
-          if (!it || typeof it.name !== "string" || typeof it.count !== "number") continue;
-          if (it.count < 1) continue;
-          items.push({ name: it.name.split(/[\s(]/)[0], count: it.count });
+    // FIX #3 (option A — INTEGRATED REWRITE):
+    // The append approach always produces afterthoughts because it's
+    // additive by design. The only way to get every non-zero category
+    // treated as equal is to throw away the AI's text whenever ANY
+    // non-zero category is missing and emit a single integrated
+    // paragraph that names every category up front in one breath.
+    if (anyMissing) {
+      const collectAll = (arr: any): Array<{ name: string; count: number }> => {
+        if (!Array.isArray(arr)) return [];
+        const out: Array<{ name: string; count: number }> = [];
+        for (const item of arr) {
+          if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+          if (item.count < 1) continue;
+          out.push({ name: item.name.split(/[\s(]/)[0], count: item.count });
         }
-        if (items.length === 0) return "";
-        const phrases = items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`);
-        return `${kind}: ${phrases.join(", ")}`;
+        // Sort by descending count so the dominant category is named first.
+        out.sort((a, b) => b.count - a.count);
+        return out;
       };
-      const parts = [
-        namedList(section.elements, "Elemental balance"),
-        namedList(section.modalities, "Modal balance"),
-        namedList(section.polarity, "Polarity"),
-      ].filter(Boolean);
-      if (parts.length > 0) {
-        section.balance_interpretation = `${parts.join(". ")}.`;
-        console.info("[ask-astrology] balance_interpretation rewritten locally to cover every non-zero category", {
+
+      const elementsAll = collectAll(section.elements);
+      const modalitiesAll = collectAll(section.modalities);
+      const polaritiesAll = collectAll(section.polarity);
+
+      const formatList = (items: Array<{ name: string; count: number }>): string =>
+        items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(", ");
+
+      const sentences: string[] = [];
+
+      if (elementsAll.length > 0) {
+        const dominant = elementsAll[0];
+        const rest = elementsAll.slice(1);
+        const dominantClause = `${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} anchor${dominant.count === 1 ? "s" : ""} this chart's elemental tone`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, balanced by ${formatList(rest)} — every active element shapes how this person processes experience.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (modalitiesAll.length > 0) {
+        const dominant = modalitiesAll[0];
+        const rest = modalitiesAll.slice(1);
+        const dominantClause = `Modally, ${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} set${dominant.count === 1 ? "s" : ""} the rhythm`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, with ${formatList(rest)} adding their own pace.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (polaritiesAll.length > 0) {
+        const dominant = polaritiesAll[0];
+        const rest = polaritiesAll.slice(1);
+        const dominantClause = `Polarity leans ${dominant.name.toLowerCase()} (${NUMBER_WORDS[dominant.count] ?? dominant.count} planet${dominant.count === 1 ? "" : "s"})`;
+        if (rest.length > 0) {
+          sentences.push(`${dominantClause}, tempered by ${formatList(rest)}.`);
+        } else {
+          sentences.push(`${dominantClause}.`);
+        }
+      }
+
+      if (sentences.length > 0) {
+        section.balance_interpretation = sentences.join(" ");
+        console.info("[ask-astrology] balance_interpretation full deterministic rewrite (option A)", {
           section_title: section.title,
+          missing_elements: missingElements.map((i) => i.name),
+          missing_modalities: missingModalities.map((i) => i.name),
+          missing_polarities: missingPolarities.map((i) => i.name),
+          rewrite_preview: sentences.join(" ").slice(0, 160),
         });
       }
     }
