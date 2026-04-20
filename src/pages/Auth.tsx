@@ -125,10 +125,10 @@ export default function Auth() {
   };
 
   const handleMagicLink = async () => {
-    const target = (rememberedEmail || email).trim();
+    const target = (email || rememberedEmail || '').trim();
     const emailResult = emailSchema.safeParse(target);
     if (!emailResult.success) {
-      toast.error('Enter a valid email first');
+      toast.error('Enter your email above first');
       return;
     }
     setIsSendingMagicLink(true);
@@ -166,15 +166,26 @@ export default function Auth() {
         </div>
         
         <div className="border border-border bg-card p-8 rounded-sm">
-          {isLogin && rememberedEmail && (
+          {isLogin && (
             <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-sm space-y-3">
               <div className="flex items-start gap-2">
                 <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
-                  <p className="text-foreground font-medium">Welcome back</p>
-                  <p className="text-muted-foreground text-xs mt-0.5 break-all">
-                    {rememberedEmail}
-                  </p>
+                  {rememberedEmail ? (
+                    <>
+                      <p className="text-foreground font-medium">Welcome back</p>
+                      <p className="text-muted-foreground text-xs mt-0.5 break-all">
+                        {rememberedEmail}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-foreground font-medium">No password? No problem.</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        Enter your email below, then click the button to get a one-tap sign-in link in your inbox.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <Button
