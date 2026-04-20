@@ -1100,6 +1100,23 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
             </CardContent>
           </Card>
 
+          {/* Interactive Reading — live spread, user-selected cards, AI interpretation */}
+          <InteractiveTarotReading
+            profile={{
+              superiorFunction: result.superiorFunction,
+              superiorSuit: result.superiorSuit,
+              superiorElement: result.superiorElement,
+              inferiorFunction: result.inferiorFunction,
+              inferiorSuit: result.inferiorSuit,
+              inferiorElement: result.inferiorElement,
+              auxiliaryElements: result.auxiliaryElements,
+              sunSign: result.sunSign,
+              ruler: result.ruler,
+              rulerSign: result.rulerSign,
+              chartName: chart?.name,
+            } satisfies FunctionProfile}
+          />
+
           {/* Example Spread Walkthrough */}
           <Card>
             <CardHeader className="pb-3">
