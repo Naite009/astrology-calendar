@@ -441,7 +441,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
   for (const section of parsedContent.sections) {
     if (!section || section.type !== "modality_element") continue;
     let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
-    if (!text) continue;
+    if (!text) text = "";
 
     const lowerText = text.toLowerCase();
     const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
@@ -477,13 +477,62 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 
     if (fragments.length > 0) {
       const trimmed = text.trim().replace(/\s+$/, "");
-      const sep = /[.!?]$/.test(trimmed) ? " " : ". ";
-      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`;
+      const sep = trimmed.length === 0 ? "" : (/[.!?]$/.test(trimmed) ? " " : ". ");
+      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`.trim();
       console.info("[ask-astrology] balance_interpretation coverage enforced", {
         added_elements: missingElements.map((i) => i.name),
         added_modalities: missingModalities.map((i) => i.name),
         added_polarities: missingPolarities.map((i) => i.name),
       });
+    }
+
+    // FINAL VERIFICATION (point 2 — universal rule): after the append, if
+    // ANY non-zero element/modality/polarity is STILL missing by name (e.g.
+    // because the appended fragment itself was stripped or didn't render
+    // for some reason), do a deterministic LOCAL REWRITE of just this
+    // field that explicitly names every non-zero entry. This never
+    // triggers a full JSON regeneration.
+    const allCovered = (arr: any, currentText: string): boolean => {
+      if (!Array.isArray(arr)) return true;
+      const lt = currentText.toLowerCase();
+      for (const item of arr) {
+        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+        if (item.count < 1) continue;
+        const root = item.name.split(/[\s(]/)[0].toLowerCase();
+        const re = new RegExp(`\\b${root}s?\\b`, "i");
+        if (!re.test(lt)) return false;
+      }
+      return true;
+    };
+    const finalText: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
+    const stillMissing =
+      !allCovered(section.elements, finalText) ||
+      !allCovered(section.modalities, finalText) ||
+      !allCovered(section.polarity, finalText);
+    if (stillMissing) {
+      const namedList = (arr: any, kind: string): string => {
+        if (!Array.isArray(arr)) return "";
+        const items: Array<{ name: string; count: number }> = [];
+        for (const it of arr) {
+          if (!it || typeof it.name !== "string" || typeof it.count !== "number") continue;
+          if (it.count < 1) continue;
+          items.push({ name: it.name.split(/[\s(]/)[0], count: it.count });
+        }
+        if (items.length === 0) return "";
+        const phrases = items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`);
+        return `${kind}: ${phrases.join(", ")}`;
+      };
+      const parts = [
+        namedList(section.elements, "Elemental balance"),
+        namedList(section.modalities, "Modal balance"),
+        namedList(section.polarity, "Polarity"),
+      ].filter(Boolean);
+      if (parts.length > 0) {
+        section.balance_interpretation = `${parts.join(". ")}.`;
+        console.info("[ask-astrology] balance_interpretation rewritten locally to cover every non-zero category", {
+          section_title: section.title,
+        });
+      }
     }
   }
 };
