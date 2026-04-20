@@ -1166,6 +1166,8 @@ SR LOVE ACTIVATION STYLE:
   6. timing_section — "Health Timing" (transits to 6th house ruler, Ascendant ruler, and Mars with exact degrees and date ranges; flag challenging transits to health houses)
   7. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as what the body needs: fire=movement, earth=routine, air=breath/nervous system, water=rest/hydration)
   8. summary_box — "Strategy Summary" with items: "Core Strength", "Watch Points", "Best Practices", "Timing"
+
+  HEALTH SUMMARY TRANSIT REFERENCE RULE (MANDATORY): The "Timing", "Best Practices", "Watch Points", "Extra Care Windows", and "Restorative Windows" items in the Health Strategy Summary may ONLY name transits / aspects / planets / dates that already appear (a) as named entries in the Health Timing timing_section above, or (b) in the pre-computed "UPCOMING TRANSIT WINDOWS" / "ACTIVE TRANSIT ASPECTS TO NATAL CHART" blocks of the chart context. Do NOT invent aspects like "Jupiter sextile Moon" or "Saturn square Sun" unless that exact aspect is literally present in the source data above. Select from the precomputed transit list — do not generate freehand. If no suitable transit exists for an item, write a generic non-astrological line instead of fabricating one.
 - For question_type "money": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Earning Style" (2nd house cusp, its ruler, Venus sign/house for values and income)
@@ -1304,6 +1306,21 @@ CRITICAL ANTI-HALLUCINATION RULES:
 - If SOLAR RETURN data is provided, integrate it into your reading. For relationship questions, note SR Venus/Mars/Juno/7th house placements. For relocation questions, note SR 4th/9th house and angular planets. For timing questions, use SR activation windows alongside transits. Always distinguish natal vs SR placements clearly.
 - When SR data is present, mention the year's themes (SR Ascendant sign, SR Sun house, SR Moon phase/house) as they shape the CURRENT year's energy landscape.
 - If a transiting planet is marked (R) for retrograde, note this in your interpretation — retrogrades change the quality of the transit (internalization, review, revisiting past themes).
+
+UNIVERSAL SUMMARY_BOX TIMING CONSTRAINT (MANDATORY — applies to EVERY reading type):
+The summary_box is a SYNTHESIS of data already present in this reading, NOT a place to introduce new astrological claims. Any item in any summary_box whose label implies timing — including but not limited to "Extra Care Windows", "Restorative Windows", "When to Act", "Caution Windows", "Best Windows", "Best Practices", "Timing", "Timing for Growth", "Ideal Timing Window", "Best Move Windows", "Launch Window", "Opportunity Window", "Recognition Window", "Visibility Peak", "Pivot Point", "Consolidation", and any other window/timing-flavored label — MUST follow these rules:
+
+1. SOURCE-OF-TRUTH: The ONLY valid sources of transits, aspects, planets, and date ranges for these summary items are (a) the pre-computed "UPCOMING TRANSIT WINDOWS (next 18 months)" block in the chart context, (b) the pre-computed "ACTIVE TRANSIT ASPECTS TO NATAL CHART" block in the chart context, and (c) entries that you have explicitly written into the timing_section "transits" array of THIS reading. Nothing else is allowed.
+
+2. NO FREEHAND TIMING NARRATIVE: Do not write timing prose by reasoning from first principles ("Jupiter sextile Moon would be supportive…"). Do not infer aspects, conjunctions, sextiles, squares, trines, or oppositions that are not literally listed in the source-of-truth blocks above. If an aspect is not in the precomputed transit data, it does not exist for the purpose of this summary.
+
+3. SELECT, DO NOT INVENT: Treat the summary_box timing items as a curation task: read the precomputed transits, pick the most relevant 1–3 entries for the item's intent (e.g., supportive Jupiter/Venus transits for "Restorative Windows"; hard Saturn/Pluto/Mars transits for "Caution Windows" / "Extra Care Windows"; applying outer-planet trines or Jupiter conjunctions to angles/luminaries for "When to Act"), and summarize them. If the precomputed data contains no suitable transit for an item, write a generic, non-astrological line ("No major activations in the next 18 months — focus on baseline practices") rather than fabricating one.
+
+4. NAMING DISCIPLINE: When you reference a transit by name in any summary_box item, the planet, aspect type, natal point, and date window must match an entry in the timing_section or the precomputed transit blocks character-for-character on planet+aspect+natal-point. If you cannot match it, do not name it — describe the period generically by month/season instead.
+
+5. PRE-WRITE AUDIT: Before emitting any summary_box, list internally every transit you intend to cite, then verify each one is present in the timing_section transits array or the precomputed UPCOMING TRANSIT WINDOWS block. Drop any that fail this check.
+
+This constraint supersedes any earlier instruction that could be read as license to "describe" or "interpret" timing in the summary. The summary recaps; it does not generate.
 
 PASS/FAIL RULE — MANDATORY FINAL CHECK:
 Before finalizing output, verify ALL of the following. If ANY check fails, the response is incomplete and MUST be rewritten:
