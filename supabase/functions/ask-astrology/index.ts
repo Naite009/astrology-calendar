@@ -618,7 +618,40 @@ const buildEmptySummaryFallback = (
     }
   }
 
-  if (allTransits.length === 0) return null;
+  // SECONDARY SOURCE: when transit verification has emptied transits[],
+  // fall back to the timing_section's windows[] (label = date range,
+  // description = soft prose). This prevents [needs review] from
+  // appearing when we still have valid window date data.
+  if (allTransits.length === 0) {
+    const windowDateRanges: string[] = [];
+    for (const section of parsedContent.sections) {
+      if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
+      for (const w of section.windows) {
+        const lbl = (w?.label || "").trim();
+        if (!lbl) continue;
+        // Only treat labels that look like date ranges (contain a year).
+        if (!/\d{4}/.test(lbl)) continue;
+        windowDateRanges.push(lbl);
+      }
+    }
+    if (windowDateRanges.length === 0) return null;
+    const seenW = new Set<string>();
+    const phrasesW: string[] = [];
+    for (const dr of windowDateRanges) {
+      const phrase = formatWindowPhrase(dr);
+      const key = phrase.toLowerCase();
+      if (!phrase || seenW.has(key)) continue;
+      seenW.add(key);
+      phrasesW.push(phrase);
+      if (phrasesW.length >= 2) break;
+    }
+    if (phrasesW.length === 0) return null;
+    const joinedW = phrasesW.length === 1 ? phrasesW[0] : `${phrasesW[0]} and ${phrasesW[1]}`;
+    const verbW = tone.positive
+      ? "are the strongest windows for"
+      : "are the periods that call for";
+    return `${joinedW} ${verbW} ${tone.outcome} based on current transits.`;
+  }
 
   // Filter by tone — soft transits for positive labels, hard for caution.
   const matching = allTransits.filter((t) => (tone.positive ? t.is_soft : t.is_hard));
