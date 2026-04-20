@@ -780,6 +780,112 @@ const overrideTimingSummaryItems = (parsedContent: any) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// NON-TIMING SUMMARY ITEM ASPECT-STRIP (PERMANENT — DRIFT FIX)
+// The four strategy items in a Relationship Strategy Summary
+// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break",
+// "What This Year Is Best For") are behavioral advice — they should
+// NEVER name specific aspects (e.g., "Jupiter trine Venus"). The model
+// keeps sneaking transit/aspect references into them, which the
+// natal-aspect validator then strips, producing drift_count > 0 even
+// after regen-on-drift.
+//
+// This pass runs AFTER overrideTimingSummaryItems and BEFORE
+// validateReading is called the second time. It deterministically
+// removes any sentence in a non-timing summary_box item that contains
+// a "<Planet> <aspect> <Planet>" phrase, regardless of whether the
+// aspect is real or hallucinated. Aspect names have no place in
+// strategy text — the timing items already cover transit timing.
+// ─────────────────────────────────────────────────────────────────────────
+const SUMMARY_PLANET_NAMES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+  "Uranus", "Neptune", "Pluto", "Chiron", "North Node", "South Node",
+  "Juno", "Lilith", "Ascendant", "Midheaven", "Descendant", "IC", "MC",
+];
+const SUMMARY_ASPECT_WORDS = [
+  "conjunct", "conjunction", "sextile", "square", "trine",
+  "opposite", "opposition", "quincunx", "semisextile", "semisquare",
+  "sesquiquadrate",
+];
+
+const buildAspectPhraseRegex = (): RegExp => {
+  const planetCore = SUMMARY_PLANET_NAMES.map((p) => p.replace(/\s/g, "\\s")).join("|");
+  const prefixAlt = "(?:SR|Solar\\s+Return|Transiting|Transit|Progressed|Composite|Davison|Synastry|Partner|Natal|the|your|my|his|her|their)\\s+";
+  const planetsAlt = `(?:${prefixAlt})?(?:${planetCore})`;
+  const aspectsAlt = SUMMARY_ASPECT_WORDS.join("|");
+  // Match "<Planet> <aspect> [to|with|the] <Planet>" anywhere in a sentence.
+  return new RegExp(
+    `\\b(${planetsAlt})(?:'s|\\s+is|\\s+sits|\\s*,)?\\s+(${aspectsAlt})\\s+(?:to|with|the\\s+)?\\s*(?:the\\s+)?(${planetsAlt})\\b`,
+    "i",
+  );
+};
+
+const splitIntoSentences = (text: string): string[] => {
+  if (!text || typeof text !== "string") return [];
+  // Split on sentence terminators while preserving them on the preceding chunk.
+  const parts = text.split(/(?<=[.!?])\s+(?=[A-Z"'(])/);
+  return parts.map((s) => s.trim()).filter((s) => s.length > 0);
+};
+
+const stripAspectSentences = (text: string, re: RegExp): { cleaned: string; removed: string[] } => {
+  if (!text || typeof text !== "string") return { cleaned: text, removed: [] };
+  const sentences = splitIntoSentences(text);
+  const kept: string[] = [];
+  const removed: string[] = [];
+  for (const s of sentences) {
+    if (re.test(s)) {
+      removed.push(s);
+    } else {
+      kept.push(s);
+    }
+  }
+  return { cleaned: kept.join(" ").trim(), removed };
+};
+
+const stripAspectPhrasesFromNonTimingSummaryItems = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const re = buildAspectPhraseRegex();
+  let stripped = 0;
+  let itemsTouched = 0;
+  let itemsBlanked = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box") continue;
+    const items = Array.isArray(section.items) ? section.items : null;
+    if (!items) continue;
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const label: string = typeof item.label === "string" ? item.label : "";
+      // Skip TIMING items — they were already deterministically rebuilt
+      // by overrideTimingSummaryItems and do not need aspect-stripping.
+      if (isTimingLabel(label)) continue;
+      const valueKey = typeof item.value === "string" ? "value"
+        : typeof item.text === "string" ? "text"
+        : "value";
+      const current: unknown = item[valueKey];
+      if (typeof current !== "string" || !current.trim()) continue;
+      const { cleaned, removed } = stripAspectSentences(current, re);
+      if (removed.length === 0) continue;
+      stripped += removed.length;
+      itemsTouched++;
+      // If stripping leaves nothing, blank the field so the export guard
+      // can flag it [needs review] rather than ship a hollow card.
+      if (!cleaned) {
+        item[valueKey] = "";
+        itemsBlanked++;
+      } else {
+        item[valueKey] = cleaned;
+      }
+    }
+  }
+  if (stripped > 0) {
+    console.info("[ask-astrology] non-timing summary items: aspect phrases stripped", {
+      sentences_removed: stripped,
+      items_touched: itemsTouched,
+      items_blanked: itemsBlanked,
+    });
+  }
+};
+
 const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
