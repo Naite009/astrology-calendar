@@ -20,6 +20,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [rememberedEmail, setRememberedEmail] = useState<string | null>(null);
+  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
 
   useEffect(() => {
     // Check if already logged in
