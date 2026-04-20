@@ -266,11 +266,13 @@ export const buildAskValidationFactsBlock = (chart: NatalChart | null) => {
   const positions = collectPointRecords(chart);
   if (positions.length === 0) return "";
 
+  const natalAspects = buildNatalAspects(positions);
+
   const facts = {
     version: 1,
     counted_planets: [...COUNTED_PLANETS],
     natal_counts: buildCounts(positions),
-    natal_aspects: buildNatalAspects(positions),
+    natal_aspects: natalAspects,
     natal_aspects_meta: {
       orb_policy: Object.fromEntries(ASPECTS.map(({ aspect, orb }) => [aspect, orb])),
       house_system: "Placidus",
@@ -279,8 +281,33 @@ export const buildAskValidationFactsBlock = (chart: NatalChart | null) => {
     positions,
   };
 
-  return [
+  // Build a prominent, human-readable allowlist so the AI treats this as
+  // primary source data — not buried metadata. Sort by tightest orb first,
+  // and show planet/sign/degree on each side so the AI never has to infer.
+  const posByName = new Map(positions.map((p) => [p.name, p]));
+  const sortedAspects = [...natalAspects].sort((a, b) => a.orb - b.orb);
+  const aspectLines = sortedAspects.map((a) => {
+    const p1 = posByName.get(a.point1);
+    const p2 = posByName.get(a.point2);
+    const fmt = (p: typeof positions[number] | undefined) =>
+      p ? `${p.name} ${p.degree}°${String(p.minutes).padStart(2, "0")}' ${p.sign}` : a.point1;
+    return `- ${fmt(p1)} ${a.aspect} ${fmt(p2)} (orb ${a.orb.toFixed(2)}°)`;
+  });
+
+  const humanReadableBlock = [
     "",
+    "=== VERIFIED NATAL ASPECTS — AUTHORITATIVE SOURCE-OF-TRUTH ===",
+    "These are the ONLY natal aspects in this chart. They were computed deterministically from the exact ecliptic positions above using the project's centralized orb policy.",
+    "ABSOLUTE RULE: You MAY ONLY name a natal aspect (in any narrative_section, summary_box, placement_table, or anywhere else in the response) if it appears verbatim in this list. If a natal aspect is NOT in this list, it does NOT EXIST. Do NOT infer, estimate, or reason from sign relationships.",
+    "If you want to claim a synthesis like 'Jupiter trine Venus' or 'Saturn opposition Pluto', search this list first — if you do not find that exact pair + aspect, replace it with one that IS in the list, or describe the dynamic in non-aspect language (placements, house themes).",
+    "",
+    aspectLines.join("\n") || "(no natal aspects within orb policy)",
+    "=== END VERIFIED NATAL ASPECTS ===",
+    "",
+  ].join("\n");
+
+  return [
+    humanReadableBlock,
     "--- VALIDATION FACTS (machine-readable) ---",
     ASK_VALIDATION_FACTS_START,
     JSON.stringify(facts, null, 2),
