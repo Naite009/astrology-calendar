@@ -24,6 +24,14 @@ export default function Auth() {
   const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
 
   useEffect(() => {
+    // Pre-fill email from cross-origin cookie so users coming back after
+    // a Lovable preview origin swap don't have to retype anything.
+    const last = readLastEmail();
+    if (last) {
+      setEmail(last);
+      setRememberedEmail(last);
+    }
+
     // Check if already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
