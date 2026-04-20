@@ -22,6 +22,7 @@ import kingPentacles from "@/assets/court-cards/king-pentacles.png";
 import { ChartSelector } from "./ChartSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { InteractiveTarotReading, type FunctionProfile } from "./tarot/InteractiveTarotReading";
 
 const COURT_CARD_IMAGES: Record<string, string> = {
   "Page of Wands": pageWands, "Knight of Wands": knightWands, "Queen of Wands": queenWands, "King of Wands": kingWands,
