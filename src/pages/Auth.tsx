@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Sparkles } from 'lucide-react';
 import { z } from 'zod';
+import { rememberLastEmail, readLastEmail } from '@/lib/lastEmailCookie';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -19,8 +20,18 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [rememberedEmail, setRememberedEmail] = useState<string | null>(null);
+  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
 
   useEffect(() => {
+    // Pre-fill email from cross-origin cookie so users coming back after
+    // a Lovable preview origin swap don't have to retype anything.
+    const last = readLastEmail();
+    if (last) {
+      setEmail(last);
+      setRememberedEmail(last);
+    }
+
     // Check if already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
@@ -77,7 +88,9 @@ export default function Auth() {
           return;
         }
         
+        
         toast.success('Welcome back!');
+        rememberLastEmail(email);
       } else {
         const redirectUrl = `${window.location.origin}/`;
         
@@ -102,11 +115,41 @@ export default function Auth() {
         }
         
         toast.success('Account created! You are now logged in.');
+        rememberLastEmail(email);
       }
     } catch (err) {
       toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMagicLink = async () => {
+    const target = (rememberedEmail || email).trim();
+    const emailResult = emailSchema.safeParse(target);
+    if (!emailResult.success) {
+      toast.error('Enter a valid email first');
+      return;
+    }
+    setIsSendingMagicLink(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: target,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          shouldCreateUser: false,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      rememberLastEmail(target);
+      toast.success(`Magic link sent to ${target}. Check your email.`);
+    } catch (err) {
+      toast.error('Could not send magic link');
+    } finally {
+      setIsSendingMagicLink(false);
     }
   };
 
@@ -123,6 +166,42 @@ export default function Auth() {
         </div>
         
         <div className="border border-border bg-card p-8 rounded-sm">
+          {isLogin && rememberedEmail && (
+            <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-sm space-y-3">
+              <div className="flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="text-foreground font-medium">Welcome back</p>
+                  <p className="text-muted-foreground text-xs mt-0.5 break-all">
+                    {rememberedEmail}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleMagicLink}
+                disabled={isSendingMagicLink || isLoading}
+              >
+                {isSendingMagicLink ? (
+                  <>
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    Sending magic link...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-3 w-3" />
+                    Email me a sign-in link
+                  </>
+                )}
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center uppercase tracking-widest">
+                Or enter your password below
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
