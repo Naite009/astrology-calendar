@@ -2541,6 +2541,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         } catch (regenErr) {
           console.error("[ask-astrology] regen-on-drift threw:", regenErr);
         }
+
+        // FINAL FALLBACK: Any summary_box item left with an empty value
+        // after validation/regen gets a deterministic plain-language
+        // window summary built from this reading's timing transits.
+        // No aspect names — only date ranges + plain outcome wording.
+        // Prevents blank PDF cards regardless of what was stripped.
+        try {
+          fillEmptySummaryItems(parsedContent);
+        } catch (fillErr) {
+          console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
+        }
       }
     } catch (parseError) {
       // Log the actual parsing error for debugging
