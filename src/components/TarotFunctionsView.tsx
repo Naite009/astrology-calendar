@@ -917,6 +917,102 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
             </CardContent>
           </Card>
 
+          {/* How Inferior & Auxiliary Were Determined */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-serif">How Your Inferior and Auxiliary Functions Were Determined</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <div className="p-3 rounded bg-secondary/50 border border-border">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Step 1: Start From Superior</p>
+                  <p className="font-medium">{FUNCTION_EMOJI[result.superiorFunction]} {result.superiorFunction} ({result.superiorElement})</p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    Anchored from your Sun's ruler ({result.ruler} in {result.rulerSign}).
+                  </p>
+                </div>
+                <div className="p-3 rounded bg-secondary/50 border border-border">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Step 2: Inferior = Opposite Element</p>
+                  <p className="font-medium">{result.superiorElement} ↔ {result.inferiorElement} → {result.inferiorFunction}</p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    Jung's rule: the unconscious shadow of your dominant function. Fire ↔ Water, Air ↔ Earth.
+                  </p>
+                </div>
+                <div className="p-3 rounded bg-secondary/50 border border-border">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Step 3: Auxiliaries = The Other Two</p>
+                  <p className="font-medium">
+                    {result.auxiliaryElements.map(el => `${ELEMENT_FUNCTION[el]} (${el})`).join(' + ')}
+                  </p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    The two elements perpendicular to your Superior/Inferior axis — your "helping hands."
+                  </p>
+                </div>
+              </div>
+
+              {/* Cross-axis diagram */}
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 text-center">Your Function Axes</p>
+                <div className="relative mx-auto aspect-square max-w-sm rounded-lg border border-border bg-secondary/30 p-4">
+                  {/* Crosshair lines */}
+                  <div className="absolute inset-x-6 top-1/2 h-px -translate-y-1/2 bg-border" aria-hidden />
+                  <div className="absolute inset-y-6 left-1/2 w-px -translate-x-1/2 bg-border" aria-hidden />
+
+                  {/* Top — Superior */}
+                  <div className="absolute left-1/2 top-2 -translate-x-1/2 text-center">
+                    <div className={`inline-flex flex-col items-center rounded-md border px-3 py-2 ${ELEMENT_COLORS[result.superiorElement]}`}>
+                      <span className="text-[10px] uppercase tracking-widest opacity-70">Superior</span>
+                      <span className="text-lg leading-none">{FUNCTION_EMOJI[result.superiorFunction]}</span>
+                      <span className="text-xs font-medium">{result.superiorFunction}</span>
+                      <span className="text-[10px] opacity-70">{result.superiorElement}</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom — Inferior */}
+                  <div className="absolute left-1/2 bottom-2 -translate-x-1/2 text-center">
+                    <div className={`inline-flex flex-col items-center rounded-md border px-3 py-2 ${ELEMENT_COLORS[result.inferiorElement]}`}>
+                      <span className="text-[10px] uppercase tracking-widest opacity-70">Inferior</span>
+                      <span className="text-lg leading-none">{FUNCTION_EMOJI[result.inferiorFunction]}</span>
+                      <span className="text-xs font-medium">{result.inferiorFunction}</span>
+                      <span className="text-[10px] opacity-70">{result.inferiorElement}</span>
+                    </div>
+                  </div>
+
+                  {/* Left — Auxiliary 1 */}
+                  {result.auxiliaryElements[0] && (
+                    <div className="absolute top-1/2 left-2 -translate-y-1/2 text-center">
+                      <div className={`inline-flex flex-col items-center rounded-md border px-3 py-2 ${ELEMENT_COLORS[result.auxiliaryElements[0]]}`}>
+                        <span className="text-[10px] uppercase tracking-widest opacity-70">Auxiliary</span>
+                        <span className="text-lg leading-none">{FUNCTION_EMOJI[ELEMENT_FUNCTION[result.auxiliaryElements[0]]]}</span>
+                        <span className="text-xs font-medium">{ELEMENT_FUNCTION[result.auxiliaryElements[0]]}</span>
+                        <span className="text-[10px] opacity-70">{result.auxiliaryElements[0]}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Right — Auxiliary 2 */}
+                  {result.auxiliaryElements[1] && (
+                    <div className="absolute top-1/2 right-2 -translate-y-1/2 text-center">
+                      <div className={`inline-flex flex-col items-center rounded-md border px-3 py-2 ${ELEMENT_COLORS[result.auxiliaryElements[1]]}`}>
+                        <span className="text-[10px] uppercase tracking-widest opacity-70">Auxiliary</span>
+                        <span className="text-lg leading-none">{FUNCTION_EMOJI[ELEMENT_FUNCTION[result.auxiliaryElements[1]]]}</span>
+                        <span className="text-xs font-medium">{ELEMENT_FUNCTION[result.auxiliaryElements[1]]}</span>
+                        <span className="text-[10px] opacity-70">{result.auxiliaryElements[1]}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Center label */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-background px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                    You
+                  </div>
+                </div>
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  Vertical axis = conscious strength ↔ unconscious shadow. Horizontal axis = your two supporting functions.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Superior & Inferior */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FunctionCard
