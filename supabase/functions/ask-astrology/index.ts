@@ -307,7 +307,127 @@ const correctModalityElementCounts = (parsedContent: any) => {
   }
 };
 
-const mergeDeterministicTimingSection = (parsedContent: any, deterministicTiming: any) => {
+// ─────────────────────────────────────────────────────────────────────────
+// Deterministic dedupe of duplicated paragraphs inside a single timing
+// entry's `interpretation` field. The AI sometimes emits the same paragraph
+// twice in a row (or the same sentence twice) within one transit entry —
+// most often on multi-pass Pluto/Saturn windows where the model copy-pastes.
+// We collapse exact and near-duplicate consecutive paragraphs/sentences.
+// ─────────────────────────────────────────────────────────────────────────
+const normalizeForCompare = (s: string): string =>
+  s.toLowerCase().replace(/\s+/g, " ").replace(/[\u2018\u2019]/g, "'").trim();
+
+const dedupeText = (text: string): string => {
+  if (typeof text !== "string" || text.length === 0) return text;
+  // First, collapse repeated paragraphs (split on blank lines).
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const seenParas = new Set<string>();
+  const dedupedParas: string[] = [];
+  for (const para of paragraphs) {
+    const key = normalizeForCompare(para);
+    if (key && !seenParas.has(key)) {
+      seenParas.add(key);
+      dedupedParas.push(para);
+    }
+  }
+  // Then, within each remaining paragraph, collapse immediate repeated sentences.
+  const cleaned = dedupedParas.map((para) => {
+    const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
+    const out: string[] = [];
+    let prev = "";
+    for (const raw of sentences) {
+      const norm = normalizeForCompare(raw);
+      if (norm && norm === prev) continue;
+      out.push(raw);
+      prev = norm;
+    }
+    return out.join("").trim();
+  });
+  return cleaned.join("\n\n");
+};
+
+const dedupeTimingInterpretations = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+    if (!Array.isArray(section.transits)) continue;
+    for (const transit of section.transits) {
+      if (!transit || typeof transit.interpretation !== "string") continue;
+      const before = transit.interpretation;
+      const after = dedupeText(before);
+      if (after !== before) {
+        console.info("[ask-astrology] timing interpretation deduplicated", {
+          planet: transit.planet,
+          aspect: transit.aspect,
+          natal_point: transit.natal_point,
+          before_len: before.length,
+          after_len: after.length,
+        });
+        transit.interpretation = after;
+      }
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enforce that balance_interpretation mentions every element/modality/
+// polarity with count≥1. If the AI omitted a non-zero category, append a
+// short, deterministic clause naming the missing categories so the reader
+// always sees full coverage. We do NOT touch zero-count categories.
+// ─────────────────────────────────────────────────────────────────────────
+const enforceNonZeroCoverage = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "modality_element") continue;
+    let text: string = typeof section.balance_interpretation === "string" ? section.balance_interpretation : "";
+    if (!text) continue;
+
+    const lowerText = text.toLowerCase();
+    const collectMissing = (arr: any): Array<{ name: string; count: number }> => {
+      if (!Array.isArray(arr)) return [];
+      const missing: Array<{ name: string; count: number }> = [];
+      for (const item of arr) {
+        if (!item || typeof item.name !== "string" || typeof item.count !== "number") continue;
+        if (item.count < 1) continue;
+        const root = item.name.split(/[\s(]/)[0].toLowerCase();
+        // Match either the singular ("water") or plural ("waters") form, case-insensitive.
+        const re = new RegExp(`\\b${root}s?\\b`, "i");
+        if (!re.test(lowerText)) missing.push({ name: item.name, count: item.count });
+      }
+      return missing;
+    };
+
+    const missingElements = collectMissing(section.elements);
+    const missingModalities = collectMissing(section.modalities);
+    const missingPolarities = collectMissing(section.polarity);
+
+    const fragments: string[] = [];
+    const formatList = (items: Array<{ name: string; count: number }>): string =>
+      items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(" and ");
+    if (missingElements.length > 0) {
+      fragments.push(`Also present: ${formatList(missingElements)} planet${missingElements.reduce((a, b) => a + b.count, 0) === 1 ? "" : "s"}.`);
+    }
+    if (missingModalities.length > 0) {
+      fragments.push(`Modal balance also includes ${formatList(missingModalities)}.`);
+    }
+    if (missingPolarities.length > 0) {
+      fragments.push(`Polarity also includes ${formatList(missingPolarities)}.`);
+    }
+
+    if (fragments.length > 0) {
+      const trimmed = text.trim().replace(/\s+$/, "");
+      const sep = /[.!?]$/.test(trimmed) ? " " : ". ";
+      section.balance_interpretation = `${trimmed}${sep}${fragments.join(" ")}`;
+      console.info("[ask-astrology] balance_interpretation coverage enforced", {
+        added_elements: missingElements.map((i) => i.name),
+        added_modalities: missingModalities.map((i) => i.name),
+        added_polarities: missingPolarities.map((i) => i.name),
+      });
+    }
+  }
+};
+
+
   if (!parsedContent || typeof parsedContent !== "object" || Array.isArray(parsedContent) || !deterministicTiming) {
     return;
   }
