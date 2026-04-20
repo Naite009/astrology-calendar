@@ -82,6 +82,67 @@ const getCurrentDateKey = (value?: string) => {
   return new Date().toISOString().slice(0, 10);
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// LOCATION TITLE-CASE NORMALIZER (PERMANENT, UNIVERSAL)
+// Mirrors src/lib/locationFormat.ts. Edge functions cannot import from
+// src/, so the rule is duplicated here. ANY birth/relocation location
+// string that touches the AI prompt or the final JSON output MUST be
+// pushed through this normalizer first. Examples:
+//   "washington, dc"  → "Washington, DC"
+//   "new york, ny"    → "New York, NY"
+//   "LOS ANGELES, ca" → "Los Angeles, CA"
+// ─────────────────────────────────────────────────────────────────────────
+const LOC_LOWERCASE_CONNECTORS = new Set(["of", "the", "and", "de", "del", "la", "le", "y"]);
+const LOC_SHORT_UPPERCASE = new Set(["DC", "DR", "ST", "MT", "PT", "FT", "USA", "UK", "UAE"]);
+
+const normalizeLocationToken = (token: string, isFirstInPart: boolean): string => {
+  if (!token) return token;
+  const stripped = token.replace(/[^A-Za-z]/g, "");
+  if (stripped.length === 2) return token.toUpperCase();
+  if (stripped.length === 3 && LOC_SHORT_UPPERCASE.has(stripped.toUpperCase())) return token.toUpperCase();
+  const lower = token.toLowerCase();
+  if (!isFirstInPart && LOC_LOWERCASE_CONNECTORS.has(lower)) return lower;
+  return token.replace(/[A-Za-z]+/g, (run) => {
+    if (run.length === 2) return run.toUpperCase();
+    return run.charAt(0).toUpperCase() + run.slice(1).toLowerCase();
+  });
+};
+
+const formatLocationTitleCase = (raw: unknown): string => {
+  if (typeof raw !== "string") return "";
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  return trimmed
+    .split(",")
+    .map((part) => {
+      const tokens = part.trim().split(/\s+/);
+      return tokens.map((tok, i) => normalizeLocationToken(tok, i === 0)).join(" ");
+    })
+    .join(", ");
+};
+
+/**
+ * Normalize the `birth_info` string in the AI's JSON output. Format the
+ * AI emits is "Date · Time · Location" (or any sequence of fields joined
+ * by middle dots). The location is the LAST segment when present. We
+ * title-case ONLY the location token to avoid touching the date/time.
+ */
+const normalizeBirthInfoString = (birthInfo: unknown): string => {
+  if (typeof birthInfo !== "string" || !birthInfo.trim()) return "";
+  const parts = birthInfo.split(/\s*[·•|]\s*/);
+  if (parts.length === 0) return birthInfo;
+  // Heuristic: any part that contains a comma or only letters (no digits)
+  // is the location segment. Date and time segments contain digits.
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const looksLikeDateOrTime = /\d/.test(part);
+    if (!looksLikeDateOrTime) {
+      parts[i] = formatLocationTitleCase(part);
+    }
+  }
+  return parts.join(" · ");
+};
+
 // Mirrors the client-side guard in AskReadingRenderer.tsx — catches blanks,
 // whitespace-only strings, NBSP/zero-width chars, lone punctuation/dashes,
 // and common filler placeholders so the AI can never sneak an empty entry
