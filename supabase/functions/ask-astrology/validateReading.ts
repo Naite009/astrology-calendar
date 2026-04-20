@@ -531,17 +531,50 @@ const canonicalPlanet = (token: string): string | null => {
 
 const ctxSafePlanetNames = [...PLANET_NAMES];
 
+// Prefix tokens that mark a planet as belonging to a non-natal chart context.
+// When EITHER side of an aspect carries one of these prefixes, the claim is
+// NOT a natal-chart claim and must not be measured against the natal aspect
+// allowlist. These claims are computed by upstream engines (transit math,
+// SR engine, progressed engine, synastry/composite/davison) and are
+// authoritative — the AI is allowed to mention them freely.
+const NON_NATAL_PREFIX_RE =
+  /^(?:transiting|transit|sr|solar\s+return|progressed|composite|davison|synastry|partner|natal)\s+/i;
+
+const stripNonNatalPrefix = (token: string): { planet: string; isNonNatal: boolean } => {
+  const trimmed = token.replace(/\s+/g, " ").trim();
+  const m = trimmed.match(NON_NATAL_PREFIX_RE);
+  if (m) {
+    const rest = trimmed.slice(m[0].length).trim();
+    // "Natal X" by itself is still a natal claim — only treat as non-natal
+    // when the prefix is something OTHER than "natal".
+    const isNonNatal = !/^natal$/i.test(m[0].trim());
+    return { planet: rest, isNonNatal };
+  }
+  return { planet: trimmed, isNonNatal: false };
+};
+
 const checkAspectPair = (
   rawP1: string,
   rawAspect: string,
   rawP2: string,
   ctx: Ctx,
 ): { bad: boolean; phrase?: string; reason?: string } => {
-  const p1 = canonicalPlanet(rawP1);
-  const p2 = canonicalPlanet(rawP2);
+  const split1 = stripNonNatalPrefix(rawP1);
+  const split2 = stripNonNatalPrefix(rawP2);
+  const p1 = canonicalPlanet(split1.planet);
+  const p2 = canonicalPlanet(split2.planet);
   const canonicalAspect = ASPECT_ALIASES[rawAspect.toLowerCase()];
   if (!p1 || !p2 || !canonicalAspect) return { bad: false };
   if (p1 === p2) return { bad: false };
+
+  // If EITHER side is from a non-natal context (transit, SR, progressed, etc.),
+  // the claim is upstream-computed and authoritative. Do NOT validate against
+  // the natal-aspect allowlist — that would strip every legitimate transit/SR
+  // reference. The pre-computed transit-to-natal block in chartContext IS the
+  // ground truth for those, and the AI is given an explicit allowlist there.
+  if (split1.isNonNatal || split2.isNonNatal) {
+    return { bad: false };
+  }
 
   const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
   const phrase = `${p1} ${canonicalAspect} ${p2}`;
@@ -560,7 +593,13 @@ const collectBadAspectClaims = (
   sentence: string,
   ctx: Ctx,
 ): StripIssue[] => {
-  const planetsAlt = ctxSafePlanetNames.map((p) => p.replace(/\s/g, "\\s")).join("|");
+  // Allow optional non-natal prefix words ("SR", "Solar Return", "Transiting",
+  // "Transit", "Progressed", "Composite", "Davison", "Synastry", "Partner",
+  // "Natal") immediately before each planet name. The prefix is captured as
+  // part of the planet token so checkAspectPair can detect it.
+  const prefixAlt = "(?:SR|Solar\\s+Return|Transiting|Transit|Progressed|Composite|Davison|Synastry|Partner|Natal)\\s+";
+  const planetCore = ctxSafePlanetNames.map((p) => p.replace(/\s/g, "\\s")).join("|");
+  const planetsAlt = `(?:${prefixAlt})?(?:${planetCore})`;
   const aspectsAlt = Object.keys(ASPECT_ALIASES).join("|");
   const symbolPlanetsAlt = Object.keys(PLANET_SYMBOLS).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const symbolAspectsAlt = Object.keys(ASPECT_SYMBOLS).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
