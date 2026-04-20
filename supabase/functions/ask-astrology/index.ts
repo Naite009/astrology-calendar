@@ -2108,9 +2108,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
+        // Deterministic dedupe of duplicated paragraphs/sentences inside any
+        // timing entry's `interpretation` field (Pluto multi-pass copy-paste bug).
+        dedupeTimingInterpretations(parsedContent);
+
+        // Enforce that balance_interpretation mentions every non-zero element /
+        // modality / polarity. Appends a short coverage clause if the AI omitted any.
+        enforceNonZeroCoverage(parsedContent);
+
         // (Legacy single-field count corrector removed — validateReading() at the
         // end of this block now handles balance_interpretation along with every
         // other string field in the reading. Keeping both would double-log fixes.)
+
 
         // POST-GENERATION TRANSIT VERIFICATION: Ensure timing transits reference real natal points from chart data
         // Bug C fix: use sanitizedChartContext (matches what AI saw) instead of raw chartContext.
