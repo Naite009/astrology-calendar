@@ -840,12 +840,12 @@ const TIMING_LABEL_PATTERNS: RegExp[] = [
   /top\s+cities?\s+timing/i,
   /key\s+windows?/i,
   /strongest\s+windows?/i,
-  // PERMANENT: "What This Year Is Best For" is the last AI-written
-  // timing field. It keeps citing Jupiter windows in prose, which the
-  // natal-aspect validator then strips. Adding it here forces the
-  // deterministic transits[]-based override to handle it like the
-  // other timing fields, eliminating the Jupiter hallucination source.
-  /what\s+this\s+year\s+is\s+best\s+for/i,
+  // NOTE: "What This Year Is Best For" is intentionally NOT in this list.
+  // It is a 1–2 sentence AI-written plain-English summary of the year's
+  // relational theme — no aspect names, no dates. Aspect names that slip
+  // in are stripped by stripAspectPhrasesFromNonTimingSummaryItems, which
+  // already covers this label. Keeping it AI-written prevents it from
+  // duplicating "Best Windows" (both pulled from the same transits pool).
 ];
 
 const isTimingLabel = (label: string): boolean => {
@@ -1658,7 +1658,7 @@ Rules:
       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
       - "Pattern to Break": Name it bluntly. Example: "Stop treating mental chemistry as proof of compatibility — it's not."
-      - "What This Year Is Best For": Be decisive. Example: "This year is for learning to stay only where things are clear, not where they're exciting."
+      - "What This Year Is Best For": A 1–2 sentence plain-English summary of the overall relational theme for this year, based on the SR chart and current transits. NO aspect names (no "Jupiter trine Venus"), NO planet names, NO dates, NO month references. Just describe what the year FEELS like relationally. Example: "This year is for learning to stay only where things are clear, not where they're exciting — the pull toward intensity is strong, but quiet steadiness is what actually grows you." Dates belong only in Best Windows.
       - "Best Windows": Timing windows.
       - "Caution Windows": Timing windows.
       Do NOT stay safe or diplomatic. The user needs to hear the hard truth clearly. Every item must feel like advice they'd remember.
