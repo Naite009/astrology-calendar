@@ -1072,6 +1072,95 @@ const dedupeNarrativeParagraphs = (parsedContent: any, log: HygieneLog) => {
   if (touched > 0) log.push({ type: "narrative_dedup_summary", detail: { sections_touched: touched } });
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// SENTENCE-LEVEL REPETITION STRIPPER (BUG: same sentence emitted 4×
+// inside ONE paragraph in the Pluto-square window description)
+// ─────────────────────────────────────────────────────────────────────────
+// dedupeNarrativeParagraphs and dedupeWindowDescriptions handle
+// paragraph-level and description-level duplication. Neither catches
+// the case where a single string contains the SAME sentence repeated
+// back-to-back (model retry/template-loop bug). This pass walks every
+// long-form string field in the JSON and removes consecutive or
+// nearby duplicate sentences within the same string.
+const SENTENCE_DEDUPE_SAFE_KEYS = new Set([
+  "_validation", "_validation_log", "_validation_warning",
+  "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+  "_sr_house_copy_warning",
+  "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
+  "house", "sign", "degrees", "generated_date", "birth_info",
+  "subject", "question_type", "question_asked", "date_range",
+]);
+const normalizeSentenceForDedupe = (s: string): string =>
+  s.toLowerCase().replace(/\s+/g, " ").trim();
+const dedupeRepeatedSentences = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let stringsTouched = 0;
+  let sentencesRemoved = 0;
+  const examples: string[] = [];
+
+  const cleanString = (text: string): string => {
+    if (!text || text.length < 30) return text;
+    const sentences = splitSentencesForMeta(text);
+    if (sentences.length <= 1) return text;
+    const seen = new Map<string, number>();
+    const kept: string[] = [];
+    for (const s of sentences) {
+      const norm = normalizeSentenceForDedupe(s);
+      // Use first 120 chars as key — catches near-duplicates that vary
+      // only in trailing punctuation or whitespace.
+      const key = norm.length > 120 ? norm.slice(0, 120) : norm;
+      if (!key) continue;
+      // Skip very short fragments (likely connectors, not real sentences).
+      if (key.length < 20) {
+        kept.push(s);
+        continue;
+      }
+      const prev = seen.get(key) ?? 0;
+      // Keep only the FIRST occurrence of any sentence. Subsequent
+      // copies are dropped silently. (The 4× Pluto repetition collapses
+      // to a single copy.)
+      if (prev > 0) {
+        sentencesRemoved++;
+        if (examples.length < 5) examples.push(s.slice(0, 100));
+        continue;
+      }
+      seen.set(key, prev + 1);
+      kept.push(s);
+    }
+    return kept.join(" ").trim();
+  };
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SENTENCE_DEDUPE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const next = cleanString(val);
+        if (next !== val) {
+          (node as any)[key] = next;
+          stringsTouched++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  if (sentencesRemoved > 0) {
+    log.push({
+      type: "repeated_sentences_collapsed",
+      detail: { strings_touched: stringsTouched, sentences_removed: sentencesRemoved, examples },
+    });
+    console.info("[ask-astrology] repeated sentences collapsed", {
+      strings_touched: stringsTouched,
+      sentences_removed: sentencesRemoved,
+      examples,
+    });
+  }
+};
+
 const SIGN_NAMES = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const PLANET_NAMES_FOR_CROSSCHECK = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","North Node","South Node"];
 const ORDINAL_TO_NUMBER: Record<string, number> = {
