@@ -4434,6 +4434,19 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // the core forces that shape how you connect" — sentences
           // that talk ABOUT the reading rather than delivering content.
           stripMetaSentences(parsedContent, emissionLog);
+          // NEW (Defect 1): Rewrite stray third-person pronouns in 2nd-person
+          // readings so canned aspect interpretations ("Their drive runs
+          // into walls") become "Your drive runs into walls".
+          rewriteThirdPersonPronouns(parsedContent, emissionLog);
+          // NEW (Defect 2): Detect the SAME aspect interpretation appearing
+          // verbatim across two different narrative sections and drop the
+          // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
+          // so identical post-rewrite copies are also caught.
+          dedupeAspectsAcrossSections(parsedContent, emissionLog);
+          // NEW (Defect 3): Replace relationship-domain phrases ("romanticizing
+          // people") that leaked into career/money/health/relocation readings
+          // with domain-appropriate wording.
+          stripOffTopicDomainPhrases(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
