@@ -628,6 +628,13 @@ const buildEmptySummaryFallback = (
   // description = soft prose). This prevents [needs review] from
   // appearing when we still have valid window date data.
   if (allTransits.length === 0) {
+    // CRITICAL: never let Caution / negative-tone labels recycle the
+    // shared windows[] pool — that pool is undifferentiated and would
+    // produce identical date ranges to Best Windows. Negative tone gets
+    // a deterministic plain sentence instead.
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
     const windowDateRanges: string[] = [];
     for (const section of parsedContent.sections) {
       if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
