@@ -813,8 +813,16 @@ const buildEmptySummaryFallback = (
   }
 
   if (phrases.length === 0) {
-    // Negative tone with no transits at all — still emit a tone-appropriate sentence.
+    // Negative tone with no transits in pool — re-check windows[] for hard
+    // outer-planet aspects before emitting any canned line. Same fix as the
+    // earlier branches: the canned string must NEVER fire when sibling
+    // windows[] data names hard outer-planet transits.
     if (!tone.positive) {
+      const hardPhrases = dedupePhrases(collectHardWindowPhrases());
+      if (hardPhrases.length > 0) {
+        const joined = hardPhrases.length === 1 ? hardPhrases[0] : `${hardPhrases[0]} and ${hardPhrases[1]}`;
+        return `${joined} are the periods that call for ${tone.outcome} based on current transits.`;
+      }
       return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
     }
     return null;
@@ -3190,6 +3198,33 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // shipped to Replit always has correct capitalization.
         if (typeof parsedContent.birth_info === "string") {
           parsedContent.birth_info = normalizeBirthInfoString(parsedContent.birth_info);
+        }
+
+        // ────────────────────────────────────────────────────────────
+        // EMISSION HYGIENE PASSES (added in response to downstream
+        // bug report). These run last so every prior rebuild/strip
+        // pass has already touched the content. They populate
+        // parsedContent._validation_log with a record of every
+        // rewrite, drop, or merge so downstream consumers (Replit
+        // PDF, future apps) can correlate corrections.
+        // ────────────────────────────────────────────────────────────
+        try {
+          const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
+          dedupeTimingArrays(parsedContent, emissionLog);
+          stripPlaceholderLeaks(parsedContent, emissionLog);
+          dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
+          if (emissionLog.length > 0) {
+            (parsedContent as any)._validation_log = [
+              ...((parsedContent as any)._validation_log ?? []),
+              ...emissionLog,
+            ];
+            console.info("[ask-astrology] emission hygiene applied", {
+              count: emissionLog.length,
+              types: Array.from(new Set(emissionLog.map((e) => e.type))),
+            });
+          }
+        } catch (hygieneErr) {
+          console.error("[ask-astrology] emission hygiene threw:", hygieneErr);
         }
       }
     } catch (parseError) {
