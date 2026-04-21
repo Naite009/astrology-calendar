@@ -490,6 +490,13 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       const modalitiesAll = collectAll(section.modalities);
       const polaritiesAll = collectAll(section.polarity);
 
+      // Pairs of elements where naming the secondary actually adds
+      // information rather than restating the dominant. We only weave
+      // the secondary into the lead sentence when it lives in this set.
+      const SECOND_ELEMENT_PAIR: Record<string, true> = {
+        Fire: true, Earth: true, Air: true, Water: true,
+      };
+
       // ─────────────────────────────────────────────────────────────────
       // ANALYTICAL PROSE LIBRARY — describes the lived behavior of each
       // element/modality/polarity dominance and absence so the rewrite
