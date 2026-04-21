@@ -28,3 +28,5 @@ Sections must:
 - Close on the last real claim, not on a meta summary
 
 Implemented in `supabase/functions/ask-astrology/index.ts` SYSTEM_PROMPT (NO META SENTENCES — HARD RULE block, immediately after COMPRESSION MANDATE).
+
+Deterministic backstop: `stripMetaSentences()` in the same file runs as part of the emission hygiene pipeline. It walks every narrative_section body, summary_box value, and bullet/list item, splits into sentences, and drops any sentence matching META_SENTENCE_PATTERNS — including "the rest of this reading...", "these are the core forces that...", "this reading shows...", "let's dive into...", and the full forbidden-pattern list above. Removals are recorded in `parsedContent._validation_log` with type `meta_sentences_stripped`.

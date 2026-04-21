@@ -1182,6 +1182,321 @@ const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// PHANTOM ASPECT GUARD (defense in depth)
+// ─────────────────────────────────────────────────────────────────────────
+// stripAspectPhrasesFromNonTimingSummaryItems() already nukes whole
+// sentences containing aspect phrases from the four behavioral strategy
+// items. But the Lauren Newman payload showed two phantom aspects
+// ("Jupiter trine Venus", "Jupiter trine Ascendant") shipping in
+// summary_box.items, which means either (a) the surrounding sentence
+// was structured in a way the regex's "(?:to|with|the\s+)?" tail
+// missed, or (b) the value was a single inline phrase rather than a
+// full sentence. This pass runs LAST in the hygiene block and walks
+// EVERY string field in the JSON. For each "<Planet> <aspect>
+// <Planet>" phrase it finds, it cross-checks against the verified
+// natal-aspect allowlist (the same allowlist passed to the AI). If
+// the phrase is NOT verified, it surgically rewrites that single
+// phrase into neutral language ("[the chart's <planet1>/<planet2>
+// dynamic]") instead of nuking the whole sentence. This guarantees
+// the JSON never ships a factually-wrong natal-aspect claim while
+// preserving the rest of the surrounding prose.
+// (PHANTOM_ASPECT_SKIP_KEYS below lists every JSON key whose string
+// values must NOT be touched — structural metadata, ID-like fields,
+// and pre-validated tokens.)
+const PHANTOM_ASPECT_SKIP_KEYS = new Set([
+  "_validation", "_validation_log", "_validation_warning",
+  "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+  "_sr_house_copy_warning",
+  "type", "label", "planet", "aspect", "natal_point", "symbol",
+  "tag", "house", "sign", "degrees", "generated_date", "birth_info",
+  "subject", "question_type", "question_asked", "name",
+  "first_applying_date", "separating_end_date", "exact_hit_date",
+  "date_range", "dateRange",
+]);
+
+const buildAllowedAspectKeySet = (allowedAspects: string[]): Set<string> => {
+  const out = new Set<string>();
+  for (const phrase of allowedAspects) {
+    // Phrase format from listAllowedNatalAspects: "<P1> <aspect> <P2>"
+    const parts = phrase.trim().split(/\s+/);
+    if (parts.length < 3) continue;
+    // Aspect word is the middle token; planets may be multi-word
+    // ("North Node"). The validator already canonicalizes pair order
+    // alphabetically, so we'll do the same here for keying.
+    const aspectIdx = parts.findIndex((tok) =>
+      /^(conjunct|conjunction|sextile|square|trine|opposite|opposition|quincunx|semisextile|semisquare|sesquiquadrate)$/i.test(tok)
+    );
+    if (aspectIdx < 0) continue;
+    const p1 = parts.slice(0, aspectIdx).join(" ");
+    const p2 = parts.slice(aspectIdx + 1).join(" ");
+    const aspect = parts[aspectIdx].toLowerCase();
+    const aspectCanonical = aspect === "conjunction" ? "conjunct"
+      : aspect === "opposite" ? "opposition"
+      : aspect;
+    const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
+    out.add(`${pair[0].toLowerCase()}|${aspectCanonical}|${pair[1].toLowerCase()}`);
+  }
+  return out;
+};
+
+const stripPhantomAspectsEverywhere = (
+  parsedContent: any,
+  allowedAspectKeys: Set<string>,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  if (allowedAspectKeys.size === 0) return; // no allowlist → can't safely judge
+
+  const planetCore = SUMMARY_PLANET_NAMES.map((p) => p.replace(/\s/g, "\\s")).join("|");
+  const prefixAlt = "(?:SR|Solar\\s+Return|Transiting|Transit|Progressed|Composite|Davison|Synastry|Partner|Natal|the|your|my|his|her|their)\\s+";
+  const planetsAlt = `(?:${prefixAlt})?(?:${planetCore})`;
+  const aspectsAlt = SUMMARY_ASPECT_WORDS.join("|");
+  const phraseRe = new RegExp(
+    `\\b(${planetsAlt})(?:'s|\\s+is|\\s+sits|\\s*,)?\\s+(${aspectsAlt})\\s+(?:to|with|the\\s+)?\\s*(?:the\\s+)?(${planetsAlt})\\b`,
+    "gi",
+  );
+
+  const stripPrefix = (raw: string): string => {
+    // Drop any leading prefix word the regex captured (the/your/my/etc)
+    // so we end up with a bare planet name.
+    const tokens = raw.trim().split(/\s+/);
+    while (tokens.length > 1 && /^(SR|Solar|Return|Transiting|Transit|Progressed|Composite|Davison|Synastry|Partner|Natal|the|your|my|his|her|their)$/i.test(tokens[0])) {
+      tokens.shift();
+    }
+    return tokens.join(" ");
+  };
+  const canonicalAspect = (raw: string): string => {
+    const lower = raw.toLowerCase();
+    if (lower === "conjunction") return "conjunct";
+    if (lower === "opposite") return "opposition";
+    return lower;
+  };
+
+  let phantomCount = 0;
+  const examples: string[] = [];
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [fieldKey, val] of Object.entries(node)) {
+      if (PHANTOM_ASPECT_SKIP_KEYS.has(fieldKey)) continue;
+      if (typeof val === "string") {
+        if (!val || val.length < 8) continue;
+        let next = val;
+        let touched = false;
+        next = next.replace(phraseRe, (match, rawP1, rawAspect, rawP2) => {
+          const p1 = stripPrefix(String(rawP1));
+          const p2 = stripPrefix(String(rawP2));
+          if (!p1 || !p2 || p1.toLowerCase() === p2.toLowerCase()) return match;
+          const aspect = canonicalAspect(String(rawAspect));
+          const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
+          const aspectKey = `${pair[0].toLowerCase()}|${aspect}|${pair[1].toLowerCase()}`;
+          if (allowedAspectKeys.has(aspectKey)) return match; // verified — leave alone
+          phantomCount++;
+          if (examples.length < 5) examples.push(match);
+          touched = true;
+          // Surgical replacement: drop the aspect claim, keep the
+          // sentence. "Jupiter trine Venus shows X" → "the
+          // Jupiter–Venus dynamic shows X".
+          return `the ${p1}–${p2} dynamic`;
+        });
+        if (touched) {
+          // Tidy up double spaces / orphan punctuation from the rewrite.
+          next = next.replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
+          (node as any)[fieldKey] = next;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  if (phantomCount > 0) {
+    log.push({
+      type: "phantom_aspect_rewritten",
+      detail: { count: phantomCount, examples },
+    });
+    console.warn("[ask-astrology] phantom aspect guard rewrote claims", {
+      count: phantomCount,
+      examples,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// META / FILLER SENTENCE STRIPPER
+// ─────────────────────────────────────────────────────────────────────────
+// Removes self-referential scaffolding sentences like "the rest of this
+// reading shows you exactly why" or "these are the core forces that
+// shape how you connect" — sentences that talk ABOUT the reading rather
+// than delivering content. These match the prompt's "NO META SENTENCES
+// — HARD RULE" but the model occasionally lapses, so we enforce
+// deterministically before emission.
+const META_SENTENCE_PATTERNS: RegExp[] = [
+  // "this reading" / "this report" / "this analysis" + verb
+  /\bthis\s+(reading|report|analysis|section|document)\b/i,
+  // "the rest of this/the document/reading"
+  /\bthe\s+rest\s+of\s+(this|the)\s+(reading|report|document|analysis|section)\b/i,
+  // "these are the (core|key|main) (forces|themes|patterns) that ..."
+  /^\s*these\s+are\s+the\s+(core|key|main|primary|major)\s+\w+\s+that\b/i,
+  // "below" / "above" referencing the document layout
+  /\b(below|above)\s*,?\s*(we|you'?ll|you\s+will|i)\s+(break|see|find|explore|cover|discuss)\b/i,
+  // Classic prompt-scaffold openers
+  /^\s*(let'?s|first,?\s+let'?s|now\s+let'?s)\s+(dive|look|consider|turn|begin|start|explore)\b/i,
+  /^\s*(in\s+this|in\s+the\s+(?:next|following))\s+section\b/i,
+  /^\s*(as\s+we'?ll\s+see|as\s+you'?ll\s+see)\b/i,
+  /^\s*(now\s+turning\s+to|before\s+we\s+continue|before\s+we\s+move\s+on)\b/i,
+  /^\s*(in\s+conclusion|to\s+wrap\s+up|to\s+summarize|in\s+summary)\b/i,
+  /^\s*here'?s\s+what\s+your\s+chart\s+says\s+about\b/i,
+  /^\s*the\s+following\s+(addresses|explains|explores|covers)\b/i,
+  // "we'll explore / we'll look at / we'll cover"
+  /\bwe'?ll\s+(explore|look\s+at|cover|discuss|dive\s+into)\b/i,
+  // Sentences that ONLY describe what the reading does, not what the chart says
+  /^\s*(this|that)\s+(reading|report|analysis)\s+(shows?|covers?|explains?|describes?|breaks\s+down)\b/i,
+];
+
+const splitSentencesForMeta = (text: string): string[] => {
+  if (!text) return [];
+  return text.split(/(?<=[.!?])\s+(?=[A-Z"'(])/).map((s) => s.trim()).filter(Boolean);
+};
+
+const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let removed = 0;
+  const examples: string[] = [];
+
+  const cleanString = (text: string): string => {
+    if (!text || text.length < 10) return text;
+    const sentences = splitSentencesForMeta(text);
+    if (sentences.length === 0) return text;
+    const kept: string[] = [];
+    for (const s of sentences) {
+      const isMeta = META_SENTENCE_PATTERNS.some((re) => re.test(s));
+      if (isMeta) {
+        removed++;
+        if (examples.length < 5) examples.push(s);
+        continue;
+      }
+      kept.push(s);
+    }
+    return kept.join(" ").trim();
+  };
+
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+
+    // Narrative bodies: body / content / text
+    for (const bodyKey of ["body", "content", "text"]) {
+      if (typeof (section as any)[bodyKey] === "string") {
+        const next = cleanString((section as any)[bodyKey]);
+        if (next !== (section as any)[bodyKey]) (section as any)[bodyKey] = next;
+      }
+    }
+
+    // summary_box items
+    if (section.type === "summary_box" && Array.isArray(section.items)) {
+      for (const item of section.items) {
+        if (!item || typeof item !== "object") continue;
+        const valueKey = typeof item.value === "string" ? "value"
+          : typeof item.text === "string" ? "text"
+          : null;
+        if (!valueKey) continue;
+        const next = cleanString(item[valueKey]);
+        if (next !== item[valueKey]) item[valueKey] = next;
+      }
+    }
+
+    // narrative_section bullets / list items
+    if (Array.isArray((section as any).bullets)) {
+      (section as any).bullets = (section as any).bullets.map((b: any) => {
+        if (typeof b === "string") return cleanString(b);
+        if (b && typeof b === "object" && typeof b.text === "string") {
+          return { ...b, text: cleanString(b.text) };
+        }
+        return b;
+      });
+    }
+  }
+
+  if (removed > 0) {
+    log.push({ type: "meta_sentences_stripped", detail: { count: removed, examples } });
+    console.info("[ask-astrology] meta/filler sentences stripped", { removed, examples });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// DUPLICATE WINDOW DESCRIPTION DETECTOR
+// ─────────────────────────────────────────────────────────────────────────
+// dedupeTimingArrays() above merges windows with byte-identical LABELS.
+// The Lauren Newman payload exposed a different problem: distinct
+// windows (different labels, different date ranges) shipping with
+// byte-identical DESCRIPTION prose — e.g. the same "Pluto squaring
+// this part of your chart..." paragraph attached to three separate
+// windows. Each window is a distinct astrological pass and deserves
+// its own description, OR the system should explicitly note that one
+// transit has multiple passes and emit the description once.
+//
+// Strategy: group windows by normalized description text. For groups
+// of 2+ sharing the same description:
+//   - Keep the first window unchanged.
+//   - For subsequent windows, replace the description with a short
+//     pointer line ("Same transit pattern as the [original-label]
+//     window — see that entry for the interpretation.") and tag the
+//     window with `_duplicate_of` for downstream consumers.
+// This avoids visible copy-paste while preserving the distinct date
+// range so the timeline view still shows every pass.
+const normalizeForDescDedupe = (s: string): string =>
+  s.toLowerCase().replace(/\s+/g, " ").trim();
+
+const dedupeWindowDescriptions = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let dedupedCount = 0;
+  const groupExamples: Array<{ description_preview: string; window_count: number }> = [];
+
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
+
+    // Group windows by normalized description text
+    const groups = new Map<string, Array<{ idx: number; window: any }>>();
+    section.windows.forEach((w: any, idx: number) => {
+      const desc = String(w?.description || "").trim();
+      if (desc.length < 40) return; // skip short / boilerplate
+      const key = normalizeForDescDedupe(desc);
+      if (!key) return;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push({ idx, window: w });
+    });
+
+    for (const [, members] of groups) {
+      if (members.length < 2) continue;
+      // Members[0] keeps its full description. The rest get rewritten.
+      const original = members[0].window;
+      const originalLabel = String(original?.label || "").trim() || "earlier window";
+      const pointer = `Same transit pattern as the "${originalLabel}" window — see that entry for the interpretation. This is an additional pass of the same transit, with peak dates in the range above.`;
+      for (let i = 1; i < members.length; i++) {
+        const dup = members[i].window;
+        dup._duplicate_of = originalLabel;
+        dup.description = pointer;
+        dedupedCount++;
+      }
+      if (groupExamples.length < 3) {
+        const preview = String(original?.description || "").slice(0, 80);
+        groupExamples.push({ description_preview: preview, window_count: members.length });
+      }
+    }
+  }
+
+  if (dedupedCount > 0) {
+    log.push({
+      type: "duplicate_window_descriptions_collapsed",
+      detail: { dedupedCount, groups: groupExamples },
+    });
+    console.info("[ask-astrology] duplicate window descriptions collapsed", { dedupedCount, groups: groupExamples });
+  }
+};
+
 const checkSRHouseNumberCopy = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   let natalHouses: Map<string, number> | null = null;
@@ -3644,6 +3959,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         try {
           const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
           dedupeTimingArrays(parsedContent, emissionLog);
+          // Collapse duplicate window descriptions before placeholder strip
+          // so the second/third copies become short pointer lines instead
+          // of repeating the full paragraph downstream.
+          dedupeWindowDescriptions(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
           // Cross-check planet placements in prose against the natal
           // placement_table; strip relationship leaks from relocation
@@ -3653,6 +3972,22 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           crossCheckPlanetPlacements(parsedContent, emissionLog);
           stripRelationshipLeaksFromRelocation(parsedContent, emissionLog);
           dedupeNarrativeParagraphs(parsedContent, emissionLog);
+          // Phantom-aspect guard: surgically rewrites any
+          // "<Planet> <aspect> <Planet>" phrase that is NOT in the
+          // verified natal-aspect allowlist. Defense in depth on top
+          // of the earlier sentence-level strip.
+          try {
+            const allowedAspects = listAllowedNatalAspects(sanitizedChartContext || undefined);
+            const allowedAspectKeys = buildAllowedAspectKeySet(allowedAspects);
+            stripPhantomAspectsEverywhere(parsedContent, allowedAspectKeys, emissionLog);
+          } catch (phantomErr) {
+            console.error("[ask-astrology] phantom aspect guard threw:", phantomErr);
+          }
+          // Strip self-referential / scaffolding sentences like "the
+          // rest of this reading shows you exactly why" or "these are
+          // the core forces that shape how you connect" — sentences
+          // that talk ABOUT the reading rather than delivering content.
+          stripMetaSentences(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
