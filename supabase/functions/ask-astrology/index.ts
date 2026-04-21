@@ -633,31 +633,69 @@ const PRONOUN_REWRITE_SAFE_KEYS = new Set<string>([
   "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "date_range", "dateRange",
 ]);
+// Hard-coded rewrites for the exact 4 boilerplate strings flagged by the
+// Replit gate audit on Lauren Newman's career reading. These canned aspect
+// interpretations were being pasted with third-person pronouns intact AND
+// duplicated across 2+ sections. We rewrite them deterministically to
+// second-person before any other pronoun pass runs.
+const CAREER_BOILERPLATE_REWRITES: Array<{ pattern: RegExp; replace: string }> = [
+  {
+    pattern: /Their reach and their grasp don'?t (quite )?match[^.]*?(\.|$)/gi,
+    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity.",
+  },
+  {
+    pattern: /Their drive runs into walls[^.]*?(\.|$)/gi,
+    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out.",
+  },
+  {
+    pattern: /They can outlast forces that break other people[^.]*?(\.|$)/gi,
+    replace: "you can outlast forces that break other people; pressure makes you more focused, not less.",
+  },
+  {
+    pattern: /They communicate carefully and people take them seriously when they do speak[^.]*?(\.|$)/gi,
+    replace: "you communicate carefully and when you do speak, people take you seriously.",
+  },
+];
+const applyCareerBoilerplateRewrites = (text: string): string => {
+  let s = text;
+  for (const { pattern, replace } of CAREER_BOILERPLATE_REWRITES) {
+    s = s.replace(pattern, replace);
+  }
+  return s;
+};
+
 const rewriteSentencePronouns = (sentence: string): string => {
-  let s = sentence;
+  // Run hard-coded boilerplate rewrites first — guaranteed hits for the 4
+  // customer-flagged stock strings.
+  let s = applyCareerBoilerplateRewrites(sentence);
   // Leading-clause swaps: "Their X" / "They X" at start of sentence or after
-  // an em-dash / colon / semicolon (these are the framings the AI library
-  // emits, e.g. "Mars square Saturn — Their drive runs into walls…").
+  // an em-dash / dash / colon / semicolon (these are the framings the AI
+  // library emits, e.g. "Mars square Saturn — Their drive runs into walls…").
   s = s.replace(
-    /(^|[—:;]\s+)(Their)\b/g,
-    (_m, lead, _w) => `${lead}Your`,
+    /(^|[—–\-:;]\s+)(Their)\b/g,
+    (_m, lead) => `${lead}Your`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(their)\b/g,
-    (_m, lead, _w) => `${lead}your`,
+    /(^|[—–\-:;]\s+)(their)\b/g,
+    (_m, lead) => `${lead}your`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(They)\b/g,
+    /(^|[—–\-:;]\s+)(They)\b/g,
     (_m, lead) => `${lead}You`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(they)\b/g,
+    /(^|[—–\-:;]\s+)(they)\b/g,
     (_m, lead) => `${lead}you`,
   );
+  // Object-pronoun swap: "...take them seriously" → "...take you seriously".
+  // Only swap "them" after verbs that nearly always refer back to the
+  // reading's subject in a career context.
+  s = s.replace(
+    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know)\s+them\b/gi,
+    (_m, verb) => `${verb} you`,
+  );
   // Verb-agreement fixups for the most common patterns the library emits.
-  // "you keeps" → "you keep", "you learns" → "you learn", etc. We only
-  // touch verbs that immediately follow a freshly-rewritten "you/You".
-  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees)\b/g,
+  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
     (_m, pron, verb) => {
       const map: Record<string, string> = {
         keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
@@ -665,18 +703,22 @@ const rewriteSentencePronouns = (sentence: string): string => {
         takes: "take", speaks: "speak", hits: "hit", breaks: "break",
         focuses: "focus", matches: "match", grasps: "grasp", reaches: "reach",
         works: "work", finds: "find", holds: "hold", builds: "build",
-        makes: "make", sees: "see",
+        makes: "make", sees: "see", wants: "want", needs: "need",
+        knows: "know", feels: "feel", tries: "try", thinks: "think",
+        seems: "seem", moves: "move", stays: "stay", goes: "go",
+        comes: "come", gives: "give", asks: "ask", says: "say",
+        tells: "tell", shows: "show", brings: "bring", carries: "carry",
+        pays: "pay", earns: "earn", loses: "lose", wins: "win",
+        leads: "lead", follows: "follow",
       };
       return `${pron} ${map[verb] ?? verb}`;
     });
-  // "you is" → "you are", "you was" → "you were"
   s = s.replace(/\b(you|You)\s+is\b/g, (_m, p) => `${p} are`);
   s = s.replace(/\b(you|You)\s+was\b/g, (_m, p) => `${p} were`);
-  // "you has" → "you have"
   s = s.replace(/\b(you|You)\s+has\b/g, (_m, p) => `${p} have`);
-  // "you doesn't" → "you don't", "you wasn't" → "you weren't"
-  s = s.replace(/\b(you|You)\s+doesn't\b/g, (_m, p) => `${p} don't`);
-  s = s.replace(/\b(you|You)\s+wasn't\b/g, (_m, p) => `${p} weren't`);
+  s = s.replace(/\b(you|You)\s+doesn'?t\b/g, (_m, p) => `${p} don't`);
+  s = s.replace(/\b(you|You)\s+wasn'?t\b/g, (_m, p) => `${p} weren't`);
+  s = s.replace(/\b(you|You)\s+hasn'?t\b/g, (_m, p) => `${p} haven't`);
   return s;
 };
 const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
@@ -698,7 +740,10 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
         if (val.length < 10) continue;
         // Quick reject: if the string contains no third-person pronoun
         // candidates at all, skip the expensive sentence-split.
-        if (!/\b(They|they|Their|their)\b/.test(val)) continue;
+        if (
+          !/\b(They|they|Their|their|Them|them)\b/.test(val) &&
+          !CAREER_BOILERPLATE_REWRITES.some(r => new RegExp(r.pattern.source, "i").test(val))
+        ) continue;
         const sentences = splitSentencesForMeta(val);
         let changed = false;
         const rewritten = sentences.map((sent) => {
@@ -3161,6 +3206,17 @@ SR LOVE ACTIVATION STYLE:
   8. modality_element — "Natal Elemental & Modal Balance"
   9. summary_box — "Strategy Summary" with items: "Ideal Field", "Ideal Work Style", "When to Act", "What to Avoid"
 
+  CAREER PROSE QUALITY RULE (NON-NEGOTIABLE — applies to EVERY narrative_section in a career reading, especially "Your Career Foundation", "Hidden Strengths", "11th House and Networking", "The Growth Edge"):
+
+  (a) STRICT 2ND PERSON. Every sentence must address the subject as "you" / "your". NEVER use "they", "their", "them" to refer to the subject. FORBIDDEN sentence patterns (these are the exact stock phrases to NEVER emit): "Their reach and their grasp don't match", "Their drive runs into walls", "They can outlast forces", "They communicate carefully and people take them seriously". REQUIRED rewrites of those exact aspects: "Sun quincunx Jupiter — your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity." / "Mars square Saturn — your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out." / "Saturn sextile Pluto — you can outlast forces that break other people; pressure makes you more focused, not less." / "Mercury sextile Saturn — you communicate carefully and when you do speak, people take you seriously."
+
+  (b) EACH ASPECT APPEARS IN AT MOST ONE SECTION. If Mars square Saturn lands hardest in Career Foundation, write it there and there only. Do NOT also paste it into Caution Zones, Hidden Strengths, or The Growth Edge. If a second section needs to reference the same aspect, write a SECTION-SPECIFIC framing (different verbs, different example, different angle) — never copy the sentence.
+
+  (c) NO RELATIONSHIP-DOMAIN PHRASES. Career readings must never contain: "romanticizing people", "idealizing your partner", "in your love life", "in love and friendship", "your romantic life", "overgiving in love". For Venus-Jupiter aspects in a career context, talk about: undervaluing your output, vague compensation arrangements, generosity at work, overpromising on deliverables. The astronomy is the same as a relationship reading; the framing is entirely different.
+
+  (d) NO SECTION TITLES OR PROSE MAY USE "DNA", "BLUEPRINT", "CONFIGURATION". Use "Foundation", "Core", "Pattern" instead.
+
+
   CAREER TRANSIT FRAMING RULE (MANDATORY): For career readings, EVERY transit description in the timing_section MUST be framed exclusively through the lens of career, work, professional identity, ambition, public visibility, and professional contribution. ABSOLUTELY FORBIDDEN in career transit entries: any language about relocation, where to live, where you're headed geographically, "settling in," "moving," "home base," "place," cities, or physical locations. FORBIDDEN transit labels in career: "SETTLE-IN", "MOVE-WINDOW", "RELOCATION WINDOW" — these are relocation labels and must NEVER appear in a career reading. Use career-appropriate labels instead: "OPPORTUNITY WINDOW", "LAUNCH WINDOW", "CONSOLIDATION", "PIVOT POINT", "VISIBILITY PEAK", "RESTRUCTURE", "RECOGNITION WINDOW". Examples of correct career framing: Saturn conjunct natal Sun = professional identity consolidation, commitment to long-term career structure, the moment your work defines who you become. Neptune square natal Moon = clarity of direction in work, dissolving outdated role identities, intuitive recalibration of what your career should feel like. Pluto trine natal Mars = capacity to act decisively on ambition, executive power, ability to push major professional moves through. Jupiter trine natal Sun = expansion of professional identity, recognition window, the year your work gets seen at a new scale.
 
   CAREER TRANSIT COMPLETENESS — JUPITER TO 10TH/MC/11TH MANDATORY: For career readings, the timing_section "transits" array MUST include a standalone entry for EVERY Jupiter transit (conjunction, sextile, square, trine, opposition) to: (a) any planet in the natal 10th house, (b) the MC ruler, (c) the natal Sun (always career-relevant), (d) any planet in the natal 11th house, and (e) the MC degree itself, that occurs within the 18-month window. These are the highest-priority career transits and MUST NEVER appear ONLY in the summary_box or narrative — each one requires its own dedicated entry with exact degrees, date range, and career-framed interpretation. If you mention a Jupiter-to-career-point transit anywhere in the reading (summary, narrative, Career Foundation section), it MUST exist as its own timing entry. Jupiter trine natal Sun in particular is almost always the single most important career transit when present and must be treated as a headline window.
@@ -3175,7 +3231,7 @@ SR LOVE ACTIVATION STYLE:
 
 - For question_type "health": Use this EXACT section order:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Your Vitality Blueprint" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
+  2. narrative_section — "Your Vitality Foundation" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
   3. narrative_section — "Stress Points & Vulnerabilities" (6th house for chronic patterns, 12th house for hidden drains, Saturn for structural weaknesses, any stelliums creating overload)
   4. narrative_section — "Healing & Recovery" (Chiron sign/house for wound-to-gift, Neptune for intuition/spiritual healing, Jupiter for where the body recovers best)
   5. city_comparison — "Best Locations for Wellness" (at least 4 cities where Moon IC, Venus ASC, or Jupiter ASC lines support vitality) — ONLY if astrocartography data is available and location is relevant to the question
