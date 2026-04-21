@@ -531,13 +531,18 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
           weak: "without much Mutable, pivoting feels harder than it looks; they prefer one path and one plan",
         },
       };
+      // POLARITY_PROSE describes the SURFACE expression only. Wording is
+      // intentionally qualified ("on the surface", "tends to") because a
+      // Yang-dominant planet count can still sit with strong inward pull
+      // from 12th-house emphasis, a private Moon, Pisces stelliums, etc.
+      // Never write the polarity line as an absolute personality claim.
       const POLARITY_PROSE: Record<string, string> = {
-        Yang: "energy moves outward by default — they assert, initiate, and process by doing",
-        Active: "energy moves outward by default — they assert, initiate, and process by doing",
-        Masculine: "energy moves outward by default — they assert, initiate, and process by doing",
-        Yin: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
-        Receptive: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
-        Feminine: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
+        Yang: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
+        Active: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
+        Masculine: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
+        Yin: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
+        Receptive: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
+        Feminine: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
       };
 
       const sentences: string[] = [];
