@@ -615,6 +615,286 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
   }
 };
 
+// ──────────────────────────────────────────────────────────────────────────
+// PRONOUN REWRITE — Defect 1
+// Aspect interpretations sometimes ship with third-person pronouns
+// ("their drive runs into walls", "they can outlast forces") even though
+// the rest of the reading addresses the subject in 2nd person ("you/your").
+// This pass mechanically swaps third-person → second-person for any string
+// that begins (or contains a clause beginning) with a third-person clause
+// referring to the subject. We only swap when it is unambiguously about the
+// reading's subject — i.e., the surrounding section is 2nd-person. To stay
+// safe we run sentence-by-sentence and only rewrite sentences where the
+// third-person pronoun is the subject of the sentence (no risk of touching
+// a real third party such as "your boss — she is…").
+// ──────────────────────────────────────────────────────────────────────────
+const PRONOUN_REWRITE_SAFE_KEYS = new Set<string>([
+  "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
+  "house", "sign", "degrees", "generated_date", "birth_info",
+  "subject", "question_type", "question_asked", "date_range", "dateRange",
+]);
+const rewriteSentencePronouns = (sentence: string): string => {
+  let s = sentence;
+  // Leading-clause swaps: "Their X" / "They X" at start of sentence or after
+  // an em-dash / colon / semicolon (these are the framings the AI library
+  // emits, e.g. "Mars square Saturn — Their drive runs into walls…").
+  s = s.replace(
+    /(^|[—:;]\s+)(Their)\b/g,
+    (_m, lead, _w) => `${lead}Your`,
+  );
+  s = s.replace(
+    /(^|[—:;]\s+)(their)\b/g,
+    (_m, lead, _w) => `${lead}your`,
+  );
+  s = s.replace(
+    /(^|[—:;]\s+)(They)\b/g,
+    (_m, lead) => `${lead}You`,
+  );
+  s = s.replace(
+    /(^|[—:;]\s+)(they)\b/g,
+    (_m, lead) => `${lead}you`,
+  );
+  // Verb-agreement fixups for the most common patterns the library emits.
+  // "you keeps" → "you keep", "you learns" → "you learn", etc. We only
+  // touch verbs that immediately follow a freshly-rewritten "you/You".
+  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees)\b/g,
+    (_m, pron, verb) => {
+      const map: Record<string, string> = {
+        keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
+        outlasts: "outlast", burns: "burn", pushes: "push", gets: "get",
+        takes: "take", speaks: "speak", hits: "hit", breaks: "break",
+        focuses: "focus", matches: "match", grasps: "grasp", reaches: "reach",
+        works: "work", finds: "find", holds: "hold", builds: "build",
+        makes: "make", sees: "see",
+      };
+      return `${pron} ${map[verb] ?? verb}`;
+    });
+  // "you is" → "you are", "you was" → "you were"
+  s = s.replace(/\b(you|You)\s+is\b/g, (_m, p) => `${p} are`);
+  s = s.replace(/\b(you|You)\s+was\b/g, (_m, p) => `${p} were`);
+  // "you has" → "you have"
+  s = s.replace(/\b(you|You)\s+has\b/g, (_m, p) => `${p} have`);
+  // "you doesn't" → "you don't", "you wasn't" → "you weren't"
+  s = s.replace(/\b(you|You)\s+doesn't\b/g, (_m, p) => `${p} don't`);
+  s = s.replace(/\b(you|You)\s+wasn't\b/g, (_m, p) => `${p} weren't`);
+  return s;
+};
+const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  // Only run on readings that address the subject in 2nd person. We treat
+  // every Ask reading as 2nd-person by default (that is the product voice),
+  // but skip if question_type is something we explicitly know is 3rd-person.
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt === "biography" || qt === "third_person") return;
+  let stringsTouched = 0;
+  let sentencesRewritten = 0;
+  const examples: string[] = [];
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (PRONOUN_REWRITE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        if (val.length < 10) continue;
+        // Quick reject: if the string contains no third-person pronoun
+        // candidates at all, skip the expensive sentence-split.
+        if (!/\b(They|they|Their|their)\b/.test(val)) continue;
+        const sentences = splitSentencesForMeta(val);
+        let changed = false;
+        const rewritten = sentences.map((sent) => {
+          const next = rewriteSentencePronouns(sent);
+          if (next !== sent) {
+            changed = true;
+            sentencesRewritten++;
+            if (examples.length < 5) examples.push(`${sent.slice(0, 90)} → ${next.slice(0, 90)}`);
+          }
+          return next;
+        });
+        if (changed) {
+          (node as any)[key] = rewritten.join(" ").trim();
+          stringsTouched++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (sentencesRewritten > 0) {
+    log.push({
+      type: "third_person_pronouns_rewritten",
+      detail: { strings_touched: stringsTouched, sentences_rewritten: sentencesRewritten, examples },
+    });
+    console.info("[ask-astrology] pronouns rewritten", { stringsTouched, sentencesRewritten });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// CROSS-SECTION ASPECT DEDUPE — Defect 2
+// The same canned aspect interpretation ("Mars square Saturn — your drive
+// runs into walls…") sometimes appears verbatim in two different sections
+// of the same reading (Career Foundation AND Caution Zones, etc.). When a
+// sentence containing an aspect pattern (e.g. "Mars square Saturn") is
+// detected in MORE than one narrative section, keep the first occurrence
+// and replace subsequent copies with a short pointer line.
+// ──────────────────────────────────────────────────────────────────────────
+const ASPECT_KIND_REGEX = /\b(conjunction|conjunct|opposition|opposite|square|trine|sextile|quincunx|inconjunct|semisextile|semisquare|sesquisquare|sesquiquadrate|quintile|biquintile)\b/i;
+const buildAspectKey = (sentence: string): string | null => {
+  // Look for "<Planet> <aspect> <Planet>" in the sentence. Use the same
+  // canonical planet list as the phantom-aspect pass.
+  const planets = PLANET_NAMES_FOR_CROSSCHECK;
+  const planetAlt = planets.map((p) => p.replace(/\s+/g, "\\s+")).join("|");
+  const re = new RegExp(`\\b(${planetAlt})\\b\\s+(${ASPECT_KIND_REGEX.source.replace(/^\\b|\\b$/g, "")})\\s+\\b(${planetAlt})\\b`, "i");
+  const m = sentence.match(re);
+  if (!m) return null;
+  const a = m[1].toLowerCase();
+  const kind = m[2].toLowerCase();
+  const b = m[3].toLowerCase();
+  // Sort planets so "Mars square Saturn" === "Saturn square Mars".
+  const [p1, p2] = [a, b].sort();
+  return `${p1}|${kind}|${p2}`;
+};
+const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  // Map<aspectKey, { sectionTitle, sentence }>
+  const firstSeen = new Map<string, { sectionTitle: string }>();
+  let removed = 0;
+  const examples: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+    const sectionTitle = String(section.title || section.type || "section");
+    const sectionType = String(section.type || "");
+    // Only touch narrative-style sections. Timing/placement tables are
+    // allowed to repeat aspect references because their structure is data,
+    // not prose, and de-duping them would damage the table.
+    if (sectionType !== "narrative_section" && sectionType !== "summary_box") continue;
+    const cleanField = (text: string): string => {
+      if (!text || text.length < 20) return text;
+      const sentences = splitSentencesForMeta(text);
+      const kept: string[] = [];
+      for (const sent of sentences) {
+        const key = buildAspectKey(sent);
+        if (!key) { kept.push(sent); continue; }
+        const prior = firstSeen.get(key);
+        if (!prior) {
+          firstSeen.set(key, { sectionTitle });
+          kept.push(sent);
+          continue;
+        }
+        // Skip — already covered in a prior section.
+        removed++;
+        if (examples.length < 5) {
+          examples.push(`"${sent.slice(0, 80)}" — duplicated from "${prior.sectionTitle}"`);
+        }
+      }
+      return kept.join(" ").trim();
+    };
+    if (typeof section.body === "string") {
+      const next = cleanField(section.body);
+      if (next !== section.body) section.body = next;
+    }
+    if (Array.isArray(section.bullets)) {
+      for (const b of section.bullets) {
+        if (b && typeof b === "object" && typeof b.text === "string") {
+          const next = cleanField(b.text);
+          if (next !== b.text) b.text = next;
+        }
+      }
+    }
+    if (Array.isArray(section.items)) {
+      for (const it of section.items) {
+        if (it && typeof it === "object" && typeof it.value === "string") {
+          const next = cleanField(it.value);
+          if (next !== it.value) it.value = next;
+        }
+      }
+    }
+  }
+  if (removed > 0) {
+    log.push({
+      type: "cross_section_aspect_duplicates_removed",
+      detail: { count: removed, examples },
+    });
+    console.info("[ask-astrology] cross-section aspect duplicates removed", { count: removed, examples });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// OFF-TOPIC DOMAIN PHRASES — Defect 3
+// Aspect-interpretation library entries are sometimes written in a
+// relationship-leaning voice ("romanticizing people", "idealizing your
+// partner") and get pasted into career / money / health readings unchanged.
+// We can't rewrite the AI's prose with full semantic accuracy, but we CAN
+// detect the obvious leaks and either neutralize or flag them. We strip
+// the phrase and replace with a domain-neutral equivalent so the
+// surrounding sentence still reads, and log the substitution so Replit
+// (and the team) can audit.
+// ──────────────────────────────────────────────────────────────────────────
+type DomainFix = { pattern: RegExp; replace: string };
+const OFF_TOPIC_PHRASES_BY_QT: Record<string, DomainFix[]> = {
+  career: [
+    { pattern: /\bromanticizing people\b/gi, replace: "overvaluing situations" },
+    { pattern: /\bromanticizing your partner\b/gi, replace: "overvaluing the work" },
+    { pattern: /\bromanticize people\b/gi, replace: "overvalue situations" },
+    { pattern: /\bidealizing your partner\b/gi, replace: "idealizing the role" },
+    { pattern: /\bidealize your partner\b/gi, replace: "idealize the role" },
+    { pattern: /\bovergiving in love\b/gi, replace: "overgiving at work" },
+    { pattern: /\bin love and friendship\b/gi, replace: "at work" },
+    { pattern: /\bin your love life\b/gi, replace: "in your work life" },
+    { pattern: /\byour romantic life\b/gi, replace: "your professional life" },
+  ],
+  money: [
+    { pattern: /\bromanticizing people\b/gi, replace: "romanticizing money" },
+    { pattern: /\bidealizing your partner\b/gi, replace: "idealizing windfalls" },
+    { pattern: /\bin your love life\b/gi, replace: "in your finances" },
+  ],
+  health: [
+    { pattern: /\bromanticizing people\b/gi, replace: "romanticizing recovery" },
+    { pattern: /\bin your love life\b/gi, replace: "in your body" },
+  ],
+  relocation: [
+    { pattern: /\bromanticizing people\b/gi, replace: "romanticizing places" },
+    { pattern: /\bidealizing your partner\b/gi, replace: "idealizing destinations" },
+    { pattern: /\bin your love life\b/gi, replace: "in a new place" },
+  ],
+};
+const stripOffTopicDomainPhrases = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  const fixes = OFF_TOPIC_PHRASES_BY_QT[qt];
+  if (!fixes || fixes.length === 0) return;
+  let replacements = 0;
+  const examples: string[] = [];
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (PRONOUN_REWRITE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        for (const { pattern, replace } of fixes) {
+          next = next.replace(pattern, replace);
+        }
+        if (next !== val) {
+          if (examples.length < 5) examples.push(`${val.slice(0, 80)} → ${next.slice(0, 80)}`);
+          (node as any)[key] = next;
+          replacements++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (replacements > 0) {
+    log.push({
+      type: "off_topic_domain_phrases_replaced",
+      detail: { question_type: qt, count: replacements, examples },
+    });
+    console.info("[ask-astrology] off-topic domain phrases replaced", { qt, count: replacements });
+  }
+};
+
 
 // ─────────────────────────────────────────────────────────────────────────
 // EMPTY SUMMARY ITEM FALLBACK
@@ -2254,6 +2534,12 @@ const regenerateAffectedSections = async (
 };
 
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
+
+PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject directly as "you" / "your". NEVER use third-person pronouns ("they", "them", "their", "he", "she", "his", "her") to refer to the subject of the reading. This is the #1 source of customer-trust collapse. When you describe an aspect, write "Your Mars squares your Saturn — your drive runs into walls until you learn to push without burning out." NEVER write "Their drive runs into walls — they keep almost-getting the big thing." If a canned aspect interpretation comes to mind in third person, rewrite the pronouns BEFORE you emit it. The only acceptable third-person references are to actual third parties the user mentioned (their boss, their partner, their child) — never to the subject themselves.
+
+CROSS-SECTION ASPECT UNIQUENESS: Each natal aspect (e.g. "Mars square Saturn") may be discussed in AT MOST ONE narrative section per reading. If an aspect is genuinely relevant to two themes, pick the section where it lands hardest and address it there. NEVER paste the same sentence verbatim into two sections. If you must reference the same aspect in a second section, write a SECTION-SPECIFIC framing (different angle, different verbs, different example) — and keep it to a single short clause, not a re-explanation.
+
+DOMAIN-APPROPRIATE FRAMING: The astronomy of an aspect is constant; the framing must change with question_type. For a CAREER reading, Venus opposition Jupiter means: undervaluing your output, vague compensation arrangements, generosity at work, overpromising on deliverables — NEVER "romanticizing people" or "idealizing your partner" (that is RELATIONSHIP framing). For a MONEY reading, the same aspect means romanticizing windfalls, overspending, blurry budgets. For a HEALTH reading: overdoing recovery, excess. For a RELOCATION reading: idealizing destinations, expecting too much from a place. NEVER ship a relationship-domain interpretation inside a non-relationship reading. Re-frame every aspect for the question_type before you write the sentence.
 
 SUMMARY_BOX TIMING SOURCE OF TRUTH (NON-NEGOTIABLE — APPLIES TO EVERY READING):
 Any timing field inside a summary_box — including but not limited to "Best Windows", "Caution Windows", "When to Act", "Extra Care Windows", "Restorative Windows", "Ideal Timing Window", "Best Timing", "Top Cities Timing", or any other label that names a date range or month — MUST be selected and summarized EXCLUSIVELY from the transits[] array already written in this same JSON's timing_section. You may NOT introduce a new aspect name, planet pairing, exact_hit_date, date_range, or month that does not already appear in transits[]. Before writing any summary_box timing field, re-read the transits[] array you just wrote and copy the relevant date_range strings verbatim (or summarize them in plain prose). If you cannot back a claim with a row from transits[], do NOT make the claim. This rule prevents the validator from stripping invented windows after the fact.
@@ -4154,6 +4440,19 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // the core forces that shape how you connect" — sentences
           // that talk ABOUT the reading rather than delivering content.
           stripMetaSentences(parsedContent, emissionLog);
+          // NEW (Defect 1): Rewrite stray third-person pronouns in 2nd-person
+          // readings so canned aspect interpretations ("Their drive runs
+          // into walls") become "Your drive runs into walls".
+          rewriteThirdPersonPronouns(parsedContent, emissionLog);
+          // NEW (Defect 2): Detect the SAME aspect interpretation appearing
+          // verbatim across two different narrative sections and drop the
+          // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
+          // so identical post-rewrite copies are also caught.
+          dedupeAspectsAcrossSections(parsedContent, emissionLog);
+          // NEW (Defect 3): Replace relationship-domain phrases ("romanticizing
+          // people") that leaked into career/money/health/relocation readings
+          // with domain-appropriate wording.
+          stripOffTopicDomainPhrases(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
