@@ -3645,6 +3645,16 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
           dedupeTimingArrays(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
+          // Cross-check planet placements in prose against the natal
+          // placement_table; strip relationship leaks from relocation
+          // readings; dedupe duplicate paragraphs; flag SR house-copy;
+          // complete bare US city names. Empty-drop runs last so
+          // anything blanked above is removed.
+          crossCheckPlanetPlacements(parsedContent, emissionLog);
+          stripRelationshipLeaksFromRelocation(parsedContent, emissionLog);
+          dedupeNarrativeParagraphs(parsedContent, emissionLog);
+          checkSRHouseNumberCopy(parsedContent, emissionLog);
+          completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
           if (emissionLog.length > 0) {
             (parsedContent as any)._validation_log = [
