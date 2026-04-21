@@ -241,6 +241,117 @@ export const LunarWorkbookSection = ({
         </div>
       </div>
 
+      {/* ═══ 0 · Guided Check-in (what to do right now) ═══ */}
+      {(() => {
+        const phaseLabel = currentPhase === 'newMoon' ? 'New Moon' : currentPhase === 'firstQuarter' ? 'First Quarter' : currentPhase === 'fullMoon' ? 'Full Moon' : currentPhase === 'lastQuarter' ? 'Last Quarter' : 'Balsamic';
+        const phaseEmoji = currentPhase === 'balsamic' ? '🌘' : currentPhase === 'newMoon' ? '🌑' : currentPhase === 'firstQuarter' ? '🌓' : currentPhase === 'fullMoon' ? '🌕' : '🌗';
+
+        // Build a checklist of the 3 highest-priority fields for the current phase
+        const checklist: Array<{ label: string; done: boolean; anchor: string; primary?: boolean }> = [];
+
+        if (currentPhase === 'balsamic') {
+          checklist.push(
+            { label: 'Note what is surfacing', done: !!journal?.what_is_surfacing?.trim(), anchor: 'surfacing-section' },
+            { label: 'Capture dreams / morning thoughts', done: !!(journal?.balsamic_dreams?.trim() || journal?.balsamic_morning_thoughts?.trim()), anchor: 'surfacing-section' },
+            { label: 'Name what needs to end', done: !!journal?.balsamic_needs_to_end?.trim(), anchor: 'surfacing-section' },
+          );
+        } else if (currentPhase === 'newMoon') {
+          checklist.push(
+            { label: 'Note what is surfacing', done: !!journal?.what_is_surfacing?.trim(), anchor: 'surfacing-section' },
+            { label: 'Write your New Moon intentions', done: !!journal?.new_moon_intentions?.trim(), anchor: 'intentions-section', primary: true },
+            { label: 'Pull a card for this cycle', done: !!(journal?.tarot_card_name?.trim() || journal?.oracle_card_name?.trim()), anchor: 'card-pulls-section' },
+          );
+        } else if (currentPhase === 'firstQuarter') {
+          checklist.push(
+            { label: 'Note obstacles showing up', done: !!journal?.first_quarter_obstacles?.trim(), anchor: 'phase-checkins-section', primary: true },
+            { label: 'What needs adjusting?', done: !!journal?.first_quarter_adjustments?.trim(), anchor: 'phase-checkins-section' },
+            { label: 'How are you showing up?', done: !!journal?.first_quarter_showing_up?.trim(), anchor: 'phase-checkins-section' },
+          );
+        } else if (currentPhase === 'fullMoon') {
+          checklist.push(
+            { label: 'What is peaking / being revealed?', done: !!journal?.full_moon_showing_up?.trim(), anchor: 'phase-checkins-section', primary: true },
+            { label: 'What asks to be released?', done: !!journal?.full_moon_releasing?.trim(), anchor: 'phase-checkins-section' },
+            { label: 'Gratitude for what culminated', done: !!journal?.full_moon_gratitude?.trim(), anchor: 'phase-checkins-section' },
+          );
+        } else if (currentPhase === 'lastQuarter') {
+          checklist.push(
+            { label: 'Patterns ready to be released', done: !!journal?.last_quarter_patterns?.trim(), anchor: 'phase-checkins-section', primary: true },
+            { label: 'What you are letting go of', done: !!journal?.last_quarter_letting_go?.trim(), anchor: 'phase-checkins-section' },
+            { label: 'How you are showing up', done: !!journal?.last_quarter_showing_up?.trim(), anchor: 'phase-checkins-section' },
+          );
+        }
+
+        const completedCount = checklist.filter(c => c.done).length;
+        const allDone = completedCount === checklist.length && checklist.length > 0;
+        const primaryAction = checklist.find(c => c.primary && !c.done) || checklist.find(c => !c.done);
+
+        return (
+          <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-primary/5 shadow-md">
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{phaseEmoji}</span>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-primary/70 font-medium">Your guided check-in</p>
+                    <h3 className="font-serif text-base font-medium">
+                      You are in the <span className="text-primary">{phaseLabel}</span> phase
+                    </h3>
+                  </div>
+                </div>
+                <Badge variant={allDone ? 'secondary' : 'outline'} className="text-[10px]">
+                  {completedCount}/{checklist.length} done
+                </Badge>
+              </div>
+
+              {/* Checklist */}
+              <div className="space-y-1.5">
+                {checklist.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => document.getElementById(item.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    className={`w-full flex items-center gap-3 text-left p-2.5 rounded-md border transition-all ${
+                      item.done
+                        ? 'bg-background/40 border-border/30 text-muted-foreground'
+                        : 'bg-background border-primary/20 hover:border-primary/50 hover:bg-primary/5'
+                    }`}
+                  >
+                    <span className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center text-[11px] ${
+                      item.done ? 'bg-primary border-primary text-primary-foreground' : 'border-primary/40 text-primary/40'
+                    }`}>
+                      {item.done ? '✓' : ''}
+                    </span>
+                    <span className={`flex-1 text-sm ${item.done ? 'line-through' : 'text-foreground'}`}>
+                      {item.label}
+                    </span>
+                    {!item.done && <span className="text-xs text-primary/60">Go →</span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* Primary CTA */}
+              {primaryAction ? (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={() => document.getElementById(primaryAction.anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                >
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  {primaryAction.label} →
+                </Button>
+              ) : (
+                <p className="text-xs text-center text-primary/70 italic py-1">
+                  ✨ You've completed this phase's check-in. Come back at the next phase.
+                </p>
+              )}
+
+              <p className="text-[11px] text-muted-foreground italic text-center leading-relaxed">
+                This guides you through what matters most right now. Other sections below stay open for deeper journaling.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {/* ═══ 1 · Current Phase Header ═══ */}
       <Card className={`border-primary/20 ${currentPhase === 'balsamic' ? 'bg-muted/30' : 'bg-primary/5'}`}>
         <CardContent className="p-5 space-y-3">
