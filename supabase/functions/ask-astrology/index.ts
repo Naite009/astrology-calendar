@@ -640,20 +640,20 @@ const PRONOUN_REWRITE_SAFE_KEYS = new Set<string>([
 // second-person before any other pronoun pass runs.
 const CAREER_BOILERPLATE_REWRITES: Array<{ pattern: RegExp; replace: string }> = [
   {
-    pattern: /Their reach and their grasp don'?t (quite )?match[^.]*?(\.|$)/gi,
-    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity.",
+    pattern: /Their reach and (?:their )?grasp don'?t (?:quite )?match[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity",
   },
   {
-    pattern: /Their drive runs into walls[^.]*?(\.|$)/gi,
-    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out.",
+    pattern: /Their drive runs into walls[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out",
   },
   {
-    pattern: /They can outlast forces that break other people[^.]*?(\.|$)/gi,
-    replace: "you can outlast forces that break other people; pressure makes you more focused, not less.",
+    pattern: /They can outlast forces that break other people[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "you can outlast forces that break other people; pressure makes you more focused, not less",
   },
   {
-    pattern: /They communicate carefully and people take them seriously when they do speak[^.]*?(\.|$)/gi,
-    replace: "you communicate carefully and when you do speak, people take you seriously.",
+    pattern: /They communicate carefully and people take them seriously[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "you communicate carefully and when you do speak, people take you seriously",
   },
 ];
 const applyCareerBoilerplateRewrites = (text: string): string => {
