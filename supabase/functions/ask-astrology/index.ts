@@ -817,17 +817,36 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
       if (!text || text.length < 20) return text;
       const sentences = splitSentencesForMeta(text);
       const kept: string[] = [];
+      let lastDroppedAspect = false;
       for (const sent of sentences) {
         const key = buildAspectKey(sent);
-        if (!key) { kept.push(sent); continue; }
+        if (!key) {
+          // If the prior sentence was a dropped aspect-canned line and THIS
+          // sentence has no aspect of its own AND is short-ish, treat it as
+          // a continuation of the canned blurb (e.g. "Once committed, the
+          // depth comes out...") and drop it too. Stop the chain after one.
+          if (lastDroppedAspect && sent.length < 220) {
+            removed++;
+            lastDroppedAspect = false;
+            if (examples.length < 5) {
+              examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped aspect line`);
+            }
+            continue;
+          }
+          lastDroppedAspect = false;
+          kept.push(sent);
+          continue;
+        }
         const prior = firstSeen.get(key);
         if (!prior) {
           firstSeen.set(key, { sectionTitle });
           kept.push(sent);
+          lastDroppedAspect = false;
           continue;
         }
         // Skip — already covered in a prior section.
         removed++;
+        lastDroppedAspect = true;
         if (examples.length < 5) {
           examples.push(`"${sent.slice(0, 80)}" — duplicated from "${prior.sectionTitle}"`);
         }
