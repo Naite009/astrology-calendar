@@ -3068,6 +3068,16 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // items still get filled or flagged [needs review].
           stripAspectPhrasesFromNonTimingSummaryItems(parsedContent);
           fillEmptySummaryItems(parsedContent);
+
+          // BUGFIX: the UI banner reads parsedContent._validation, but the
+          // summary_box cleanup above runs after the earlier validator pass.
+          // Re-run validation once here so the banner reflects the final,
+          // cleaned export state instead of stale pre-cleanup drift.
+          validateReading(parsedContent, sanitizedChartContext || undefined);
+          console.info("[ask-astrology] post-summary cleanup validation refreshed", {
+            drift_count: parsedContent?._validation?.drift_count ?? 0,
+            stripped_aspects: parsedContent?._validation?.stripped_aspects?.length ?? 0,
+          });
         } catch (fillErr) {
           console.error("[ask-astrology] fillEmptySummaryItems threw:", fillErr);
         }
