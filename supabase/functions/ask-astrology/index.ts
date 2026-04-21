@@ -697,16 +697,64 @@ const buildEmptySummaryFallback = (
     }
   }
 
+  // Helper: scan timing_section.windows[] for entries that describe
+  // hard outer-planet aspects (Saturn/Uranus/Neptune/Pluto/Chiron with
+  // square/opposition). Returns deduped date-range phrases extracted
+  // from the matched window labels.
+  // BUG FIX: previously, when transits[] was empty (verification stripped
+  // them) the negative-tone path emitted the canned "relatively open
+  // period" string without ever consulting windows[]. For Paul's reading
+  // this produced "open period" while windows[] held 8 hard transits
+  // including Uranus opp Venus, Neptune opp Moon, and Pluto squares.
+  const HARD_OUTER_RE = /\b(saturn|uranus|neptune|pluto|chiron)\b/i;
+  const HARD_ASPECT_RE = /\b(square|squaring|squares|opposition|opposing|opposes|opp\.?)\b/i;
+  const collectHardWindowPhrases = (): string[] => {
+    const phrases: string[] = [];
+    for (const section of parsedContent.sections) {
+      if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
+      for (const w of section.windows) {
+        const lbl = (w?.label || "").trim();
+        const desc = (w?.description || "").trim();
+        const haystack = `${lbl} ${desc}`;
+        if (!HARD_OUTER_RE.test(haystack) || !HARD_ASPECT_RE.test(haystack)) continue;
+        // Prefer the label as the date-range source since it typically
+        // already encodes the active window (e.g. "Mar 11 — Sep 7, 2027").
+        // If the label doesn't carry a year, try the description.
+        const dateSource = /\d{4}/.test(lbl) ? lbl : (/\d{4}/.test(desc) ? desc : "");
+        if (!dateSource) continue;
+        phrases.push(dateSource);
+      }
+    }
+    return phrases;
+  };
+
+  const dedupePhrases = (raw: string[], limit = 2): string[] => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const dr of raw) {
+      const phrase = formatWindowPhrase(dr);
+      const key = phrase.toLowerCase();
+      if (!phrase || seen.has(key)) continue;
+      seen.add(key);
+      out.push(phrase);
+      if (out.length >= limit) break;
+    }
+    return out;
+  };
+
   // SECONDARY SOURCE: when transit verification has emptied transits[],
   // fall back to the timing_section's windows[] (label = date range,
   // description = soft prose). This prevents [needs review] from
   // appearing when we still have valid window date data.
   if (allTransits.length === 0) {
-    // CRITICAL: never let Caution / negative-tone labels recycle the
-    // shared windows[] pool — that pool is undifferentiated and would
-    // produce identical date ranges to Best Windows. Negative tone gets
-    // a deterministic plain sentence instead.
     if (!tone.positive) {
+      // FIX: scan windows[] for hard outer-planet aspects before giving
+      // up to the canned "open period" sentence.
+      const hardPhrases = dedupePhrases(collectHardWindowPhrases());
+      if (hardPhrases.length > 0) {
+        const joined = hardPhrases.length === 1 ? hardPhrases[0] : `${hardPhrases[0]} and ${hardPhrases[1]}`;
+        return `${joined} are the periods that call for ${tone.outcome} based on current transits.`;
+      }
       return "No major challenging transits are active in this window — this is a relatively open period.";
     }
     const windowDateRanges: string[] = [];
@@ -715,28 +763,15 @@ const buildEmptySummaryFallback = (
       for (const w of section.windows) {
         const lbl = (w?.label || "").trim();
         if (!lbl) continue;
-        // Only treat labels that look like date ranges (contain a year).
         if (!/\d{4}/.test(lbl)) continue;
         windowDateRanges.push(lbl);
       }
     }
     if (windowDateRanges.length === 0) return null;
-    const seenW = new Set<string>();
-    const phrasesW: string[] = [];
-    for (const dr of windowDateRanges) {
-      const phrase = formatWindowPhrase(dr);
-      const key = phrase.toLowerCase();
-      if (!phrase || seenW.has(key)) continue;
-      seenW.add(key);
-      phrasesW.push(phrase);
-      if (phrasesW.length >= 2) break;
-    }
+    const phrasesW = dedupePhrases(windowDateRanges);
     if (phrasesW.length === 0) return null;
     const joinedW = phrasesW.length === 1 ? phrasesW[0] : `${phrasesW[0]} and ${phrasesW[1]}`;
-    const verbW = tone.positive
-      ? "are the strongest windows for"
-      : "are the periods that call for";
-    return `${joinedW} ${verbW} ${tone.outcome} based on current transits.`;
+    return `${joinedW} are the strongest windows for ${tone.outcome} based on current transits.`;
   }
 
   // Filter by tone — soft transits for positive labels, hard for caution.
@@ -744,11 +779,15 @@ const buildEmptySummaryFallback = (
 
   // CRITICAL (fix #2): Caution Windows must NEVER recycle the Best
   // Windows pool. If the negative-tone filter produced zero matches,
-  // emit a deterministic "no major challenging transits" sentence
-  // rather than falling back to soft transits. Otherwise Best and
-  // Caution end up with identical date ranges.
+  // first re-check windows[] for hard outer-planet aspects before
+  // giving up to the canned "open period" sentence.
   if (matching.length === 0) {
     if (!tone.positive) {
+      const hardPhrases = dedupePhrases(collectHardWindowPhrases());
+      if (hardPhrases.length > 0) {
+        const joined = hardPhrases.length === 1 ? hardPhrases[0] : `${hardPhrases[0]} and ${hardPhrases[1]}`;
+        return `${joined} are the periods that call for ${tone.outcome} based on current transits.`;
+      }
       return "No major challenging transits are active in this window — this is a relatively open period.";
     }
     // For positive labels, falling back to all transits is acceptable —
