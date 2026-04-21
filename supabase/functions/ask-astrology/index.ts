@@ -813,8 +813,16 @@ const buildEmptySummaryFallback = (
   }
 
   if (phrases.length === 0) {
-    // Negative tone with no transits at all — still emit a tone-appropriate sentence.
+    // Negative tone with no transits in pool — re-check windows[] for hard
+    // outer-planet aspects before emitting any canned line. Same fix as the
+    // earlier branches: the canned string must NEVER fire when sibling
+    // windows[] data names hard outer-planet transits.
     if (!tone.positive) {
+      const hardPhrases = dedupePhrases(collectHardWindowPhrases());
+      if (hardPhrases.length > 0) {
+        const joined = hardPhrases.length === 1 ? hardPhrases[0] : `${hardPhrases[0]} and ${hardPhrases[1]}`;
+        return `${joined} are the periods that call for ${tone.outcome} based on current transits.`;
+      }
       return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
     }
     return null;
@@ -825,6 +833,164 @@ const buildEmptySummaryFallback = (
     ? "are the strongest windows for"
     : "are the periods that call for";
   return `${joined} ${verb} ${tone.outcome} based on current transits.`;
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// EMISSION HYGIENE — three independent post-process passes that run last
+// in processJob, after all aspect-strip / timing-rebuild work. Each
+// records what it did in a shared log array so downstream consumers can
+// see every silent rewrite.
+// ─────────────────────────────────────────────────────────────────────────
+
+type HygieneLog = Array<{ type: string; detail: Record<string, unknown> }>;
+
+// Pass 1: dedupe transit rows and timing window entries.
+// - transits[] dedup key: planet + aspect + natal_point + date_range
+// - windows[]  dedup key: normalized label
+const dedupeTimingArrays = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "timing_section") continue;
+
+    if (Array.isArray(section.transits)) {
+      const seen = new Set<string>();
+      const kept: any[] = [];
+      let dropped = 0;
+      for (const t of section.transits) {
+        const key = [
+          String(t?.planet || "").trim().toLowerCase(),
+          String(t?.aspect || "").trim().toLowerCase(),
+          String(t?.natal_point || "").trim().toLowerCase(),
+          String(t?.date_range || "").trim().toLowerCase(),
+        ].join("|");
+        if (seen.has(key)) { dropped++; continue; }
+        seen.add(key);
+        kept.push(t);
+      }
+      if (dropped > 0) {
+        section.transits = kept;
+        log.push({ type: "transit_duplicates_removed", detail: { section: section.title || "", dropped } });
+      }
+    }
+
+    if (Array.isArray(section.windows)) {
+      const seen = new Map<string, any>();
+      const kept: any[] = [];
+      let merged = 0;
+      for (const w of section.windows) {
+        const labelKey = String(w?.label || "").trim().toLowerCase().replace(/\s+/g, " ");
+        if (!labelKey) { kept.push(w); continue; }
+        if (seen.has(labelKey)) {
+          const existing = seen.get(labelKey);
+          const existingDesc = String(existing?.description || "");
+          const dupDesc = String(w?.description || "");
+          if (dupDesc.length > existingDesc.length) existing.description = dupDesc;
+          merged++;
+          continue;
+        }
+        seen.set(labelKey, w);
+        kept.push(w);
+      }
+      if (merged > 0) {
+        section.windows = kept;
+        log.push({ type: "window_duplicates_merged", detail: { section: section.title || "", merged } });
+      }
+    }
+  }
+};
+
+// Pass 2: scrub placeholder / directive leaks from any string field.
+const PLACEHOLDER_PATTERNS: RegExp[] = [
+  /\[\s*INSERT[^\]]*\]/i,
+  /\[\s*TODO[^\]]*\]/i,
+  /\[\s*PLACEHOLDER[^\]]*\]/i,
+  /\bLorem\s+ipsum\b/i,
+  /\bplaceholder\s+text\b/i,
+  /\{\{[^}]+\}\}/, // unfilled mustache template
+];
+const PLACEHOLDER_SAFE_KEYS = new Set([
+  "_validation", "_validation_log", "_validation_warning", "_empty_summary_flags",
+  "_count_sum_warnings", "_parse_error",
+  "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
+  "house", "sign", "degrees", "generated_date", "birth_info",
+]);
+const stripPlaceholderLeaks = (root: any, log: HygieneLog) => {
+  if (!root || typeof root !== "object") return;
+  const visit = (node: any, path: string) => {
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}]`);
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (PLACEHOLDER_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        for (const re of PLACEHOLDER_PATTERNS) {
+          if (re.test(val)) {
+            const cleaned = val.replace(re, "").replace(/\s+/g, " ").trim();
+            (node as any)[key] = cleaned;
+            log.push({ type: "placeholder_stripped", detail: { path: `${path}.${key}`, pattern: re.source } });
+            break;
+          }
+        }
+      } else {
+        visit(val, `${path}.${key}`);
+      }
+    }
+  };
+  visit(root, "$");
+};
+
+// Pass 3: drop empty summary_box items and fully-empty sections.
+const isWhitespaceOrEmpty = (v: unknown): boolean => {
+  if (v === null || v === undefined) return true;
+  if (typeof v === "string") return v.trim().length === 0;
+  return false;
+};
+const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const keptSections: any[] = [];
+  let droppedItems = 0;
+  let droppedSections = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type === "summary_box" && Array.isArray(section.items)) {
+      const keptItems: any[] = [];
+      for (const item of section.items) {
+        if (!item || typeof item !== "object") { keptItems.push(item); continue; }
+        const valueKey = typeof item.value === "string" ? "value"
+          : typeof item.text === "string" ? "text"
+          : "value";
+        const v = item[valueKey];
+        // Keep falsy non-strings (0, false). Only drop true empties.
+        if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
+          droppedItems++;
+          log.push({ type: "empty_summary_item_dropped", detail: { section: section.title || "", label: item.label || "" } });
+          continue;
+        }
+        keptItems.push(item);
+      }
+      section.items = keptItems;
+    }
+
+    const hasItems = Array.isArray(section?.items) && section.items.length > 0;
+    const hasTransits = Array.isArray(section?.transits) && section.transits.length > 0;
+    const hasWindows = Array.isArray(section?.windows) && section.windows.length > 0;
+    const bodyText = typeof section?.content === "string" ? section.content
+      : typeof section?.text === "string" ? section.text
+      : typeof section?.value === "string" ? section.value
+      : "";
+    const hasBody = bodyText.trim().length > 0;
+    if (!hasItems && !hasTransits && !hasWindows && !hasBody) {
+      droppedSections++;
+      log.push({ type: "empty_section_dropped", detail: { section: section?.title || "", section_type: section?.type || "" } });
+      continue;
+    }
+    keptSections.push(section);
+  }
+  parsedContent.sections = keptSections;
+  if (droppedItems > 0 || droppedSections > 0) {
+    log.push({ type: "empty_drop_summary", detail: { dropped_items: droppedItems, dropped_sections: droppedSections } });
+  }
 };
 
 const fillEmptySummaryItems = (parsedContent: any) => {
@@ -3190,6 +3356,33 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // shipped to Replit always has correct capitalization.
         if (typeof parsedContent.birth_info === "string") {
           parsedContent.birth_info = normalizeBirthInfoString(parsedContent.birth_info);
+        }
+
+        // ────────────────────────────────────────────────────────────
+        // EMISSION HYGIENE PASSES (added in response to downstream
+        // bug report). These run last so every prior rebuild/strip
+        // pass has already touched the content. They populate
+        // parsedContent._validation_log with a record of every
+        // rewrite, drop, or merge so downstream consumers (Replit
+        // PDF, future apps) can correlate corrections.
+        // ────────────────────────────────────────────────────────────
+        try {
+          const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
+          dedupeTimingArrays(parsedContent, emissionLog);
+          stripPlaceholderLeaks(parsedContent, emissionLog);
+          dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
+          if (emissionLog.length > 0) {
+            (parsedContent as any)._validation_log = [
+              ...((parsedContent as any)._validation_log ?? []),
+              ...emissionLog,
+            ];
+            console.info("[ask-astrology] emission hygiene applied", {
+              count: emissionLog.length,
+              types: Array.from(new Set(emissionLog.map((e) => e.type))),
+            });
+          }
+        } catch (hygieneErr) {
+          console.error("[ask-astrology] emission hygiene threw:", hygieneErr);
         }
       }
     } catch (parseError) {
