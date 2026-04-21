@@ -4067,6 +4067,11 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // so the second/third copies become short pointer lines instead
           // of repeating the full paragraph downstream.
           dedupeWindowDescriptions(parsedContent, emissionLog);
+          // NEW: collapse same-sentence-repeated-N-times within a single
+          // string (e.g. Pluto-square description shipping the same
+          // sentence 4 times back-to-back). Runs before placeholder strip
+          // so the deduped prose is what every subsequent pass sees.
+          dedupeRepeatedSentences(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
           // Cross-check planet placements in prose against the natal
           // placement_table; strip relationship leaks from relocation
@@ -4095,18 +4100,33 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
+
+          // ALWAYS attach _validation_log (even when empty) so downstream
+          // consumers (Replit PDF audit, future apps) can prove what was
+          // and was not corrected on this side. An empty array is a
+          // meaningful signal: "we ran every pass and found nothing".
+          const existingLog = Array.isArray((parsedContent as any)._validation_log)
+            ? (parsedContent as any)._validation_log
+            : [];
+          (parsedContent as any)._validation_log = [...existingLog, ...emissionLog];
           if (emissionLog.length > 0) {
-            (parsedContent as any)._validation_log = [
-              ...((parsedContent as any)._validation_log ?? []),
-              ...emissionLog,
-            ];
             console.info("[ask-astrology] emission hygiene applied", {
               count: emissionLog.length,
               types: Array.from(new Set(emissionLog.map((e) => e.type))),
             });
+          } else {
+            console.info("[ask-astrology] emission hygiene clean — no corrections needed");
           }
         } catch (hygieneErr) {
           console.error("[ask-astrology] emission hygiene threw:", hygieneErr);
+          // Even on hygiene failure, keep the audit field present.
+          if (!Array.isArray((parsedContent as any)._validation_log)) {
+            (parsedContent as any)._validation_log = [];
+          }
+          (parsedContent as any)._validation_log.push({
+            type: "hygiene_pass_threw",
+            detail: { error: hygieneErr instanceof Error ? hygieneErr.message : String(hygieneErr) },
+          });
         }
       }
     } catch (parseError) {
