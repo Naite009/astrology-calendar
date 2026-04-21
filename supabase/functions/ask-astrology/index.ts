@@ -862,7 +862,7 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
             firstSeenAspect.set(aspectKey, { sectionTitle });
             // Also record the sentence so an identical literal copy elsewhere
             // (without an aspect detected) still dedupes.
-            const norm = normalizeSentenceForDedupe(sent);
+            const norm = normalizeSentenceForCrossSection(sent);
             if (norm.length >= 25) firstSeenSentence.set(norm, { sectionTitle });
             kept.push(sent);
             lastDropped = false;
