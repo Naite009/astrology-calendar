@@ -22,10 +22,24 @@ const MODALITY_MAP: Record<string, string> = {
   Gemini: "Mutable", Virgo: "Mutable", Sagittarius: "Mutable", Pisces: "Mutable",
 };
 
-const POLARITY_MAP: Record<string, string> = {
-  Aries: "Masculine", Taurus: "Feminine", Gemini: "Masculine", Cancer: "Feminine",
-  Leo: "Masculine", Virgo: "Feminine", Libra: "Masculine", Scorpio: "Feminine",
-  Sagittarius: "Masculine", Capricorn: "Feminine", Aquarius: "Masculine", Pisces: "Feminine",
+// Planet-based polarity (NOT sign-based). A planet's intrinsic nature determines
+// its Yang/Yin assignment, regardless of which sign it currently occupies.
+// - Yang (active, outward, projecting): Sun, Mars, Jupiter, Saturn, Uranus
+// - Yin (receptive, inward, magnetic): Moon, Venus, Neptune, Pluto
+// - Neutral / variable: Mercury (takes on the polarity of the sign it's in or
+//   the planet it most closely aspects — for the count we treat it as neutral
+//   and exclude it from both totals)
+const PLANET_POLARITY: Record<string, "Yang" | "Yin" | "Neutral"> = {
+  Sun: "Yang",
+  Mars: "Yang",
+  Jupiter: "Yang",
+  Saturn: "Yang",
+  Uranus: "Yang",
+  Moon: "Yin",
+  Venus: "Yin",
+  Neptune: "Yin",
+  Pluto: "Yin",
+  Mercury: "Neutral",
 };
 
 const COUNTED_PLANETS = [
