@@ -840,12 +840,12 @@ const TIMING_LABEL_PATTERNS: RegExp[] = [
   /top\s+cities?\s+timing/i,
   /key\s+windows?/i,
   /strongest\s+windows?/i,
-  // PERMANENT: "What This Year Is Best For" is the last AI-written
-  // timing field. It keeps citing Jupiter windows in prose, which the
-  // natal-aspect validator then strips. Adding it here forces the
-  // deterministic transits[]-based override to handle it like the
-  // other timing fields, eliminating the Jupiter hallucination source.
-  /what\s+this\s+year\s+is\s+best\s+for/i,
+  // NOTE: "What This Year Is Best For" is intentionally NOT in this list.
+  // It is a 1–2 sentence AI-written plain-English summary of the year's
+  // relational theme — no aspect names, no dates. Aspect names that slip
+  // in are stripped by stripAspectPhrasesFromNonTimingSummaryItems, which
+  // already covers this label. Keeping it AI-written prevents it from
+  // duplicating "Best Windows" (both pulled from the same transits pool).
 ];
 
 const isTimingLabel = (label: string): boolean => {
