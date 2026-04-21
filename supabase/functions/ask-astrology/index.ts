@@ -1201,9 +1201,9 @@ const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
 // dynamic]") instead of nuking the whole sentence. This guarantees
 // the JSON never ships a factually-wrong natal-aspect claim while
 // preserving the rest of the surrounding prose.
-const PHANTOM_ASPECT_SAFE_KEYS = new Set([
-  ..._.keys ? _.keys : [],
-]);
+// (PHANTOM_ASPECT_SKIP_KEYS below lists every JSON key whose string
+// values must NOT be touched — structural metadata, ID-like fields,
+// and pre-validated tokens.)
 const PHANTOM_ASPECT_SKIP_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
@@ -1279,8 +1279,8 @@ const stripPhantomAspectsEverywhere = (
   const visit = (node: any) => {
     if (Array.isArray(node)) { for (const x of node) visit(x); return; }
     if (!node || typeof node !== "object") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (PHANTOM_ASPECT_SKIP_KEYS.has(key)) continue;
+    for (const [fieldKey, val] of Object.entries(node)) {
+      if (PHANTOM_ASPECT_SKIP_KEYS.has(fieldKey)) continue;
       if (typeof val === "string") {
         if (!val || val.length < 8) continue;
         let next = val;
@@ -1291,8 +1291,8 @@ const stripPhantomAspectsEverywhere = (
           if (!p1 || !p2 || p1.toLowerCase() === p2.toLowerCase()) return match;
           const aspect = canonicalAspect(String(rawAspect));
           const pair = [p1, p2].sort((a, b) => a.localeCompare(b));
-          const key = `${pair[0].toLowerCase()}|${aspect}|${pair[1].toLowerCase()}`;
-          if (allowedAspectKeys.has(key)) return match; // verified — leave alone
+          const aspectKey = `${pair[0].toLowerCase()}|${aspect}|${pair[1].toLowerCase()}`;
+          if (allowedAspectKeys.has(aspectKey)) return match; // verified — leave alone
           phantomCount++;
           if (examples.length < 5) examples.push(match);
           touched = true;
@@ -1304,7 +1304,7 @@ const stripPhantomAspectsEverywhere = (
         if (touched) {
           // Tidy up double spaces / orphan punctuation from the rewrite.
           next = next.replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
-          (node as any)[key as any] = next;
+          (node as any)[fieldKey] = next;
         }
       } else {
         visit(val);
