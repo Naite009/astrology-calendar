@@ -627,7 +627,8 @@ const SUMMARY_LABEL_TONE: Array<{
 }> = [
   { pattern: /caution|extra care|warning|risk|avoid|protect/i, positive: false, outcome: "extra care, slower decisions, and protective rest" },
   { pattern: /restorative|rest|recovery|recharge|reset/i, positive: true, outcome: "restoration, recovery, and grounding routines" },
-  { pattern: /best window|when to act|launch|opportunity|growth|expansion|act now|move forward|green light/i, positive: true, outcome: "forward action, opportunity, and visible momentum" },
+  { pattern: /what\s+this\s+year\s+is\s+best\s+for/i, positive: true, outcome: "forward action, opportunity, and visible momentum" },
+  { pattern: /best\s+window|when\s+to\s+act|launch|opportunity|growth|expansion|act now|move forward|green light/i, positive: true, outcome: "forward action, opportunity, and visible momentum" },
   { pattern: /connect|relationship|love|romance|partner|emotional|open/i, positive: true, outcome: "new connection and emotional openness" },
   { pattern: /money|wealth|finance|income|abundance/i, positive: true, outcome: "financial growth and earning opportunity" },
   { pattern: /career|work|professional|recognition|visibility/i, positive: true, outcome: "career visibility and professional progress" },
@@ -701,7 +702,7 @@ const buildEmptySummaryFallback = (
     // produce identical date ranges to Best Windows. Negative tone gets
     // a deterministic plain sentence instead.
     if (!tone.positive) {
-      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+      return "No major challenging transits are active in this window — this is a relatively open period.";
     }
     const windowDateRanges: string[] = [];
     for (const section of parsedContent.sections) {
