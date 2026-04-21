@@ -822,7 +822,7 @@ const DEDUPE_SKIP_FIELD_KEYS = new Set<string>([
 ]);
 // Normalize a sentence for exact-text dedupe: lowercase, collapse whitespace,
 // strip terminal punctuation, normalize dashes and curly quotes.
-const normalizeSentenceForDedupe = (s: string): string => {
+const normalizeSentenceForCrossSection = (s: string): string => {
   return s
     .toLowerCase()
     .replace(/[\u2013\u2014]/g, "-")
