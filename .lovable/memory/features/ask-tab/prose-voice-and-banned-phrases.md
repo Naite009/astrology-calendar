@@ -22,6 +22,16 @@ Three companion hygiene passes run in the same emission pipeline (after `stripMe
 
 These passes are paired with explicit upstream SYSTEM_PROMPT rules: PRONOUN VOICE (strictly 2nd person), CROSS-SECTION ASPECT UNIQUENESS (at most one section per aspect), and DOMAIN-APPROPRIATE FRAMING (re-frame each aspect for the question_type before emitting).
 
+### Career-template hardening (Lauren Newman 12-defects-per-reading sweep)
+
+The Replit gate sweep showed all career readings failing on the same 4 boilerplate strings ("Their reach and their grasp don't match", "Their drive runs into walls", "They can outlast forces", "They communicate carefully and people take them seriously") repeated across the same 4 sections (Career Foundation, Hidden Strengths, 11th House and Networking, The Growth Edge). Solar Returns and Relocation passed clean.
+
+Fix applied at three layers:
+- **Template-level** (`SYSTEM_PROMPT` career section, after section 9): a new `CAREER PROSE QUALITY RULE` block (a–d) enumerates the 4 forbidden stock phrases by name with required 2nd-person rewrites, mandates one-section-per-aspect, bans relationship-domain phrases, and bans "DNA"/"blueprint"/"configuration" in section titles.
+- **Hard-coded boilerplate rewrites** (`CAREER_BOILERPLATE_REWRITES` array): regex-driven deterministic rewrites for the 4 exact strings, run as the first step inside `rewriteSentencePronouns` so they're guaranteed clean even if the broader regex misses an edge case.
+- **Broader pronoun coverage**: leading-clause swap now matches em-dash, en-dash, hyphen, colon, semicolon. Object-pronoun swap added (`take them seriously` → `take you seriously`). Verb-agreement map expanded from 22 to 50+ common verbs. Quick-reject also tests for the boilerplate patterns directly.
+- **Health-template fix**: section 2 title "Your Vitality Blueprint" → "Your Vitality Foundation" (the runtime banned-phrase strip would catch it, but template-level fix prevents the AI from generating it).
+
 ## Prose-over-bullets in compact relationship mode
 The compact relationship sections — "How You Love", "This Year in Love", "Where Natal and Solar Return Connect", and the prose portion of "Relationship Strategy" — must use continuous prose paragraphs in the `body` field (2–4 paragraphs each, line-break separated) and an empty `bullets: []` array. Synthesis happens through NAMED INLINE TRANSITION LABELS embedded inside the prose, not as separate bullet items.
 
