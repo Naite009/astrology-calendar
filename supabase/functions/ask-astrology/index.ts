@@ -1012,6 +1012,7 @@ const stripAspectPhrasesFromNonTimingSummaryItems = (parsedContent: any) => {
   let itemsBlanked = 0;
   for (const section of parsedContent.sections) {
     if (section?.type !== "summary_box") continue;
+    const sectionTitle: string = typeof section.title === "string" ? section.title : "(untitled summary_box)";
     const items = Array.isArray(section.items) ? section.items : null;
     if (!items) continue;
     for (const item of items) {
@@ -1025,6 +1026,26 @@ const stripAspectPhrasesFromNonTimingSummaryItems = (parsedContent: any) => {
         : "value";
       const current: unknown = item[valueKey];
       if (typeof current !== "string" || !current.trim()) continue;
+
+      // PRE-STRIP DIAGNOSTIC: log the exact field (section title + item
+      // label) and full pre-strip text whenever the AI produced an
+      // aspect phrase in a non-timing summary item. This pinpoints the
+      // source field of recurring hallucinations like "Jupiter trine
+      // Venus" so we can either deterministize the field via
+      // TIMING_LABEL_PATTERNS or add a targeted prompt constraint.
+      const previewMatch = re.exec(current);
+      // Reset lastIndex — buildAspectPhraseRegex returns a /g regex and
+      // exec() advances state. stripAspectSentences runs its own scan.
+      re.lastIndex = 0;
+      if (previewMatch) {
+        console.info("[ask-astrology][PRE-STRIP] aspect phrase detected in summary_box item", {
+          section_title: sectionTitle,
+          item_label: label || "(no label)",
+          first_match: previewMatch[0],
+          full_value: current,
+        });
+      }
+
       const { cleaned, removed } = stripAspectSentences(current, re);
       if (removed.length === 0) continue;
       stripped += removed.length;
