@@ -640,20 +640,20 @@ const PRONOUN_REWRITE_SAFE_KEYS = new Set<string>([
 // second-person before any other pronoun pass runs.
 const CAREER_BOILERPLATE_REWRITES: Array<{ pattern: RegExp; replace: string }> = [
   {
-    pattern: /Their reach and their grasp don'?t (quite )?match[^.]*?(\.|$)/gi,
-    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity.",
+    pattern: /Their reach and (?:their )?grasp don'?t (?:quite )?match[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity",
   },
   {
-    pattern: /Their drive runs into walls[^.]*?(\.|$)/gi,
-    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out.",
+    pattern: /Their drive runs into walls[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out",
   },
   {
-    pattern: /They can outlast forces that break other people[^.]*?(\.|$)/gi,
-    replace: "you can outlast forces that break other people; pressure makes you more focused, not less.",
+    pattern: /They can outlast forces that break other people[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "you can outlast forces that break other people; pressure makes you more focused, not less",
   },
   {
-    pattern: /They communicate carefully and people take them seriously when they do speak[^.]*?(\.|$)/gi,
-    replace: "you communicate carefully and when you do speak, people take you seriously.",
+    pattern: /They communicate carefully and people take them seriously[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi,
+    replace: "you communicate carefully and when you do speak, people take you seriously",
   },
 ];
 const applyCareerBoilerplateRewrites = (text: string): string => {
@@ -799,112 +799,132 @@ const buildAspectKey = (sentence: string): string | null => {
   const [p1, p2] = [a, b].sort();
   return `${p1}|${kind}|${p2}`;
 };
+// Section types that are pure data tables — their cells are intentionally
+// repeated and must NEVER be touched by the prose-dedupe pass.
+const DEDUPE_SKIP_SECTION_TYPES = new Set<string>([
+  "timing_section",
+  "modality_element",
+  "table_section",
+  "data_table",
+  "transit_table",
+  "windows_section",
+  "placement_table",
+]);
+// Field keys whose contents are metadata, not prose. The recursive walker
+// must skip these to avoid mangling labels, titles, dates, etc.
+const DEDUPE_SKIP_FIELD_KEYS = new Set<string>([
+  "type", "title", "label", "name", "subtitle", "heading", "id", "kind",
+  "planet", "sign", "house", "degrees", "aspect", "natal_point", "symbol",
+  "tag", "date", "date_range", "dateRange", "generated_date",
+  "subject", "question_type", "question_asked",
+  "balance_interpretation", // counts/data, not prose
+  "windows", "transits", "items_meta",
+]);
+// Normalize a sentence for exact-text dedupe: lowercase, collapse whitespace,
+// strip terminal punctuation, normalize dashes and curly quotes.
+const normalizeSentenceForCrossSection = (s: string): string => {
+  return s
+    .toLowerCase()
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[.!?]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
 const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
-  // Map<aspectKey, { sectionTitle, sentence }>
-  const firstSeen = new Map<string, { sectionTitle: string }>();
+  // Map<aspectKey, { sectionTitle }> — for aspect-anchored sentences.
+  const firstSeenAspect = new Map<string, { sectionTitle: string }>();
+  // Map<normalizedSentence, { sectionTitle }> — catches duplicate canned
+  // lines that have NO aspect anchor (e.g. "This is the South Node pattern:
+  // security through partnership instead of through self.").
+  const firstSeenSentence = new Map<string, { sectionTitle: string }>();
   let removed = 0;
   const examples: string[] = [];
   for (const section of parsedContent.sections) {
     if (!section || typeof section !== "object") continue;
-    const sectionTitle = String(section.title || section.type || "section");
     const sectionType = String(section.type || "");
-    // Only touch narrative-style sections. Timing/placement tables are
-    // allowed to repeat aspect references because their structure is data,
-    // not prose, and de-duping them would damage the table.
-    if (sectionType !== "narrative_section" && sectionType !== "summary_box") continue;
+    // Skip pure data/table sections — their cells are meant to repeat.
+    if (DEDUPE_SKIP_SECTION_TYPES.has(sectionType)) continue;
+    const sectionTitle = String(section.title || section.type || "section");
     const cleanField = (text: string): string => {
-      if (!text || text.length < 20) return text;
+      if (!text || typeof text !== "string" || text.length < 20) return text;
       const sentences = splitSentencesForMeta(text);
       const kept: string[] = [];
-      let lastDroppedAspect = false;
+      let lastDropped = false;
       for (const sent of sentences) {
-        const key = buildAspectKey(sent);
-        if (!key) {
-          // If the prior sentence was a dropped aspect-canned line and THIS
-          // sentence has no aspect of its own AND is short-ish, treat it as
-          // a continuation of the canned blurb (e.g. "Once committed, the
-          // depth comes out...") and drop it too. Stop the chain after one.
-          if (lastDroppedAspect && sent.length < 220) {
+        const aspectKey = buildAspectKey(sent);
+        // 1) Aspect-anchored dedupe.
+        if (aspectKey) {
+          const prior = firstSeenAspect.get(aspectKey);
+          if (!prior) {
+            firstSeenAspect.set(aspectKey, { sectionTitle });
+            // Also record the sentence so an identical literal copy elsewhere
+            // (without an aspect detected) still dedupes.
+            const norm = normalizeSentenceForCrossSection(sent);
+            if (norm.length >= 25) firstSeenSentence.set(norm, { sectionTitle });
+            kept.push(sent);
+            lastDropped = false;
+            continue;
+          }
+          removed++;
+          lastDropped = true;
+          if (examples.length < 5) {
+            examples.push(`"${sent.slice(0, 80)}" — duplicate aspect from "${prior.sectionTitle}"`);
+          }
+          continue;
+        }
+        // 2) Exact-sentence dedupe (catches canned lines without an aspect
+        // anchor like the South Node pattern sentence).
+        const norm = normalizeSentenceForCrossSection(sent);
+        // Only dedupe sentences long enough to be intentional content, not
+        // generic transitional phrases. Floor at 25 chars normalized.
+        if (norm.length >= 25) {
+          const priorSent = firstSeenSentence.get(norm);
+          if (priorSent) {
             removed++;
-            lastDroppedAspect = false;
+            lastDropped = true;
             if (examples.length < 5) {
-              examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped aspect line`);
+              examples.push(`"${sent.slice(0, 80)}" — duplicate sentence from "${priorSent.sectionTitle}"`);
             }
             continue;
           }
-          lastDroppedAspect = false;
-          kept.push(sent);
+          firstSeenSentence.set(norm, { sectionTitle });
+        }
+        // 3) Orphan continuation: short sentence right after a dropped
+        // aspect/canned line with no anchor of its own — drop as part of
+        // the same canned blurb. Only one orphan per dropped parent.
+        if (lastDropped && sent.length < 220) {
+          removed++;
+          lastDropped = false;
+          if (examples.length < 5) {
+            examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped line`);
+          }
           continue;
         }
-        const prior = firstSeen.get(key);
-        if (!prior) {
-          firstSeen.set(key, { sectionTitle });
-          kept.push(sent);
-          lastDroppedAspect = false;
-          continue;
-        }
-        // Skip — already covered in a prior section.
-        removed++;
-        lastDroppedAspect = true;
-        if (examples.length < 5) {
-          examples.push(`"${sent.slice(0, 80)}" — duplicated from "${prior.sectionTitle}"`);
-        }
+        lastDropped = false;
+        kept.push(sent);
       }
       return kept.join(" ").trim();
     };
-    // Body-style fields. Sections may use any of: body, content, text, prose, narrative.
-    for (const fieldName of ["body", "content", "text", "prose", "narrative"]) {
-      if (typeof (section as any)[fieldName] === "string") {
-        const next = cleanField((section as any)[fieldName]);
-        if (next !== (section as any)[fieldName]) (section as any)[fieldName] = next;
-      }
-    }
-    // Bullets can be plain strings OR { text } / { value } objects. Handle both.
-    if (Array.isArray(section.bullets)) {
-      section.bullets = section.bullets.map((b: any) => {
-        if (typeof b === "string") {
-          const next = cleanField(b);
-          return next !== b ? next : b;
-        }
-        if (b && typeof b === "object") {
-          if (typeof b.text === "string") {
-            const next = cleanField(b.text);
-            if (next !== b.text) return { ...b, text: next };
-          }
-          if (typeof b.value === "string") {
-            const next = cleanField(b.value);
-            if (next !== b.value) return { ...b, value: next };
-          }
-        }
-        return b;
-      });
-    }
-    // Generic items array — handles { value } and { text } shapes.
-    if (Array.isArray(section.items)) {
-      for (const it of section.items) {
-        if (it && typeof it === "object") {
-          if (typeof it.value === "string") {
-            const next = cleanField(it.value);
-            if (next !== it.value) it.value = next;
-          }
-          if (typeof it.text === "string") {
-            const next = cleanField(it.text);
-            if (next !== it.text) it.text = next;
-          }
+    // Recursive walker that cleans every prose-bearing string field anywhere
+    // in the section (handles nested subsections, blocks, paragraphs, etc.).
+    // Skips known metadata keys and timing/data sub-objects.
+    const walk = (node: any) => {
+      if (Array.isArray(node)) { for (const x of node) walk(x); return; }
+      if (!node || typeof node !== "object") return;
+      for (const [key, val] of Object.entries(node)) {
+        if (DEDUPE_SKIP_FIELD_KEYS.has(key)) continue;
+        if (typeof val === "string") {
+          const next = cleanField(val);
+          if (next !== val) (node as any)[key] = next;
+        } else if (val && typeof val === "object") {
+          walk(val);
         }
       }
-    }
-    // Paragraphs array — some narrative sections emit prose as a string[].
-    if (Array.isArray((section as any).paragraphs)) {
-      (section as any).paragraphs = (section as any).paragraphs.map((p: any) => {
-        if (typeof p === "string") {
-          const next = cleanField(p);
-          return next !== p ? next : p;
-        }
-        return p;
-      });
-    }
+    };
+    walk(section);
   }
   if (removed > 0) {
     log.push({
