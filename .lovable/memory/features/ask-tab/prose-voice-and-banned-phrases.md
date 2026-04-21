@@ -6,7 +6,9 @@ type: preference
 ## Banned phrases (hard ban — never use anywhere in any Ask reading)
 "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast".
 
-If the AI catches itself about to use any of these, it must stop and rewrite in plain human language instead.
+**"DNA" specifically** must NEVER appear in astrological context (no "Career DNA", "Astrology DNA", "chart DNA", "energetic DNA", etc.). Use "Foundation" or "Core" instead. The biological term "DNA" remains acceptable in body-part / anatomical references inside encyclopedic data files (e.g., Pluto ruling cellular regeneration) — but never in AI-generated prose or section titles.
+
+If the AI catches itself about to use any of these, it must stop and rewrite in plain human language instead. A server-side `stripBannedPhrases` hygiene pass in `supabase/functions/ask-astrology/index.ts` runs after `dedupeRepeatedSentences` as a final safety net, replacing "DNA"/"dna" → "Foundation"/"foundation" and "blueprint" variants → "foundation" across all string fields in the JSON output. Replacements are recorded in `_validation_log` as `banned_phrases_replaced`.
 
 ## Prose-over-bullets in compact relationship mode
 The compact relationship sections — "How You Love", "This Year in Love", "Where Natal and Solar Return Connect", and the prose portion of "Relationship Strategy" — must use continuous prose paragraphs in the `body` field (2–4 paragraphs each, line-break separated) and an empty `bullets: []` array. Synthesis happens through NAMED INLINE TRANSITION LABELS embedded inside the prose, not as separate bullet items.
