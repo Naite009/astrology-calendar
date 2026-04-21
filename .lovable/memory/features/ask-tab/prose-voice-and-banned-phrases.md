@@ -10,6 +10,18 @@ type: preference
 
 If the AI catches itself about to use any of these, it must stop and rewrite in plain human language instead. A server-side `stripBannedPhrases` hygiene pass in `supabase/functions/ask-astrology/index.ts` runs after `dedupeRepeatedSentences` as a final safety net, replacing "DNA"/"dna" → "Foundation"/"foundation" and "blueprint" variants → "foundation" across all string fields in the JSON output. Replacements are recorded in `_validation_log` as `banned_phrases_replaced`.
 
+## Three additional prose-quality enforcement passes (Lauren Newman defects)
+
+Three companion hygiene passes run in the same emission pipeline (after `stripMetaSentences`) and log to `_validation_log`:
+
+1. **`rewriteThirdPersonPronouns`** — Every Ask reading is strictly 2nd-person ("you" / "your"). This pass mechanically swaps stray third-person pronouns ("Their drive runs into walls", "they keep almost-getting the big thing") to 2nd-person and fixes verb agreement (`you keeps` → `you keep`, `you is` → `you are`). Skipped for `question_type === "biography" | "third_person"`. Logs as `third_person_pronouns_rewritten`.
+
+2. **`dedupeAspectsAcrossSections`** — Each natal aspect (e.g. "Mars square Saturn") may appear in AT MOST ONE narrative section per reading. This pass keys aspect mentions by sorted `<planet>|<kind>|<planet>` and removes duplicate sentences from later sections, keeping the first occurrence. Only touches `narrative_section` and `summary_box` types — never timing tables. Logs as `cross_section_aspect_duplicates_removed`.
+
+3. **`stripOffTopicDomainPhrases`** — Aspect-library entries occasionally leak relationship-domain phrasing ("romanticizing people", "in your love life") into career/money/health/relocation readings. This pass replaces those phrases with domain-appropriate equivalents per `question_type` (career/money/health/relocation). Logs as `off_topic_domain_phrases_replaced`.
+
+These passes are paired with explicit upstream SYSTEM_PROMPT rules: PRONOUN VOICE (strictly 2nd person), CROSS-SECTION ASPECT UNIQUENESS (at most one section per aspect), and DOMAIN-APPROPRIATE FRAMING (re-frame each aspect for the question_type before emitting).
+
 ## Prose-over-bullets in compact relationship mode
 The compact relationship sections — "How You Love", "This Year in Love", "Where Natal and Solar Return Connect", and the prose portion of "Relationship Strategy" — must use continuous prose paragraphs in the `body` field (2–4 paragraphs each, line-break separated) and an empty `bullets: []` array. Synthesis happens through NAMED INLINE TRANSITION LABELS embedded inside the prose, not as separate bullet items.
 
