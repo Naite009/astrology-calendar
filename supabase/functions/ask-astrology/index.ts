@@ -740,7 +740,7 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
         if (val.length < 10) continue;
         // Quick reject: if the string contains no third-person pronoun
         // candidates at all, skip the expensive sentence-split.
-        if (!/\b(They|they|Their|their)\b/.test(val)) continue;
+        if (!/\b(They|they|Their|their|Them|them)\b/.test(val) && !CAREER_BOILERPLATE_REWRITES.some(r => r.pattern.test(val))) continue;
         const sentences = splitSentencesForMeta(val);
         let changed = false;
         const rewritten = sentences.map((sent) => {
