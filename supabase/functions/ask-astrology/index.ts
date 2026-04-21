@@ -2070,7 +2070,16 @@ MANDATORY ASPECT VERIFICATION PROTOCOL:
 - STEP 5 (STATE THE ORB): Always include the actual orb when claiming an aspect, e.g. "Venus trine Moon (3° orb)." Never claim an aspect without showing the math.
 - STEP 6 (POST-WRITE AUDIT): After completing the entire reading, cross-check EVERY aspect claim in all narrative_section bodies, timing_section transits, and summary_box text against the placement table degrees. For each claimed aspect, verify: (a) the degree separation matches the aspect type within orb limits, and (b) the orb label (tight/moderate/wide) is correct. If any claim fails, REMOVE it or REPLACE it with a real aspect.
 - STEP 7 (REPLACE, DON'T DELETE): When removing a hallucinated aspect, scan the chart for a REAL aspect to discuss instead. Never leave an empty interpretation — find genuine chart data to support the narrative.
+- STEP 8 (ORB FORMATTING — DEGREES & MINUTES): When stating an orb in degrees-and-minutes format (e.g., "1°43'"), the minutes value MUST be an integer in the range 0–59. Minutes are sixtieths of a degree, NOT decimal hundredths. FORBIDDEN: "1°72'", "0°87'", "2°99'" — these are mathematically impossible. If your raw orb is 1.72°, convert correctly: 0.72 × 60 = 43 minutes → "1°43'". If 0.95° → 57'. If 0.5° → 30'. If you cannot do the conversion confidently, state the orb as a decimal degree instead (e.g., "1.7° orb") — never invent minute values ≥ 60.
 - This protocol applies equally to natal-to-natal, transit-to-natal, and SR-to-natal aspects.
+
+PLANET POLARITY (YIN/YANG) — DO NOT CONFUSE WITH SIGN POLARITY:
+- Planet polarity is a property of the PLANET ITSELF, not the sign it occupies. Use these fixed assignments in every reading:
+  • YANG (active / masculine / projective): Sun, Mars, Jupiter, Uranus, Pluto
+  • YIN (receptive / feminine / magnetic): Moon, Venus, Neptune
+  • NEUTRAL / DUAL (takes polarity from sign and aspects): Mercury, Saturn, Chiron
+- Sign polarity is SEPARATE and independent: Fire/Air signs are Yang; Earth/Water signs are Yin. A Yang planet in a Yin sign is still a Yang planet — its expression is filtered through the sign, not reversed by it. NEVER relabel Mars, Jupiter, or Uranus as "Yin" because they sit in Cancer, Taurus, Virgo, Pisces, Capricorn, or Scorpio. NEVER relabel Moon or Venus as "Yang" because they sit in a fire or air sign.
+- When you report yin/yang balance for a person, count PLANET polarity (using the fixed list above) separately from SIGN polarity, and explicitly label which one you are reporting ("By planet nature: 5 Yang / 3 Yin / 2 Neutral" vs "By sign placement: 4 Yang signs / 6 Yin signs"). Do not mix the two counts into a single number.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
