@@ -2,6 +2,7 @@
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateReading, listAllowedNatalAspects } from "./validateReading.ts";
+import { rewriteNatalAspectsDeterministically } from "./natalAspectRewriter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
