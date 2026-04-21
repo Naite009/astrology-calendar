@@ -3175,7 +3175,7 @@ SR LOVE ACTIVATION STYLE:
 
 - For question_type "health": Use this EXACT section order:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Your Vitality Blueprint" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
+  2. narrative_section — "Your Vitality Foundation" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
   3. narrative_section — "Stress Points & Vulnerabilities" (6th house for chronic patterns, 12th house for hidden drains, Saturn for structural weaknesses, any stelliums creating overload)
   4. narrative_section — "Healing & Recovery" (Chiron sign/house for wound-to-gift, Neptune for intuition/spiritual healing, Jupiter for where the body recovers best)
   5. city_comparison — "Best Locations for Wellness" (at least 4 cities where Moon IC, Venus ASC, or Jupiter ASC lines support vitality) — ONLY if astrocartography data is available and location is relevant to the question
