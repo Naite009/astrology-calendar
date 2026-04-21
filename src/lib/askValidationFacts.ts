@@ -1,4 +1,5 @@
 import { NatalChart } from "@/hooks/useNatalChart";
+import { lookupAspectMeaning } from "@/lib/aspectMeaningLibrary";
 
 export const ASK_VALIDATION_FACTS_START = "VALIDATION_FACTS_JSON_START";
 export const ASK_VALIDATION_FACTS_END = "VALIDATION_FACTS_JSON_END";
