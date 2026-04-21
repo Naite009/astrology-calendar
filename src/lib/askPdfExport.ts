@@ -523,15 +523,14 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   }
   addFooter();
 
-  // Filename mirrors the JSON export: <person-slug>_<reading-type>_<YYYY-MM-DD>.pdf
-  // Previously this emitted `<safeName>_reading_<date>.pdf`, which (when
-  // the chart name was already e.g. "reading_report") looked like
-  // `reading_reading_report_<timestamp>.pdf` to customers. The Replit
-  // bug report flagged this — we now derive the type slug from the
-  // reading's `question_type` (relationship / career / health / …)
-  // exactly the same way `handleDownloadJson` does in AskView.
+  // Filename mirrors the JSON export EXACTLY — same slug rules (hyphens, not
+  // underscores), same multi-reading label, same full ISO timestamp suffix.
+  // JSON pattern (AskView.handleDownloadJson):
+  //   <person-slug>_<reading-type>_<YYYY-MM-DD_HH-MM-SSZ>.json
+  // PDF must match so the two downloads sit side-by-side in the user's
+  // Downloads folder with identical names except for the extension.
   const slug = (s: string) =>
-    (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const personSlug = slug(chart?.name || "") || "chart";
   const types = Array.from(
     new Set(
@@ -541,7 +540,11 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     )
   );
   const typeSlug =
-    types.length === 0 ? "reading" : types.length === 1 ? types[0] : "multi_reading";
-  const dateSlug = new Date().toISOString().slice(0, 10);
-  pdf.save(`${personSlug}_${typeSlug}_${dateSlug}.pdf`);
+    types.length === 0 ? "reading" : types.length === 1 ? types[0] : "multi-reading";
+  const ts = new Date()
+    .toISOString()
+    .replace(/[:.]/g, "-")
+    .replace("T", "_")
+    .replace(/-\d{3}Z$/, "Z"); // 2026-04-21_14-32-05Z
+  pdf.save(`${personSlug}_${typeSlug}_${ts}.pdf`);
 }
