@@ -4124,6 +4124,11 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // sentence 4 times back-to-back). Runs before placeholder strip
           // so the deduped prose is what every subsequent pass sees.
           dedupeRepeatedSentences(parsedContent, emissionLog);
+          // Final safety net: scrub banned phrases the AI was instructed
+          // never to emit ("DNA", "blueprint") and replace with neutral
+          // alternatives ("Foundation"). Runs after dedupe so we don't
+          // re-introduce duplicate sentences via replacement collisions.
+          stripBannedPhrases(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
           // Cross-check planet placements in prose against the natal
           // placement_table; strip relationship leaks from relocation
