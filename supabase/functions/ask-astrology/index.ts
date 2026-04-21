@@ -3022,6 +3022,23 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           console.error("[ask-astrology] regen-on-drift threw:", regenErr);
         }
 
+        // DETERMINISTIC NATAL ASPECT REWRITE — replaces any AI-written
+        // natal aspect phrase with a code-built behavioral sentence so
+        // the model never authors the meaning of an aspect. Runs after
+        // validation + regen so only verified aspects survive to be
+        // rewritten in our voice.
+        try {
+          const r = rewriteNatalAspectsDeterministically(
+            parsedContent,
+            sanitizedChartContext || undefined,
+          );
+          if (r.rewritten_count > 0 || r.skipped_no_library > 0) {
+            console.info("[ask-astrology] natal aspects deterministically rewritten", r);
+          }
+        } catch (rewriteErr) {
+          console.error("[ask-astrology] natal aspect rewriter threw:", rewriteErr);
+        }
+
         // FINAL FALLBACK: Any summary_box item left with an empty value
         // after validation/regen gets a deterministic plain-language
         // window summary built from this reading's timing transits.
