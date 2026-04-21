@@ -2,6 +2,7 @@
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateReading, listAllowedNatalAspects } from "./validateReading.ts";
+import { rewriteNatalAspectsDeterministically } from "./natalAspectRewriter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -490,42 +491,109 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       const modalitiesAll = collectAll(section.modalities);
       const polaritiesAll = collectAll(section.polarity);
 
-      const formatList = (items: Array<{ name: string; count: number }>): string =>
-        items.map((i) => `${NUMBER_WORDS[i.count] ?? i.count} ${i.name}`).join(", ");
+      // Pairs of elements where naming the secondary actually adds
+      // information rather than restating the dominant. We only weave
+      // the secondary into the lead sentence when it lives in this set.
+      const SECOND_ELEMENT_PAIR: Record<string, true> = {
+        Fire: true, Earth: true, Air: true, Water: true,
+      };
+
+      // ─────────────────────────────────────────────────────────────────
+      // ANALYTICAL PROSE LIBRARY — describes the lived behavior of each
+      // element/modality/polarity dominance and absence so the rewrite
+      // reads like an interpretation a person can recognize themselves
+      // in, not a count list. We name lived experience first, the count
+      // is supportive context, never the headline.
+      // ─────────────────────────────────────────────────────────────────
+      const ELEMENT_DOMINANT: Record<string, string> = {
+        Fire: "lives forward — they think out loud, act on instinct, and need a project, person, or cause to push toward",
+        Earth: "lives in the body and the calendar — they trust what they can see, build, and repeat, and they relax once the practical side is handled",
+        Air: "lives in the head — they process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
+        Water: "lives in feelings — they pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
+      };
+      const ELEMENT_WEAK: Record<string, string> = {
+        Fire: "Fire is quiet here, so initiative often waits for someone else to spark it — momentum has to be chosen, not assumed",
+        Earth: "Earth is light, so structure, money rhythms, and bodily care are skills they have to consciously build instead of defaulting to",
+        Air: "Air is light, so they may carry feelings or gut sense for a long time before putting them into words — talking it out is the growth edge",
+        Water: "Water is light, so they can underestimate how much an interaction actually affected them and need to learn to name feelings before they leak out",
+      };
+      const MODALITY_PROSE: Record<string, { lead: string; weak: string }> = {
+        Cardinal: {
+          lead: "starts things — they get bored maintaining what is already running and feel most alive when something new is being launched",
+          weak: "without much Cardinal, they rarely initiate alone and tend to react to what others put in front of them",
+        },
+        Fixed: {
+          lead: "holds the line — once they commit, they stay, and they need a real reason (not pressure) before they will change course",
+          weak: "without much Fixed, follow-through requires structure or accountability they set up on purpose",
+        },
+        Mutable: {
+          lead: "adapts — they think in possibilities, change plans easily, and get restless inside rigid systems",
+          weak: "without much Mutable, pivoting feels harder than it looks; they prefer one path and one plan",
+        },
+      };
+      const POLARITY_PROSE: Record<string, string> = {
+        Yang: "energy moves outward by default — they assert, initiate, and process by doing",
+        Active: "energy moves outward by default — they assert, initiate, and process by doing",
+        Masculine: "energy moves outward by default — they assert, initiate, and process by doing",
+        Yin: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
+        Receptive: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
+        Feminine: "energy moves inward by default — they receive first, reflect, and act once they have felt the situation",
+      };
 
       const sentences: string[] = [];
+      const elementNames = new Set(elementsAll.map((i) => i.name));
+      const ALL_ELEMENTS = ["Fire", "Earth", "Air", "Water"];
 
+      // Element interpretation — lead with dominant lived behavior,
+      // name secondary element as a balance, then call out any major gap.
       if (elementsAll.length > 0) {
         const dominant = elementsAll[0];
-        const rest = elementsAll.slice(1);
-        const dominantClause = `${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} anchor${dominant.count === 1 ? "s" : ""} this chart's elemental tone`;
-        if (rest.length > 0) {
-          sentences.push(`${dominantClause}, balanced by ${formatList(rest)} — every active element shapes how this person processes experience.`);
-        } else {
-          sentences.push(`${dominantClause}.`);
+        const second = elementsAll[1];
+        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how they meet the world";
+        let elementSentence = `This person ${lead}`;
+        if (second && SECOND_ELEMENT_PAIR[second.name]) {
+          const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
+          if (secondLead) {
+            // Trim the secondary description so it reads as a balance, not a duplicate.
+            const trimmed = secondLead.split("—")[0].trim();
+            elementSentence += `, with a strong secondary pull that also ${trimmed}`;
+          }
+        }
+        elementSentence += ".";
+        sentences.push(elementSentence);
+
+        const missingElements = ALL_ELEMENTS.filter((e) => !elementNames.has(e));
+        if (missingElements.length === 1) {
+          const note = ELEMENT_WEAK[missingElements[0]];
+          if (note) sentences.push(`${note}.`);
+        } else if (missingElements.length === 2) {
+          // Two missing elements — name the more behaviorally costly one.
+          const priority = ["Fire", "Earth", "Water", "Air"];
+          const pick = priority.find((e) => missingElements.includes(e));
+          if (pick && ELEMENT_WEAK[pick]) sentences.push(`${ELEMENT_WEAK[pick]}.`);
         }
       }
 
+      // Modality interpretation — lead names the operating rhythm; if
+      // a modality is fully absent, name what that absence looks like.
       if (modalitiesAll.length > 0) {
         const dominant = modalitiesAll[0];
-        const rest = modalitiesAll.slice(1);
-        const dominantClause = `Modally, ${NUMBER_WORDS[dominant.count] ?? dominant.count} ${dominant.name} planet${dominant.count === 1 ? "" : "s"} set${dominant.count === 1 ? "s" : ""} the rhythm`;
-        if (rest.length > 0) {
-          sentences.push(`${dominantClause}, with ${formatList(rest)} adding their own pace.`);
-        } else {
-          sentences.push(`${dominantClause}.`);
+        const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
+        sentences.push(`Their pace ${lead}.`);
+        const presentMods = new Set(modalitiesAll.map((i) => i.name));
+        const ALL_MODS = ["Cardinal", "Fixed", "Mutable"];
+        const missingMod = ALL_MODS.find((m) => !presentMods.has(m));
+        if (missingMod && MODALITY_PROSE[missingMod]) {
+          sentences.push(`${MODALITY_PROSE[missingMod].weak}.`);
         }
       }
 
+      // Polarity interpretation — describe the default direction of
+      // energy in plain language, no count framing.
       if (polaritiesAll.length > 0) {
         const dominant = polaritiesAll[0];
-        const rest = polaritiesAll.slice(1);
-        const dominantClause = `Polarity leans ${dominant.name.toLowerCase()} (${NUMBER_WORDS[dominant.count] ?? dominant.count} planet${dominant.count === 1 ? "" : "s"})`;
-        if (rest.length > 0) {
-          sentences.push(`${dominantClause}, tempered by ${formatList(rest)}.`);
-        } else {
-          sentences.push(`${dominantClause}.`);
-        }
+        const lead = POLARITY_PROSE[dominant.name];
+        if (lead) sentences.push(`Overall, ${lead}.`);
       }
 
       if (sentences.length > 0) {
@@ -628,6 +696,13 @@ const buildEmptySummaryFallback = (
   // description = soft prose). This prevents [needs review] from
   // appearing when we still have valid window date data.
   if (allTransits.length === 0) {
+    // CRITICAL: never let Caution / negative-tone labels recycle the
+    // shared windows[] pool — that pool is undifferentiated and would
+    // produce identical date ranges to Best Windows. Negative tone gets
+    // a deterministic plain sentence instead.
+    if (!tone.positive) {
+      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+    }
     const windowDateRanges: string[] = [];
     for (const section of parsedContent.sections) {
       if (section?.type !== "timing_section" || !Array.isArray(section.windows)) continue;
@@ -2945,6 +3020,23 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         } catch (regenErr) {
           console.error("[ask-astrology] regen-on-drift threw:", regenErr);
+        }
+
+        // DETERMINISTIC NATAL ASPECT REWRITE — replaces any AI-written
+        // natal aspect phrase with a code-built behavioral sentence so
+        // the model never authors the meaning of an aspect. Runs after
+        // validation + regen so only verified aspects survive to be
+        // rewritten in our voice.
+        try {
+          const r = rewriteNatalAspectsDeterministically(
+            parsedContent,
+            sanitizedChartContext || undefined,
+          );
+          if (r.rewritten_count > 0 || r.skipped_no_library > 0) {
+            console.info("[ask-astrology] natal aspects deterministically rewritten", r);
+          }
+        } catch (rewriteErr) {
+          console.error("[ask-astrology] natal aspect rewriter threw:", rewriteErr);
         }
 
         // FINAL FALLBACK: Any summary_box item left with an empty value
