@@ -22,10 +22,24 @@ const MODALITY_MAP: Record<string, string> = {
   Gemini: "Mutable", Virgo: "Mutable", Sagittarius: "Mutable", Pisces: "Mutable",
 };
 
-const POLARITY_MAP: Record<string, string> = {
-  Aries: "Masculine", Taurus: "Feminine", Gemini: "Masculine", Cancer: "Feminine",
-  Leo: "Masculine", Virgo: "Feminine", Libra: "Masculine", Scorpio: "Feminine",
-  Sagittarius: "Masculine", Capricorn: "Feminine", Aquarius: "Masculine", Pisces: "Feminine",
+// Planet-based polarity (NOT sign-based). A planet's intrinsic nature determines
+// its Yang/Yin assignment, regardless of which sign it currently occupies.
+// - Yang (active, outward, projecting): Sun, Mars, Jupiter, Saturn, Uranus
+// - Yin (receptive, inward, magnetic): Moon, Venus, Neptune, Pluto
+// - Neutral / variable: Mercury (takes on the polarity of the sign it's in or
+//   the planet it most closely aspects — for the count we treat it as neutral
+//   and exclude it from both totals)
+const PLANET_POLARITY: Record<string, "Yang" | "Yin" | "Neutral"> = {
+  Sun: "Yang",
+  Mars: "Yang",
+  Jupiter: "Yang",
+  Saturn: "Yang",
+  Uranus: "Yang",
+  Moon: "Yin",
+  Venus: "Yin",
+  Neptune: "Yin",
+  Pluto: "Yin",
+  Mercury: "Neutral",
 };
 
 const COUNTED_PLANETS = [
@@ -222,7 +236,9 @@ const buildCounts = (points: PointRecord[]) => {
     if (!COUNTED_PLANETS.includes(point.name as (typeof COUNTED_PLANETS)[number])) continue;
     const element = ELEMENT_MAP[point.sign];
     const modality = MODALITY_MAP[point.sign];
-    const polarity = POLARITY_MAP[point.sign];
+    // Polarity is now derived from the PLANET itself, not the sign it occupies.
+    // Mercury is neutral and is excluded from both Yang/Yin totals.
+    const polarity = PLANET_POLARITY[point.name];
 
     if (element) {
       elements[element].count += 1;
@@ -232,10 +248,10 @@ const buildCounts = (points: PointRecord[]) => {
       modalities[modality].count += 1;
       modalities[modality].planets.push(point.name);
     }
-    if (polarity === "Masculine") {
+    if (polarity === "Yang") {
       masculine.count += 1;
       masculine.planets.push(point.name);
-    } else if (polarity === "Feminine") {
+    } else if (polarity === "Yin") {
       feminine.count += 1;
       feminine.planets.push(point.name);
     }
@@ -248,16 +264,18 @@ const buildCounts = (points: PointRecord[]) => {
     elements,
     modalities,
     polarity: {
-      Masculine: masculine,
-      Feminine: feminine,
+      // Primary planet-based polarity counts.
       Yang: { count: masculine.count, planets: [...masculine.planets] },
       Yin: { count: feminine.count, planets: [...feminine.planets] },
+      // Aliases retained so existing prompt vocabulary still resolves.
       Active: { count: masculine.count, planets: [...masculine.planets] },
       Receptive: { count: feminine.count, planets: [...feminine.planets] },
+      Masculine: { count: masculine.count, planets: [...masculine.planets] },
+      Feminine: { count: feminine.count, planets: [...feminine.planets] },
     },
     dominant_element: dominant(elements),
     dominant_modality: dominant(modalities),
-    dominant_polarity: masculine.count >= feminine.count ? "Masculine" : "Feminine",
+    dominant_polarity: masculine.count >= feminine.count ? "Yang" : "Yin",
   };
 };
 
