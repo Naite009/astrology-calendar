@@ -877,7 +877,7 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
         }
         // 2) Exact-sentence dedupe (catches canned lines without an aspect
         // anchor like the South Node pattern sentence).
-        const norm = normalizeSentenceForDedupe(sent);
+        const norm = normalizeSentenceForCrossSection(sent);
         // Only dedupe sentences long enough to be intentional content, not
         // generic transitional phrases. Floor at 25 chars normalized.
         if (norm.length >= 25) {
