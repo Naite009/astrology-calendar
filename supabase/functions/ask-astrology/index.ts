@@ -716,11 +716,23 @@ const buildEmptySummaryFallback = (
         const lbl = (w?.label || "").trim();
         const desc = (w?.description || "").trim();
         const haystack = `${lbl} ${desc}`;
-        if (!HARD_OUTER_RE.test(haystack) || !HARD_ASPECT_RE.test(haystack)) continue;
+        // Honour an explicit `nature: "challenging"` flag if the schema
+        // ever grows one. Otherwise infer from planet+aspect regex.
+        const explicitlyChallenging = typeof w?.nature === "string" && /challeng|hard|caution/i.test(w.nature);
+        const inferredHard = HARD_OUTER_RE.test(haystack) && HARD_ASPECT_RE.test(haystack);
+        if (!explicitlyChallenging && !inferredHard) continue;
         // Prefer the label as the date-range source since it typically
         // already encodes the active window (e.g. "Mar 11 — Sep 7, 2027").
-        // If the label doesn't carry a year, try the description.
-        const dateSource = /\d{4}/.test(lbl) ? lbl : (/\d{4}/.test(desc) ? desc : "");
+        // If the label doesn't carry a year, try the description. As a
+        // final fallback, use the bare label so the canned "no major
+        // challenging transits" string never wins when windows[] clearly
+        // names hard outer-planet aspects (the Lauren Newman bug: 8
+        // challenging transits present, fallback still emitted because
+        // none of the labels carried 4-digit years).
+        let dateSource = "";
+        if (/\d{4}/.test(lbl)) dateSource = lbl;
+        else if (/\d{4}/.test(desc)) dateSource = desc;
+        else if (lbl) dateSource = lbl; // accept label without year
         if (!dateSource) continue;
         phrases.push(dateSource);
       }
