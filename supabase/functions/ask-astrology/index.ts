@@ -743,7 +743,7 @@ const buildEmptySummaryFallback = (
   // Caution end up with identical date ranges.
   if (matching.length === 0) {
     if (!tone.positive) {
-      return "No major challenging transits are active in this window. Use this calmer period to consolidate gains and prepare for upcoming shifts.";
+      return "No major challenging transits are active in this window — this is a relatively open period.";
     }
     // For positive labels, falling back to all transits is acceptable —
     // a soft window labeled "Best" can still cite a neutral transit
@@ -839,6 +839,12 @@ const TIMING_LABEL_PATTERNS: RegExp[] = [
   /top\s+cities?\s+timing/i,
   /key\s+windows?/i,
   /strongest\s+windows?/i,
+  // PERMANENT: "What This Year Is Best For" is the last AI-written
+  // timing field. It keeps citing Jupiter windows in prose, which the
+  // natal-aspect validator then strips. Adding it here forces the
+  // deterministic transits[]-based override to handle it like the
+  // other timing fields, eliminating the Jupiter hallucination source.
+  /what\s+this\s+year\s+is\s+best\s+for/i,
 ];
 
 const isTimingLabel = (label: string): boolean => {
