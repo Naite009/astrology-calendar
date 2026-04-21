@@ -1314,11 +1314,26 @@ const stripPhantomAspectsEverywhere = (
   visit(parsedContent);
 
   if (phantomCount > 0) {
+    // Log under BOTH names: `aspect_crosscheck_rewrite` mirrors the
+    // `crossCheckPlanetPlacements` naming so downstream consumers
+    // (Replit PDF generator, audit dashboards) can correlate aspect
+    // and placement rewrites with the same query. The legacy
+    // `phantom_aspect_rewritten` entry is kept for back-compat with
+    // any consumer already filtering on it.
+    log.push({
+      type: "aspect_crosscheck_rewrite",
+      detail: {
+        count: phantomCount,
+        examples,
+        truth_source: "listAllowedNatalAspects (longitudes + standard major orbs)",
+        action: "rewritten to neutral '<P1>–<P2> dynamic' phrasing",
+      },
+    });
     log.push({
       type: "phantom_aspect_rewritten",
       detail: { count: phantomCount, examples },
     });
-    console.warn("[ask-astrology] phantom aspect guard rewrote claims", {
+    console.warn("[ask-astrology] aspect cross-check rewrote phantom claims", {
       count: phantomCount,
       examples,
     });
