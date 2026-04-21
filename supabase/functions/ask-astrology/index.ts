@@ -3959,6 +3959,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         try {
           const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
           dedupeTimingArrays(parsedContent, emissionLog);
+          // Collapse duplicate window descriptions before placeholder strip
+          // so the second/third copies become short pointer lines instead
+          // of repeating the full paragraph downstream.
+          dedupeWindowDescriptions(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
           // Cross-check planet placements in prose against the natal
           // placement_table; strip relationship leaks from relocation
@@ -3968,6 +3972,22 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           crossCheckPlanetPlacements(parsedContent, emissionLog);
           stripRelationshipLeaksFromRelocation(parsedContent, emissionLog);
           dedupeNarrativeParagraphs(parsedContent, emissionLog);
+          // Phantom-aspect guard: surgically rewrites any
+          // "<Planet> <aspect> <Planet>" phrase that is NOT in the
+          // verified natal-aspect allowlist. Defense in depth on top
+          // of the earlier sentence-level strip.
+          try {
+            const allowedAspects = listAllowedNatalAspects(sanitizedChartContext || undefined);
+            const allowedAspectKeys = buildAllowedAspectKeySet(allowedAspects);
+            stripPhantomAspectsEverywhere(parsedContent, allowedAspectKeys, emissionLog);
+          } catch (phantomErr) {
+            console.error("[ask-astrology] phantom aspect guard threw:", phantomErr);
+          }
+          // Strip self-referential / scaffolding sentences like "the
+          // rest of this reading shows you exactly why" or "these are
+          // the core forces that shape how you connect" — sentences
+          // that talk ABOUT the reading rather than delivering content.
+          stripMetaSentences(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
