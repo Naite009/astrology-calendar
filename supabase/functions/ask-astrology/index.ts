@@ -2079,12 +2079,12 @@ MANDATORY ASPECT VERIFICATION PROTOCOL:
 - This protocol applies equally to natal-to-natal, transit-to-natal, and SR-to-natal aspects.
 
 PLANET POLARITY (YIN/YANG) — DO NOT CONFUSE WITH SIGN POLARITY:
-- Planet polarity is a property of the PLANET ITSELF, not the sign it occupies. Use these fixed assignments in every reading:
-  • YANG (active / masculine / projective): Sun, Mars, Jupiter, Uranus, Pluto
-  • YIN (receptive / feminine / magnetic): Moon, Venus, Neptune
-  • NEUTRAL / DUAL (takes polarity from sign and aspects): Mercury, Saturn, Chiron
-- Sign polarity is SEPARATE and independent: Fire/Air signs are Yang; Earth/Water signs are Yin. A Yang planet in a Yin sign is still a Yang planet — its expression is filtered through the sign, not reversed by it. NEVER relabel Mars, Jupiter, or Uranus as "Yin" because they sit in Cancer, Taurus, Virgo, Pisces, Capricorn, or Scorpio. NEVER relabel Moon or Venus as "Yang" because they sit in a fire or air sign.
-- When you report yin/yang balance for a person, count PLANET polarity (using the fixed list above) separately from SIGN polarity, and explicitly label which one you are reporting ("By planet nature: 5 Yang / 3 Yin / 2 Neutral" vs "By sign placement: 4 Yang signs / 6 Yin signs"). Do not mix the two counts into a single number.
+- Planet polarity is a property of the PLANET ITSELF, not the sign it occupies. Use these fixed assignments in every reading (these are authoritative — do not substitute other systems):
+  • YANG (active / projective / outward): Sun, Mars, Jupiter, Saturn, Uranus
+  • YIN (receptive / magnetic / inward): Moon, Venus, Neptune, Pluto
+  • NEUTRAL / VARIABLE: Mercury (takes on the polarity of the sign it occupies or the planet it most closely aspects; exclude from Yang/Yin totals when reporting a count)
+- Sign polarity is SEPARATE and independent: Fire/Air signs are Yang; Earth/Water signs are Yin. A Yang planet in a Yin sign is still a Yang planet — its expression is filtered through the sign, not reversed by it. NEVER relabel Mars, Jupiter, Saturn, or Uranus as "Yin" because they sit in Cancer, Taurus, Virgo, Pisces, Capricorn, or Scorpio. NEVER relabel Moon, Venus, Neptune, or Pluto as "Yang" because they sit in a fire or air sign.
+- When you report yin/yang balance for a person, count PLANET polarity (using the fixed list above) separately from SIGN polarity, and explicitly label which one you are reporting ("By planet nature: 5 Yang / 4 Yin / 1 Neutral" vs "By sign placement: 4 Yang signs / 6 Yin signs"). Do not mix the two counts into a single number.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
