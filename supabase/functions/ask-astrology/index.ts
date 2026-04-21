@@ -993,6 +993,281 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// EMISSION HYGIENE — EXTENDED PASSES
+// ─────────────────────────────────────────────────────────────────────────
+
+const RELOCATION_PHRASE_FIXES: Array<[RegExp, string]> = [
+  [/\byour\s+partner\b/gi, "your environment"],
+  [/\bthe\s+person\s+closest\s+to\s+you\b/gi, "the place you call home"],
+  [/\bin\s+your\s+relationship\s+world\b/gi, "in your environment"],
+  [/\baround\s+desire,\s*sex,\s*conflict\b/gi, "around drive, momentum, and assertion"],
+  [/\bin\s+a\s+relationship\b/gi, "in this place"],
+  [/\bwith\s+a\s+partner\b/gi, "in this place"],
+  [/\bthis\s+relationship\b/gi, "this place"],
+  [/\byour\s+relationship\b/gi, "your environment"],
+];
+const HYGIENE_SAFE_KEYS = new Set([
+  "_validation", "_validation_log", "_validation_warning",
+  "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+  "type", "label", "planet", "aspect", "natal_point", "symbol",
+  "tag", "house", "sign", "degrees", "generated_date", "birth_info",
+  "subject", "question_type", "question_asked", "name",
+]);
+const stripRelationshipLeaksFromRelocation = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt !== "relocation" && qt !== "travel") return;
+  let rewritten = 0;
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (HYGIENE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        for (const [re, repl] of RELOCATION_PHRASE_FIXES) {
+          if (re.test(next)) next = next.replace(re, repl);
+        }
+        if (next !== val) { (node as any)[key] = next; rewritten++; }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (rewritten > 0) log.push({ type: "relocation_phrasing_normalized", detail: { rewrites: rewritten } });
+};
+
+const dedupeNarrativeParagraphs = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let touched = 0;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "narrative_section") continue;
+    const bodyKey = typeof section.body === "string" ? "body"
+      : typeof section.content === "string" ? "content"
+      : typeof section.text === "string" ? "text"
+      : null;
+    if (!bodyKey) continue;
+    const original = String(section[bodyKey]);
+    if (!original.trim()) continue;
+    const paragraphs = original.split(/\n\s*\n+/);
+    if (paragraphs.length <= 1) continue;
+    const seen = new Set<string>();
+    const kept: string[] = [];
+    for (const p of paragraphs) {
+      const norm = p.trim().toLowerCase().replace(/\s+/g, " ");
+      if (!norm) continue;
+      const key = norm.length > 200 ? norm.slice(0, 200) : norm;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      kept.push(p.trim());
+    }
+    if (kept.length !== paragraphs.length) {
+      section[bodyKey] = kept.join("\n\n");
+      touched++;
+      log.push({ type: "narrative_paragraph_duplicates_dropped", detail: { section: section.title || "", removed: paragraphs.length - kept.length } });
+    }
+  }
+  if (touched > 0) log.push({ type: "narrative_dedup_summary", detail: { sections_touched: touched } });
+};
+
+const SIGN_NAMES = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+const PLANET_NAMES_FOR_CROSSCHECK = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","North Node","South Node"];
+const ORDINAL_TO_NUMBER: Record<string, number> = {
+  "1st":1,"first":1,"2nd":2,"second":2,"3rd":3,"third":3,"4th":4,"fourth":4,
+  "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
+  "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
+};
+const NUMBER_TO_ORDINAL: Record<number, string> = {1:"1st",2:"2nd",3:"3rd",4:"4th",5:"5th",6:"6th",7:"7th",8:"8th",9:"9th",10:"10th",11:"11th",12:"12th"};
+
+interface PlacementFact { sign?: string; house?: number; retrograde?: boolean; }
+
+const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> => {
+  const map = new Map<string, PlacementFact>();
+  if (!Array.isArray(parsedContent?.sections)) return map;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section?.title || "").toLowerCase();
+    if (titleLower.includes("solar return") || titleLower.includes("sr ")) continue;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const planet = String(row.planet || row.body || row.name || "").trim();
+      if (!planet) continue;
+      const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
+      const houseRaw = row.house;
+      let house: number | undefined;
+      if (typeof houseRaw === "number") house = houseRaw;
+      else if (typeof houseRaw === "string") {
+        const m = houseRaw.match(/\d+/);
+        if (m) house = parseInt(m[0], 10);
+      }
+      const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
+      const retrograde = /\bR\b|retrograde/i.test(retroRaw) && !/direct/i.test(retroRaw);
+      map.set(planet.toLowerCase(), { sign, house, retrograde });
+    }
+  }
+  return map;
+};
+
+const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const truth = buildPlacementTruthMap(parsedContent);
+  if (truth.size === 0) return;
+
+  const flagsByPlanet = new Map<string, { fixed: number; flagged: string[] }>();
+  const noteFix = (planet: string, before: string, after: string) => {
+    const key = planet.toLowerCase();
+    if (!flagsByPlanet.has(key)) flagsByPlanet.set(key, { fixed: 0, flagged: [] });
+    const slot = flagsByPlanet.get(key)!;
+    slot.fixed++;
+    if (slot.flagged.length < 3) slot.flagged.push(`${before} → ${after}`);
+  };
+
+  const planetAlt = PLANET_NAMES_FOR_CROSSCHECK.slice().sort((a,b)=>b.length-a.length).map((p)=>p.replace(/\s+/g,"\\s+")).join("|");
+  const signRe = new RegExp(`\\b(${planetAlt})\\b(\\s+at\\s+\\d+°(?:\\d+'?)?\\s+)(${SIGN_NAMES.join("|")})\\b`, "gi");
+  const houseRe = new RegExp(`\\b(${planetAlt})\\b(\\s+in\\s+(?:your\\s+)?)(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)(\\s+house)\\b`, "gi");
+  const motionRe = new RegExp(`\\b(${planetAlt})\\b(\\s+(?:is\\s+)?)(retrograde|direct)\\b`, "gi");
+
+  const fixString = (val: string): string => {
+    let next = val;
+    next = next.replace(signRe, (m, planet, mid, sign) => {
+      const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
+      if (!fact?.sign) return m;
+      if (fact.sign.toLowerCase() === String(sign).toLowerCase()) return m;
+      const replaced = `${planet}${mid}${fact.sign}`;
+      noteFix(planet, m, replaced);
+      return replaced;
+    });
+    next = next.replace(houseRe, (m, planet, mid, ord, tail) => {
+      const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
+      if (!fact?.house) return m;
+      const ordNum = ORDINAL_TO_NUMBER[String(ord).toLowerCase()];
+      if (!ordNum || ordNum === fact.house) return m;
+      const replaced = `${planet}${mid}${NUMBER_TO_ORDINAL[fact.house]}${tail}`;
+      noteFix(planet, m, replaced);
+      return replaced;
+    });
+    next = next.replace(motionRe, (m, planet, mid, motion) => {
+      const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
+      if (fact?.retrograde === undefined) return m;
+      const claimsRetro = String(motion).toLowerCase() === "retrograde";
+      if (claimsRetro === fact.retrograde) return m;
+      const correct = fact.retrograde ? "retrograde" : "direct";
+      const replaced = `${planet}${mid}${correct}`;
+      noteFix(planet, m, replaced);
+      return replaced;
+    });
+    return next;
+  };
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (HYGIENE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const fixed = fixString(val);
+        if (fixed !== val) (node as any)[key] = fixed;
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  for (const [planet, slot] of flagsByPlanet.entries()) {
+    log.push({ type: "placement_crosscheck_rewrite", detail: { planet, fixed: slot.fixed, examples: slot.flagged } });
+  }
+};
+
+const checkSRHouseNumberCopy = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let natalHouses: Map<string, number> | null = null;
+  let srTable: any = null;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section?.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    const houseMap = new Map<string, number>();
+    for (const row of rows) {
+      const planet = String(row?.planet || row?.body || row?.name || "").trim().toLowerCase();
+      if (!planet) continue;
+      const houseRaw = row?.house;
+      let house: number | undefined;
+      if (typeof houseRaw === "number") house = houseRaw;
+      else if (typeof houseRaw === "string") {
+        const m = houseRaw.match(/\d+/);
+        if (m) house = parseInt(m[0], 10);
+      }
+      if (house !== undefined) houseMap.set(planet, house);
+    }
+    if (isSR) srTable = { section, houseMap };
+    else if (!natalHouses) natalHouses = houseMap;
+  }
+  if (!natalHouses || !srTable || srTable.houseMap.size === 0) return;
+  let matches = 0;
+  let compared = 0;
+  for (const [planet, srHouse] of srTable.houseMap.entries()) {
+    const natalHouse = natalHouses.get(planet);
+    if (natalHouse === undefined) continue;
+    compared++;
+    if (natalHouse === srHouse) matches++;
+  }
+  if (compared >= 6 && matches === compared) {
+    srTable.section._sr_house_copy_warning = true;
+    log.push({
+      type: "sr_house_copy_detected",
+      detail: { compared, matches, message: "SR placement table house numbers match natal exactly — likely copied from natal. Consumer should derive houses from SR Ascendant." },
+    });
+  }
+};
+
+const US_CITY_TO_STATE: Record<string, string> = {
+  "atlanta":"GA","austin":"TX","boston":"MA","chicago":"IL","dallas":"TX","denver":"CO",
+  "detroit":"MI","houston":"TX","indianapolis":"IN","jacksonville":"FL","las vegas":"NV",
+  "los angeles":"CA","memphis":"TN","miami":"FL","milwaukee":"WI","minneapolis":"MN",
+  "nashville":"TN","new orleans":"LA","new york":"NY","oakland":"CA","oklahoma city":"OK",
+  "orlando":"FL","philadelphia":"PA","phoenix":"AZ","pittsburgh":"PA","portland":"OR",
+  "raleigh":"NC","sacramento":"CA","salt lake city":"UT","san antonio":"TX","san diego":"CA",
+  "san francisco":"CA","san jose":"CA","seattle":"WA","st. louis":"MO","st louis":"MO",
+  "tampa":"FL","tucson":"AZ","brooklyn":"NY","queens":"NY","bronx":"NY","manhattan":"NY",
+  "asheville":"NC","savannah":"GA","charleston":"SC","richmond":"VA","albuquerque":"NM",
+  "tulsa":"OK","kansas city":"MO","omaha":"NE","boise":"ID","anchorage":"AK","honolulu":"HI",
+  "providence":"RI","hartford":"CT","burlington":"VT","bangor":"ME","santa fe":"NM",
+  "santa barbara":"CA","santa monica":"CA",
+};
+const completeCityNames = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const cities = Object.keys(US_CITY_TO_STATE).sort((a,b)=>b.length-a.length);
+  const cityAlt = cities.map((c)=>c.replace(/\s+/g,"\\s+").replace(/\./g,"\\.")).join("|");
+  const cityRe = new RegExp(`\\b(${cityAlt})\\b(?!\\s*,\\s*[A-Za-z])`, "gi");
+
+  let expansions = 0;
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (HYGIENE_SAFE_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const next = val.replace(cityRe, (m, city) => {
+          const state = US_CITY_TO_STATE[String(city).toLowerCase().replace(/\s+/g, " ")];
+          if (!state) return m;
+          expansions++;
+          return `${m}, ${state}`;
+        });
+        if (next !== val) (node as any)[key] = next;
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (expansions > 0) log.push({ type: "city_names_completed", detail: { expansions } });
+};
+
 const fillEmptySummaryItems = (parsedContent: any) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   for (const section of parsedContent.sections) {
