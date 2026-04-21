@@ -278,11 +278,6 @@ const buildCounts = (points: PointRecord[]) => {
     dominant_polarity: masculine.count >= feminine.count ? "Yang" : "Yin",
   };
 };
-    dominant_element: dominant(elements),
-    dominant_modality: dominant(modalities),
-    dominant_polarity: masculine.count >= feminine.count ? "Masculine" : "Feminine",
-  };
-};
 
 export const buildAskValidationFactsBlock = (chart: NatalChart | null) => {
   if (!chart) return "";
