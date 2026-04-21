@@ -3305,7 +3305,7 @@ SR LOVE ACTIVATION STYLE:
   MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Your Soul's Blueprint" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
+  2. narrative_section — "Your Soul's Foundation" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
   3. narrative_section — "The Inner Teacher" (Saturn sign/house for life lessons, Chiron for wound-to-gift, 12th house for spiritual connection)
   4. narrative_section — "The Awakening Points" (Uranus for breakthroughs, Neptune for spiritual vision, Pluto for deep transformation)
   5. timing_section — "Spiritual Timing" (transits to North Node, Neptune, and 12th house ruler with exact degrees and date ranges)
