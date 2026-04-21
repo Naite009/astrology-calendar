@@ -633,31 +633,69 @@ const PRONOUN_REWRITE_SAFE_KEYS = new Set<string>([
   "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "date_range", "dateRange",
 ]);
+// Hard-coded rewrites for the exact 4 boilerplate strings flagged by the
+// Replit gate audit on Lauren Newman's career reading. These canned aspect
+// interpretations were being pasted with third-person pronouns intact AND
+// duplicated across 2+ sections. We rewrite them deterministically to
+// second-person before any other pronoun pass runs.
+const CAREER_BOILERPLATE_REWRITES: Array<{ pattern: RegExp; replace: string }> = [
+  {
+    pattern: /Their reach and their grasp don'?t (quite )?match[^.]*?(\.|$)/gi,
+    replace: "your reach and your grasp don't quite match, so you keep almost-getting the big thing until you size your ask to your actual capacity.",
+  },
+  {
+    pattern: /Their drive runs into walls[^.]*?(\.|$)/gi,
+    replace: "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out.",
+  },
+  {
+    pattern: /They can outlast forces that break other people[^.]*?(\.|$)/gi,
+    replace: "you can outlast forces that break other people; pressure makes you more focused, not less.",
+  },
+  {
+    pattern: /They communicate carefully and people take them seriously when they do speak[^.]*?(\.|$)/gi,
+    replace: "you communicate carefully and when you do speak, people take you seriously.",
+  },
+];
+const applyCareerBoilerplateRewrites = (text: string): string => {
+  let s = text;
+  for (const { pattern, replace } of CAREER_BOILERPLATE_REWRITES) {
+    s = s.replace(pattern, replace);
+  }
+  return s;
+};
+
 const rewriteSentencePronouns = (sentence: string): string => {
-  let s = sentence;
+  // Run hard-coded boilerplate rewrites first — guaranteed hits for the 4
+  // customer-flagged stock strings.
+  let s = applyCareerBoilerplateRewrites(sentence);
   // Leading-clause swaps: "Their X" / "They X" at start of sentence or after
-  // an em-dash / colon / semicolon (these are the framings the AI library
-  // emits, e.g. "Mars square Saturn — Their drive runs into walls…").
+  // an em-dash / dash / colon / semicolon (these are the framings the AI
+  // library emits, e.g. "Mars square Saturn — Their drive runs into walls…").
   s = s.replace(
-    /(^|[—:;]\s+)(Their)\b/g,
-    (_m, lead, _w) => `${lead}Your`,
+    /(^|[—–\-:;]\s+)(Their)\b/g,
+    (_m, lead) => `${lead}Your`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(their)\b/g,
-    (_m, lead, _w) => `${lead}your`,
+    /(^|[—–\-:;]\s+)(their)\b/g,
+    (_m, lead) => `${lead}your`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(They)\b/g,
+    /(^|[—–\-:;]\s+)(They)\b/g,
     (_m, lead) => `${lead}You`,
   );
   s = s.replace(
-    /(^|[—:;]\s+)(they)\b/g,
+    /(^|[—–\-:;]\s+)(they)\b/g,
     (_m, lead) => `${lead}you`,
   );
+  // Object-pronoun swap: "...take them seriously" → "...take you seriously".
+  // Only swap "them" after verbs that nearly always refer back to the
+  // reading's subject in a career context.
+  s = s.replace(
+    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know)\s+them\b/gi,
+    (_m, verb) => `${verb} you`,
+  );
   // Verb-agreement fixups for the most common patterns the library emits.
-  // "you keeps" → "you keep", "you learns" → "you learn", etc. We only
-  // touch verbs that immediately follow a freshly-rewritten "you/You".
-  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees)\b/g,
+  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
     (_m, pron, verb) => {
       const map: Record<string, string> = {
         keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
@@ -665,18 +703,22 @@ const rewriteSentencePronouns = (sentence: string): string => {
         takes: "take", speaks: "speak", hits: "hit", breaks: "break",
         focuses: "focus", matches: "match", grasps: "grasp", reaches: "reach",
         works: "work", finds: "find", holds: "hold", builds: "build",
-        makes: "make", sees: "see",
+        makes: "make", sees: "see", wants: "want", needs: "need",
+        knows: "know", feels: "feel", tries: "try", thinks: "think",
+        seems: "seem", moves: "move", stays: "stay", goes: "go",
+        comes: "come", gives: "give", asks: "ask", says: "say",
+        tells: "tell", shows: "show", brings: "bring", carries: "carry",
+        pays: "pay", earns: "earn", loses: "lose", wins: "win",
+        leads: "lead", follows: "follow",
       };
       return `${pron} ${map[verb] ?? verb}`;
     });
-  // "you is" → "you are", "you was" → "you were"
   s = s.replace(/\b(you|You)\s+is\b/g, (_m, p) => `${p} are`);
   s = s.replace(/\b(you|You)\s+was\b/g, (_m, p) => `${p} were`);
-  // "you has" → "you have"
   s = s.replace(/\b(you|You)\s+has\b/g, (_m, p) => `${p} have`);
-  // "you doesn't" → "you don't", "you wasn't" → "you weren't"
-  s = s.replace(/\b(you|You)\s+doesn't\b/g, (_m, p) => `${p} don't`);
-  s = s.replace(/\b(you|You)\s+wasn't\b/g, (_m, p) => `${p} weren't`);
+  s = s.replace(/\b(you|You)\s+doesn'?t\b/g, (_m, p) => `${p} don't`);
+  s = s.replace(/\b(you|You)\s+wasn'?t\b/g, (_m, p) => `${p} weren't`);
+  s = s.replace(/\b(you|You)\s+hasn'?t\b/g, (_m, p) => `${p} haven't`);
   return s;
 };
 const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
