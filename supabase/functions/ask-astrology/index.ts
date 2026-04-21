@@ -1173,6 +1173,46 @@ const dedupeRepeatedSentences = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// Hard banned-phrase replacement pass — final safety net for words the AI
+// is told never to emit (e.g., "DNA", "blueprint"). Replaces case-insensitively
+// while preserving capitalization where possible.
+const BANNED_PHRASE_REPLACEMENTS: Array<{ pattern: RegExp; replace: (match: string) => string }> = [
+  { pattern: /\bDNA\b/g, replace: () => "Foundation" },
+  { pattern: /\bdna\b/g, replace: () => "foundation" },
+  { pattern: /\bBlueprint\b/g, replace: () => "Foundation" },
+  { pattern: /\bblueprint\b/g, replace: () => "foundation" },
+  { pattern: /\bBLUEPRINT\b/g, replace: () => "FOUNDATION" },
+];
+const stripBannedPhrases = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let replacements = 0;
+  const examples: string[] = [];
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === "string") {
+        let next = val;
+        for (const { pattern, replace } of BANNED_PHRASE_REPLACEMENTS) {
+          next = next.replace(pattern, replace);
+        }
+        if (next !== val) {
+          if (examples.length < 5) examples.push(`${val.slice(0, 80)} → ${next.slice(0, 80)}`);
+          (node as any)[key] = next;
+          replacements++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (replacements > 0) {
+    log.push({ type: "banned_phrases_replaced", detail: { count: replacements, examples } });
+    console.info("[ask-astrology] banned phrases replaced", { count: replacements, examples });
+  }
+};
+
 const SIGN_NAMES = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const PLANET_NAMES_FOR_CROSSCHECK = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","North Node","South Node"];
 const ORDINAL_TO_NUMBER: Record<string, number> = {
@@ -2826,7 +2866,7 @@ SR LOVE ACTIVATION STYLE:
   Do NOT assume the user's current location. Never rate a presumed "current location." Only compare recommended cities. Tone must be practical and honest — no fluff.
 - For question_type "career": Use this EXACT section order:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Your Career DNA" (10th house cusp sign, its ruler, Sun sign/house, MC degree)
+  2. narrative_section — "Your Career Foundation" (10th house cusp sign, its ruler, Sun sign/house, MC degree)
   3. narrative_section — "Hidden Strengths" (6th house for daily work style, 2nd house for earning style, 8th house for joint ventures/investments)
   4. narrative_section — "The Growth Edge" (North Node purpose, Saturn lessons, Chiron's wound-to-gift in career context)
   5. city_comparison — "Best Cities for Career" (at least 4 cities where Sun MC, Jupiter MC, or Venus MC lines fall)
@@ -2837,11 +2877,11 @@ SR LOVE ACTIVATION STYLE:
 
   CAREER TRANSIT FRAMING RULE (MANDATORY): For career readings, EVERY transit description in the timing_section MUST be framed exclusively through the lens of career, work, professional identity, ambition, public visibility, and professional contribution. ABSOLUTELY FORBIDDEN in career transit entries: any language about relocation, where to live, where you're headed geographically, "settling in," "moving," "home base," "place," cities, or physical locations. FORBIDDEN transit labels in career: "SETTLE-IN", "MOVE-WINDOW", "RELOCATION WINDOW" — these are relocation labels and must NEVER appear in a career reading. Use career-appropriate labels instead: "OPPORTUNITY WINDOW", "LAUNCH WINDOW", "CONSOLIDATION", "PIVOT POINT", "VISIBILITY PEAK", "RESTRUCTURE", "RECOGNITION WINDOW". Examples of correct career framing: Saturn conjunct natal Sun = professional identity consolidation, commitment to long-term career structure, the moment your work defines who you become. Neptune square natal Moon = clarity of direction in work, dissolving outdated role identities, intuitive recalibration of what your career should feel like. Pluto trine natal Mars = capacity to act decisively on ambition, executive power, ability to push major professional moves through. Jupiter trine natal Sun = expansion of professional identity, recognition window, the year your work gets seen at a new scale.
 
-  CAREER TRANSIT COMPLETENESS — JUPITER TO 10TH/MC/11TH MANDATORY: For career readings, the timing_section "transits" array MUST include a standalone entry for EVERY Jupiter transit (conjunction, sextile, square, trine, opposition) to: (a) any planet in the natal 10th house, (b) the MC ruler, (c) the natal Sun (always career-relevant), (d) any planet in the natal 11th house, and (e) the MC degree itself, that occurs within the 18-month window. These are the highest-priority career transits and MUST NEVER appear ONLY in the summary_box or narrative — each one requires its own dedicated entry with exact degrees, date range, and career-framed interpretation. If you mention a Jupiter-to-career-point transit anywhere in the reading (summary, narrative, DNA section), it MUST exist as its own timing entry. Jupiter trine natal Sun in particular is almost always the single most important career transit when present and must be treated as a headline window.
+  CAREER TRANSIT COMPLETENESS — JUPITER TO 10TH/MC/11TH MANDATORY: For career readings, the timing_section "transits" array MUST include a standalone entry for EVERY Jupiter transit (conjunction, sextile, square, trine, opposition) to: (a) any planet in the natal 10th house, (b) the MC ruler, (c) the natal Sun (always career-relevant), (d) any planet in the natal 11th house, and (e) the MC degree itself, that occurs within the 18-month window. These are the highest-priority career transits and MUST NEVER appear ONLY in the summary_box or narrative — each one requires its own dedicated entry with exact degrees, date range, and career-framed interpretation. If you mention a Jupiter-to-career-point transit anywhere in the reading (summary, narrative, Career Foundation section), it MUST exist as its own timing entry. Jupiter trine natal Sun in particular is almost always the single most important career transit when present and must be treated as a headline window.
 
   CAREER NATAL-SR HOUSE BRIDGE RULE: When the Solar Return chart has a stellium or significant cluster (3+ planets) in any house, the career reading MUST explicitly bridge the SR house activation to what already lives in that same natal house. Example: If SR has Sun + Venus + Chiron in the SR 6th, and the natal 6th contains Pluto in Sagittarius, the reading must state that this year's 6th house activation is landing on a natal 6th that already carries Pluto's demand for depth and philosophical meaning — so the year is not generic "daily work habits" but a specific transformation of the daily work environment shaped by the natal Pluto signature. Make this bridge in the relevant narrative section, not just in passing.
 
-  12TH HOUSE MARS CAREER SHADOW RULE: If natal Mars is in the 12th house, the "Your Career DNA" section MUST explicitly name the career-specific shadow — the tendency to do excellent work behind the scenes and then fail to put it in front of the people who need to see it. This shadow must appear in the Career DNA section where Mars is first introduced, not buried later in a networking or 11th house section. The same shadow may be reinforced later, but it must be named upfront.
+  12TH HOUSE MARS CAREER SHADOW RULE: If natal Mars is in the 12th house, the "Your Career Foundation" section MUST explicitly name the career-specific shadow — the tendency to do excellent work behind the scenes and then fail to put it in front of the people who need to see it. This shadow must appear in the Career Foundation section where Mars is first introduced, not buried later in a networking or 11th house section. The same shadow may be reinforced later, but it must be named upfront.
 
   ACTIVE-NOW TRANSIT ACTION RULE: When a slow outer-planet transit (Saturn, Pluto, Neptune, Uranus) is currently within 1° of exact to a personal planet (Sun, Moon, Mercury, Venus, Mars) RIGHT NOW at the time of reading generation, any narrative section that touches a related theme (e.g., 2nd house financial anxiety pattern when Saturn is conjuncting natal Sun) MUST include a direct, time-stamped action note: "This transit is exact right now — this is the moment to assess whether [specific pattern] is active in your work life, not a general future caution." Do not leave timing-critical patterns generic when the transit is live.
 
@@ -4084,6 +4124,11 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // sentence 4 times back-to-back). Runs before placeholder strip
           // so the deduped prose is what every subsequent pass sees.
           dedupeRepeatedSentences(parsedContent, emissionLog);
+          // Final safety net: scrub banned phrases the AI was instructed
+          // never to emit ("DNA", "blueprint") and replace with neutral
+          // alternatives ("Foundation"). Runs after dedupe so we don't
+          // re-introduce duplicate sentences via replacement collisions.
+          stripBannedPhrases(parsedContent, emissionLog);
           stripPlaceholderLeaks(parsedContent, emissionLog);
           // Cross-check planet placements in prose against the natal
           // placement_table; strip relationship leaks from relocation
