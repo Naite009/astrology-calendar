@@ -941,17 +941,41 @@ const OFF_TOPIC_PHRASES_BY_QT: Record<string, DomainFix[]> = {
   ],
   money: [
     { pattern: /\bromanticizing people\b/gi, replace: "romanticizing money" },
+    { pattern: /\bromanticize people\b/gi, replace: "romanticize money" },
     { pattern: /\bidealizing your partner\b/gi, replace: "idealizing windfalls" },
+    { pattern: /\bidealize your partner\b/gi, replace: "idealize windfalls" },
     { pattern: /\bin your love life\b/gi, replace: "in your finances" },
+    { pattern: /\bovergiving in love\b/gi, replace: "overspending on others" },
+    { pattern: /\bin love and friendship\b/gi, replace: "in your spending and giving" },
+    { pattern: /\byour romantic life\b/gi, replace: "your financial life" },
+    { pattern: /\bwarmth with proportion\b/gi, replace: "generosity with proportion" },
+    { pattern: /\ba partner who can handle\b/gi, replace: "a financial structure that can handle" },
   ],
   health: [
     { pattern: /\bromanticizing people\b/gi, replace: "romanticizing recovery" },
+    { pattern: /\bromanticize people\b/gi, replace: "romanticize recovery" },
+    { pattern: /\bidealizing your partner\b/gi, replace: "idealizing quick fixes" },
+    { pattern: /\bidealize your partner\b/gi, replace: "idealize quick fixes" },
     { pattern: /\bin your love life\b/gi, replace: "in your body" },
+    { pattern: /\bovergiving in love\b/gi, replace: "overdoing it physically" },
+    { pattern: /\bovergiving, overspending, or romanticizing people\b/gi, replace: "overdoing, overindulging, or romanticizing recovery" },
+    { pattern: /\bin love and friendship\b/gi, replace: "in how you treat your body" },
+    { pattern: /\byour romantic life\b/gi, replace: "your physical wellbeing" },
+    { pattern: /\bwarmth with proportion\b/gi, replace: "vitality with proportion" },
+    { pattern: /\ba partner who can handle\b/gi, replace: "a routine that can handle" },
+    { pattern: /\battraction(s)? are real strengths\b/gi, replace: "vitality is a real strength" },
   ],
   relocation: [
     { pattern: /\bromanticizing people\b/gi, replace: "romanticizing places" },
+    { pattern: /\bromanticize people\b/gi, replace: "romanticize places" },
     { pattern: /\bidealizing your partner\b/gi, replace: "idealizing destinations" },
+    { pattern: /\bidealize your partner\b/gi, replace: "idealize destinations" },
     { pattern: /\bin your love life\b/gi, replace: "in a new place" },
+    { pattern: /\bovergiving in love\b/gi, replace: "overinvesting in a place" },
+    { pattern: /\bin love and friendship\b/gi, replace: "in your environment" },
+    { pattern: /\byour romantic life\b/gi, replace: "your sense of place" },
+    { pattern: /\bwarmth with proportion\b/gi, replace: "openness with discernment" },
+    { pattern: /\ba partner who can handle\b/gi, replace: "a place that can hold" },
   ],
 };
 const stripOffTopicDomainPhrases = (parsedContent: any, log: HygieneLog) => {
@@ -2635,7 +2659,9 @@ PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject direc
 
 CROSS-SECTION ASPECT UNIQUENESS: Each natal aspect (e.g. "Mars square Saturn") may be discussed in AT MOST ONE narrative section per reading. If an aspect is genuinely relevant to two themes, pick the section where it lands hardest and address it there. NEVER paste the same sentence verbatim into two sections. If you must reference the same aspect in a second section, write a SECTION-SPECIFIC framing (different angle, different verbs, different example) — and keep it to a single short clause, not a re-explanation.
 
-DOMAIN-APPROPRIATE FRAMING: The astronomy of an aspect is constant; the framing must change with question_type. For a CAREER reading, Venus opposition Jupiter means: undervaluing your output, vague compensation arrangements, generosity at work, overpromising on deliverables — NEVER "romanticizing people" or "idealizing your partner" (that is RELATIONSHIP framing). For a MONEY reading, the same aspect means romanticizing windfalls, overspending, blurry budgets. For a HEALTH reading: overdoing recovery, excess. For a RELOCATION reading: idealizing destinations, expecting too much from a place. NEVER ship a relationship-domain interpretation inside a non-relationship reading. Re-frame every aspect for the question_type before you write the sentence.
+DOMAIN-APPROPRIATE FRAMING: The astronomy of an aspect is constant; the framing must change with question_type. For a CAREER reading, Venus opposition Jupiter means: undervaluing your output, vague compensation arrangements, generosity at work, overpromising on deliverables — NEVER "romanticizing people" or "idealizing your partner" (that is RELATIONSHIP framing). For a MONEY reading, the same aspect means romanticizing windfalls, overspending, blurry budgets. For a HEALTH reading: overdoing recovery, excess, romanticizing healing protocols. For a RELOCATION reading: idealizing destinations, expecting too much from a place. NEVER ship a relationship-domain interpretation inside a non-relationship reading. Re-frame every aspect for the question_type before you write the sentence.
+
+FORBIDDEN STOCK BLURBS — applies to EVERY question_type other than relationship: NEVER emit any variation of: "Generosity and attraction are real strengths, but the pattern can tip into overgiving, overspending, or romanticizing people — the work is warmth with proportion. Once committed, the depth comes out, and you need a partner who can handle that shift without pulling away." This is a relationship-library entry. In a career reading rewrite as overpromising at work; in a money reading as overspending and blurry budgets; in a health reading as overdoing recovery; in a relocation reading as idealizing destinations. Same approach applies to the Mars-Saturn blurb ("Their drive runs into walls"), Saturn-Pluto blurb ("They can outlast forces that break other people"), Mercury-Saturn blurb ("They communicate carefully and people take them seriously"), and Sun-Jupiter blurb ("Their reach and their grasp don't match") — these must be rewritten in 2nd person AND in the question_type's domain language before you emit them, in EVERY reading type, not just career.
 
 SUMMARY_BOX TIMING SOURCE OF TRUTH (NON-NEGOTIABLE — APPLIES TO EVERY READING):
 Any timing field inside a summary_box — including but not limited to "Best Windows", "Caution Windows", "When to Act", "Extra Care Windows", "Restorative Windows", "Ideal Timing Window", "Best Timing", "Top Cities Timing", or any other label that names a date range or month — MUST be selected and summarized EXCLUSIVELY from the transits[] array already written in this same JSON's timing_section. You may NOT introduce a new aspect name, planet pairing, exact_hit_date, date_range, or month that does not already appear in transits[]. Before writing any summary_box timing field, re-read the transits[] array you just wrote and copy the relevant date_range strings verbatim (or summarize them in plain prose). If you cannot back a claim with a row from transits[], do NOT make the claim. This rule prevents the validator from stripping invented windows after the fact.
@@ -3305,7 +3331,7 @@ SR LOVE ACTIVATION STYLE:
   MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
-  2. narrative_section — "Your Soul's Blueprint" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
+  2. narrative_section — "Your Soul's Foundation" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
   3. narrative_section — "The Inner Teacher" (Saturn sign/house for life lessons, Chiron for wound-to-gift, 12th house for spiritual connection)
   4. narrative_section — "The Awakening Points" (Uranus for breakthroughs, Neptune for spiritual vision, Pluto for deep transformation)
   5. timing_section — "Spiritual Timing" (transits to North Node, Neptune, and 12th house ruler with exact degrees and date ranges)
