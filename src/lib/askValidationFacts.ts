@@ -1,4 +1,5 @@
 import { NatalChart } from "@/hooks/useNatalChart";
+import { lookupAspectMeaning } from "@/lib/aspectMeaningLibrary";
 
 export const ASK_VALIDATION_FACTS_START = "VALIDATION_FACTS_JSON_START";
 export const ASK_VALIDATION_FACTS_END = "VALIDATION_FACTS_JSON_END";
@@ -284,6 +285,9 @@ export const buildAskValidationFactsBlock = (chart: NatalChart | null) => {
   // Build a prominent, human-readable allowlist so the AI treats this as
   // primary source data — not buried metadata. Sort by tightest orb first,
   // and show planet/sign/degree on each side so the AI never has to infer.
+  // Each line ALSO carries the verified behavioral meaning of the aspect
+  // (when in our meaning library) so the AI writes interpretation from
+  // accurate raw material instead of pattern-matching to archetypes.
   const posByName = new Map(positions.map((p) => [p.name, p]));
   const sortedAspects = [...natalAspects].sort((a, b) => a.orb - b.orb);
   const aspectLines = sortedAspects.map((a) => {
@@ -291,13 +295,16 @@ export const buildAskValidationFactsBlock = (chart: NatalChart | null) => {
     const p2 = posByName.get(a.point2);
     const fmt = (p: typeof positions[number] | undefined) =>
       p ? `${p.name} ${p.degree}°${String(p.minutes).padStart(2, "0")}' ${p.sign}` : a.point1;
-    return `- ${fmt(p1)} ${a.aspect} ${fmt(p2)} (orb ${a.orb.toFixed(2)}°)`;
+    const base = `- ${fmt(p1)} ${a.aspect} ${fmt(p2)} (orb ${a.orb.toFixed(2)}°)`;
+    const meaning = lookupAspectMeaning(a.point1, a.point2, a.aspect);
+    return meaning ? `${base}\n    MEANING: ${meaning}.` : base;
   });
 
   const humanReadableBlock = [
     "",
     "=== VERIFIED NATAL ASPECTS — AUTHORITATIVE SOURCE-OF-TRUTH ===",
     "These are the ONLY natal aspects in this chart. They were computed deterministically from the exact ecliptic positions above using the project's centralized orb policy.",
+    "Each aspect that has a verified MEANING line carries the authoritative behavioral interpretation for that pair + aspect type. When you reference this aspect in any narrative section, you MUST write your prose so it conveys the lived experience described in the MEANING line. Do NOT contradict the MEANING line. Do NOT replace the meaning with generic archetypal language (e.g., do not describe an opposition as flowing or a trine as friction). Use the MEANING as your source of truth for the FEELING of the aspect, then translate it into recognizable, lived language for the reader.",
     "ABSOLUTE RULE: You MAY ONLY name a natal aspect (in any narrative_section, summary_box, placement_table, or anywhere else in the response) if it appears verbatim in this list. If a natal aspect is NOT in this list, it does NOT EXIST. Do NOT infer, estimate, or reason from sign relationships.",
     "If you want to claim a synthesis like 'Jupiter trine Venus' or 'Saturn opposition Pluto', search this list first — if you do not find that exact pair + aspect, replace it with one that IS in the list, or describe the dynamic in non-aspect language (placements, house themes).",
     "",
