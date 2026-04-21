@@ -1173,6 +1173,46 @@ const dedupeRepeatedSentences = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// Hard banned-phrase replacement pass — final safety net for words the AI
+// is told never to emit (e.g., "DNA", "blueprint"). Replaces case-insensitively
+// while preserving capitalization where possible.
+const BANNED_PHRASE_REPLACEMENTS: Array<{ pattern: RegExp; replace: (match: string) => string }> = [
+  { pattern: /\bDNA\b/g, replace: () => "Foundation" },
+  { pattern: /\bdna\b/g, replace: () => "foundation" },
+  { pattern: /\bBlueprint\b/g, replace: () => "Foundation" },
+  { pattern: /\bblueprint\b/g, replace: () => "foundation" },
+  { pattern: /\bBLUEPRINT\b/g, replace: () => "FOUNDATION" },
+];
+const stripBannedPhrases = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let replacements = 0;
+  const examples: string[] = [];
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === "string") {
+        let next = val;
+        for (const { pattern, replace } of BANNED_PHRASE_REPLACEMENTS) {
+          next = next.replace(pattern, replace);
+        }
+        if (next !== val) {
+          if (examples.length < 5) examples.push(`${val.slice(0, 80)} → ${next.slice(0, 80)}`);
+          (node as any)[key] = next;
+          replacements++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (replacements > 0) {
+    log.push({ type: "banned_phrases_replaced", detail: { count: replacements, examples } });
+    console.info("[ask-astrology] banned phrases replaced", { count: replacements, examples });
+  }
+};
+
 const SIGN_NAMES = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const PLANET_NAMES_FOR_CROSSCHECK = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","North Node","South Node"];
 const ORDINAL_TO_NUMBER: Record<string, number> = {
