@@ -834,25 +834,57 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
       }
       return kept.join(" ").trim();
     };
-    if (typeof section.body === "string") {
-      const next = cleanField(section.body);
-      if (next !== section.body) section.body = next;
-    }
-    if (Array.isArray(section.bullets)) {
-      for (const b of section.bullets) {
-        if (b && typeof b === "object" && typeof b.text === "string") {
-          const next = cleanField(b.text);
-          if (next !== b.text) b.text = next;
-        }
+    // Body-style fields. Sections may use any of: body, content, text, prose, narrative.
+    for (const fieldName of ["body", "content", "text", "prose", "narrative"]) {
+      if (typeof (section as any)[fieldName] === "string") {
+        const next = cleanField((section as any)[fieldName]);
+        if (next !== (section as any)[fieldName]) (section as any)[fieldName] = next;
       }
     }
+    // Bullets can be plain strings OR { text } / { value } objects. Handle both.
+    if (Array.isArray(section.bullets)) {
+      section.bullets = section.bullets.map((b: any) => {
+        if (typeof b === "string") {
+          const next = cleanField(b);
+          return next !== b ? next : b;
+        }
+        if (b && typeof b === "object") {
+          if (typeof b.text === "string") {
+            const next = cleanField(b.text);
+            if (next !== b.text) return { ...b, text: next };
+          }
+          if (typeof b.value === "string") {
+            const next = cleanField(b.value);
+            if (next !== b.value) return { ...b, value: next };
+          }
+        }
+        return b;
+      });
+    }
+    // Generic items array — handles { value } and { text } shapes.
     if (Array.isArray(section.items)) {
       for (const it of section.items) {
-        if (it && typeof it === "object" && typeof it.value === "string") {
-          const next = cleanField(it.value);
-          if (next !== it.value) it.value = next;
+        if (it && typeof it === "object") {
+          if (typeof it.value === "string") {
+            const next = cleanField(it.value);
+            if (next !== it.value) it.value = next;
+          }
+          if (typeof it.text === "string") {
+            const next = cleanField(it.text);
+            if (next !== it.text) it.text = next;
+          }
         }
       }
+    }
+    // Paragraphs array — some narrative sections emit prose as a string[].
+    if (Array.isArray((section as any).paragraphs)) {
+      (section as any).paragraphs = (section as any).paragraphs.map((p: any) => {
+        if (typeof p === "string") {
+          const next = cleanField(p);
+          return next !== p ? next : p;
+        }
+        return p;
+      });
     }
   }
   if (removed > 0) {
