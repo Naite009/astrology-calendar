@@ -114,6 +114,13 @@ const normalizeExportSentence = (s: string): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const getExportSentenceKey = (s: string): string | null => {
+  const norm = normalizeExportSentence(s);
+  if (norm.length < 25) return null;
+  if (/^this is the south node (pattern|default)\b/.test(norm)) return 'south-node-pattern';
+  return norm;
+};
+
 const buildExportAspectKey = (sentence: string): string | null => {
   const planetAlt = EXPORT_PLANET_NAMES.map((p) => p.replace(/\s+/g, '\\s+')).join('|');
   const re = new RegExp(`\\b(${planetAlt})\\b\\s+(${EXPORT_ASPECT_KIND_REGEX.source.replace(/^\\b|\\b$/g, '')})\\s+\\b(${planetAlt})\\b`, 'i');
@@ -143,20 +150,20 @@ const sanitizeReadingForExport = (reading: { sections?: unknown[] }) => {
           continue;
         }
         firstSeenAspect.set(aspectKey, sectionTitle);
-        const norm = normalizeExportSentence(sent);
-        if (norm.length >= 25) firstSeenSentence.set(norm, sectionTitle);
+        const sentenceKey = getExportSentenceKey(sent);
+        if (sentenceKey) firstSeenSentence.set(sentenceKey, sectionTitle);
         kept.push(sent);
         lastDropped = false;
         continue;
       }
 
-      const norm = normalizeExportSentence(sent);
-      if (norm.length >= 25) {
-        if (firstSeenSentence.has(norm)) {
+      const sentenceKey = getExportSentenceKey(sent);
+      if (sentenceKey) {
+        if (firstSeenSentence.has(sentenceKey)) {
           lastDropped = true;
           continue;
         }
-        firstSeenSentence.set(norm, sectionTitle);
+        firstSeenSentence.set(sentenceKey, sectionTitle);
       }
 
       if (lastDropped && sent.length < 220) {
