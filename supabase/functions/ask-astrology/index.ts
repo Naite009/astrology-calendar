@@ -2763,7 +2763,10 @@ const requestMissingSections = async (
         temperature: 0.3,
         max_tokens: 4000,
       }),
-      signal: AbortSignal.timeout(45000),
+      // V2 retry needs more headroom than the original 45s — the gate
+      // failure log showed `Signal timed out` at ~50s. Sections re-author
+      // is heavier than bullet patches, so 120s here, 90s for bullets.
+      signal: AbortSignal.timeout(120000),
     });
   } catch (fetchErr) {
     return { added: 0, skipped: true, error: `fetch: ${(fetchErr as any)?.message || String(fetchErr)}` };
@@ -2897,7 +2900,7 @@ const requestMissingBullets = async (
         temperature: 0.3,
         max_tokens: 2000,
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(90000),
     });
   } catch (fetchErr) {
     console.warn(`[ask-astrology] V2 bullet patch fetch failed: ${(fetchErr as any)?.message || String(fetchErr)}`);
