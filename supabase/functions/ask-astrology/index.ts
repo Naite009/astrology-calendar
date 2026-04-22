@@ -2686,6 +2686,129 @@ const regenerateAffectedSections = async (
   return { regenerated, skipped: false };
 };
 
+// V2 GATE RETRY: Re-prompt Claude to author the specific sections the
+// external Replit gate flagged as MISSING_REQUIRED_SECTION. Returns the
+// number of sections successfully appended. Never throws — degrades to
+// a no-op so the gate verdict still gets recorded if anything fails.
+const requestMissingSections = async (
+  parsedContent: any,
+  missingSections: Array<{ section: string; fix: string }>,
+  _chartContext: string | undefined,
+  systemBlocks: Array<Record<string, any>>,
+  ANTHROPIC_API_KEY: string,
+  userQuestion: string,
+): Promise<{ added: number; skipped: boolean; error?: string }> => {
+  if (!Array.isArray(missingSections) || missingSections.length === 0) {
+    return { added: 0, skipped: true };
+  }
+  if (!parsedContent || typeof parsedContent !== "object") {
+    return { added: 0, skipped: true, error: "no parsedContent" };
+  }
+
+  const requestedList = missingSections
+    .map((d) => `- "${d.section}" — ${d.fix || "Add this required section."}`)
+    .join("\n");
+
+  const existingSections = Array.isArray(parsedContent?.sections)
+    ? parsedContent.sections.map((s: any) => `- "${s?.title || s?.type || "(untitled)"}" (type: ${s?.type || "unknown"})`).join("\n")
+    : "(no sections present)";
+
+  const userMessage = [
+    "An external QA gate flagged this reading as missing REQUIRED sections. Author each missing section now using the SAME chart, voice, and depth standards as the original reading.",
+    "",
+    "USER'S ORIGINAL QUESTION:",
+    userQuestion || "(not captured)",
+    "",
+    "MISSING SECTIONS TO AUTHOR:",
+    requestedList,
+    "",
+    "SECTIONS ALREADY PRESENT (do NOT duplicate):",
+    existingSections,
+    "",
+    "RULES:",
+    "- Output JSON ONLY. No prose, no markdown fences.",
+    "- Output shape: { \"sections\": [ { \"title\": string, \"type\": string, \"body\": string, \"bullets\"?: [{ \"text\": string }] } ] }",
+    "- Use the EXACT section name from the missing list as the `title`.",
+    "- Set `type` to a lowercased snake_case version of the title (e.g. \"needs_profile\", \"relationship_pattern\", \"essence\", \"how_this_person\").",
+    "- 2nd-person voice (\"you\" / \"your\") only — never 3rd person about the subject.",
+    "- Each section must be substantive (3–6 sentences in body), grounded in the chart context provided in the system prompt.",
+    "- Do NOT reference aspects, planets, or transits that aren't already in the chart context.",
+    "- Do NOT repeat content that's already in the existing sections listed above.",
+  ].join("\n");
+
+  let regenResponse: Response | null = null;
+  try {
+    regenResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: systemBlocks,
+        messages: [{ role: "user", content: userMessage }],
+        temperature: 0.3,
+        max_tokens: 4000,
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+  } catch (fetchErr) {
+    return { added: 0, skipped: true, error: `fetch: ${(fetchErr as any)?.message || String(fetchErr)}` };
+  }
+
+  if (!regenResponse?.ok) {
+    return { added: 0, skipped: true, error: `anthropic ${regenResponse?.status}` };
+  }
+
+  let regenJson: any = null;
+  try { regenJson = await regenResponse.json(); } catch { return { added: 0, skipped: true, error: "non-json" }; }
+
+  const regenText: string = regenJson?.content?.[0]?.text || "";
+  if (!regenText) return { added: 0, skipped: true, error: "empty text" };
+
+  let parsed: any = null;
+  try {
+    const cleaned = regenText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const first = regenText.indexOf("{");
+    const last = regenText.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      try { parsed = JSON.parse(regenText.slice(first, last + 1)); } catch { /* */ }
+    }
+  }
+
+  if (!parsed || !Array.isArray(parsed?.sections)) {
+    return { added: 0, skipped: true, error: "no sections in response" };
+  }
+
+  if (!Array.isArray(parsedContent.sections)) parsedContent.sections = [];
+  let added = 0;
+  for (const newSec of parsed.sections) {
+    if (!newSec || typeof newSec !== "object") continue;
+    if (typeof newSec.title !== "string" || !newSec.title.trim()) continue;
+    if (typeof newSec.body !== "string" || !newSec.body.trim()) continue;
+    parsedContent.sections.push({
+      title: newSec.title.trim(),
+      type: typeof newSec.type === "string" && newSec.type.trim()
+        ? newSec.type.trim()
+        : newSec.title.trim().toLowerCase().replace(/\s+/g, "_"),
+      body: newSec.body.trim(),
+      bullets: Array.isArray(newSec.bullets)
+        ? newSec.bullets
+            .filter((b: any) => b && typeof b.text === "string" && b.text.trim())
+            .map((b: any) => ({ text: b.text.trim() }))
+        : undefined,
+      _v2_gate_added: true,
+    });
+    added++;
+  }
+
+  return { added, skipped: false };
+};
+
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
 
 PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject directly as "you" / "your". NEVER use third-person pronouns ("they", "them", "their", "he", "she", "his", "her") to refer to the subject of the reading. This is the #1 source of customer-trust collapse. When you describe an aspect, write "Your Mars squares your Saturn — your drive runs into walls until you learn to push without burning out." NEVER write "Their drive runs into walls — they keep almost-getting the big thing." If a canned aspect interpretation comes to mind in third person, rewrite the pronouns BEFORE you emit it. The only acceptable third-person references are to actual third parties the user mentioned (their boss, their partner, their child) — never to the subject themselves.
