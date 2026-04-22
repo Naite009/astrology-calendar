@@ -4997,36 +4997,98 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       // ── PASS 1 ───────────────────────────────────────────────────
       const verdict1 = await runGate("initial");
       const history: any[] = [verdict1];
-      let retryInfo: any = null;
 
-      // ── V2 RETRY: trigger on missing OR empty content defects ─────
+      // ── V2 RETRY LOOP — capped, structured, give-up-aware ─────────
       // The Replit gate emits three defect codes that V2 must heal:
       //   - MISSING_REQUIRED_SECTION → section never authored
       //   - EMPTY_SECTION            → section title present, body+bullets empty
       //   - EMPTY_BULLET_TEXT        → bullet has label but no text body
-      // The first two are healed by re-authoring the section. The third
-      // is healed by patching the missing bullet text inside an existing
-      // section.
-      const allDefects = Array.isArray(verdict1?.defects) ? verdict1.defects : [];
-      const sectionDefects = allDefects.filter(
-        (d: any) =>
-          (d?.code === "MISSING_REQUIRED_SECTION" || d?.code === "EMPTY_SECTION")
-          && typeof d?.section === "string",
-      );
-      const bulletDefects = allDefects.filter(
-        (d: any) =>
-          d?.code === "EMPTY_BULLET_TEXT"
-          && typeof d?.section === "string"
-          && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
-      );
-      const totalRetry = sectionDefects.length + bulletDefects.length;
+      // The first two are healed by re-authoring the section.
+      // The third is healed by patching bullet text in-place via
+      // requestMissingBullets, which matches BOTH section title and
+      // bullet label (not just the first empty bullet) — see findBullet
+      // in that helper.
+      //
+      // We loop up to MAX_GATE_RETRIES times. Each pass:
+      //   1. Inspect the latest verdict's defects.
+      //   2. If healable defect count is 0 → done (success).
+      //   3. If we haven't made forward progress vs. the previous pass
+      //      (same defect signature OR added 0 sections AND patched 0
+      //      bullets) → give up and record `give_up_reason`. This
+      //      prevents burning Claude credits on a stuck reading.
+      //   4. Otherwise call Claude, re-run the gate, log per-attempt
+      //      structured data into retryAttempts[], and continue.
+      const MAX_GATE_RETRIES = 3;
+      const retryAttempts: Array<Record<string, any>> = [];
+      let giveUpReason: string | null = null;
 
-      if (totalRetry > 0 && ANTHROPIC_API_KEY) {
-        console.info(`[ask-astrology][gate] V2 retry: ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
+      const collectDefects = (verdict: any) => {
+        const defects = Array.isArray(verdict?.defects) ? verdict.defects : [];
+        const sectionDefects = defects.filter(
+          (d: any) =>
+            (d?.code === "MISSING_REQUIRED_SECTION" || d?.code === "EMPTY_SECTION")
+            && typeof d?.section === "string",
+        );
+        const bulletDefects = defects.filter(
+          (d: any) =>
+            d?.code === "EMPTY_BULLET_TEXT"
+            && typeof d?.section === "string"
+            && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
+        );
+        return { sectionDefects, bulletDefects };
+      };
+
+      // Defect signature: stable string used to detect "same defects as
+      // last pass" (no progress). Sorted so order doesn't matter.
+      const defectSignature = (sectionDefects: any[], bulletDefects: any[]) => {
+        const s = sectionDefects.map((d: any) => `S:${d.code}:${String(d.section).toLowerCase()}`);
+        const b = bulletDefects.map((d: any) => `B:${String(d.section).toLowerCase()}::${String(d.bullet_label || d.label).toLowerCase()}`);
+        return [...s, ...b].sort().join("|");
+      };
+
+      let prevSignature: string | null = null;
+      let attemptIdx = 0;
+
+      while (attemptIdx < MAX_GATE_RETRIES) {
+        const lastVerdict = history[history.length - 1];
+        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        const totalRetry = sectionDefects.length + bulletDefects.length;
+
+        if (totalRetry === 0) break; // gate is happy
+
+        if (!ANTHROPIC_API_KEY) {
+          giveUpReason = "no_anthropic_key";
+          retryAttempts.push({
+            attempt: attemptIdx + 1,
+            skipped: true,
+            reason: "no_anthropic_key",
+            requested_sections: sectionDefects.length,
+            requested_bullets: bulletDefects.length,
+          });
+          break;
+        }
+
+        const sig = defectSignature(sectionDefects, bulletDefects);
+        if (prevSignature !== null && sig === prevSignature) {
+          // Same defects came back after a non-zero patch attempt — the
+          // gate is rejecting whatever Claude is producing. Stop.
+          giveUpReason = "no_progress_same_defects";
+          retryAttempts.push({
+            attempt: attemptIdx + 1,
+            skipped: true,
+            reason: "no_progress_same_defects",
+            defect_signature: sig,
+          });
+          console.warn(`[ask-astrology][gate] V2 give up: defects unchanged after attempt ${attemptIdx} (${totalRetry} defects still failing)`);
+          break;
+        }
+        prevSignature = sig;
+
+        const attemptStart = Date.now();
+        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}/${MAX_GATE_RETRIES}: ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
           sections: sectionDefects.map((d: any) => `${d.code}:${d.section}`),
           bullets: bulletDefects.map((d: any) => `${d.section} → ${d.bullet_label || d.label}`),
         });
-        const retryStartedAt = Date.now();
 
         // 1) Section-level retry (re-authors missing OR empty sections)
         const retryResult = sectionDefects.length > 0
@@ -5045,9 +5107,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             )
           : { added: 0, skipped: true } as { added: number; skipped: boolean; error?: string };
 
-        // For EMPTY_SECTION defects, the original empty shell is still
-        // in the array. Drop it so the new V2 version is the only copy
-        // (matched by title, case-insensitive). Never drop _v2_gate_added.
+        // For EMPTY_SECTION defects, drop the empty shell so the new
+        // V2 version is the only copy (matched by title, ci).
         if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
           const emptyTitles = new Set(
             sectionDefects
@@ -5063,12 +5124,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             });
             const removed = before - parsedContent.sections.length;
             if (removed > 0) {
-              console.info(`[ask-astrology][gate] V2: removed ${removed} empty shell section(s) replaced by V2 content`);
+              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} empty shell section(s)`);
             }
           }
         }
 
-        // 2) Bullet-level patch (fills missing bullet text in-place)
+        // 2) Bullet-level patch — matches by (section title, bullet label)
         let bulletsPatched = 0;
         if (bulletDefects.length > 0) {
           try {
@@ -5088,68 +5149,100 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           }
         }
 
-        const retryMs = Date.now() - retryStartedAt;
-        retryInfo = {
-          attempted: true,
-          requested_sections: sectionDefects.length,
-          added_sections: retryResult.added,
-          requested_bullets: bulletDefects.length,
-          patched_bullets: bulletsPatched,
-          skipped: retryResult.skipped && bulletsPatched === 0,
-          error: retryResult.error,
-          regen_ms: retryMs,
-        };
-        console.info(`[ask-astrology][gate] V2 retry result sections=${retryResult.added}/${sectionDefects.length} bullets=${bulletsPatched}/${bulletDefects.length} ms=${retryMs}${retryResult.error ? ` err=${retryResult.error}` : ""}`);
-
-        // ── PASS 2 ─────────────────────────────────────────────────
-        // Re-call the gate only if we actually changed something.
-        if (retryResult.added > 0 || bulletsPatched > 0) {
-          // ── REORDER ─────────────────────────────────────────────
-          // V2 appends new sections to the END. Foundational sections
-          // must appear BEFORE timing/strategy/summary blocks so the
-          // reader sees the chart + setup before the recommendations.
-          const FOUNDATION_ORDER = [
-            "natal key placements",
-            "solar return key placements",
-            "essence",
-            "how this person",
-            "how_this_person",
-            "relationship pattern",
-            "relationship_pattern",
-            "needs profile",
-            "needs_profile",
-            "contradiction patterns",
-            "contradiction_patterns",
-            "natal elemental & modal balance",
-            "modality_element",
-          ];
-          const norm = (s: any) => String(s?.title || s?.type || "").trim().toLowerCase();
-          const foundationRank = (s: any): number => {
-            const t = norm(s);
-            for (let i = 0; i < FOUNDATION_ORDER.length; i++) {
-              if (t === FOUNDATION_ORDER[i] || t.includes(FOUNDATION_ORDER[i])) return i;
-            }
-            return -1;
-          };
-          const sections = parsedContent.sections as any[];
-          if (Array.isArray(sections)) {
-            const foundations: any[] = [];
-            const rest: any[] = [];
-            for (const sec of sections) {
-              if (foundationRank(sec) >= 0) foundations.push(sec);
-              else rest.push(sec);
-            }
-            foundations.sort((a, b) => foundationRank(a) - foundationRank(b));
-            parsedContent.sections = [...foundations, ...rest];
-            console.info(`[ask-astrology][gate] V2 reorder: foundations=${foundations.length} rest=${rest.length}`);
+        // Reorder so foundations come first (V2 always appends).
+        const FOUNDATION_ORDER = [
+          "natal key placements",
+          "solar return key placements",
+          "essence",
+          "how this person",
+          "how_this_person",
+          "relationship pattern",
+          "relationship_pattern",
+          "needs profile",
+          "needs_profile",
+          "contradiction patterns",
+          "contradiction_patterns",
+          "natal elemental & modal balance",
+          "modality_element",
+        ];
+        const norm = (s: any) => String(s?.title || s?.type || "").trim().toLowerCase();
+        const foundationRank = (s: any): number => {
+          const t = norm(s);
+          for (let i = 0; i < FOUNDATION_ORDER.length; i++) {
+            if (t === FOUNDATION_ORDER[i] || t.includes(FOUNDATION_ORDER[i])) return i;
           }
-
-          const verdict2 = await runGate("post_retry");
-          history.push(verdict2);
+          return -1;
+        };
+        if (Array.isArray(parsedContent.sections)) {
+          const foundations: any[] = [];
+          const rest: any[] = [];
+          for (const sec of parsedContent.sections) {
+            if (foundationRank(sec) >= 0) foundations.push(sec);
+            else rest.push(sec);
+          }
+          foundations.sort((a, b) => foundationRank(a) - foundationRank(b));
+          parsedContent.sections = [...foundations, ...rest];
         }
-      } else if (totalRetry > 0 && !ANTHROPIC_API_KEY) {
-        retryInfo = { attempted: false, skipped: "no_anthropic_key", requested: totalRetry };
+
+        const attemptMs = Date.now() - attemptStart;
+
+        // If neither sections nor bullets actually changed this pass,
+        // re-running the gate will produce the same verdict — give up.
+        if (retryResult.added === 0 && bulletsPatched === 0) {
+          giveUpReason = "claude_made_no_changes";
+          retryAttempts.push({
+            attempt: attemptIdx + 1,
+            requested_sections: sectionDefects.length,
+            requested_bullets: bulletDefects.length,
+            added_sections: 0,
+            patched_bullets: 0,
+            attempt_ms: attemptMs,
+            error: retryResult.error,
+            skipped: true,
+            reason: "claude_made_no_changes",
+          });
+          console.warn(`[ask-astrology][gate] V2 give up after attempt ${attemptIdx + 1}: Claude returned no usable patches${retryResult.error ? ` (${retryResult.error})` : ""}`);
+          break;
+        }
+
+        const verdictN = await runGate(`post_retry_${attemptIdx + 1}`);
+        history.push(verdictN);
+
+        retryAttempts.push({
+          attempt: attemptIdx + 1,
+          requested_sections: sectionDefects.length,
+          requested_bullets: bulletDefects.length,
+          added_sections: retryResult.added,
+          patched_bullets: bulletsPatched,
+          attempt_ms: attemptMs,
+          verdict_ok: verdictN?.ok,
+          verdict_defects: Array.isArray(verdictN?.defects) ? verdictN.defects.length : null,
+          error: retryResult.error,
+        });
+        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1} result sections=${retryResult.added}/${sectionDefects.length} bullets=${bulletsPatched}/${bulletDefects.length} ms=${attemptMs} → verdict ok=${verdictN?.ok} defects=${Array.isArray(verdictN?.defects) ? verdictN.defects.length : "?"}`);
+
+        attemptIdx++;
       }
+
+      // If we exhausted MAX_GATE_RETRIES and still have defects, record it.
+      if (!giveUpReason && attemptIdx >= MAX_GATE_RETRIES) {
+        const lastVerdict = history[history.length - 1];
+        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        if (sectionDefects.length + bulletDefects.length > 0) {
+          giveUpReason = "max_retries_reached";
+          console.warn(`[ask-astrology][gate] V2 give up: hit MAX_GATE_RETRIES=${MAX_GATE_RETRIES}, ${sectionDefects.length + bulletDefects.length} defect(s) still present`);
+        }
+      }
+
+      const retryInfo = retryAttempts.length > 0 || giveUpReason
+        ? {
+            attempted: retryAttempts.length > 0,
+            attempts: retryAttempts,
+            total_attempts: retryAttempts.length,
+            max_attempts: MAX_GATE_RETRIES,
+            give_up_reason: giveUpReason,
+          }
+        : null;
 
       // Final _gate object: most recent verdict at the top level + full history.
       const final = history[history.length - 1];
