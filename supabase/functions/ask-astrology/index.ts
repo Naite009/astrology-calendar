@@ -4726,6 +4726,57 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       parsedContent = { raw: content, _parse_error: parseError instanceof Error ? parseError.message : 'Unknown parse error' };
     }
 
+    // ────────────────────────────────────────────────────────────
+    // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading) — V1.2
+    // Hoisted OUT of the parse/hygiene block so it runs even when
+    // hygiene throws or parsing produced a partial structure. The
+    // ONLY way this is skipped is if updateJob below never runs.
+    // ────────────────────────────────────────────────────────────
+    if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+      console.info("[ask-astrology][gate] reached pre-update gate hoist", { jobId });
+      try {
+        const gateUrl = Deno.env.get("REPLIT_GATE_URL");
+        const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
+        console.info("[ask-astrology][gate] env check", { hasUrl: !!gateUrl, hasToken: !!gateToken });
+        if (gateUrl && gateToken) {
+          const gateStartedAt = Date.now();
+          const gateResp = await fetch(`${gateUrl.replace(/\/$/, "")}/check-reading`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${gateToken}`,
+            },
+            body: JSON.stringify(parsedContent),
+            signal: AbortSignal.timeout(8000),
+          });
+          const gateMs = Date.now() - gateStartedAt;
+          let gateBody: any = null;
+          try { gateBody = await gateResp.json(); } catch { /* non-JSON */ }
+          const ok = gateResp.status === 200 && gateBody?.ok === true;
+          const defects = Array.isArray(gateBody?.defects) ? gateBody.defects : [];
+          const fixesApplied = Array.isArray(gateBody?.fixes_applied) ? gateBody.fixes_applied : [];
+          (parsedContent as any)._gate = {
+            ok,
+            status: gateResp.status,
+            latency_ms: gateMs,
+            defects,
+            fixes_applied: fixesApplied,
+            checked_at: new Date().toISOString(),
+          };
+          console.info(`[ask-astrology][gate] verdict status=${gateResp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} ms=${gateMs}`);
+        } else {
+          (parsedContent as any)._gate = { ok: null, skipped: "missing_config" };
+          console.warn("[ask-astrology][gate] missing REPLIT_GATE_URL or REPLIT_GATE_TOKEN");
+        }
+      } catch (gateErr) {
+        (parsedContent as any)._gate = {
+          ok: null,
+          error: gateErr instanceof Error ? gateErr.message : String(gateErr),
+        };
+        console.error("[ask-astrology][gate] threw:", gateErr);
+      }
+    }
+
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
     // polling on its activeJobId.
@@ -4735,6 +4786,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       completed_at: new Date().toISOString(),
     });
     console.log(`[ask-astrology] Job ${jobId} completed (content length=${content.length})`);
+
   } catch (error) {
     console.error(`[ask-astrology] processJob ${jobId} failed:`, error);
     await updateJob({
