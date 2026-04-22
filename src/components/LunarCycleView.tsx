@@ -810,6 +810,22 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
+  // How each natal Moon sign tends to *meet* a new theme — concrete behavior, not traits
+  const MOON_SIGN_RESPONSE: Record<string, string> = {
+    Aries: 'react fast, want to act before you fully think it through, and get frustrated if things stall',
+    Taurus: 'need to feel safe and settled in your body before you commit, and resist being rushed',
+    Gemini: 'talk it out, gather options, and shift moods quickly as new information lands',
+    Cancer: 'feel it in your gut first, get protective of who and what matters, and need a soft place to land',
+    Leo: 'want to be seen and acknowledged, take it personally when you\'re not, and lead with warmth',
+    Virgo: 'analyze the details, look for what needs fixing, and quietly worry until you have a plan',
+    Libra: 'check how others are feeling, weigh both sides, and resist anything that feels unfair or out of balance',
+    Scorpio: 'feel everything intensely, watch before you act, and need full honesty before you trust',
+    Sagittarius: 'want the bigger meaning, get restless if it feels small, and look for the door out if it gets too heavy',
+    Capricorn: 'go quiet, take it seriously, and try to handle it alone before asking for help',
+    Aquarius: 'step back to observe, need space to process, and trust logic more than emotion in the moment',
+    Pisces: 'absorb the mood of everyone around you, blur your own needs with theirs, and need solitude to find your own signal again',
+  };
+
   // Calculate New Moon house in natal chart
   const getNewMoonHouse = (): number | null => {
     if (!activeChart?.houseCusps || !interpretation) return null;
@@ -1075,12 +1091,30 @@ Keep the tone deep, insightful, and practically applicable.`
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-4">
-                {signLunationData.themes.map((theme, i) => (
-                  <div key={i} className="p-4 bg-secondary/30 rounded-lg">
-                    <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
-                    <p className="text-sm text-foreground/80">{theme.description}</p>
-                  </div>
-                ))}
+                {signLunationData.themes.map((theme, i) => {
+                  const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
+                  const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
+                  // Build a chart-specific line: anchor the theme to the New Moon's natal house + natal Moon sign
+                  let personalLine: string | null = null;
+                  if (activeChart && houseArea && newMoonHouse) {
+                    if (natalMoon?.sign) {
+                      personalLine = `For ${activeChart.name}: this theme lands in ${houseArea} (House ${newMoonHouse}) — and with your natal Moon in ${natalMoon.sign}, you'll likely meet it through how you ${MOON_SIGN_RESPONSE[natalMoon.sign] || 'process feelings and react under pressure'}.`;
+                    } else {
+                      personalLine = `For ${activeChart.name}: this theme lands in ${houseArea} (House ${newMoonHouse}) — that's the area of life where this New Moon's work shows up most concretely for you.`;
+                    }
+                  }
+                  return (
+                    <div key={i} className="p-4 bg-secondary/30 rounded-lg">
+                      <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
+                      <p className="text-sm text-foreground/80">{theme.description}</p>
+                      {personalLine && (
+                        <p className="text-xs text-primary/90 mt-2 pt-2 border-t border-border/50 italic">
+                          {personalLine}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
                 <p className="text-sm text-muted-foreground italic">
                   Begin with integrity, plant seeds step by step, trust that you don't need to know the whole plan yet — what is no longer working is meant to dissolve.
                 </p>
