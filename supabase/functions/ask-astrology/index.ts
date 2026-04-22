@@ -4667,9 +4667,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // reading and removes the need for users to paste defects back
         // to support.
         // ────────────────────────────────────────────────────────────
+        // V1.1 deploy probe — if this log line never appears, the live bundle is stale.
+        console.info("[ask-astrology][gate] entering gate block", { jobId, hasParsedSections: Array.isArray((parsedContent as any)?.sections) });
         try {
           const gateUrl = Deno.env.get("REPLIT_GATE_URL");
           const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
+          console.info("[ask-astrology][gate] env check", { hasUrl: !!gateUrl, hasToken: !!gateToken });
           if (gateUrl && gateToken) {
             const gateStartedAt = Date.now();
             const gateResp = await fetch(`${gateUrl.replace(/\/$/, "")}/check-reading`, {
