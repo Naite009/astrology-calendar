@@ -3894,16 +3894,34 @@ async function processJob(args: {
 }) {
   const { jobId, messages, chartContext, currentDate, deterministicTiming } = args;
   const svc = getServiceClient();
+  const PROCESS_WALL_CLOCK_BUDGET_MS = 330_000;
+  const processStartedAt = Date.now();
 
   const updateJob = async (patch: Record<string, any>) => {
     try {
-      await svc.from("ask_jobs").update(patch).eq("id", jobId);
+      const { error } = await svc.from("ask_jobs").update(patch).eq("id", jobId);
+      if (error) {
+        console.error(`[ask-astrology] Failed to update job ${jobId}:`, error);
+      }
     } catch (e) {
       console.error(`[ask-astrology] Failed to update job ${jobId}:`, e);
     }
   };
 
-  await updateJob({ status: "processing", started_at: new Date().toISOString() });
+  const failAndStop = async (message: string) => {
+    await updateJob({
+      status: "failed",
+      error_message: message,
+      completed_at: new Date().toISOString(),
+    });
+  };
+
+  await updateJob({
+    status: "processing",
+    started_at: new Date().toISOString(),
+    completed_at: null,
+    error_message: null,
+  });
 
   try {
     const effectiveCurrentDate = getCurrentDateKey(currentDate);
@@ -3936,20 +3954,15 @@ async function processJob(args: {
       }
     }
 
-    // LILITH HARD DATA GATE: Check if chart context actually contains Lilith data
     const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
-
-    // JUNO HARD DATA GATE: Mirrors Lilith — conditional per chart payload
     const junoDataPresent = /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
 
-    // SOLAR RETURN YEAR EXTRACTION: Parse the actual SR year from chart context for validation
     let srYearFromContext: number | null = null;
     const srYearMatch = sanitizedChartContext.match(/SOLAR RETURN\s+(\d{4})/);
     if (srYearMatch) {
       srYearFromContext = parseInt(srYearMatch[1], 10);
     }
 
-    // HOUSE POSITION EXTRACTION: Parse planet→house mappings from chart data for post-generation cross-check
     const chartHouseMap: Record<string, number> = {};
     const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
     let hm;
@@ -3977,35 +3990,13 @@ SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When check
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
-    // ============================================================
-    // ANTHROPIC PROMPT CACHING — 2 cache breakpoints
-    // ============================================================
-    // Cache hits cut latency by ~80% and cost by ~90% on repeated
-    // questions for the same chart. Cache key is byte-for-byte exact
-    // prefix match, so block ORDER is critical:
-    //   Block 1 (CACHED): SYSTEM_PROMPT — identical for every user,
-    //     every chart, every question. Stable until prompt is edited.
-    //   Block 2 (CACHED): Chart-derived gates + chart data — identical
-    //     for every question on this specific chart.
-    //   Block 3 (UNCACHED): Per-question / per-day content — compact
-    //     mode flag + current date. Changes too often to cache.
-    //
-    // Min cacheable size: 1024 input tokens (Sonnet). SYSTEM_PROMPT
-    // alone is well above that; chart block is also typically >1024.
-    // Default TTL: 5 minutes. Cache writes cost 1.25x base; reads
-    // cost 0.1x base. Break-even after ~2 hits within 5 min.
-    // ============================================================
-
     const chartScopedRules = [
-      // Inject hard Lilith gate based on actual data presence
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
-      // Inject hard Juno gate based on actual data presence
       junoDataPresent
         ? null
         : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
-      // Inject SR year enforcement if SR data is present
       srYearFromContext
         ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
         : null,
@@ -4021,9 +4012,6 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       .filter(Boolean)
       .join("\n\n");
 
-    // Build system as an ARRAY of blocks. Anthropic only caches blocks
-    // marked with cache_control. Order = Block1, Block2, Block3 (prefix
-    // match). Skip empty blocks so we never send "" to the API.
     const systemBlocks: Array<Record<string, any>> = [
       {
         type: "text",
@@ -4052,13 +4040,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     const sanitizedMessages = messages.filter((m: any) => m.role !== "system");
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (Date.now() - processStartedAt > PROCESS_WALL_CLOCK_BUDGET_MS) {
+        await failAndStop("The reading took too long to generate. Please try again.");
+        return;
+      }
+
       if (attempt > 0) {
         await new Promise(r => setTimeout(r, 1500));
         console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
       }
 
       try {
-        // STREAMING: keeps connection alive, bypasses 150s idle timeout
         response = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
@@ -4067,17 +4059,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            // Sonnet 4.6 is non-negotiable for interpretation quality.
-            // Streaming (stream: true) keeps the Anthropic <-> edge function
-            // connection alive indefinitely — no timeout while tokens flow.
-            // The async job pattern means the client polls the DB, so even
-            // 8-10 min Sonnet generations complete safely in the background.
             model: "claude-sonnet-4-6",
             system: systemBlocks,
             messages: sanitizedMessages,
             temperature: 0.3,
-            // 32000 to fully accommodate long relocation/relationship reports
-            // without hitting max_tokens truncation.
             max_tokens: 32000,
             stream: true,
           }),
@@ -4086,25 +4071,19 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         console.error(`Anthropic fetch failed on attempt ${attempt + 1}:`, fetchErr?.message);
         lastError = String(fetchErr?.message || fetchErr);
         if (attempt < MAX_RETRIES - 1) continue;
-        return new Response(JSON.stringify({ error: "Network error reaching the AI. Please try again." }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        await failAndStop("Network error reaching the AI. Please try again.");
+        return;
       }
 
       if (response.ok) break;
 
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        await failAndStop("Rate limit exceeded, please try again later.");
+        return;
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required, please add AI credits." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        await failAndStop("Payment required, please add AI credits.");
+        return;
       }
 
       if ([502, 503, 504].includes(response.status) && attempt < MAX_RETRIES - 1) {
@@ -4115,18 +4094,14 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
+      return;
     }
 
     if (!response || !response.ok || !response.body) {
       console.error("All retries exhausted. Last error:", lastError);
-      return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
+      return;
     }
 
     // CONSUME ANTHROPIC STREAM into a single `content` string.
