@@ -5021,8 +5021,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       //      prevents burning Claude credits on a stuck reading.
       //   4. Otherwise call Claude, re-run the gate, log per-attempt
       //      structured data into retryAttempts[], and continue.
-      const MAX_GATE_RETRIES = 3;
-      const V2_WALL_CLOCK_BUDGET_MS = 180_000; // 3 min hard ceiling for the entire heal loop
+      // Cap is intentionally low (2) — V2 retries are EXPENSIVE Claude calls.
+      // Each attempt = 1 sections call + 1 bullets call (targeted, not full
+      // reading regen). After 2 passes, ship the best attempt with
+      // _gate.label = "exhausted" rather than burning more credits.
+      const MAX_GATE_RETRIES = 2;
+      const V2_WALL_CLOCK_BUDGET_MS = 120_000; // 2 min hard ceiling for the entire heal loop
       const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = null;
@@ -5333,8 +5337,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
       // Final _gate object: most recent verdict at the top level + full history.
       const final = history[history.length - 1];
+      // Label the gate outcome so downstream readers can tell at a glance
+      // whether V2 healed everything ("ok"), shipped a best-effort attempt
+      // after the retry cap ("exhausted"), or never tripped retries ("ok"
+      // on first pass / "failed" if no retry was attempted but verdict bad).
+      const finalOk = final?.ok === true;
+      const v2Ran = retryAttempts.length > 0;
+      const gateLabel = finalOk
+        ? "ok"
+        : (v2Ran ? "exhausted" : "failed");
       (parsedContent as any)._gate = {
         ...final,
+        label: gateLabel,
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
