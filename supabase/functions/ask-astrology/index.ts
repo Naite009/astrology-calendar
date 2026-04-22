@@ -5022,8 +5022,16 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       //   4. Otherwise call Claude, re-run the gate, log per-attempt
       //      structured data into retryAttempts[], and continue.
       const MAX_GATE_RETRIES = 3;
+      const V2_WALL_CLOCK_BUDGET_MS = 180_000; // 3 min hard ceiling for the entire heal loop
+      const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = null;
+      // Track which section titles V2 has authored so subsequent passes
+      // REPLACE the V2 version instead of duplicating it.
+      const v2OwnedTitles = new Set<string>();
+      // Surface defect codes V2 cannot fix (e.g. LOW_SCORE, BANNED_PHRASE)
+      // so we know what the gate wants but the loop can't address.
+      let lastUnhealableDefects: any[] = [];
 
       const collectDefects = (verdict: any) => {
         const defects = Array.isArray(verdict?.defects) ? verdict.defects : [];
@@ -5038,7 +5046,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             && typeof d?.section === "string"
             && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
         );
-        return { sectionDefects, bulletDefects };
+        const healableCodes = new Set(["MISSING_REQUIRED_SECTION", "EMPTY_SECTION", "EMPTY_BULLET_TEXT"]);
+        const unhealable = defects.filter((d: any) => d?.code && !healableCodes.has(d.code));
+        return { sectionDefects, bulletDefects, unhealable };
       };
 
       // Defect signature: stable string used to detect "same defects as
