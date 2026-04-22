@@ -721,13 +721,21 @@ const rewriteSentencePronouns = (sentence: string): string => {
   s = s.replace(/\b(you|You)\s+hasn'?t\b/g, (_m, p) => `${p} haven't`);
   return s;
 };
+const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
+  if (!payload || typeof payload !== "object") return;
+  if (Array.isArray(payload?.readings)) {
+    for (const reading of payload.readings) {
+      if (reading && typeof reading === "object") visitor(reading);
+    }
+    return;
+  }
+  visitor(payload);
+};
 const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   // Only run on readings that address the subject in 2nd person. We treat
   // every Ask reading as 2nd-person by default (that is the product voice),
   // but skip if question_type is something we explicitly know is 3rd-person.
-  const qt = String(parsedContent?.question_type || "").toLowerCase();
-  if (qt === "biography" || qt === "third_person") return;
   let stringsTouched = 0;
   let sentencesRewritten = 0;
   const examples: string[] = [];
@@ -764,7 +772,11 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
       }
     }
   };
-  visit(parsedContent);
+  forEachReadingPayload(parsedContent, (reading) => {
+    const qt = String(reading?.question_type || "").toLowerCase();
+    if (qt === "biography" || qt === "third_person") return;
+    visit(reading);
+  });
   if (sentencesRewritten > 0) {
     log.push({
       type: "third_person_pronouns_rewritten",
@@ -832,100 +844,95 @@ const normalizeSentenceForCrossSection = (s: string): string => {
     .replace(/\s+/g, " ")
     .trim();
 };
+const getCrossSectionSentenceKey = (s: string): string | null => {
+  const norm = normalizeSentenceForCrossSection(s);
+  if (norm.length < 25) return null;
+  if (/^this is the south node (pattern|default)\b/.test(norm)) return "south-node-pattern";
+  return norm;
+};
 const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
-  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
-  // Map<aspectKey, { sectionTitle }> — for aspect-anchored sentences.
-  const firstSeenAspect = new Map<string, { sectionTitle: string }>();
-  // Map<normalizedSentence, { sectionTitle }> — catches duplicate canned
-  // lines that have NO aspect anchor (e.g. "This is the South Node pattern:
-  // security through partnership instead of through self.").
-  const firstSeenSentence = new Map<string, { sectionTitle: string }>();
+  if (!parsedContent || typeof parsedContent !== "object") return;
   let removed = 0;
   const examples: string[] = [];
-  for (const section of parsedContent.sections) {
-    if (!section || typeof section !== "object") continue;
-    const sectionType = String(section.type || "");
-    // Skip pure data/table sections — their cells are meant to repeat.
-    if (DEDUPE_SKIP_SECTION_TYPES.has(sectionType)) continue;
-    const sectionTitle = String(section.title || section.type || "section");
-    const cleanField = (text: string): string => {
-      if (!text || typeof text !== "string" || text.length < 20) return text;
-      const sentences = splitSentencesForMeta(text);
-      const kept: string[] = [];
-      let lastDropped = false;
-      for (const sent of sentences) {
-        const aspectKey = buildAspectKey(sent);
-        // 1) Aspect-anchored dedupe.
-        if (aspectKey) {
-          const prior = firstSeenAspect.get(aspectKey);
-          if (!prior) {
-            firstSeenAspect.set(aspectKey, { sectionTitle });
-            // Also record the sentence so an identical literal copy elsewhere
-            // (without an aspect detected) still dedupes.
-            const norm = normalizeSentenceForCrossSection(sent);
-            if (norm.length >= 25) firstSeenSentence.set(norm, { sectionTitle });
-            kept.push(sent);
-            lastDropped = false;
-            continue;
-          }
-          removed++;
-          lastDropped = true;
-          if (examples.length < 5) {
-            examples.push(`"${sent.slice(0, 80)}" — duplicate aspect from "${prior.sectionTitle}"`);
-          }
-          continue;
-        }
-        // 2) Exact-sentence dedupe (catches canned lines without an aspect
-        // anchor like the South Node pattern sentence).
-        const norm = normalizeSentenceForCrossSection(sent);
-        // Only dedupe sentences long enough to be intentional content, not
-        // generic transitional phrases. Floor at 25 chars normalized.
-        if (norm.length >= 25) {
-          const priorSent = firstSeenSentence.get(norm);
-          if (priorSent) {
+  forEachReadingPayload(parsedContent, (reading) => {
+    if (!Array.isArray(reading?.sections)) return;
+    // Map<aspectKey, { sectionTitle }> — for aspect-anchored sentences.
+    const firstSeenAspect = new Map<string, { sectionTitle: string }>();
+    // Map<normalizedSentence, { sectionTitle }> — catches duplicate canned
+    // lines that have NO aspect anchor (e.g. "This is the South Node pattern:
+    // security through partnership instead of through self.").
+    const firstSeenSentence = new Map<string, { sectionTitle: string }>();
+    for (const section of reading.sections) {
+      if (!section || typeof section !== "object") continue;
+      const sectionType = String(section.type || "");
+      if (DEDUPE_SKIP_SECTION_TYPES.has(sectionType)) continue;
+      const sectionTitle = String(section.title || section.type || "section");
+      const cleanField = (text: string): string => {
+        if (!text || typeof text !== "string" || text.length < 20) return text;
+        const sentences = splitSentencesForMeta(text);
+        const kept: string[] = [];
+        let lastDropped = false;
+        for (const sent of sentences) {
+          const aspectKey = buildAspectKey(sent);
+          if (aspectKey) {
+            const prior = firstSeenAspect.get(aspectKey);
+            if (!prior) {
+              firstSeenAspect.set(aspectKey, { sectionTitle });
+              const sentenceKey = getCrossSectionSentenceKey(sent);
+              if (sentenceKey) firstSeenSentence.set(sentenceKey, { sectionTitle });
+              kept.push(sent);
+              lastDropped = false;
+              continue;
+            }
             removed++;
             lastDropped = true;
             if (examples.length < 5) {
-              examples.push(`"${sent.slice(0, 80)}" — duplicate sentence from "${priorSent.sectionTitle}"`);
+              examples.push(`"${sent.slice(0, 80)}" — duplicate aspect from "${prior.sectionTitle}"`);
             }
             continue;
           }
-          firstSeenSentence.set(norm, { sectionTitle });
-        }
-        // 3) Orphan continuation: short sentence right after a dropped
-        // aspect/canned line with no anchor of its own — drop as part of
-        // the same canned blurb. Only one orphan per dropped parent.
-        if (lastDropped && sent.length < 220) {
-          removed++;
-          lastDropped = false;
-          if (examples.length < 5) {
-            examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped line`);
+          const sentenceKey = getCrossSectionSentenceKey(sent);
+          if (sentenceKey) {
+            const priorSent = firstSeenSentence.get(sentenceKey);
+            if (priorSent) {
+              removed++;
+              lastDropped = true;
+              if (examples.length < 5) {
+                examples.push(`"${sent.slice(0, 80)}" — duplicate sentence from "${priorSent.sectionTitle}"`);
+              }
+              continue;
+            }
+            firstSeenSentence.set(sentenceKey, { sectionTitle });
           }
-          continue;
+          if (lastDropped && sent.length < 220) {
+            removed++;
+            lastDropped = false;
+            if (examples.length < 5) {
+              examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped line`);
+            }
+            continue;
+          }
+          lastDropped = false;
+          kept.push(sent);
         }
-        lastDropped = false;
-        kept.push(sent);
-      }
-      return kept.join(" ").trim();
-    };
-    // Recursive walker that cleans every prose-bearing string field anywhere
-    // in the section (handles nested subsections, blocks, paragraphs, etc.).
-    // Skips known metadata keys and timing/data sub-objects.
-    const walk = (node: any) => {
-      if (Array.isArray(node)) { for (const x of node) walk(x); return; }
-      if (!node || typeof node !== "object") return;
-      for (const [key, val] of Object.entries(node)) {
-        if (DEDUPE_SKIP_FIELD_KEYS.has(key)) continue;
-        if (typeof val === "string") {
-          const next = cleanField(val);
-          if (next !== val) (node as any)[key] = next;
-        } else if (val && typeof val === "object") {
-          walk(val);
+        return kept.join(" ").trim();
+      };
+      const walk = (node: any) => {
+        if (Array.isArray(node)) { for (const x of node) walk(x); return; }
+        if (!node || typeof node !== "object") return;
+        for (const [key, val] of Object.entries(node)) {
+          if (DEDUPE_SKIP_FIELD_KEYS.has(key)) continue;
+          if (typeof val === "string") {
+            const next = cleanField(val);
+            if (next !== val) (node as any)[key] = next;
+          } else if (val && typeof val === "object") {
+            walk(val);
+          }
         }
-      }
-    };
-    walk(section);
-  }
+      };
+      walk(section);
+    }
+  });
   if (removed > 0) {
     log.push({
       type: "cross_section_aspect_duplicates_removed",
@@ -1935,7 +1942,12 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
 
 const splitSentencesForMeta = (text: string): string[] => {
   if (!text) return [];
-  return text.split(/(?<=[.!?])\s+(?=[A-Z"'(])/).map((s) => s.trim()).filter(Boolean);
+  return text
+    .replace(/([.!?])\s+([A-Z][a-z]+\s+(?:conjunction|conjunct|opposition|opposite|square|trine|sextile|quincunx|inconjunct|semisextile|semisquare|sesquisquare|sesquiquadrate|quintile|biquintile)\s+[A-Z])/g, "$1\n$2")
+    .replace(/([.!?])\s+(This is the South Node (?:pattern|default))/g, "$1\n$2")
+    .split(/\n|(?<=[.!?])\s+(?=[A-Z"'(])/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 };
 
 const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
