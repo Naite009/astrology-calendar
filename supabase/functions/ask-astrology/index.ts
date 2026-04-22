@@ -2820,6 +2820,124 @@ const requestMissingSections = async (
   return { added, skipped: false };
 };
 
+// V2 BULLET PATCH: Re-prompt Claude to author the body text for bullets
+// that the gate flagged as EMPTY_BULLET_TEXT. Patches in-place by
+// finding (section title, bullet label) and writing into the bullet's
+// `text` field. Returns the count of bullets successfully patched.
+// Never throws — caller treats failure as 0 patches.
+const requestMissingBullets = async (
+  parsedContent: any,
+  missingBullets: Array<{ section: string; label: string; fix: string }>,
+  systemBlocks: Array<Record<string, any>>,
+  ANTHROPIC_API_KEY: string,
+  userQuestion: string,
+): Promise<number> => {
+  if (!Array.isArray(missingBullets) || missingBullets.length === 0) return 0;
+  if (!parsedContent || !Array.isArray(parsedContent.sections)) return 0;
+
+  // Build the request list, skipping any (section,label) pairs we cannot
+  // actually find in the current payload (they may have already been
+  // healed by upstream cleanup).
+  const findBullet = (sectionTitle: string, label: string) => {
+    const sNorm = String(sectionTitle).trim().toLowerCase();
+    const lNorm = String(label).trim().toLowerCase();
+    for (const sec of parsedContent.sections) {
+      const t = String(sec?.title || "").trim().toLowerCase();
+      if (t !== sNorm) continue;
+      if (!Array.isArray(sec?.bullets)) continue;
+      for (const b of sec.bullets) {
+        const bl = String(b?.label || "").trim().toLowerCase();
+        if (bl === lNorm) return { sec, bullet: b };
+      }
+    }
+    return null;
+  };
+
+  const targets = missingBullets
+    .map((d) => ({ ...d, hit: findBullet(d.section, d.label) }))
+    .filter((x) => x.hit !== null);
+  if (targets.length === 0) return 0;
+
+  const requestedList = targets
+    .map((d, i) => `${i + 1}. Section: "${d.section}" → Bullet label: "${d.label}" — ${d.fix}`)
+    .join("\n");
+
+  const userMessage = [
+    "An external QA gate flagged these bullets as missing their body text. Author the missing text for each one. Use the SAME chart, voice, and depth standards as the original reading.",
+    "",
+    "USER'S ORIGINAL QUESTION:",
+    userQuestion || "(not captured)",
+    "",
+    "BULLETS TO PATCH:",
+    requestedList,
+    "",
+    "RULES:",
+    "- Output JSON ONLY. No prose, no markdown fences.",
+    "- Output shape: { \"bullets\": [ { \"section\": string, \"label\": string, \"text\": string } ] }",
+    "- `section` and `label` MUST exactly match the values from the request list above (these are the lookup keys).",
+    "- `text` must be a substantive 1–3 sentence body grounded in the chart context provided in the system prompt.",
+    "- 2nd-person voice (\"you\" / \"your\") only.",
+    "- Do NOT reference aspects, planets, or transits that aren't already in the chart context.",
+    "- Do NOT repeat content from elsewhere in the reading.",
+  ].join("\n");
+
+  let regenResponse: Response | null = null;
+  try {
+    regenResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: systemBlocks,
+        messages: [{ role: "user", content: userMessage }],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+  } catch (fetchErr) {
+    console.warn(`[ask-astrology] V2 bullet patch fetch failed: ${(fetchErr as any)?.message || String(fetchErr)}`);
+    return 0;
+  }
+
+  if (!regenResponse?.ok) return 0;
+
+  let regenJson: any = null;
+  try { regenJson = await regenResponse.json(); } catch { return 0; }
+  const regenText: string = regenJson?.content?.[0]?.text || "";
+  if (!regenText) return 0;
+
+  let parsed: any = null;
+  try {
+    const cleaned = regenText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const first = regenText.indexOf("{");
+    const last = regenText.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      try { parsed = JSON.parse(regenText.slice(first, last + 1)); } catch { /* */ }
+    }
+  }
+  if (!parsed || !Array.isArray(parsed.bullets)) return 0;
+
+  let patched = 0;
+  for (const fix of parsed.bullets) {
+    if (!fix || typeof fix !== "object") continue;
+    if (typeof fix.section !== "string" || typeof fix.label !== "string") continue;
+    if (typeof fix.text !== "string" || !fix.text.trim()) continue;
+    const hit = findBullet(fix.section, fix.label);
+    if (!hit) continue;
+    hit.bullet.text = fix.text.trim();
+    hit.bullet._v2_gate_patched = true;
+    patched++;
+  }
+  return patched;
+};
+
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
 
 PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject directly as "you" / "your". NEVER use third-person pronouns ("they", "them", "their", "he", "she", "his", "her") to refer to the subject of the reading. This is the #1 source of customer-trust collapse. When you describe an aspect, write "Your Mars squares your Saturn — your drive runs into walls until you learn to push without burning out." NEVER write "Their drive runs into walls — they keep almost-getting the big thing." If a canned aspect interpretation comes to mind in third person, rewrite the pronouns BEFORE you emit it. The only acceptable third-person references are to actual third parties the user mentioned (their boss, their partner, their child) — never to the subject themselves.
@@ -4881,50 +4999,118 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       const history: any[] = [verdict1];
       let retryInfo: any = null;
 
-      // ── V2 RETRY: only if pass 1 found missing sections ──────────
-      const missingDefects = Array.isArray(verdict1?.defects)
-        ? verdict1.defects.filter((d: any) => d?.code === "MISSING_REQUIRED_SECTION" && typeof d?.section === "string")
-        : [];
+      // ── V2 RETRY: trigger on missing OR empty content defects ─────
+      // The Replit gate emits three defect codes that V2 must heal:
+      //   - MISSING_REQUIRED_SECTION → section never authored
+      //   - EMPTY_SECTION            → section title present, body+bullets empty
+      //   - EMPTY_BULLET_TEXT        → bullet has label but no text body
+      // The first two are healed by re-authoring the section. The third
+      // is healed by patching the missing bullet text inside an existing
+      // section.
+      const allDefects = Array.isArray(verdict1?.defects) ? verdict1.defects : [];
+      const sectionDefects = allDefects.filter(
+        (d: any) =>
+          (d?.code === "MISSING_REQUIRED_SECTION" || d?.code === "EMPTY_SECTION")
+          && typeof d?.section === "string",
+      );
+      const bulletDefects = allDefects.filter(
+        (d: any) =>
+          d?.code === "EMPTY_BULLET_TEXT"
+          && typeof d?.section === "string"
+          && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
+      );
+      const totalRetry = sectionDefects.length + bulletDefects.length;
 
-      if (missingDefects.length > 0 && ANTHROPIC_API_KEY) {
-        console.info(`[ask-astrology][gate] V2 retry: re-prompting for ${missingDefects.length} missing section(s)`, {
-          sections: missingDefects.map((d: any) => d.section),
+      if (totalRetry > 0 && ANTHROPIC_API_KEY) {
+        console.info(`[ask-astrology][gate] V2 retry: ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
+          sections: sectionDefects.map((d: any) => `${d.code}:${d.section}`),
+          bullets: bulletDefects.map((d: any) => `${d.section} → ${d.bullet_label || d.label}`),
         });
         const retryStartedAt = Date.now();
-        const retryResult = await requestMissingSections(
-          parsedContent,
-          missingDefects.map((d: any) => ({ section: d.section, fix: d.fix || "" })),
-          sanitizedChartContext || undefined,
-          systemBlocks,
-          ANTHROPIC_API_KEY,
-          latestUserMessage,
-        );
+
+        // 1) Section-level retry (re-authors missing OR empty sections)
+        const retryResult = sectionDefects.length > 0
+          ? await requestMissingSections(
+              parsedContent,
+              sectionDefects.map((d: any) => ({
+                section: d.section,
+                fix: d.fix || (d.code === "EMPTY_SECTION"
+                  ? `Re-author this section — its body and bullets came back empty.`
+                  : "Add this required section."),
+              })),
+              sanitizedChartContext || undefined,
+              systemBlocks,
+              ANTHROPIC_API_KEY,
+              latestUserMessage,
+            )
+          : { added: 0, skipped: true } as { added: number; skipped: boolean; error?: string };
+
+        // For EMPTY_SECTION defects, the original empty shell is still
+        // in the array. Drop it so the new V2 version is the only copy
+        // (matched by title, case-insensitive). Never drop _v2_gate_added.
+        if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
+          const emptyTitles = new Set(
+            sectionDefects
+              .filter((d: any) => d.code === "EMPTY_SECTION")
+              .map((d: any) => String(d.section).trim().toLowerCase()),
+          );
+          if (emptyTitles.size > 0) {
+            const before = parsedContent.sections.length;
+            parsedContent.sections = parsedContent.sections.filter((s: any) => {
+              if (s?._v2_gate_added) return true;
+              const t = String(s?.title || "").trim().toLowerCase();
+              return !emptyTitles.has(t);
+            });
+            const removed = before - parsedContent.sections.length;
+            if (removed > 0) {
+              console.info(`[ask-astrology][gate] V2: removed ${removed} empty shell section(s) replaced by V2 content`);
+            }
+          }
+        }
+
+        // 2) Bullet-level patch (fills missing bullet text in-place)
+        let bulletsPatched = 0;
+        if (bulletDefects.length > 0) {
+          try {
+            bulletsPatched = await requestMissingBullets(
+              parsedContent,
+              bulletDefects.map((d: any) => ({
+                section: d.section,
+                label: d.bullet_label || d.label,
+                fix: d.fix || "Author the missing body text for this bullet.",
+              })),
+              systemBlocks,
+              ANTHROPIC_API_KEY,
+              latestUserMessage,
+            );
+          } catch (bErr) {
+            console.warn(`[ask-astrology][gate] V2 bullet patch threw: ${(bErr as any)?.message || String(bErr)}`);
+          }
+        }
+
         const retryMs = Date.now() - retryStartedAt;
         retryInfo = {
           attempted: true,
-          requested: missingDefects.length,
-          added: retryResult.added,
-          skipped: retryResult.skipped,
+          requested_sections: sectionDefects.length,
+          added_sections: retryResult.added,
+          requested_bullets: bulletDefects.length,
+          patched_bullets: bulletsPatched,
+          skipped: retryResult.skipped && bulletsPatched === 0,
           error: retryResult.error,
           regen_ms: retryMs,
         };
-        console.info(`[ask-astrology][gate] V2 retry result added=${retryResult.added}/${missingDefects.length} ms=${retryMs}${retryResult.error ? ` err=${retryResult.error}` : ""}`);
+        console.info(`[ask-astrology][gate] V2 retry result sections=${retryResult.added}/${sectionDefects.length} bullets=${bulletsPatched}/${bulletDefects.length} ms=${retryMs}${retryResult.error ? ` err=${retryResult.error}` : ""}`);
 
         // ── PASS 2 ─────────────────────────────────────────────────
-        // Only re-call the gate if we actually added at least one section.
-        // Otherwise the second verdict would be identical and we'd waste a round trip.
-        if (retryResult.added > 0) {
+        // Re-call the gate only if we actually changed something.
+        if (retryResult.added > 0 || bulletsPatched > 0) {
           // ── REORDER ─────────────────────────────────────────────
-          // V2 appends new sections to the END of the array. But the
-          // gate's "missing required" sections are FOUNDATIONAL ones
-          // (essence, how this person, relationship pattern, needs
-          // profile) that must appear BEFORE timing/strategy/summary
-          // sections — otherwise the reader sees "Relationship Timing
-          // Windows" first with no setup. We use a canonical priority
-          // map: anything matching a foundational name moves to the
-          // front (in canonical order); everything else keeps its
-          // existing relative order at the end.
+          // V2 appends new sections to the END. Foundational sections
+          // must appear BEFORE timing/strategy/summary blocks so the
+          // reader sees the chart + setup before the recommendations.
           const FOUNDATION_ORDER = [
+            "natal key placements",
+            "solar return key placements",
             "essence",
             "how this person",
             "how_this_person",
@@ -4961,8 +5147,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           const verdict2 = await runGate("post_retry");
           history.push(verdict2);
         }
-      } else if (missingDefects.length > 0 && !ANTHROPIC_API_KEY) {
-        retryInfo = { attempted: false, skipped: "no_anthropic_key", requested: missingDefects.length };
+      } else if (totalRetry > 0 && !ANTHROPIC_API_KEY) {
+        retryInfo = { attempted: false, skipped: "no_anthropic_key", requested: totalRetry };
       }
 
       // Final _gate object: most recent verdict at the top level + full history.
