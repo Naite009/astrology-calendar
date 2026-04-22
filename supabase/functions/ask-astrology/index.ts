@@ -5075,6 +5075,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           stripOffTopicDomainPhrases(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
+          // CRITICAL: backfill placement_table rows + elemental/modal arrays
+          // from the deterministic chart context BEFORE dropping empty sections.
+          // This guarantees Natal Key Placements, Solar Return Key Placements,
+          // and Natal Elemental & Modal Balance can NEVER disappear, regardless
+          // of what the AI returns. The AI is responsible for prose only.
+          backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
           // ALWAYS attach _validation_log (even when empty) so downstream
