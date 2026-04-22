@@ -5063,11 +5063,29 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       let attemptIdx = 0;
 
       while (attemptIdx < MAX_GATE_RETRIES) {
+        // Wall-clock budget — even if no individual call exceeds its
+        // timeout, the cumulative cost of N retries × Claude + N gate
+        // calls can starve the rest of the request. Bail before that.
+        const elapsedMs = Date.now() - v2StartedAt;
+        if (elapsedMs > V2_WALL_CLOCK_BUDGET_MS) {
+          giveUpReason = "wall_clock_budget_exceeded";
+          retryAttempts.push({
+            attempt: attemptIdx + 1,
+            skipped: true,
+            reason: "wall_clock_budget_exceeded",
+            elapsed_ms: elapsedMs,
+            budget_ms: V2_WALL_CLOCK_BUDGET_MS,
+          });
+          console.warn(`[ask-astrology][gate] V2 give up: wall-clock ${elapsedMs}ms > budget ${V2_WALL_CLOCK_BUDGET_MS}ms`);
+          break;
+        }
+
         const lastVerdict = history[history.length - 1];
-        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        const { sectionDefects, bulletDefects, unhealable } = collectDefects(lastVerdict);
+        lastUnhealableDefects = unhealable;
         const totalRetry = sectionDefects.length + bulletDefects.length;
 
-        if (totalRetry === 0) break; // gate is happy
+        if (totalRetry === 0) break; // gate is happy (or only unhealable defects remain)
 
         if (!ANTHROPIC_API_KEY) {
           giveUpReason = "no_anthropic_key";
@@ -5098,10 +5116,33 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         prevSignature = sig;
 
         const attemptStart = Date.now();
-        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}/${MAX_GATE_RETRIES}: ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
+        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}/${MAX_GATE_RETRIES} (elapsed=${elapsedMs}ms): ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
           sections: sectionDefects.map((d: any) => `${d.code}:${d.section}`),
           bullets: bulletDefects.map((d: any) => `${d.section} → ${d.bullet_label || d.label}`),
+          unhealable_count: unhealable.length,
         });
+
+        // Before re-authoring, drop any sections V2 already owns whose
+        // titles match the current section defects. This prevents
+        // duplicate sections when retry #2 needs to re-do retry #1's work.
+        if (Array.isArray(parsedContent.sections) && sectionDefects.length > 0) {
+          const replacingTitles = new Set(
+            sectionDefects.map((d: any) => String(d.section).trim().toLowerCase()),
+          );
+          const before = parsedContent.sections.length;
+          parsedContent.sections = parsedContent.sections.filter((s: any) => {
+            const t = String(s?.title || "").trim().toLowerCase();
+            // Drop the previous V2-owned copy if its title is being re-authored
+            if (s?._v2_gate_added && replacingTitles.has(t) && v2OwnedTitles.has(t)) {
+              return false;
+            }
+            return true;
+          });
+          const removed = before - parsedContent.sections.length;
+          if (removed > 0) {
+            console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: dropped ${removed} stale V2-authored section(s) before re-author`);
+          }
+        }
 
         // 1) Section-level retry (re-authors missing OR empty sections)
         const retryResult = sectionDefects.length > 0
@@ -5120,8 +5161,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             )
           : { added: 0, skipped: true } as { added: number; skipped: boolean; error?: string };
 
-        // For EMPTY_SECTION defects, drop the empty shell so the new
-        // V2 version is the only copy (matched by title, ci).
+        // Mark newly-added titles as V2-owned for future replace-not-append.
+        if (retryResult.added > 0 && Array.isArray(parsedContent.sections)) {
+          for (const s of parsedContent.sections) {
+            if (s?._v2_gate_added) {
+              v2OwnedTitles.add(String(s?.title || "").trim().toLowerCase());
+            }
+          }
+        }
+
+        // For EMPTY_SECTION defects from the ORIGINAL output, drop the
+        // empty shell so the new V2 version is the only copy.
         if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
           const emptyTitles = new Set(
             sectionDefects
@@ -5137,7 +5187,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             });
             const removed = before - parsedContent.sections.length;
             if (removed > 0) {
-              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} empty shell section(s)`);
+              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original empty shell section(s)`);
             }
           }
         }
