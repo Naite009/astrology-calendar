@@ -4745,13 +4745,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           tokenLen: gateToken?.length ?? 0,
         });
         if (gateUrlRaw && gateToken) {
-          // Defensive URL construction:
-          // - Strip trailing slash
-          // - Strip a trailing /check-reading if user accidentally included it
-          // - Ensure /api segment is present (Replit gate expects /api/check-reading)
-          let base = gateUrlRaw.trim().replace(/\/$/, "");
-          base = base.replace(/\/check-reading$/i, "");
-          if (!/\/api$/i.test(base)) base = `${base}/api`;
+          // URL construction: secret stores the base ending in /api (verified via gate-probe).
+          // Just append /check-reading. Strip trailing slash defensively.
+          const base = gateUrlRaw.trim().replace(/\/$/, "");
           constructedUrl = `${base}/check-reading`;
           // Log host + path only (never the token)
           let hostForLog = "";
