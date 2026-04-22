@@ -810,6 +810,22 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
+  // How each natal Moon sign tends to *meet* a new theme — concrete behavior, not traits
+  const MOON_SIGN_RESPONSE: Record<string, string> = {
+    Aries: 'react fast, want to act before you fully think it through, and get frustrated if things stall',
+    Taurus: 'need to feel safe and settled in your body before you commit, and resist being rushed',
+    Gemini: 'talk it out, gather options, and shift moods quickly as new information lands',
+    Cancer: 'feel it in your gut first, get protective of who and what matters, and need a soft place to land',
+    Leo: 'want to be seen and acknowledged, take it personally when you\'re not, and lead with warmth',
+    Virgo: 'analyze the details, look for what needs fixing, and quietly worry until you have a plan',
+    Libra: 'check how others are feeling, weigh both sides, and resist anything that feels unfair or out of balance',
+    Scorpio: 'feel everything intensely, watch before you act, and need full honesty before you trust',
+    Sagittarius: 'want the bigger meaning, get restless if it feels small, and look for the door out if it gets too heavy',
+    Capricorn: 'go quiet, take it seriously, and try to handle it alone before asking for help',
+    Aquarius: 'step back to observe, need space to process, and trust logic more than emotion in the moment',
+    Pisces: 'absorb the mood of everyone around you, blur your own needs with theirs, and need solitude to find your own signal again',
+  };
+
   // Calculate New Moon house in natal chart
   const getNewMoonHouse = (): number | null => {
     if (!activeChart?.houseCusps || !interpretation) return null;
