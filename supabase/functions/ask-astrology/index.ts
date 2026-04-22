@@ -4903,6 +4903,50 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         // Only re-call the gate if we actually added at least one section.
         // Otherwise the second verdict would be identical and we'd waste a round trip.
         if (retryResult.added > 0) {
+          // ── REORDER ─────────────────────────────────────────────
+          // V2 appends new sections to the END of the array. But the
+          // gate's "missing required" sections are FOUNDATIONAL ones
+          // (essence, how this person, relationship pattern, needs
+          // profile) that must appear BEFORE timing/strategy/summary
+          // sections — otherwise the reader sees "Relationship Timing
+          // Windows" first with no setup. We use a canonical priority
+          // map: anything matching a foundational name moves to the
+          // front (in canonical order); everything else keeps its
+          // existing relative order at the end.
+          const FOUNDATION_ORDER = [
+            "essence",
+            "how this person",
+            "how_this_person",
+            "relationship pattern",
+            "relationship_pattern",
+            "needs profile",
+            "needs_profile",
+            "contradiction patterns",
+            "contradiction_patterns",
+            "natal elemental & modal balance",
+            "modality_element",
+          ];
+          const norm = (s: any) => String(s?.title || s?.type || "").trim().toLowerCase();
+          const foundationRank = (s: any): number => {
+            const t = norm(s);
+            for (let i = 0; i < FOUNDATION_ORDER.length; i++) {
+              if (t === FOUNDATION_ORDER[i] || t.includes(FOUNDATION_ORDER[i])) return i;
+            }
+            return -1;
+          };
+          const sections = parsedContent.sections as any[];
+          if (Array.isArray(sections)) {
+            const foundations: any[] = [];
+            const rest: any[] = [];
+            for (const sec of sections) {
+              if (foundationRank(sec) >= 0) foundations.push(sec);
+              else rest.push(sec);
+            }
+            foundations.sort((a, b) => foundationRank(a) - foundationRank(b));
+            parsedContent.sections = [...foundations, ...rest];
+            console.info(`[ask-astrology][gate] V2 reorder: foundations=${foundations.length} rest=${rest.length}`);
+          }
+
           const verdict2 = await runGate("post_retry");
           history.push(verdict2);
         }
