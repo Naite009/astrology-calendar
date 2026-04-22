@@ -5337,8 +5337,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
 
       // Final _gate object: most recent verdict at the top level + full history.
       const final = history[history.length - 1];
+      // Label the gate outcome so downstream readers can tell at a glance
+      // whether V2 healed everything ("ok"), shipped a best-effort attempt
+      // after the retry cap ("exhausted"), or never tripped retries ("ok"
+      // on first pass / "failed" if no retry was attempted but verdict bad).
+      const finalOk = final?.ok === true;
+      const v2Ran = retryAttempts.length > 0;
+      const gateLabel = finalOk
+        ? "ok"
+        : (v2Ran ? "exhausted" : "failed");
       (parsedContent as any)._gate = {
         ...final,
+        label: gateLabel,
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
