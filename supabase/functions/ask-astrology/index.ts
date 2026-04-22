@@ -1420,6 +1420,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     const hasElements = Array.isArray(section?.elements) && section.elements.length > 0;
     const hasModalities = Array.isArray(section?.modalities) && section.modalities.length > 0;
     const hasPolarity = Array.isArray(section?.polarity) && section.polarity.length > 0;
+    // placement_table sections store data under `rows` — without this check
+    // the cleanup pass deletes "Natal Key Placements" and "Solar Return Key
+    // Placements" tables (the chart summary at the top of every reading).
+    const hasRows = Array.isArray(section?.rows) && section.rows.length > 0;
     const bodyText = typeof section?.body === "string" ? section.body
       : typeof section?.content === "string" ? section.content
       : typeof section?.text === "string" ? section.text
@@ -1427,7 +1431,7 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
       : typeof section?.balance_interpretation === "string" ? section.balance_interpretation
       : "";
     const hasBody = bodyText.trim().length > 0;
-    if (!hasItems && !hasTransits && !hasWindows && !hasBullets && !hasPlacements && !hasElements && !hasModalities && !hasPolarity && !hasBody) {
+    if (!hasItems && !hasTransits && !hasWindows && !hasBullets && !hasPlacements && !hasElements && !hasModalities && !hasPolarity && !hasRows && !hasBody) {
       droppedSections++;
       log.push({ type: "empty_section_dropped", detail: { section: section?.title || "", section_type: section?.type || "" } });
       continue;
