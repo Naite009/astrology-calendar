@@ -545,3 +545,81 @@ Deno.test("Claude returns empty patch → give_up_reason=claude_made_no_changes"
   assertEquals(result.giveUpReason, "claude_made_no_changes");
   assertEquals(result.totalAttempts, 1);
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// TEST 6 — Wall-clock budget kicks in even before MAX_GATE_RETRIES
+// ─────────────────────────────────────────────────────────────────────
+Deno.test("wall-clock budget exceeded → give_up_reason=wall_clock_budget_exceeded", async () => {
+  const payload: Payload = { sections: [{ title: "Foo", body: "" }] };
+  const runGate: RunGate = async (label) => ({
+    label, ok: false, defects: [{ code: "EMPTY_SECTION", section: `Sec_${label}` }],
+  });
+  const runClaude: RunClaude = async (sd) => ({
+    newSections: sd.map((d) => ({ title: d.section, body: "x" })),
+  });
+
+  // Fake clock: jumps past the 180s budget on the 2nd check.
+  let tick = 0;
+  const clock = () => { tick++; return tick === 1 ? 0 : 200_000; };
+
+  const result = await runV2Loop(payload, runGate, runClaude, { clock });
+  assertEquals(result.giveUpReason, "wall_clock_budget_exceeded");
+  const last = result.attempts[result.attempts.length - 1];
+  assertEquals(last.reason, "wall_clock_budget_exceeded");
+  assert(last.elapsed_ms >= 180_000);
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// TEST 7 — Replace-not-append: retry #2 redoes a V2-owned section
+// without producing a duplicate copy in the final payload.
+// ─────────────────────────────────────────────────────────────────────
+Deno.test("V2 replaces its own previous section instead of appending duplicate", async () => {
+  const payload: Payload = {
+    sections: [{ title: "Natal Key Placements", body: "" }],
+  };
+  let pass = 0;
+  const runGate: RunGate = async (label, p) => {
+    pass++;
+    // Pass 1 + 2 both flag the same EMPTY_SECTION so retry #2 redoes #1's work.
+    // Pass 3 sees only 1 copy and passes.
+    const natalCount = p.sections.filter((s) => s.title === "Natal Key Placements").length;
+    if (label === "initial" || (pass === 2 && natalCount === 1)) {
+      return { label, ok: false, defects: [{ code: "EMPTY_SECTION", section: "Natal Key Placements" }] };
+    }
+    return { label, ok: true, defects: [] };
+  };
+  const runClaude: RunClaude = async (sd) => ({
+    newSections: sd.map((d, i) => ({ title: d.section, body: `v${i + 1} body` })),
+  });
+
+  const result = await runV2Loop(payload, runGate, runClaude);
+  const natalCopies = result.payload.sections.filter((s) => s.title === "Natal Key Placements");
+  assertEquals(natalCopies.length, 1, "must end with exactly one Natal section, not duplicates");
+  assert(natalCopies[0]._v2_gate_added);
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// TEST 8 — Unhealable defects are surfaced in v2_retry.unhealable_defects
+// ─────────────────────────────────────────────────────────────────────
+Deno.test("unhealable defect codes surface in _gate.v2_retry.unhealable_defects", async () => {
+  const payload: Payload = { sections: [{ title: "Foo", body: "real body" }] };
+  const runGate: RunGate = async (label) => ({
+    label,
+    ok: false,
+    defects: [
+      { code: "LOW_SCORE", section: "Foo", fix: "raise quality" },
+      { code: "BANNED_PHRASE", section: "Foo" },
+    ],
+  });
+  const runClaude: RunClaude = async () => ({});
+
+  const result = await runV2Loop(payload, runGate, runClaude);
+  // No healable defects → loop exits without calling Claude
+  assertEquals(result.totalAttempts, 0);
+  assertEquals(result.unhealableDefects.length, 2);
+  const codes = result.unhealableDefects.map((d: any) => d.code).sort();
+  assertEquals(codes, ["BANNED_PHRASE", "LOW_SCORE"]);
+  // Final _gate object surfaces them too
+  const surfaced = (result.payload._gate as any).v2_retry.unhealable_defects;
+  assertEquals(surfaced.length, 2);
+});
