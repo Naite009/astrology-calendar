@@ -4903,6 +4903,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     // ────────────────────────────────────────────────────────────
     if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       console.info("[ask-astrology][gate] reached pre-update gate hoist", { jobId });
+      try {
 
       const gateUrlRaw = Deno.env.get("REPLIT_GATE_URL");
       const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
