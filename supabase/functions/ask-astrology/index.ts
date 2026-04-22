@@ -905,11 +905,21 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
             }
             firstSeenSentence.set(sentenceKey, { sectionTitle });
           }
-          if (lastDropped && sent.length < 220) {
+          // CONSERVATIVE orphan-continuation rule: previously this dropped
+          // any sentence < 220 chars after a deleted one, which silently nuked
+          // entire bullet bodies in Needs Profile / Contradiction Patterns.
+          // Now: only drop true sentence FRAGMENTS (very short, no internal
+          // punctuation, starts with a lowercase connective like "but/and/so").
+          if (
+            lastDropped &&
+            sent.length < 90 &&
+            /^[a-z]/.test(sent) &&
+            /^(but|and|so|which|that|because|though|although|yet|or)\b/i.test(sent.trim())
+          ) {
             removed++;
             lastDropped = false;
             if (examples.length < 5) {
-              examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped line`);
+              examples.push(`"${sent.slice(0, 80)}" — true orphan fragment after dropped line`);
             }
             continue;
           }
@@ -1386,6 +1396,220 @@ const isWhitespaceOrEmpty = (v: unknown): boolean => {
   if (v === null || v === undefined) return true;
   if (typeof v === "string") return v.trim().length === 0;
   return false;
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// DETERMINISTIC STRUCTURAL BACKFILL
+// AI sometimes returns empty-shell placement_table sections (just title +
+// type) or empty modality_element arrays. Instead of dropping them, we
+// reconstruct the structural data from the chart context the user already
+// computed deterministically with astronomy-engine. This guarantees the
+// "Natal Key Placements" / "Solar Return Key Placements" tables and the
+// elemental balance counts are NEVER missing again, regardless of AI output.
+// ─────────────────────────────────────────────────────────────────────────
+
+interface ParsedPosition {
+  planet: string;
+  degree: number;
+  minutes: number;
+  sign: string;
+  house: number | null;
+  retrograde: boolean;
+}
+
+const ZODIAC_SIGNS_FOR_PARSE = [
+  "Aries","Taurus","Gemini","Cancer","Leo","Virgo",
+  "Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces",
+];
+
+const SIGN_TO_ELEMENT: Record<string, string> = {
+  Aries:"Fire", Leo:"Fire", Sagittarius:"Fire",
+  Taurus:"Earth", Virgo:"Earth", Capricorn:"Earth",
+  Gemini:"Air", Libra:"Air", Aquarius:"Air",
+  Cancer:"Water", Scorpio:"Water", Pisces:"Water",
+};
+const SIGN_TO_MODALITY: Record<string, string> = {
+  Aries:"Cardinal", Cancer:"Cardinal", Libra:"Cardinal", Capricorn:"Cardinal",
+  Taurus:"Fixed", Leo:"Fixed", Scorpio:"Fixed", Aquarius:"Fixed",
+  Gemini:"Mutable", Virgo:"Mutable", Sagittarius:"Mutable", Pisces:"Mutable",
+};
+const SIGN_TO_POLARITY: Record<string, string> = {
+  Aries:"Yang", Gemini:"Yang", Leo:"Yang", Libra:"Yang", Sagittarius:"Yang", Aquarius:"Yang",
+  Taurus:"Yin", Cancer:"Yin", Virgo:"Yin", Scorpio:"Yin", Capricorn:"Yin", Pisces:"Yin",
+};
+const ELEMENT_SYMBOLS: Record<string, string> = { Fire:"🔥", Earth:"🌍", Air:"💨", Water:"💧" };
+const TEN_PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"];
+
+const parsePositionsFromContext = (
+  chartContext: string,
+  blockHeader: RegExp,
+  planetPrefix: string = "",
+): ParsedPosition[] => {
+  if (!chartContext) return [];
+  const headerMatch = chartContext.match(blockHeader);
+  if (!headerMatch) return [];
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL/);
+  const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+  const lineRe = planetPrefix
+    ? new RegExp(`-\\s*${planetPrefix}\\s+([A-Za-z][A-Za-z ]+?):\\s+(\\d+)°(\\d+)'\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})(?:\\s+\\(${planetPrefix}\\s*House\\s+(\\d+)\\))?(\\s+\\(R\\))?`, "g")
+    : new RegExp(`-\\s+([A-Za-z][A-Za-z ]+?):\\s+(\\d+)°(\\d+)'\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})(?:\\s+\\(House\\s+(\\d+)\\))?(\\s+\\(R\\))?`, "g");
+  const out: ParsedPosition[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = lineRe.exec(block)) !== null) {
+    out.push({
+      planet: m[1].trim(),
+      degree: parseInt(m[2], 10),
+      minutes: parseInt(m[3], 10),
+      sign: m[4],
+      house: m[5] ? parseInt(m[5], 10) : null,
+      retrograde: !!m[6],
+    });
+  }
+  return out;
+};
+
+const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number; sign: string; degree: number }> => {
+  if (!chartContext) return [];
+  const headerMatch = chartContext.match(/\nHouse Cusps[^:]*:\n/);
+  if (!headerMatch) return [];
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  const endMatch = tail.match(/\n\s*\n|\nPlanets In Each|\nRuler Chains|\nVERIFIED/);
+  const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+  const re = new RegExp(`-\\s+House\\s+(\\d+):\\s+(\\d+)°\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
+  const out: Array<{ house: number; sign: string; degree: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(block)) !== null) {
+    out.push({ house: parseInt(m[1], 10), sign: m[3], degree: parseInt(m[2], 10) });
+  }
+  return out;
+};
+
+const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
+  return positions.map((p) => ({
+    planet: p.planet,
+    sign: p.sign,
+    degrees: `${p.degree}°${String(p.minutes).padStart(2, "0")}'`,
+    house: p.house ?? "—",
+    retrograde: p.retrograde,
+  }));
+};
+
+const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
+  const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
+  const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
+  const modalityCounts: Record<string, string[]> = { Cardinal:[], Fixed:[], Mutable:[] };
+  const polarityCounts: Record<string, string[]> = { Yang:[], Yin:[] };
+  for (const p of tenOnly) {
+    const el = SIGN_TO_ELEMENT[p.sign]; if (el) elementCounts[el].push(p.planet);
+    const md = SIGN_TO_MODALITY[p.sign]; if (md) modalityCounts[md].push(p.planet);
+    const po = SIGN_TO_POLARITY[p.sign]; if (po) polarityCounts[po].push(p.planet);
+  }
+  const elements = Object.entries(elementCounts).map(([name, planets]) => ({
+    name, count: planets.length, symbol: ELEMENT_SYMBOLS[name], planets,
+  }));
+  const modalities = Object.entries(modalityCounts).map(([name, planets]) => ({
+    name, count: planets.length, planets,
+  }));
+  const polarity = Object.entries(polarityCounts).map(([name, planets]) => ({
+    name, count: planets.length, planets,
+  }));
+  const dominantOf = (arr: Array<{ name: string; count: number }>) =>
+    arr.slice().sort((a,b)=>b.count-a.count)[0]?.name ?? null;
+  return {
+    elements, modalities, polarity,
+    dominant_element: dominantOf(elements),
+    dominant_modality: dominantOf(modalities),
+    dominant_polarity: dominantOf(polarity),
+  };
+};
+
+const backfillStructuralSectionsFromChartContext = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections) || !chartContext) return;
+
+  const natalPositions = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPositions = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const houseCusps = parseHouseCuspsFromContext(chartContext);
+
+  let backfilled = 0;
+  const details: string[] = [];
+
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+    const titleLower = String(section?.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+
+    // 1. Backfill placement_table sections that came back as empty shells.
+    if (section.type === "placement_table") {
+      const hasRows = Array.isArray(section.rows) && section.rows.length > 0;
+      const hasPlacements = Array.isArray(section.placements) && section.placements.length > 0;
+      if (!hasRows && !hasPlacements) {
+        const source = isSR ? srPositions : natalPositions;
+        if (source.length > 0) {
+          section.rows = buildRowsFromPositions(source);
+          if (!isSR && houseCusps.length > 0) {
+            const angles = [
+              { house: 1, label: "Ascendant" },
+              { house: 4, label: "IC" },
+              { house: 7, label: "Descendant" },
+              { house: 10, label: "Midheaven" },
+            ];
+            for (const ang of angles) {
+              const c = houseCusps.find((h) => h.house === ang.house);
+              if (c) {
+                section.rows.push({
+                  planet: ang.label,
+                  sign: c.sign,
+                  degrees: `${c.degree}°00'`,
+                  house: ang.house,
+                  retrograde: false,
+                });
+              }
+            }
+          }
+          backfilled++;
+          details.push(`${section.title}: ${section.rows.length} rows backfilled from chart context`);
+        }
+      }
+    }
+
+    // 2. Backfill modality_element sections with empty arrays.
+    if (
+      section.type === "modality_element" ||
+      titleLower.includes("elemental") ||
+      titleLower.includes("modal balance")
+    ) {
+      const hasElements = Array.isArray(section.elements) && section.elements.length > 0;
+      const hasModalities = Array.isArray(section.modalities) && section.modalities.length > 0;
+      if ((!hasElements || !hasModalities) && natalPositions.length >= 8) {
+        const built = buildElementalBalanceFromPositions(natalPositions);
+        if (!hasElements) section.elements = built.elements;
+        if (!hasModalities) section.modalities = built.modalities;
+        if (!Array.isArray(section.polarity) || section.polarity.length === 0) {
+          section.polarity = built.polarity;
+        }
+        section.dominant_element = section.dominant_element || built.dominant_element;
+        section.dominant_modality = section.dominant_modality || built.dominant_modality;
+        section.dominant_polarity = section.dominant_polarity || built.dominant_polarity;
+        backfilled++;
+        details.push(`${section.title}: elemental/modal arrays backfilled from natal positions`);
+      }
+    }
+  }
+
+  if (backfilled > 0) {
+    log.push({
+      type: "structural_sections_backfilled_from_chart_context",
+      detail: { count: backfilled, sections: details },
+    });
+    console.info("[ask-astrology] structural backfill applied", { backfilled, details });
+  }
 };
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
@@ -4851,6 +5075,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           stripOffTopicDomainPhrases(parsedContent, emissionLog);
           checkSRHouseNumberCopy(parsedContent, emissionLog);
           completeCityNames(parsedContent, emissionLog);
+          // CRITICAL: backfill placement_table rows + elemental/modal arrays
+          // from the deterministic chart context BEFORE dropping empty sections.
+          // This guarantees Natal Key Placements, Solar Return Key Placements,
+          // and Natal Elemental & Modal Balance can NEVER disappear, regardless
+          // of what the AI returns. The AI is responsible for prose only.
+          backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
           // ALWAYS attach _validation_log (even when empty) so downstream
