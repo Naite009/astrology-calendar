@@ -4734,13 +4734,37 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     // ────────────────────────────────────────────────────────────
     if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       console.info("[ask-astrology][gate] reached pre-update gate hoist", { jobId });
+      let constructedUrl = "";
       try {
-        const gateUrl = Deno.env.get("REPLIT_GATE_URL");
+        const gateUrlRaw = Deno.env.get("REPLIT_GATE_URL");
         const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
-        console.info("[ask-astrology][gate] env check", { hasUrl: !!gateUrl, hasToken: !!gateToken });
-        if (gateUrl && gateToken) {
+        console.info("[ask-astrology][gate] env check", {
+          hasUrl: !!gateUrlRaw,
+          hasToken: !!gateToken,
+          urlLen: gateUrlRaw?.length ?? 0,
+          tokenLen: gateToken?.length ?? 0,
+        });
+        if (gateUrlRaw && gateToken) {
+          // Defensive URL construction:
+          // - Strip trailing slash
+          // - Strip a trailing /check-reading if user accidentally included it
+          // - Ensure /api segment is present (Replit gate expects /api/check-reading)
+          let base = gateUrlRaw.trim().replace(/\/$/, "");
+          base = base.replace(/\/check-reading$/i, "");
+          if (!/\/api$/i.test(base)) base = `${base}/api`;
+          constructedUrl = `${base}/check-reading`;
+          // Log host + path only (never the token)
+          let hostForLog = "";
+          let pathForLog = "";
+          try {
+            const u = new URL(constructedUrl);
+            hostForLog = u.host;
+            pathForLog = u.pathname;
+          } catch { /* ignore */ }
+          console.info("[ask-astrology][gate] outbound", { host: hostForLog, path: pathForLog });
+
           const gateStartedAt = Date.now();
-          const gateResp = await fetch(`${gateUrl.replace(/\/$/, "")}/check-reading`, {
+          const gateResp = await fetch(constructedUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -4751,7 +4775,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           });
           const gateMs = Date.now() - gateStartedAt;
           let gateBody: any = null;
-          try { gateBody = await gateResp.json(); } catch { /* non-JSON */ }
+          let rawText = "";
+          try { rawText = await gateResp.text(); } catch { /* */ }
+          try { gateBody = rawText ? JSON.parse(rawText) : null; } catch { /* non-JSON */ }
           const ok = gateResp.status === 200 && gateBody?.ok === true;
           const defects = Array.isArray(gateBody?.defects) ? gateBody.defects : [];
           const fixesApplied = Array.isArray(gateBody?.fixes_applied) ? gateBody.fixes_applied : [];
@@ -4762,6 +4788,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             defects,
             fixes_applied: fixesApplied,
             checked_at: new Date().toISOString(),
+            url_path: (() => { try { return new URL(constructedUrl).pathname; } catch { return ""; } })(),
+            // Capture body snippet only on non-200 to aid debugging
+            ...(gateResp.status !== 200 ? { body_snippet: rawText.slice(0, 300) } : {}),
           };
           console.info(`[ask-astrology][gate] verdict status=${gateResp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} ms=${gateMs}`);
         } else {
@@ -4769,11 +4798,15 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           console.warn("[ask-astrology][gate] missing REPLIT_GATE_URL or REPLIT_GATE_TOKEN");
         }
       } catch (gateErr) {
+        const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
+        const name = gateErr instanceof Error ? gateErr.name : "Error";
         (parsedContent as any)._gate = {
           ok: null,
-          error: gateErr instanceof Error ? gateErr.message : String(gateErr),
+          error: msg,
+          error_name: name,
+          attempted_url_path: (() => { try { return new URL(constructedUrl).pathname; } catch { return ""; } })(),
         };
-        console.error("[ask-astrology][gate] threw:", gateErr);
+        console.error("[ask-astrology][gate] threw:", name, msg);
       }
     }
 
