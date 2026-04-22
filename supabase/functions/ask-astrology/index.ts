@@ -905,11 +905,21 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
             }
             firstSeenSentence.set(sentenceKey, { sectionTitle });
           }
-          if (lastDropped && sent.length < 220) {
+          // CONSERVATIVE orphan-continuation rule: previously this dropped
+          // any sentence < 220 chars after a deleted one, which silently nuked
+          // entire bullet bodies in Needs Profile / Contradiction Patterns.
+          // Now: only drop true sentence FRAGMENTS (very short, no internal
+          // punctuation, starts with a lowercase connective like "but/and/so").
+          if (
+            lastDropped &&
+            sent.length < 90 &&
+            /^[a-z]/.test(sent) &&
+            /^(but|and|so|which|that|because|though|although|yet|or)\b/i.test(sent.trim())
+          ) {
             removed++;
             lastDropped = false;
             if (examples.length < 5) {
-              examples.push(`"${sent.slice(0, 80)}" — orphan continuation of dropped line`);
+              examples.push(`"${sent.slice(0, 80)}" — true orphan fragment after dropped line`);
             }
             continue;
           }
