@@ -5290,20 +5290,44 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       // If we exhausted MAX_GATE_RETRIES and still have defects, record it.
       if (!giveUpReason && attemptIdx >= MAX_GATE_RETRIES) {
         const lastVerdict = history[history.length - 1];
-        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        const { sectionDefects, bulletDefects, unhealable } = collectDefects(lastVerdict);
+        lastUnhealableDefects = unhealable;
         if (sectionDefects.length + bulletDefects.length > 0) {
           giveUpReason = "max_retries_reached";
           console.warn(`[ask-astrology][gate] V2 give up: hit MAX_GATE_RETRIES=${MAX_GATE_RETRIES}, ${sectionDefects.length + bulletDefects.length} defect(s) still present`);
         }
       }
 
-      const retryInfo = retryAttempts.length > 0 || giveUpReason
+      // Refresh unhealable from final verdict so we surface the latest set.
+      const finalUnhealable = collectDefects(history[history.length - 1]).unhealable;
+      if (finalUnhealable.length > 0) {
+        console.warn(`[ask-astrology][gate] V2 final: ${finalUnhealable.length} unhealable defect(s) the loop cannot fix`, {
+          codes: [...new Set(finalUnhealable.map((d: any) => d.code))],
+          sections: [...new Set(finalUnhealable.map((d: any) => d.section).filter(Boolean))],
+        });
+      }
+
+      const retryInfo = retryAttempts.length > 0 || giveUpReason || finalUnhealable.length > 0
         ? {
             attempted: retryAttempts.length > 0,
             attempts: retryAttempts,
             total_attempts: retryAttempts.length,
             max_attempts: MAX_GATE_RETRIES,
             give_up_reason: giveUpReason,
+            wall_clock_ms: Date.now() - v2StartedAt,
+            wall_clock_budget_ms: V2_WALL_CLOCK_BUDGET_MS,
+            // Defects the gate flagged that V2 has no healer for. Surfacing
+            // these tells future maintainers what new defect codes need
+            // healers (e.g. add LOW_SCORE handler, BANNED_PHRASE handler).
+            unhealable_defects: finalUnhealable.length > 0
+              ? finalUnhealable.map((d: any) => ({
+                  code: d.code,
+                  section: d.section,
+                  bullet_label: d.bullet_label || d.label,
+                  fix: d.fix,
+                }))
+              : [],
+            v2_owned_titles: [...v2OwnedTitles],
           }
         : null;
 
