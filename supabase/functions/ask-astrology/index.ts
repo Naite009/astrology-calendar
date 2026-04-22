@@ -4785,40 +4785,43 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     }
 
     // ────────────────────────────────────────────────────────────
-    // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading) — V1.2
-    // Hoisted OUT of the parse/hygiene block so it runs even when
-    // hygiene throws or parsing produced a partial structure. The
-    // ONLY way this is skipped is if updateJob below never runs.
+    // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading) — V2
+    // V1.2: Hoisted out of hygiene so it runs even when hygiene throws.
+    // V2:   When the gate returns MISSING_REQUIRED_SECTION defects, we
+    //       re-prompt Claude to author exactly those sections, append
+    //       them, and re-run the gate ONCE. The full history (initial
+    //       verdict, what we added, second verdict) is recorded on
+    //       `_gate.history[]` so downstream consumers can audit what
+    //       happened. Hard ceiling: 1 retry — never spin.
     // ────────────────────────────────────────────────────────────
     if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       console.info("[ask-astrology][gate] reached pre-update gate hoist", { jobId });
-      let constructedUrl = "";
-      try {
-        const gateUrlRaw = Deno.env.get("REPLIT_GATE_URL");
-        const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
-        console.info("[ask-astrology][gate] env check", {
-          hasUrl: !!gateUrlRaw,
-          hasToken: !!gateToken,
-          urlLen: gateUrlRaw?.length ?? 0,
-          tokenLen: gateToken?.length ?? 0,
-        });
-        if (gateUrlRaw && gateToken) {
-          // URL construction: secret stores the base ending in /api (verified via gate-probe).
-          // Just append /check-reading. Strip trailing slash defensively.
-          const base = gateUrlRaw.trim().replace(/\/$/, "");
-          constructedUrl = `${base}/check-reading`;
-          // Log host + path only (never the token)
-          let hostForLog = "";
-          let pathForLog = "";
-          try {
-            const u = new URL(constructedUrl);
-            hostForLog = u.host;
-            pathForLog = u.pathname;
-          } catch { /* ignore */ }
-          console.info("[ask-astrology][gate] outbound", { host: hostForLog, path: pathForLog });
 
-          const gateStartedAt = Date.now();
-          const gateResp = await fetch(constructedUrl, {
+      const gateUrlRaw = Deno.env.get("REPLIT_GATE_URL");
+      const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
+      console.info("[ask-astrology][gate] env check", {
+        hasUrl: !!gateUrlRaw,
+        hasToken: !!gateToken,
+        urlLen: gateUrlRaw?.length ?? 0,
+        tokenLen: gateToken?.length ?? 0,
+      });
+
+      // Inner helper: one round-trip to the gate. Returns a verdict object
+      // shaped exactly like _gate (minus history). Never throws.
+      const runGate = async (label: string): Promise<any> => {
+        if (!gateUrlRaw || !gateToken) {
+          return { ok: null, skipped: "missing_config", label, checked_at: new Date().toISOString() };
+        }
+        const base = gateUrlRaw.trim().replace(/\/$/, "");
+        const constructedUrl = `${base}/check-reading`;
+        let pathForLog = "";
+        let hostForLog = "";
+        try { const u = new URL(constructedUrl); hostForLog = u.host; pathForLog = u.pathname; } catch { /* */ }
+        console.info(`[ask-astrology][gate] outbound (${label})`, { host: hostForLog, path: pathForLog });
+
+        const t0 = Date.now();
+        try {
+          const resp = await fetch(constructedUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -4827,41 +4830,93 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             body: JSON.stringify(parsedContent),
             signal: AbortSignal.timeout(8000),
           });
-          const gateMs = Date.now() - gateStartedAt;
-          let gateBody: any = null;
+          const ms = Date.now() - t0;
           let rawText = "";
-          try { rawText = await gateResp.text(); } catch { /* */ }
-          try { gateBody = rawText ? JSON.parse(rawText) : null; } catch { /* non-JSON */ }
-          const ok = gateResp.status === 200 && gateBody?.ok === true;
-          const defects = Array.isArray(gateBody?.defects) ? gateBody.defects : [];
-          const fixesApplied = Array.isArray(gateBody?.fixes_applied) ? gateBody.fixes_applied : [];
-          (parsedContent as any)._gate = {
+          try { rawText = await resp.text(); } catch { /* */ }
+          let body: any = null;
+          try { body = rawText ? JSON.parse(rawText) : null; } catch { /* non-JSON */ }
+          const ok = resp.status === 200 && body?.ok === true;
+          const defects = Array.isArray(body?.defects) ? body.defects : [];
+          const fixesApplied = Array.isArray(body?.fixes_applied) ? body.fixes_applied : [];
+          console.info(`[ask-astrology][gate] verdict (${label}) status=${resp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} ms=${ms}`);
+          return {
+            label,
             ok,
-            status: gateResp.status,
-            latency_ms: gateMs,
+            status: resp.status,
+            latency_ms: ms,
             defects,
             fixes_applied: fixesApplied,
             checked_at: new Date().toISOString(),
-            url_path: (() => { try { return new URL(constructedUrl).pathname; } catch { return ""; } })(),
-            // Capture body snippet only on non-200 to aid debugging
-            ...(gateResp.status !== 200 ? { body_snippet: rawText.slice(0, 300) } : {}),
+            url_path: pathForLog,
+            ...(resp.status !== 200 ? { body_snippet: rawText.slice(0, 300) } : {}),
           };
-          console.info(`[ask-astrology][gate] verdict status=${gateResp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} ms=${gateMs}`);
-        } else {
-          (parsedContent as any)._gate = { ok: null, skipped: "missing_config" };
-          console.warn("[ask-astrology][gate] missing REPLIT_GATE_URL or REPLIT_GATE_TOKEN");
+        } catch (gateErr) {
+          const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
+          const name = gateErr instanceof Error ? gateErr.name : "Error";
+          console.error(`[ask-astrology][gate] threw (${label}):`, name, msg);
+          return {
+            label,
+            ok: null,
+            error: msg,
+            error_name: name,
+            attempted_url_path: pathForLog,
+            checked_at: new Date().toISOString(),
+          };
         }
-      } catch (gateErr) {
-        const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
-        const name = gateErr instanceof Error ? gateErr.name : "Error";
-        (parsedContent as any)._gate = {
-          ok: null,
-          error: msg,
-          error_name: name,
-          attempted_url_path: (() => { try { return new URL(constructedUrl).pathname; } catch { return ""; } })(),
+      };
+
+      // ── PASS 1 ───────────────────────────────────────────────────
+      const verdict1 = await runGate("initial");
+      const history: any[] = [verdict1];
+      let retryInfo: any = null;
+
+      // ── V2 RETRY: only if pass 1 found missing sections ──────────
+      const missingDefects = Array.isArray(verdict1?.defects)
+        ? verdict1.defects.filter((d: any) => d?.code === "MISSING_REQUIRED_SECTION" && typeof d?.section === "string")
+        : [];
+
+      if (missingDefects.length > 0 && ANTHROPIC_API_KEY) {
+        console.info(`[ask-astrology][gate] V2 retry: re-prompting for ${missingDefects.length} missing section(s)`, {
+          sections: missingDefects.map((d: any) => d.section),
+        });
+        const retryStartedAt = Date.now();
+        const retryResult = await requestMissingSections(
+          parsedContent,
+          missingDefects.map((d: any) => ({ section: d.section, fix: d.fix || "" })),
+          sanitizedChartContext || undefined,
+          systemBlocks,
+          ANTHROPIC_API_KEY,
+          latestUserMessage,
+        );
+        const retryMs = Date.now() - retryStartedAt;
+        retryInfo = {
+          attempted: true,
+          requested: missingDefects.length,
+          added: retryResult.added,
+          skipped: retryResult.skipped,
+          error: retryResult.error,
+          regen_ms: retryMs,
         };
-        console.error("[ask-astrology][gate] threw:", name, msg);
+        console.info(`[ask-astrology][gate] V2 retry result added=${retryResult.added}/${missingDefects.length} ms=${retryMs}${retryResult.error ? ` err=${retryResult.error}` : ""}`);
+
+        // ── PASS 2 ─────────────────────────────────────────────────
+        // Only re-call the gate if we actually added at least one section.
+        // Otherwise the second verdict would be identical and we'd waste a round trip.
+        if (retryResult.added > 0) {
+          const verdict2 = await runGate("post_retry");
+          history.push(verdict2);
+        }
+      } else if (missingDefects.length > 0 && !ANTHROPIC_API_KEY) {
+        retryInfo = { attempted: false, skipped: "no_anthropic_key", requested: missingDefects.length };
       }
+
+      // Final _gate object: most recent verdict at the top level + full history.
+      const final = history[history.length - 1];
+      (parsedContent as any)._gate = {
+        ...final,
+        history,
+        ...(retryInfo ? { v2_retry: retryInfo } : {}),
+      };
     }
 
     // Persist final result to the ask_jobs row. The client (which may have
