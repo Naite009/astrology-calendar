@@ -1180,13 +1180,16 @@ Keep the tone deep, insightful, and practically applicable.`
                 {signLunationData.themes.map((theme, i) => {
                   const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
                   const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
-                  // Build a chart-specific line: anchor the theme to the New Moon's natal house + natal Moon sign
+                  // Build a chart-specific line UNIQUE to this theme by classifying what it asks for
+                  // and pairing it with how this person's natal Moon typically meets that exact kind of work.
                   let personalLine: string | null = null;
                   if (activeChart && houseArea && newMoonHouse) {
-                    if (natalMoon?.sign) {
-                      personalLine = `For ${activeChart.name}: this theme lands in ${houseArea} (House ${newMoonHouse}) — and with your natal Moon in ${natalMoon.sign}, you'll likely meet it through how you ${MOON_SIGN_RESPONSE[natalMoon.sign] || 'process feelings and react under pressure'}.`;
+                    const workType = classifyTheme(theme.title, theme.description);
+                    if (natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]) {
+                      const reaction = MOON_SIGN_REACTIONS[natalMoon.sign][workType];
+                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}). With your natal Moon in ${natalMoon.sign}, ${reaction}`;
                     } else {
-                      personalLine = `For ${activeChart.name}: this theme lands in ${houseArea} (House ${newMoonHouse}) — that's the area of life where this New Moon's work shows up most concretely for you.`;
+                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}) — that's the specific life area where this theme has to play out for you, not in the abstract.`;
                     }
                   }
                   return (
