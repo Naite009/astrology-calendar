@@ -844,6 +844,12 @@ const normalizeSentenceForCrossSection = (s: string): string => {
     .replace(/\s+/g, " ")
     .trim();
 };
+const getCrossSectionSentenceKey = (s: string): string | null => {
+  const norm = normalizeSentenceForCrossSection(s);
+  if (norm.length < 25) return null;
+  if (/^this is the south node (pattern|default)\b/.test(norm)) return "south-node-pattern";
+  return norm;
+};
 const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   let removed = 0;
@@ -872,8 +878,8 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
             const prior = firstSeenAspect.get(aspectKey);
             if (!prior) {
               firstSeenAspect.set(aspectKey, { sectionTitle });
-              const norm = normalizeSentenceForCrossSection(sent);
-              if (norm.length >= 25) firstSeenSentence.set(norm, { sectionTitle });
+              const sentenceKey = getCrossSectionSentenceKey(sent);
+              if (sentenceKey) firstSeenSentence.set(sentenceKey, { sectionTitle });
               kept.push(sent);
               lastDropped = false;
               continue;
@@ -885,9 +891,9 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
             }
             continue;
           }
-          const norm = normalizeSentenceForCrossSection(sent);
-          if (norm.length >= 25) {
-            const priorSent = firstSeenSentence.get(norm);
+          const sentenceKey = getCrossSectionSentenceKey(sent);
+          if (sentenceKey) {
+            const priorSent = firstSeenSentence.get(sentenceKey);
             if (priorSent) {
               removed++;
               lastDropped = true;
@@ -896,7 +902,7 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
               }
               continue;
             }
-            firstSeenSentence.set(norm, { sectionTitle });
+            firstSeenSentence.set(sentenceKey, { sectionTitle });
           }
           if (lastDropped && sent.length < 220) {
             removed++;
