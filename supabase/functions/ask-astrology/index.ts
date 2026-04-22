@@ -5021,8 +5021,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       //      prevents burning Claude credits on a stuck reading.
       //   4. Otherwise call Claude, re-run the gate, log per-attempt
       //      structured data into retryAttempts[], and continue.
-      const MAX_GATE_RETRIES = 3;
-      const V2_WALL_CLOCK_BUDGET_MS = 180_000; // 3 min hard ceiling for the entire heal loop
+      // Cap is intentionally low (2) — V2 retries are EXPENSIVE Claude calls.
+      // Each attempt = 1 sections call + 1 bullets call (targeted, not full
+      // reading regen). After 2 passes, ship the best attempt with
+      // _gate.label = "exhausted" rather than burning more credits.
+      const MAX_GATE_RETRIES = 2;
+      const V2_WALL_CLOCK_BUDGET_MS = 120_000; // 2 min hard ceiling for the entire heal loop
       const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = null;
