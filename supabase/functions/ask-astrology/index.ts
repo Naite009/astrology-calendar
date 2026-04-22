@@ -2763,7 +2763,10 @@ const requestMissingSections = async (
         temperature: 0.3,
         max_tokens: 4000,
       }),
-      signal: AbortSignal.timeout(45000),
+      // V2 retry needs more headroom than the original 45s — the gate
+      // failure log showed `Signal timed out` at ~50s. Sections re-author
+      // is heavier than bullet patches, so 120s here, 90s for bullets.
+      signal: AbortSignal.timeout(120000),
     });
   } catch (fetchErr) {
     return { added: 0, skipped: true, error: `fetch: ${(fetchErr as any)?.message || String(fetchErr)}` };
@@ -2897,7 +2900,7 @@ const requestMissingBullets = async (
         temperature: 0.3,
         max_tokens: 2000,
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(90000),
     });
   } catch (fetchErr) {
     console.warn(`[ask-astrology] V2 bullet patch fetch failed: ${(fetchErr as any)?.message || String(fetchErr)}`);
@@ -5019,8 +5022,16 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       //   4. Otherwise call Claude, re-run the gate, log per-attempt
       //      structured data into retryAttempts[], and continue.
       const MAX_GATE_RETRIES = 3;
+      const V2_WALL_CLOCK_BUDGET_MS = 180_000; // 3 min hard ceiling for the entire heal loop
+      const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = null;
+      // Track which section titles V2 has authored so subsequent passes
+      // REPLACE the V2 version instead of duplicating it.
+      const v2OwnedTitles = new Set<string>();
+      // Surface defect codes V2 cannot fix (e.g. LOW_SCORE, BANNED_PHRASE)
+      // so we know what the gate wants but the loop can't address.
+      let lastUnhealableDefects: any[] = [];
 
       const collectDefects = (verdict: any) => {
         const defects = Array.isArray(verdict?.defects) ? verdict.defects : [];
@@ -5035,7 +5046,9 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             && typeof d?.section === "string"
             && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
         );
-        return { sectionDefects, bulletDefects };
+        const healableCodes = new Set(["MISSING_REQUIRED_SECTION", "EMPTY_SECTION", "EMPTY_BULLET_TEXT"]);
+        const unhealable = defects.filter((d: any) => d?.code && !healableCodes.has(d.code));
+        return { sectionDefects, bulletDefects, unhealable };
       };
 
       // Defect signature: stable string used to detect "same defects as
@@ -5050,11 +5063,29 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       let attemptIdx = 0;
 
       while (attemptIdx < MAX_GATE_RETRIES) {
+        // Wall-clock budget — even if no individual call exceeds its
+        // timeout, the cumulative cost of N retries × Claude + N gate
+        // calls can starve the rest of the request. Bail before that.
+        const elapsedMs = Date.now() - v2StartedAt;
+        if (elapsedMs > V2_WALL_CLOCK_BUDGET_MS) {
+          giveUpReason = "wall_clock_budget_exceeded";
+          retryAttempts.push({
+            attempt: attemptIdx + 1,
+            skipped: true,
+            reason: "wall_clock_budget_exceeded",
+            elapsed_ms: elapsedMs,
+            budget_ms: V2_WALL_CLOCK_BUDGET_MS,
+          });
+          console.warn(`[ask-astrology][gate] V2 give up: wall-clock ${elapsedMs}ms > budget ${V2_WALL_CLOCK_BUDGET_MS}ms`);
+          break;
+        }
+
         const lastVerdict = history[history.length - 1];
-        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        const { sectionDefects, bulletDefects, unhealable } = collectDefects(lastVerdict);
+        lastUnhealableDefects = unhealable;
         const totalRetry = sectionDefects.length + bulletDefects.length;
 
-        if (totalRetry === 0) break; // gate is happy
+        if (totalRetry === 0) break; // gate is happy (or only unhealable defects remain)
 
         if (!ANTHROPIC_API_KEY) {
           giveUpReason = "no_anthropic_key";
@@ -5085,10 +5116,33 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         prevSignature = sig;
 
         const attemptStart = Date.now();
-        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}/${MAX_GATE_RETRIES}: ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
+        console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}/${MAX_GATE_RETRIES} (elapsed=${elapsedMs}ms): ${sectionDefects.length} section defect(s), ${bulletDefects.length} bullet defect(s)`, {
           sections: sectionDefects.map((d: any) => `${d.code}:${d.section}`),
           bullets: bulletDefects.map((d: any) => `${d.section} → ${d.bullet_label || d.label}`),
+          unhealable_count: unhealable.length,
         });
+
+        // Before re-authoring, drop any sections V2 already owns whose
+        // titles match the current section defects. This prevents
+        // duplicate sections when retry #2 needs to re-do retry #1's work.
+        if (Array.isArray(parsedContent.sections) && sectionDefects.length > 0) {
+          const replacingTitles = new Set(
+            sectionDefects.map((d: any) => String(d.section).trim().toLowerCase()),
+          );
+          const before = parsedContent.sections.length;
+          parsedContent.sections = parsedContent.sections.filter((s: any) => {
+            const t = String(s?.title || "").trim().toLowerCase();
+            // Drop the previous V2-owned copy if its title is being re-authored
+            if (s?._v2_gate_added && replacingTitles.has(t) && v2OwnedTitles.has(t)) {
+              return false;
+            }
+            return true;
+          });
+          const removed = before - parsedContent.sections.length;
+          if (removed > 0) {
+            console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: dropped ${removed} stale V2-authored section(s) before re-author`);
+          }
+        }
 
         // 1) Section-level retry (re-authors missing OR empty sections)
         const retryResult = sectionDefects.length > 0
@@ -5107,8 +5161,17 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             )
           : { added: 0, skipped: true } as { added: number; skipped: boolean; error?: string };
 
-        // For EMPTY_SECTION defects, drop the empty shell so the new
-        // V2 version is the only copy (matched by title, ci).
+        // Mark newly-added titles as V2-owned for future replace-not-append.
+        if (retryResult.added > 0 && Array.isArray(parsedContent.sections)) {
+          for (const s of parsedContent.sections) {
+            if (s?._v2_gate_added) {
+              v2OwnedTitles.add(String(s?.title || "").trim().toLowerCase());
+            }
+          }
+        }
+
+        // For EMPTY_SECTION defects from the ORIGINAL output, drop the
+        // empty shell so the new V2 version is the only copy.
         if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
           const emptyTitles = new Set(
             sectionDefects
@@ -5124,7 +5187,7 @@ In the timing section, include only the 2-4 strongest verified windows over the 
             });
             const removed = before - parsedContent.sections.length;
             if (removed > 0) {
-              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} empty shell section(s)`);
+              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original empty shell section(s)`);
             }
           }
         }
@@ -5227,20 +5290,44 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       // If we exhausted MAX_GATE_RETRIES and still have defects, record it.
       if (!giveUpReason && attemptIdx >= MAX_GATE_RETRIES) {
         const lastVerdict = history[history.length - 1];
-        const { sectionDefects, bulletDefects } = collectDefects(lastVerdict);
+        const { sectionDefects, bulletDefects, unhealable } = collectDefects(lastVerdict);
+        lastUnhealableDefects = unhealable;
         if (sectionDefects.length + bulletDefects.length > 0) {
           giveUpReason = "max_retries_reached";
           console.warn(`[ask-astrology][gate] V2 give up: hit MAX_GATE_RETRIES=${MAX_GATE_RETRIES}, ${sectionDefects.length + bulletDefects.length} defect(s) still present`);
         }
       }
 
-      const retryInfo = retryAttempts.length > 0 || giveUpReason
+      // Refresh unhealable from final verdict so we surface the latest set.
+      const finalUnhealable = collectDefects(history[history.length - 1]).unhealable;
+      if (finalUnhealable.length > 0) {
+        console.warn(`[ask-astrology][gate] V2 final: ${finalUnhealable.length} unhealable defect(s) the loop cannot fix`, {
+          codes: [...new Set(finalUnhealable.map((d: any) => d.code))],
+          sections: [...new Set(finalUnhealable.map((d: any) => d.section).filter(Boolean))],
+        });
+      }
+
+      const retryInfo = retryAttempts.length > 0 || giveUpReason || finalUnhealable.length > 0
         ? {
             attempted: retryAttempts.length > 0,
             attempts: retryAttempts,
             total_attempts: retryAttempts.length,
             max_attempts: MAX_GATE_RETRIES,
             give_up_reason: giveUpReason,
+            wall_clock_ms: Date.now() - v2StartedAt,
+            wall_clock_budget_ms: V2_WALL_CLOCK_BUDGET_MS,
+            // Defects the gate flagged that V2 has no healer for. Surfacing
+            // these tells future maintainers what new defect codes need
+            // healers (e.g. add LOW_SCORE handler, BANNED_PHRASE handler).
+            unhealable_defects: finalUnhealable.length > 0
+              ? finalUnhealable.map((d: any) => ({
+                  code: d.code,
+                  section: d.section,
+                  bullet_label: d.bullet_label || d.label,
+                  fix: d.fix,
+                }))
+              : [],
+            v2_owned_titles: [...v2OwnedTitles],
           }
         : null;
 
