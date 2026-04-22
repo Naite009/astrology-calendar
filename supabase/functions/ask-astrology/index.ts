@@ -1415,12 +1415,19 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     const hasItems = Array.isArray(section?.items) && section.items.length > 0;
     const hasTransits = Array.isArray(section?.transits) && section.transits.length > 0;
     const hasWindows = Array.isArray(section?.windows) && section.windows.length > 0;
-    const bodyText = typeof section?.content === "string" ? section.content
+    const hasBullets = Array.isArray(section?.bullets) && section.bullets.length > 0;
+    const hasPlacements = Array.isArray(section?.placements) && section.placements.length > 0;
+    const hasElements = Array.isArray(section?.elements) && section.elements.length > 0;
+    const hasModalities = Array.isArray(section?.modalities) && section.modalities.length > 0;
+    const hasPolarity = Array.isArray(section?.polarity) && section.polarity.length > 0;
+    const bodyText = typeof section?.body === "string" ? section.body
+      : typeof section?.content === "string" ? section.content
       : typeof section?.text === "string" ? section.text
       : typeof section?.value === "string" ? section.value
+      : typeof section?.balance_interpretation === "string" ? section.balance_interpretation
       : "";
     const hasBody = bodyText.trim().length > 0;
-    if (!hasItems && !hasTransits && !hasWindows && !hasBody) {
+    if (!hasItems && !hasTransits && !hasWindows && !hasBullets && !hasPlacements && !hasElements && !hasModalities && !hasPolarity && !hasBody) {
       droppedSections++;
       log.push({ type: "empty_section_dropped", detail: { section: section?.title || "", section_type: section?.type || "" } });
       continue;
