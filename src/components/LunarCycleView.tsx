@@ -810,20 +810,106 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
-  // How each natal Moon sign tends to *meet* a new theme — concrete behavior, not traits
-  const MOON_SIGN_RESPONSE: Record<string, string> = {
-    Aries: 'react fast, want to act before you fully think it through, and get frustrated if things stall',
-    Taurus: 'need to feel safe and settled in your body before you commit, and resist being rushed',
-    Gemini: 'talk it out, gather options, and shift moods quickly as new information lands',
-    Cancer: 'feel it in your gut first, get protective of who and what matters, and need a soft place to land',
-    Leo: 'want to be seen and acknowledged, take it personally when you\'re not, and lead with warmth',
-    Virgo: 'analyze the details, look for what needs fixing, and quietly worry until you have a plan',
-    Libra: 'check how others are feeling, weigh both sides, and resist anything that feels unfair or out of balance',
-    Scorpio: 'feel everything intensely, watch before you act, and need full honesty before you trust',
-    Sagittarius: 'want the bigger meaning, get restless if it feels small, and look for the door out if it gets too heavy',
-    Capricorn: 'go quiet, take it seriously, and try to handle it alone before asking for help',
-    Aquarius: 'step back to observe, need space to process, and trust logic more than emotion in the moment',
-    Pisces: 'absorb the mood of everyone around you, blur your own needs with theirs, and need solitude to find your own signal again',
+  // For each natal Moon sign, describe how that person tends to react to FIVE distinct kinds of theme-work.
+  // The personal line per theme picks the right reaction based on what the theme is actually asking for.
+  // 'action' = themes asking for movement/initiative/starting | 'release' = themes asking to let go/end something
+  // 'values' = themes asking to clarify what matters | 'connect' = themes asking to communicate/relate
+  // 'feel' = themes asking to feel/grieve/be with emotion
+  const MOON_SIGN_REACTIONS: Record<string, Record<string, string>> = {
+    Aries: {
+      action: 'you\'ll want to move on it the moment you read it — the trap is starting three things and finishing none. Pick ONE first step today and do only that.',
+      release: 'letting go isn\'t your default; you\'d rather fight or push through. Notice when you\'re forcing something that\'s already over and let yourself walk away cleanly.',
+      values: 'you tend to know what you want in your gut. Trust the fast yes/no instead of arguing yourself out of it — but write it down so you don\'t forget by next week.',
+      connect: 'you\'ll want to say it bluntly. Say it — but soften the opening sentence so the other person can actually hear you instead of bracing for impact.',
+      feel: 'sitting with feelings is the hardest ask for you. Try 10 minutes a day where you don\'t fix anything — just notice what\'s under the urge to act.',
+    },
+    Taurus: {
+      action: 'you won\'t move until it feels safe in your body, which can look like procrastination but is actually data-gathering. Give yourself a clear deadline so "not yet" doesn\'t become "never."',
+      release: 'you hold on tight to what feels stable, even when it\'s stopped working. Name one specific thing (object, habit, or commitment) you\'ll let go of by the next Full Moon.',
+      values: 'this is your home territory — you already know what you value, you just override it for security. Re-read your list and check: what am I doing that contradicts this?',
+      connect: 'you\'d rather show up consistently than have the big talk. This cycle, have the conversation you\'ve been postponing — even if it takes you a week to find the words.',
+      feel: 'you tend to soothe with food, comfort, or shopping. Try moving the feeling through your body instead — walk, stretch, or sit on the floor and breathe.',
+    },
+    Gemini: {
+      action: 'you\'ll want to research it instead of doing it. Set a 24-hour limit on input-gathering, then act on what you have — perfect information is a trap for you.',
+      release: 'you let things drift rather than ending them, which leaves loose threads. Send the actual closing message or delete the actual file — make the ending real.',
+      values: 'you can argue any side, which makes "what matters most" hard. Pick three values and rank them. The ranking is the point.',
+      connect: 'this is your strength — use it. Have the conversation now. But listen for one full minute before you reply.',
+      feel: 'you intellectualize feelings into ideas about feelings. Try writing the raw sentence ("I feel ___ because ___") without analyzing it.',
+    },
+    Cancer: {
+      action: 'you\'ll wait until the emotional climate feels right, which can mean waiting forever. Take the action even when you feel uncertain — your gut sharpens once you\'re in motion.',
+      release: 'you grieve everything you let go of, even things that hurt you. Let yourself feel sad about it AND release it — both can be true at once.',
+      values: 'your values are tied to who you love. Check: am I protecting what matters to me, or absorbing what matters to them?',
+      connect: 'you read the room before you speak. Say the thing directly this time — your hint will not be received as a hint.',
+      feel: 'this is where you live. The work isn\'t feeling more, it\'s noticing whose feelings you\'re carrying that aren\'t yours.',
+    },
+    Leo: {
+      action: 'you move when you feel inspired and stall when you don\'t. Show up for the boring middle part — the part nobody claps for.',
+      release: 'letting go can feel like losing face. Remind yourself: walking away from what no longer fits is dignity, not defeat.',
+      values: 'you know what you love. Check: am I doing this because I love it, or because someone is watching?',
+      connect: 'you communicate with warmth and presence. Be the one who says the vulnerable thing first this cycle.',
+      feel: 'you\'d rather perform fine than admit you\'re hurt. Tell one trusted person the unvarnished version.',
+    },
+    Virgo: {
+      action: 'you\'ll plan it perfectly and never start. Do the messy first version this week — you can refine it later, but you can\'t edit nothing.',
+      release: 'you keep tweaking what should be ended. Set a "done" line in advance and honor it even if it\'s not perfect.',
+      values: 'you confuse "useful" with "important." Ask: would I still do this if no one needed me to?',
+      connect: 'you tend to give corrections instead of feelings. Lead with how it landed for you, not what they did wrong.',
+      feel: 'you somatize what you don\'t process — back, gut, jaw. The body symptom IS the feeling asking to be named.',
+    },
+    Libra: {
+      action: 'you\'ll wait for everyone to agree before you move. They won\'t. Make the call this week even if someone\'s disappointed.',
+      release: 'you stay in things to keep the peace, long past when it\'s served you. Letting go IS fair to you — that counts.',
+      values: 'you can see all sides, which dilutes your own. Write down what YOU want before you ask anyone else.',
+      connect: 'this is your superpower, but you smooth over the hard part. Name the actual disagreement out loud this cycle.',
+      feel: 'you mirror others\' moods. Take a day alone to figure out which feelings are actually yours.',
+    },
+    Scorpio: {
+      action: 'you wait until you\'re sure, then move with full commitment. Don\'t wait for 100% certainty — 70% is enough this cycle.',
+      release: 'you hold onto resentments and unfinished business in the body. Write the unsent letter and burn it — make the ending physical.',
+      values: 'you know what you value because you know what you won\'t tolerate. Honor a "no" you\'ve been overriding.',
+      connect: 'you go deep or stay silent — there\'s no in-between. Try a real conversation that\'s not a confession or an interrogation.',
+      feel: 'you feel everything at high volume but show none of it. Pick one trusted person and let them see one real reaction this week.',
+    },
+    Sagittarius: {
+      action: 'you\'ll start big and lose interest at the boring part. Commit to the small, repetitive step — that\'s where the actual change lives.',
+      release: 'you bolt instead of closing things properly. Have the conversation BEFORE you leave — your future self needs the closure.',
+      values: 'you confuse freedom with absence of commitment. What do you value enough to actually choose, even when something else looks shinier?',
+      connect: 'you\'re honest to a fault. Notice when "I\'m just being honest" is actually avoiding accountability for the impact.',
+      feel: 'you escape feelings by making meaning of them too fast. Sit with the raw version before you turn it into a lesson.',
+    },
+    Capricorn: {
+      action: 'this is your strength — you execute. Check: am I doing the thing because it matters, or because doing things is how I prove I exist?',
+      release: 'you treat letting go as failure. Reframe: ending something that\'s done is good management, not giving up.',
+      values: 'you confuse achievement with worth. Write down what you value APART from what you produce.',
+      connect: 'you keep it professional even with people you love. Drop one wall this cycle and let someone in on the unfinished version.',
+      feel: 'you postpone feelings until the work is done — then they show up as exhaustion or shutdown. Build a 15-minute window for them BEFORE the crash.',
+    },
+    Aquarius: {
+      action: 'you\'ll think about it from above instead of doing it from inside. Get your hands on it — the doing teaches you something the analysis can\'t.',
+      release: 'you cut ties cleanly but skip the grief. Let yourself feel the loss of what you\'re ending, even if leaving was right.',
+      values: 'you value freedom and principle. Check: am I withholding closeness in the name of independence?',
+      connect: 'you communicate ideas easily, feelings less so. Try saying the personal sentence, not the conceptual one.',
+      feel: 'you observe your feelings like a scientist observing a specimen. Get back inside them — feel them in your body, not your analysis.',
+    },
+    Pisces: {
+      action: 'you\'ll dream about it, then dissolve when it\'s time to do it. Set one tiny, concrete, scheduled step — protect it from the fog.',
+      release: 'you let things blur into endings without naming them. Say the actual goodbye out loud or in writing — make it real.',
+      values: 'you absorb what others value. Spend a day alone and ask what YOU actually want, separate from anyone else\'s wishes.',
+      connect: 'you communicate through feeling and atmosphere. Use plain words this cycle — they need to hear it, not just sense it.',
+      feel: 'this is your native land. The work isn\'t feeling more — it\'s identifying whose feelings are yours and which you can put down.',
+    },
+  };
+
+  // Classify a theme by its title + description into one of five work-types
+  const classifyTheme = (title: string, description: string): keyof typeof MOON_SIGN_REACTIONS['Aries'] => {
+    const text = `${title} ${description}`.toLowerCase();
+    if (/\b(release|let go|end|complete|finish|dissolve|surrender|grieve|leave behind|outgrow|shed)\b/.test(text)) return 'release';
+    if (/\b(value|matter|worth|meaning|purpose|priorit|deserv|nourish|recommit|honor what)\b/.test(text)) return 'values';
+    if (/\b(communicat|conversat|speak|say|word|share|connect|listen|tell|express|voice)\b/.test(text)) return 'connect';
+    if (/\b(feel|emotion|grief|tender|soft|heart|cry|mood|inner|body|sensation|gut|nurture)\b/.test(text)) return 'feel';
+    return 'action'; // default — most themes are about doing/initiating something
   };
 
   // Calculate New Moon house in natal chart
