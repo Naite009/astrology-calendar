@@ -4651,73 +4651,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           });
         }
 
-        // ────────────────────────────────────────────────────────────
-        // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading)
-        // After every local hygiene pass has run, send the cleaned
-        // payload to the external QA gate. The gate returns:
-        //   200 + { ok: true,  fixes_applied: [...] }  → clean
-        //   422 + { ok: false, defects: [...] }        → defects remain
-        // We attach the gate's verdict to parsedContent._gate so the
-        // UI (and any downstream PDF renderer) can surface a quiet
-        // "X issues remain" warning instead of a hard failure.
-        //
-        // V1 SCOPE: report-only. The auto-retry loop (re-call AI with
-        // structured defect manifest) is the next step. Even report-only
-        // gives us a single source of truth for what's wrong with each
-        // reading and removes the need for users to paste defects back
-        // to support.
-        // ────────────────────────────────────────────────────────────
-        // V1.1 deploy probe — if this log line never appears, the live bundle is stale.
-        console.info("[ask-astrology][gate] entering gate block", { jobId, hasParsedSections: Array.isArray((parsedContent as any)?.sections) });
-        try {
-          const gateUrl = Deno.env.get("REPLIT_GATE_URL");
-          const gateToken = Deno.env.get("REPLIT_GATE_TOKEN");
-          console.info("[ask-astrology][gate] env check", { hasUrl: !!gateUrl, hasToken: !!gateToken });
-          if (gateUrl && gateToken) {
-            const gateStartedAt = Date.now();
-            const gateResp = await fetch(`${gateUrl.replace(/\/$/, "")}/check-reading`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${gateToken}`,
-              },
-              body: JSON.stringify(parsedContent),
-              // Hard cap so a slow gate never blocks the job.
-              signal: AbortSignal.timeout(8000),
-            });
-            const gateMs = Date.now() - gateStartedAt;
-            let gateBody: any = null;
-            try { gateBody = await gateResp.json(); } catch { /* non-JSON */ }
-            const ok = gateResp.status === 200 && gateBody?.ok === true;
-            const defects = Array.isArray(gateBody?.defects) ? gateBody.defects : [];
-            const fixesApplied = Array.isArray(gateBody?.fixes_applied) ? gateBody.fixes_applied : [];
-            (parsedContent as any)._gate = {
-              ok,
-              status: gateResp.status,
-              latency_ms: gateMs,
-              defects,
-              fixes_applied: fixesApplied,
-              checked_at: new Date().toISOString(),
-            };
-            if (ok) {
-              console.info(`[ask-astrology] gate OK in ${gateMs}ms (fixes_applied=${fixesApplied.length})`);
-            } else {
-              console.warn(`[ask-astrology] gate FAIL ${gateResp.status} in ${gateMs}ms — ${defects.length} defects`, {
-                jobId,
-                defectCodes: defects.map((d: any) => d?.code).filter(Boolean),
-              });
-            }
-          } else {
-            console.warn("[ask-astrology] REPLIT_GATE_URL or REPLIT_GATE_TOKEN missing — skipping gate");
-            (parsedContent as any)._gate = { ok: null, skipped: "missing_config" };
-          }
-        } catch (gateErr) {
-          console.error("[ask-astrology] gate call threw:", gateErr);
-          (parsedContent as any)._gate = {
-            ok: null,
-            error: gateErr instanceof Error ? gateErr.message : String(gateErr),
-          };
-        }
+        // V1 in-line gate call removed — superseded by the V1.2 hoisted
+        // gate + V2 retry loop below (which runs even when hygiene throws).
       }
     } catch (parseError) {
       // Log the actual parsing error for debugging
