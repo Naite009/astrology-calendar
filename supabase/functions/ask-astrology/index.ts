@@ -5000,11 +5000,25 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       // Each attempt = 1 sections call + 1 bullets call (targeted, not full
       // reading regen). After 2 passes, ship the best attempt with
       // _gate.label = "exhausted" rather than burning more credits.
-      const MAX_GATE_RETRIES = 2;
+      // ────────────────────────────────────────────────────────────────
+      // V2 KILL SWITCH (2026-04-22)
+      // V2 was hitting MAX_GATE_RETRIES on most jobs and burning Claude
+      // credits without healing defects. Until we can prove a retry
+      // actually fixes something, V2 ships attempt 1 as final and only
+      // RECORDS the gate verdict — no Claude healing calls.
+      //
+      // Re-enable per-request by setting env ASK_V2_HEALING_ENABLED=true.
+      // ────────────────────────────────────────────────────────────────
+      const V2_HEALING_ENABLED =
+        (Deno.env.get("ASK_V2_HEALING_ENABLED") ?? "false").toLowerCase() === "true";
+      const MAX_GATE_RETRIES = V2_HEALING_ENABLED ? 2 : 0;
       const V2_WALL_CLOCK_BUDGET_MS = 120_000; // 2 min hard ceiling for the entire heal loop
       const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
-      let giveUpReason: string | null = null;
+      let giveUpReason: string | null = V2_HEALING_ENABLED ? null : "v2_disabled_kill_switch";
+      if (!V2_HEALING_ENABLED) {
+        console.warn("[ask-astrology][gate] V2 healing DISABLED via kill switch (ASK_V2_HEALING_ENABLED!=true). Shipping attempt 1 as final.");
+      }
       // Track which section titles V2 has authored so subsequent passes
       // REPLACE the V2 version instead of duplicating it.
       const v2OwnedTitles = new Set<string>();
