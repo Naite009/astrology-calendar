@@ -2820,6 +2820,124 @@ const requestMissingSections = async (
   return { added, skipped: false };
 };
 
+// V2 BULLET PATCH: Re-prompt Claude to author the body text for bullets
+// that the gate flagged as EMPTY_BULLET_TEXT. Patches in-place by
+// finding (section title, bullet label) and writing into the bullet's
+// `text` field. Returns the count of bullets successfully patched.
+// Never throws — caller treats failure as 0 patches.
+const requestMissingBullets = async (
+  parsedContent: any,
+  missingBullets: Array<{ section: string; label: string; fix: string }>,
+  systemBlocks: Array<Record<string, any>>,
+  ANTHROPIC_API_KEY: string,
+  userQuestion: string,
+): Promise<number> => {
+  if (!Array.isArray(missingBullets) || missingBullets.length === 0) return 0;
+  if (!parsedContent || !Array.isArray(parsedContent.sections)) return 0;
+
+  // Build the request list, skipping any (section,label) pairs we cannot
+  // actually find in the current payload (they may have already been
+  // healed by upstream cleanup).
+  const findBullet = (sectionTitle: string, label: string) => {
+    const sNorm = String(sectionTitle).trim().toLowerCase();
+    const lNorm = String(label).trim().toLowerCase();
+    for (const sec of parsedContent.sections) {
+      const t = String(sec?.title || "").trim().toLowerCase();
+      if (t !== sNorm) continue;
+      if (!Array.isArray(sec?.bullets)) continue;
+      for (const b of sec.bullets) {
+        const bl = String(b?.label || "").trim().toLowerCase();
+        if (bl === lNorm) return { sec, bullet: b };
+      }
+    }
+    return null;
+  };
+
+  const targets = missingBullets
+    .map((d) => ({ ...d, hit: findBullet(d.section, d.label) }))
+    .filter((x) => x.hit !== null);
+  if (targets.length === 0) return 0;
+
+  const requestedList = targets
+    .map((d, i) => `${i + 1}. Section: "${d.section}" → Bullet label: "${d.label}" — ${d.fix}`)
+    .join("\n");
+
+  const userMessage = [
+    "An external QA gate flagged these bullets as missing their body text. Author the missing text for each one. Use the SAME chart, voice, and depth standards as the original reading.",
+    "",
+    "USER'S ORIGINAL QUESTION:",
+    userQuestion || "(not captured)",
+    "",
+    "BULLETS TO PATCH:",
+    requestedList,
+    "",
+    "RULES:",
+    "- Output JSON ONLY. No prose, no markdown fences.",
+    "- Output shape: { \"bullets\": [ { \"section\": string, \"label\": string, \"text\": string } ] }",
+    "- `section` and `label` MUST exactly match the values from the request list above (these are the lookup keys).",
+    "- `text` must be a substantive 1–3 sentence body grounded in the chart context provided in the system prompt.",
+    "- 2nd-person voice (\"you\" / \"your\") only.",
+    "- Do NOT reference aspects, planets, or transits that aren't already in the chart context.",
+    "- Do NOT repeat content from elsewhere in the reading.",
+  ].join("\n");
+
+  let regenResponse: Response | null = null;
+  try {
+    regenResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: systemBlocks,
+        messages: [{ role: "user", content: userMessage }],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+  } catch (fetchErr) {
+    console.warn(`[ask-astrology] V2 bullet patch fetch failed: ${(fetchErr as any)?.message || String(fetchErr)}`);
+    return 0;
+  }
+
+  if (!regenResponse?.ok) return 0;
+
+  let regenJson: any = null;
+  try { regenJson = await regenResponse.json(); } catch { return 0; }
+  const regenText: string = regenJson?.content?.[0]?.text || "";
+  if (!regenText) return 0;
+
+  let parsed: any = null;
+  try {
+    const cleaned = regenText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const first = regenText.indexOf("{");
+    const last = regenText.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      try { parsed = JSON.parse(regenText.slice(first, last + 1)); } catch { /* */ }
+    }
+  }
+  if (!parsed || !Array.isArray(parsed.bullets)) return 0;
+
+  let patched = 0;
+  for (const fix of parsed.bullets) {
+    if (!fix || typeof fix !== "object") continue;
+    if (typeof fix.section !== "string" || typeof fix.label !== "string") continue;
+    if (typeof fix.text !== "string" || !fix.text.trim()) continue;
+    const hit = findBullet(fix.section, fix.label);
+    if (!hit) continue;
+    hit.bullet.text = fix.text.trim();
+    hit.bullet._v2_gate_patched = true;
+    patched++;
+  }
+  return patched;
+};
+
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
 
 PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject directly as "you" / "your". NEVER use third-person pronouns ("they", "them", "their", "he", "she", "his", "her") to refer to the subject of the reading. This is the #1 source of customer-trust collapse. When you describe an aspect, write "Your Mars squares your Saturn — your drive runs into walls until you learn to push without burning out." NEVER write "Their drive runs into walls — they keep almost-getting the big thing." If a canned aspect interpretation comes to mind in third person, rewrite the pronouns BEFORE you emit it. The only acceptable third-person references are to actual third parties the user mentioned (their boss, their partner, their child) — never to the subject themselves.
