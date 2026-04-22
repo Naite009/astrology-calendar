@@ -5342,6 +5342,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
+      } catch (gateBlockErr) {
+        // Never let the gate / V2 logic block a terminal job status.
+        // Attach a minimal _gate so downstream consumers see what happened.
+        const msg = gateBlockErr instanceof Error ? gateBlockErr.message : String(gateBlockErr);
+        console.error(`[ask-astrology][gate] block threw — shipping attempt 1 anyway:`, msg);
+        (parsedContent as any)._gate = {
+          label: "block_error",
+          ok: null,
+          error: msg,
+          checked_at: new Date().toISOString(),
+        };
+      }
     }
 
     // Persist final result to the ask_jobs row. The client (which may have
