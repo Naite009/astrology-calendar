@@ -61,6 +61,141 @@ export class PreExportValidationError extends Error {
   }
 }
 
+const EXPORT_SANITIZE_SKIP_SECTION_TYPES = new Set([
+  'timing_section',
+  'modality_element',
+  'table_section',
+  'data_table',
+  'transit_table',
+  'windows_section',
+  'placement_table',
+]);
+
+const EXPORT_SANITIZE_SKIP_KEYS = new Set([
+  'type', 'title', 'label', 'name', 'subtitle', 'heading', 'id', 'kind',
+  'planet', 'sign', 'house', 'degrees', 'aspect', 'natal_point', 'symbol',
+  'tag', 'date', 'date_range', 'dateRange', 'generated_date',
+  'subject', 'question_type', 'question_asked', 'balance_interpretation',
+  'windows', 'transits', 'items_meta',
+]);
+
+const EXPORT_ASPECT_KIND_REGEX = /\b(conjunction|conjunct|opposition|opposite|square|trine|sextile|quincunx|inconjunct|semisextile|semisquare|sesquisquare|sesquiquadrate|quintile|biquintile)\b/i;
+const EXPORT_PLANET_NAMES = [
+  'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+  'Chiron', 'North Node', 'South Node', 'Juno', 'Lilith', 'Ascendant', 'Descendant', 'Midheaven', 'IC',
+];
+
+const splitExportSentences = (text: string): string[] =>
+  text
+    .replace(/([.!?])\s+([A-Z][a-z]+\s+(?:conjunction|conjunct|opposition|opposite|square|trine|sextile|quincunx|inconjunct|semisextile|semisquare|sesquisquare|sesquiquadrate|quintile|biquintile)\s+[A-Z])/g, '$1\n$2')
+    .replace(/([.!?])\s+(This is the South Node (?:pattern|default))/g, '$1\n$2')
+    .split(/\n|(?<=[.!?])\s+(?=[A-Z"'(])/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const rewriteExportSentencePronouns = (sentence: string): string => {
+  let s = sentence;
+  s = s.replace(/Their drive runs into walls[\s\S]*?(?=(?:[.!?](?:\s|$))|$)/gi, "your drive runs into walls (usually your own internalized 'no') until you learn to push without burning out");
+  s = s.replace(/(^|[—–\-:;]\s+)(Their)\b/g, (_m, lead) => `${lead}Your`);
+  s = s.replace(/(^|[—–\-:;]\s+)(their)\b/g, (_m, lead) => `${lead}your`);
+  s = s.replace(/(^|[—–\-:;]\s+)(They)\b/g, (_m, lead) => `${lead}You`);
+  s = s.replace(/(^|[—–\-:;]\s+)(they)\b/g, (_m, lead) => `${lead}you`);
+  s = s.replace(/\bpeople take them seriously\b/gi, 'people take you seriously');
+  return s;
+};
+
+const normalizeExportSentence = (s: string): string =>
+  s
+    .toLowerCase()
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[.!?]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const buildExportAspectKey = (sentence: string): string | null => {
+  const planetAlt = EXPORT_PLANET_NAMES.map((p) => p.replace(/\s+/g, '\\s+')).join('|');
+  const re = new RegExp(`\\b(${planetAlt})\\b\\s+(${EXPORT_ASPECT_KIND_REGEX.source.replace(/^\\b|\\b$/g, '')})\\s+\\b(${planetAlt})\\b`, 'i');
+  const m = sentence.match(re);
+  if (!m) return null;
+  const [a, b] = [m[1].toLowerCase(), m[3].toLowerCase()].sort();
+  return `${a}|${m[2].toLowerCase()}|${b}`;
+};
+
+const sanitizeReadingForExport = (reading: { sections?: unknown[] }) => {
+  const sections = Array.isArray(reading.sections) ? reading.sections : [];
+  const firstSeenAspect = new Map<string, string>();
+  const firstSeenSentence = new Map<string, string>();
+
+  const cleanField = (text: string, sectionTitle: string): string => {
+    if (!text || text.length < 20) return text;
+    const sentences = splitExportSentences(text);
+    const kept: string[] = [];
+    let lastDropped = false;
+
+    for (const raw of sentences) {
+      const sent = rewriteExportSentencePronouns(raw);
+      const aspectKey = buildExportAspectKey(sent);
+      if (aspectKey) {
+        if (firstSeenAspect.has(aspectKey)) {
+          lastDropped = true;
+          continue;
+        }
+        firstSeenAspect.set(aspectKey, sectionTitle);
+        const norm = normalizeExportSentence(sent);
+        if (norm.length >= 25) firstSeenSentence.set(norm, sectionTitle);
+        kept.push(sent);
+        lastDropped = false;
+        continue;
+      }
+
+      const norm = normalizeExportSentence(sent);
+      if (norm.length >= 25) {
+        if (firstSeenSentence.has(norm)) {
+          lastDropped = true;
+          continue;
+        }
+        firstSeenSentence.set(norm, sectionTitle);
+      }
+
+      if (lastDropped && sent.length < 220) {
+        lastDropped = false;
+        continue;
+      }
+
+      lastDropped = false;
+      kept.push(sent);
+    }
+
+    return kept.join(' ').trim();
+  };
+
+  const walk = (node: unknown, sectionTitle: string) => {
+    if (Array.isArray(node)) {
+      node.forEach((entry) => walk(entry, sectionTitle));
+      return;
+    }
+    if (!node || typeof node !== 'object') return;
+    Object.entries(node).forEach(([key, value]) => {
+      if (EXPORT_SANITIZE_SKIP_KEYS.has(key)) return;
+      if (typeof value === 'string') {
+        const next = cleanField(value, sectionTitle);
+        if (next !== value) (node as Record<string, unknown>)[key] = next;
+        return;
+      }
+      if (value && typeof value === 'object') walk(value, sectionTitle);
+    });
+  };
+
+  sections.forEach((section) => {
+    if (!section || typeof section !== 'object') return;
+    const typed = section as { type?: string; title?: string };
+    if (EXPORT_SANITIZE_SKIP_SECTION_TYPES.has(String(typed.type || ''))) return;
+    walk(section, String(typed.title || typed.type || 'section'));
+  });
+};
+
 /**
  * Mutates the readings payload to merge duplicate-label windows, then throws
  * if any required-field rule is violated. Returns the same (possibly merged)
@@ -72,6 +207,7 @@ export function validateAndPrepareReadingsForExport<T extends { sections?: unkno
   const failures: PreExportFailure[] = [];
 
   readings.forEach((reading, readingIndex) => {
+    sanitizeReadingForExport(reading);
     const sections = Array.isArray(reading?.sections) ? reading.sections : [];
     sections.forEach((section, sectionIndex) => {
       if (!section || typeof section !== 'object') return;
