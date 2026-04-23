@@ -1662,9 +1662,9 @@ const normalizePlacementTableRetrograde = (
       }
       if (changed) {
         normalizedRows++;
-        if (examples.length < 6) {
+        if (examples.length < 8) {
           examples.push(
-            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde})`
+            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde}) [src=${source}]`
           );
         }
       }
