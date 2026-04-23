@@ -688,16 +688,50 @@ const rewriteSentencePronouns = (sentence: string): string => {
     /(^|[—–\-:;]\s+)(they)\b/g,
     (_m, lead) => `${lead}you`,
   );
-  // Object-pronoun swap: "...take them seriously" → "...take you seriously".
-  // Only swap "them" after verbs that nearly always refer back to the
-  // reading's subject in a career context.
+  // Mid-sentence "their" → "your" when it clearly refers back to the
+  // reading's subject (the only entity we ever address in 2nd person).
+  // "their inner life", "their needs", "their patterns", etc. inside a
+  // 2nd-person reading is always the subject. We swap any standalone
+  // "their"/"Their" that is followed by a noun-like word and is NOT
+  // preceded by a quote, possessive marker, or proper-noun-like context.
+  // Conservative: skip when the previous token is a name-shaped word
+  // (capitalized non-first-word) to preserve "your boss — Sarah, their
+  // partner" style references.
   s = s.replace(
-    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know)\s+them\b/gi,
+    /(^|[\s,()"'])(their|Their)\b(?=\s+[a-z])/g,
+    (_m, pre, word) => `${pre}${word === "Their" ? "Your" : "your"}`,
+  );
+  // Mid-sentence "they" → "you" (subject pronoun) when followed by a verb.
+  // Same conservative gate: only after whitespace/punct, never after a
+  // capitalized name-token. Catches "and they need", "but they feel".
+  s = s.replace(
+    /(^|[\s,()"'])(they|They)\b(?=\s+(?:are|is|was|were|have|has|had|will|would|could|should|may|might|do|does|did|don'?t|doesn'?t|didn'?t|can|can'?t|cannot|won'?t|need|needs|want|wants|feel|feels|know|knows|think|thinks|see|sees|get|gets|keep|keeps|stay|stays|go|goes|come|comes|live|lives|run|runs|move|moves|hold|holds))/g,
+    (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
+  );
+  // Object pronoun "them" → "you" mid-sentence after verbs that nearly
+  // always refer back to the subject. Same verb whitelist as before but
+  // expanded.
+  s = s.replace(
+    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know|love|leave|meet|find|tell|ask|push|pull|hold|help|teach|show|give|wait\s+for)\s+them\b/gi,
     (_m, verb) => `${verb} you`,
   );
-  // Verb-agreement fixups for the most common patterns the library emits.
-  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
-    (_m, pron, verb) => {
+  // Verb-agreement fixups for "you" (singular 2nd person → no "-s" verbs).
+  // Bug-fix note: this pass is INTENTIONALLY scoped to "you" / "You"
+  // immediately followed by a third-person-singular verb. It must NOT
+  // touch "part of you needs / wants / is", because in that phrase the
+  // subject is "part" (singular), not "you", and the verb form is
+  // already correct. The look-behind check below excludes the broken
+  // case where "you" is the OBJECT of a preceding preposition.
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
+    (match, lead, pron, verb) => {
+      // If the character right before "you" is a letter-or-space sequence
+      // ending in a preposition like "of"/"to"/"for"/"with"/"from"/"in"/
+      // "on"/"about" then "you" is the OBJECT and we must NOT rewrite the
+      // verb — the real subject ("part", "side", "piece") sits earlier.
+      const prefix = match.slice(0, match.length - (pron.length + 1 + verb.length));
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(prefix)) {
+        return match;
+      }
       const map: Record<string, string> = {
         keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
         outlasts: "outlast", burns: "burn", pushes: "push", gets: "get",
@@ -712,14 +746,24 @@ const rewriteSentencePronouns = (sentence: string): string => {
         pays: "pay", earns: "earn", loses: "lose", wins: "win",
         leads: "lead", follows: "follow",
       };
-      return `${pron} ${map[verb] ?? verb}`;
+      return `${lead}${pron} ${map[verb] ?? verb}`;
     });
-  s = s.replace(/\b(you|You)\s+is\b/g, (_m, p) => `${p} are`);
-  s = s.replace(/\b(you|You)\s+was\b/g, (_m, p) => `${p} were`);
-  s = s.replace(/\b(you|You)\s+has\b/g, (_m, p) => `${p} have`);
-  s = s.replace(/\b(you|You)\s+doesn'?t\b/g, (_m, p) => `${p} don't`);
-  s = s.replace(/\b(you|You)\s+wasn'?t\b/g, (_m, p) => `${p} weren't`);
-  s = s.replace(/\b(you|You)\s+hasn'?t\b/g, (_m, p) => `${p} haven't`);
+  // "you is/was/has" → "you are/were/have" — same preposition guard.
+  const guardedReplace = (re: RegExp, repl: (p: string) => string) => {
+    s = s.replace(re, (match, lead, pron) => {
+      const prefix = match.slice(0, match.length - (pron.length + match.match(/\s+\w+'?\w*$/)?.[0].length || 0));
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(prefix)) {
+        return match;
+      }
+      return `${lead}${repl(pron)}`;
+    });
+  };
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+is\b/g, (p) => `${p} are`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, (p) => `${p} were`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+has\b/g, (p) => `${p} have`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, (p) => `${p} don't`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, (p) => `${p} weren't`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, (p) => `${p} haven't`);
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
