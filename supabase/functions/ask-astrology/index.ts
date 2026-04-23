@@ -4353,12 +4353,7 @@ MANDATORY ASPECT VERIFICATION PROTOCOL:
 - This protocol applies equally to natal-to-natal, transit-to-natal, and SR-to-natal aspects.
 
 PLANET POLARITY (YIN/YANG) — DO NOT CONFUSE WITH SIGN POLARITY:
-- Planet polarity is a property of the PLANET ITSELF, not the sign it occupies. Use these fixed assignments in every reading (these are authoritative — do not substitute other systems):
-  • YANG (active / projective / outward): Sun, Mars, Jupiter, Saturn, Uranus
-  • YIN (receptive / magnetic / inward): Moon, Venus, Neptune, Pluto
-  • NEUTRAL / VARIABLE: Mercury (takes on the polarity of the sign it occupies or the planet it most closely aspects; exclude from Yang/Yin totals when reporting a count)
-- Sign polarity is SEPARATE and independent: Fire/Air signs are Yang; Earth/Water signs are Yin. A Yang planet in a Yin sign is still a Yang planet — its expression is filtered through the sign, not reversed by it. NEVER relabel Mars, Jupiter, Saturn, or Uranus as "Yin" because they sit in Cancer, Taurus, Virgo, Pisces, Capricorn, or Scorpio. NEVER relabel Moon, Venus, Neptune, or Pluto as "Yang" because they sit in a fire or air sign.
-- When you report yin/yang balance for a person, count PLANET polarity (using the fixed list above) separately from SIGN polarity, and explicitly label which one you are reporting ("By planet nature: 5 Yang / 4 Yin / 1 Neutral" vs "By sign placement: 4 Yang signs / 6 Yin signs"). Do not mix the two counts into a single number.
+- Polarity counts (Yang / Yin) are computed deterministically by the system AFTER you generate the reading and will overwrite whatever you put in the polarity[] array. Therefore, do NOT spend effort classifying planets by polarity, do NOT count Yang vs Yin yourself, and do NOT make polarity claims in narrative prose that depend on a specific count. The system will inject the correct planet-based counts (Sun, Mars, Jupiter, Saturn, Uranus = Yang; Moon, Venus, Neptune, Pluto = Yin; Mercury counted toward Yang). Your only job in the polarity[] array is to leave a stub with the two names ("Yang (Active)" and "Yin (Receptive)") and a placeholder count of 0 — the system will fill in the correct count and planet list. The balance_interpretation paragraph may discuss the lived FEEL of the person's polarity blend in qualitative language ("outward, expressive, initiating" vs "inward, receptive, magnetic"), but it must NOT name a specific Yang/Yin count number, since the system overwrites those.
 
 CRITICAL ANTI-HALLUCINATION RULES:
 - Use the EXACT house positions shown in parentheses next to each planet (e.g., "Venus: 15°00' Taurus (House 2)"). Do NOT infer houses from zodiac signs.
