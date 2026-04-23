@@ -2132,12 +2132,9 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
   const keptSections: any[] = [];
   let droppedItems = 0;
   let droppedSections = 0;
-  // Labels that must NEVER be dropped — instead, backfill with a canonical
-  // fallback so the summary box is always complete. "Best Windows" was
-  // repeatedly being generated empty and dropped, leaving the user with no
-  // forward-timing field. The fallback string matches the prompt instruction
-  // so the rendered output stays consistent with what the model was told to
-  // write when no strong windows exist.
+  // Labels that must NEVER be dropped — but timing labels must be rebuilt
+  // from the actual timing data first. Only if the timing engine itself says
+  // there is no strong forward window should we fall back to the canned text.
   const SUMMARY_ITEM_BACKFILLS: Record<string, string> = {
     "best windows": "No strong forward windows are active in the current period.",
   };
@@ -2152,8 +2149,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         const v = item[valueKey];
         // Keep falsy non-strings (0, false). Only drop true empties.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
-          const labelKey = typeof item.label === "string" ? item.label.trim().toLowerCase() : "";
-          const backfill = SUMMARY_ITEM_BACKFILLS[labelKey];
+          const label = typeof item.label === "string" ? item.label.trim() : "";
+          const labelKey = label.toLowerCase();
+          const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
+          const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
           if (backfill) {
             item[valueKey] = backfill;
             log.push({
@@ -2169,8 +2168,8 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         }
         keptItems.push(item);
       }
-      // If "Best Windows" wasn't in items at all, add it with the canonical
-      // fallback so it's always present as a labeled field.
+      // If "Best Windows" wasn't in items at all, add it — but source it
+      // from the deterministic timing engine, not a canned fallback.
       const hasBestWindows = keptItems.some(
         (it) => it && typeof it === "object" && typeof it.label === "string"
           && it.label.trim().toLowerCase() === "best windows"
@@ -2178,7 +2177,7 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
       if (!hasBestWindows) {
         keptItems.push({
           label: "Best Windows",
-          value: SUMMARY_ITEM_BACKFILLS["best windows"],
+          value: buildEmptySummaryFallback(parsedContent, "Best Windows") || SUMMARY_ITEM_BACKFILLS["best windows"],
         });
         log.push({
           type: "best_windows_item_inserted",
