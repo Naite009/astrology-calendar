@@ -7563,6 +7563,39 @@ HARD RULE — applies to every sentence:
       }
     }
 
+    // ────────────────────────────────────────────────────────────
+    // POST-GATE DETERMINISTIC SAFETY PASS (2026-04-23)
+    // The Replit /check-reading gate is a black box: today it only
+    // returns a verdict, but in past behavior it has been observed to
+    // mutate prose (e.g. re-asserting "7th house cusp Libra" for a
+    // Libra-ASC chart, swapping rulers). To guarantee that OUR
+    // deterministic facts are the LAST writer on the JSON, re-run the
+    // two cusp/rulership correctors AFTER the gate has had its turn.
+    // These are pure, idempotent, ~ms-cheap, and never fabricate text —
+    // they only rewrite specific incorrect patterns against the verified
+    // chart context. Replit cannot have the last word on these facts.
+    // ────────────────────────────────────────────────────────────
+    if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+      try {
+        const postGateLog: HygieneLog = [];
+        fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        correctSignRulershipClaimsInProse(parsedContent, postGateLog);
+        if (postGateLog.length > 0) {
+          console.info("[ask-astrology] post-gate safety pass applied", {
+            count: postGateLog.length,
+            types: [...new Set(postGateLog.map((e: any) => e?.type).filter(Boolean))],
+          });
+          (parsedContent as any)._post_gate_safety = {
+            applied_at: new Date().toISOString(),
+            corrections: postGateLog,
+          };
+        }
+      } catch (postGateErr) {
+        const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
+        console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
+      }
+    }
+
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
     // polling on its activeJobId.
