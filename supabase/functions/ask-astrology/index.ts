@@ -6619,10 +6619,13 @@ HARD RULE — applies to every sentence:
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
           fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // VERIFIED SR ANGLE CLAIM GUARD: if the model invents an SR-to-natal
-          // Ascendant/Descendant claim that is not present in the verified
-          // SR-to-natal aspect block, strip that sentence before export.
-          stripUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR-TO-NATAL ANGLE CORRECTION (corrections, not deletions): if the
+          // model claims "SR <Planet> ... your Ascendant/Descendant" with the
+          // wrong angle / orb / aspect, rewrite the sentence using the
+          // deterministic SR positions and natal angle positions. If a claim
+          // cannot be corrected deterministically, flag it in the emission log
+          // and leave the prose intact for human review.
+          correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
