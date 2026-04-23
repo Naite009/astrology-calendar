@@ -4229,6 +4229,20 @@ ASCENDANT/DESCENDANT RULE — MANDATORY:
 - When referencing a natal angle in overlay or cross-chart prose (e.g. "SR Saturn near your natal Ascendant"), verify which axis point you mean BEFORE writing its sign or degree. If the SR planet's sign/degree is closer to the natal Descendant than the Ascendant, you must say Descendant — not Ascendant.
 - Do not claim any SR-to-natal Ascendant or Descendant aspect (conjunction, opposition, square, trine, sextile, "within X°", "near", "lands on") unless that exact aspect appears in the deterministic "ACTIVE SOLAR RETURN-TO-NATAL ASPECTS" block. If it is not in that block, do not write it.
 
+HOUSE RULER RULES — MANDATORY (applies dynamically to every chart based on the Ascendant sign in the placement table):
+- Read the 1st house cusp sign from the "House Cusps" block. That sign's traditional ruler IS the chart ruler. Read the 7th house cusp sign — it is always exactly opposite the Ascendant. The "House Cusps (with traditional rulers)" block already lists the correct ruler for every cusp; copy it from there, do not infer it.
+- Traditional rulers (use these — never modern co-rulers): Aries→Mars, Taurus→Venus, Gemini→Mercury, Cancer→Moon, Leo→Sun, Virgo→Mercury, Libra→Venus, Scorpio→Mars, Sagittarius→Jupiter, Capricorn→Saturn, Aquarius→Saturn, Pisces→Jupiter.
+- The Sun rules ONLY Leo. The Moon rules ONLY Cancer. Never assign the Sun or Moon as ruler of any other sign or any other house cusp.
+- Never write "the 7th house cusp is [Ascendant sign]" or "the 1st house cusp is [Descendant sign]". Verify which house you are naming before you write its sign.
+- Worked example for verification (apply the same logic to the actual chart you are reading): If the chart's 1st house cusp is Libra, then 1st house cusp = Libra ruled by Venus, and 7th house cusp = Aries ruled by Mars. Writing "7th house cusp is Libra" or "7th house ruler is the Sun" would both be wrong in that chart.
+- Before writing any "Nth house cusp is X, ruled by Y" sentence, cross-check N, X, and Y against the "House Cusps (with traditional rulers)" block. If they do not match the block exactly, rewrite the sentence using the block's values.
+
+NATAL RETROGRADE LOCK — MANDATORY:
+- Every natal planet's retrograde status is fixed at birth. Read it from the "NATAL Planetary Positions" block (markers: "R", "Rx", "℞", "retrograde").
+- If a natal planet is marked retrograde in that block, every natal sentence that mentions it MUST say "retrograde" or "Rx". You may never describe that natal planet as "direct".
+- This applies especially to natal Chiron: if natal Chiron is marked retrograde in the NATAL block, every natal mention of Chiron must say "Chiron retrograde" or "Chiron Rx".
+- Do not invent a retrograde marker on a natal planet that is direct in the NATAL block.
+
 ESSENCE OPENING MANDATORY — APPLIES TO EVERY READING (relationship, career, money, health, relocation, spiritual, timing, general):
 The VERY FIRST narrative_section of every reading MUST be titled "The Essence" (or for relationships: "The Essence of Your Relationship Style"; for career: "The Essence of How You Work"; etc.). Its "body" is a single short paragraph (2–4 sentences, ~50–90 words) that captures the entire essence of the person's style on this topic in plain, recognizable, human language — zero astrology jargon, zero planet/sign/house names. The reader must finish that paragraph and think "yes, that is exactly me." Only AFTER this Essence paragraph do you go into "Natal Relationship Architecture" / "How You Show Up at Work" / etc. and explain WHY astrologically.
 
