@@ -1910,7 +1910,96 @@ const fixAscendantDescendantLabelSwapsInProse = (
   }
 };
 
-const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
+// VERIFIED SR-TO-NATAL ANGLE CLAIM GUARD — the model sometimes invents
+// cross-chart angle activations (especially "SR Saturn near natal Ascendant")
+// that are NOT present in the deterministic SR-to-natal aspect block from the
+// chart context. When that happens, the sentence must be removed rather than
+// trusted. This specifically protects Ascendant/Descendant axis claims.
+const stripUnverifiedSrAngleClaims = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+
+  const allowed = new Set<string>();
+  const headerMatch = chartContext.match(/\n--- ACTIVE SOLAR RETURN-TO-NATAL ASPECTS \(this year\) ---\n/);
+  if (headerMatch) {
+    const startIdx = headerMatch.index! + headerMatch[0].length;
+    const tail = chartContext.slice(startIdx);
+    const endMatch = tail.match(/\n\s*\n|\n--- |\n[A-Z][A-Z ]{6,}:/);
+    const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+    const lineRe = /-\s*SR\s+([A-Za-z][A-Za-z ]+)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+[☌☍△□⚹]\s+Natal\s+(Ascendant|Descendant|Midheaven|IC)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+\(orb:\s*([\d.]+)°\)\s+—\s+(conjunct|opposition|trine|square|sextile)/gi;
+    let m: RegExpExecArray | null;
+    while ((m = lineRe.exec(block)) !== null) {
+      const srPlanet = m[1].trim().toLowerCase();
+      const natalAngle = m[3].trim().toLowerCase();
+      allowed.add(`${srPlanet}|${natalAngle}`);
+    }
+  }
+
+  const hasAngleClaim = (s: string): boolean =>
+    /\bSR\s+(Saturn|Neptune|Uranus|Pluto|Jupiter|Mars|Venus|Mercury|Sun|Moon|Chiron)\b/i.test(s)
+    && /\bnatal\s+(Ascendant|Descendant)\b/i.test(s)
+    && /(within\s+\d|orb|conjunct|opposition|trine|square|sextile|lands\s+within|sits\s+within|near)/i.test(s);
+
+  const sentenceAllowed = (s: string): boolean => {
+    const sr = s.match(/\bSR\s+([A-Za-z][A-Za-z ]+)\b/i);
+    const ang = s.match(/\bnatal\s+(Ascendant|Descendant|Midheaven|IC)\b/i);
+    if (!sr || !ang) return true;
+    return allowed.has(`${sr[1].trim().toLowerCase()}|${ang[1].trim().toLowerCase()}`);
+  };
+
+  let stripped = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const cleanText = (text: string): string => {
+    if (!text || typeof text !== "string") return text;
+    const sentences = splitIntoSentences(text);
+    if (sentences.length === 0) return text;
+    const kept = sentences.filter((s) => !(hasAngleClaim(s) && !sentenceAllowed(s)));
+    if (kept.length !== sentences.length) {
+      stripped += sentences.length - kept.length;
+      const removed = sentences.filter((s) => hasAngleClaim(s) && !sentenceAllowed(s));
+      for (const r of removed) if (examples.length < 5) examples.push(r.slice(0, 180));
+    }
+    let out = kept.join(" ").trim();
+    out = out.replace(/^\([^)]*natal\s+(Ascendant|Descendant)[^)]*\)\s*/i, "").trim();
+    return out;
+  };
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const next = cleanText(val);
+        if (next !== val) (node as any)[key] = next;
+      } else {
+        visit(val);
+      }
+    }
+  };
+
+  visit(parsedContent);
+  if (stripped > 0) {
+    log.push({
+      type: "unverified_sr_angle_claims_stripped",
+      detail: { stripped, allowed_pairs: Array.from(allowed), examples },
+    });
+    console.info("[ask-astrology] unverified SR angle claims stripped", {
+      stripped,
+      allowed_pairs: Array.from(allowed),
+    });
+  }
+};
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
   const modalityCounts: Record<string, string[]> = { Cardinal:[], Fixed:[], Mutable:[] };
