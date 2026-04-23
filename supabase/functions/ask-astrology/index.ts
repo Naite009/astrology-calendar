@@ -4984,8 +4984,56 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
     };
     const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
 
+    // Angles Axis Truth — explicitly states each angle and its mathematically
+    // opposite cusp so the AI cannot write "your 7th house cusp is Libra"
+    // when Libra is the Ascendant. Cusps 1/7, 4/10, 2/8, 3/9, 5/11, 6/12 are
+    // always exactly 180° apart in the Placidus system, so the Descendant
+    // is ALWAYS the opposite sign of the Ascendant. This is built from the
+    // deterministic House Cusps block in the chart context (source of truth).
+    const buildAnglesAxisBlock = (ctx: string): string | null => {
+      const cusps = parseHouseCuspsFromContext(ctx);
+      if (cusps.length < 12) return null;
+      const byHouse = new Map<number, { sign: string; degree: number }>();
+      for (const c of cusps) byHouse.set(c.house, { sign: c.sign, degree: c.degree });
+      const a1 = byHouse.get(1), a7 = byHouse.get(7);
+      const a4 = byHouse.get(4), a10 = byHouse.get(10);
+      const a2 = byHouse.get(2), a8 = byHouse.get(8);
+      const a3 = byHouse.get(3), a9 = byHouse.get(9);
+      const a5 = byHouse.get(5), a11 = byHouse.get(11);
+      const a6 = byHouse.get(6), a12 = byHouse.get(12);
+      if (!a1 || !a7 || !a4 || !a10) return null;
+      const fmt = (h: number, label: string, c: { sign: string; degree: number } | undefined) =>
+        c ? `- ${label} (House ${h} cusp): ${c.degree}° ${c.sign}` : "";
+      return `=========================================================
+SECTION: NATAL HOUSE CUSP AXIS — angles and opposite cusps. NON-NEGOTIABLE.
+=========================================================
+
+The 7th house cusp is the DESCENDANT, which is ALWAYS the opposite sign of the Ascendant. The 4th/10th, 2nd/8th, 3rd/9th, 5th/11th, and 6th/12th cusps are always exactly 180° apart and ALWAYS in opposite signs. For THIS chart, the cusps are:
+
+${fmt(1, "Ascendant", a1)}
+${fmt(7, "Descendant", a7)}
+${fmt(10, "Midheaven (MC)", a10)}
+${fmt(4, "IC", a4)}
+${fmt(2, "2nd house", a2)}
+${fmt(8, "8th house", a8)}
+${fmt(3, "3rd house", a3)}
+${fmt(9, "9th house", a9)}
+${fmt(5, "5th house", a5)}
+${fmt(11, "11th house", a11)}
+${fmt(6, "6th house", a6)}
+${fmt(12, "12th house", a12)}
+
+HARD RULE — applies to every sentence:
+- When you write about the Ascendant, the sign MUST be ${a1.sign}. When you write about the 7th house cusp / Descendant, the sign MUST be ${a7.sign}. NEVER swap them. The Ascendant rules the 1st house only; the Descendant (opposite sign) rules the 7th.
+- The Descendant / 7th house cusp is ${a7.sign}, ruled by the traditional ruler of ${a7.sign}. Do NOT name the Ascendant's ruler when discussing the 7th house — name the ruler of ${a7.sign}.
+- The MC is ${a10.sign} and the IC is ${a4.sign}. They are opposite. Do not swap.
+- The above cusps are deterministic Placidus calculations from astronomy-engine. They are FACT. If you write any other sign on any of these cusps, you have made an error.`;
+    };
+    const anglesAxisBlock = buildAnglesAxisBlock(sanitizedChartContext);
+
     const chartScopedRules = [
       natalGroundTruthBlock,
+      anglesAxisBlock,
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
