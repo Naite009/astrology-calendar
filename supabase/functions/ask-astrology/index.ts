@@ -7738,6 +7738,10 @@ HARD RULE — applies to every sentence:
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctSignRulershipClaimsInProse(parsedContent, postGateLog);
+        // SR planet position guard — reverts any "SR <Planet> 26°21' Leo"
+        // back to the deterministic SR sign (e.g. Pisces) when Replit or
+        // the AI corrupted it. Reads truth from chart context, not JSON.
+        correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         if (postGateLog.length > 0) {
           console.info("[ask-astrology] post-gate safety pass applied", {
             count: postGateLog.length,
