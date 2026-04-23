@@ -4439,6 +4439,23 @@ HOUSE RULER RULES — MANDATORY (applies dynamically to every chart based on the
 - Worked example for verification (apply the same logic to the actual chart you are reading): If the chart's 1st house cusp is Libra, then 1st house cusp = Libra ruled by Venus, and 7th house cusp = Aries ruled by Mars. Writing "7th house cusp is Libra" or "7th house ruler is the Sun" would both be wrong in that chart.
 - Before writing any "Nth house cusp is X, ruled by Y" sentence, cross-check N, X, and Y against the "House Cusps (with traditional rulers)" block. If they do not match the block exactly, rewrite the sentence using the block's values.
 
+SIGN RULERSHIP — MANDATORY:
+- Traditional and modern co-rulers by sign:
+  - Aries: Mars
+  - Taurus: Venus
+  - Gemini: Mercury
+  - Cancer: Moon
+  - Leo: Sun
+  - Virgo: Mercury
+  - Libra: Venus
+  - Scorpio: Mars / Pluto
+  - Sagittarius: Jupiter
+  - Capricorn: Saturn
+  - Aquarius: Saturn / Uranus
+  - Pisces: Jupiter / Neptune
+- Pisces is ruled by Jupiter and Neptune. Saturn does NOT rule Pisces. Never write Saturn as a ruler or co-ruler of Pisces under any circumstance.
+- When naming a sign's ruler, use only the rulers listed above for that sign. Never assign a planet as ruler of a sign it does not rule (e.g., never "Sun rules Libra", never "Saturn rules Pisces", never "Jupiter rules Aquarius").
+
 NATAL RETROGRADE LOCK — MANDATORY:
 - Every natal planet's retrograde status is fixed at birth. Read it from the "NATAL Planetary Positions" block (markers: "R", "Rx", "℞", "retrograde").
 - If a natal planet is marked retrograde in that block, every natal sentence that mentions it MUST say "retrograde" or "Rx". You may never describe that natal planet as "direct".
