@@ -606,7 +606,7 @@ export interface DeterministicTallies {
  */
 export const computeDeterministicTallies = (natalChartBlock: string): DeterministicTallies => {
   const planetSign: Record<string, string> = {};
-  const re = /^([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
+  const re = /^[\s\-\*•]*([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
   let m: RegExpExecArray | null;
   while ((m = re.exec(natalChartBlock)) !== null) {
     const planet = m[1].trim();
