@@ -5941,6 +5941,13 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // RETROGRADE NORMALIZATION: every placement_table row must carry
+          // BOTH a `retrograde: boolean` field (read by the external Replit
+          // /check-reading gate) AND the "℞" glyph appended to the planet
+          // name (consumed by the PDF renderer). This pass reconciles the
+          // two representations on every row, killing RETROGRADE_STATE_MISMATCH
+          // false positives without changing any prose.
+          normalizePlacementTableRetrograde(parsedContent, emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
