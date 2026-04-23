@@ -5481,6 +5481,10 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
           // balance_interpretation, and summary items so the payload cannot
           // ship with the same 3 empty fields again.
           backfillRelationshipSectionBodies(parsedContent, emissionLog);
+          // FIX A — synthesize timing_section.body from windows when empty
+          // so the universal MISSING_REQUIRED_BODY validator below treats
+          // timing tables as fully populated when they have data.
+          backfillTimingSectionBodies(parsedContent, emissionLog);
           // FINAL PRONOUN SAFETY NET (Fix 3): every backfill / structural
           // pass above can introduce new prose. Re-run the pronoun rewriter
           // so any "their"/"they"/"them" that slipped in via templates,
