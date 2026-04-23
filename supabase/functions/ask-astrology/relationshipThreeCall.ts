@@ -25,7 +25,9 @@
 //   - call_status tracks {a,b,c}: "done" | "failed" | undefined.
 //
 // Resilience:
-//   - 45 second per-call timeout via AbortSignal.timeout.
+//   - 150 second per-call timeout via AbortSignal.timeout.
+//     (Sonnet reliably needs 60–120s per call for one third of a full
+//     relationship reading; 45s was too tight and timed out 100% of jobs.)
 //   - Up to 2 attempts per call with exponential backoff (1.5s, 4.5s).
 //   - On final failure, the whole job is marked failed but successful
 //     call outputs remain in their columns for resume.
