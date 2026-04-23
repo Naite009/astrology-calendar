@@ -506,30 +506,33 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // in, not a count list. We name lived experience first, the count
       // is supportive context, never the headline.
       // ─────────────────────────────────────────────────────────────────
+      // SECOND-PERSON PROSE LIBRARY — every template addresses the reader
+      // as "you" / "your" so the deterministic backfill never reintroduces
+      // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
-        Fire: "lives forward — they think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "lives in the body and the calendar — they trust what they can see, build, and repeat, and they relax once the practical side is handled",
-        Air: "lives in the head — they process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
-        Water: "lives in feelings — they pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
+        Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
+        Earth: "live in your body and your calendar — you trust what you can see, build, and repeat, and you relax once the practical side is handled",
+        Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
+        Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
       const ELEMENT_WEAK: Record<string, string> = {
         Fire: "Fire is quiet here, so initiative often waits for someone else to spark it — momentum has to be chosen, not assumed",
-        Earth: "Earth is light, so structure, money rhythms, and bodily care are skills they have to consciously build instead of defaulting to",
-        Air: "Air is light, so they may carry feelings or gut sense for a long time before putting them into words — talking it out is the growth edge",
-        Water: "Water is light, so they can underestimate how much an interaction actually affected them and need to learn to name feelings before they leak out",
+        Earth: "Earth is light, so structure, money rhythms, and bodily care are skills you have to consciously build instead of defaulting to",
+        Air: "Air is light, so you may carry feelings or gut sense for a long time before putting them into words — talking it out is the growth edge",
+        Water: "Water is light, so you can underestimate how much an interaction actually affected you and need to learn to name feelings before they leak out",
       };
       const MODALITY_PROSE: Record<string, { lead: string; weak: string }> = {
         Cardinal: {
-          lead: "starts things — they get bored maintaining what is already running and feel most alive when something new is being launched",
-          weak: "without much Cardinal, they rarely initiate alone and tend to react to what others put in front of them",
+          lead: "starts things — you get bored maintaining what is already running and feel most alive when something new is being launched",
+          weak: "without much Cardinal, you rarely initiate alone and tend to react to what others put in front of you",
         },
         Fixed: {
-          lead: "holds the line — once they commit, they stay, and they need a real reason (not pressure) before they will change course",
-          weak: "without much Fixed, follow-through requires structure or accountability they set up on purpose",
+          lead: "holds the line — once you commit, you stay, and you need a real reason (not pressure) before you will change course",
+          weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "adapts — they think in possibilities, change plans easily, and get restless inside rigid systems",
-          weak: "without much Mutable, pivoting feels harder than it looks; they prefer one path and one plan",
+          lead: "adapts — you think in possibilities, change plans easily, and get restless inside rigid systems",
+          weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
       // POLARITY_PROSE describes the SURFACE expression only. Wording is
@@ -538,12 +541,12 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // from 12th-house emphasis, a private Moon, Pisces stelliums, etc.
       // Never write the polarity line as an absolute personality claim.
       const POLARITY_PROSE: Record<string, string> = {
-        Yang: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Active: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Masculine: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Yin: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
-        Receptive: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
-        Feminine: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
+        Yang: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Active: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Masculine: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Yin: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
+        Receptive: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
+        Feminine: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
       };
 
       const sentences: string[] = [];
@@ -555,14 +558,14 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       if (elementsAll.length > 0) {
         const dominant = elementsAll[0];
         const second = elementsAll[1];
-        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how they meet the world";
-        let elementSentence = `This person ${lead}`;
+        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
+        let elementSentence = `You ${lead}`;
         if (second && SECOND_ELEMENT_PAIR[second.name]) {
           const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
           if (secondLead) {
             // Trim the secondary description so it reads as a balance, not a duplicate.
             const trimmed = secondLead.split("—")[0].trim();
-            elementSentence += `, with a strong secondary pull that also ${trimmed}`;
+            elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
           }
         }
         elementSentence += ".";
@@ -585,7 +588,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       if (modalitiesAll.length > 0) {
         const dominant = modalitiesAll[0];
         const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
-        sentences.push(`Their pace ${lead}.`);
+        sentences.push(`Your pace ${lead}.`);
         const presentMods = new Set(modalitiesAll.map((i) => i.name));
         const ALL_MODS = ["Cardinal", "Fixed", "Mutable"];
         const missingMod = ALL_MODS.find((m) => !presentMods.has(m));
