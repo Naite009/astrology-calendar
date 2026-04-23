@@ -1908,7 +1908,13 @@ const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> 
         if (m) house = parseInt(m[0], 10);
       }
       const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-      const retrograde = /\bR\b|retrograde/i.test(retroRaw) && !/direct/i.test(retroRaw);
+      // Detect retrograde from any of: "R", "Rx", "℞" (U+211E), or the word "retrograde".
+      // Boolean true on row.retrograde is also honored. "direct" overrides.
+      const retroBoolean = row.retrograde === true;
+      const retrograde = !/direct/i.test(retroRaw) && (
+        retroBoolean
+        || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
+      );
       map.set(planet.toLowerCase(), { sign, house, retrograde });
     }
   }
