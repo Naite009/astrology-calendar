@@ -4582,24 +4582,70 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         .map((l) => l.trim())
         .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
       if (lines.length === 0) return null;
-      const retroLines = lines.filter((l) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l));
+
+      // Per-planet retrograde classification. We keep an explicit DIRECT vs
+      // RETROGRADE list for the 10 classical planets + Chiron because the
+      // model frequently bleeds the SR retrograde state of Saturn, Neptune,
+      // Uranus, Mars, and Jupiter into natal prose. Naming each planet's
+      // status in the prompt removes any ambiguity.
+      const RETRO_TRACKED = [
+        "Sun", "Moon", "Mercury", "Venus", "Mars",
+        "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron",
+      ];
+      const isLineRetro = (l: string) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l);
+      const planetFromLine = (l: string): string | null => {
+        const m = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
+        return m ? m[1].trim() : null;
+      };
+      const directPlanets: string[] = [];
+      const retroPlanets: string[] = [];
+      for (const planet of RETRO_TRACKED) {
+        const line = lines.find((l) => {
+          const p = planetFromLine(l);
+          return p && p.toLowerCase() === planet.toLowerCase();
+        });
+        if (!line) continue;
+        if (isLineRetro(line)) retroPlanets.push(planet);
+        else directPlanets.push(planet);
+      }
+
       const placementList = lines.map((l) => `- ${l}`).join("\n");
-      const retroList = retroLines.length > 0
-        ? retroLines.map((l) => {
-            const planetMatch = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
-            return planetMatch ? planetMatch[1].trim() : l;
-          }).join(", ")
-        : "(none — no natal planets are retrograde in this chart)";
+      const directBullets = directPlanets.length > 0
+        ? directPlanets.map((p) => `- ${p}: DIRECT`).join("\n")
+        : "- (none in this chart)";
+      const retroBullets = retroPlanets.length > 0
+        ? retroPlanets.map((p) => `- ${p}: RETROGRADE`).join("\n")
+        : "- (none — no natal planets are retrograde in this chart)";
+
+      // Pluto-specific anchor. The model has been observed substituting SR
+      // Pluto's sign/degree (e.g., 1°22' Aquarius) into natal prose when the
+      // ground truth block sat too far down in the prompt. We restate Pluto's
+      // natal position as its own line so it cannot be missed, and we move
+      // this entire block to the FIRST cached system block (see chartScopedRules
+      // ordering below) so the model reads it before SR data.
+      const plutoLine = lines.find((l) => /^Pluto\s*:/i.test(l));
+      const plutoAnchor = plutoLine
+        ? `\n\nPLUTO ANCHOR (most-confused planet — verify before writing):\nNatal ${plutoLine}\nNever substitute SR Pluto's sign/degree/house into a natal sentence. If you write "Pluto" in any natal context, the sign MUST match this line.`
+        : "";
+
       return `NATAL GROUND TRUTH — these values are fixed constants for this chart. When writing any NATAL interpretation in any section, these are the only correct positions. Do NOT substitute Solar Return positions here under any circumstances:
 
 ${placementList}
 
-Natal retrograde planets in this chart: ${retroList}. Always preserve their retrograde status in natal prose. NEVER describe a natal retrograde planet as direct, and NEVER add a retrograde marker to a natal direct planet.
+NATAL RETROGRADE STATUS — these are fixed. Do not change them based on SR chart status.
+
+These natal planets are DIRECT (not retrograde):
+${directBullets}
+
+These natal planets are RETROGRADE:
+${retroBullets}
+
+When writing natal sections, never describe a DIRECT natal planet as retrograde, and never describe a RETROGRADE natal planet as direct. SR Saturn, SR Neptune, SR Uranus, SR Mars, and SR Jupiter may be retrograde in the Solar Return chart — that has NO bearing on natal status. These are different planets in different charts. If natal Saturn is listed as DIRECT above, it is direct in every natal sentence you write, full stop.${plutoAnchor}
 
 CHART SEPARATION RULES — MANDATORY (universal, every reading type):
 - Natal sections: reference ONLY the natal positions listed above.
 - Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
-- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
+- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, SR Pluto, etc. are in completely different signs than their natal counterparts — do not confuse them.
 - Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.
 - VERIFICATION MANDATE: Every time you are about to name a planet's sign in a natal sentence, mentally re-check the NATAL GROUND TRUTH list above. If the sign you are about to write does not match the list, you are confusing the SR chart with the natal chart — stop and correct it before continuing the sentence. This check is non-negotiable and applies to Saturn, Jupiter, Uranus, Neptune, Pluto, and Chiron in particular, since those are the planets the model most often mis-copies between charts.`;
     };
