@@ -1957,8 +1957,38 @@ const NUMBER_TO_ORDINAL: Record<number, string> = {1:"1st",2:"2nd",3:"3rd",4:"4t
 
 interface PlacementFact { sign?: string; house?: number; retrograde?: boolean; }
 
-const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> => {
+const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<string, PlacementFact> => {
   const map = new Map<string, PlacementFact>();
+
+  const normalizePlanetKey = (raw: unknown): string =>
+    String(raw || "")
+      .replace(/\s*[\u211E℞]+\s*$/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+  const setFact = (planetRaw: unknown, fact: PlacementFact) => {
+    const key = normalizePlanetKey(planetRaw);
+    if (!key) return;
+    const existing = map.get(key) || {};
+    map.set(key, {
+      sign: fact.sign ?? existing.sign,
+      house: fact.house ?? existing.house,
+      retrograde: fact.retrograde ?? existing.retrograde,
+    });
+  };
+
+  const natalPositions = chartContext
+    ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/)
+    : [];
+  for (const pos of natalPositions) {
+    setFact(pos.planet, {
+      sign: pos.sign,
+      house: pos.house ?? undefined,
+      retrograde: pos.retrograde,
+    });
+  }
+
   if (!Array.isArray(parsedContent?.sections)) return map;
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
@@ -1967,7 +1997,9 @@ const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> 
     const rows = Array.isArray(section.rows) ? section.rows : [];
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
-      const planet = String(row.planet || row.body || row.name || "").trim();
+      const planet = String(row.planet || row.body || row.name || "")
+        .replace(/\s*[\u211E℞]+\s*$/g, "")
+        .trim();
       if (!planet) continue;
       const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
       const houseRaw = row.house;
@@ -1978,14 +2010,11 @@ const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> 
         if (m) house = parseInt(m[0], 10);
       }
       const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-      // Detect retrograde from any of: "R", "Rx", "℞" (U+211E), or the word "retrograde".
-      // Boolean true on row.retrograde is also honored. "direct" overrides.
       const retroBoolean = row.retrograde === true;
       const retrograde = !/direct/i.test(retroRaw) && (
-        retroBoolean
-        || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
+        retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
       );
-      map.set(planet.toLowerCase(), { sign, house, retrograde });
+      setFact(planet, { sign, house, retrograde });
     }
   }
   return map;
