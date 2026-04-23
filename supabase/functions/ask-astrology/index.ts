@@ -5422,6 +5422,76 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
           rewriteThirdPersonPronouns(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
+          // POST-CLEANUP HARD VALIDATOR — mirrors Replit's MISSING_REQUIRED_BODY
+          // gate on our side so the payload self-reports any narrative /
+          // summary / modality section that still ships with bullets but no
+          // prose body. Runs AFTER every backfill / synthesis pass so a
+          // failure here means the prompt + every safety net failed and the
+          // section is genuinely empty. Emits structured entries to
+          // _validation_log so Replit's gate and any audit can see them.
+          try {
+            const REQUIRED_BODY_TYPES = new Set([
+              "narrative_section",
+              "summary_box",
+              "modality_element",
+              "needs_profile",
+              "strategy_summary",
+            ]);
+            const meaningfulText = (raw: unknown): boolean => {
+              if (typeof raw !== "string") return false;
+              const cleaned = raw
+                .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+              return cleaned.length >= 30; // ~one short sentence minimum
+            };
+            const hasBulletsOrItems = (s: any): boolean => {
+              if (!s || typeof s !== "object") return false;
+              if (Array.isArray(s.bullets) && s.bullets.length > 0) return true;
+              if (Array.isArray(s.items) && s.items.length > 0) return true;
+              if (Array.isArray(s.elements) && s.elements.length > 0) return true;
+              if (Array.isArray(s.modalities) && s.modalities.length > 0) return true;
+              if (Array.isArray(s.polarity) && s.polarity.length > 0) return true;
+              if (meaningfulText(s.balance_interpretation)) return true;
+              return false;
+            };
+            const sections = Array.isArray((parsedContent as any)?.sections)
+              ? (parsedContent as any).sections
+              : [];
+            const missingBodies: Array<Record<string, unknown>> = [];
+            for (const section of sections) {
+              if (!section || typeof section !== "object") continue;
+              const type = String(section.type || "").toLowerCase();
+              if (!REQUIRED_BODY_TYPES.has(type)) continue;
+              if (meaningfulText(section.body)) continue;
+              if (!hasBulletsOrItems(section)) continue;
+              const title = String(section.title || "").trim() || "(untitled)";
+              const bodyLen = typeof section.body === "string" ? section.body.length : 0;
+              missingBodies.push({
+                type: "missing_required_body",
+                detail: {
+                  section_type: type,
+                  title,
+                  body_length: bodyLen,
+                  has_bullets: Array.isArray(section.bullets) && section.bullets.length > 0,
+                  has_items: Array.isArray(section.items) && section.items.length > 0,
+                  has_balance_interpretation: meaningfulText(section.balance_interpretation),
+                  healable: true,
+                  severity: "error",
+                },
+              });
+            }
+            if (missingBodies.length > 0) {
+              for (const entry of missingBodies) emissionLog.push(entry as any);
+              console.warn("[ask-astrology] MISSING_REQUIRED_BODY post-cleanup", {
+                count: missingBodies.length,
+                titles: missingBodies.map((m: any) => m?.detail?.title),
+              });
+            }
+          } catch (validatorError) {
+            console.warn("[ask-astrology] missing_required_body validator threw", validatorError);
+          }
+
           // ALWAYS attach _validation_log (even when empty) so downstream
           // consumers (Replit PDF audit, future apps) can prove what was
           // and was not corrected on this side. An empty array is a
