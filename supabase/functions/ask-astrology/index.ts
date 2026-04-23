@@ -688,16 +688,52 @@ const rewriteSentencePronouns = (sentence: string): string => {
     /(^|[—–\-:;]\s+)(they)\b/g,
     (_m, lead) => `${lead}you`,
   );
-  // Object-pronoun swap: "...take them seriously" → "...take you seriously".
-  // Only swap "them" after verbs that nearly always refer back to the
-  // reading's subject in a career context.
+  // Mid-sentence "their" → "your" when it clearly refers back to the
+  // reading's subject (the only entity we ever address in 2nd person).
+  // "their inner life", "their needs", "their patterns", etc. inside a
+  // 2nd-person reading is always the subject. We swap any standalone
+  // "their"/"Their" that is followed by a noun-like word and is NOT
+  // preceded by a quote, possessive marker, or proper-noun-like context.
+  // Conservative: skip when the previous token is a name-shaped word
+  // (capitalized non-first-word) to preserve "your boss — Sarah, their
+  // partner" style references.
   s = s.replace(
-    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know)\s+them\b/gi,
+    /(^|[\s,()"'])(their|Their)\b(?=\s+[a-z])/g,
+    (_m, pre, word) => `${pre}${word === "Their" ? "Your" : "your"}`,
+  );
+  // Mid-sentence "they" → "you" (subject pronoun) when followed by a verb.
+  // Same conservative gate: only after whitespace/punct, never after a
+  // capitalized name-token. Catches "and they need", "but they feel".
+  s = s.replace(
+    /(^|[\s,()"'])(they|They)\b(?=\s+(?:are|is|was|were|have|has|had|will|would|could|should|may|might|do|does|did|don'?t|doesn'?t|didn'?t|can|can'?t|cannot|won'?t|need|needs|want|wants|feel|feels|know|knows|think|thinks|see|sees|get|gets|keep|keeps|stay|stays|go|goes|come|comes|live|lives|run|runs|move|moves|hold|holds))/g,
+    (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
+  );
+  // Object pronoun "them" → "you" mid-sentence after verbs that nearly
+  // always refer back to the subject. Same verb whitelist as before but
+  // expanded.
+  s = s.replace(
+    /\b(take|treat|respect|value|see|include|promote|pay|hire|fire|trust|pick|choose|select|consider|notice|reach|hear|know|love|leave|meet|find|tell|ask|push|pull|hold|help|teach|show|give|wait\s+for)\s+them\b/gi,
     (_m, verb) => `${verb} you`,
   );
-  // Verb-agreement fixups for the most common patterns the library emits.
-  s = s.replace(/\b(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
-    (_m, pron, verb) => {
+  // Verb-agreement fixups for "you" (singular 2nd person → no "-s" verbs).
+  // Bug-fix note: this pass is INTENTIONALLY scoped to "you" / "You"
+  // immediately followed by a third-person-singular verb. It must NOT
+  // touch "part of you needs / wants / is", because in that phrase the
+  // subject is "part" (singular), not "you", and the verb form is
+  // already correct. The look-behind check below excludes the broken
+  // case where "you" is the OBJECT of a preceding preposition.
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
+    (_match, lead, pron, verb, offset, fullString) => {
+      // Build the FULL prefix from the original string up to and including
+      // the captured `lead` character. If the prior context ends with a
+      // preposition like "of"/"to"/"for"/etc., "you" is the OBJECT and the
+      // verb form is already correct (subject is the noun before "of").
+      const fullPrefix = (typeof offset === "number" && typeof fullString === "string")
+        ? fullString.slice(0, offset) + (lead || "")
+        : (lead || "");
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(fullPrefix)) {
+        return _match;
+      }
       const map: Record<string, string> = {
         keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
         outlasts: "outlast", burns: "burn", pushes: "push", gets: "get",
@@ -712,14 +748,27 @@ const rewriteSentencePronouns = (sentence: string): string => {
         pays: "pay", earns: "earn", loses: "lose", wins: "win",
         leads: "lead", follows: "follow",
       };
-      return `${pron} ${map[verb] ?? verb}`;
+      return `${lead}${pron} ${map[verb] ?? verb}`;
     });
-  s = s.replace(/\b(you|You)\s+is\b/g, (_m, p) => `${p} are`);
-  s = s.replace(/\b(you|You)\s+was\b/g, (_m, p) => `${p} were`);
-  s = s.replace(/\b(you|You)\s+has\b/g, (_m, p) => `${p} have`);
-  s = s.replace(/\b(you|You)\s+doesn'?t\b/g, (_m, p) => `${p} don't`);
-  s = s.replace(/\b(you|You)\s+wasn'?t\b/g, (_m, p) => `${p} weren't`);
-  s = s.replace(/\b(you|You)\s+hasn'?t\b/g, (_m, p) => `${p} haven't`);
+  // "you is/was/has" → "you are/were/have" — same preposition guard built
+  // from the FULL string offset.
+  const guardedReplace = (re: RegExp, replacement: string) => {
+    s = s.replace(re, (_match: string, lead: string, pron: string, offset: number, fullString: string) => {
+      const fullPrefix = (typeof offset === "number" && typeof fullString === "string")
+        ? fullString.slice(0, offset) + (lead || "")
+        : (lead || "");
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(fullPrefix)) {
+        return _match;
+      }
+      return `${lead}${pron} ${replacement}`;
+    });
+  };
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+is\b/g, "are");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, "were");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+has\b/g, "have");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
@@ -1908,7 +1957,13 @@ const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> 
         if (m) house = parseInt(m[0], 10);
       }
       const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-      const retrograde = /\bR\b|retrograde/i.test(retroRaw) && !/direct/i.test(retroRaw);
+      // Detect retrograde from any of: "R", "Rx", "℞" (U+211E), or the word "retrograde".
+      // Boolean true on row.retrograde is also honored. "direct" overrides.
+      const retroBoolean = row.retrograde === true;
+      const retrograde = !/direct/i.test(retroRaw) && (
+        retroBoolean
+        || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
+      );
       map.set(planet.toLowerCase(), { sign, house, retrograde });
     }
   }
@@ -1936,6 +1991,44 @@ const ensureSentence = (text: string): string => {
   const cleaned = String(text || "").trim();
   if (!cleaned) return "";
   return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
+};
+
+// Hardcode the canonical title for the strategy summary section. The AI
+// occasionally returns variants like "Summary", "Strategy Summary", or
+// "Relationship Strategy". The downstream renderer + cleanup logic match
+// on the EXACT canonical string "Relationship Strategy Summary", so we
+// force-rename any close variant in relationship readings before the
+// backfill runs. This is Fix 4 in the chart-reference / pronoun /
+// title-contract patch set.
+const RELATIONSHIP_SUMMARY_TITLE_VARIANTS = [
+  "summary",
+  "strategy summary",
+  "relationship strategy",
+  "relationship summary",
+  "your relationship strategy",
+  "your strategy summary",
+];
+const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt && qt !== "relationship") return;
+  let renamed = 0;
+  const renames: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (!section || section?.type !== "summary_box") continue;
+    const currentTitle = String(section.title || "").trim();
+    if (currentTitle === "Relationship Strategy Summary") continue;
+    const lower = currentTitle.toLowerCase();
+    if (RELATIONSHIP_SUMMARY_TITLE_VARIANTS.includes(lower)) {
+      section.title = "Relationship Strategy Summary";
+      renamed++;
+      if (renames.length < 5) renames.push(`${currentTitle} → Relationship Strategy Summary`);
+    }
+  }
+  if (renamed > 0) {
+    log.push({ type: "summary_box_title_hardcoded", detail: { renamed, renames } });
+    console.info("[ask-astrology] summary_box title hardcoded", { renamed, renames });
+  }
 };
 
 const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) => {
@@ -2075,20 +2168,31 @@ const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
     return next;
   };
 
-  const visit = (node: any) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+  // Section-aware visit: the natal truth map applies ONLY to NATAL prose.
+  // SR (Solar Return) sections legitimately reference different sign /
+  // house / retrograde data for the same planet, so we skip them entirely
+  // to prevent natal facts from overwriting accurate SR statements.
+  const isSRContext = (sectionLike: any): boolean => {
+    if (!sectionLike || typeof sectionLike !== "object") return false;
+    const t = String(sectionLike?.title || sectionLike?.label || "").toLowerCase();
+    return t.includes("solar return") || /\bsr\b/.test(t) || t.includes("sr ");
+  };
+  const visit = (node: any, srScope: boolean) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, srScope); return; }
     if (!node || typeof node !== "object") return;
+    const nextScope = srScope || isSRContext(node);
+    if (nextScope) return; // do not rewrite SR-context strings against the natal truth map
     for (const [key, val] of Object.entries(node)) {
       if (HYGIENE_SAFE_KEYS.has(key)) continue;
       if (typeof val === "string") {
         const fixed = fixString(val);
         if (fixed !== val) (node as any)[key] = fixed;
       } else {
-        visit(val);
+        visit(val, nextScope);
       }
     }
   };
-  visit(parsedContent);
+  visit(parsedContent, false);
 
   for (const [planet, slot] of flagsByPlanet.entries()) {
     log.push({ type: "placement_crosscheck_rewrite", detail: { planet, fixed: slot.fixed, examples: slot.flagged } });
@@ -3275,6 +3379,11 @@ const requestMissingBullets = async (
 };
 
 const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
+
+CHART REFERENCE RULES — MANDATORY (NON-NEGOTIABLE, applies to EVERY reading type):
+When writing any section that interprets NATAL placements, you may ONLY reference positions from the NATAL planetary positions table provided in the chart context. You may NOT use Solar Return (SR) planet positions, signs, degrees, houses, or retrograde status in natal prose under any circumstances. When writing any section that interprets SOLAR RETURN placements, you may ONLY reference positions from the SR planetary positions table provided in the chart context. Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct table (NATAL section vs. SR section). The natal table is the absolute source of truth for the natal chart — natal positions never change regardless of what the SR chart shows that year. If a planet's sign in your sentence does not match the natal table for a natal section (or the SR table for an SR section), STOP and rewrite the sentence using the correct sign from the correct table. This applies to every planet (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, Lilith, Juno, Nodes) and to every section without exception.
+
+NATAL CHIRON RETROGRADE RULE — MANDATORY: Each planet's retrograde status is fixed in the natal chart. Read the natal placement table to see which planets are marked retrograde (often shown with "R", "Rx", or "retrograde"). Specifically: if natal Chiron is marked retrograde in the natal table, you MUST refer to it as "Chiron retrograde" or "Chiron Rx" in every natal section that mentions it — never describe natal Chiron as direct in that case. The same rule applies to every other natal planet: never flip a natal retrograde planet to direct, and never invent a retrograde marker on a natal direct planet. Solar Return retrograde status is independent and is read only from the SR table when writing SR sections.
 
 PRONOUN VOICE — STRICTLY 2ND PERSON: Every reading addresses the subject directly as "you" / "your". NEVER use third-person pronouns ("they", "them", "their", "he", "she", "his", "her") to refer to the subject of the reading. This is the #1 source of customer-trust collapse. When you describe an aspect, write "Your Mars squares your Saturn — your drive runs into walls until you learn to push without burning out." NEVER write "Their drive runs into walls — they keep almost-getting the big thing." If a canned aspect interpretation comes to mind in third person, rewrite the pronouns BEFORE you emit it. The only acceptable third-person references are to actual third parties the user mentioned (their boss, their partner, their child) — never to the subject themselves.
 
@@ -5199,6 +5308,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // FIX 4 — TITLE CONTRACT: hardcode the canonical
+          // "Relationship Strategy Summary" title before the backfill
+          // searches for it. This prevents the backfill from missing the
+          // section when the AI returns a variant like "Summary" or
+          // "Strategy Summary".
+          enforceRelationshipSummaryTitle(parsedContent, emissionLog);
           // RELATIONSHIP BODY BACKFILL: if hygiene/prompt drift still leaves
           // Needs Profile / Modal Balance / Strategy Summary without prose
           // bodies, build them deterministically from the surviving bullets,
