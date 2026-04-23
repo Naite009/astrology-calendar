@@ -4935,73 +4935,199 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
     const MAX_RETRIES = 2;
     let response: Response | null = null;
     let lastError = "";
+    let content = "";
+    let finishReason = "";
+    // Cache telemetry — proves prompt caching is actually hitting in prod.
+    // cache_read = tokens served from cache (90% cheaper, near-zero latency).
+    // cache_creation = tokens written to cache on this call (1.25x cost).
+    let cacheReadTokens = 0;
+    let cacheCreationTokens = 0;
+    let regularInputTokens = 0;
+    let outputTokens = 0;
 
     const sanitizedMessages = messages.filter((m: any) => m.role !== "system");
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      if (Date.now() - processStartedAt > PROCESS_WALL_CLOCK_BUDGET_MS) {
-        await failAndStop("The reading took too long to generate. Please try again.");
-        return;
-      }
-
-      if (attempt > 0) {
-        await new Promise(r => setTimeout(r, 1500));
-        console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
-      }
-
+    // ────────────────────────────────────────────────────────────────────
+    // RELATIONSHIP BRANCH: 3-call architecture (natal-only / SR-only / overlay)
+    // ────────────────────────────────────────────────────────────────────
+    // Why split: monolithic single-call generation kept bleeding SR planet
+    // positions (Saturn in Pisces Rx, Neptune in Aries, Pluto in Aquarius,
+    // etc.) into natal prose because the model could see both charts at
+    // once. The Replit gate caught the bleed via placement_crosscheck_rewrite
+    // but was playing cleanup on errors that should never have been
+    // generated. We now physically isolate each call's chart context so the
+    // model literally cannot reference the wrong chart's data.
+    //
+    // Other question types still use the single-call path below — this
+    // refactor is scoped to relationship readings only (per user spec).
+    if (isRelationshipQuestion) {
       try {
-        response = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-6",
-            system: systemBlocks,
-            messages: sanitizedMessages,
-            temperature: 0.3,
-            max_tokens: 32000,
-            stream: true,
-          }),
+        // Re-derive pure natal / SR text blocks from sanitizedChartContext.
+        // These mirror the regexes in buildNatalGroundTruthBlock and become
+        // the per-call user message payload — Call A sees only natal,
+        // Call B sees only SR.
+        const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+        const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+        const nm = sanitizedChartContext.match(natalHeaderRe);
+        const sm = sanitizedChartContext.match(srHeaderRe);
+        const natalLines = nm
+          ? nm[1].split("\n").map((l: string) => l.trim()).filter((l: string) => l && /[A-Za-z]+:\s*\d+°/.test(l))
+          : [];
+        const srLines = sm
+          ? sm[1].split("\n").map((l: string) => l.trim()).filter((l: string) => l && /[A-Za-z]+:\s*\d+°/.test(l))
+          : [];
+
+        if (natalLines.length === 0) {
+          // Without a natal table we can't run the 3-call architecture
+          // correctly — fall through to the single-call branch.
+          console.warn(`[ask-astrology] 3-call: natal table not parseable from chartContext; falling back to single-call`);
+          throw new Error("FALLBACK_TO_SINGLE_CALL");
+        }
+
+        const natalChartBlock = natalLines.map((l: string) => `- ${l}`).join("\n");
+        const srChartBlock = srLines.length > 0
+          ? srLines.map((l: string) => `- ${l.replace(/^SR\s+/i, "")}`).join("\n")
+          : "(no Solar Return chart provided for this reading)";
+
+        // Build a SHARED chart-scoped rules block that the 3 calls all reuse.
+        // Critically, this OMITS the natal/SR placement tables (those move
+        // into the per-call user messages) so each call only sees the data
+        // it should. Lilith/Juno gates and SR-year mute remain because they
+        // apply uniformly to every section of every call.
+        const chartScopedRulesShared = [
+          lilithDataPresent
+            ? null
+            : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
+          junoDataPresent
+            ? null
+            : `ABSOLUTE RULE: Juno data is NOT present in this chart. Do NOT mention Juno anywhere — not in placement_table, not in narrative sections, not in relationship analysis, not in any bullet or sentence. Do NOT infer Juno from prior readings, other charts, house themes, or partial imports. This is a hard data constraint, not a suggestion.`,
+          srYearFromContext
+            ? `ABSOLUTE RULE — SOLAR RETURN REFERENCES: When referencing the Solar Return anywhere in your response — section titles, body text, timing references, or summary — just say "Solar Return" without any year number. Do NOT append years like "Solar Return 2026" or "Solar Return 2024–2025". Simply use "Solar Return" or "this Solar Return year". This is a hard data constraint.`
+            : null,
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+
+        // Resume support — read prior partial outputs from the job row so a
+        // retry after one failed call doesn't re-run the calls that succeeded.
+        const { data: jobRowForResume } = await svc
+          .from("ask_jobs")
+          .select("call_a_output,call_b_output,call_c_output,call_status")
+          .eq("id", jobId)
+          .maybeSingle();
+        const priorOutputs = jobRowForResume ? buildPriorOutputs(jobRowForResume as any) : {};
+        const priorCount = Object.keys(priorOutputs).length;
+        if (priorCount > 0) {
+          console.info(`[ask-astrology] 3-call: resuming with ${priorCount} prior call(s)`, Object.keys(priorOutputs));
+        }
+
+        const tcStarted = Date.now();
+        const tcResult = await runThreeCallRelationship({
+          jobId,
+          anthropicApiKey: ANTHROPIC_API_KEY,
+          masterSystemPrompt: SYSTEM_PROMPT,
+          chartScopedRulesShared,
+          natalChartBlock,
+          srChartBlock,
+          effectiveCurrentDate,
+          userQuestion: latestUserMessage,
+          priorOutputs,
+          updateJob,
         });
-      } catch (fetchErr: any) {
-        console.error(`Anthropic fetch failed on attempt ${attempt + 1}:`, fetchErr?.message);
-        lastError = String(fetchErr?.message || fetchErr);
-        if (attempt < MAX_RETRIES - 1) continue;
-        await failAndStop("Network error reaching the AI. Please try again.");
-        return;
-      }
+        const tcMs = Date.now() - tcStarted;
 
-      if (response.ok) break;
-
-      if (response.status === 429) {
-        await failAndStop("Rate limit exceeded, please try again later.");
-        return;
+        // Hand the merged JSON string off to the existing parse/hygiene
+        // pipeline below by setting `content` and `finishReason`. To every
+        // downstream stage this looks identical to a single-call response.
+        content = tcResult.mergedJsonString;
+        finishReason = "stop";
+        console.info(`[ask-astrology] 3-call complete in ${tcMs}ms (A=${tcResult.diagnostics.a.ok ? `${(tcResult.diagnostics.a as any).ms}ms` : "FAIL"} B=${tcResult.diagnostics.b.ok ? `${(tcResult.diagnostics.b as any).ms}ms` : "FAIL"} C=${tcResult.diagnostics.c.ok ? `${(tcResult.diagnostics.c as any).ms}ms` : "FAIL"})`);
+      } catch (tcErr: any) {
+        if (tcErr?.message === "FALLBACK_TO_SINGLE_CALL") {
+          // Natal table not parseable — fall through to single-call below.
+        } else {
+          // 3-call orchestrator failed terminally (after its own internal
+          // 2x backoff per call). Mark the job failed but keep any
+          // call_*_output rows intact so a manual retry can resume.
+          console.error(`[ask-astrology] 3-call failed:`, tcErr?.message || tcErr);
+          await failAndStop(`Reading generation failed: ${tcErr?.message || "unknown error"}. Please try again.`);
+          return;
+        }
       }
-      if (response.status === 402) {
-        await failAndStop("Payment required, please add AI credits.");
-        return;
-      }
-
-      if ([502, 503, 504].includes(response.status) && attempt < MAX_RETRIES - 1) {
-        lastError = await response.text();
-        console.warn(`Transient gateway error ${response.status}, will retry...`);
-        continue;
-      }
-
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
-      return;
     }
 
-    if (!response || !response.ok || !response.body) {
-      console.error("All retries exhausted. Last error:", lastError);
-      await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
-      return;
+    // ────────────────────────────────────────────────────────────────────
+    // SINGLE-CALL PATH — original behavior, untouched. Runs for every
+    // non-relationship question type, AND for relationship readings that
+    // fell through (e.g. natal table not parseable).
+    // ────────────────────────────────────────────────────────────────────
+    if (!content) {
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        if (Date.now() - processStartedAt > PROCESS_WALL_CLOCK_BUDGET_MS) {
+          await failAndStop("The reading took too long to generate. Please try again.");
+          return;
+        }
+
+        if (attempt > 0) {
+          await new Promise(r => setTimeout(r, 1500));
+          console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
+        }
+
+        try {
+          response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "x-api-key": ANTHROPIC_API_KEY,
+              "anthropic-version": "2023-06-01",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-6",
+              system: systemBlocks,
+              messages: sanitizedMessages,
+              temperature: 0.3,
+              max_tokens: 32000,
+              stream: true,
+            }),
+          });
+        } catch (fetchErr: any) {
+          console.error(`Anthropic fetch failed on attempt ${attempt + 1}:`, fetchErr?.message);
+          lastError = String(fetchErr?.message || fetchErr);
+          if (attempt < MAX_RETRIES - 1) continue;
+          await failAndStop("Network error reaching the AI. Please try again.");
+          return;
+        }
+
+        if (response.ok) break;
+
+        if (response.status === 429) {
+          await failAndStop("Rate limit exceeded, please try again later.");
+          return;
+        }
+        if (response.status === 402) {
+          await failAndStop("Payment required, please add AI credits.");
+          return;
+        }
+
+        if ([502, 503, 504].includes(response.status) && attempt < MAX_RETRIES - 1) {
+          lastError = await response.text();
+          console.warn(`Transient gateway error ${response.status}, will retry...`);
+          continue;
+        }
+
+        const errorText = await response.text();
+        console.error("AI gateway error:", response.status, errorText);
+        await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
+        return;
+      }
+
+      if (!response || !response.ok || !response.body) {
+        console.error("All retries exhausted. Last error:", lastError);
+        await failAndStop("AI service temporarily unavailable. Please try again in a moment.");
+        return;
+      }
     }
+
 
     // CONSUME ANTHROPIC STREAM into a single `content` string.
     // Background job: no client connection to keep alive — we just collect
