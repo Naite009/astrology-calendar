@@ -4600,7 +4600,8 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
 - Natal sections: reference ONLY the natal positions listed above.
 - Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
 - Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
-- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.`;
+- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.
+- VERIFICATION MANDATE: Every time you are about to name a planet's sign in a natal sentence, mentally re-check the NATAL GROUND TRUTH list above. If the sign you are about to write does not match the list, you are confusing the SR chart with the natal chart — stop and correct it before continuing the sentence. This check is non-negotiable and applies to Saturn, Jupiter, Uranus, Neptune, Pluto, and Chiron in particular, since those are the planets the model most often mis-copies between charts.`;
     };
     const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
 
