@@ -772,6 +772,24 @@ const rewriteSentencePronouns = (sentence: string): string => {
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
+  // INVERSE preposition agreement: when "you" IS the object of a
+  // preposition (singular antecedent like "part of you"), the verb must
+  // be 3rd-person-singular. Catch leakage like "this part of you are
+  // patient" and rewrite to "this part of you is patient". Only fires
+  // when the previous context ends with one of the preposition tokens
+  // — that is the exact case the forward guard skips.
+  s = s.replace(/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s+(you|You)\s+(are|were|have|don'?t|weren'?t|haven'?t)\b/gi,
+    (_match: string, prep: string, pron: string, verb: string) => {
+      const lower = verb.toLowerCase().replace("'", "'");
+      const map: Record<string, string> = {
+        are: "is", were: "was", have: "has",
+        "don't": "doesn't", "dont": "doesnt",
+        "weren't": "wasn't", "werent": "wasnt",
+        "haven't": "hasn't", "havent": "hasnt",
+      };
+      const replacement = map[lower] ?? verb;
+      return `${prep} ${pron} ${replacement}`;
+    });
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
