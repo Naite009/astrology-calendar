@@ -1688,6 +1688,15 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
   const keptSections: any[] = [];
   let droppedItems = 0;
   let droppedSections = 0;
+  // Labels that must NEVER be dropped — instead, backfill with a canonical
+  // fallback so the summary box is always complete. "Best Windows" was
+  // repeatedly being generated empty and dropped, leaving the user with no
+  // forward-timing field. The fallback string matches the prompt instruction
+  // so the rendered output stays consistent with what the model was told to
+  // write when no strong windows exist.
+  const SUMMARY_ITEM_BACKFILLS: Record<string, string> = {
+    "best windows": "No strong forward windows are active in the current period.",
+  };
   for (const section of parsedContent.sections) {
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
@@ -1699,11 +1708,38 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         const v = item[valueKey];
         // Keep falsy non-strings (0, false). Only drop true empties.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
+          const labelKey = typeof item.label === "string" ? item.label.trim().toLowerCase() : "";
+          const backfill = SUMMARY_ITEM_BACKFILLS[labelKey];
+          if (backfill) {
+            item[valueKey] = backfill;
+            log.push({
+              type: "empty_summary_item_backfilled",
+              detail: { section: section.title || "", label: item.label || "", backfill },
+            });
+            keptItems.push(item);
+            continue;
+          }
           droppedItems++;
           log.push({ type: "empty_summary_item_dropped", detail: { section: section.title || "", label: item.label || "" } });
           continue;
         }
         keptItems.push(item);
+      }
+      // If "Best Windows" wasn't in items at all, add it with the canonical
+      // fallback so it's always present as a labeled field.
+      const hasBestWindows = keptItems.some(
+        (it) => it && typeof it === "object" && typeof it.label === "string"
+          && it.label.trim().toLowerCase() === "best windows"
+      );
+      if (!hasBestWindows) {
+        keptItems.push({
+          label: "Best Windows",
+          value: SUMMARY_ITEM_BACKFILLS["best windows"],
+        });
+        log.push({
+          type: "best_windows_item_inserted",
+          detail: { section: section.title || "", reason: "missing_from_items" },
+        });
       }
       section.items = keptItems;
     }
