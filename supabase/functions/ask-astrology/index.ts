@@ -5130,77 +5130,67 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
 
 
     // CONSUME ANTHROPIC STREAM into a single `content` string.
+    // Skipped entirely on the 3-call relationship path (content already set).
     // Background job: no client connection to keep alive — we just collect
     // the full text and write the parsed result to the ask_jobs row.
-    const anthropicResponse = response;
-    let content = "";
-    let finishReason = "";
-    // Cache telemetry — proves prompt caching is actually hitting in prod.
-    // cache_read = tokens served from cache (90% cheaper, near-zero latency).
-    // cache_creation = tokens written to cache on this call (1.25x cost).
-    let cacheReadTokens = 0;
-    let cacheCreationTokens = 0;
-    let regularInputTokens = 0;
-    let outputTokens = 0;
     const aiCallStartedAt = Date.now();
 
-    try {
-      const reader = anthropicResponse.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+    if (response && response.body && !content) {
+      const anthropicResponse = response;
+      try {
+        const reader = anthropicResponse.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
 
-        const events = buffer.split("\n\n");
-        buffer = events.pop() || "";
+          const events = buffer.split("\n\n");
+          buffer = events.pop() || "";
 
-        for (const event of events) {
-          const dataLine = event.split("\n").find(l => l.startsWith("data: "));
-          if (!dataLine) continue;
-          const payload = dataLine.slice(6).trim();
-          if (!payload || payload === "[DONE]") continue;
-          try {
-            const evt = JSON.parse(payload);
-            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
-              content += evt.delta.text || "";
-            } else if (evt.type === "message_start") {
-              // Initial usage block: includes cache read/creation counts
-              const usage = evt.message?.usage;
-              if (usage) {
-                cacheReadTokens = usage.cache_read_input_tokens ?? 0;
-                cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
-                regularInputTokens = usage.input_tokens ?? 0;
+          for (const event of events) {
+            const dataLine = event.split("\n").find(l => l.startsWith("data: "));
+            if (!dataLine) continue;
+            const payload = dataLine.slice(6).trim();
+            if (!payload || payload === "[DONE]") continue;
+            try {
+              const evt = JSON.parse(payload);
+              if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+                content += evt.delta.text || "";
+              } else if (evt.type === "message_start") {
+                const usage = evt.message?.usage;
+                if (usage) {
+                  cacheReadTokens = usage.cache_read_input_tokens ?? 0;
+                  cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
+                  regularInputTokens = usage.input_tokens ?? 0;
+                }
+              } else if (evt.type === "message_delta") {
+                if (evt.delta?.stop_reason) {
+                  finishReason = evt.delta.stop_reason;
+                }
+                if (evt.usage?.output_tokens) {
+                  outputTokens = evt.usage.output_tokens;
+                }
+              } else if (evt.type === "error") {
+                console.error("Anthropic stream error event:", evt);
+                throw new Error(evt.error?.message || "Stream error");
               }
-            } else if (evt.type === "message_delta") {
-              if (evt.delta?.stop_reason) {
-                finishReason = evt.delta.stop_reason;
-              }
-              // Final usage update — output tokens land here
-              if (evt.usage?.output_tokens) {
-                outputTokens = evt.usage.output_tokens;
-              }
-            } else if (evt.type === "error") {
-              console.error("Anthropic stream error event:", evt);
-              throw new Error(evt.error?.message || "Stream error");
+            } catch (parseEvtErr) {
+              console.warn("[ask-astrology] Skipped malformed stream event:", parseEvtErr instanceof Error ? parseEvtErr.message : parseEvtErr);
             }
-          } catch (parseEvtErr) {
-            // Log once per stream that we hit a malformed event so future
-            // Anthropic shape changes don't fail silently.
-            console.warn("[ask-astrology] Skipped malformed stream event:", parseEvtErr instanceof Error ? parseEvtErr.message : parseEvtErr);
           }
         }
+      } catch (streamErr: any) {
+        console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
+        await updateJob({
+          status: "failed",
+          error_message: "The reading was interrupted. Please try again.",
+          completed_at: new Date().toISOString(),
+        });
+        return;
       }
-    } catch (streamErr: any) {
-      console.error("ask-astrology error: stream consumption failed:", streamErr?.message);
-      await updateJob({
-        status: "failed",
-        error_message: "The reading was interrupted. Please try again.",
-        completed_at: new Date().toISOString(),
-      });
-      return;
     }
 
     // Log cache + token telemetry. cache_hit_rate near 0% on first call
