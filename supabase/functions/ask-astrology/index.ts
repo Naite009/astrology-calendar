@@ -2163,20 +2163,31 @@ const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
     return next;
   };
 
-  const visit = (node: any) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+  // Section-aware visit: the natal truth map applies ONLY to NATAL prose.
+  // SR (Solar Return) sections legitimately reference different sign /
+  // house / retrograde data for the same planet, so we skip them entirely
+  // to prevent natal facts from overwriting accurate SR statements.
+  const isSRContext = (sectionLike: any): boolean => {
+    if (!sectionLike || typeof sectionLike !== "object") return false;
+    const t = String(sectionLike?.title || sectionLike?.label || "").toLowerCase();
+    return t.includes("solar return") || /\bsr\b/.test(t) || t.includes("sr ");
+  };
+  const visit = (node: any, srScope: boolean) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, srScope); return; }
     if (!node || typeof node !== "object") return;
+    const nextScope = srScope || isSRContext(node);
+    if (nextScope) return; // do not rewrite SR-context strings against the natal truth map
     for (const [key, val] of Object.entries(node)) {
       if (HYGIENE_SAFE_KEYS.has(key)) continue;
       if (typeof val === "string") {
         const fixed = fixString(val);
         if (fixed !== val) (node as any)[key] = fixed;
       } else {
-        visit(val);
+        visit(val, nextScope);
       }
     }
   };
-  visit(parsedContent);
+  visit(parsedContent, false);
 
   for (const [planet, slot] of flagsByPlanet.entries()) {
     log.push({ type: "placement_crosscheck_rewrite", detail: { planet, fixed: slot.fixed, examples: slot.flagged } });
