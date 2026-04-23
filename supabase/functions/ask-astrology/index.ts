@@ -1758,6 +1758,18 @@ const SIGN_OPPOSITE: Record<string, string> = {
   Leo: "Aquarius", Aquarius: "Leo",
   Virgo: "Pisces", Pisces: "Virgo",
 };
+// Traditional rulers used to verify "Nth house cusp is X, ruled by Y" prose.
+const TRADITIONAL_RULER_BY_SIGN: Record<string, string> = {
+  Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
+  Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
+  Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Saturn", Pisces: "Jupiter",
+};
+const ORDINAL_WORDS_RE = "(?:1st|first|2nd|second|3rd|third|4th|fourth|5th|fifth|6th|sixth|7th|seventh|8th|eighth|9th|ninth|10th|tenth|11th|eleventh|12th|twelfth)";
+const ORDINAL_TO_HOUSE_NUM: Record<string, number> = {
+  "1st":1,"first":1,"2nd":2,"second":2,"3rd":3,"third":3,"4th":4,"fourth":4,
+  "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
+  "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
+};
 const fixDescendantCuspMentionsInProse = (
   parsedContent: any,
   chartContext: string,
@@ -1772,6 +1784,17 @@ const fixDescendantCuspMentionsInProse = (
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
   if (!ascSign || !dscSign || ascSign === dscSign) return;
+
+  // Build a per-house cusp sign + traditional ruler lookup.
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) {
+    if (c?.house && c?.sign) cuspSignByHouse[c.house] = c.sign;
+  }
+  const rulerForHouse = (h: number): string | undefined => {
+    const sign = cuspSignByHouse[h];
+    return sign ? TRADITIONAL_RULER_BY_SIGN[sign] : undefined;
+  };
+
   // Match: "7th house cusp [is/in/at/=] {ascSign}" — case-insensitive.
   const wrongSeventh = new RegExp(
     `\\b(7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp)?\\s*(?:is|in|at|sits in|=|,|—)?\\s*)\\b${ascSign}\\b`,
@@ -1782,7 +1805,19 @@ const fixDescendantCuspMentionsInProse = (
     `\\b(Descendant\\s*(?:is|in|at|=|,|—)?\\s*)\\b${ascSign}\\b`,
     "gi",
   );
+
+  // Match: "<ordinal> house cusp is <SIGN>, ruled by <PLANET>" so we can
+  // also correct a wrong ruler claim like "7th house cusp is Aries, ruled
+  // by the Sun" → "...ruled by Mars". Captures: 1=ordinal 2=sign 3=ruler.
+  const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const houseRulerRe = new RegExp(
+    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
+  let rulerRewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
@@ -1799,11 +1834,40 @@ const fixDescendantCuspMentionsInProse = (
         let next = val;
         next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
         next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+        // Cross-check "<ordinal> house cusp is <SIGN>, ruled by <RULER>"
+        // against the deterministic cusp signs and traditional rulers.
+        next = next.replace(houseRulerRe, (full, ord, claimedSign, mid, claimedRuler) => {
+          const houseNum = ORDINAL_TO_HOUSE_NUM[String(ord).toLowerCase()];
+          if (!houseNum) return full;
+          const correctSign = cuspSignByHouse[houseNum];
+          const correctRuler = rulerForHouse(houseNum);
+          if (!correctSign || !correctRuler) return full;
+          let fixedSign = claimedSign;
+          let fixedRuler = claimedRuler;
+          let changed = false;
+          if (String(claimedSign).toLowerCase() !== correctSign.toLowerCase()) {
+            fixedSign = correctSign;
+            changed = true;
+          }
+          if (String(claimedRuler).toLowerCase() !== correctRuler.toLowerCase()) {
+            fixedRuler = correctRuler;
+            changed = true;
+          }
+          if (!changed) return full;
+          rulerRewrites++;
+          return full
+            .replace(new RegExp(`\\b${claimedSign}\\b`), fixedSign)
+            .replace(new RegExp(`\\b${claimedRuler}\\b`), fixedRuler);
+        });
         if (next !== val) {
           rewrites++;
           if (examples.length < 5) {
-            const idx = val.search(wrongSeventh) >= 0 ? val.search(wrongSeventh) : val.search(wrongDescendant);
-            examples.push(val.slice(Math.max(0, idx - 20), idx + 80));
+            const idx = val.search(wrongSeventh) >= 0
+              ? val.search(wrongSeventh)
+              : val.search(wrongDescendant) >= 0
+                ? val.search(wrongDescendant)
+                : Math.max(0, val.search(houseRulerRe));
+            examples.push(val.slice(Math.max(0, idx - 20), idx + 120));
           }
           (node as any)[key] = next;
         }
@@ -1816,10 +1880,10 @@ const fixDescendantCuspMentionsInProse = (
   if (rewrites > 0) {
     log.push({
       type: "descendant_cusp_sign_corrected_in_prose",
-      detail: { rewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
+      detail: { rewrites, ruler_rewrites: rulerRewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
     });
-    console.info("[ask-astrology] descendant cusp sign corrected in prose", {
-      rewrites, ascSign, dscSign,
+    console.info("[ask-astrology] descendant cusp / ruler claims corrected in prose", {
+      rewrites, ruler_rewrites: rulerRewrites, ascSign, dscSign,
     });
   }
 };
