@@ -4584,13 +4584,7 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
       .filter(Boolean)
       .join("\n\n");
 
-    const systemBlocks: Array<Record<string, any>> = [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ];
+    const systemBlocks: Array<Record<string, any>> = [];
     if (chartScopedRules) {
       systemBlocks.push({
         type: "text",
@@ -4598,6 +4592,11 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
         cache_control: { type: "ephemeral" },
       });
     }
+    systemBlocks.push({
+      type: "text",
+      text: SYSTEM_PROMPT,
+      cache_control: { type: "ephemeral" },
+    });
     if (perQuestionTail) {
       systemBlocks.push({
         type: "text",
