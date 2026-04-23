@@ -506,30 +506,33 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // in, not a count list. We name lived experience first, the count
       // is supportive context, never the headline.
       // ─────────────────────────────────────────────────────────────────
+      // SECOND-PERSON PROSE LIBRARY — every template addresses the reader
+      // as "you" / "your" so the deterministic backfill never reintroduces
+      // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
-        Fire: "lives forward — they think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "lives in the body and the calendar — they trust what they can see, build, and repeat, and they relax once the practical side is handled",
-        Air: "lives in the head — they process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
-        Water: "lives in feelings — they pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
+        Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
+        Earth: "live in your body and your calendar — you trust what you can see, build, and repeat, and you relax once the practical side is handled",
+        Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
+        Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
       const ELEMENT_WEAK: Record<string, string> = {
         Fire: "Fire is quiet here, so initiative often waits for someone else to spark it — momentum has to be chosen, not assumed",
-        Earth: "Earth is light, so structure, money rhythms, and bodily care are skills they have to consciously build instead of defaulting to",
-        Air: "Air is light, so they may carry feelings or gut sense for a long time before putting them into words — talking it out is the growth edge",
-        Water: "Water is light, so they can underestimate how much an interaction actually affected them and need to learn to name feelings before they leak out",
+        Earth: "Earth is light, so structure, money rhythms, and bodily care are skills you have to consciously build instead of defaulting to",
+        Air: "Air is light, so you may carry feelings or gut sense for a long time before putting them into words — talking it out is the growth edge",
+        Water: "Water is light, so you can underestimate how much an interaction actually affected you and need to learn to name feelings before they leak out",
       };
       const MODALITY_PROSE: Record<string, { lead: string; weak: string }> = {
         Cardinal: {
-          lead: "starts things — they get bored maintaining what is already running and feel most alive when something new is being launched",
-          weak: "without much Cardinal, they rarely initiate alone and tend to react to what others put in front of them",
+          lead: "starts things — you get bored maintaining what is already running and feel most alive when something new is being launched",
+          weak: "without much Cardinal, you rarely initiate alone and tend to react to what others put in front of you",
         },
         Fixed: {
-          lead: "holds the line — once they commit, they stay, and they need a real reason (not pressure) before they will change course",
-          weak: "without much Fixed, follow-through requires structure or accountability they set up on purpose",
+          lead: "holds the line — once you commit, you stay, and you need a real reason (not pressure) before you will change course",
+          weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "adapts — they think in possibilities, change plans easily, and get restless inside rigid systems",
-          weak: "without much Mutable, pivoting feels harder than it looks; they prefer one path and one plan",
+          lead: "adapts — you think in possibilities, change plans easily, and get restless inside rigid systems",
+          weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
       // POLARITY_PROSE describes the SURFACE expression only. Wording is
@@ -538,12 +541,12 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // from 12th-house emphasis, a private Moon, Pisces stelliums, etc.
       // Never write the polarity line as an absolute personality claim.
       const POLARITY_PROSE: Record<string, string> = {
-        Yang: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Active: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Masculine: "on the surface, energy tends to move outward — they assert, initiate, and often process by doing, even when their inner life runs much quieter than that suggests",
-        Yin: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
-        Receptive: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
-        Feminine: "on the surface, energy tends to move inward — they receive first, reflect, and act once they have felt the situation, even when their outer life looks more active than that suggests",
+        Yang: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Active: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Masculine: "on the surface, your energy tends to move outward — you assert, initiate, and often process by doing, even when your inner life runs much quieter than that suggests",
+        Yin: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
+        Receptive: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
+        Feminine: "on the surface, your energy tends to move inward — you receive first, reflect, and act once you have felt the situation, even when your outer life looks more active than that suggests",
       };
 
       const sentences: string[] = [];
@@ -555,14 +558,14 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       if (elementsAll.length > 0) {
         const dominant = elementsAll[0];
         const second = elementsAll[1];
-        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how they meet the world";
-        let elementSentence = `This person ${lead}`;
+        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
+        let elementSentence = `You ${lead}`;
         if (second && SECOND_ELEMENT_PAIR[second.name]) {
           const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
           if (secondLead) {
             // Trim the secondary description so it reads as a balance, not a duplicate.
             const trimmed = secondLead.split("—")[0].trim();
-            elementSentence += `, with a strong secondary pull that also ${trimmed}`;
+            elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
           }
         }
         elementSentence += ".";
@@ -585,7 +588,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       if (modalitiesAll.length > 0) {
         const dominant = modalitiesAll[0];
         const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
-        sentences.push(`Their pace ${lead}.`);
+        sentences.push(`Your pace ${lead}.`);
         const presentMods = new Set(modalitiesAll.map((i) => i.name));
         const ALL_MODS = ["Cardinal", "Fixed", "Mutable"];
         const missingMod = ALL_MODS.find((m) => !presentMods.has(m));
@@ -769,6 +772,24 @@ const rewriteSentencePronouns = (sentence: string): string => {
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
+  // INVERSE preposition agreement: when "you" IS the object of a
+  // preposition (singular antecedent like "part of you"), the verb must
+  // be 3rd-person-singular. Catch leakage like "this part of you are
+  // patient" and rewrite to "this part of you is patient". Only fires
+  // when the previous context ends with one of the preposition tokens
+  // — that is the exact case the forward guard skips.
+  s = s.replace(/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s+(you|You)\s+(are|were|have|don'?t|weren'?t|haven'?t)\b/gi,
+    (_match: string, prep: string, pron: string, verb: string) => {
+      const lower = verb.toLowerCase().replace("'", "'");
+      const map: Record<string, string> = {
+        are: "is", were: "was", have: "has",
+        "don't": "doesn't", "dont": "doesnt",
+        "weren't": "wasn't", "werent": "wasnt",
+        "haven't": "hasn't", "havent": "hasnt",
+      };
+      const replacement = map[lower] ?? verb;
+      return `${prep} ${pron} ${replacement}`;
+    });
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
@@ -1993,41 +2014,70 @@ const ensureSentence = (text: string): string => {
   return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
 };
 
-// Hardcode the canonical title for the strategy summary section. The AI
-// occasionally returns variants like "Summary", "Strategy Summary", or
-// "Relationship Strategy". The downstream renderer + cleanup logic match
-// on the EXACT canonical string "Relationship Strategy Summary", so we
-// force-rename any close variant in relationship readings before the
-// backfill runs. This is Fix 4 in the chart-reference / pronoun /
-// title-contract patch set.
-const RELATIONSHIP_SUMMARY_TITLE_VARIANTS = [
+// Hardcode canonical summary_box titles per question_type. The AI sometimes
+// returns variants like "Summary", "Strategy Summary", or domain-specific
+// shortenings; downstream renderers + cleanup logic match the exact
+// canonical title, so we force-rename any close variant before the body
+// backfill runs. Universal across every reading type (Fix 4).
+const SUMMARY_TITLE_BY_QUESTION_TYPE: Record<string, string> = {
+  relationship: "Relationship Strategy Summary",
+  relocation: "Location Strategy Summary",
+  location: "Location Strategy Summary",
+  career: "Career Strategy Summary",
+  money: "Money Strategy Summary",
+  health: "Health Strategy Summary",
+  spiritual: "Spiritual Strategy Summary",
+  timing: "Timing Strategy Summary",
+  general: "Strategy Summary",
+};
+const SUMMARY_TITLE_GENERIC_VARIANTS = new Set([
   "summary",
   "strategy summary",
-  "relationship strategy",
-  "relationship summary",
-  "your relationship strategy",
   "your strategy summary",
-];
+  "strategy",
+  "the strategy",
+  "the summary",
+]);
+const SUMMARY_TITLE_DOMAIN_VARIANTS: Record<string, string[]> = {
+  relationship: ["relationship strategy", "relationship summary", "your relationship strategy"],
+  relocation: ["location strategy", "location summary", "relocation strategy", "relocation summary", "your location strategy"],
+  location: ["location strategy", "location summary", "relocation strategy", "relocation summary", "your location strategy"],
+  career: ["career strategy", "career summary", "your career strategy", "work strategy", "work summary"],
+  money: ["money strategy", "money summary", "financial strategy", "financial summary", "your money strategy"],
+  health: ["health strategy", "health summary", "your health strategy", "wellness strategy", "wellness summary"],
+  spiritual: ["spiritual strategy", "spiritual summary", "your spiritual strategy"],
+  timing: ["timing strategy", "timing summary", "your timing strategy"],
+  general: [],
+};
 const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const qt = String(parsedContent?.question_type || "").toLowerCase();
-  if (qt && qt !== "relationship") return;
+  const canonical = SUMMARY_TITLE_BY_QUESTION_TYPE[qt] || SUMMARY_TITLE_BY_QUESTION_TYPE.general;
+  if (!canonical) return;
+
+  const acceptableLowers = new Set<string>(SUMMARY_TITLE_GENERIC_VARIANTS);
+  const domainVariants = SUMMARY_TITLE_DOMAIN_VARIANTS[qt] || [];
+  for (const variant of domainVariants) acceptableLowers.add(variant);
+
   let renamed = 0;
   const renames: string[] = [];
   for (const section of parsedContent.sections) {
     if (!section || section?.type !== "summary_box") continue;
     const currentTitle = String(section.title || "").trim();
-    if (currentTitle === "Relationship Strategy Summary") continue;
+    if (currentTitle === canonical) continue;
     const lower = currentTitle.toLowerCase();
-    if (RELATIONSHIP_SUMMARY_TITLE_VARIANTS.includes(lower)) {
-      section.title = "Relationship Strategy Summary";
+    // Always normalize empty / generic-summary titles. For known domain
+    // variants of the SAME question_type, also normalize. We do NOT touch
+    // titles that are clearly a different domain (defensive).
+    if (!currentTitle || acceptableLowers.has(lower)) {
+      section.title = canonical;
       renamed++;
-      if (renames.length < 5) renames.push(`${currentTitle} → Relationship Strategy Summary`);
+      if (renames.length < 5) renames.push(`${currentTitle || "(empty)"} → ${canonical}`);
     }
   }
   if (renamed > 0) {
-    log.push({ type: "summary_box_title_hardcoded", detail: { renamed, renames } });
-    console.info("[ask-astrology] summary_box title hardcoded", { renamed, renames });
+    log.push({ type: "summary_box_title_hardcoded", detail: { question_type: qt, renamed, renames } });
+    console.info("[ask-astrology] summary_box title hardcoded", { question_type: qt, renamed, renames });
   }
 };
 
@@ -4441,7 +4491,49 @@ SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When check
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
+    // FIX 1 — DYNAMIC NATAL GROUND TRUTH BLOCK
+    // Extract the natal placement rows from sanitizedChartContext and re-emit
+    // them at the top of the system prompt as an explicit "fixed constants"
+    // table the model must check before writing any natal sentence. This
+    // applies to EVERY question_type and stops the SR/natal sign-bleed at
+    // the source instead of relying on post-generation cross-checks.
+    const buildNatalGroundTruthBlock = (ctx: string): string | null => {
+      if (!ctx) return null;
+      // Match the NATAL Planetary Positions block emitted by the chart
+      // builder. We accept either "NATAL Planetary Positions:" or the
+      // legacy "Planetary Positions:" header.
+      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      const natalMatch = ctx.match(natalHeaderRe);
+      if (!natalMatch) return null;
+      const lines = natalMatch[1]
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
+      if (lines.length === 0) return null;
+      const retroLines = lines.filter((l) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l));
+      const placementList = lines.map((l) => `- ${l}`).join("\n");
+      const retroList = retroLines.length > 0
+        ? retroLines.map((l) => {
+            const planetMatch = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
+            return planetMatch ? planetMatch[1].trim() : l;
+          }).join(", ")
+        : "(none — no natal planets are retrograde in this chart)";
+      return `NATAL GROUND TRUTH — these values are fixed constants for this chart. When writing any NATAL interpretation in any section, these are the only correct positions. Do NOT substitute Solar Return positions here under any circumstances:
+
+${placementList}
+
+Natal retrograde planets in this chart: ${retroList}. Always preserve their retrograde status in natal prose. NEVER describe a natal retrograde planet as direct, and NEVER add a retrograde marker to a natal direct planet.
+
+CHART SEPARATION RULES — MANDATORY (universal, every reading type):
+- Natal sections: reference ONLY the natal positions listed above.
+- Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
+- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
+- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.`;
+    };
+    const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
+
     const chartScopedRules = [
+      natalGroundTruthBlock,
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
@@ -5320,6 +5412,14 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // balance_interpretation, and summary items so the payload cannot
           // ship with the same 3 empty fields again.
           backfillRelationshipSectionBodies(parsedContent, emissionLog);
+          // FINAL PRONOUN SAFETY NET (Fix 3): every backfill / structural
+          // pass above can introduce new prose. Re-run the pronoun rewriter
+          // so any "their"/"they"/"them" that slipped in via templates,
+          // count rewrites, or balance backfills gets normalized to "your"/
+          // "you" before the payload ships. Also covers balance_interpretation
+          // which is generated by enforceNonZeroCoverage earlier in the
+          // pipeline and is NOT in PRONOUN_REWRITE_SAFE_KEYS.
+          rewriteThirdPersonPronouns(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
           // ALWAYS attach _validation_log (even when empty) so downstream
