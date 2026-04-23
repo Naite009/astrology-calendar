@@ -5199,6 +5199,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // RELATIONSHIP BODY BACKFILL: if hygiene/prompt drift still leaves
+          // Needs Profile / Modal Balance / Strategy Summary without prose
+          // bodies, build them deterministically from the surviving bullets,
+          // balance_interpretation, and summary items so the payload cannot
+          // ship with the same 3 empty fields again.
+          backfillRelationshipSectionBodies(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
           // ALWAYS attach _validation_log (even when empty) so downstream
