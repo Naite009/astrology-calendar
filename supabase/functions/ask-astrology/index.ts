@@ -1806,15 +1806,57 @@ const fixDescendantCuspMentionsInProse = (
     "gi",
   );
 
-  // Match: "<ordinal> house cusp is <SIGN>, ruled by <PLANET>" so we can
-  // also correct a wrong ruler claim like "7th house cusp is Aries, ruled
-  // by the Sun" → "...ruled by Mars". Captures: 1=ordinal 2=sign 3=ruler.
+  // Match house-ruler phrasings so we can correct BOTH the cusp sign and the
+  // ruler dynamically from the deterministic House Cusps block. This covers:
+  // - "7th house cusp is Aries, ruled by Venus"
+  // - "the ruler of that 7th house is Venus"
+  // - "7th house ruler is Venus"
+  // - "7th house cusp Aries, ruler Venus in Sagittarius"
   const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
   const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
   const houseRulerRe = new RegExp(
     `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
     "gi",
   );
+  const houseRulerOfRe = new RegExp(
+    `\\b(?:the\\s+)?ruler\\s+of\\s+(?:the\\s+|that\\s+|your\\s+)?(${ORDINAL_WORDS_RE})\\s+house(?:\\s+cusp)?\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+  const directHouseRulerRe = new RegExp(
+    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+  const houseRulerLabelRe = new RegExp(
+    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruler\\s+(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+
+  const fixHouseRulerClaim = (
+    full: string,
+    ordRaw: string,
+    claimedRuler: string,
+    claimedSign?: string,
+  ) => {
+    const houseNum = ORDINAL_TO_HOUSE_NUM[String(ordRaw).toLowerCase()];
+    if (!houseNum) return full;
+    const correctSign = cuspSignByHouse[houseNum];
+    const correctRuler = rulerForHouse(houseNum);
+    if (!correctSign || !correctRuler) return full;
+
+    let nextFull = full;
+    let changed = false;
+
+    if (claimedSign && String(claimedSign).toLowerCase() !== correctSign.toLowerCase()) {
+      nextFull = nextFull.replace(new RegExp(`\\b${claimedSign}\\b`), correctSign);
+      changed = true;
+    }
+    if (String(claimedRuler).toLowerCase() !== correctRuler.toLowerCase()) {
+      nextFull = nextFull.replace(new RegExp(`\\b${claimedRuler}\\b`), correctRuler);
+      changed = true;
+    }
+    if (changed) rulerRewrites++;
+    return nextFull;
+  };
 
   let rewrites = 0;
   let rulerRewrites = 0;
@@ -1834,39 +1876,29 @@ const fixDescendantCuspMentionsInProse = (
         let next = val;
         next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
         next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
-        // Cross-check "<ordinal> house cusp is <SIGN>, ruled by <RULER>"
-        // against the deterministic cusp signs and traditional rulers.
-        next = next.replace(houseRulerRe, (full, ord, claimedSign, mid, claimedRuler) => {
-          const houseNum = ORDINAL_TO_HOUSE_NUM[String(ord).toLowerCase()];
-          if (!houseNum) return full;
-          const correctSign = cuspSignByHouse[houseNum];
-          const correctRuler = rulerForHouse(houseNum);
-          if (!correctSign || !correctRuler) return full;
-          let fixedSign = claimedSign;
-          let fixedRuler = claimedRuler;
-          let changed = false;
-          if (String(claimedSign).toLowerCase() !== correctSign.toLowerCase()) {
-            fixedSign = correctSign;
-            changed = true;
-          }
-          if (String(claimedRuler).toLowerCase() !== correctRuler.toLowerCase()) {
-            fixedRuler = correctRuler;
-            changed = true;
-          }
-          if (!changed) return full;
-          rulerRewrites++;
-          return full
-            .replace(new RegExp(`\\b${claimedSign}\\b`), fixedSign)
-            .replace(new RegExp(`\\b${claimedRuler}\\b`), fixedRuler);
-        });
+        next = next.replace(houseRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+        );
+        next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler),
+        );
+        next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler),
+        );
+        next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+        );
         if (next !== val) {
           rewrites++;
           if (examples.length < 5) {
+            const rulerIdx = [houseRulerRe, houseRulerOfRe, directHouseRulerRe, houseRulerLabelRe]
+              .map((re) => val.search(re))
+              .find((idx) => idx >= 0) ?? -1;
             const idx = val.search(wrongSeventh) >= 0
               ? val.search(wrongSeventh)
               : val.search(wrongDescendant) >= 0
                 ? val.search(wrongDescendant)
-                : Math.max(0, val.search(houseRulerRe));
+                : Math.max(0, rulerIdx);
             examples.push(val.slice(Math.max(0, idx - 20), idx + 120));
           }
           (node as any)[key] = next;
