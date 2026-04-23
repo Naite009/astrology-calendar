@@ -1758,6 +1758,18 @@ const SIGN_OPPOSITE: Record<string, string> = {
   Leo: "Aquarius", Aquarius: "Leo",
   Virgo: "Pisces", Pisces: "Virgo",
 };
+// Traditional rulers used to verify "Nth house cusp is X, ruled by Y" prose.
+const TRADITIONAL_RULER_BY_SIGN: Record<string, string> = {
+  Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
+  Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
+  Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Saturn", Pisces: "Jupiter",
+};
+const ORDINAL_WORDS_RE = "(?:1st|first|2nd|second|3rd|third|4th|fourth|5th|fifth|6th|sixth|7th|seventh|8th|eighth|9th|ninth|10th|tenth|11th|eleventh|12th|twelfth)";
+const ORDINAL_TO_HOUSE_NUM: Record<string, number> = {
+  "1st":1,"first":1,"2nd":2,"second":2,"3rd":3,"third":3,"4th":4,"fourth":4,
+  "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
+  "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
+};
 const fixDescendantCuspMentionsInProse = (
   parsedContent: any,
   chartContext: string,
@@ -1772,6 +1784,17 @@ const fixDescendantCuspMentionsInProse = (
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
   if (!ascSign || !dscSign || ascSign === dscSign) return;
+
+  // Build a per-house cusp sign + traditional ruler lookup.
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) {
+    if (c?.house && c?.sign) cuspSignByHouse[c.house] = c.sign;
+  }
+  const rulerForHouse = (h: number): string | undefined => {
+    const sign = cuspSignByHouse[h];
+    return sign ? TRADITIONAL_RULER_BY_SIGN[sign] : undefined;
+  };
+
   // Match: "7th house cusp [is/in/at/=] {ascSign}" — case-insensitive.
   const wrongSeventh = new RegExp(
     `\\b(7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp)?\\s*(?:is|in|at|sits in|=|,|—)?\\s*)\\b${ascSign}\\b`,
@@ -1782,7 +1805,19 @@ const fixDescendantCuspMentionsInProse = (
     `\\b(Descendant\\s*(?:is|in|at|=|,|—)?\\s*)\\b${ascSign}\\b`,
     "gi",
   );
+
+  // Match: "<ordinal> house cusp is <SIGN>, ruled by <PLANET>" so we can
+  // also correct a wrong ruler claim like "7th house cusp is Aries, ruled
+  // by the Sun" → "...ruled by Mars". Captures: 1=ordinal 2=sign 3=ruler.
+  const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const houseRulerRe = new RegExp(
+    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
+  let rulerRewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
@@ -1799,11 +1834,40 @@ const fixDescendantCuspMentionsInProse = (
         let next = val;
         next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
         next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+        // Cross-check "<ordinal> house cusp is <SIGN>, ruled by <RULER>"
+        // against the deterministic cusp signs and traditional rulers.
+        next = next.replace(houseRulerRe, (full, ord, claimedSign, mid, claimedRuler) => {
+          const houseNum = ORDINAL_TO_HOUSE_NUM[String(ord).toLowerCase()];
+          if (!houseNum) return full;
+          const correctSign = cuspSignByHouse[houseNum];
+          const correctRuler = rulerForHouse(houseNum);
+          if (!correctSign || !correctRuler) return full;
+          let fixedSign = claimedSign;
+          let fixedRuler = claimedRuler;
+          let changed = false;
+          if (String(claimedSign).toLowerCase() !== correctSign.toLowerCase()) {
+            fixedSign = correctSign;
+            changed = true;
+          }
+          if (String(claimedRuler).toLowerCase() !== correctRuler.toLowerCase()) {
+            fixedRuler = correctRuler;
+            changed = true;
+          }
+          if (!changed) return full;
+          rulerRewrites++;
+          return full
+            .replace(new RegExp(`\\b${claimedSign}\\b`), fixedSign)
+            .replace(new RegExp(`\\b${claimedRuler}\\b`), fixedRuler);
+        });
         if (next !== val) {
           rewrites++;
           if (examples.length < 5) {
-            const idx = val.search(wrongSeventh) >= 0 ? val.search(wrongSeventh) : val.search(wrongDescendant);
-            examples.push(val.slice(Math.max(0, idx - 20), idx + 80));
+            const idx = val.search(wrongSeventh) >= 0
+              ? val.search(wrongSeventh)
+              : val.search(wrongDescendant) >= 0
+                ? val.search(wrongDescendant)
+                : Math.max(0, val.search(houseRulerRe));
+            examples.push(val.slice(Math.max(0, idx - 20), idx + 120));
           }
           (node as any)[key] = next;
         }
@@ -1816,10 +1880,10 @@ const fixDescendantCuspMentionsInProse = (
   if (rewrites > 0) {
     log.push({
       type: "descendant_cusp_sign_corrected_in_prose",
-      detail: { rewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
+      detail: { rewrites, ruler_rewrites: rulerRewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
     });
-    console.info("[ask-astrology] descendant cusp sign corrected in prose", {
-      rewrites, ascSign, dscSign,
+    console.info("[ask-astrology] descendant cusp / ruler claims corrected in prose", {
+      rewrites, ruler_rewrites: rulerRewrites, ascSign, dscSign,
     });
   }
 };
@@ -2625,17 +2689,62 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
       .trim()
       .toLowerCase();
 
-  const setFact = (planetRaw: unknown, fact: PlacementFact) => {
+  const setFact = (planetRaw: unknown, fact: PlacementFact, opts?: { authoritative?: boolean }) => {
     const key = normalizePlanetKey(planetRaw);
     if (!key) return;
     const existing = map.get(key) || {};
-    map.set(key, {
-      sign: fact.sign ?? existing.sign,
-      house: fact.house ?? existing.house,
-      retrograde: fact.retrograde ?? existing.retrograde,
-    });
+    // Authoritative writes (the deterministic NATAL positions block from
+    // chartContext) overwrite anything previously set by AI-emitted
+    // placement_table rows. Non-authoritative writes only fill in fields
+    // that are still nullish.
+    if (opts?.authoritative) {
+      map.set(key, {
+        sign: fact.sign ?? existing.sign,
+        house: fact.house ?? existing.house,
+        retrograde: fact.retrograde ?? existing.retrograde,
+      });
+    } else {
+      map.set(key, {
+        sign: existing.sign ?? fact.sign,
+        house: existing.house ?? fact.house,
+        retrograde: existing.retrograde ?? fact.retrograde,
+      });
+    }
   };
 
+  // Process placement_table rows FIRST (lower priority).
+  if (Array.isArray(parsedContent?.sections)) {
+    for (const section of parsedContent.sections) {
+      if (section?.type !== "placement_table") continue;
+      const titleLower = String(section?.title || "").toLowerCase();
+      if (titleLower.includes("solar return") || titleLower.includes("sr ")) continue;
+      const rows = Array.isArray(section.rows) ? section.rows : [];
+      for (const row of rows) {
+        if (!row || typeof row !== "object") continue;
+        const planet = String(row.planet || row.body || row.name || "")
+          .replace(/\s*[\u211E℞]+\s*$/g, "")
+          .trim();
+        if (!planet) continue;
+        const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
+        const houseRaw = row.house;
+        let house: number | undefined;
+        if (typeof houseRaw === "number") house = houseRaw;
+        else if (typeof houseRaw === "string") {
+          const m = houseRaw.match(/\d+/);
+          if (m) house = parseInt(m[0], 10);
+        }
+        const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
+        const retroBoolean = row.retrograde === true;
+        const retrograde = !/direct/i.test(retroRaw) && (
+          retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
+        );
+        setFact(planet, { sign, house, retrograde });
+      }
+    }
+  }
+
+  // Then overlay the deterministic NATAL positions block from chartContext
+  // as the authoritative source of truth.
   const natalPositions = chartContext
     ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/)
     : [];
@@ -2644,37 +2753,9 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
       sign: pos.sign,
       house: pos.house ?? undefined,
       retrograde: pos.retrograde,
-    });
+    }, { authoritative: true });
   }
 
-  if (!Array.isArray(parsedContent?.sections)) return map;
-  for (const section of parsedContent.sections) {
-    if (section?.type !== "placement_table") continue;
-    const titleLower = String(section?.title || "").toLowerCase();
-    if (titleLower.includes("solar return") || titleLower.includes("sr ")) continue;
-    const rows = Array.isArray(section.rows) ? section.rows : [];
-    for (const row of rows) {
-      if (!row || typeof row !== "object") continue;
-      const planet = String(row.planet || row.body || row.name || "")
-        .replace(/\s*[\u211E℞]+\s*$/g, "")
-        .trim();
-      if (!planet) continue;
-      const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
-      const houseRaw = row.house;
-      let house: number | undefined;
-      if (typeof houseRaw === "number") house = houseRaw;
-      else if (typeof houseRaw === "string") {
-        const m = houseRaw.match(/\d+/);
-        if (m) house = parseInt(m[0], 10);
-      }
-      const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-      const retroBoolean = row.retrograde === true;
-      const retrograde = !/direct/i.test(retroRaw) && (
-        retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
-      );
-      setFact(planet, { sign, house, retrograde });
-    }
-  }
   return map;
 };
 
@@ -2768,7 +2849,7 @@ const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) =>
   }
 };
 
-const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) => {
+const backfillRelationshipSectionBodies = (parsedContent: any, chartContext: string, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
 
   const needs = parsedContent.sections.find((s: any) => s?.title === "Relationship Needs Profile");
@@ -2776,7 +2857,7 @@ const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) 
   const summary = parsedContent.sections.find((s: any) => s?.title === "Relationship Strategy Summary");
   if (!needs && !balance && !summary) return;
 
-  const truth = buildPlacementTruthMap(parsedContent);
+  const truth = buildPlacementTruthMap(parsedContent, chartContext);
   const formatPlacement = (planet: string): string => {
     const fact = truth.get(planet.toLowerCase());
     if (!fact?.sign || !fact?.house) return planet;
@@ -2895,9 +2976,13 @@ const backfillTimingSectionBodies = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
-const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
+const crossCheckPlanetPlacements = (parsedContent: any, chartContext: string, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
-  const truth = buildPlacementTruthMap(parsedContent);
+  // Pass chartContext so the deterministic NATAL positions block becomes the
+  // source of truth for sign/house/retrograde — not the AI's emitted prose
+  // or placement_table rows (which may themselves be wrong, e.g. natal
+  // Chiron incorrectly marked direct).
+  const truth = buildPlacementTruthMap(parsedContent, chartContext);
   if (truth.size === 0) return;
 
   const flagsByPlanet = new Map<string, { fixed: number; flagged: string[] }>();
@@ -4207,6 +4292,20 @@ ASCENDANT/DESCENDANT RULE — MANDATORY:
 - Never assign the Ascendant's sign or degree to the Descendant, and never assign the Descendant's sign or degree to the Ascendant, in any sentence, in any section.
 - When referencing a natal angle in overlay or cross-chart prose (e.g. "SR Saturn near your natal Ascendant"), verify which axis point you mean BEFORE writing its sign or degree. If the SR planet's sign/degree is closer to the natal Descendant than the Ascendant, you must say Descendant — not Ascendant.
 - Do not claim any SR-to-natal Ascendant or Descendant aspect (conjunction, opposition, square, trine, sextile, "within X°", "near", "lands on") unless that exact aspect appears in the deterministic "ACTIVE SOLAR RETURN-TO-NATAL ASPECTS" block. If it is not in that block, do not write it.
+
+HOUSE RULER RULES — MANDATORY (applies dynamically to every chart based on the Ascendant sign in the placement table):
+- Read the 1st house cusp sign from the "House Cusps" block. That sign's traditional ruler IS the chart ruler. Read the 7th house cusp sign — it is always exactly opposite the Ascendant. The "House Cusps (with traditional rulers)" block already lists the correct ruler for every cusp; copy it from there, do not infer it.
+- Traditional rulers (use these — never modern co-rulers): Aries→Mars, Taurus→Venus, Gemini→Mercury, Cancer→Moon, Leo→Sun, Virgo→Mercury, Libra→Venus, Scorpio→Mars, Sagittarius→Jupiter, Capricorn→Saturn, Aquarius→Saturn, Pisces→Jupiter.
+- The Sun rules ONLY Leo. The Moon rules ONLY Cancer. Never assign the Sun or Moon as ruler of any other sign or any other house cusp.
+- Never write "the 7th house cusp is [Ascendant sign]" or "the 1st house cusp is [Descendant sign]". Verify which house you are naming before you write its sign.
+- Worked example for verification (apply the same logic to the actual chart you are reading): If the chart's 1st house cusp is Libra, then 1st house cusp = Libra ruled by Venus, and 7th house cusp = Aries ruled by Mars. Writing "7th house cusp is Libra" or "7th house ruler is the Sun" would both be wrong in that chart.
+- Before writing any "Nth house cusp is X, ruled by Y" sentence, cross-check N, X, and Y against the "House Cusps (with traditional rulers)" block. If they do not match the block exactly, rewrite the sentence using the block's values.
+
+NATAL RETROGRADE LOCK — MANDATORY:
+- Every natal planet's retrograde status is fixed at birth. Read it from the "NATAL Planetary Positions" block (markers: "R", "Rx", "℞", "retrograde").
+- If a natal planet is marked retrograde in that block, every natal sentence that mentions it MUST say "retrograde" or "Rx". You may never describe that natal planet as "direct".
+- This applies especially to natal Chiron: if natal Chiron is marked retrograde in the NATAL block, every natal mention of Chiron must say "Chiron retrograde" or "Chiron Rx".
+- Do not invent a retrograde marker on a natal planet that is direct in the NATAL block.
 
 ESSENCE OPENING MANDATORY — APPLIES TO EVERY READING (relationship, career, money, health, relocation, spiritual, timing, general):
 The VERY FIRST narrative_section of every reading MUST be titled "The Essence" (or for relationships: "The Essence of Your Relationship Style"; for career: "The Essence of How You Work"; etc.). Its "body" is a single short paragraph (2–4 sentences, ~50–90 words) that captures the entire essence of the person's style on this topic in plain, recognizable, human language — zero astrology jargon, zero planet/sign/house names. The reader must finish that paragraph and think "yes, that is exactly me." Only AFTER this Essence paragraph do you go into "Natal Relationship Architecture" / "How You Show Up at Work" / etc. and explain WHY astrologically.
@@ -6323,7 +6422,7 @@ HARD RULE — applies to every sentence:
           // readings; dedupe duplicate paragraphs; flag SR house-copy;
           // complete bare US city names. Empty-drop runs last so
           // anything blanked above is removed.
-          crossCheckPlanetPlacements(parsedContent, emissionLog);
+          crossCheckPlanetPlacements(parsedContent, sanitizedChartContext || "", emissionLog);
           stripRelationshipLeaksFromRelocation(parsedContent, emissionLog);
           dedupeNarrativeParagraphs(parsedContent, emissionLog);
           // Phantom-aspect guard: surgically rewrites any
@@ -6429,7 +6528,7 @@ HARD RULE — applies to every sentence:
           // RELATIONSHIP BODY BACKFILL: now runs AFTER inject + coverage so
           // balance_interpretation is populated and the body backfill can
           // copy it into the section body.
-          backfillRelationshipSectionBodies(parsedContent, emissionLog);
+          backfillRelationshipSectionBodies(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX A — synthesize timing_section.body from windows when empty
           // so the universal MISSING_REQUIRED_BODY validator below treats
           // timing tables as fully populated when they have data.
