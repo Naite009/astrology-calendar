@@ -6953,6 +6953,14 @@ HARD RULE — applies to every sentence:
           // Scorpio = Mars/Pluto). Prevents the prompt-only rule from
           // slipping through into the final reading.
           correctSignRulershipClaimsInProse(parsedContent, emissionLog);
+          // SR PLANET POSITION CORRECTION: scan all prose for any
+          // "SR <Planet> [at] <deg>°[<min>'] <Sign>" claim that uses the
+          // wrong sign (typically the natal sign leaking into SR context,
+          // or a sign whose degree number matches the deterministic SR
+          // degree). Reads truth from the SR Planetary Positions block in
+          // the chart context. Prevents "SR Saturn 26°21' Leo" when the
+          // truth is "SR Saturn 26°21' Pisces ℞".
+          correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
