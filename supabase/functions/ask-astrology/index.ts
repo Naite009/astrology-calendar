@@ -1682,6 +1682,148 @@ const normalizePlacementTableRetrograde = (
   }
 };
 
+// DETERMINISTIC SR HOUSE OVERRIDE — runs after AI generation. The model
+// repeatedly copies natal house numbers into the SR placement table even
+// after we tell it not to. The chart context's "SR Planetary Positions"
+// block carries the deterministic SR house annotations from
+// astronomy-engine and is THE source of truth. We overwrite every SR row's
+// `house` field from this map so the Replit gate never has to recompute.
+const overrideSRHouseNumbersFromContext = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections) || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPos.length === 0) return;
+  const houseMap = new Map<string, number>();
+  for (const p of srPos) {
+    if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+  }
+  if (houseMap.size === 0) return;
+  let overridden = 0;
+  const examples: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    if (!isSR) continue;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const baseName = String(row.planet || row.body || row.name || "")
+        .replace(/\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i, "").trim().toLowerCase();
+      if (!baseName) continue;
+      const truthHouse = houseMap.get(baseName);
+      if (truthHouse == null) continue;
+      const beforeRaw = row.house;
+      let beforeNum: number | null = null;
+      if (typeof beforeRaw === "number") beforeNum = beforeRaw;
+      else if (typeof beforeRaw === "string") {
+        const m = beforeRaw.match(/\d+/);
+        if (m) beforeNum = parseInt(m[0], 10);
+      }
+      if (beforeNum !== truthHouse) {
+        row.house = truthHouse;
+        overridden++;
+        if (examples.length < 8) {
+          examples.push(`${baseName}: ${beforeRaw} ⇒ ${truthHouse}`);
+        }
+      }
+    }
+  }
+  if (overridden > 0) {
+    log.push({
+      type: "sr_house_numbers_overridden_from_context",
+      detail: { overridden, examples },
+    });
+    console.info("[ask-astrology] SR house numbers overridden from context", {
+      overridden,
+      examples,
+    });
+  }
+};
+
+// DETERMINISTIC 7TH-CUSP / DESCENDANT FIXER — the AI sometimes writes
+// "the 7th house cusp [in/is] {AscendantSign}" because it confuses the
+// Ascendant with the Descendant. The 7th cusp is mathematically the
+// opposite sign of the 1st cusp (Ascendant). We detect any prose that
+// names the 7th cusp with the wrong sign and rewrite it to the correct
+// opposite sign from the deterministic House Cusps block.
+const SIGN_OPPOSITE: Record<string, string> = {
+  Aries: "Libra", Libra: "Aries",
+  Taurus: "Scorpio", Scorpio: "Taurus",
+  Gemini: "Sagittarius", Sagittarius: "Gemini",
+  Cancer: "Capricorn", Capricorn: "Cancer",
+  Leo: "Aquarius", Aquarius: "Leo",
+  Virgo: "Pisces", Pisces: "Virgo",
+};
+const fixDescendantCuspMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const asc = cusps.find((c) => c.house === 1);
+  const dsc = cusps.find((c) => c.house === 7);
+  if (!asc || !dsc) return;
+  const ascSign = asc.sign;
+  const dscSign = dsc.sign;
+  if (!ascSign || !dscSign || ascSign === dscSign) return;
+  // Match: "7th house cusp [is/in/at/=] {ascSign}" — case-insensitive.
+  const wrongSeventh = new RegExp(
+    `\\b(7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp)?\\s*(?:is|in|at|sits in|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    "gi",
+  );
+  // Match: "Descendant [is/in/at] {ascSign}"
+  const wrongDescendant = new RegExp(
+    `\\b(Descendant\\s*(?:is|in|at|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    "gi",
+  );
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  const visit = (node: any, parentKey?: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
+        next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+        if (next !== val) {
+          rewrites++;
+          if (examples.length < 5) {
+            const idx = val.search(wrongSeventh) >= 0 ? val.search(wrongSeventh) : val.search(wrongDescendant);
+            examples.push(val.slice(Math.max(0, idx - 20), idx + 80));
+          }
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val, key);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (rewrites > 0) {
+    log.push({
+      type: "descendant_cusp_sign_corrected_in_prose",
+      detail: { rewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
+    });
+    console.info("[ask-astrology] descendant cusp sign corrected in prose", {
+      rewrites, ascSign, dscSign,
+    });
+  }
+};
+
 const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
@@ -6025,6 +6167,14 @@ HARD RULE — applies to every sentence:
           // two representations on every row, killing RETROGRADE_STATE_MISMATCH
           // false positives without changing any prose.
           normalizePlacementTableRetrograde(parsedContent, emissionLog, sanitizedChartContext || "");
+          // SR HOUSE OVERRIDE: SR placement table house numbers must come
+          // from the SR Planetary Positions block (deterministic truth),
+          // not from whatever the AI copied from natal. This kills the
+          // Replit gate's "recomputed N SR house number(s)" fix.
+          overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
+          // 7th house cusp / Descendant with the Ascendant's sign.
+          fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
@@ -6073,87 +6223,103 @@ HARD RULE — applies to every sentence:
           // so the universal MISSING_REQUIRED_BODY validator below treats
           // timing tables as fully populated when they have data.
           backfillTimingSectionBodies(parsedContent, emissionLog);
-          // DETERMINISTIC DEDUP + DASH-STRIP for transit window descriptions.
-          // Mirrors the Replit gate's "deduped paragraph in description" and
-          // "Stripped em-dashes" fixes so the AI output is already clean
-          // before it leaves us. Voice stays consistent and downstream
-          // post-processing has nothing to do.
+          // DETERMINISTIC DEDUP + DASH-STRIP — recursive walk over EVERY
+          // string field in the payload. The previous implementation only
+          // visited timing_section.windows, narrative_section.body, and
+          // summary_box.items, so em-dashes survived in places like
+          // narrative_section.bullets, subsection.body, modality_element
+          // .balance_interpretation, etc. That left the Replit gate with
+          // 30+ fields to strip and 4+ paragraphs to dedupe per run.
+          // The fuzzy normalization (lowercase + strip terminal punctuation
+          // + collapse whitespace) catches paragraph dups that the older
+          // exact-match version missed.
           try {
-            if (Array.isArray(parsedContent?.sections)) {
-              let dedupedFields = 0;
-              let dashStrippedFields = 0;
-              const splitSentences = (s: string): string[] =>
-                s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
-              const dedupSentences = (s: string): { out: string; changed: boolean } => {
-                const parts = splitSentences(s);
-                const seen = new Set<string>();
-                const kept: string[] = [];
-                for (const p of parts) {
-                  const key = p.toLowerCase().replace(/\s+/g, " ");
-                  if (seen.has(key)) continue;
-                  seen.add(key);
-                  kept.push(p);
-                }
-                const out = kept.join(" ");
-                return { out, changed: out !== s };
-              };
-              const stripDashes = (s: string): { out: string; changed: boolean } => {
-                // em-dash → ", "  ;  en-dash in date ranges → " to "
-                let out = s.replace(/\s*\u2014\s*/g, ", ");
-                out = out.replace(
-                  /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
-                  "$1 to $2",
-                );
-                out = out.replace(/\s*\u2013\s*/g, ", ");
-                return { out, changed: out !== s };
-              };
-              const cleanString = (s: string): string => {
-                if (typeof s !== "string" || !s) return s;
-                const a = stripDashes(s);
-                if (a.changed) dashStrippedFields++;
-                const b = dedupSentences(a.out);
-                if (b.changed) dedupedFields++;
-                return b.out;
-              };
-              for (const sec of parsedContent.sections) {
-                if (!sec || typeof sec !== "object") continue;
-                if (sec.type === "timing_section" && Array.isArray(sec.windows)) {
-                  for (const w of sec.windows) {
-                    if (w && typeof w.description === "string") {
-                      w.description = cleanString(w.description);
-                    }
-                    if (w && typeof w.title === "string") {
-                      const a = stripDashes(w.title);
-                      if (a.changed) dashStrippedFields++;
-                      w.title = a.out;
-                    }
-                  }
-                  if (typeof sec.body === "string") sec.body = cleanString(sec.body);
-                }
-                if (sec.type === "narrative_section" && typeof sec.body === "string") {
-                  sec.body = cleanString(sec.body);
-                }
-                if (sec.type === "summary_box" && Array.isArray(sec.items)) {
-                  for (const it of sec.items) {
-                    if (it && typeof it.text === "string") it.text = cleanString(it.text);
-                    if (it && typeof it.label === "string") {
-                      const a = stripDashes(it.label);
-                      if (a.changed) dashStrippedFields++;
-                      it.label = a.out;
-                    }
-                  }
+            let dedupedFields = 0;
+            let dashStrippedFields = 0;
+            const splitSentences = (s: string): string[] =>
+              s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+            // Fuzzy key: lowercase, drop terminal punctuation, collapse
+            // whitespace, normalize curly quotes and dashes — so two
+            // sentences that differ only in trailing "." or extra spaces
+            // are treated as duplicates.
+            const fuzzyKey = (s: string): string =>
+              s.toLowerCase()
+                .replace(/[\u2013\u2014]/g, "-")
+                .replace(/[\u2018\u2019]/g, "'")
+                .replace(/[\u201C\u201D]/g, '"')
+                .replace(/[.!?]+$/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+            const dedupSentences = (s: string): { out: string; changed: boolean } => {
+              const parts = splitSentences(s);
+              if (parts.length < 2) return { out: s, changed: false };
+              const seen = new Set<string>();
+              const kept: string[] = [];
+              for (const p of parts) {
+                const key = fuzzyKey(p);
+                if (key.length < 12) { kept.push(p); continue; } // too short to be a meaningful dup
+                if (seen.has(key)) continue;
+                seen.add(key);
+                kept.push(p);
+              }
+              const out = kept.join(" ");
+              return { out, changed: out !== s };
+            };
+            const stripDashes = (s: string): { out: string; changed: boolean } => {
+              // em-dash → ", "  ;  en-dash in date ranges → " to "  ;
+              // any remaining en-dash → ", "
+              let out = s.replace(/\s*\u2014\s*/g, ", ");
+              out = out.replace(
+                /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
+                "$1 to $2",
+              );
+              out = out.replace(/\s*\u2013\s*/g, ", ");
+              return { out, changed: out !== s };
+            };
+            const cleanString = (s: string): string => {
+              if (typeof s !== "string" || !s) return s;
+              const a = stripDashes(s);
+              if (a.changed) dashStrippedFields++;
+              const b = dedupSentences(a.out);
+              if (b.changed) dedupedFields++;
+              return b.out;
+            };
+            // Recursive walker — visit every string in the payload, skip
+            // metadata/identifier keys (titles, labels, dates, planet
+            // names, etc.) so we don't mangle them.
+            const SKIP_FIELD_KEYS = new Set([
+              "type", "title", "label", "name", "subtitle", "heading", "id", "kind",
+              "planet", "sign", "house", "degrees", "aspect", "natal_point", "symbol",
+              "tag", "date", "date_range", "dateRange", "generated_date",
+              "subject", "question_type", "question_asked",
+              "_validation", "_validation_log", "_validation_warning",
+              "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+              "_sr_house_copy_warning", "_source_call",
+            ]);
+            const visit = (node: any): void => {
+              if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+              if (!node || typeof node !== "object") return;
+              for (const [key, val] of Object.entries(node)) {
+                if (SKIP_FIELD_KEYS.has(key)) continue;
+                if (typeof val === "string") {
+                  if (val.length < 4) continue;
+                  const cleaned = cleanString(val);
+                  if (cleaned !== val) (node as any)[key] = cleaned;
+                } else {
+                  visit(val);
                 }
               }
-              if (dedupedFields > 0 || dashStrippedFields > 0) {
-                emissionLog.push({
-                  type: "transit_dedup_and_dash_strip",
-                  detail: { dedupedFields, dashStrippedFields },
-                });
-                console.info("[ask-astrology] dedup+dash-strip", {
-                  dedupedFields,
-                  dashStrippedFields,
-                });
-              }
+            };
+            visit(parsedContent);
+            if (dedupedFields > 0 || dashStrippedFields > 0) {
+              emissionLog.push({
+                type: "transit_dedup_and_dash_strip",
+                detail: { dedupedFields, dashStrippedFields },
+              });
+              console.info("[ask-astrology] dedup+dash-strip", {
+                dedupedFields,
+                dashStrippedFields,
+              });
             }
           } catch (cleanErr) {
             console.warn("[ask-astrology] dedup+dash-strip failed:", cleanErr);
