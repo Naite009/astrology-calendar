@@ -2044,6 +2044,164 @@ const correctSignRulershipClaimsInProse = (parsedContent: any, log: HygieneLog) 
 };
 
 
+// DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
+// "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
+// claim and rewrites the SIGN if it does not match the deterministic SR
+// chart context. The chart context's "SR Planetary Positions" block is the
+// astronomy-engine-derived source of truth — every SR planet's true sign &
+// degree live there. The AI (and the Replit gate) sometimes corrupt these
+// (e.g. "SR Saturn 26°21' Pisces" gets rewritten to "Leo" — the natal sign).
+// This pass restores the correct sign from the SR positions block.
+//
+// Strategy:
+//   - Parse SR positions from chart context once.
+//   - For every SR planet, build a regex that matches that planet name in
+//     prose with an "SR" / "Solar Return" / "this year's" qualifier nearby,
+//     followed by an optional degree and a sign that is NOT the correct sign.
+//   - Rewrite the wrong sign to the correct sign in-place.
+//   - Skip placement_table rows (those are normalized by their own pass).
+//   - Skip natal-context sentences (only rewrite when SR/Solar Return
+//     qualifier is present, OR when the wrong sign matches the planet's
+//     NATAL sign — that's the classic "AI mixed natal & SR" pattern).
+const correctSrPlanetPositionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+
+  // Source of truth: SR positions parsed from the deterministic chart context.
+  const srPositions = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPositions.length === 0) return;
+
+  // Also pull natal positions so we can detect "AI used natal sign in SR
+  // context" and "Replit swapped SR sign back to natal" — both common
+  // failure modes worth correcting silently.
+  const natalPositions = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const natalByPlanet = new Map<string, string>();
+  for (const p of natalPositions) {
+    natalByPlanet.set(p.planet.toLowerCase(), p.sign);
+  }
+
+  // Build planet → correct-SR-sign map (only for the 10 classical planets +
+  // Chiron, which are the ones that actually appear in narrative prose).
+  const SR_TARGETS = new Set([
+    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
+  ]);
+  const srSignByPlanet = new Map<string, { sign: string; degree: number; minutes: number }>();
+  for (const p of srPositions) {
+    if (SR_TARGETS.has(p.planet)) {
+      srSignByPlanet.set(p.planet, { sign: p.sign, degree: p.degree, minutes: p.minutes });
+    }
+  }
+  if (srSignByPlanet.size === 0) return;
+
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  // SR qualifier must appear within ~80 chars BEFORE the planet name for the
+  // sentence to count as "SR context" (we never rewrite a natal sentence).
+  const SR_QUALIFIER_RE = /(?:\bSR\b|\bSolar Return\b|\bsolar return\b|\bthis year(?:'s)?\b|\bthis year's\b)/;
+
+  // Skip structural fields and any row that's part of the placement_table
+  // (the table-row normalizer handles those separately).
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  let signRewrites = 0;
+  let degreeRewrites = 0;
+  const examples: string[] = [];
+
+  // For each SR planet, build two patterns:
+  //   1. "<SR-qualifier> ... <Planet> [at] [<deg>°[<min>']] <WRONG_SIGN>"
+  //   2. "<Planet> [at] [<deg>°[<min>']] <WRONG_SIGN> ... <SR-qualifier>"
+  // We do this by walking each string, splitting on sentence boundaries,
+  // and only rewriting sentences that contain an SR qualifier.
+  const sentenceSplit = /(?<=[.!?])\s+|\n+/;
+
+  const visit = (node: any, parentKey?: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, parentKey); return; }
+    if (!node || typeof node !== "object") return;
+    // Skip placement_table sections entirely — their rows are normalized elsewhere.
+    if (node?.type === "placement_table") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const sentences = val.split(sentenceSplit);
+        let touched = false;
+        for (let i = 0; i < sentences.length; i++) {
+          const s = sentences[i];
+          if (!s || s.length < 10) continue;
+          const isSrContext = SR_QUALIFIER_RE.test(s);
+          if (!isSrContext) continue;
+
+          let next = s;
+          for (const [planet, truth] of srSignByPlanet.entries()) {
+            const correctSign = truth.sign;
+            const natalSign = natalByPlanet.get(planet.toLowerCase());
+
+            // Pattern: "<Planet> [(at|in|sits in|=)]? [<deg>°[<min>']] <Sign>"
+            // Sign capture must NOT already be correct.
+            const planetSignRe = new RegExp(
+              `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|now\\s+in|currently\\s+in|=|—|,)?\\s*)(?:(\\d+)°(?:(\\d+)')?\\s+)?(${SIGN_NAMES_RE})\\b`,
+              "g",
+            );
+
+            next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+              if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
+              // Only rewrite if the claimed sign is the natal sign (classic
+              // "Replit reverted to natal" / "AI used natal in SR context")
+              // OR if a degree is present and matches the SR degree (in which
+              // case the sign MUST be the SR sign — degree+sign together
+              // uniquely identify a position).
+              const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
+              const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
+              if (!claimedIsNatal && !degreeMatchesSr) return match;
+
+              signRewrites++;
+              if (degStr !== undefined && parseInt(degStr, 10) !== truth.degree) {
+                degreeRewrites++;
+              }
+              const fixedDeg = degStr !== undefined ? `${truth.degree}°${minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : ""} ` : "";
+              const retro = retroPart || "";
+              const lead = degStr !== undefined ? `${planet}${retro}${gap || " "}` : `${planet}${retro}${gap || " "}`;
+              return `${lead}${fixedDeg}${correctSign}`;
+            });
+          }
+
+          if (next !== s) {
+            sentences[i] = next;
+            touched = true;
+            if (examples.length < 5) {
+              examples.push(`${s.slice(0, 100)} → ${next.slice(0, 100)}`);
+            }
+          }
+        }
+        if (touched) {
+          (node as any)[key] = sentences.join(" ");
+        }
+      } else {
+        visit(val, key);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  if (signRewrites > 0) {
+    log.push({
+      type: "sr_planet_positions_corrected_in_prose",
+      detail: { sign_rewrites: signRewrites, degree_rewrites: degreeRewrites, examples },
+    });
+    console.info("[ask-astrology] SR planet positions corrected in prose", {
+      sign_rewrites: signRewrites,
+      degree_rewrites: degreeRewrites,
+    });
+  }
+};
+
+
 // still swap the *labels* even when it gets the sign/degree from the chart.
 // Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
 // the "natal Ascendant". This pass rewrites or strips any prose that names
