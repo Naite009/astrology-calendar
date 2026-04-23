@@ -1682,6 +1682,148 @@ const normalizePlacementTableRetrograde = (
   }
 };
 
+// DETERMINISTIC SR HOUSE OVERRIDE — runs after AI generation. The model
+// repeatedly copies natal house numbers into the SR placement table even
+// after we tell it not to. The chart context's "SR Planetary Positions"
+// block carries the deterministic SR house annotations from
+// astronomy-engine and is THE source of truth. We overwrite every SR row's
+// `house` field from this map so the Replit gate never has to recompute.
+const overrideSRHouseNumbersFromContext = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections) || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPos.length === 0) return;
+  const houseMap = new Map<string, number>();
+  for (const p of srPos) {
+    if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+  }
+  if (houseMap.size === 0) return;
+  let overridden = 0;
+  const examples: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    if (!isSR) continue;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const baseName = String(row.planet || row.body || row.name || "")
+        .replace(/\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i, "").trim().toLowerCase();
+      if (!baseName) continue;
+      const truthHouse = houseMap.get(baseName);
+      if (truthHouse == null) continue;
+      const beforeRaw = row.house;
+      let beforeNum: number | null = null;
+      if (typeof beforeRaw === "number") beforeNum = beforeRaw;
+      else if (typeof beforeRaw === "string") {
+        const m = beforeRaw.match(/\d+/);
+        if (m) beforeNum = parseInt(m[0], 10);
+      }
+      if (beforeNum !== truthHouse) {
+        row.house = truthHouse;
+        overridden++;
+        if (examples.length < 8) {
+          examples.push(`${baseName}: ${beforeRaw} ⇒ ${truthHouse}`);
+        }
+      }
+    }
+  }
+  if (overridden > 0) {
+    log.push({
+      type: "sr_house_numbers_overridden_from_context",
+      detail: { overridden, examples },
+    });
+    console.info("[ask-astrology] SR house numbers overridden from context", {
+      overridden,
+      examples,
+    });
+  }
+};
+
+// DETERMINISTIC 7TH-CUSP / DESCENDANT FIXER — the AI sometimes writes
+// "the 7th house cusp [in/is] {AscendantSign}" because it confuses the
+// Ascendant with the Descendant. The 7th cusp is mathematically the
+// opposite sign of the 1st cusp (Ascendant). We detect any prose that
+// names the 7th cusp with the wrong sign and rewrite it to the correct
+// opposite sign from the deterministic House Cusps block.
+const SIGN_OPPOSITE: Record<string, string> = {
+  Aries: "Libra", Libra: "Aries",
+  Taurus: "Scorpio", Scorpio: "Taurus",
+  Gemini: "Sagittarius", Sagittarius: "Gemini",
+  Cancer: "Capricorn", Capricorn: "Cancer",
+  Leo: "Aquarius", Aquarius: "Leo",
+  Virgo: "Pisces", Pisces: "Virgo",
+};
+const fixDescendantCuspMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const asc = cusps.find((c) => c.house === 1);
+  const dsc = cusps.find((c) => c.house === 7);
+  if (!asc || !dsc) return;
+  const ascSign = asc.sign;
+  const dscSign = dsc.sign;
+  if (!ascSign || !dscSign || ascSign === dscSign) return;
+  // Match: "7th house cusp [is/in/at/=] {ascSign}" — case-insensitive.
+  const wrongSeventh = new RegExp(
+    `\\b(7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp)?\\s*(?:is|in|at|sits in|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    "gi",
+  );
+  // Match: "Descendant [is/in/at] {ascSign}"
+  const wrongDescendant = new RegExp(
+    `\\b(Descendant\\s*(?:is|in|at|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    "gi",
+  );
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  const visit = (node: any, parentKey?: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
+        next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+        if (next !== val) {
+          rewrites++;
+          if (examples.length < 5) {
+            const idx = val.search(wrongSeventh) >= 0 ? val.search(wrongSeventh) : val.search(wrongDescendant);
+            examples.push(val.slice(Math.max(0, idx - 20), idx + 80));
+          }
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val, key);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (rewrites > 0) {
+    log.push({
+      type: "descendant_cusp_sign_corrected_in_prose",
+      detail: { rewrites, asc_sign: ascSign, dsc_sign: dscSign, examples },
+    });
+    console.info("[ask-astrology] descendant cusp sign corrected in prose", {
+      rewrites, ascSign, dscSign,
+    });
+  }
+};
+
 const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
