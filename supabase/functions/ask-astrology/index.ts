@@ -6369,6 +6369,14 @@ HARD RULE — applies to every sentence:
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
+          // Descendant the Ascendant (or vice versa) using the deterministic
+          // House 1 / House 7 cusp data from chart context.
+          fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // VERIFIED SR ANGLE CLAIM GUARD: if the model invents an SR-to-natal
+          // Ascendant/Descendant claim that is not present in the verified
+          // SR-to-natal aspect block, strip that sentence before export.
+          stripUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
