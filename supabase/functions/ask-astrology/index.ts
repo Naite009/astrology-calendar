@@ -1598,13 +1598,34 @@ const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
 // reconciles both representations on every placement_table in the payload
 // (Natal AND Solar Return) without ever overwriting a true `retrograde:
 // false` flag with a glyph or vice versa.
-const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) => {
+const normalizePlacementTableRetrograde = (
+  parsedContent: any,
+  log: HygieneLog,
+  chartContext: string = "",
+) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   let normalizedRows = 0;
   const examples: string[] = [];
   const RETRO_GLYPH_RE = /\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i;
+
+  // Build chart-context truth maps for retrograde state. The chart context
+  // is computed deterministically from astronomy-engine and is THE source
+  // of truth — it must override any AI-authored `retrograde: false` on a
+  // planet that is in fact retrograde (e.g. SR Saturn, SR Neptune).
+  const natalTruth = new Map<string, boolean>();
+  const srTruth = new Map<string, boolean>();
+  if (chartContext) {
+    const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+    const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+    for (const p of natalPos) natalTruth.set(p.planet.toLowerCase(), !!p.retrograde);
+    for (const p of srPos) srTruth.set(p.planet.toLowerCase(), !!p.retrograde);
+  }
+
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
+    const titleLower = String(section.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const truthMap = isSR ? srTruth : natalTruth;
     const rows = Array.isArray(section.rows) ? section.rows : [];
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
@@ -1613,15 +1634,20 @@ const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) 
       const hasGlyph = RETRO_GLYPH_RE.test(rawPlanet);
       const baseName = rawPlanet.replace(RETRO_GLYPH_RE, "").trim();
       // Determine retrograde state. Priority:
-      //   1. explicit boolean true
-      //   2. glyph/Rx suffix on planet name
-      //   3. explicit boolean false
-      //   4. default false
+      //   1. CHART CONTEXT (deterministic astronomy-engine truth) — overrides AI
+      //   2. explicit boolean true
+      //   3. glyph/Rx suffix on planet name
+      //   4. explicit boolean false
+      //   5. default false
+      const ctxRetro = truthMap.get(baseName.toLowerCase());
       let retro: boolean;
-      if (row.retrograde === true) retro = true;
-      else if (hasGlyph) retro = true;
-      else if (row.retrograde === false) retro = false;
-      else retro = false;
+      let source: string;
+      if (ctxRetro === true) { retro = true; source = "chart_context"; }
+      else if (ctxRetro === false) { retro = false; source = "chart_context"; }
+      else if (row.retrograde === true) { retro = true; source = "row_boolean"; }
+      else if (hasGlyph) { retro = true; source = "glyph"; }
+      else if (row.retrograde === false) { retro = false; source = "row_boolean"; }
+      else { retro = false; source = "default"; }
 
       const desiredPlanet = retro ? `${baseName} ℞` : baseName;
       const before = { planet: rawPlanet, retrograde: row.retrograde };
