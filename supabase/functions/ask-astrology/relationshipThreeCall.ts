@@ -646,6 +646,7 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
     modalities: tallies.modalities,
     polarity: tallies.polarity,
     balance_interpretation: "",
+    body: "",
     _deterministic: true,
   };
 };
@@ -653,6 +654,13 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
 /**
  * Insert (or replace) the modality_element section in the merged sections
  * array at the spot indicated by MERGE_ORDER. Idempotent.
+ *
+ * PRESERVATION RULE: when replacing an existing modality_element section,
+ * any non-empty `body` or `balance_interpretation` the AI authored is
+ * preserved on the new section. We only overwrite the deterministic count
+ * arrays (elements/modalities/polarity) and dominant_* fields; prose is
+ * AI-authored and must survive the inject so downstream body backfills
+ * have something to copy from.
  */
 export const injectDeterministicModalityElement = (
   parsedContent: any,
@@ -664,10 +672,20 @@ export const injectDeterministicModalityElement = (
   const tallies = computeDeterministicTallies(natalChartBlock);
   const newSection = buildModalityElementSection(tallies);
 
+  const isNonEmptyString = (v: unknown): v is string =>
+    typeof v === "string" && v.trim().length > 0;
+
   // Replace any existing modality_element section, otherwise insert at the
   // canonical slot (just before the summary_box at the end).
   const existingIdx = parsedContent.sections.findIndex((s: any) => s?.type === "modality_element");
   if (existingIdx >= 0) {
+    const prev = parsedContent.sections[existingIdx] || {};
+    // Preserve AI-authored prose so the body backfill has source material.
+    if (isNonEmptyString(prev.body)) newSection.body = prev.body;
+    if (isNonEmptyString(prev.balance_interpretation)) {
+      newSection.balance_interpretation = prev.balance_interpretation;
+    }
+    if (isNonEmptyString(prev.title)) newSection.title = prev.title;
     parsedContent.sections[existingIdx] = newSection;
     return { injected: true, tallies };
   }
