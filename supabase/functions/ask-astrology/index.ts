@@ -2625,17 +2625,62 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
       .trim()
       .toLowerCase();
 
-  const setFact = (planetRaw: unknown, fact: PlacementFact) => {
+  const setFact = (planetRaw: unknown, fact: PlacementFact, opts?: { authoritative?: boolean }) => {
     const key = normalizePlanetKey(planetRaw);
     if (!key) return;
     const existing = map.get(key) || {};
-    map.set(key, {
-      sign: fact.sign ?? existing.sign,
-      house: fact.house ?? existing.house,
-      retrograde: fact.retrograde ?? existing.retrograde,
-    });
+    // Authoritative writes (the deterministic NATAL positions block from
+    // chartContext) overwrite anything previously set by AI-emitted
+    // placement_table rows. Non-authoritative writes only fill in fields
+    // that are still nullish.
+    if (opts?.authoritative) {
+      map.set(key, {
+        sign: fact.sign ?? existing.sign,
+        house: fact.house ?? existing.house,
+        retrograde: fact.retrograde ?? existing.retrograde,
+      });
+    } else {
+      map.set(key, {
+        sign: existing.sign ?? fact.sign,
+        house: existing.house ?? fact.house,
+        retrograde: existing.retrograde ?? fact.retrograde,
+      });
+    }
   };
 
+  // Process placement_table rows FIRST (lower priority).
+  if (Array.isArray(parsedContent?.sections)) {
+    for (const section of parsedContent.sections) {
+      if (section?.type !== "placement_table") continue;
+      const titleLower = String(section?.title || "").toLowerCase();
+      if (titleLower.includes("solar return") || titleLower.includes("sr ")) continue;
+      const rows = Array.isArray(section.rows) ? section.rows : [];
+      for (const row of rows) {
+        if (!row || typeof row !== "object") continue;
+        const planet = String(row.planet || row.body || row.name || "")
+          .replace(/\s*[\u211E℞]+\s*$/g, "")
+          .trim();
+        if (!planet) continue;
+        const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
+        const houseRaw = row.house;
+        let house: number | undefined;
+        if (typeof houseRaw === "number") house = houseRaw;
+        else if (typeof houseRaw === "string") {
+          const m = houseRaw.match(/\d+/);
+          if (m) house = parseInt(m[0], 10);
+        }
+        const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
+        const retroBoolean = row.retrograde === true;
+        const retrograde = !/direct/i.test(retroRaw) && (
+          retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
+        );
+        setFact(planet, { sign, house, retrograde });
+      }
+    }
+  }
+
+  // Then overlay the deterministic NATAL positions block from chartContext
+  // as the authoritative source of truth.
   const natalPositions = chartContext
     ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/)
     : [];
@@ -2644,37 +2689,9 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
       sign: pos.sign,
       house: pos.house ?? undefined,
       retrograde: pos.retrograde,
-    });
+    }, { authoritative: true });
   }
 
-  if (!Array.isArray(parsedContent?.sections)) return map;
-  for (const section of parsedContent.sections) {
-    if (section?.type !== "placement_table") continue;
-    const titleLower = String(section?.title || "").toLowerCase();
-    if (titleLower.includes("solar return") || titleLower.includes("sr ")) continue;
-    const rows = Array.isArray(section.rows) ? section.rows : [];
-    for (const row of rows) {
-      if (!row || typeof row !== "object") continue;
-      const planet = String(row.planet || row.body || row.name || "")
-        .replace(/\s*[\u211E℞]+\s*$/g, "")
-        .trim();
-      if (!planet) continue;
-      const sign = SIGN_NAMES.find((s) => new RegExp(`\\b${s}\\b`, "i").test(String(row.sign || row.position || "")));
-      const houseRaw = row.house;
-      let house: number | undefined;
-      if (typeof houseRaw === "number") house = houseRaw;
-      else if (typeof houseRaw === "string") {
-        const m = houseRaw.match(/\d+/);
-        if (m) house = parseInt(m[0], 10);
-      }
-      const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-      const retroBoolean = row.retrograde === true;
-      const retrograde = !/direct/i.test(retroRaw) && (
-        retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
-      );
-      setFact(planet, { sign, house, retrograde });
-    }
-  }
   return map;
 };
 
