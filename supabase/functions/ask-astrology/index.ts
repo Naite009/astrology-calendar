@@ -2895,9 +2895,13 @@ const backfillTimingSectionBodies = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
-const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
+const crossCheckPlanetPlacements = (parsedContent: any, chartContext: string, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
-  const truth = buildPlacementTruthMap(parsedContent);
+  // Pass chartContext so the deterministic NATAL positions block becomes the
+  // source of truth for sign/house/retrograde — not the AI's emitted prose
+  // or placement_table rows (which may themselves be wrong, e.g. natal
+  // Chiron incorrectly marked direct).
+  const truth = buildPlacementTruthMap(parsedContent, chartContext);
   if (truth.size === 0) return;
 
   const flagsByPlanet = new Map<string, { fixed: number; flagged: string[] }>();
