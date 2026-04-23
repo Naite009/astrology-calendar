@@ -1976,46 +1976,87 @@ const fixAscendantDescendantLabelSwapsInProse = (
 
 // VERIFIED SR-TO-NATAL ANGLE CLAIM GUARD — the model sometimes invents
 // cross-chart angle activations (especially "SR Saturn near natal Ascendant")
-// that are NOT present in the deterministic SR-to-natal aspect block from the
-// chart context. When that happens, the sentence must be removed rather than
-// trusted. This specifically protects Ascendant/Descendant axis claims.
-const stripUnverifiedSrAngleClaims = (
+// where the SR planet's actual position is far from the natal angle, OR it
+// names the wrong angle (Ascendant vs. Descendant), OR it cites the wrong
+// orb. POLICY: corrections, not deletions. Rewrite the sentence using the
+// deterministic SR positions and natal angle positions from chart context.
+// If a claim cannot be corrected deterministically, leave the prose intact
+// and flag it in the validation log.
+const correctUnverifiedSrAngleClaims = (
   parsedContent: any,
   chartContext: string,
   log: HygieneLog,
 ) => {
   if (!parsedContent || !chartContext) return;
 
-  const allowed = new Set<string>();
-  const headerMatch = chartContext.match(/\n--- ACTIVE SOLAR RETURN-TO-NATAL ASPECTS \(this year\) ---\n/);
-  if (headerMatch) {
-    const startIdx = headerMatch.index! + headerMatch[0].length;
-    const tail = chartContext.slice(startIdx);
-    const endMatch = tail.match(/\n\s*\n|\n--- |\n[A-Z][A-Z ]{6,}:/);
-    const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
-    const lineRe = /-\s*SR\s+([A-Za-z][A-Za-z ]+)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+[☌☍△□⚹]\s+Natal\s+(Ascendant|Descendant|Midheaven|IC)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+\(orb:\s*([\d.]+)°\)\s+—\s+(conjunct|opposition|trine|square|sextile)/gi;
-    let m: RegExpExecArray | null;
-    while ((m = lineRe.exec(block)) !== null) {
-      const srPlanet = m[1].trim().toLowerCase();
-      const natalAngle = m[3].trim().toLowerCase();
-      allowed.add(`${srPlanet}|${natalAngle}`);
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const asc = cusps.find((c) => c.house === 1);
+  const dsc = cusps.find((c) => c.house === 7);
+  if (!asc || !dsc || !asc.sign || !dsc.sign) return;
+
+  const SIGN_ORDER = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+  const toAbs = (sign: string, deg: number, min = 0): number => {
+    const idx = SIGN_ORDER.indexOf(sign);
+    if (idx === -1) return NaN;
+    return idx * 30 + deg + min / 60;
+  };
+  const ascAbs = toAbs(asc.sign, asc.degree, (asc as any).minutes || 0);
+  const dscAbs = toAbs(dsc.sign, dsc.degree, (dsc as any).minutes || 0);
+  if (Number.isNaN(ascAbs) || Number.isNaN(dscAbs)) return;
+
+  const angles: Record<string, { sign: string; degree: number; abs: number }> = {
+    Ascendant: { sign: asc.sign, degree: asc.degree, abs: ascAbs },
+    Descendant: { sign: dsc.sign, degree: dsc.degree, abs: dscAbs },
+  };
+
+  // Pull SR planet positions from the deterministic chart context block.
+  const srPositions = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const srByPlanet = new Map<string, { sign: string; degree: number; abs: number }>();
+  for (const p of srPositions) {
+    if (!p?.planet || !p?.sign) continue;
+    const abs = toAbs(p.sign, p.degree || 0, (p as any).minutes || 0);
+    if (!Number.isNaN(abs)) {
+      srByPlanet.set(p.planet.toLowerCase(), { sign: p.sign, degree: p.degree || 0, abs });
     }
   }
 
-  const hasAngleClaim = (s: string): boolean =>
-    /\bSR\s+(Saturn|Neptune|Uranus|Pluto|Jupiter|Mars|Venus|Mercury|Sun|Moon|Chiron)\b/i.test(s)
-    && /\bnatal\s+(Ascendant|Descendant)\b/i.test(s)
-    && /(within\s+\d|orb|conjunct|opposition|trine|square|sextile|lands\s+within|sits\s+within|near)/i.test(s);
-
-  const sentenceAllowed = (s: string): boolean => {
-    const sr = s.match(/\bSR\s+([A-Za-z][A-Za-z ]+)\b/i);
-    const ang = s.match(/\bnatal\s+(Ascendant|Descendant|Midheaven|IC)\b/i);
-    if (!sr || !ang) return true;
-    return allowed.has(`${sr[1].trim().toLowerCase()}|${ang[1].trim().toLowerCase()}`);
+  // Aspect classification by separation in degrees. Tolerances mirror our
+  // angle-orb conventions (~9° for angles).
+  const ASPECT_TARGETS: { name: string; degrees: number; orb: number }[] = [
+    { name: "conjunct",   degrees: 0,   orb: 9 },
+    { name: "opposition", degrees: 180, orb: 9 },
+    { name: "square",     degrees: 90,  orb: 7 },
+    { name: "trine",      degrees: 120, orb: 7 },
+    { name: "sextile",    degrees: 60,  orb: 5 },
+  ];
+  const angularDiff = (a: number, b: number): number => {
+    let d = Math.abs(((a - b) % 360 + 360) % 360);
+    if (d > 180) d = 360 - d;
+    return d;
+  };
+  const classify = (srAbs: number, angleAbs: number): { aspect: string | null; orb: number } => {
+    const sep = angularDiff(srAbs, angleAbs);
+    let best: { name: string; orb: number } | null = null;
+    for (const t of ASPECT_TARGETS) {
+      const orb = Math.abs(sep - t.degrees);
+      if (orb <= t.orb && (!best || orb < best.orb)) best = { name: t.name, orb };
+    }
+    return { aspect: best?.name ?? null, orb: best?.orb ?? sep };
   };
 
-  let stripped = 0;
-  const examples: string[] = [];
+  // Sentence pattern: "SR <Planet> ... <natal|your> Ascendant|Descendant ..."
+  // We only act on sentences that have BOTH an SR planet and a natal angle.
+  const PLANET_RE_SRC = "Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno";
+  const srPlanetRe = new RegExp(`\\bSR\\s+(${PLANET_RE_SRC})\\b`, "i");
+  const angleRe = /\b(?:natal|your)\s+(Ascendant|Descendant)\b/i;
+  const orbClaimRe = /\bwithin\s+(\d+)°(?:\s*(\d+)['′])?/i;
+  const aspectClaimRe = /\b(conjunct|conjunction|opposition|opposite|square|trine|sextile|near|lands\s+on|lands\s+within|sits\s+within)\b/i;
+
+  let corrected = 0;
+  let flagged = 0;
+  const correctionExamples: string[] = [];
+  const flaggedExamples: string[] = [];
   const SKIP_KEYS = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
     "planet","sign","house","degrees","aspect","natal_point","symbol",
@@ -2023,19 +2064,103 @@ const stripUnverifiedSrAngleClaims = (
     "subject","question_type","question_asked",
   ]);
 
+  const formatOrb = (orbDeg: number): string => {
+    const whole = Math.floor(orbDeg);
+    const minutes = Math.round((orbDeg - whole) * 60);
+    if (minutes === 0) return `${whole}°`;
+    if (minutes === 60) return `${whole + 1}°`;
+    return `${whole}°${String(minutes).padStart(2, "0")}'`;
+  };
+
+  const correctSentence = (sentence: string): { next: string; didCorrect: boolean; didFlag: boolean } => {
+    const srMatch = sentence.match(srPlanetRe);
+    const angleMatch = sentence.match(angleRe);
+    if (!srMatch || !angleMatch) return { next: sentence, didCorrect: false, didFlag: false };
+
+    const srPlanet = srMatch[1];
+    const claimedAngle = angleMatch[1] as "Ascendant" | "Descendant";
+    const srPos = srByPlanet.get(srPlanet.toLowerCase());
+    if (!srPos) {
+      // We cannot verify deterministically — flag, do not delete.
+      return { next: sentence, didCorrect: false, didFlag: true };
+    }
+
+    // Compute aspect to BOTH angles and pick the closer one. The angle
+    // the model named is only "right" if it's the closer one; otherwise
+    // the sentence is talking about the other end of the axis.
+    const ascResult = classify(srPos.abs, angles.Ascendant.abs);
+    const dscResult = classify(srPos.abs, angles.Descendant.abs);
+    const closerAngle: "Ascendant" | "Descendant" =
+      ascResult.orb <= dscResult.orb ? "Ascendant" : "Descendant";
+    const closerResult = closerAngle === "Ascendant" ? ascResult : dscResult;
+
+    // If neither angle is actually within aspect orb, the claim is not
+    // supportable. Flag and leave the prose intact (per policy).
+    if (!closerResult.aspect) {
+      return { next: sentence, didCorrect: false, didFlag: true };
+    }
+
+    let next = sentence;
+    let changed = false;
+
+    // 1) Fix the angle name if the model picked the wrong end of the axis.
+    if (claimedAngle !== closerAngle) {
+      next = next.replace(angleRe, (m) => m.replace(claimedAngle, closerAngle));
+      changed = true;
+    }
+
+    // 2) Fix any explicit "within X°[Y']" orb claim that disagrees with
+    //    the real orb by more than 0.5°.
+    const orbMatch = next.match(orbClaimRe);
+    if (orbMatch) {
+      const claimedOrbDeg = parseInt(orbMatch[1], 10) + (orbMatch[2] ? parseInt(orbMatch[2], 10) / 60 : 0);
+      if (Math.abs(claimedOrbDeg - closerResult.orb) > 0.5) {
+        next = next.replace(orbClaimRe, `within ${formatOrb(closerResult.orb)}`);
+        changed = true;
+      }
+    }
+
+    // 3) If a specific aspect verb is claimed and disagrees with the real
+    //    classification, replace it with the correct one.
+    const aspectMatch = next.match(aspectClaimRe);
+    if (aspectMatch) {
+      const claimedRaw = aspectMatch[1].toLowerCase();
+      const claimedNorm = claimedRaw.startsWith("conjunct") ? "conjunct"
+        : claimedRaw.startsWith("oppos") ? "opposition"
+        : claimedRaw === "square" ? "square"
+        : claimedRaw === "trine" ? "trine"
+        : claimedRaw === "sextile" ? "sextile"
+        : null;
+      if (claimedNorm && claimedNorm !== closerResult.aspect) {
+        next = next.replace(aspectClaimRe, closerResult.aspect!);
+        changed = true;
+      }
+    }
+
+    return { next, didCorrect: changed, didFlag: false };
+  };
+
   const cleanText = (text: string): string => {
     if (!text || typeof text !== "string") return text;
     const sentences = splitIntoSentences(text);
     if (sentences.length === 0) return text;
-    const kept = sentences.filter((s) => !(hasAngleClaim(s) && !sentenceAllowed(s)));
-    if (kept.length !== sentences.length) {
-      stripped += sentences.length - kept.length;
-      const removed = sentences.filter((s) => hasAngleClaim(s) && !sentenceAllowed(s));
-      for (const r of removed) if (examples.length < 5) examples.push(r.slice(0, 180));
+    let touched = false;
+    const out: string[] = [];
+    for (const s of sentences) {
+      const { next, didCorrect, didFlag } = correctSentence(s);
+      if (didCorrect) {
+        corrected++;
+        touched = true;
+        if (correctionExamples.length < 5) {
+          correctionExamples.push(`${s.slice(0, 140)} → ${next.slice(0, 140)}`);
+        }
+      } else if (didFlag) {
+        flagged++;
+        if (flaggedExamples.length < 5) flaggedExamples.push(s.slice(0, 180));
+      }
+      out.push(next);
     }
-    let out = kept.join(" ").trim();
-    out = out.replace(/^\([^)]*natal\s+(Ascendant|Descendant)[^)]*\)\s*/i, "").trim();
-    return out;
+    return touched ? out.join(" ").trim() : text;
   };
 
   const visit = (node: any) => {
@@ -2053,14 +2178,27 @@ const stripUnverifiedSrAngleClaims = (
   };
 
   visit(parsedContent);
-  if (stripped > 0) {
+
+  if (corrected > 0) {
     log.push({
-      type: "unverified_sr_angle_claims_stripped",
-      detail: { stripped, allowed_pairs: Array.from(allowed), examples },
+      type: "sr_angle_claims_corrected_in_prose",
+      detail: { corrected, examples: correctionExamples },
     });
-    console.info("[ask-astrology] unverified SR angle claims stripped", {
-      stripped,
-      allowed_pairs: Array.from(allowed),
+    console.info("[ask-astrology] SR-to-natal angle claims corrected in prose", {
+      corrected,
+    });
+  }
+  if (flagged > 0) {
+    log.push({
+      type: "sr_angle_claims_unverifiable",
+      detail: {
+        flagged,
+        note: "Sentence references an SR planet → natal angle relationship that could not be verified against deterministic chart context. Prose left intact for human review.",
+        examples: flaggedExamples,
+      },
+    });
+    console.warn("[ask-astrology] SR-to-natal angle claims unverifiable (left intact)", {
+      flagged,
     });
   }
 };
@@ -6481,10 +6619,13 @@ HARD RULE — applies to every sentence:
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
           fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // VERIFIED SR ANGLE CLAIM GUARD: if the model invents an SR-to-natal
-          // Ascendant/Descendant claim that is not present in the verified
-          // SR-to-natal aspect block, strip that sentence before export.
-          stripUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR-TO-NATAL ANGLE CORRECTION (corrections, not deletions): if the
+          // model claims "SR <Planet> ... your Ascendant/Descendant" with the
+          // wrong angle / orb / aspect, rewrite the sentence using the
+          // deterministic SR positions and natal angle positions. If a claim
+          // cannot be corrected deterministically, flag it in the emission log
+          // and leave the prose intact for human review.
+          correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
