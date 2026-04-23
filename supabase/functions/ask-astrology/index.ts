@@ -6450,7 +6450,7 @@ HARD RULE — applies to every sentence:
           // RELATIONSHIP BODY BACKFILL: now runs AFTER inject + coverage so
           // balance_interpretation is populated and the body backfill can
           // copy it into the section body.
-          backfillRelationshipSectionBodies(parsedContent, emissionLog);
+          backfillRelationshipSectionBodies(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX A — synthesize timing_section.body from windows when empty
           // so the universal MISSING_REQUIRED_BODY validator below treats
           // timing tables as fully populated when they have data.
