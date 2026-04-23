@@ -723,14 +723,16 @@ const rewriteSentencePronouns = (sentence: string): string => {
   // already correct. The look-behind check below excludes the broken
   // case where "you" is the OBJECT of a preceding preposition.
   s = s.replace(/(^|[^a-zA-Z])(you|You)\s+(keeps|learns|runs|communicates|outlasts|burns|pushes|gets|takes|speaks|hits|breaks|focuses|matches|grasps|reaches|works|finds|holds|builds|makes|sees|wants|needs|knows|feels|tries|thinks|seems|moves|stays|goes|comes|gives|asks|says|tells|shows|brings|carries|pays|earns|loses|wins|leads|follows)\b/g,
-    (match, lead, pron, verb) => {
-      // If the character right before "you" is a letter-or-space sequence
-      // ending in a preposition like "of"/"to"/"for"/"with"/"from"/"in"/
-      // "on"/"about" then "you" is the OBJECT and we must NOT rewrite the
-      // verb — the real subject ("part", "side", "piece") sits earlier.
-      const prefix = match.slice(0, match.length - (pron.length + 1 + verb.length));
-      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(prefix)) {
-        return match;
+    (_match, lead, pron, verb, offset, fullString) => {
+      // Build the FULL prefix from the original string up to and including
+      // the captured `lead` character. If the prior context ends with a
+      // preposition like "of"/"to"/"for"/etc., "you" is the OBJECT and the
+      // verb form is already correct (subject is the noun before "of").
+      const fullPrefix = (typeof offset === "number" && typeof fullString === "string")
+        ? fullString.slice(0, offset) + (lead || "")
+        : (lead || "");
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(fullPrefix)) {
+        return _match;
       }
       const map: Record<string, string> = {
         keeps: "keep", learns: "learn", runs: "run", communicates: "communicate",
@@ -748,22 +750,25 @@ const rewriteSentencePronouns = (sentence: string): string => {
       };
       return `${lead}${pron} ${map[verb] ?? verb}`;
     });
-  // "you is/was/has" → "you are/were/have" — same preposition guard.
-  const guardedReplace = (re: RegExp, repl: (p: string) => string) => {
-    s = s.replace(re, (match, lead, pron) => {
-      const prefix = match.slice(0, match.length - (pron.length + match.match(/\s+\w+'?\w*$/)?.[0].length || 0));
-      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(prefix)) {
-        return match;
+  // "you is/was/has" → "you are/were/have" — same preposition guard built
+  // from the FULL string offset.
+  const guardedReplace = (re: RegExp, replacement: string) => {
+    s = s.replace(re, (_match: string, lead: string, pron: string, offset: number, fullString: string) => {
+      const fullPrefix = (typeof offset === "number" && typeof fullString === "string")
+        ? fullString.slice(0, offset) + (lead || "")
+        : (lead || "");
+      if (/\b(of|to|for|with|from|in|on|about|like|as|by|behind|beside)\s*$/i.test(fullPrefix)) {
+        return _match;
       }
-      return `${lead}${repl(pron)}`;
+      return `${lead}${pron} ${replacement}`;
     });
   };
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+is\b/g, (p) => `${p} are`);
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, (p) => `${p} were`);
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+has\b/g, (p) => `${p} have`);
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, (p) => `${p} don't`);
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, (p) => `${p} weren't`);
-  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, (p) => `${p} haven't`);
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+is\b/g, "are");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, "were");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+has\b/g, "have");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
+  guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
