@@ -1824,6 +1824,92 @@ const fixDescendantCuspMentionsInProse = (
   }
 };
 
+// DETERMINISTIC ASCENDANT / DESCENDANT AXIS LABEL GUARD — the model can
+// still swap the *labels* even when it gets the sign/degree from the chart.
+// Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
+// the "natal Ascendant". This pass rewrites or strips any prose that names
+// House 7 / Descendant coordinates as Ascendant, or House 1 / Ascendant
+// coordinates as Descendant.
+const fixAscendantDescendantLabelSwapsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const asc = cusps.find((c) => c.house === 1);
+  const dsc = cusps.find((c) => c.house === 7);
+  if (!asc || !dsc) return;
+
+  const degreeForms = (deg: number): string[] => [
+    `${deg}°`,
+    `${deg}°00'`,
+    `${deg}°0'`,
+    `${deg}°0.0`,
+    `${deg.toFixed(1)}°`,
+  ];
+  const joinAlt = (parts: string[]) => parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const ascDegAlt = joinAlt(degreeForms(asc.degree));
+  const dscDegAlt = joinAlt(degreeForms(dsc.degree));
+  const ascSign = asc.sign;
+  const dscSign = dsc.sign;
+
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+)?Ascendant\\s+at\\s+(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+)?Descendant\\s+at\\s+(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(wrongAscLabel, (m) => m.replace(/Ascendant/i, "Descendant"));
+        next = next.replace(wrongDescLabel, (m) => m.replace(/Descendant/i, "Ascendant"));
+        next = next.replace(wrongAscSignOnly, (m) => m.replace(/Ascendant/i, "Descendant"));
+        next = next.replace(wrongDescSignOnly, (m) => m.replace(/Descendant/i, "Ascendant"));
+        if (next !== val) {
+          rewrites++;
+          if (examples.length < 5) examples.push(val.slice(0, 140));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+
+  visit(parsedContent);
+  if (rewrites > 0) {
+    log.push({
+      type: "ascendant_descendant_labels_corrected_in_prose",
+      detail: {
+        rewrites,
+        ascendant: `${asc.degree}° ${ascSign}`,
+        descendant: `${dsc.degree}° ${dscSign}`,
+        examples,
+      },
+    });
+    console.info("[ask-astrology] ascendant/descendant labels corrected in prose", {
+      rewrites,
+      ascendant: `${asc.degree}° ${ascSign}`,
+      descendant: `${dsc.degree}° ${dscSign}`,
+    });
+  }
+};
+
 const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
