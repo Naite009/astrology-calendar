@@ -3285,6 +3285,7 @@ Return this exact structure:
     {
       "type": "modality_element",
       "title": "Natal Elemental & Modal Balance",
+      "body": "REQUIRED — 2 to 4 sentences of real prose (50–100 words) that open this section BEFORE the elements/modalities/polarity arrays. Sentence 1 must open with a recognizable behavior pattern this person actually lives (e.g., 'You move through the world by talking, processing out loud, and needing intellectual room — but underneath that, something quieter is always digesting privately.'). Sentence 2 must name the dominant element + modality combination driving it (e.g., 'That comes from four Air planets paired with a Water Moon in the 12th house.'). Sentences 3–4 should preview the specific tension or strength this exact balance creates for THIS person's question. FORBIDDEN: generic elemental descriptions like 'You have a balanced chart' or meta sentences like 'Below is your elemental breakdown.' Do NOT leave this field empty.",
       "elements": [
         { "name": "Fire", "symbol": "🔥", "count": 3, "planets": ["Sun", "Mars", "Jupiter"], "interpretation": "1 sentence: what does having 3 fire planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
         { "name": "Earth", "symbol": "🌍", "count": 2, "planets": ["Venus", "Saturn"], "interpretation": "1 sentence: what does having 2 earth planets mean for how THIS person acts regarding their specific question? Describe a behavior or pattern, not a trait label." },
@@ -3308,6 +3309,7 @@ Return this exact structure:
     {
       "type": "summary_box",
       "title": "Summary",
+      "body": "REQUIRED — 2 to 3 sentences of real prose (40–80 words) that open the summary BEFORE the items array. Synthesize the single most important takeaway from this entire reading in plain behavioral language — what is the ONE thing this person should walk away knowing about their question? Sentence 1 must name the core pattern or strategy (e.g., 'Your work this year is to stop treating mental chemistry as proof of compatibility and start checking whether actions match words from week one.'). Sentence 2 should preview what to do with that. FORBIDDEN: meta sentences like 'Here is your summary' or 'In conclusion' — every sentence must make a substantive claim. Do NOT leave this field empty. The items[] follow this prose.",
       "items": [
         { "label": "Who", "value": "Full answer here." },
         { "label": "Where", "value": "Full answer here." },
@@ -3681,7 +3683,7 @@ RELATIONSHIP NEEDS PROFILE (MANDATORY — must appear immediately after "Your Re
 This is a simple, punchy map of how the person loves. SHORT sentences only.
 - "title": "Relationship Needs Profile"
 - "type": "narrative_section"
-- "body": "These are the core forces that shape how you connect, what you need, and what draws you in."
+- "body": REQUIRED — 2 to 4 sentences of real prose (50–110 words) that name THIS person's specific needs profile in lived behavioral language BEFORE the bullets. Sentence 1 must open with a recognizable behavior pattern (e.g., "You tend to give more than you've been given before you check whether the other person has actually shown up yet."). Sentence 2 must name the dominant placement that drives it (e.g., "That comes from your Venus in Sagittarius in the 2nd opposing Jupiter in the 8th."). Sentences 3–4 should preview the tension between what you VALUE (Venus) and what you NEED emotionally (Moon) and what you're DRAWN TO (Mars). FORBIDDEN: meta sentences like "These are the core forces that shape how you connect" or "Below are your needs" — every sentence must make a substantive claim about THIS chart. Do NOT leave this field empty or use the placeholder text. The bullets follow this prose.
 - "bullets": Exactly 4 bullets using the EXACT arrow label format below. Each bullet text must lead with the placement in parentheses, then 1-2 sentences translating it to behavior.
   { "label": "Venus → what you value in love", "text": "(Venus in Capricorn, 7th house) You value consistency and relationships that build over time — you need proof before you invest." },
   { "label": "Moon → what you need emotionally", "text": "(Moon conjunct Saturn in Cancer, 1st house) You need emotional safety and reliability to feel secure — without it, you shut down." },
