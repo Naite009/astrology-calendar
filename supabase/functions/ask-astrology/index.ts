@@ -1988,6 +1988,44 @@ const ensureSentence = (text: string): string => {
   return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
 };
 
+// Hardcode the canonical title for the strategy summary section. The AI
+// occasionally returns variants like "Summary", "Strategy Summary", or
+// "Relationship Strategy". The downstream renderer + cleanup logic match
+// on the EXACT canonical string "Relationship Strategy Summary", so we
+// force-rename any close variant in relationship readings before the
+// backfill runs. This is Fix 4 in the chart-reference / pronoun /
+// title-contract patch set.
+const RELATIONSHIP_SUMMARY_TITLE_VARIANTS = [
+  "summary",
+  "strategy summary",
+  "relationship strategy",
+  "relationship summary",
+  "your relationship strategy",
+  "your strategy summary",
+];
+const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt && qt !== "relationship") return;
+  let renamed = 0;
+  const renames: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (!section || section?.type !== "summary_box") continue;
+    const currentTitle = String(section.title || "").trim();
+    if (currentTitle === "Relationship Strategy Summary") continue;
+    const lower = currentTitle.toLowerCase();
+    if (RELATIONSHIP_SUMMARY_TITLE_VARIANTS.includes(lower)) {
+      section.title = "Relationship Strategy Summary";
+      renamed++;
+      if (renames.length < 5) renames.push(`${currentTitle} → Relationship Strategy Summary`);
+    }
+  }
+  if (renamed > 0) {
+    log.push({ type: "summary_box_title_hardcoded", detail: { renamed, renames } });
+    console.info("[ask-astrology] summary_box title hardcoded", { renamed, renames });
+  }
+};
+
 const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
 
