@@ -6167,6 +6167,14 @@ HARD RULE — applies to every sentence:
           // two representations on every row, killing RETROGRADE_STATE_MISMATCH
           // false positives without changing any prose.
           normalizePlacementTableRetrograde(parsedContent, emissionLog, sanitizedChartContext || "");
+          // SR HOUSE OVERRIDE: SR placement table house numbers must come
+          // from the SR Planetary Positions block (deterministic truth),
+          // not from whatever the AI copied from natal. This kills the
+          // Replit gate's "recomputed N SR house number(s)" fix.
+          overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
+          // 7th house cusp / Descendant with the Ascendant's sign.
+          fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
