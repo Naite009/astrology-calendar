@@ -1824,6 +1824,183 @@ const fixDescendantCuspMentionsInProse = (
   }
 };
 
+// DETERMINISTIC ASCENDANT / DESCENDANT AXIS LABEL GUARD — the model can
+// still swap the *labels* even when it gets the sign/degree from the chart.
+// Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
+// the "natal Ascendant". This pass rewrites or strips any prose that names
+// House 7 / Descendant coordinates as Ascendant, or House 1 / Ascendant
+// coordinates as Descendant.
+const fixAscendantDescendantLabelSwapsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const asc = cusps.find((c) => c.house === 1);
+  const dsc = cusps.find((c) => c.house === 7);
+  if (!asc || !dsc) return;
+
+  const degreeForms = (deg: number): string[] => [
+    `${deg}°`,
+    `${deg}°00'`,
+    `${deg}°0'`,
+    `${deg}°0.0`,
+    `${deg.toFixed(1)}°`,
+  ];
+  const joinAlt = (parts: string[]) => parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const ascDegAlt = joinAlt(degreeForms(asc.degree));
+  const dscDegAlt = joinAlt(degreeForms(dsc.degree));
+  const ascSign = asc.sign;
+  const dscSign = dsc.sign;
+
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+)?Ascendant\\s+at\\s+(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+)?Descendant\\s+at\\s+(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(wrongAscLabel, (m) => m.replace(/Ascendant/i, "Descendant"));
+        next = next.replace(wrongDescLabel, (m) => m.replace(/Descendant/i, "Ascendant"));
+        next = next.replace(wrongAscSignOnly, (m) => m.replace(/Ascendant/i, "Descendant"));
+        next = next.replace(wrongDescSignOnly, (m) => m.replace(/Descendant/i, "Ascendant"));
+        if (next !== val) {
+          rewrites++;
+          if (examples.length < 5) examples.push(val.slice(0, 140));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+
+  visit(parsedContent);
+  if (rewrites > 0) {
+    log.push({
+      type: "ascendant_descendant_labels_corrected_in_prose",
+      detail: {
+        rewrites,
+        ascendant: `${asc.degree}° ${ascSign}`,
+        descendant: `${dsc.degree}° ${dscSign}`,
+        examples,
+      },
+    });
+    console.info("[ask-astrology] ascendant/descendant labels corrected in prose", {
+      rewrites,
+      ascendant: `${asc.degree}° ${ascSign}`,
+      descendant: `${dsc.degree}° ${dscSign}`,
+    });
+  }
+};
+
+// VERIFIED SR-TO-NATAL ANGLE CLAIM GUARD — the model sometimes invents
+// cross-chart angle activations (especially "SR Saturn near natal Ascendant")
+// that are NOT present in the deterministic SR-to-natal aspect block from the
+// chart context. When that happens, the sentence must be removed rather than
+// trusted. This specifically protects Ascendant/Descendant axis claims.
+const stripUnverifiedSrAngleClaims = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+
+  const allowed = new Set<string>();
+  const headerMatch = chartContext.match(/\n--- ACTIVE SOLAR RETURN-TO-NATAL ASPECTS \(this year\) ---\n/);
+  if (headerMatch) {
+    const startIdx = headerMatch.index! + headerMatch[0].length;
+    const tail = chartContext.slice(startIdx);
+    const endMatch = tail.match(/\n\s*\n|\n--- |\n[A-Z][A-Z ]{6,}:/);
+    const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+    const lineRe = /-\s*SR\s+([A-Za-z][A-Za-z ]+)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+[☌☍△□⚹]\s+Natal\s+(Ascendant|Descendant|Midheaven|IC)\s+[\d.]+°\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s+\(orb:\s*([\d.]+)°\)\s+—\s+(conjunct|opposition|trine|square|sextile)/gi;
+    let m: RegExpExecArray | null;
+    while ((m = lineRe.exec(block)) !== null) {
+      const srPlanet = m[1].trim().toLowerCase();
+      const natalAngle = m[3].trim().toLowerCase();
+      allowed.add(`${srPlanet}|${natalAngle}`);
+    }
+  }
+
+  const hasAngleClaim = (s: string): boolean =>
+    /\bSR\s+(Saturn|Neptune|Uranus|Pluto|Jupiter|Mars|Venus|Mercury|Sun|Moon|Chiron)\b/i.test(s)
+    && /\bnatal\s+(Ascendant|Descendant)\b/i.test(s)
+    && /(within\s+\d|orb|conjunct|opposition|trine|square|sextile|lands\s+within|sits\s+within|near)/i.test(s);
+
+  const sentenceAllowed = (s: string): boolean => {
+    const sr = s.match(/\bSR\s+([A-Za-z][A-Za-z ]+)\b/i);
+    const ang = s.match(/\bnatal\s+(Ascendant|Descendant|Midheaven|IC)\b/i);
+    if (!sr || !ang) return true;
+    return allowed.has(`${sr[1].trim().toLowerCase()}|${ang[1].trim().toLowerCase()}`);
+  };
+
+  let stripped = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const cleanText = (text: string): string => {
+    if (!text || typeof text !== "string") return text;
+    const sentences = splitIntoSentences(text);
+    if (sentences.length === 0) return text;
+    const kept = sentences.filter((s) => !(hasAngleClaim(s) && !sentenceAllowed(s)));
+    if (kept.length !== sentences.length) {
+      stripped += sentences.length - kept.length;
+      const removed = sentences.filter((s) => hasAngleClaim(s) && !sentenceAllowed(s));
+      for (const r of removed) if (examples.length < 5) examples.push(r.slice(0, 180));
+    }
+    let out = kept.join(" ").trim();
+    out = out.replace(/^\([^)]*natal\s+(Ascendant|Descendant)[^)]*\)\s*/i, "").trim();
+    return out;
+  };
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        const next = cleanText(val);
+        if (next !== val) (node as any)[key] = next;
+      } else {
+        visit(val);
+      }
+    }
+  };
+
+  visit(parsedContent);
+  if (stripped > 0) {
+    log.push({
+      type: "unverified_sr_angle_claims_stripped",
+      detail: { stripped, allowed_pairs: Array.from(allowed), examples },
+    });
+    console.info("[ask-astrology] unverified SR angle claims stripped", {
+      stripped,
+      allowed_pairs: Array.from(allowed),
+    });
+  }
+};
+
 const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
@@ -6194,6 +6371,14 @@ HARD RULE — applies to every sentence:
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
+          // Descendant the Ascendant (or vice versa) using the deterministic
+          // House 1 / House 7 cusp data from chart context.
+          fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // VERIFIED SR ANGLE CLAIM GUARD: if the model invents an SR-to-natal
+          // Ascendant/Descendant claim that is not present in the verified
+          // SR-to-natal aspect block, strip that sentence before export.
+          stripUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", emissionLog);
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
