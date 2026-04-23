@@ -1598,13 +1598,34 @@ const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
 // reconciles both representations on every placement_table in the payload
 // (Natal AND Solar Return) without ever overwriting a true `retrograde:
 // false` flag with a glyph or vice versa.
-const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) => {
+const normalizePlacementTableRetrograde = (
+  parsedContent: any,
+  log: HygieneLog,
+  chartContext: string = "",
+) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   let normalizedRows = 0;
   const examples: string[] = [];
   const RETRO_GLYPH_RE = /\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i;
+
+  // Build chart-context truth maps for retrograde state. The chart context
+  // is computed deterministically from astronomy-engine and is THE source
+  // of truth — it must override any AI-authored `retrograde: false` on a
+  // planet that is in fact retrograde (e.g. SR Saturn, SR Neptune).
+  const natalTruth = new Map<string, boolean>();
+  const srTruth = new Map<string, boolean>();
+  if (chartContext) {
+    const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+    const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+    for (const p of natalPos) natalTruth.set(p.planet.toLowerCase(), !!p.retrograde);
+    for (const p of srPos) srTruth.set(p.planet.toLowerCase(), !!p.retrograde);
+  }
+
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
+    const titleLower = String(section.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const truthMap = isSR ? srTruth : natalTruth;
     const rows = Array.isArray(section.rows) ? section.rows : [];
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
@@ -1613,15 +1634,20 @@ const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) 
       const hasGlyph = RETRO_GLYPH_RE.test(rawPlanet);
       const baseName = rawPlanet.replace(RETRO_GLYPH_RE, "").trim();
       // Determine retrograde state. Priority:
-      //   1. explicit boolean true
-      //   2. glyph/Rx suffix on planet name
-      //   3. explicit boolean false
-      //   4. default false
+      //   1. CHART CONTEXT (deterministic astronomy-engine truth) — overrides AI
+      //   2. explicit boolean true
+      //   3. glyph/Rx suffix on planet name
+      //   4. explicit boolean false
+      //   5. default false
+      const ctxRetro = truthMap.get(baseName.toLowerCase());
       let retro: boolean;
-      if (row.retrograde === true) retro = true;
-      else if (hasGlyph) retro = true;
-      else if (row.retrograde === false) retro = false;
-      else retro = false;
+      let source: string;
+      if (ctxRetro === true) { retro = true; source = "chart_context"; }
+      else if (ctxRetro === false) { retro = false; source = "chart_context"; }
+      else if (row.retrograde === true) { retro = true; source = "row_boolean"; }
+      else if (hasGlyph) { retro = true; source = "glyph"; }
+      else if (row.retrograde === false) { retro = false; source = "row_boolean"; }
+      else { retro = false; source = "default"; }
 
       const desiredPlanet = retro ? `${baseName} ℞` : baseName;
       const before = { planet: rawPlanet, retrograde: row.retrograde };
@@ -1636,9 +1662,9 @@ const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) 
       }
       if (changed) {
         normalizedRows++;
-        if (examples.length < 6) {
+        if (examples.length < 8) {
           examples.push(
-            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde})`
+            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde}) [src=${source}]`
           );
         }
       }
@@ -5947,18 +5973,50 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
           // name (consumed by the PDF renderer). This pass reconciles the
           // two representations on every row, killing RETROGRADE_STATE_MISMATCH
           // false positives without changing any prose.
-          normalizePlacementTableRetrograde(parsedContent, emissionLog);
+          normalizePlacementTableRetrograde(parsedContent, emissionLog, sanitizedChartContext || "");
           // FIX 4 — TITLE CONTRACT: hardcode the canonical
           // "Relationship Strategy Summary" title before the backfill
           // searches for it. This prevents the backfill from missing the
           // section when the AI returns a variant like "Summary" or
           // "Strategy Summary".
           enforceRelationshipSummaryTitle(parsedContent, emissionLog);
-          // RELATIONSHIP BODY BACKFILL: if hygiene/prompt drift still leaves
-          // Needs Profile / Modal Balance / Strategy Summary without prose
-          // bodies, build them deterministically from the surviving bullets,
-          // balance_interpretation, and summary items so the payload cannot
-          // ship with the same 3 empty fields again.
+          // FIX 2 — DETERMINISTIC POLARITY OVERWRITE (must run BEFORE
+          // body backfills so balance_interpretation is fresh and the
+          // modality_element section exists with correct counts before
+          // backfillRelationshipSectionBodies tries to read it).
+          overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // 3-CALL RELATIONSHIP: inject a deterministic modality_element
+          // section (and overwrite any AI-authored polarity counts) using
+          // the new planet-identity rule (Sun/Mercury/Mars/Jupiter/Saturn/
+          // Uranus = Yang, Moon/Venus/Neptune/Pluto = Yin → always sums 10).
+          // CRITICAL ORDER: this MUST run BEFORE backfillRelationshipSectionBodies
+          // so the modality_element section exists with deterministic counts +
+          // a populated balance_interpretation/body when the body backfill
+          // copies balance_interpretation into body.
+          if (isRelationshipQuestion && (parsedContent as any)?._three_call?.enabled) {
+            try {
+              const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
+              const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
+              emissionLog.push({
+                type: "deterministic_tallies_injected",
+                detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies },
+              });
+            } catch (detErr) {
+              console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
+            }
+          }
+          // enforceNonZeroCoverage runs earlier in the pipeline; re-run any
+          // necessary balance_interpretation generation here by calling it
+          // again so the freshly-injected section gets coverage text BEFORE
+          // body backfill copies it.
+          try {
+            enforceNonZeroCoverage(parsedContent);
+          } catch (covErr) {
+            console.warn("[ask-astrology] enforceNonZeroCoverage re-run threw:", covErr);
+          }
+          // RELATIONSHIP BODY BACKFILL: now runs AFTER inject + coverage so
+          // balance_interpretation is populated and the body backfill can
+          // copy it into the section body.
           backfillRelationshipSectionBodies(parsedContent, emissionLog);
           // FIX A — synthesize timing_section.body from windows when empty
           // so the universal MISSING_REQUIRED_BODY validator below treats
@@ -5972,30 +6030,6 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
           // which is generated by enforceNonZeroCoverage earlier in the
           // pipeline and is NOT in PRONOUN_REWRITE_SAFE_KEYS.
           rewriteThirdPersonPronouns(parsedContent, emissionLog);
-          // FIX 2 — DETERMINISTIC POLARITY OVERWRITE: the model keeps
-          // re-deriving polarity from signs (Saturn in Libra → Yang) regardless
-          // of prompt instructions. Polarity is a planet property. Overwrite
-          // the AI's polarity[] with the planet-based truth computed from the
-          // natal chart context. Yang + Yin always sums to 10.
-          overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
-          // 3-CALL RELATIONSHIP: inject a deterministic modality_element
-          // section (and overwrite any AI-authored polarity counts) using
-          // the new planet-identity rule (Sun/Mercury/Mars/Jupiter/Saturn/
-          // Uranus = Yang, Moon/Venus/Neptune/Pluto = Yin → always sums 10).
-          // The model is no longer asked to compute these on the 3-call
-          // path, so we inject them ourselves before any downstream pass.
-          if (isRelationshipQuestion && (parsedContent as any)?._three_call?.enabled) {
-            try {
-              const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
-              const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
-              emissionLog.push({
-                type: "deterministic_tallies_injected",
-                detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies },
-              });
-            } catch (detErr) {
-              console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
-            }
-          }
           // FIX 3 — RELATIONSHIP PATTERN SECTION ENFORCER: rename close
           // variants of the title and insert a deterministic minimal section
           // if missing entirely, so Replit's MISSING_REQUIRED_SECTION gate for
