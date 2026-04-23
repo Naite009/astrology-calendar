@@ -37,7 +37,7 @@
 // and merged into the final JSON.
 // ============================================================================
 
-const PER_CALL_TIMEOUT_MS = 45_000;
+const PER_CALL_TIMEOUT_MS = 150_000;
 const PER_CALL_MAX_ATTEMPTS = 2;
 const RETRY_BACKOFF_MS = [1500, 4500]; // index 0 = before attempt 2, etc.
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
