@@ -1505,9 +1505,21 @@ const SIGN_TO_MODALITY: Record<string, string> = {
   Taurus:"Fixed", Leo:"Fixed", Scorpio:"Fixed", Aquarius:"Fixed",
   Gemini:"Mutable", Virgo:"Mutable", Sagittarius:"Mutable", Pisces:"Mutable",
 };
+// SIGN_TO_POLARITY remains for any sign-based logic that genuinely wants
+// the sign's polarity. POLARITY counts in modality_element use PLANET-based
+// polarity (PLANET_POLARITY below) per the project standard, so this map is
+// no longer used for the modality_element section.
 const SIGN_TO_POLARITY: Record<string, string> = {
   Aries:"Yang", Gemini:"Yang", Leo:"Yang", Libra:"Yang", Sagittarius:"Yang", Aquarius:"Yang",
   Taurus:"Yin", Cancer:"Yin", Virgo:"Yin", Scorpio:"Yin", Capricorn:"Yin", Pisces:"Yin",
+};
+// PLANET-based polarity. Mercury is classified Yang (Hellenistic diurnal
+// classification) so Yang + Yin always sums to 10 across the 10 counted
+// planets. This matches src/lib/askValidationFacts.ts and is the single
+// source of truth for polarity counts in the AI output.
+const PLANET_POLARITY: Record<string, "Yang" | "Yin"> = {
+  Sun: "Yang", Mercury: "Yang", Mars: "Yang", Jupiter: "Yang", Saturn: "Yang", Uranus: "Yang",
+  Moon: "Yin", Venus: "Yin", Neptune: "Yin", Pluto: "Yin",
 };
 const ELEMENT_SYMBOLS: Record<string, string> = { Fire:"🔥", Earth:"🌍", Air:"💨", Water:"💧" };
 const TEN_PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"];
