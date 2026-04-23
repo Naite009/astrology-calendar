@@ -6787,6 +6787,14 @@ HARD RULE — applies to every sentence:
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SIGN RULERSHIP CORRECTION: scan all prose for any "<Planet>
+          // rules <Sign>" / "<Sign> ruled by <Planet>" / "<Planet>, ruler of
+          // <Sign>" claim and rewrite when the planet does not actually
+          // rule that sign. Uses traditional + modern co-ruler map (Pisces =
+          // Jupiter/Neptune, never Saturn; Aquarius = Saturn/Uranus;
+          // Scorpio = Mars/Pluto). Prevents the prompt-only rule from
+          // slipping through into the final reading.
+          correctSignRulershipClaimsInProse(parsedContent, emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
