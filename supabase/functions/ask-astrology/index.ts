@@ -5303,6 +5303,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // FIX 4 — TITLE CONTRACT: hardcode the canonical
+          // "Relationship Strategy Summary" title before the backfill
+          // searches for it. This prevents the backfill from missing the
+          // section when the AI returns a variant like "Summary" or
+          // "Strategy Summary".
+          enforceRelationshipSummaryTitle(parsedContent, emissionLog);
           // RELATIONSHIP BODY BACKFILL: if hygiene/prompt drift still leaves
           // Needs Profile / Modal Balance / Strategy Summary without prose
           // bodies, build them deterministically from the surviving bullets,
