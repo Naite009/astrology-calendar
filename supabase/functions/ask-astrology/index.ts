@@ -5509,7 +5509,9 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               "modality_element",
               "needs_profile",
               "strategy_summary",
+              "timing_section",
             ]);
+            const SOFT_LENGTH_CAP = 1500; // chars — log-only warning, no truncation
             const meaningfulText = (raw: unknown): boolean => {
               if (typeof raw !== "string") return false;
               const cleaned = raw
