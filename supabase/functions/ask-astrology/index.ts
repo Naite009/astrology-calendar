@@ -2196,6 +2196,47 @@ const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) 
   }
 };
 
+// FIX A — TIMING SECTION BODY BACKFILL (universal, all reading types)
+// When a timing_section ships with windows[]/transits[] populated but an
+// empty body, synthesize 1–2 sentences from the strongest window so the
+// section never renders as a bald table. Runs before the post-cleanup
+// MISSING_REQUIRED_BODY validator so timing_section can join the gate.
+const backfillTimingSectionBodies = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const changes: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+    const type = String(section.type || "").toLowerCase();
+    if (type !== "timing_section") continue;
+    if (!isEffectivelyEmpty(section.body)) continue;
+    const windows = Array.isArray(section.windows) ? section.windows
+      : Array.isArray(section.transits) ? section.transits
+      : Array.isArray(section.items) ? section.items
+      : [];
+    if (windows.length === 0) continue;
+    const first = windows[0] || {};
+    const dateRange = String(first.date_range || first.dateRange || first.date || first.window || "the upcoming window").trim();
+    const transitName = String(first.transit || first.aspect || first.title || first.name || "").trim();
+    const meaning = String(first.meaning || first.note || first.description || first.body || "").trim();
+    const lead = transitName
+      ? `The strongest window is ${transitName} during ${dateRange}.`
+      : `The strongest window opens during ${dateRange}.`;
+    const tail = meaning
+      ? ` ${ensureSentence(firstSentenceFromText(meaning))}`
+      : ` Treat this as the period when the patterns named above will be the easiest to act on.`;
+    const synthesized = `${lead}${tail}`.trim();
+    if (!isEffectivelyEmpty(synthesized)) {
+      section.body = synthesized;
+      const title = String(section.title || "Timing Windows").trim();
+      changes.push(`${title}.body`);
+    }
+  }
+  if (changes.length > 0) {
+    log.push({ type: "timing_section_body_backfilled", detail: { fields: changes } });
+    console.info("[ask-astrology] timing_section bodies backfilled", { fields: changes });
+  }
+};
+
 const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const truth = buildPlacementTruthMap(parsedContent);
