@@ -5902,6 +5902,24 @@ When writing about any planet in a natal section, look ONLY at the NATAL CHART s
           // the AI's polarity[] with the planet-based truth computed from the
           // natal chart context. Yang + Yin always sums to 10.
           overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // 3-CALL RELATIONSHIP: inject a deterministic modality_element
+          // section (and overwrite any AI-authored polarity counts) using
+          // the new planet-identity rule (Sun/Mercury/Mars/Jupiter/Saturn/
+          // Uranus = Yang, Moon/Venus/Neptune/Pluto = Yin → always sums 10).
+          // The model is no longer asked to compute these on the 3-call
+          // path, so we inject them ourselves before any downstream pass.
+          if (isRelationshipQuestion && (parsedContent as any)?._three_call?.enabled) {
+            try {
+              const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
+              const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
+              emissionLog.push({
+                type: "deterministic_tallies_injected",
+                detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies },
+              });
+            } catch (detErr) {
+              console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
+            }
+          }
           // FIX 3 — RELATIONSHIP PATTERN SECTION ENFORCER: rename close
           // variants of the title and insert a deterministic minimal section
           // if missing entirely, so Replit's MISSING_REQUIRED_SECTION gate for
