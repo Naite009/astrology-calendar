@@ -4473,7 +4473,49 @@ SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When check
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
+    // FIX 1 — DYNAMIC NATAL GROUND TRUTH BLOCK
+    // Extract the natal placement rows from sanitizedChartContext and re-emit
+    // them at the top of the system prompt as an explicit "fixed constants"
+    // table the model must check before writing any natal sentence. This
+    // applies to EVERY question_type and stops the SR/natal sign-bleed at
+    // the source instead of relying on post-generation cross-checks.
+    const buildNatalGroundTruthBlock = (ctx: string): string | null => {
+      if (!ctx) return null;
+      // Match the NATAL Planetary Positions block emitted by the chart
+      // builder. We accept either "NATAL Planetary Positions:" or the
+      // legacy "Planetary Positions:" header.
+      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      const natalMatch = ctx.match(natalHeaderRe);
+      if (!natalMatch) return null;
+      const lines = natalMatch[1]
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
+      if (lines.length === 0) return null;
+      const retroLines = lines.filter((l) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l));
+      const placementList = lines.map((l) => `- ${l}`).join("\n");
+      const retroList = retroLines.length > 0
+        ? retroLines.map((l) => {
+            const planetMatch = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
+            return planetMatch ? planetMatch[1].trim() : l;
+          }).join(", ")
+        : "(none — no natal planets are retrograde in this chart)";
+      return `NATAL GROUND TRUTH — these values are fixed constants for this chart. When writing any NATAL interpretation in any section, these are the only correct positions. Do NOT substitute Solar Return positions here under any circumstances:
+
+${placementList}
+
+Natal retrograde planets in this chart: ${retroList}. Always preserve their retrograde status in natal prose. NEVER describe a natal retrograde planet as direct, and NEVER add a retrograde marker to a natal direct planet.
+
+CHART SEPARATION RULES — MANDATORY (universal, every reading type):
+- Natal sections: reference ONLY the natal positions listed above.
+- Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
+- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
+- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.`;
+    };
+    const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
+
     const chartScopedRules = [
+      natalGroundTruthBlock,
       lilithDataPresent
         ? null
         : `ABSOLUTE RULE: Lilith data is NOT present in this chart. Do NOT mention Lilith anywhere — not in placement_table, not in narrative sections, not in shadow analysis, not in any bullet or sentence. This is a hard data constraint, not a suggestion.`,
