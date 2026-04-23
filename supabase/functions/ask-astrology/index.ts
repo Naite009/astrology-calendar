@@ -4002,11 +4002,12 @@ This constraint supersedes any earlier instruction that could be read as license
 PASS/FAIL RULE — MANDATORY FINAL CHECK:
 Before finalizing output, verify ALL of the following. If ANY check fails, the response is incomplete and MUST be rewritten:
 1. Timing section: Every transit includes transiting planet, aspect, exact degree, first applying date, exact hit date, separating date, pass label, tag, and interpretation. Multi-pass transits are NOT collapsed.
-2. Relationship Needs Profile: Uses exact "Venus →", "Moon →", "Mars →", "7th house →" label format. Each is one short sentence of behavior/experience.
+2. Relationship Needs Profile: Uses exact "Venus →", "Moon →", "Mars →", "7th house →" label format. Each is one short sentence of behavior/experience. The "body" field MUST contain 2–4 sentences of real prose (50–110 words) opening with lived behavior + the dominant placement — never empty, never the placeholder "These are the core forces that shape...".
 3. Overlay section: Contains at least 3–5 explicit cross-chart activations, each naming SR factor + natal factor + meaning.
 4. No generic language: No standalone use of "intense", "deep", "mentally stimulating", "psychologically complex", "emotionally consuming", "transformational" without immediate real-life translation.
-5. Strategy summary: Includes decisive directives — who to move toward, early warning signs, pattern to break, what this year is best for.
-6. Mars in Gemini in the 12th behavioral explanation, contradiction patterns, "what this year feels like" format, and one-sentence relationship pattern summary are all preserved when applicable.`;
+5. Strategy summary: Includes decisive directives — who to move toward, early warning signs, pattern to break, what this year is best for. The "body" field MUST contain 2–3 sentences (40–80 words) of real prose synthesizing the single most important takeaway BEFORE the items array — never empty.
+6. Modal Balance section: The "body" field MUST contain 2–4 sentences (50–100 words) of real prose opening with lived behavior + the dominant element/modality combination BEFORE the elements/modalities/polarity arrays — never empty.
+7. Mars in Gemini in the 12th behavioral explanation, contradiction patterns, "what this year feels like" format, and one-sentence relationship pattern summary are all preserved when applicable.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
