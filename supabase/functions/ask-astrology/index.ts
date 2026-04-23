@@ -4615,23 +4615,28 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     // the source instead of relying on post-generation cross-checks.
     const buildNatalGroundTruthBlock = (ctx: string): string | null => {
       if (!ctx) return null;
-      // Match the NATAL Planetary Positions block emitted by the chart
-      // builder. We accept either "NATAL Planetary Positions:" or the
-      // legacy "Planetary Positions:" header.
       const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
       const natalMatch = ctx.match(natalHeaderRe);
       if (!natalMatch) return null;
-      const lines = natalMatch[1]
+      const natalLines = natalMatch[1]
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
-      if (lines.length === 0) return null;
+      if (natalLines.length === 0) return null;
 
-      // Per-planet retrograde classification. We keep an explicit DIRECT vs
-      // RETROGRADE list for the 10 classical planets + Chiron because the
-      // model frequently bleeds the SR retrograde state of Saturn, Neptune,
-      // Uranus, Mars, and Jupiter into natal prose. Naming each planet's
-      // status in the prompt removes any ambiguity.
+      // Also extract the SR planetary positions so we can present BOTH
+      // tables side-by-side with HARD RULE separating them. Previous attempts
+      // relied on the model finding SR data buried later in the chart context
+      // — too easy to miss. Restating SR data directly under the natal data,
+      // with explicit "do not interchange" framing, structurally prevents
+      // the SR-bleed-into-natal pattern that has recurred across every
+      // regeneration.
+      const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      const srMatch = ctx.match(srHeaderRe);
+      const srLines = srMatch
+        ? srMatch[1].split("\n").map((l) => l.trim()).filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l))
+        : [];
+
       const RETRO_TRACKED = [
         "Sun", "Moon", "Mercury", "Venus", "Mars",
         "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron",
@@ -4639,12 +4644,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
       const isLineRetro = (l: string) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l);
       const planetFromLine = (l: string): string | null => {
         const m = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
-        return m ? m[1].trim() : null;
+        return m ? m[1].trim().replace(/^SR\s+/i, "") : null;
       };
       const directPlanets: string[] = [];
       const retroPlanets: string[] = [];
       for (const planet of RETRO_TRACKED) {
-        const line = lines.find((l) => {
+        const line = natalLines.find((l) => {
           const p = planetFromLine(l);
           return p && p.toLowerCase() === planet.toLowerCase();
         });
@@ -4653,7 +4658,10 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         else directPlanets.push(planet);
       }
 
-      const placementList = lines.map((l) => `- ${l}`).join("\n");
+      const natalPlacementList = natalLines.map((l) => `- ${l}`).join("\n");
+      const srPlacementList = srLines.length > 0
+        ? srLines.map((l) => `- ${l.replace(/^SR\s+/i, "")}`).join("\n")
+        : "(no Solar Return chart provided for this reading)";
       const directBullets = directPlanets.length > 0
         ? directPlanets.map((p) => `- ${p}: DIRECT`).join("\n")
         : "- (none in this chart)";
@@ -4661,22 +4669,18 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         ? retroPlanets.map((p) => `- ${p}: RETROGRADE`).join("\n")
         : "- (none — no natal planets are retrograde in this chart)";
 
-      // Pluto-specific anchor. The model has been observed substituting SR
-      // Pluto's sign/degree (e.g., 1°22' Aquarius) into natal prose when the
-      // ground truth block sat too far down in the prompt. We restate Pluto's
-      // natal position as its own line so it cannot be missed, and we move
-      // this entire block to the FIRST cached system block (see chartScopedRules
-      // ordering below) so the model reads it before SR data.
-      const plutoLine = lines.find((l) => /^Pluto\s*:/i.test(l));
-      const plutoAnchor = plutoLine
-        ? `\n\nPLUTO ANCHOR (most-confused planet — verify before writing):\nNatal ${plutoLine}\nNever substitute SR Pluto's sign/degree/house into a natal sentence. If you write "Pluto" in any natal context, the sign MUST match this line.`
-        : "";
+      // STRUCTURAL SEPARATION (mandated reframing):
+      // Two clearly labeled SECTION headers with their own placement lists,
+      // followed by a HARD RULE explaining how to use them. The model can no
+      // longer "infer" — it has to look at one section or the other, and the
+      // sections are visually disjoint in the prompt.
+      return `=========================================================
+SECTION: NATAL CHART — use ONLY these positions when writing about natal placements. These are frozen facts. Do not derive, infer, or substitute any position from the SR chart below.
+=========================================================
 
-      return `NATAL GROUND TRUTH — these values are fixed constants for this chart. When writing any NATAL interpretation in any section, these are the only correct positions. Do NOT substitute Solar Return positions here under any circumstances:
+${natalPlacementList}
 
-${placementList}
-
-NATAL RETROGRADE STATUS — these are fixed. Do not change them based on SR chart status.
+NATAL RETROGRADE STATUS — these are fixed.
 
 These natal planets are DIRECT (not retrograde):
 ${directBullets}
@@ -4684,14 +4688,22 @@ ${directBullets}
 These natal planets are RETROGRADE:
 ${retroBullets}
 
-When writing natal sections, never describe a DIRECT natal planet as retrograde, and never describe a RETROGRADE natal planet as direct. SR Saturn, SR Neptune, SR Uranus, SR Mars, and SR Jupiter may be retrograde in the Solar Return chart — that has NO bearing on natal status. These are different planets in different charts. If natal Saturn is listed as DIRECT above, it is direct in every natal sentence you write, full stop.${plutoAnchor}
+=========================================================
+SECTION: SOLAR RETURN CHART — use ONLY these positions when writing about SR placements. Do not carry these positions into any natal interpretation section.
+=========================================================
 
-CHART SEPARATION RULES — MANDATORY (universal, every reading type):
-- Natal sections: reference ONLY the natal positions listed above.
-- Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
-- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, SR Pluto, etc. are in completely different signs than their natal counterparts — do not confuse them.
-- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.
-- VERIFICATION MANDATE: Every time you are about to name a planet's sign in a natal sentence, mentally re-check the NATAL GROUND TRUTH list above. If the sign you are about to write does not match the list, you are confusing the SR chart with the natal chart — stop and correct it before continuing the sentence. This check is non-negotiable and applies to Saturn, Jupiter, Uranus, Neptune, Pluto, and Chiron in particular, since those are the planets the model most often mis-copies between charts.`;
+${srPlacementList}
+
+=========================================================
+HARD RULE — non-negotiable, applies to every sentence in every section:
+=========================================================
+When writing about any planet in a natal section, look ONLY at the NATAL CHART section above. When writing about any planet in an SR section, look ONLY at the SOLAR RETURN CHART section above. These two charts describe the same planets at different positions. They are never interchangeable.
+
+- If you are writing a natal sentence and you reach for Saturn's sign, the sign MUST come from the NATAL CHART section, never from the SOLAR RETURN CHART section. Same for Neptune, Pluto, Jupiter, Uranus, Chiron, and every other planet.
+- If you are writing an SR sentence and you reach for Saturn's sign, the sign MUST come from the SOLAR RETURN CHART section, never from the NATAL CHART section.
+- Retrograde status is read from the same section as the placement. Natal Saturn DIRECT means natal Saturn is direct in every natal sentence, even if SR Saturn is retrograde. SR Saturn retrograde means SR Saturn is retrograde in every SR sentence, even if natal Saturn is direct.
+- Before you write any planet's sign, degree, house, or retrograde status in prose, identify which SECTION your sentence belongs to (natal vs SR) and verify the value against THAT section's table only.
+- The model has historically substituted SR Saturn (Pisces Rx), SR Neptune (Aries Rx), SR Pluto (Aquarius), SR Jupiter (Cancer), and SR Chiron (Aries Rx) into natal prose. This is the exact substitution this rule prohibits. If you catch yourself about to write any of these SR positions in a natal sentence, stop and re-read the NATAL CHART section.`;
     };
     const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
 
