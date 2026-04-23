@@ -2000,6 +2000,8 @@ const stripUnverifiedSrAngleClaims = (
     });
   }
 };
+
+const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
   const tenOnly = positions.filter((p) => TEN_PLANETS.includes(p.planet));
   const elementCounts: Record<string, string[]> = { Fire:[], Earth:[], Air:[], Water:[] };
   const modalityCounts: Record<string, string[]> = { Cardinal:[], Fixed:[], Mutable:[] };
