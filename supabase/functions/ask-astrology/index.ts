@@ -704,11 +704,13 @@ const rewriteSentencePronouns = (sentence: string): string => {
     /(^|[\s,()"'])(their|Their)\b(?=\s+[a-z])/g,
     (_m, pre, word) => `${pre}${word === "Their" ? "Your" : "your"}`,
   );
-  // Mid-sentence "they" → "you" (subject pronoun) when followed by a verb.
-  // Same conservative gate: only after whitespace/punct, never after a
-  // capitalized name-token. Catches "and they need", "but they feel".
+  // Broader subject-pronoun "they/They" → "you/You" mid-sentence. The old
+  // rule only matched a closed verb whitelist; expand to ANY lowercase
+  // word starting with a letter, since 2nd-person product voice means
+  // "they" never validly refers to anyone but the subject in this context.
+  // Conservative: still skip when preceded by a capitalized name token.
   s = s.replace(
-    /(^|[\s,()"'])(they|They)\b(?=\s+(?:are|is|was|were|have|has|had|will|would|could|should|may|might|do|does|did|don'?t|doesn'?t|didn'?t|can|can'?t|cannot|won'?t|need|needs|want|wants|feel|feels|know|knows|think|thinks|see|sees|get|gets|keep|keeps|stay|stays|go|goes|come|comes|live|lives|run|runs|move|moves|hold|holds))/g,
+    /(^|[\s,()"'])(they|They)\b(?=\s+[a-z])/g,
     (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
   );
   // Object pronoun "them" → "you" mid-sentence after verbs that nearly
