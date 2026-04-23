@@ -6323,7 +6323,7 @@ HARD RULE — applies to every sentence:
           // readings; dedupe duplicate paragraphs; flag SR house-copy;
           // complete bare US city names. Empty-drop runs last so
           // anything blanked above is removed.
-          crossCheckPlanetPlacements(parsedContent, emissionLog);
+          crossCheckPlanetPlacements(parsedContent, sanitizedChartContext || "", emissionLog);
           stripRelationshipLeaksFromRelocation(parsedContent, emissionLog);
           dedupeNarrativeParagraphs(parsedContent, emissionLog);
           // Phantom-aspect guard: surgically rewrites any
