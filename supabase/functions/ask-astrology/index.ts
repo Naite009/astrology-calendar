@@ -2075,26 +2075,46 @@ const backfillStructuralSectionsFromChartContext = (
       }
     }
 
-    // 2. Backfill modality_element sections with empty arrays.
+    // 2. Backfill modality_element sections — repair if arrays empty OR
+    //    if entries are missing required `name`/`symbol` labels (which
+    //    causes the UI to render unlabeled bars). The deterministic
+    //    natal-position calculation is the source of truth for counts.
     if (
       section.type === "modality_element" ||
       titleLower.includes("elemental") ||
       titleLower.includes("modal balance")
     ) {
+      const isMissingLabels = (arr: any[]): boolean =>
+        !Array.isArray(arr) || arr.length === 0 ||
+        arr.some((e) => !e || typeof e.name !== "string" || !e.name.trim());
       const hasElements = Array.isArray(section.elements) && section.elements.length > 0;
       const hasModalities = Array.isArray(section.modalities) && section.modalities.length > 0;
-      if ((!hasElements || !hasModalities) && natalPositions.length >= 8) {
+      const elementsBroken = isMissingLabels(section.elements);
+      const modalitiesBroken = isMissingLabels(section.modalities);
+      const polarityBroken = isMissingLabels(section.polarity);
+      const needsRepair = elementsBroken || modalitiesBroken || polarityBroken || !hasElements || !hasModalities;
+      if (needsRepair && natalPositions.length >= 8) {
         const built = buildElementalBalanceFromPositions(natalPositions);
-        if (!hasElements) section.elements = built.elements;
-        if (!hasModalities) section.modalities = built.modalities;
-        if (!Array.isArray(section.polarity) || section.polarity.length === 0) {
-          section.polarity = built.polarity;
-        }
-        section.dominant_element = section.dominant_element || built.dominant_element;
-        section.dominant_modality = section.dominant_modality || built.dominant_modality;
-        section.dominant_polarity = section.dominant_polarity || built.dominant_polarity;
+        // Preserve any AI-authored interpretations that we DO have, by
+        // matching on count or order. If labels were missing, reorder to
+        // match the deterministic name list.
+        const mergeByOrder = (aiArr: any[], builtArr: any[]) => {
+          if (!Array.isArray(aiArr) || aiArr.length === 0) return builtArr;
+          return builtArr.map((b, i) => {
+            const ai = aiArr[i];
+            const interpretation = ai && typeof ai.interpretation === "string" && ai.interpretation.trim()
+              ? ai.interpretation : undefined;
+            return interpretation ? { ...b, interpretation } : b;
+          });
+        };
+        if (elementsBroken || !hasElements) section.elements = mergeByOrder(section.elements, built.elements);
+        if (modalitiesBroken || !hasModalities) section.modalities = mergeByOrder(section.modalities, built.modalities);
+        if (polarityBroken) section.polarity = mergeByOrder(section.polarity, built.polarity);
+        section.dominant_element = built.dominant_element;
+        section.dominant_modality = built.dominant_modality;
+        section.dominant_polarity = built.dominant_polarity;
         backfilled++;
-        details.push(`${section.title}: elemental/modal arrays backfilled from natal positions`);
+        details.push(`${section.title}: elemental/modal labels repaired (elementsBroken=${elementsBroken}, modalitiesBroken=${modalitiesBroken}, polarityBroken=${polarityBroken})`);
       }
     }
   }
