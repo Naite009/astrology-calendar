@@ -78,6 +78,7 @@ export interface SummaryItem {
 export interface SummaryBoxSection {
   type: "summary_box";
   title: string;
+  body?: string;
   items: SummaryItem[];
 }
 
@@ -108,6 +109,7 @@ export interface PolarityEntry {
 export interface ModalityElementSection {
   type: "modality_element";
   title: string;
+  body?: string;
   elements: ElementEntry[];
   modalities: ModalityEntry[];
   polarity?: PolarityEntry[];
@@ -434,21 +436,27 @@ function SummaryBox({ section }: { section: SummaryBoxSection }) {
     }
     return true;
   });
-  if (validItems.length === 0) {
+  const hasBody = !isEffectivelyEmpty(section.body);
+  if (!hasBody && validItems.length === 0) {
     console.warn("[SummaryBox] Suppressing empty summary box", { title: section.title });
     return null;
   }
   return (
     <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
       <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
-      <div className="space-y-2">
-        {validItems.map((item, i) => (
-          <div key={i} className="flex gap-3">
-            <span className="text-sm font-bold text-primary shrink-0 min-w-[60px]">{item.label}</span>
-            <span className="text-sm text-foreground">{item.value}</span>
-          </div>
-        ))}
-      </div>
+      {hasBody && (
+        <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
+      )}
+      {validItems.length > 0 && (
+        <div className="space-y-2">
+          {validItems.map((item, i) => (
+            <div key={i} className="flex gap-3">
+              <span className="text-sm font-bold text-primary shrink-0 min-w-[60px]">{item.label}</span>
+              <span className="text-sm text-foreground">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1064,12 +1072,15 @@ function CityComparison({ section }: { section: CityComparisonSection }) {
 }
 function ModalityElementCard({ section }: { section: ModalityElementSection }) {
   const totalPlanets = section.elements.reduce((s, e) => s + e.count, 0) || 10;
+  const hasBody = !isEffectivelyEmpty(section.body);
   return (
     <Card className="border-border bg-card/50">
       <CardContent className="p-4 space-y-4">
         <h3 className="text-sm font-semibold text-foreground tracking-wide uppercase">{section.title}</h3>
+        {hasBody && (
+          <p className="text-sm text-foreground/90 leading-relaxed">{section.body}</p>
+        )}
 
-        {/* Elements */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Elements</p>
           <div className="grid grid-cols-2 gap-2">
@@ -1089,7 +1100,6 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
           </div>
         </div>
 
-        {/* Modalities */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Modalities</p>
           <div className="space-y-2">
@@ -1109,7 +1119,6 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
           </div>
         </div>
 
-        {/* Polarity */}
         {section.polarity && section.polarity.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Polarity (Yin / Yang)</p>
@@ -1131,7 +1140,6 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
           </div>
         )}
 
-        {/* Dominant + Synthesis */}
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
           <p className="text-xs font-semibold text-primary">
             Dominant: {section.dominant_element} · {section.dominant_modality}{section.dominant_polarity ? ` · ${section.dominant_polarity}` : ''}
