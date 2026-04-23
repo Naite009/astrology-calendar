@@ -171,6 +171,9 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       case "city_comparison":
         renderCityComparison(section);
         break;
+      case "modality_element":
+        renderModalityElement(section);
+        break;
     }
   }
 
@@ -414,15 +417,13 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     y += 4;
   }
 
-  function renderSummary(section: { title: string; items: any[] }) {
-    // Run every item through the shared normalizer so a missing value
-    // can never produce a bare label with empty space after it.
+  function renderSummary(section: { title: string; body?: string; items: any[] }) {
     const safeItems = (section.items ?? [])
       .map((it) => normalizeSummaryItem(it))
       .filter((it): it is { label?: string; value?: string } => it != null);
+    const hasBody = !isBlank(section.body);
 
-    if (safeItems.length === 0) {
-      // eslint-disable-next-line no-console
+    if (!hasBody && safeItems.length === 0) {
       console.warn(`[askPdfExport.renderSummary] skipping empty summary "${section.title}"`);
       return;
     }
@@ -430,9 +431,9 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     ensureSpace(20);
     y += 4;
 
-    // Gold-bordered summary box
+    const bodyLines = hasBody ? pdf.splitTextToSize(section.body || "", CONTENT_W - 16) : [];
     const itemLines: string[][] = [];
-    let totalH = 14;
+    let totalH = 14 + (hasBody ? bodyLines.length * 5 + 4 : 0);
     for (const item of safeItems) {
       const lines = pdf.splitTextToSize(item.value || "", CONTENT_W - 30);
       itemLines.push(lines);
@@ -453,6 +454,17 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
     pdf.text(section.title, MARGIN + 8, y);
     y += 8;
 
+    if (hasBody) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.body);
+      for (const line of bodyLines) {
+        pdf.text(line, MARGIN + 8, y);
+        y += 5;
+      }
+      y += 2;
+    }
+
     for (let i = 0; i < safeItems.length; i++) {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
@@ -467,6 +479,92 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
       }
       y += 2;
     }
+    y += 4;
+  }
+
+  function renderModalityElement(section: { title: string; body?: string; balance_interpretation?: string; elements?: any[]; modalities?: any[]; polarity?: any[]; dominant_element?: string; dominant_modality?: string; dominant_polarity?: string }) {
+    const hasBody = !isBlank(section.body);
+    const synthesis = !isBlank(section.balance_interpretation) ? String(section.balance_interpretation) : "";
+    const elements = Array.isArray(section.elements) ? section.elements : [];
+    const modalities = Array.isArray(section.modalities) ? section.modalities : [];
+    const polarity = Array.isArray(section.polarity) ? section.polarity : [];
+    const detailLines: string[] = [];
+
+    for (const el of elements) {
+      const line = `${el?.name || "Element"}: ${el?.count ?? "–"}${Array.isArray(el?.planets) && el.planets.length ? ` (${el.planets.join(", ")})` : ""}`;
+      detailLines.push(line);
+      if (!isBlank(el?.interpretation)) detailLines.push(String(el.interpretation));
+    }
+    for (const mod of modalities) {
+      const line = `${mod?.name || "Modality"}: ${mod?.count ?? "–"}${Array.isArray(mod?.planets) && mod.planets.length ? ` (${mod.planets.join(", ")})` : ""}`;
+      detailLines.push(line);
+      if (!isBlank(mod?.interpretation)) detailLines.push(String(mod.interpretation));
+    }
+    for (const pol of polarity) {
+      const line = `${pol?.name || "Polarity"}: ${pol?.count ?? "–"}${Array.isArray(pol?.planets) && pol.planets.length ? ` (${pol.planets.join(", ")})` : ""}`;
+      detailLines.push(line);
+      if (!isBlank(pol?.interpretation)) detailLines.push(String(pol.interpretation));
+    }
+
+    if (!hasBody && isBlank(synthesis) && detailLines.length === 0) return;
+
+    ensureSpace(28);
+    y += 4;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.setTextColor(...COLORS.heading);
+    pdf.text(section.title, MARGIN, y);
+    y += 6;
+
+    if (hasBody) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...COLORS.body);
+      const bodyLines = pdf.splitTextToSize(section.body || "", CONTENT_W);
+      for (const line of bodyLines) {
+        ensureSpace(6);
+        pdf.text(line, MARGIN, y);
+        y += 6;
+      }
+      y += 2;
+    }
+
+    const dominantLine = [section.dominant_element, section.dominant_modality, section.dominant_polarity].filter(Boolean).join(" · ");
+    if (!isBlank(dominantLine)) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.accent);
+      pdf.text(`Dominant: ${dominantLine}`, MARGIN, y);
+      y += 6;
+    }
+
+    if (!isBlank(synthesis)) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...COLORS.body);
+      const synthLines = pdf.splitTextToSize(synthesis, CONTENT_W);
+      for (const line of synthLines) {
+        ensureSpace(5);
+        pdf.text(line, MARGIN, y);
+        y += 5;
+      }
+      y += 2;
+    }
+
+    for (const entry of detailLines) {
+      const isHeading = /^(Fire|Earth|Air|Water|Cardinal|Fixed|Mutable|Yang|Yin|Yang \(Active\)|Yin \(Receptive\)):/i.test(entry);
+      pdf.setFont("helvetica", isHeading ? "bold" : "normal");
+      pdf.setFontSize(isHeading ? 9.5 : 9);
+      pdf.setTextColor(...(isHeading ? COLORS.heading : COLORS.body));
+      const lines = pdf.splitTextToSize(entry, CONTENT_W);
+      for (const line of lines) {
+        ensureSpace(5);
+        pdf.text(line, MARGIN, y);
+        y += 5;
+      }
+      y += 1;
+    }
+
     y += 4;
   }
   function renderCityComparison(section: { title: string; cities: any[] }) {

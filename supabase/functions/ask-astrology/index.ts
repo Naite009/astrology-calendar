@@ -1915,6 +1915,115 @@ const buildPlacementTruthMap = (parsedContent: any): Map<string, PlacementFact> 
   return map;
 };
 
+const stripLeadingPlacementPrefix = (text: string): string =>
+  String(text || "").replace(/^\([^)]*\)\s*/, "").trim();
+
+const firstClauseFromText = (text: string): string => {
+  const cleaned = stripLeadingPlacementPrefix(text);
+  if (!cleaned) return "";
+  const clause = cleaned.split(/\s+[—–-]\s+/)[0]?.trim() || cleaned;
+  const sentence = splitIntoSentences(clause)[0] || clause;
+  return sentence.replace(/[\s.;:,!?]+$/g, "").trim();
+};
+
+const firstSentenceFromText = (text: string): string => {
+  const cleaned = stripLeadingPlacementPrefix(text);
+  if (!cleaned) return "";
+  return (splitIntoSentences(cleaned)[0] || cleaned).trim();
+};
+
+const ensureSentence = (text: string): string => {
+  const cleaned = String(text || "").trim();
+  if (!cleaned) return "";
+  return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
+};
+
+const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+
+  const needs = parsedContent.sections.find((s: any) => s?.title === "Relationship Needs Profile");
+  const balance = parsedContent.sections.find((s: any) => s?.title === "Natal Elemental & Modal Balance");
+  const summary = parsedContent.sections.find((s: any) => s?.title === "Relationship Strategy Summary");
+  if (!needs && !balance && !summary) return;
+
+  const truth = buildPlacementTruthMap(parsedContent);
+  const formatPlacement = (planet: string): string => {
+    const fact = truth.get(planet.toLowerCase());
+    if (!fact?.sign || !fact?.house) return planet;
+    return `${planet} in ${fact.sign} in the ${NUMBER_TO_ORDINAL[fact.house] || `${fact.house}th`} house`;
+  };
+
+  const changes: string[] = [];
+
+  if (needs && isEffectivelyEmpty(needs.body)) {
+    const bullets = Array.isArray(needs.bullets) ? needs.bullets : [];
+    const bulletText = (labelHint: string): string => {
+      const hit = bullets.find((b: any) => String(b?.label || "").toLowerCase().includes(labelHint.toLowerCase()));
+      return typeof hit?.text === "string" ? hit.text : "";
+    };
+
+    const venusLead = firstClauseFromText(bulletText("Venus"));
+    const moonLead = firstClauseFromText(bulletText("Moon"));
+    const seventhLead = firstClauseFromText(bulletText("7th house"));
+    const placementSentence = `That comes from ${formatPlacement("Venus")}, ${formatPlacement("Moon")}, and ${formatPlacement("Mars")}.`;
+    const fallbackBody = [
+      venusLead && ensureSentence(venusLead),
+      moonLead && ensureSentence(moonLead),
+      ensureSentence(placementSentence),
+      seventhLead && ensureSentence(seventhLead),
+    ].filter(Boolean).join(" ").trim();
+
+    if (!isEffectivelyEmpty(fallbackBody)) {
+      needs.body = fallbackBody;
+      changes.push("Relationship Needs Profile.body");
+    }
+  }
+
+  if (balance && isEffectivelyEmpty(balance.body)) {
+    const source = typeof balance.balance_interpretation === "string" ? balance.balance_interpretation : "";
+    const sentences = splitIntoSentences(source).filter((s) => !isEffectivelyEmpty(s));
+    const fallbackBody = sentences.slice(0, 3).map(ensureSentence).join(" ").trim()
+      || `Your relationship style shows a real mix between how quickly you register connection and how slowly trust actually settles. That comes from your natal elemental and modal balance, which is describing the pattern underneath the relationship behavior shown elsewhere in this reading.`;
+    if (!isEffectivelyEmpty(fallbackBody)) {
+      balance.body = fallbackBody;
+      changes.push("Natal Elemental & Modal Balance.body");
+    }
+  }
+
+  if (summary && isEffectivelyEmpty(summary.body)) {
+    const items = Array.isArray(summary.items) ? summary.items : [];
+    const itemValue = (label: string): string => {
+      const hit = items.find((item: any) => String(item?.label || "") === label);
+      if (!hit) return "";
+      if (typeof hit.value === "string") return hit.value;
+      if (typeof hit.text === "string") return hit.text;
+      return "";
+    };
+
+    const who = firstSentenceFromText(itemValue("Who to Move Toward"));
+    const pattern = firstSentenceFromText(itemValue("Pattern to Break"));
+    const warning = firstSentenceFromText(itemValue("Early Warning Signs"));
+    const year = firstSentenceFromText(itemValue("What This Year Is Best For"));
+    const fallbackBody = [
+      who && ensureSentence(who),
+      pattern && ensureSentence(pattern.replace(/^The habit of\s+/i, "The pattern to break is the habit of ")),
+      !pattern && warning ? ensureSentence(warning) : "",
+      year && !/clarity/i.test(`${who} ${pattern} ${warning}`) ? ensureSentence(year) : "",
+    ].filter(Boolean).join(" ").trim()
+      || `Your relationship work is to trust steady behavior more than chemistry and stop talking yourself into ambiguity. The right connection will get clearer as it goes, not harder to name.`;
+
+    if (!isEffectivelyEmpty(fallbackBody)) {
+      summary.body = fallbackBody;
+      changes.push("Relationship Strategy Summary.body");
+    }
+  }
+
+  if (changes.length > 0) {
+    log.push({ type: "relationship_body_fields_backfilled", detail: { fields: changes } });
+    console.info("[ask-astrology] relationship body fields deterministically backfilled", { fields: changes });
+  }
+};
+
 const crossCheckPlanetPlacements = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const truth = buildPlacementTruthMap(parsedContent);
@@ -5090,6 +5199,12 @@ In the timing section, include only the 2-4 strongest verified windows over the 
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // RELATIONSHIP BODY BACKFILL: if hygiene/prompt drift still leaves
+          // Needs Profile / Modal Balance / Strategy Summary without prose
+          // bodies, build them deterministically from the surviving bullets,
+          // balance_interpretation, and summary items so the payload cannot
+          // ship with the same 3 empty fields again.
+          backfillRelationshipSectionBodies(parsedContent, emissionLog);
           dropEmptySummaryItemsAndSections(parsedContent, emissionLog);
 
           // ALWAYS attach _validation_log (even when empty) so downstream
