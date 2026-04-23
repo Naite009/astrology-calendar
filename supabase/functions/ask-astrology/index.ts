@@ -6223,87 +6223,103 @@ HARD RULE — applies to every sentence:
           // so the universal MISSING_REQUIRED_BODY validator below treats
           // timing tables as fully populated when they have data.
           backfillTimingSectionBodies(parsedContent, emissionLog);
-          // DETERMINISTIC DEDUP + DASH-STRIP for transit window descriptions.
-          // Mirrors the Replit gate's "deduped paragraph in description" and
-          // "Stripped em-dashes" fixes so the AI output is already clean
-          // before it leaves us. Voice stays consistent and downstream
-          // post-processing has nothing to do.
+          // DETERMINISTIC DEDUP + DASH-STRIP — recursive walk over EVERY
+          // string field in the payload. The previous implementation only
+          // visited timing_section.windows, narrative_section.body, and
+          // summary_box.items, so em-dashes survived in places like
+          // narrative_section.bullets, subsection.body, modality_element
+          // .balance_interpretation, etc. That left the Replit gate with
+          // 30+ fields to strip and 4+ paragraphs to dedupe per run.
+          // The fuzzy normalization (lowercase + strip terminal punctuation
+          // + collapse whitespace) catches paragraph dups that the older
+          // exact-match version missed.
           try {
-            if (Array.isArray(parsedContent?.sections)) {
-              let dedupedFields = 0;
-              let dashStrippedFields = 0;
-              const splitSentences = (s: string): string[] =>
-                s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
-              const dedupSentences = (s: string): { out: string; changed: boolean } => {
-                const parts = splitSentences(s);
-                const seen = new Set<string>();
-                const kept: string[] = [];
-                for (const p of parts) {
-                  const key = p.toLowerCase().replace(/\s+/g, " ");
-                  if (seen.has(key)) continue;
-                  seen.add(key);
-                  kept.push(p);
-                }
-                const out = kept.join(" ");
-                return { out, changed: out !== s };
-              };
-              const stripDashes = (s: string): { out: string; changed: boolean } => {
-                // em-dash → ", "  ;  en-dash in date ranges → " to "
-                let out = s.replace(/\s*\u2014\s*/g, ", ");
-                out = out.replace(
-                  /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
-                  "$1 to $2",
-                );
-                out = out.replace(/\s*\u2013\s*/g, ", ");
-                return { out, changed: out !== s };
-              };
-              const cleanString = (s: string): string => {
-                if (typeof s !== "string" || !s) return s;
-                const a = stripDashes(s);
-                if (a.changed) dashStrippedFields++;
-                const b = dedupSentences(a.out);
-                if (b.changed) dedupedFields++;
-                return b.out;
-              };
-              for (const sec of parsedContent.sections) {
-                if (!sec || typeof sec !== "object") continue;
-                if (sec.type === "timing_section" && Array.isArray(sec.windows)) {
-                  for (const w of sec.windows) {
-                    if (w && typeof w.description === "string") {
-                      w.description = cleanString(w.description);
-                    }
-                    if (w && typeof w.title === "string") {
-                      const a = stripDashes(w.title);
-                      if (a.changed) dashStrippedFields++;
-                      w.title = a.out;
-                    }
-                  }
-                  if (typeof sec.body === "string") sec.body = cleanString(sec.body);
-                }
-                if (sec.type === "narrative_section" && typeof sec.body === "string") {
-                  sec.body = cleanString(sec.body);
-                }
-                if (sec.type === "summary_box" && Array.isArray(sec.items)) {
-                  for (const it of sec.items) {
-                    if (it && typeof it.text === "string") it.text = cleanString(it.text);
-                    if (it && typeof it.label === "string") {
-                      const a = stripDashes(it.label);
-                      if (a.changed) dashStrippedFields++;
-                      it.label = a.out;
-                    }
-                  }
+            let dedupedFields = 0;
+            let dashStrippedFields = 0;
+            const splitSentences = (s: string): string[] =>
+              s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+            // Fuzzy key: lowercase, drop terminal punctuation, collapse
+            // whitespace, normalize curly quotes and dashes — so two
+            // sentences that differ only in trailing "." or extra spaces
+            // are treated as duplicates.
+            const fuzzyKey = (s: string): string =>
+              s.toLowerCase()
+                .replace(/[\u2013\u2014]/g, "-")
+                .replace(/[\u2018\u2019]/g, "'")
+                .replace(/[\u201C\u201D]/g, '"')
+                .replace(/[.!?]+$/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+            const dedupSentences = (s: string): { out: string; changed: boolean } => {
+              const parts = splitSentences(s);
+              if (parts.length < 2) return { out: s, changed: false };
+              const seen = new Set<string>();
+              const kept: string[] = [];
+              for (const p of parts) {
+                const key = fuzzyKey(p);
+                if (key.length < 12) { kept.push(p); continue; } // too short to be a meaningful dup
+                if (seen.has(key)) continue;
+                seen.add(key);
+                kept.push(p);
+              }
+              const out = kept.join(" ");
+              return { out, changed: out !== s };
+            };
+            const stripDashes = (s: string): { out: string; changed: boolean } => {
+              // em-dash → ", "  ;  en-dash in date ranges → " to "  ;
+              // any remaining en-dash → ", "
+              let out = s.replace(/\s*\u2014\s*/g, ", ");
+              out = out.replace(
+                /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
+                "$1 to $2",
+              );
+              out = out.replace(/\s*\u2013\s*/g, ", ");
+              return { out, changed: out !== s };
+            };
+            const cleanString = (s: string): string => {
+              if (typeof s !== "string" || !s) return s;
+              const a = stripDashes(s);
+              if (a.changed) dashStrippedFields++;
+              const b = dedupSentences(a.out);
+              if (b.changed) dedupedFields++;
+              return b.out;
+            };
+            // Recursive walker — visit every string in the payload, skip
+            // metadata/identifier keys (titles, labels, dates, planet
+            // names, etc.) so we don't mangle them.
+            const SKIP_FIELD_KEYS = new Set([
+              "type", "title", "label", "name", "subtitle", "heading", "id", "kind",
+              "planet", "sign", "house", "degrees", "aspect", "natal_point", "symbol",
+              "tag", "date", "date_range", "dateRange", "generated_date",
+              "subject", "question_type", "question_asked",
+              "_validation", "_validation_log", "_validation_warning",
+              "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+              "_sr_house_copy_warning", "_source_call",
+            ]);
+            const visit = (node: any): void => {
+              if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+              if (!node || typeof node !== "object") return;
+              for (const [key, val] of Object.entries(node)) {
+                if (SKIP_FIELD_KEYS.has(key)) continue;
+                if (typeof val === "string") {
+                  if (val.length < 4) continue;
+                  const cleaned = cleanString(val);
+                  if (cleaned !== val) (node as any)[key] = cleaned;
+                } else {
+                  visit(val);
                 }
               }
-              if (dedupedFields > 0 || dashStrippedFields > 0) {
-                emissionLog.push({
-                  type: "transit_dedup_and_dash_strip",
-                  detail: { dedupedFields, dashStrippedFields },
-                });
-                console.info("[ask-astrology] dedup+dash-strip", {
-                  dedupedFields,
-                  dashStrippedFields,
-                });
-              }
+            };
+            visit(parsedContent);
+            if (dedupedFields > 0 || dashStrippedFields > 0) {
+              emissionLog.push({
+                type: "transit_dedup_and_dash_strip",
+                detail: { dedupedFields, dashStrippedFields },
+              });
+              console.info("[ask-astrology] dedup+dash-strip", {
+                dedupedFields,
+                dashStrippedFields,
+              });
             }
           } catch (cleanErr) {
             console.warn("[ask-astrology] dedup+dash-strip failed:", cleanErr);
