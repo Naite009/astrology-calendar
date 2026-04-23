@@ -1579,12 +1579,81 @@ const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number
 
 const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
   return positions.map((p) => ({
-    planet: p.planet,
+    planet: p.retrograde ? `${p.planet} ℞` : p.planet,
     sign: p.sign,
     degrees: `${p.degree}°${String(p.minutes).padStart(2, "0")}'`,
     house: p.house ?? "—",
-    retrograde: p.retrograde,
+    retrograde: !!p.retrograde,
   }));
+};
+
+// Normalize every placement_table row so that each row has BOTH:
+//   - a `retrograde: boolean` field (what the external Replit /check-reading
+//     gate parses), AND
+//   - the "℞" glyph appended to the `planet` string (what the PDF renderer
+//     and human reader see).
+// The AI sometimes emits one form (e.g. "Saturn ℞" with no retrograde
+// boolean) without the other, which causes RETROGRADE_STATE_MISMATCH
+// false positives even though the underlying data is correct. This helper
+// reconciles both representations on every placement_table in the payload
+// (Natal AND Solar Return) without ever overwriting a true `retrograde:
+// false` flag with a glyph or vice versa.
+const normalizePlacementTableRetrograde = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let normalizedRows = 0;
+  const examples: string[] = [];
+  const RETRO_GLYPH_RE = /\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i;
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const rawPlanet = String(row.planet || row.body || row.name || "");
+      if (!rawPlanet) continue;
+      const hasGlyph = RETRO_GLYPH_RE.test(rawPlanet);
+      const baseName = rawPlanet.replace(RETRO_GLYPH_RE, "").trim();
+      // Determine retrograde state. Priority:
+      //   1. explicit boolean true
+      //   2. glyph/Rx suffix on planet name
+      //   3. explicit boolean false
+      //   4. default false
+      let retro: boolean;
+      if (row.retrograde === true) retro = true;
+      else if (hasGlyph) retro = true;
+      else if (row.retrograde === false) retro = false;
+      else retro = false;
+
+      const desiredPlanet = retro ? `${baseName} ℞` : baseName;
+      const before = { planet: rawPlanet, retrograde: row.retrograde };
+      let changed = false;
+      if (row.retrograde !== retro) {
+        row.retrograde = retro;
+        changed = true;
+      }
+      if (rawPlanet !== desiredPlanet) {
+        row.planet = desiredPlanet;
+        changed = true;
+      }
+      if (changed) {
+        normalizedRows++;
+        if (examples.length < 6) {
+          examples.push(
+            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde})`
+          );
+        }
+      }
+    }
+  }
+  if (normalizedRows > 0) {
+    log.push({
+      type: "placement_table_retrograde_normalized",
+      detail: { rows: normalizedRows, examples },
+    });
+    console.info("[ask-astrology] placement_table retrograde normalized", {
+      rows: normalizedRows,
+      examples,
+    });
+  }
 };
 
 const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
