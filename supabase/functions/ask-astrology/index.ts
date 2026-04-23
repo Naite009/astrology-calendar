@@ -5527,6 +5527,8 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               if (Array.isArray(s.elements) && s.elements.length > 0) return true;
               if (Array.isArray(s.modalities) && s.modalities.length > 0) return true;
               if (Array.isArray(s.polarity) && s.polarity.length > 0) return true;
+              if (Array.isArray(s.windows) && s.windows.length > 0) return true;
+              if (Array.isArray(s.transits) && s.transits.length > 0) return true;
               if (meaningfulText(s.balance_interpretation)) return true;
               return false;
             };
@@ -5534,26 +5536,42 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               ? (parsedContent as any).sections
               : [];
             const missingBodies: Array<Record<string, unknown>> = [];
+            const oversizedBodies: Array<Record<string, unknown>> = [];
             for (const section of sections) {
               if (!section || typeof section !== "object") continue;
               const type = String(section.type || "").toLowerCase();
               if (!REQUIRED_BODY_TYPES.has(type)) continue;
+              const bodyStr = typeof section.body === "string" ? section.body : "";
+              const title = String(section.title || "").trim() || "(untitled)";
+              // Soft length-cap warning (Fix C): log only, never truncate.
+              if (type === "narrative_section" && bodyStr.length > SOFT_LENGTH_CAP) {
+                oversizedBodies.push({
+                  type: "narrative_body_oversized",
+                  detail: { title, body_length: bodyStr.length, soft_cap: SOFT_LENGTH_CAP, severity: "warning" },
+                });
+              }
               if (meaningfulText(section.body)) continue;
               if (!hasBulletsOrItems(section)) continue;
-              const title = String(section.title || "").trim() || "(untitled)";
-              const bodyLen = typeof section.body === "string" ? section.body.length : 0;
               missingBodies.push({
                 type: "missing_required_body",
                 detail: {
                   section_type: type,
                   title,
-                  body_length: bodyLen,
+                  body_length: bodyStr.length,
                   has_bullets: Array.isArray(section.bullets) && section.bullets.length > 0,
                   has_items: Array.isArray(section.items) && section.items.length > 0,
+                  has_windows: Array.isArray(section.windows) && section.windows.length > 0,
                   has_balance_interpretation: meaningfulText(section.balance_interpretation),
                   healable: true,
                   severity: "error",
                 },
+              });
+            }
+            if (oversizedBodies.length > 0) {
+              for (const entry of oversizedBodies) emissionLog.push(entry as any);
+              console.info("[ask-astrology] narrative bodies over soft cap", {
+                count: oversizedBodies.length,
+                titles: oversizedBodies.map((m: any) => m?.detail?.title),
               });
             }
             if (missingBodies.length > 0) {
