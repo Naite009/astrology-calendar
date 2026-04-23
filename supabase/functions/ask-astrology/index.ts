@@ -2785,7 +2785,7 @@ const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) =>
   }
 };
 
-const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) => {
+const backfillRelationshipSectionBodies = (parsedContent: any, chartContext: string, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
 
   const needs = parsedContent.sections.find((s: any) => s?.title === "Relationship Needs Profile");
@@ -2793,7 +2793,7 @@ const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) 
   const summary = parsedContent.sections.find((s: any) => s?.title === "Relationship Strategy Summary");
   if (!needs && !balance && !summary) return;
 
-  const truth = buildPlacementTruthMap(parsedContent);
+  const truth = buildPlacementTruthMap(parsedContent, chartContext);
   const formatPlacement = (planet: string): string => {
     const fact = truth.get(planet.toLowerCase());
     if (!fact?.sign || !fact?.house) return planet;
