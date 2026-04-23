@@ -704,11 +704,13 @@ const rewriteSentencePronouns = (sentence: string): string => {
     /(^|[\s,()"'])(their|Their)\b(?=\s+[a-z])/g,
     (_m, pre, word) => `${pre}${word === "Their" ? "Your" : "your"}`,
   );
-  // Mid-sentence "they" → "you" (subject pronoun) when followed by a verb.
-  // Same conservative gate: only after whitespace/punct, never after a
-  // capitalized name-token. Catches "and they need", "but they feel".
+  // Broader subject-pronoun "they/They" → "you/You" mid-sentence. The old
+  // rule only matched a closed verb whitelist; expand to ANY lowercase
+  // word starting with a letter, since 2nd-person product voice means
+  // "they" never validly refers to anyone but the subject in this context.
+  // Conservative: still skip when preceded by a capitalized name token.
   s = s.replace(
-    /(^|[\s,()"'])(they|They)\b(?=\s+(?:are|is|was|were|have|has|had|will|would|could|should|may|might|do|does|did|don'?t|doesn'?t|didn'?t|can|can'?t|cannot|won'?t|need|needs|want|wants|feel|feels|know|knows|think|thinks|see|sees|get|gets|keep|keeps|stay|stays|go|goes|come|comes|live|lives|run|runs|move|moves|hold|holds))/g,
+    /(^|[\s,()"'])(they|They)\b(?=\s+[a-z])/g,
     (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
   );
   // Object pronoun "them" → "you" mid-sentence after verbs that nearly
@@ -2193,6 +2195,47 @@ const backfillRelationshipSectionBodies = (parsedContent: any, log: HygieneLog) 
   if (changes.length > 0) {
     log.push({ type: "relationship_body_fields_backfilled", detail: { fields: changes } });
     console.info("[ask-astrology] relationship body fields deterministically backfilled", { fields: changes });
+  }
+};
+
+// FIX A — TIMING SECTION BODY BACKFILL (universal, all reading types)
+// When a timing_section ships with windows[]/transits[] populated but an
+// empty body, synthesize 1–2 sentences from the strongest window so the
+// section never renders as a bald table. Runs before the post-cleanup
+// MISSING_REQUIRED_BODY validator so timing_section can join the gate.
+const backfillTimingSectionBodies = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const changes: string[] = [];
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+    const type = String(section.type || "").toLowerCase();
+    if (type !== "timing_section") continue;
+    if (!isEffectivelyEmpty(section.body)) continue;
+    const windows = Array.isArray(section.windows) ? section.windows
+      : Array.isArray(section.transits) ? section.transits
+      : Array.isArray(section.items) ? section.items
+      : [];
+    if (windows.length === 0) continue;
+    const first = windows[0] || {};
+    const dateRange = String(first.date_range || first.dateRange || first.date || first.window || "the upcoming window").trim();
+    const transitName = String(first.transit || first.aspect || first.title || first.name || "").trim();
+    const meaning = String(first.meaning || first.note || first.description || first.body || "").trim();
+    const lead = transitName
+      ? `The strongest window is ${transitName} during ${dateRange}.`
+      : `The strongest window opens during ${dateRange}.`;
+    const tail = meaning
+      ? ` ${ensureSentence(firstSentenceFromText(meaning))}`
+      : ` Treat this as the period when the patterns named above will be the easiest to act on.`;
+    const synthesized = `${lead}${tail}`.trim();
+    if (!isEffectivelyEmpty(synthesized)) {
+      section.body = synthesized;
+      const title = String(section.title || "Timing Windows").trim();
+      changes.push(`${title}.body`);
+    }
+  }
+  if (changes.length > 0) {
+    log.push({ type: "timing_section_body_backfilled", detail: { fields: changes } });
+    console.info("[ask-astrology] timing_section bodies backfilled", { fields: changes });
   }
 };
 
@@ -4557,7 +4600,8 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
 - Natal sections: reference ONLY the natal positions listed above.
 - Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
 - Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
-- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.`;
+- Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.
+- VERIFICATION MANDATE: Every time you are about to name a planet's sign in a natal sentence, mentally re-check the NATAL GROUND TRUTH list above. If the sign you are about to write does not match the list, you are confusing the SR chart with the natal chart — stop and correct it before continuing the sentence. This check is non-negotiable and applies to Saturn, Jupiter, Uranus, Neptune, Pluto, and Chiron in particular, since those are the planets the model most often mis-copies between charts.`;
     };
     const natalGroundTruthBlock = buildNatalGroundTruthBlock(sanitizedChartContext);
 
@@ -5440,6 +5484,10 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
           // balance_interpretation, and summary items so the payload cannot
           // ship with the same 3 empty fields again.
           backfillRelationshipSectionBodies(parsedContent, emissionLog);
+          // FIX A — synthesize timing_section.body from windows when empty
+          // so the universal MISSING_REQUIRED_BODY validator below treats
+          // timing tables as fully populated when they have data.
+          backfillTimingSectionBodies(parsedContent, emissionLog);
           // FINAL PRONOUN SAFETY NET (Fix 3): every backfill / structural
           // pass above can introduce new prose. Re-run the pronoun rewriter
           // so any "their"/"they"/"them" that slipped in via templates,
@@ -5464,7 +5512,9 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               "modality_element",
               "needs_profile",
               "strategy_summary",
+              "timing_section",
             ]);
+            const SOFT_LENGTH_CAP = 1500; // chars — log-only warning, no truncation
             const meaningfulText = (raw: unknown): boolean => {
               if (typeof raw !== "string") return false;
               const cleaned = raw
@@ -5480,6 +5530,8 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               if (Array.isArray(s.elements) && s.elements.length > 0) return true;
               if (Array.isArray(s.modalities) && s.modalities.length > 0) return true;
               if (Array.isArray(s.polarity) && s.polarity.length > 0) return true;
+              if (Array.isArray(s.windows) && s.windows.length > 0) return true;
+              if (Array.isArray(s.transits) && s.transits.length > 0) return true;
               if (meaningfulText(s.balance_interpretation)) return true;
               return false;
             };
@@ -5487,26 +5539,42 @@ CHART SEPARATION RULES — MANDATORY (universal, every reading type):
               ? (parsedContent as any).sections
               : [];
             const missingBodies: Array<Record<string, unknown>> = [];
+            const oversizedBodies: Array<Record<string, unknown>> = [];
             for (const section of sections) {
               if (!section || typeof section !== "object") continue;
               const type = String(section.type || "").toLowerCase();
               if (!REQUIRED_BODY_TYPES.has(type)) continue;
+              const bodyStr = typeof section.body === "string" ? section.body : "";
+              const title = String(section.title || "").trim() || "(untitled)";
+              // Soft length-cap warning (Fix C): log only, never truncate.
+              if (type === "narrative_section" && bodyStr.length > SOFT_LENGTH_CAP) {
+                oversizedBodies.push({
+                  type: "narrative_body_oversized",
+                  detail: { title, body_length: bodyStr.length, soft_cap: SOFT_LENGTH_CAP, severity: "warning" },
+                });
+              }
               if (meaningfulText(section.body)) continue;
               if (!hasBulletsOrItems(section)) continue;
-              const title = String(section.title || "").trim() || "(untitled)";
-              const bodyLen = typeof section.body === "string" ? section.body.length : 0;
               missingBodies.push({
                 type: "missing_required_body",
                 detail: {
                   section_type: type,
                   title,
-                  body_length: bodyLen,
+                  body_length: bodyStr.length,
                   has_bullets: Array.isArray(section.bullets) && section.bullets.length > 0,
                   has_items: Array.isArray(section.items) && section.items.length > 0,
+                  has_windows: Array.isArray(section.windows) && section.windows.length > 0,
                   has_balance_interpretation: meaningfulText(section.balance_interpretation),
                   healable: true,
                   severity: "error",
                 },
+              });
+            }
+            if (oversizedBodies.length > 0) {
+              for (const entry of oversizedBodies) emissionLog.push(entry as any);
+              console.info("[ask-astrology] narrative bodies over soft cap", {
+                count: oversizedBodies.length,
+                titles: oversizedBodies.map((m: any) => m?.detail?.title),
               });
             }
             if (missingBodies.length > 0) {
