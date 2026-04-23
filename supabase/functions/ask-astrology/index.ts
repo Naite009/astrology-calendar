@@ -1996,41 +1996,70 @@ const ensureSentence = (text: string): string => {
   return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
 };
 
-// Hardcode the canonical title for the strategy summary section. The AI
-// occasionally returns variants like "Summary", "Strategy Summary", or
-// "Relationship Strategy". The downstream renderer + cleanup logic match
-// on the EXACT canonical string "Relationship Strategy Summary", so we
-// force-rename any close variant in relationship readings before the
-// backfill runs. This is Fix 4 in the chart-reference / pronoun /
-// title-contract patch set.
-const RELATIONSHIP_SUMMARY_TITLE_VARIANTS = [
+// Hardcode canonical summary_box titles per question_type. The AI sometimes
+// returns variants like "Summary", "Strategy Summary", or domain-specific
+// shortenings; downstream renderers + cleanup logic match the exact
+// canonical title, so we force-rename any close variant before the body
+// backfill runs. Universal across every reading type (Fix 4).
+const SUMMARY_TITLE_BY_QUESTION_TYPE: Record<string, string> = {
+  relationship: "Relationship Strategy Summary",
+  relocation: "Location Strategy Summary",
+  location: "Location Strategy Summary",
+  career: "Career Strategy Summary",
+  money: "Money Strategy Summary",
+  health: "Health Strategy Summary",
+  spiritual: "Spiritual Strategy Summary",
+  timing: "Timing Strategy Summary",
+  general: "Strategy Summary",
+};
+const SUMMARY_TITLE_GENERIC_VARIANTS = new Set([
   "summary",
   "strategy summary",
-  "relationship strategy",
-  "relationship summary",
-  "your relationship strategy",
   "your strategy summary",
-];
+  "strategy",
+  "the strategy",
+  "the summary",
+]);
+const SUMMARY_TITLE_DOMAIN_VARIANTS: Record<string, string[]> = {
+  relationship: ["relationship strategy", "relationship summary", "your relationship strategy"],
+  relocation: ["location strategy", "location summary", "relocation strategy", "relocation summary", "your location strategy"],
+  location: ["location strategy", "location summary", "relocation strategy", "relocation summary", "your location strategy"],
+  career: ["career strategy", "career summary", "your career strategy", "work strategy", "work summary"],
+  money: ["money strategy", "money summary", "financial strategy", "financial summary", "your money strategy"],
+  health: ["health strategy", "health summary", "your health strategy", "wellness strategy", "wellness summary"],
+  spiritual: ["spiritual strategy", "spiritual summary", "your spiritual strategy"],
+  timing: ["timing strategy", "timing summary", "your timing strategy"],
+  general: [],
+};
 const enforceRelationshipSummaryTitle = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const qt = String(parsedContent?.question_type || "").toLowerCase();
-  if (qt && qt !== "relationship") return;
+  const canonical = SUMMARY_TITLE_BY_QUESTION_TYPE[qt] || SUMMARY_TITLE_BY_QUESTION_TYPE.general;
+  if (!canonical) return;
+
+  const acceptableLowers = new Set<string>(SUMMARY_TITLE_GENERIC_VARIANTS);
+  const domainVariants = SUMMARY_TITLE_DOMAIN_VARIANTS[qt] || [];
+  for (const variant of domainVariants) acceptableLowers.add(variant);
+
   let renamed = 0;
   const renames: string[] = [];
   for (const section of parsedContent.sections) {
     if (!section || section?.type !== "summary_box") continue;
     const currentTitle = String(section.title || "").trim();
-    if (currentTitle === "Relationship Strategy Summary") continue;
+    if (currentTitle === canonical) continue;
     const lower = currentTitle.toLowerCase();
-    if (RELATIONSHIP_SUMMARY_TITLE_VARIANTS.includes(lower)) {
-      section.title = "Relationship Strategy Summary";
+    // Always normalize empty / generic-summary titles. For known domain
+    // variants of the SAME question_type, also normalize. We do NOT touch
+    // titles that are clearly a different domain (defensive).
+    if (!currentTitle || acceptableLowers.has(lower)) {
+      section.title = canonical;
       renamed++;
-      if (renames.length < 5) renames.push(`${currentTitle} → Relationship Strategy Summary`);
+      if (renames.length < 5) renames.push(`${currentTitle || "(empty)"} → ${canonical}`);
     }
   }
   if (renamed > 0) {
-    log.push({ type: "summary_box_title_hardcoded", detail: { renamed, renames } });
-    console.info("[ask-astrology] summary_box title hardcoded", { renamed, renames });
+    log.push({ type: "summary_box_title_hardcoded", detail: { question_type: qt, renamed, renames } });
+    console.info("[ask-astrology] summary_box title hardcoded", { question_type: qt, renamed, renames });
   }
 };
 
