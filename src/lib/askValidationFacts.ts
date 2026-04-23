@@ -24,13 +24,15 @@ const MODALITY_MAP: Record<string, string> = {
 
 // Planet-based polarity (NOT sign-based). A planet's intrinsic nature determines
 // its Yang/Yin assignment, regardless of which sign it currently occupies.
-// - Yang (active, outward, projecting): Sun, Mars, Jupiter, Saturn, Uranus
+// - Yang (active, outward, projecting): Sun, Mercury, Mars, Jupiter, Saturn, Uranus
+//   (Mercury is traditionally classified as Yang/diurnal under Hellenistic sect —
+//   it's a day planet, never far from the Sun, and its expression is outward.
+//   Assigning it to Yang ensures the polarity totals always sum to 10 across the
+//   counted planet set, fixing a prior off-by-one where Mercury was excluded.)
 // - Yin (receptive, inward, magnetic): Moon, Venus, Neptune, Pluto
-// - Neutral / variable: Mercury (takes on the polarity of the sign it's in or
-//   the planet it most closely aspects — for the count we treat it as neutral
-//   and exclude it from both totals)
-const PLANET_POLARITY: Record<string, "Yang" | "Yin" | "Neutral"> = {
+const PLANET_POLARITY: Record<string, "Yang" | "Yin"> = {
   Sun: "Yang",
+  Mercury: "Yang",
   Mars: "Yang",
   Jupiter: "Yang",
   Saturn: "Yang",
@@ -39,7 +41,6 @@ const PLANET_POLARITY: Record<string, "Yang" | "Yin" | "Neutral"> = {
   Venus: "Yin",
   Neptune: "Yin",
   Pluto: "Yin",
-  Mercury: "Neutral",
 };
 
 const COUNTED_PLANETS = [
@@ -236,8 +237,9 @@ const buildCounts = (points: PointRecord[]) => {
     if (!COUNTED_PLANETS.includes(point.name as (typeof COUNTED_PLANETS)[number])) continue;
     const element = ELEMENT_MAP[point.sign];
     const modality = MODALITY_MAP[point.sign];
-    // Polarity is now derived from the PLANET itself, not the sign it occupies.
-    // Mercury is neutral and is excluded from both Yang/Yin totals.
+    // Polarity is derived from the PLANET itself, not the sign it occupies.
+    // Mercury is assigned to Yang (Hellenistic diurnal classification) so that
+    // Yang + Yin always sums to 10 across the 10 counted planets.
     const polarity = PLANET_POLARITY[point.name];
 
     if (element) {

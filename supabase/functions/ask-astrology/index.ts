@@ -1688,6 +1688,15 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
   const keptSections: any[] = [];
   let droppedItems = 0;
   let droppedSections = 0;
+  // Labels that must NEVER be dropped — instead, backfill with a canonical
+  // fallback so the summary box is always complete. "Best Windows" was
+  // repeatedly being generated empty and dropped, leaving the user with no
+  // forward-timing field. The fallback string matches the prompt instruction
+  // so the rendered output stays consistent with what the model was told to
+  // write when no strong windows exist.
+  const SUMMARY_ITEM_BACKFILLS: Record<string, string> = {
+    "best windows": "No strong forward windows are active in the current period.",
+  };
   for (const section of parsedContent.sections) {
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
@@ -1699,11 +1708,38 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         const v = item[valueKey];
         // Keep falsy non-strings (0, false). Only drop true empties.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
+          const labelKey = typeof item.label === "string" ? item.label.trim().toLowerCase() : "";
+          const backfill = SUMMARY_ITEM_BACKFILLS[labelKey];
+          if (backfill) {
+            item[valueKey] = backfill;
+            log.push({
+              type: "empty_summary_item_backfilled",
+              detail: { section: section.title || "", label: item.label || "", backfill },
+            });
+            keptItems.push(item);
+            continue;
+          }
           droppedItems++;
           log.push({ type: "empty_summary_item_dropped", detail: { section: section.title || "", label: item.label || "" } });
           continue;
         }
         keptItems.push(item);
+      }
+      // If "Best Windows" wasn't in items at all, add it with the canonical
+      // fallback so it's always present as a labeled field.
+      const hasBestWindows = keptItems.some(
+        (it) => it && typeof it === "object" && typeof it.label === "string"
+          && it.label.trim().toLowerCase() === "best windows"
+      );
+      if (!hasBestWindows) {
+        keptItems.push({
+          label: "Best Windows",
+          value: SUMMARY_ITEM_BACKFILLS["best windows"],
+        });
+        log.push({
+          type: "best_windows_item_inserted",
+          detail: { section: section.title || "", reason: "missing_from_items" },
+        });
       }
       section.items = keptItems;
     }
@@ -3518,6 +3554,14 @@ FORBIDDEN STOCK BLURBS — applies to EVERY question_type other than relationshi
 SUMMARY_BOX TIMING SOURCE OF TRUTH (NON-NEGOTIABLE — APPLIES TO EVERY READING):
 Any timing field inside a summary_box — including but not limited to "Best Windows", "Caution Windows", "When to Act", "Extra Care Windows", "Restorative Windows", "Ideal Timing Window", "Best Timing", "Top Cities Timing", or any other label that names a date range or month — MUST be selected and summarized EXCLUSIVELY from the transits[] array already written in this same JSON's timing_section. You may NOT introduce a new aspect name, planet pairing, exact_hit_date, date_range, or month that does not already appear in transits[]. Before writing any summary_box timing field, re-read the transits[] array you just wrote and copy the relevant date_range strings verbatim (or summarize them in plain prose). If you cannot back a claim with a row from transits[], do NOT make the claim. This rule prevents the validator from stripping invented windows after the fact.
 
+BEST WINDOWS MANDATORY-NON-EMPTY RULE (NON-NEGOTIABLE — APPLIES TO EVERY READING TYPE: relationship, career, health, money, location, spiritual, general):
+The summary_box MUST contain a "Best Windows" item as a standalone labeled field. It must NEVER be empty. It must NEVER be merged with "What This Year Is Best For" — those are two distinct items with different purposes. "What This Year Is Best For" is a plain-English thematic summary with NO dates and NO planets. "Best Windows" is a date-range field that names actual forward timing windows.
+- If Jupiter or other benefic transit windows exist in the timing_section transits[] array, list them in "Best Windows" with exact date ranges, copied verbatim from transits[].
+- If no strong forward windows exist in the current period (no Jupiter trine/sextile/conjunction to a personal point, no other clearly supportive transit), write the "Best Windows" value EXACTLY as: "No strong forward windows are active in the current period."
+- Do NOT leave the value blank, do NOT write "N/A", do NOT write "See timing section above", do NOT omit the item entirely. The hygiene gate will drop empty summary items and log empty_summary_item_dropped — that is a generation failure, not an acceptable outcome.
+- "Best Windows" and "What This Year Is Best For" are SEPARATE items. Both must be present in the summary_box items[] array. Never collapse one into the other.
+
+
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
 
 NO META SENTENCES — HARD RULE: Every sentence must make a claim about the chart, the person, or a concrete recommendation. Do NOT write introductory, transitional, or self-referential sentences about the document itself. FORBIDDEN sentence patterns include (non-exhaustive): "This reading will explore...", "In this section we'll look at...", "Below, we break down...", "Let's dive into...", "First, let's consider...", "To summarize the above...", "As we'll see in the next section...", "This analysis covers...", "The following addresses...", "Now turning to...", "Before we continue...", "In conclusion,...", "To wrap up,...", "Here's what your chart says about...". If a sentence is only scaffolding and would still be true if you swapped this person's chart for someone else's, DELETE IT. Open every section directly with substance — lived behavior in sentence 1, placement in sentence 2 (per the behavior-first rule). Close every section on the last real claim, not on a meta summary.
@@ -3901,8 +3945,8 @@ Rules:
       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
       - "Pattern to Break": Name it bluntly. Example: "Stop treating mental chemistry as proof of compatibility — it's not."
       - "What This Year Is Best For": A 1–2 sentence plain-English summary of the overall relational theme for this year, based on the SR chart and current transits. NO aspect names (no "Jupiter trine Venus"), NO planet names, NO dates, NO month references. Just describe what the year FEELS like relationally. Example: "This year is for learning to stay only where things are clear, not where they're exciting — the pull toward intensity is strong, but quiet steadiness is what actually grows you." Dates belong only in Best Windows.
-      - "Best Windows": Timing windows.
-      - "Caution Windows": Timing windows.
+      - "Best Windows": Date-range timing windows copied from the timing_section transits[] above. MUST NOT be empty. If no strong forward windows exist in the current period, write EXACTLY: "No strong forward windows are active in the current period." MUST be a separate item from "What This Year Is Best For" — never merge them.
+      - "Caution Windows": Date-range timing windows copied from the timing_section transits[] above.
       Do NOT stay safe or diplomatic. The user needs to hear the hard truth clearly. Every item must feel like advice they'd remember.
 
       SUMMARY TRANSIT REFERENCE RULE (MANDATORY): The "Best Windows" and "Caution Windows" items in the Relationship Strategy Summary may ONLY reference transits that were named entries in the Timing Windows (timing_section) above. Do NOT introduce new transit names, new planets, new dates, or new aspects in the summary that did not appear as explicit entries in the timing_section. If a transit was not named in Timing Windows, it cannot appear here. The summary windows are a recap, not a new analysis.
@@ -4582,24 +4626,70 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         .map((l) => l.trim())
         .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
       if (lines.length === 0) return null;
-      const retroLines = lines.filter((l) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l));
+
+      // Per-planet retrograde classification. We keep an explicit DIRECT vs
+      // RETROGRADE list for the 10 classical planets + Chiron because the
+      // model frequently bleeds the SR retrograde state of Saturn, Neptune,
+      // Uranus, Mars, and Jupiter into natal prose. Naming each planet's
+      // status in the prompt removes any ambiguity.
+      const RETRO_TRACKED = [
+        "Sun", "Moon", "Mercury", "Venus", "Mars",
+        "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron",
+      ];
+      const isLineRetro = (l: string) => /\b(Rx|R|retrograde)\b|\u211E/i.test(l);
+      const planetFromLine = (l: string): string | null => {
+        const m = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
+        return m ? m[1].trim() : null;
+      };
+      const directPlanets: string[] = [];
+      const retroPlanets: string[] = [];
+      for (const planet of RETRO_TRACKED) {
+        const line = lines.find((l) => {
+          const p = planetFromLine(l);
+          return p && p.toLowerCase() === planet.toLowerCase();
+        });
+        if (!line) continue;
+        if (isLineRetro(line)) retroPlanets.push(planet);
+        else directPlanets.push(planet);
+      }
+
       const placementList = lines.map((l) => `- ${l}`).join("\n");
-      const retroList = retroLines.length > 0
-        ? retroLines.map((l) => {
-            const planetMatch = l.match(/^([A-Za-z][A-Za-z\s]*?):/);
-            return planetMatch ? planetMatch[1].trim() : l;
-          }).join(", ")
-        : "(none — no natal planets are retrograde in this chart)";
+      const directBullets = directPlanets.length > 0
+        ? directPlanets.map((p) => `- ${p}: DIRECT`).join("\n")
+        : "- (none in this chart)";
+      const retroBullets = retroPlanets.length > 0
+        ? retroPlanets.map((p) => `- ${p}: RETROGRADE`).join("\n")
+        : "- (none — no natal planets are retrograde in this chart)";
+
+      // Pluto-specific anchor. The model has been observed substituting SR
+      // Pluto's sign/degree (e.g., 1°22' Aquarius) into natal prose when the
+      // ground truth block sat too far down in the prompt. We restate Pluto's
+      // natal position as its own line so it cannot be missed, and we move
+      // this entire block to the FIRST cached system block (see chartScopedRules
+      // ordering below) so the model reads it before SR data.
+      const plutoLine = lines.find((l) => /^Pluto\s*:/i.test(l));
+      const plutoAnchor = plutoLine
+        ? `\n\nPLUTO ANCHOR (most-confused planet — verify before writing):\nNatal ${plutoLine}\nNever substitute SR Pluto's sign/degree/house into a natal sentence. If you write "Pluto" in any natal context, the sign MUST match this line.`
+        : "";
+
       return `NATAL GROUND TRUTH — these values are fixed constants for this chart. When writing any NATAL interpretation in any section, these are the only correct positions. Do NOT substitute Solar Return positions here under any circumstances:
 
 ${placementList}
 
-Natal retrograde planets in this chart: ${retroList}. Always preserve their retrograde status in natal prose. NEVER describe a natal retrograde planet as direct, and NEVER add a retrograde marker to a natal direct planet.
+NATAL RETROGRADE STATUS — these are fixed. Do not change them based on SR chart status.
+
+These natal planets are DIRECT (not retrograde):
+${directBullets}
+
+These natal planets are RETROGRADE:
+${retroBullets}
+
+When writing natal sections, never describe a DIRECT natal planet as retrograde, and never describe a RETROGRADE natal planet as direct. SR Saturn, SR Neptune, SR Uranus, SR Mars, and SR Jupiter may be retrograde in the Solar Return chart — that has NO bearing on natal status. These are different planets in different charts. If natal Saturn is listed as DIRECT above, it is direct in every natal sentence you write, full stop.${plutoAnchor}
 
 CHART SEPARATION RULES — MANDATORY (universal, every reading type):
 - Natal sections: reference ONLY the natal positions listed above.
 - Solar Return (SR) sections: reference ONLY the SR chart positions provided in the SR table further down in this chart context.
-- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, etc. are in completely different signs than their natal counterparts — do not confuse them.
+- Never mix them. SR Saturn, SR Neptune, SR Uranus, SR Jupiter, SR Pluto, etc. are in completely different signs than their natal counterparts — do not confuse them.
 - Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct chart table for that section.
 - VERIFICATION MANDATE: Every time you are about to name a planet's sign in a natal sentence, mentally re-check the NATAL GROUND TRUTH list above. If the sign you are about to write does not match the list, you are confusing the SR chart with the natal chart — stop and correct it before continuing the sentence. This check is non-negotiable and applies to Saturn, Jupiter, Uranus, Neptune, Pluto, and Chiron in particular, since those are the planets the model most often mis-copies between charts.`;
     };
