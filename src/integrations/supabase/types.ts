@@ -16,6 +16,10 @@ export type Database = {
     Tables: {
       ask_jobs: {
         Row: {
+          call_a_output: Json | null
+          call_b_output: Json | null
+          call_c_output: Json | null
+          call_status: Json
           chart_id: string
           completed_at: string | null
           created_at: string
@@ -29,6 +33,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          call_a_output?: Json | null
+          call_b_output?: Json | null
+          call_c_output?: Json | null
+          call_status?: Json
           chart_id: string
           completed_at?: string | null
           created_at?: string
@@ -42,6 +50,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          call_a_output?: Json | null
+          call_b_output?: Json | null
+          call_c_output?: Json | null
+          call_status?: Json
           chart_id?: string
           completed_at?: string | null
           created_at?: string
