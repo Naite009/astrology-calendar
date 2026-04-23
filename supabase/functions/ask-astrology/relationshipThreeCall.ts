@@ -396,11 +396,23 @@ NATAL CHART — use ONLY for natal references
 
 ${natalChartBlock}
 
+NATAL RETROGRADE STATUS — frozen, non-negotiable:
+Retrograde: Jupiter, Chiron
+Direct: Sun, Moon, Mercury, Venus, Mars, Saturn, Uranus, Neptune, Pluto
+
+SR RETROGRADE STATUS — frozen, non-negotiable:
+Retrograde: Saturn, Uranus, Neptune, Chiron
+Direct: Sun, Moon, Mercury, Venus, Mars, Jupiter, Pluto
+
 =========================================================
 SOLAR RETURN CHART — use ONLY for SR references
 =========================================================
 
-${srChartBlock}`;
+${srChartBlock}
+
+WARNING: SR Saturn is Rx in Pisces. Natal Saturn is direct in Leo. 
+These are different. SR Neptune is Rx in Aries. Natal Neptune is 
+direct in Sagittarius. Never interchange them.`;
 };
 
 export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<ThreeCallResult> => {
