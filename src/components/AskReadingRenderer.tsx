@@ -1093,7 +1093,7 @@ function ModalityElementCard({ section }: { section: ModalityElementSection }) {
                 <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                   <div className="bg-primary/70 h-1.5 rounded-full transition-all" style={{ width: `${(el.count / totalPlanets) * 100}%` }} />
                 </div>
-                <p className="text-xs text-muted-foreground">{el.planets.join(", ")}</p>
+                <p className="text-xs text-muted-foreground">{(el.planets ?? []).join(", ")}</p>
                 <p className="text-xs text-foreground/70 mt-1">{el.interpretation}</p>
               </div>
             ))}
