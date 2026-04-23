@@ -4102,6 +4102,9 @@ This applies to narrative_section bullets, summary_box items (where astrological
 
 Rules:
 - HOUSE NUMBER ACCURACY (CRITICAL): Every house number in placement tables MUST be copied EXACTLY from the pre-computed values in the chart context (shown as "(House X)" or "(SR House X)"). NEVER calculate, infer, or guess house numbers from a planet's sign. In Placidus house systems, sign and house are INDEPENDENT — a planet in Aries can be in ANY house (1 through 12) depending on the Ascendant degree. If you see "SR Mercury: 11°26' Pisces (SR House 4)" in the context, the house column MUST say 4, not 11 or 12. This is the #1 source of errors — triple-check every house number against the context before outputting.
+- SR HOUSE NUMBERS COME FROM SR ASCENDANT — NOT NATAL: When you fill the "Solar Return Key Placements" table, every house number MUST be read from the SR Planetary Positions block (the "(SR House X)" annotations), NOT copied from the natal placement table. SR planets occupy DIFFERENT houses than natal planets because the SR Ascendant is different from the natal Ascendant. If your SR table has 9+ rows where the SR house equals the natal house for the same planet, you have made an error — you copied natal houses instead of reading SR houses. Re-read the SR Planetary Positions block and rewrite the SR house column from there.
+- NO EM-DASHES OR EN-DASHES (—, –) ANYWHERE IN PROSE: Use commas, periods, parentheses, or " to " for date ranges. Never use the em-dash character (U+2014) or the en-dash character (U+2013) in any narrative_section body, summary item, transit description, or bullet. They are post-processed away by downstream renderers and the replacement breaks your sentence rhythm. Write "Jupiter expands the relationship, more opportunity, more confidence" NOT "Jupiter expands the relationship — more opportunity, more confidence". For date ranges write "May 8 to June 2, 2026" NOT "May 8–June 2, 2026". This is non-negotiable.
+- NO REPEATED SENTENCES OR PARAGRAPHS WITHIN THE SAME FIELD: Each transit description, narrative paragraph, and summary item must contain each sentence exactly once. Before finalizing any timing_section window description, scan the description for any sentence that appears more than once and remove the duplicates. Do NOT pad short descriptions by repeating the boilerplate sentence twice. If you find yourself writing the same template phrase ("Pluto turns the heat up underneath…", "Uranus shakes the relationship loose…", "Jupiter expands the relationship…") in multiple consecutive transit windows for the same planet, vary the wording so each window reads as a distinct interpretation, not the same template applied to a different natal point.
 - Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven, South Node — never omit them. Include Lilith and Juno ONLY if their data is explicitly present in the chart context.
 - Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ ☋ ⚸ ⚵ — never skip symbols
 - Always include Chiron (⚷), Midheaven (MC), and South Node (☋) in the placement_table. Include Lilith (⚸) and Juno (⚵) ONLY when their data is explicitly provided in the chart context — never fabricate their positions.
@@ -6070,6 +6073,91 @@ HARD RULE — applies to every sentence:
           // so the universal MISSING_REQUIRED_BODY validator below treats
           // timing tables as fully populated when they have data.
           backfillTimingSectionBodies(parsedContent, emissionLog);
+          // DETERMINISTIC DEDUP + DASH-STRIP for transit window descriptions.
+          // Mirrors the Replit gate's "deduped paragraph in description" and
+          // "Stripped em-dashes" fixes so the AI output is already clean
+          // before it leaves us. Voice stays consistent and downstream
+          // post-processing has nothing to do.
+          try {
+            if (Array.isArray(parsedContent?.sections)) {
+              let dedupedFields = 0;
+              let dashStrippedFields = 0;
+              const splitSentences = (s: string): string[] =>
+                s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+              const dedupSentences = (s: string): { out: string; changed: boolean } => {
+                const parts = splitSentences(s);
+                const seen = new Set<string>();
+                const kept: string[] = [];
+                for (const p of parts) {
+                  const key = p.toLowerCase().replace(/\s+/g, " ");
+                  if (seen.has(key)) continue;
+                  seen.add(key);
+                  kept.push(p);
+                }
+                const out = kept.join(" ");
+                return { out, changed: out !== s };
+              };
+              const stripDashes = (s: string): { out: string; changed: boolean } => {
+                // em-dash → ", "  ;  en-dash in date ranges → " to "
+                let out = s.replace(/\s*\u2014\s*/g, ", ");
+                out = out.replace(
+                  /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
+                  "$1 to $2",
+                );
+                out = out.replace(/\s*\u2013\s*/g, ", ");
+                return { out, changed: out !== s };
+              };
+              const cleanString = (s: string): string => {
+                if (typeof s !== "string" || !s) return s;
+                const a = stripDashes(s);
+                if (a.changed) dashStrippedFields++;
+                const b = dedupSentences(a.out);
+                if (b.changed) dedupedFields++;
+                return b.out;
+              };
+              for (const sec of parsedContent.sections) {
+                if (!sec || typeof sec !== "object") continue;
+                if (sec.type === "timing_section" && Array.isArray(sec.windows)) {
+                  for (const w of sec.windows) {
+                    if (w && typeof w.description === "string") {
+                      w.description = cleanString(w.description);
+                    }
+                    if (w && typeof w.title === "string") {
+                      const a = stripDashes(w.title);
+                      if (a.changed) dashStrippedFields++;
+                      w.title = a.out;
+                    }
+                  }
+                  if (typeof sec.body === "string") sec.body = cleanString(sec.body);
+                }
+                if (sec.type === "narrative_section" && typeof sec.body === "string") {
+                  sec.body = cleanString(sec.body);
+                }
+                if (sec.type === "summary_box" && Array.isArray(sec.items)) {
+                  for (const it of sec.items) {
+                    if (it && typeof it.text === "string") it.text = cleanString(it.text);
+                    if (it && typeof it.label === "string") {
+                      const a = stripDashes(it.label);
+                      if (a.changed) dashStrippedFields++;
+                      it.label = a.out;
+                    }
+                  }
+                }
+              }
+              if (dedupedFields > 0 || dashStrippedFields > 0) {
+                emissionLog.push({
+                  type: "transit_dedup_and_dash_strip",
+                  detail: { dedupedFields, dashStrippedFields },
+                });
+                console.info("[ask-astrology] dedup+dash-strip", {
+                  dedupedFields,
+                  dashStrippedFields,
+                });
+              }
+            }
+          } catch (cleanErr) {
+            console.warn("[ask-astrology] dedup+dash-strip failed:", cleanErr);
+          }
           // FINAL PRONOUN SAFETY NET (Fix 3): every backfill / structural
           // pass above can introduce new prose. Re-run the pronoun rewriter
           // so any "their"/"they"/"them" that slipped in via templates,
