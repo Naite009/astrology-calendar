@@ -1913,61 +1913,52 @@ const fixDescendantCuspMentionsInProse = (
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
   ]);
-  const visit = (node: any, parentKey?: string) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
-    if (!node || typeof node !== "object") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        let next = val;
-        next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
-        next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
-        next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(houseItsRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        next = next.replace(houseLooseItsRulerRe, (full, ord, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        if (next !== val) {
-          rewrites++;
-          if (examples.length < 5) {
-            const rulerIdx = [
-              houseRuledByRe,
-              houseRulerOfRe,
-              directHouseRulerRe,
-              houseItsRulerRe,
-              houseLooseItsRulerRe,
-              houseRulerLabelRe,
-            ]
-              .map((re) => val.search(re))
-              .find((idx) => idx >= 0) ?? -1;
-            const idx = val.search(wrongSeventh) >= 0
-              ? val.search(wrongSeventh)
-              : val.search(wrongDescendant) >= 0
-                ? val.search(wrongDescendant)
-                : Math.max(0, rulerIdx);
-            examples.push(val.slice(Math.max(0, idx - 20), idx + 140));
-          }
-          (node as any)[key] = next;
-        }
-      } else {
-        visit(val, key);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
+    next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+    next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(houseItsRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    next = next.replace(houseLooseItsRulerRe, (full, ord, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    if (next !== val) {
+      rewrites++;
+      if (examples.length < 5) {
+        const rulerIdx = [
+          houseRuledByRe,
+          houseRulerOfRe,
+          directHouseRulerRe,
+          houseItsRulerRe,
+          houseLooseItsRulerRe,
+          houseRulerLabelRe,
+        ]
+          .map((re) => val.search(re))
+          .find((idx) => idx >= 0) ?? -1;
+        const idx = val.search(wrongSeventh) >= 0
+          ? val.search(wrongSeventh)
+          : val.search(wrongDescendant) >= 0
+            ? val.search(wrongDescendant)
+            : Math.max(0, rulerIdx);
+        examples.push(val.slice(Math.max(0, idx - 20), idx + 140));
       }
+      (node as any)[key] = next;
     }
-  };
-  visit(parsedContent);
+  });
   if (rewrites > 0) {
     log.push({
       type: "descendant_cusp_sign_corrected_in_prose",
