@@ -7078,6 +7078,68 @@ HARD RULE — applies to every sentence:
           console.info(`[ask-astrology] 3-call: resuming with ${priorCount} prior call(s)`, Object.keys(priorOutputs));
         }
 
+
+        // ── Pre-compute verified cross-chart activations for Call C ──────
+        // This removes the model's ability to invent SR-to-natal aspects,
+        // mis-state orbs, or confuse natal Ascendant with natal Descendant.
+        // We compute every aspect deterministically from the actual chart
+        // data and Call C interprets that frozen list only.
+        let verifiedActivations: VerifiedActivation[] = [];
+        let callCActivationsBlock = "";
+        let callCRetrogradeSummary = "";
+        try {
+          const natalPositions = parsePositionsFromContext(
+            sanitizedChartContext,
+            /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n/i,
+            "",
+          );
+          const srPositions = parsePositionsFromContext(
+            sanitizedChartContext,
+            /SR\s+Planetary\s+Positions[^\n]*:\s*\n/i,
+            "SR",
+          );
+          const natalCusps = parseHouseCuspsFromContext(sanitizedChartContext);
+          if (natalPositions.length > 0 && srPositions.length > 0) {
+            verifiedActivations = computeCrossChartActivations({
+              natalPositions,
+              srPositions,
+              natalCusps,
+            });
+            callCActivationsBlock = [
+              renderActivationsBlock(verifiedActivations),
+              buildActivationRulesBlock(verifiedActivations.length),
+            ].join("\n\n");
+
+            // Per-chart retrograde summary — replaces the old hardcoded
+            // leak in relationshipThreeCall.buildCallCUserMessage.
+            const retroLine = (
+              tag: string,
+              positions: typeof natalPositions,
+            ) => {
+              const rx = positions.filter((p) => p.retrograde).map((p) => p.planet);
+              const dr = positions.filter((p) => !p.retrograde).map((p) => p.planet);
+              return `${tag} retrograde: ${rx.length ? rx.join(", ") : "(none)"}\n${tag} direct: ${dr.length ? dr.join(", ") : "(none)"}`;
+            };
+            callCRetrogradeSummary = [
+              "RETROGRADE STATUS — frozen, non-negotiable:",
+              retroLine("Natal", natalPositions),
+              retroLine("SR", srPositions),
+            ].join("\n");
+
+            console.info(
+              `[ask-astrology] cross-chart activations precomputed: ${verifiedActivations.length} hit(s)`,
+              verifiedActivations.slice(0, 3).map((a) => `${a.srPoint}-${a.aspect}-${a.natalPoint} (${a.orb}°)`),
+            );
+          } else {
+            console.warn(
+              `[ask-astrology] cross-chart activations skipped — natal=${natalPositions.length} sr=${srPositions.length}`,
+            );
+          }
+        } catch (actErr: any) {
+          console.error("[ask-astrology] activations precompute failed:", actErr?.message || actErr);
+          // Non-fatal — Call C falls back to no activations block (legacy behavior).
+        }
+
         const tcStarted = Date.now();
         const tcResult = await runThreeCallRelationship({
           jobId,
@@ -7088,6 +7150,8 @@ HARD RULE — applies to every sentence:
           srChartBlock,
           effectiveCurrentDate,
           userQuestion: latestUserMessage,
+          callCActivationsBlock,
+          callCRetrogradeSummary,
           priorOutputs,
           updateJob,
         });
