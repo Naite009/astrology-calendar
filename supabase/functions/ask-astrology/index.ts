@@ -10,6 +10,12 @@ import {
   injectDeterministicModalityElement,
   overwriteAllPolarityCounts,
 } from "./relationshipThreeCall.ts";
+import {
+  computeCrossChartActivations,
+  renderActivationsBlock,
+  buildActivationRulesBlock,
+  type VerifiedActivation,
+} from "./crossChartActivations.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
