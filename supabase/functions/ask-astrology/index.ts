@@ -7107,6 +7107,7 @@ HARD RULE — applies to every sentence:
               srPositions,
               natalCusps,
             });
+            verifiedActivationsForResult = verifiedActivations;
             callCActivationsBlock = [
               renderActivationsBlock(verifiedActivations),
               buildActivationRulesBlock(verifiedActivations.length),
