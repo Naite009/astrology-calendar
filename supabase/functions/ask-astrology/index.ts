@@ -1770,6 +1770,40 @@ const ORDINAL_TO_HOUSE_NUM: Record<string, number> = {
   "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
   "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
 };
+const forEachProseField = (
+  root: any,
+  skipKeys: Set<string>,
+  fn: (args: { node: any; key: string; value: string; path: string }) => void,
+) => {
+  const visit = (node: any, path: string) => {
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}]`);
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    if (node?.type === "placement_table") return;
+
+    for (const [key, val] of Object.entries(node)) {
+      if (skipKeys.has(key)) continue;
+      const childPath = `${path}.${key}`;
+
+      if (typeof val === "string") {
+        const isDirectProseField = key === "body" || key === "content" || key === "text";
+        const isBulletTextField = path.includes(".bullets[") && key === "text";
+        const isGenericStringField = !path.includes(".placement_table") && !["planet","sign","house","degrees","aspect","natal_point","symbol"].includes(key);
+
+        if (isDirectProseField || isBulletTextField || isGenericStringField) {
+          fn({ node, key, value: val, path: childPath });
+        }
+      } else {
+        visit(val, childPath);
+      }
+    }
+  };
+
+  visit(root, "$");
+};
+
 const fixDescendantCuspMentionsInProse = (
   parsedContent: any,
   chartContext: string,
@@ -1879,61 +1913,52 @@ const fixDescendantCuspMentionsInProse = (
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
   ]);
-  const visit = (node: any, parentKey?: string) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
-    if (!node || typeof node !== "object") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        let next = val;
-        next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
-        next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
-        next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(houseItsRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        next = next.replace(houseLooseItsRulerRe, (full, ord, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler),
-        );
-        next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
-          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
-        );
-        if (next !== val) {
-          rewrites++;
-          if (examples.length < 5) {
-            const rulerIdx = [
-              houseRuledByRe,
-              houseRulerOfRe,
-              directHouseRulerRe,
-              houseItsRulerRe,
-              houseLooseItsRulerRe,
-              houseRulerLabelRe,
-            ]
-              .map((re) => val.search(re))
-              .find((idx) => idx >= 0) ?? -1;
-            const idx = val.search(wrongSeventh) >= 0
-              ? val.search(wrongSeventh)
-              : val.search(wrongDescendant) >= 0
-                ? val.search(wrongDescendant)
-                : Math.max(0, rulerIdx);
-            examples.push(val.slice(Math.max(0, idx - 20), idx + 140));
-          }
-          (node as any)[key] = next;
-        }
-      } else {
-        visit(val, key);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
+    next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+    next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(houseItsRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    next = next.replace(houseLooseItsRulerRe, (full, ord, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler),
+    );
+    next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+      fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+    );
+    if (next !== val) {
+      rewrites++;
+      if (examples.length < 5) {
+        const rulerIdx = [
+          houseRuledByRe,
+          houseRulerOfRe,
+          directHouseRulerRe,
+          houseItsRulerRe,
+          houseLooseItsRulerRe,
+          houseRulerLabelRe,
+        ]
+          .map((re) => val.search(re))
+          .find((idx) => idx >= 0) ?? -1;
+        const idx = val.search(wrongSeventh) >= 0
+          ? val.search(wrongSeventh)
+          : val.search(wrongDescendant) >= 0
+            ? val.search(wrongDescendant)
+            : Math.max(0, rulerIdx);
+        examples.push(val.slice(Math.max(0, idx - 20), idx + 140));
       }
+      (node as any)[key] = next;
     }
-  };
-  visit(parsedContent);
+  });
   if (rewrites > 0) {
     log.push({
       type: "descendant_cusp_sign_corrected_in_prose",
@@ -2128,45 +2153,33 @@ const correctSignRulershipClaimsInProse = (parsedContent: any, log: HygieneLog) 
     "subject","question_type","question_asked",
   ]);
 
-  const visit = (node: any) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
-    if (!node || typeof node !== "object") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        let next = val;
-        for (const pat of patterns) {
-          next = next.replace(pat.re, (full, ...groups) => {
-            const sign = String(groups[pat.signIdx - 1] || "");
-            const claimedPlanet = String(groups[pat.planetIdx - 1] || "");
-            const modifierRaw = pat.modifierIdx ? String(groups[pat.modifierIdx - 1] || "").toLowerCase() : "";
-            const modifierHint: "modern" | "traditional" | null =
-              modifierRaw === "modern" ? "modern" :
-              modifierRaw === "traditional" ? "traditional" : null;
-            if (!sign || !claimedPlanet) return full;
-            // Normalize capitalization for lookup.
-            const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
-            const planetCap = claimedPlanet.charAt(0).toUpperCase() + claimedPlanet.slice(1).toLowerCase();
-            if (isCorrectRuler(signCap, planetCap)) return full;
-            const replacement = pickReplacement(signCap, modifierHint);
-            if (!replacement || replacement.toLowerCase() === planetCap.toLowerCase()) return full;
-            rewrites++;
-            // Replace ONLY the planet token (preserve original casing context).
-            return full.replace(new RegExp(`\\b${claimedPlanet}\\b`), replacement);
-          });
-        }
-        if (next !== val) {
-          if (examples.length < 5) {
-            examples.push(val.slice(0, 160));
-          }
-          (node as any)[key] = next;
-        }
-      } else {
-        visit(val);
-      }
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    for (const pat of patterns) {
+      next = next.replace(pat.re, (full, ...groups) => {
+        const sign = String(groups[pat.signIdx - 1] || "");
+        const claimedPlanet = String(groups[pat.planetIdx - 1] || "");
+        const modifierRaw = pat.modifierIdx ? String(groups[pat.modifierIdx - 1] || "").toLowerCase() : "";
+        const modifierHint: "modern" | "traditional" | null =
+          modifierRaw === "modern" ? "modern" :
+          modifierRaw === "traditional" ? "traditional" : null;
+        if (!sign || !claimedPlanet) return full;
+        const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
+        const planetCap = claimedPlanet.charAt(0).toUpperCase() + claimedPlanet.slice(1).toLowerCase();
+        if (isCorrectRuler(signCap, planetCap)) return full;
+        const replacement = pickReplacement(signCap, modifierHint);
+        if (!replacement || replacement.toLowerCase() === planetCap.toLowerCase()) return full;
+        rewrites++;
+        return full.replace(new RegExp(`\\b${claimedPlanet}\\b`), replacement);
+      });
     }
-  };
-  visit(parsedContent);
+    if (next !== val) {
+      if (examples.length < 5) {
+        examples.push(val.slice(0, 160));
+      }
+      (node as any)[key] = next;
+    }
+  });
   if (rewrites > 0) {
     log.push({
       type: "sign_rulership_corrected_in_prose",
@@ -2246,81 +2259,55 @@ const correctSrPlanetPositionsInProse = (
   let signRewrites = 0;
   let degreeRewrites = 0;
   const examples: string[] = [];
-
-  // For each SR planet, build two patterns:
-  //   1. "<SR-qualifier> ... <Planet> [at] [<deg>°[<min>']] <WRONG_SIGN>"
-  //   2. "<Planet> [at] [<deg>°[<min>']] <WRONG_SIGN> ... <SR-qualifier>"
-  // We do this by walking each string, splitting on sentence boundaries,
-  // and only rewriting sentences that contain an SR qualifier.
   const sentenceSplit = /(?<=[.!?])\s+|\n+/;
 
-  const visit = (node: any, parentKey?: string) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x, parentKey); return; }
-    if (!node || typeof node !== "object") return;
-    // Skip placement_table sections entirely — their rows are normalized elsewhere.
-    if (node?.type === "placement_table") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        const sentences = val.split(sentenceSplit);
-        let touched = false;
-        for (let i = 0; i < sentences.length; i++) {
-          const s = sentences[i];
-          if (!s || s.length < 10) continue;
-          const isSrContext = SR_QUALIFIER_RE.test(s);
-          if (!isSrContext) continue;
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    const sentences = val.split(sentenceSplit);
+    let touched = false;
+    for (let i = 0; i < sentences.length; i++) {
+      const s = sentences[i];
+      if (!s || s.length < 10) continue;
+      const isSrContext = SR_QUALIFIER_RE.test(s);
+      if (!isSrContext) continue;
 
-          let next = s;
-          for (const [planet, truth] of srSignByPlanet.entries()) {
-            const correctSign = truth.sign;
-            const natalSign = natalByPlanet.get(planet.toLowerCase());
+      let next = s;
+      for (const [planet, truth] of srSignByPlanet.entries()) {
+        const correctSign = truth.sign;
+        const natalSign = natalByPlanet.get(planet.toLowerCase());
+        const planetSignRe = new RegExp(
+          `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|now\\s+in|currently\\s+in|=|—|,)?\\s*)(?:(\\d+)°(?:(\\d+)')?\\s+)?(${SIGN_NAMES_RE})\\b`,
+          "g",
+        );
 
-            // Pattern: "<Planet> [(at|in|sits in|=)]? [<deg>°[<min>']] <Sign>"
-            // Sign capture must NOT already be correct.
-            const planetSignRe = new RegExp(
-              `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|now\\s+in|currently\\s+in|=|—|,)?\\s*)(?:(\\d+)°(?:(\\d+)')?\\s+)?(${SIGN_NAMES_RE})\\b`,
-              "g",
-            );
+        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+          if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
+          const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
+          const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
+          if (!claimedIsNatal && !degreeMatchesSr) return match;
 
-            next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
-              if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
-              // Only rewrite if the claimed sign is the natal sign (classic
-              // "Replit reverted to natal" / "AI used natal in SR context")
-              // OR if a degree is present and matches the SR degree (in which
-              // case the sign MUST be the SR sign — degree+sign together
-              // uniquely identify a position).
-              const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
-              const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
-              if (!claimedIsNatal && !degreeMatchesSr) return match;
-
-              signRewrites++;
-              if (degStr !== undefined && parseInt(degStr, 10) !== truth.degree) {
-                degreeRewrites++;
-              }
-              const fixedDeg = degStr !== undefined ? `${truth.degree}°${minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : ""} ` : "";
-              const retro = retroPart || "";
-              const lead = degStr !== undefined ? `${planet}${retro}${gap || " "}` : `${planet}${retro}${gap || " "}`;
-              return `${lead}${fixedDeg}${correctSign}`;
-            });
+          signRewrites++;
+          if (degStr !== undefined && parseInt(degStr, 10) !== truth.degree) {
+            degreeRewrites++;
           }
+          const fixedDeg = degStr !== undefined ? `${truth.degree}°${minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : ""} ` : "";
+          const retro = retroPart || "";
+          const lead = degStr !== undefined ? `${planet}${retro}${gap || " "}` : `${planet}${retro}${gap || " "}`;
+          return `${lead}${fixedDeg}${correctSign}`;
+        });
+      }
 
-          if (next !== s) {
-            sentences[i] = next;
-            touched = true;
-            if (examples.length < 5) {
-              examples.push(`${s.slice(0, 100)} → ${next.slice(0, 100)}`);
-            }
-          }
+      if (next !== s) {
+        sentences[i] = next;
+        touched = true;
+        if (examples.length < 5) {
+          examples.push(`${s.slice(0, 100)} → ${next.slice(0, 100)}`);
         }
-        if (touched) {
-          (node as any)[key] = sentences.join(" ");
-        }
-      } else {
-        visit(val, key);
       }
     }
-  };
-  visit(parsedContent);
+    if (touched) {
+      (node as any)[key] = sentences.join(" ");
+    }
+  });
 
   if (signRewrites > 0) {
     log.push({
