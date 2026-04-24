@@ -1883,7 +1883,7 @@ const fixDescendantCuspMentionsInProse = (
   const dsc = cusps.find((c) => c.house === 7);
   if (!asc || !dsc) return;
   const ascSign = asc.sign;
-  const dscSign = dsc.sign;
+  let dscSign = dsc.sign;
   if (!ascSign || !dscSign || ascSign === dscSign) return;
 
   // SAFETY ASSERT: house 7's sign must be the mathematical opposite of
@@ -1900,14 +1900,8 @@ const fixDescendantCuspMentionsInProse = (
       corrected_dsc_sign: corrected,
     });
     dsc.sign = corrected;
+    dscSign = corrected;
   }
-  // Re-read dscSign from the (possibly mutated) dsc.sign so all
-  // downstream rewrites use the corrected opposition value.
-  const dscSignFinal = dsc.sign;
-  // Allow shadowing into the existing dscSign const used below by
-  // reassigning via a fresh binding scope.
-  // (No-op alias kept for grep-ability.)
-  void dscSignFinal;
 
   // Build a per-house cusp sign + traditional ruler lookup.
   const cuspSignByHouse: Record<number, string> = {};
