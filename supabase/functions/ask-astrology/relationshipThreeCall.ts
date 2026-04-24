@@ -593,9 +593,9 @@ const SIGN_MODALITY: Record<string, "Cardinal" | "Fixed" | "Mutable"> = {
 const COUNTED_PLANETS = Object.keys(PLANET_POLARITY); // exactly 10
 
 export interface DeterministicTallies {
-  elements: Array<{ tag: string; count: number }>;
-  modalities: Array<{ tag: string; count: number }>;
-  polarity: Array<{ tag: string; count: number }>;
+  elements: Array<{ tag: string; count: number; planets: string[] }>;
+  modalities: Array<{ tag: string; count: number; planets: string[] }>;
+  polarity: Array<{ tag: string; count: number; planets: string[] }>;
 }
 
 /**
