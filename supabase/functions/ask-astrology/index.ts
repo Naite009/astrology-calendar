@@ -7097,6 +7097,10 @@ HARD RULE — applies to every sentence:
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
           fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // NATAL RETROGRADE GUARD: catch "<Planet> direct" in any prose
+          // (bullets included) when the deterministic NATAL block marks
+          // that planet retrograde. Critical for natal Chiron.
+          fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // SR-TO-NATAL ANGLE CORRECTION (corrections, not deletions): if the
           // model claims "SR <Planet> ... your Ascendant/Descendant" with the
           // wrong angle / orb / aspect, rewrite the sentence using the
