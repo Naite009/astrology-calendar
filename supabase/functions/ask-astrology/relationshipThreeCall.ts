@@ -221,7 +221,31 @@ const DIRECTIVE_B = buildDirective(
 const DIRECTIVE_C = buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
-  `This is the OVERLAY call. The user message contains BOTH the NATAL CHART and the SOLAR RETURN CHART, presented in two clearly labeled, separate blocks. It ALSO contains a "VERIFIED CROSS-CHART ACTIVATIONS — GROUND TRUTH" block listing every SR-to-natal aspect that exists this year. You are interpreting that pre-verified list — you are NOT discovering aspects yourself. Read the strict rules in "RULES FOR USING THE VERIFIED ACTIVATIONS" and follow them without exception: do not invent aspects, do not state orbs in prose, do not reference natal points outside the list, and never confuse Ascendant with Descendant (the list labels each angle by name). When you cite a planet's sign or degree, pull the value from the matching activation entry or the labeled chart block — never from the other chart.`,
+  `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
+
+The VERIFIED CROSS-CHART ACTIVATIONS block in the user
+message is the ONLY source of cross-chart aspects you
+are permitted to reference.
+
+You MUST NOT:
+- Identify any aspect not in the verified list
+- State any orb not taken directly from the verified list
+- Reference any natal point not in the verified list
+- Write "natal Venus at X" unless X matches the
+  natalPosition field in the verified list exactly
+- Write "natal Pluto at X" unless X matches the
+  natalPosition field in the verified list exactly
+
+You MUST:
+- For each activation you interpret, copy the srPosition
+  and natalPosition values verbatim from the verified list
+- If asked to discuss an activation not in the list,
+  write "no significant activation this year" instead
+
+VIOLATION OF THIS RULE PRODUCES FACTUALLY WRONG OUTPUT
+THAT CANNOT BE CORRECTED DOWNSTREAM. Treat the verified
+activations as the only ground truth that exists for
+this call.`,
 );
 
 // ─── Anthropic call helper ──────────────────────────────────────────────────
