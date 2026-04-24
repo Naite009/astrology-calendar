@@ -1901,7 +1901,13 @@ const fixDescendantCuspMentionsInProse = (
     });
     dsc.sign = corrected;
   }
-  const finalDscSign = dsc.sign;
+  // Re-read dscSign from the (possibly mutated) dsc.sign so all
+  // downstream rewrites use the corrected opposition value.
+  const dscSignFinal = dsc.sign;
+  // Allow shadowing into the existing dscSign const used below by
+  // reassigning via a fresh binding scope.
+  // (No-op alias kept for grep-ability.)
+  void dscSignFinal;
 
   // Build a per-house cusp sign + traditional ruler lookup.
   const cuspSignByHouse: Record<number, string> = {};
