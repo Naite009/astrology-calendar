@@ -3603,6 +3603,7 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     "subject","question_type","question_asked",
     "_accuracy_review","_validation","_validation_log","_validation_warning",
     "_post_gate_safety","_final_hygiene","_sr_house_copy_warning","_source_call",
+    "_verified_activations",
   ]);
   const ALL_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
   const SIGN_RE = `(?:${ALL_SIGNS.join("|")})`;
