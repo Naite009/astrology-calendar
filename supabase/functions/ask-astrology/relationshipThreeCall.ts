@@ -439,6 +439,12 @@ const buildCallCUserMessage = (
     : "";
   return `User's question: ${userQuestion}
 
+REMINDER: You may only interpret activations from the
+VERIFIED CROSS-CHART ACTIVATIONS list below. Every
+planet degree you write must come from that list.
+Do not use degrees from the natal or SR placement
+tables for overlay prose — use only the verified list.
+
 You have BOTH charts in this call. They describe the same planets at different positions and are NEVER interchangeable. When you write about a natal placement, pull the value from the NATAL CHART block. When you write about an SR placement, pull the value from the SOLAR RETURN CHART block.
 
 =========================================================
