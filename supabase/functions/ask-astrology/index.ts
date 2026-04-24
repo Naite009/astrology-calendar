@@ -1956,7 +1956,13 @@ const fixDescendantCuspMentionsInProse = (
   const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
   const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
   const HOUSE_LEAD_RE = `\\b(${ORDINAL_WORDS_RE})\\s+house`;
-  const HOUSE_CUSP_SIGN_RE = `${HOUSE_LEAD_RE}\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`;
+  // IMPORTANT: the cusp/copula token MUST be present. Earlier versions
+  // made BOTH `(?:cusp\s+)?` and `(?:is\s+|in\s+|at\s+|=|,)?` optional,
+  // which let a phrase like "the 7th house Mars in Scorpio in the 1st"
+  // match — capturing "Scorpio" as the supposed cusp sign and triggering
+  // a wrong rewrite (Aries→Libra etc.) via fixHouseRulerClaim. Requiring
+  // an explicit `cusp ` OR an explicit copula prevents this drift.
+  const HOUSE_CUSP_SIGN_RE = `${HOUSE_LEAD_RE}\\s+(?:cusp\\s+(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?|(?:is\\s+|=\\s*|in\\s+|at\\s+))(${SIGN_NAMES_RE})\\b`;
   const houseRuledByRe = new RegExp(
     `${HOUSE_CUSP_SIGN_RE}([^.!?]{0,100}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
     "gi",
