@@ -302,23 +302,50 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           <h3 className="text-sm uppercase tracking-widest text-foreground font-medium mb-3">
             ☉ Solar Return Charts for {selectedNatal.name}
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {srChartsForNatal.sort((a, b) => b.solarReturnYear - a.solarReturnYear).map(sr => (
-              <button
-                key={sr.id}
-                onClick={() => setSelectedSRId(sr.id)}
-                className={`text-sm px-3 py-2 rounded-sm border transition-all ${
-                  selectedSRId === sr.id
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-secondary text-foreground border-border hover:border-primary'
-                }`}
-              >
-                SR {sr.solarReturnYear}
-                {sr.solarReturnLocation && sr.solarReturnLocation !== selectedNatal?.birthLocation && (
-                  <span className="ml-1 text-[10px] opacity-70">📍</span>
-                )}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            {srChartsForNatal.sort((a, b) => b.solarReturnYear - a.solarReturnYear).map(sr => {
+              const asc = (sr.houseCusps as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.house1;
+              const sun = (sr.planets as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.Sun;
+              const isActive = selectedSRId === sr.id;
+              return (
+                <div
+                  key={sr.id}
+                  className={`flex items-center justify-between gap-3 rounded-sm border p-3 transition-all ${
+                    isActive
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-secondary/40 border-border hover:border-primary'
+                  }`}
+                >
+                  <button
+                    onClick={() => setSelectedSRId(sr.id)}
+                    className="flex-1 text-left"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-foreground">SR {sr.solarReturnYear}</span>
+                      <span className="text-xs text-muted-foreground">
+                        📍 {sr.solarReturnLocation || '— no location —'}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
+                      {sun && <span>☉ Sun {sun.degree}°{String(sun.minutes).padStart(2,'0')}' {sun.sign}</span>}
+                      {asc && <span>↑ ASC {asc.degree}°{String(asc.minutes).padStart(2,'0')}' {asc.sign}</span>}
+                      {sr.solarReturnDateTime && <span>🕒 {new Date(sr.solarReturnDateTime).toUTCString().replace(' GMT', ' UTC')}</span>}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete SR ${sr.solarReturnYear} (${sr.solarReturnLocation || 'no location'}) for ${selectedNatal.name}?`)) {
+                        deleteSolarReturn(sr.id);
+                        if (selectedSRId === sr.id) setSelectedSRId(null);
+                      }
+                    }}
+                    className="text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm border border-border text-muted-foreground hover:border-destructive hover:text-destructive transition-colors shrink-0"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
