@@ -221,7 +221,7 @@ const DIRECTIVE_B = buildDirective(
 const DIRECTIVE_C = buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
-  `This is the OVERLAY call. The user message contains BOTH the NATAL CHART and the SOLAR RETURN CHART, presented in two clearly labeled, separate blocks. You are writing about HOW the two charts INTERACT — not about either chart independently. Every claim in this call must reference both: a natal placement AND an SR placement that touch each other (e.g. "Your natal Venus at X is being activated by SR Y at Z"). When you cite a planet's sign, degree, house, or retrograde status, identify which chart it comes from (NATAL vs SR) and pull the value from THAT chart's block only. The two charts describe the same planets at different positions — never interchange them.`,
+  `This is the OVERLAY call. The user message contains BOTH the NATAL CHART and the SOLAR RETURN CHART, presented in two clearly labeled, separate blocks. It ALSO contains a "VERIFIED CROSS-CHART ACTIVATIONS — GROUND TRUTH" block listing every SR-to-natal aspect that exists this year. You are interpreting that pre-verified list — you are NOT discovering aspects yourself. Read the strict rules in "RULES FOR USING THE VERIFIED ACTIVATIONS" and follow them without exception: do not invent aspects, do not state orbs in prose, do not reference natal points outside the list, and never confuse Ascendant with Descendant (the list labels each angle by name). When you cite a planet's sign or degree, pull the value from the matching activation entry or the labeled chart block — never from the other chart.`,
 );
 
 // ─── Anthropic call helper ──────────────────────────────────────────────────
