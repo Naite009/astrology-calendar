@@ -2148,6 +2148,15 @@ const fixHouseRulerPlacementInProse = (
     "gi",
   );
 
+  // Pattern D: parenthetical/list form — "ruler <Planet> in <Sign>, <Nth> house"
+  // (or " — <Nth> house" / "; <Nth> house"). Uses comma/semicolon/em-dash as the
+  // separator instead of a second "in", which Pattern B requires. This catches
+  // bullet labels like "(7th house cusp Aries, ruler Mars in Scorpio, 2nd house)".
+  const rulerWithSignAndHouseTerse = new RegExp(
+    `\\bruler\\s+(${PLANET_NAMES_RE})\\s+in\\s+(${SIGN_NAMES_RE})\\s*[,;—–-]\\s*(${ORDINAL_RE})\\s+house\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
@@ -2182,6 +2191,20 @@ const fixHouseRulerPlacementInProse = (
         String(claimedSign).toLowerCase() === correctSign.toLowerCase()
       ) return full;
       return `ruler ${planet} in ${correctSign} in your ${correctOrd} house`;
+    });
+
+    // Pattern D — terse comma/semicolon/dash separated form. Run BEFORE
+    // rulerWithSignOnly so the more specific match wins.
+    next = next.replace(rulerWithSignAndHouseTerse, (full, planet, claimedSign, claimedOrd) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign || !fact.house) return full;
+      const correctOrd = ordinalForHouse(fact.house);
+      const correctSign = fact.sign;
+      if (
+        String(claimedOrd).toLowerCase() === correctOrd.toLowerCase() &&
+        String(claimedSign).toLowerCase() === correctSign.toLowerCase()
+      ) return full;
+      return `ruler ${planet} in ${correctSign}, ${correctOrd} house`;
     });
 
     next = next.replace(rulerWithSignOnly, (full, planet, claimedSign) => {
@@ -2629,6 +2652,19 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\s+(?:at\\s+)?${dscDegAlt}\\s+${dscSign}\\b`, "gi");
   const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\s+(?:at\\s+)?${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
+  // SIGN-ONLY (no degree) wrong-axis claims, e.g. "your natal Ascendant
+  // is in late Aries" / "the natal Ascendant in Aries". The Ascendant
+  // sign is fixed by the cusp data — anything that names it as the
+  // *opposite* sign (i.e. dscSign) is by definition mislabeled.
+  const wrongAscSignWord = new RegExp(
+    `\\b(?:natal\\s+|your\\s+)?Ascendant\\b(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${dscSign}\\b`,
+    "gi",
+  );
+  const wrongDescSignWord = new RegExp(
+    `\\b(?:natal\\s+|your\\s+)?Descendant\\b(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${ascSign}\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
@@ -2638,17 +2674,68 @@ const fixAscendantDescendantLabelSwapsInProse = (
     "subject","question_type","question_asked",
   ]);
 
+  // Helper: apply all wrong-axis regexes to a single string.
+  const applyAxisFixes = (s: string): string => {
+    let next = s;
+    next = next.replace(wrongAscLabel, (m) => m.replace(/Ascendant/i, "Descendant"));
+    next = next.replace(wrongDescLabel, (m) => m.replace(/Descendant/i, "Ascendant"));
+    next = next.replace(wrongAscSignOnly, (m) => m.replace(/Ascendant/i, "Descendant"));
+    next = next.replace(wrongDescSignOnly, (m) => m.replace(/Descendant/i, "Ascendant"));
+    next = next.replace(wrongAscSignWord, (m) => m.replace(/Ascendant/i, "Descendant"));
+    next = next.replace(wrongDescSignWord, (m) => m.replace(/Descendant/i, "Ascendant"));
+    return next;
+  };
+
+  // Bullet-aware traversal. When we visit a bullet object {label, text},
+  // we first detect which axis-word the *text* references (which is the
+  // ground-truth-anchored field because it carries the degree+sign), then
+  // propagate that correction to the *label* even though `label` is in
+  // SKIP_KEYS. This catches "SR Chiron conjunct natal Ascendant" labels
+  // whose text actually proves the bullet is about the Descendant.
+  const correctBulletLabel = (bullet: any) => {
+    if (!bullet || typeof bullet !== "object") return;
+    const text = typeof bullet.text === "string" ? bullet.text : "";
+    const label = typeof bullet.label === "string" ? bullet.label : "";
+    if (!text || !label) return;
+    const fixedText = applyAxisFixes(text);
+    if (fixedText === text) return; // text didn't need correction → don't touch label
+    // text was rewritten Ascendant↔Descendant; mirror the same swap in
+    // the label IF the label uses the now-wrong axis word AND has no
+    // degree disambiguator of its own.
+    const labelHadAsc = /\bAscendant\b/i.test(label);
+    const labelHadDsc = /\bDescendant\b/i.test(label);
+    const textChangedAscToDsc = /Ascendant/i.test(text) && /Descendant/i.test(fixedText);
+    const textChangedDscToAsc = /Descendant/i.test(text) && /Ascendant/i.test(fixedText);
+    if (labelHadAsc && textChangedAscToDsc) {
+      const newLabel = label.replace(/\bAscendant\b/i, "Descendant");
+      if (newLabel !== label) {
+        bullet.label = newLabel;
+        rewrites++;
+        if (examples.length < 5) examples.push(`label: ${label.slice(0,100)} → ${newLabel.slice(0,100)}`);
+      }
+    } else if (labelHadDsc && textChangedDscToAsc) {
+      const newLabel = label.replace(/\bDescendant\b/i, "Ascendant");
+      if (newLabel !== label) {
+        bullet.label = newLabel;
+        rewrites++;
+        if (examples.length < 5) examples.push(`label: ${label.slice(0,100)} → ${newLabel.slice(0,100)}`);
+      }
+    }
+  };
+
   const visit = (node: any) => {
     if (Array.isArray(node)) { for (const x of node) visit(x); return; }
     if (!node || typeof node !== "object") return;
+
+    // Bullet shape detection: {label?:string, text?:string, ...}
+    if (typeof (node as any).text === "string" && typeof (node as any).label === "string") {
+      correctBulletLabel(node);
+    }
+
     for (const [key, val] of Object.entries(node)) {
       if (SKIP_KEYS.has(key)) continue;
       if (typeof val === "string") {
-        let next = val;
-        next = next.replace(wrongAscLabel, (m) => m.replace(/Ascendant/i, "Descendant"));
-        next = next.replace(wrongDescLabel, (m) => m.replace(/Descendant/i, "Ascendant"));
-        next = next.replace(wrongAscSignOnly, (m) => m.replace(/Ascendant/i, "Descendant"));
-        next = next.replace(wrongDescSignOnly, (m) => m.replace(/Descendant/i, "Ascendant"));
+        const next = applyAxisFixes(val);
         if (next !== val) {
           rewrites++;
           if (examples.length < 5) examples.push(val.slice(0, 140));
