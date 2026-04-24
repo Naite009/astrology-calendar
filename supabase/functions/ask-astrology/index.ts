@@ -7923,6 +7923,7 @@ HARD RULE — applies to every sentence:
 
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctSignRulershipClaimsInProse(parsedContent, postGateLog);
