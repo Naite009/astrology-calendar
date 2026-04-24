@@ -462,11 +462,12 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 interface SRInputFormProps {
   natalChart: NatalChart;
   existingSR?: SolarReturnChart;
+  existingSRYears?: number[];
   onSave: (sr: Partial<SolarReturnChart>) => void;
   onCancel: () => void;
 }
 
-const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormProps) => {
+const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onCancel }: SRInputFormProps) => {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(existingSR?.solarReturnYear || currentYear);
   const [location, setLocation] = useState(existingSR?.solarReturnLocation || '');
