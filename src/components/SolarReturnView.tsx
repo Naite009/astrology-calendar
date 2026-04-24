@@ -267,20 +267,30 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         <div className="border border-primary/30 rounded-sm p-4 bg-card space-y-3">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Select person for new Solar Return:</h4>
           <div className="flex flex-wrap gap-2">
-            {allCharts.map(c => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setSelectedNatalId(c.id);
-                  setShowInputForm(true);
-                  setEditingSRId(null);
-                  setShowAddForNewPerson(false);
-                }}
-                className="text-sm px-3 py-2 rounded-sm border border-border bg-secondary text-foreground hover:border-primary transition-all"
-              >
-                {c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}
-              </button>
-            ))}
+            {allCharts.map(c => {
+              const existingYears = getSolarReturnsForChart(c.id)
+                .map(s => s.solarReturnYear)
+                .sort((a, b) => b - a);
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setSelectedNatalId(c.id);
+                    setShowInputForm(true);
+                    setEditingSRId(null);
+                    setShowAddForNewPerson(false);
+                  }}
+                  className="text-left text-sm px-3 py-2 rounded-sm border border-border bg-secondary text-foreground hover:border-primary transition-all"
+                >
+                  <div>{c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}</div>
+                  {existingYears.length > 0 && (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      Already has: SR {existingYears.join(', ')}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
           <button onClick={() => setShowAddForNewPerson(false)} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
         </div>
