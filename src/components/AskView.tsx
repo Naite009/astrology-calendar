@@ -579,14 +579,43 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
       return 1;
     };
-    Object.entries(planets).forEach(([planet, data]) => {
-      if (data && typeof data === 'object' && 'sign' in data) {
-        const pos = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+    // SOURCE-OF-TRUTH OVERRIDE for angles: derive Ascendant/Descendant/MC/IC
+    // from houseCusps (the deterministic source) rather than chart.planets,
+    // which has historically contained corrupted/swapped angle data from
+    // OCR imports. This is the upstream fix for "Ascendant Aries house 1"
+    // when the real angle is Libra house 1 — the wrong value was being
+    // emitted into the NATAL Planetary Positions block sent to the AI,
+    // causing every downstream correction pass to fight a bad input.
+    const h1Override = (houseCusps as any)?.house1;
+    const h7Override = (houseCusps as any)?.house7;
+    const h10Override = (houseCusps as any)?.house10;
+    const h4Override = (houseCusps as any)?.house4;
+    const angleOverrides: Record<string, { sign: string; degree: number; minutes?: number }> = {};
+    if (h1Override?.sign) angleOverrides.Ascendant = h1Override;
+    if (h7Override?.sign) angleOverrides.Descendant = h7Override;
+    if (h10Override?.sign) angleOverrides.Midheaven = h10Override;
+    if (h4Override?.sign) angleOverrides.IC = h4Override;
+    const planetEntries = Object.entries(planets) as Array<[string, any]>;
+    // Ensure Ascendant/Descendant/MC/IC always emit, even if absent from planets map.
+    for (const angleName of Object.keys(angleOverrides)) {
+      if (!planetEntries.some(([n]) => n === angleName)) {
+        planetEntries.push([angleName, angleOverrides[angleName]]);
+      }
+    }
+    planetEntries.forEach(([planet, data]) => {
+      // For the four cardinal angles, ALWAYS use houseCusps as source of truth.
+      const override = angleOverrides[planet];
+      const source = override ?? data;
+      if (source && typeof source === 'object' && 'sign' in source) {
+        const pos = source as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
         const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
-        const house = calcHouse(absDeg);
+        // Angles live on their own house cusp by definition.
+        const house = override
+          ? (planet === 'Ascendant' ? 1 : planet === 'Descendant' ? 7 : planet === 'Midheaven' ? 10 : planet === 'IC' ? 4 : calcHouse(absDeg))
+          : calcHouse(absDeg);
         context += `- ${planet}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}`;
         if (house) context += ` (House ${house})`;
-        if (pos.isRetrograde) context += " (R)";
+        if ((pos as any).isRetrograde) context += " (R)";
         context += "\n";
       }
     });
