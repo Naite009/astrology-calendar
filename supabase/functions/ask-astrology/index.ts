@@ -2276,23 +2276,22 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const dsc = cusps.find((c) => c.house === 7);
   if (!asc || !dsc) return;
 
-  const degreeForms = (deg: number): string[] => [
-    `${deg}°`,
-    `${deg}°00'`,
-    `${deg}°0'`,
-    `${deg}°0.0`,
-    `${deg.toFixed(1)}°`,
-  ];
-  const joinAlt = (parts: string[]) => parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
-  const ascDegAlt = joinAlt(degreeForms(asc.degree));
-  const dscDegAlt = joinAlt(degreeForms(dsc.degree));
+  // Match the degree value with optional minutes (e.g. 24°, 24°55', 24°5', 24.5°).
+  // The minutes are optional so prose like "natal Ascendant at 24°55' Aries" is
+  // caught the same as "natal Ascendant at 24° Aries".
+  const degreeFormsRe = (deg: number): string =>
+    `(?:${deg}°(?:\\d{1,2}')?|${deg.toFixed(1)}°)`;
+  const ascDegAlt = degreeFormsRe(asc.degree);
+  const dscDegAlt = degreeFormsRe(dsc.degree);
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
 
-  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
-  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
-  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+)?Ascendant\\s+at\\s+(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
-  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+)?Descendant\\s+at\\s+(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+  // "natal Ascendant ... 24°55' Aries" — degrees match Descendant → Ascendant label is wrong.
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // "natal Ascendant at 24°55' Aries" (sign-only — when degree is omitted but sign points wrong way).
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\s+(?:at\\s+)?${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\s+(?:at\\s+)?${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
   let rewrites = 0;
   const examples: string[] = [];
