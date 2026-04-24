@@ -7957,6 +7957,11 @@ HARD RULE — applies to every sentence:
           // NATAL POSITION COUNTERPART: catch "natal <Planet> at <wrong>" where
           // the wrong value is actually the SR position (sign or degree bleed).
           correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR HOUSE CUSP CORRECTOR: rewrite "SR Nth house in <Sign>" or
+          // "SR Descendant in <Sign>" using the deterministic SR House
+          // Cusps block. Catches the Paul-style overlay bug where the AI
+          // wrote "SR 7th house in Capricorn" when SR 7th cusp = Aries.
+          correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
