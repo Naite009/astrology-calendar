@@ -2140,6 +2140,79 @@ const fixHouseRulerPlacementInProse = (
 // retrograde. We also catch the inverse: if the AI tags a natal-direct
 // planet as retrograde, we strip the marker. This runs on EVERY string
 // field (bullets included), not just body fields.
+// DETERMINISTIC SIGN-RULERSHIP CORRECTOR — the AI sometimes writes
+// "Capricorn is ruled by Jupiter" or "your Libra Sun, ruled by Mars".
+// Sign rulership is a fixed, traditional table (TRADITIONAL_RULER_BY_SIGN);
+// any deviation is always wrong. This pass scans every prose / bullet
+// string for "<Sign> ... ruled by <Planet>" or "<Sign> ..., its ruler
+// <Planet>" phrasings and rewrites the planet to the correct traditional
+// ruler of that sign. It never touches placement_table rows or schema-
+// reserved string keys (planet/sign/house/aspect/etc).
+const correctSignRulershipClaimsInProse = (
+  parsedContent: any,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const SIGN_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const PLANET_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
+  // "<Sign> ... ruled by <Planet>"  (allow up to 60 chars between)
+  const ruledByRe = new RegExp(
+    `\\b(${SIGN_RE})\\b([^.!?\\n]{0,60}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_RE})\\b`,
+    "gi",
+  );
+  // "<Sign> ... its ruler <Planet>" or "<Sign> ... the ruler is <Planet>"
+  const itsRulerRe = new RegExp(
+    `\\b(${SIGN_RE})\\b([^.!?\\n]{0,60}?)\\b(?:its|the)\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_RE})\\b`,
+    "gi",
+  );
+  // "ruler of <Sign> is <Planet>"
+  const rulerOfRe = new RegExp(
+    `\\b(?:the\\s+)?ruler\\s+of\\s+(${SIGN_RE})\\b\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_RE})\\b`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const fixSignRuler = (full: string, sign: string, claimedRuler: string): string => {
+    const correct = TRADITIONAL_RULER_BY_SIGN[sign as keyof typeof TRADITIONAL_RULER_BY_SIGN]
+      || (TRADITIONAL_RULER_BY_SIGN as Record<string, string>)[sign];
+    if (!correct) return full;
+    if (String(claimedRuler).toLowerCase() === String(correct).toLowerCase()) return full;
+    rewrites++;
+    if (examples.length < 5) examples.push(full.slice(0, 160));
+    return full.replace(new RegExp(`\\b${claimedRuler}\\b`, "i"), correct);
+  };
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(ruledByRe, (full, sign, _mid, claimedRuler) =>
+      fixSignRuler(full, sign, claimedRuler),
+    );
+    next = next.replace(itsRulerRe, (full, sign, _mid, claimedRuler) =>
+      fixSignRuler(full, sign, claimedRuler),
+    );
+    next = next.replace(rulerOfRe, (full, sign, claimedRuler) =>
+      fixSignRuler(full, sign, claimedRuler),
+    );
+    if (next !== val) (node as any)[key] = next;
+  });
+
+  if (rewrites > 0) {
+    log.push({
+      type: "sign_rulership_corrected_in_prose",
+      detail: { rewrites, examples },
+    });
+    console.info("[ask-astrology] sign rulership claims corrected in prose", { rewrites });
+  }
+};
+
 const fixNatalRetrogradeMentionsInProse = (
   parsedContent: any,
   chartContext: string,
