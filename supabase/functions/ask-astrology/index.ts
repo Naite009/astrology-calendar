@@ -1840,14 +1840,68 @@ const fixDescendantCuspMentionsInProse = (
   log: HygieneLog,
 ) => {
   if (!parsedContent || !chartContext) return;
-  const cusps = parseHouseCuspsFromContext(chartContext);
-  if (cusps.length < 12) return;
+  let cusps = parseHouseCuspsFromContext(chartContext);
+
+  // FALLBACK: if the chart context did not contain a parseable House
+  // Cusps block (so cusps.length < 12), DO NOT silently bail. Without
+  // this fallback the AI's wrong "7th house cusp Libra" sentence would
+  // ship uncorrected on every chart whose context lacks that block.
+  // The Ascendant is always available from the NATAL Planetary
+  // Positions / placement table — pull it, then synthesize the 7th
+  // cusp via the mathematical opposition rule (Aries↔Libra etc).
+  if (cusps.length < 12) {
+    let ascSignFallback: string | null = null;
+    let ascDegFallback = 0;
+    let ascMinFallback = 0;
+    // Try chart context "Ascendant" line e.g. "Ascendant: 24°56' Libra"
+    const ascLine = chartContext.match(/Ascendant[^\n]*?(\d+)°(?:(\d+)')?\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)/i);
+    if (ascLine) {
+      ascDegFallback = parseInt(ascLine[1], 10);
+      ascMinFallback = ascLine[2] ? parseInt(ascLine[2], 10) : 0;
+      ascSignFallback = ascLine[3];
+    }
+    if (ascSignFallback && SIGN_OPPOSITE[ascSignFallback]) {
+      const dscSignSyn = SIGN_OPPOSITE[ascSignFallback];
+      // Build minimal cusp array — only houses 1 and 7 are guaranteed
+      // correct via opposition. We populate house 1 and 7 only; the
+      // ruler-claim regex paths that look at houses 2–6/8–12 will
+      // gracefully no-op when those keys are absent.
+      cusps = [
+        { house: 1, sign: ascSignFallback, degree: ascDegFallback, minutes: ascMinFallback },
+        { house: 7, sign: dscSignSyn, degree: ascDegFallback, minutes: ascMinFallback },
+      ];
+      console.info("[ask-astrology] House Cusps block missing — synthesized 1st/7th from Ascendant", {
+        ascSign: ascSignFallback,
+        dscSign: dscSignSyn,
+      });
+    } else {
+      // Truly no Ascendant data anywhere — safe to bail.
+      return;
+    }
+  }
   const asc = cusps.find((c) => c.house === 1);
   const dsc = cusps.find((c) => c.house === 7);
   if (!asc || !dsc) return;
   const ascSign = asc.sign;
-  const dscSign = dsc.sign;
+  let dscSign = dsc.sign;
   if (!ascSign || !dscSign || ascSign === dscSign) return;
+
+  // SAFETY ASSERT: house 7's sign must be the mathematical opposite of
+  // house 1's sign. If parseHouseCuspsFromContext ever returns data
+  // where they disagree (would only happen with corrupted upstream
+  // chart context), trust the opposition rule and overwrite — the
+  // Ascendant is the source of truth, and the Descendant is by
+  // definition exactly 180° away.
+  if (SIGN_OPPOSITE[ascSign] && dscSign !== SIGN_OPPOSITE[ascSign]) {
+    const corrected = SIGN_OPPOSITE[ascSign];
+    console.warn("[ask-astrology] House Cusps block disagrees with opposition rule — overriding 7th cusp", {
+      asc_sign: ascSign,
+      reported_dsc_sign: dscSign,
+      corrected_dsc_sign: corrected,
+    });
+    dsc.sign = corrected;
+    dscSign = corrected;
+  }
 
   // Build a per-house cusp sign + traditional ruler lookup.
   const cuspSignByHouse: Record<number, string> = {};
