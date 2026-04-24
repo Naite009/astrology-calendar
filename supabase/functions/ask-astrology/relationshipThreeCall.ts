@@ -436,6 +436,7 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
   const {
     jobId, anthropicApiKey, masterSystemPrompt, chartScopedRulesShared,
     natalChartBlock, srChartBlock, effectiveCurrentDate, userQuestion,
+    callCActivationsBlock, callCRetrogradeSummary,
     priorOutputs, updateJob,
   } = args;
 
@@ -446,7 +447,13 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
 
   const userMsgA = buildCallAUserMessage(natalChartBlock, userQuestion);
   const userMsgB = buildCallBUserMessage(srChartBlock, userQuestion);
-  const userMsgC = buildCallCUserMessage(natalChartBlock, srChartBlock, userQuestion);
+  const userMsgC = buildCallCUserMessage(
+    natalChartBlock,
+    srChartBlock,
+    userQuestion,
+    callCActivationsBlock || "",
+    callCRetrogradeSummary || "",
+  );
 
   // Helper that runs a single call, persists its output on success, and
   // patches call_status. Reuses prior output if present.
