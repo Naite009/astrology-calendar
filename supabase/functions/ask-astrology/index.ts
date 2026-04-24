@@ -2148,6 +2148,15 @@ const fixHouseRulerPlacementInProse = (
     "gi",
   );
 
+  // Pattern D: parenthetical/list form — "ruler <Planet> in <Sign>, <Nth> house"
+  // (or " — <Nth> house" / "; <Nth> house"). Uses comma/semicolon/em-dash as the
+  // separator instead of a second "in", which Pattern B requires. This catches
+  // bullet labels like "(7th house cusp Aries, ruler Mars in Scorpio, 2nd house)".
+  const rulerWithSignAndHouseTerse = new RegExp(
+    `\\bruler\\s+(${PLANET_NAMES_RE})\\s+in\\s+(${SIGN_NAMES_RE})\\s*[,;—–-]\\s*(${ORDINAL_RE})\\s+house\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
