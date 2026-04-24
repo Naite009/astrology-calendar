@@ -58,6 +58,21 @@ export interface ThreeCallArgs {
   srChartBlock: string;                // text block containing only SR chart data ("(no SR provided)" if absent)
   effectiveCurrentDate: string;
   userQuestion: string;
+  /**
+   * Pre-rendered "VERIFIED CROSS-CHART ACTIVATIONS — GROUND TRUTH" block plus
+   * the strict rules that follow it. Built deterministically by the caller via
+   * computeCrossChartActivations + renderActivationsBlock + buildActivationRulesBlock.
+   * Empty string disables the feature (legacy/fallback).
+   */
+  callCActivationsBlock?: string;
+  /**
+   * Per-chart deterministic retrograde summary for Call C — replaces the old
+   * hardcoded leak ("SR Saturn Rx in Pisces …"). Format:
+   *   "Natal retrograde: Jupiter, Chiron\nNatal direct: Sun, Moon, …\n
+   *    SR retrograde: Saturn, Uranus, …\nSR direct: Sun, Moon, …"
+   * Empty string falls back to no retrograde reminder.
+   */
+  callCRetrogradeSummary?: string;
   // Persisted output from prior partial run, keyed by call id. If present,
   // that call is skipped and its output is reused.
   priorOutputs?: Partial<Record<CallId, PriorCallOutput>>;
