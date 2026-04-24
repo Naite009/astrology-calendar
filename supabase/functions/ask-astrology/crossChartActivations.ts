@@ -23,7 +23,16 @@
 //   Two points (Chiron, Node, etc.): −2° from base, floor 1°
 // ============================================================================
 
-import { ParsedPosition } from "./typesShared.ts";
+// Mirrors ParsedPosition in index.ts (kept local so this module is self-contained
+// and edge functions don't need a shared types file).
+export interface ParsedPosition {
+  planet: string;
+  degree: number;
+  minutes: number;
+  sign: string;
+  house: number | null;
+  retrograde: boolean;
+}
 
 // Inlined zodiac order (cannot import from src/)
 const ZODIAC_SIGNS = [
