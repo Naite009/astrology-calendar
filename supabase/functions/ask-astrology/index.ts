@@ -7392,6 +7392,9 @@ HARD RULE — applies to every sentence:
           // the chart context. Prevents "SR Saturn 26°21' Leo" when the
           // truth is "SR Saturn 26°21' Pisces ℞".
           correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // NATAL POSITION COUNTERPART: catch "natal <Planet> at <wrong>" where
+          // the wrong value is actually the SR position (sign or degree bleed).
+          correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
