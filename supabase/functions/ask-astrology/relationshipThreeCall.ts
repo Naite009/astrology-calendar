@@ -618,17 +618,28 @@ export const computeDeterministicTallies = (natalChartBlock: string): Determinis
   const modalities = { Cardinal: 0, Fixed: 0, Mutable: 0 };
   const polarity = { Yang: 0, Yin: 0 };
 
+  const elementPlanets: Record<string, string[]> = { Fire: [], Earth: [], Air: [], Water: [] };
+  const modalityPlanets: Record<string, string[]> = { Cardinal: [], Fixed: [], Mutable: [] };
+  const polarityPlanets: Record<string, string[]> = { Yang: [], Yin: [] };
+
   for (const planet of COUNTED_PLANETS) {
     const sign = planetSign[planet];
-    if (sign && SIGN_ELEMENT[sign]) elements[SIGN_ELEMENT[sign]]++;
-    if (sign && SIGN_MODALITY[sign]) modalities[SIGN_MODALITY[sign]]++;
+    if (sign && SIGN_ELEMENT[sign]) {
+      elements[SIGN_ELEMENT[sign]]++;
+      elementPlanets[SIGN_ELEMENT[sign]].push(planet);
+    }
+    if (sign && SIGN_MODALITY[sign]) {
+      modalities[SIGN_MODALITY[sign]]++;
+      modalityPlanets[SIGN_MODALITY[sign]].push(planet);
+    }
     polarity[PLANET_POLARITY[planet]]++; // polarity by planet identity, sign-independent
+    polarityPlanets[PLANET_POLARITY[planet]].push(planet);
   }
 
   return {
-    elements: (["Fire", "Earth", "Air", "Water"] as const).map((tag) => ({ tag, count: elements[tag] })),
-    modalities: (["Cardinal", "Fixed", "Mutable"] as const).map((tag) => ({ tag, count: modalities[tag] })),
-    polarity: (["Yang", "Yin"] as const).map((tag) => ({ tag, count: polarity[tag] })),
+    elements: (["Fire", "Earth", "Air", "Water"] as const).map((tag) => ({ tag, count: elements[tag], planets: elementPlanets[tag] })),
+    modalities: (["Cardinal", "Fixed", "Mutable"] as const).map((tag) => ({ tag, count: modalities[tag], planets: modalityPlanets[tag] })),
+    polarity: (["Yang", "Yin"] as const).map((tag) => ({ tag, count: polarity[tag], planets: polarityPlanets[tag] })),
   };
 };
 
