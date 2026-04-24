@@ -728,6 +728,10 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
 
   const handleSave = () => {
     if (!planets.Sun?.sign) return;
+    if (existingSRYears.includes(year)) {
+      toast.error(`A Solar Return for ${year} already exists for ${natalChart.name}. Pick a different year or edit the existing one.`);
+      return;
+    }
     onSave({
       name: `SR ${year} – ${natalChart.name}`,
       birthDate: natalChart.birthDate,
