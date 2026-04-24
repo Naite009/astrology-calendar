@@ -2498,7 +2498,7 @@ const correctUnverifiedSrAngleClaims = (
   const PLANET_RE_SRC = "Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno";
   const srPlanetRe = new RegExp(`\\bSR\\s+(${PLANET_RE_SRC})\\b`, "i");
   const angleRe = /\b(?:natal|your)\s+(Ascendant|Descendant)\b/i;
-  const orbClaimRe = /\bwithin\s+(\d+)°(?:\s*(\d+)['′])?/i;
+  const orbClaimRe = /\b(?:within|lands\s+within|sits\s+within)\s+(\d+)°(?:\s*(\d+)['′])?/i;
   const aspectClaimRe = /\b(conjunct|conjunction|opposition|opposite|square|trine|sextile|near|lands\s+on|lands\s+within|sits\s+within)\b/i;
 
   let corrected = 0;
