@@ -3987,7 +3987,7 @@ const SENTENCE_DEDUPE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_sr_house_copy_warning",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_source_call",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "date_range",
