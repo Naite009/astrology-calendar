@@ -400,7 +400,19 @@ ${srChartBlock}
 (No natal chart data is provided for this call. Do not reference natal positions.)`;
 };
 
-const buildCallCUserMessage = (natalChartBlock: string, srChartBlock: string, userQuestion: string): string => {
+const buildCallCUserMessage = (
+  natalChartBlock: string,
+  srChartBlock: string,
+  userQuestion: string,
+  callCActivationsBlock: string,
+  callCRetrogradeSummary: string,
+): string => {
+  const retroBlock = callCRetrogradeSummary
+    ? `\n${callCRetrogradeSummary}\n`
+    : "";
+  const activationsBlock = callCActivationsBlock
+    ? `\n\n${callCActivationsBlock}\n`
+    : "";
   return `User's question: ${userQuestion}
 
 You have BOTH charts in this call. They describe the same planets at different positions and are NEVER interchangeable. When you write about a natal placement, pull the value from the NATAL CHART block. When you write about an SR placement, pull the value from the SOLAR RETURN CHART block.
@@ -411,23 +423,12 @@ NATAL CHART — use ONLY for natal references
 
 ${natalChartBlock}
 
-NATAL RETROGRADE STATUS — frozen, non-negotiable:
-Retrograde: Jupiter, Chiron
-Direct: Sun, Moon, Mercury, Venus, Mars, Saturn, Uranus, Neptune, Pluto
-
-SR RETROGRADE STATUS — frozen, non-negotiable:
-Retrograde: Saturn, Uranus, Neptune, Chiron
-Direct: Sun, Moon, Mercury, Venus, Mars, Jupiter, Pluto
-
 =========================================================
 SOLAR RETURN CHART — use ONLY for SR references
 =========================================================
 
 ${srChartBlock}
-
-WARNING: SR Saturn is Rx in Pisces. Natal Saturn is direct in Leo. 
-These are different. SR Neptune is Rx in Aries. Natal Neptune is 
-direct in Sagittarius. Never interchange them.`;
+${retroBlock}${activationsBlock}`;
 };
 
 export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<ThreeCallResult> => {
