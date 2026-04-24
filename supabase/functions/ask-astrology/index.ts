@@ -8103,6 +8103,7 @@ HARD RULE — applies to every sentence:
               "_validation", "_validation_log", "_validation_warning",
               "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
               "_sr_house_copy_warning", "_source_call",
+              "_post_gate_safety", "_final_hygiene", "_accuracy_review",
             ]);
             const visit = (node: any): void => {
               if (Array.isArray(node)) { for (const x of node) visit(x); return; }
