@@ -1829,15 +1829,19 @@ const fixDescendantCuspMentionsInProse = (
     return sign ? TRADITIONAL_RULER_BY_SIGN[sign] : undefined;
   };
 
-  // Match any 7th-house / Descendant statement that incorrectly uses the
-  // Ascendant sign. The only valid replacement is the deterministic 7th cusp
-  // sign from the House Cusps block.
+  // Match ANY 7th-house / Descendant statement and force the deterministic
+  // 7th cusp sign from the House Cusps block. We do NOT just look for
+  // "<AscSign>" — that misses the case where the AI writes a *third* wrong
+  // sign (e.g. "Descendant in Gemini" for a Libra-ASC / Aries-DSC chart).
+  // The placement table is the single source of truth: house 7's sign is
+  // whatever `parseHouseCuspsFromContext` returned for `house === 7`.
+  const ALL_SIGNS_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
   const wrongSeventh = new RegExp(
-    `\\b((?:your\\s+|the\\s+|that\\s+)?7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp|house)?\\s*(?:is|in|at|sits in|falls in|lands in|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    `\\b((?:your\\s+|the\\s+|that\\s+)?7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp|house)?\\s*(?:is|in|at|sits in|falls in|lands in|=|,|—)?\\s*)\\b(${ALL_SIGNS_RE})\\b`,
     "gi",
   );
   const wrongDescendant = new RegExp(
-    `\\b((?:your\\s+|the\\s+)?Descendant\\s*(?:is|in|at|falls in|lands in|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    `\\b((?:your\\s+|the\\s+)?Descendant\\s*(?:is|in|at|falls in|lands in|=|,|—)?\\s*)\\b(${ALL_SIGNS_RE})\\b`,
     "gi",
   );
 
@@ -1916,8 +1920,20 @@ const fixDescendantCuspMentionsInProse = (
 
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
-    next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
-    next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+    // Force any "7th house ... <Sign>" or "Descendant ... <Sign>" claim to
+    // use the deterministic dscSign (the 7th cusp from the placement table).
+    // Skip the rewrite when the named sign is ALREADY correct, so we never
+    // touch valid prose.
+    next = next.replace(wrongSeventh, (full, lead, namedSign) =>
+      String(namedSign).toLowerCase() === dscSign.toLowerCase()
+        ? full
+        : `${lead}${dscSign}`,
+    );
+    next = next.replace(wrongDescendant, (full, lead, namedSign) =>
+      String(namedSign).toLowerCase() === dscSign.toLowerCase()
+        ? full
+        : `${lead}${dscSign}`,
+    );
     next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
       fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
     );
