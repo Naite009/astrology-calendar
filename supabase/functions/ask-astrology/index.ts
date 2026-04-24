@@ -2101,7 +2101,82 @@ const fixHouseRulerPlacementInProse = (
 };
 
 
-// DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
+// DETERMINISTIC NATAL RETROGRADE CORRECTOR — the AI sometimes writes
+// "Chiron direct at 29°38' Aries" inside a bullet/parenthetical when natal
+// Chiron is actually retrograde. Same flip can hit any natal planet
+// marked retrograde in the NATAL block. We scan all prose strings for
+// "<Planet> direct" / "<Planet> Direct" and rewrite to "<Planet>
+// retrograde" when the deterministic NATAL block says that planet is
+// retrograde. We also catch the inverse: if the AI tags a natal-direct
+// planet as retrograde, we strip the marker. This runs on EVERY string
+// field (bullets included), not just body fields.
+const fixNatalRetrogradeMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  if (natalPos.length === 0) return;
+  const natalRetro = new Map<string, boolean>();
+  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  // Only attempt corrections for planets we have ground truth on.
+  const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","Ceres","Pallas","Vesta","Eris"];
+  const knownPlanets = PLANET_NAMES.filter((p) => natalRetro.has(p.toLowerCase()));
+  if (knownPlanets.length === 0) return;
+  const PLANET_RE = `(?:${knownPlanets.join("|")})`;
+
+  // "<Planet> direct" — only flip when context is clearly natal (not SR / not "SR <Planet>").
+  // We require that the word "SR" does NOT appear in the immediately
+  // preceding 10 chars. Lookbehind on Deno regex is supported.
+  const directRe = new RegExp(`(?<!\\bSR\\s)\\b(${PLANET_RE})\\s+direct\\b`, "gi");
+
+  let directToRetro = 0;
+  let invalidRetroStripped = 0;
+  const examples: string[] = [];
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(directRe, (full, planet) => {
+          const isNatalRetro = natalRetro.get(String(planet).toLowerCase()) === true;
+          if (!isNatalRetro) return full;
+          directToRetro++;
+          return `${planet} retrograde`;
+        });
+        if (next !== val) {
+          if (examples.length < 5) examples.push(val.slice(0, 160));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  if (directToRetro > 0 || invalidRetroStripped > 0) {
+    log.push({
+      type: "natal_retrograde_corrected_in_prose",
+      detail: { direct_to_retrograde: directToRetro, examples },
+    });
+    console.info("[ask-astrology] natal retrograde corrected in prose", {
+      direct_to_retrograde: directToRetro,
+    });
+  }
+};
+
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
 // claim and rewrites the SIGN if it does not match the deterministic SR
 // chart context. The chart context's "SR Planetary Positions" block is the
