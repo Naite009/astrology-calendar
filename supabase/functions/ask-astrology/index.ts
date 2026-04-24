@@ -1945,6 +1945,82 @@ const fixDescendantCuspMentionsInProse = (
   }
 };
 
+// DETERMINISTIC NATAL RETROGRADE CORRECTOR — the AI sometimes writes
+// "Chiron direct at 29°38' Aries" inside a bullet/parenthetical when natal
+// Chiron is actually retrograde. Same flip can hit any natal planet
+// marked retrograde in the NATAL block. We scan all prose strings for
+// "<Planet> direct" / "<Planet> Direct" and rewrite to "<Planet>
+// retrograde" when the deterministic NATAL block says that planet is
+// retrograde. We also catch the inverse: if the AI tags a natal-direct
+// planet as retrograde, we strip the marker. This runs on EVERY string
+// field (bullets included), not just body fields.
+const fixNatalRetrogradeMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  if (natalPos.length === 0) return;
+  const natalRetro = new Map<string, boolean>();
+  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  // Only attempt corrections for planets we have ground truth on.
+  const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","Ceres","Pallas","Vesta","Eris"];
+  const knownPlanets = PLANET_NAMES.filter((p) => natalRetro.has(p.toLowerCase()));
+  if (knownPlanets.length === 0) return;
+  const PLANET_RE = `(?:${knownPlanets.join("|")})`;
+
+  // "<Planet> direct" — only flip when context is clearly natal (not SR / not "SR <Planet>").
+  // We require that the word "SR" does NOT appear in the immediately
+  // preceding 10 chars. Lookbehind on Deno regex is supported.
+  const directRe = new RegExp(`(?<!\\bSR\\s)\\b(${PLANET_RE})\\s+direct\\b`, "gi");
+
+  let directToRetro = 0;
+  let invalidRetroStripped = 0;
+  const examples: string[] = [];
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(directRe, (full, planet) => {
+          const isNatalRetro = natalRetro.get(String(planet).toLowerCase()) === true;
+          if (!isNatalRetro) return full;
+          directToRetro++;
+          return `${planet} retrograde`;
+        });
+        if (next !== val) {
+          if (examples.length < 5) examples.push(val.slice(0, 160));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+
+  if (directToRetro > 0 || invalidRetroStripped > 0) {
+    log.push({
+      type: "natal_retrograde_corrected_in_prose",
+      detail: { direct_to_retrograde: directToRetro, examples },
+    });
+    console.info("[ask-astrology] natal retrograde corrected in prose", {
+      direct_to_retrograde: directToRetro,
+    });
+  }
+};
+
 // Modern co-rulers (per user spec). Used in addition to TRADITIONAL_RULER_BY_SIGN.
 // Pisces is ruled by Jupiter AND Neptune. Saturn does NOT rule Pisces.
 const SIGN_RULERS_ALL: Record<string, string[]> = {
@@ -2276,23 +2352,22 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const dsc = cusps.find((c) => c.house === 7);
   if (!asc || !dsc) return;
 
-  const degreeForms = (deg: number): string[] => [
-    `${deg}°`,
-    `${deg}°00'`,
-    `${deg}°0'`,
-    `${deg}°0.0`,
-    `${deg.toFixed(1)}°`,
-  ];
-  const joinAlt = (parts: string[]) => parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
-  const ascDegAlt = joinAlt(degreeForms(asc.degree));
-  const dscDegAlt = joinAlt(degreeForms(dsc.degree));
+  // Match the degree value with optional minutes (e.g. 24°, 24°55', 24°5', 24.5°).
+  // The minutes are optional so prose like "natal Ascendant at 24°55' Aries" is
+  // caught the same as "natal Ascendant at 24° Aries".
+  const degreeFormsRe = (deg: number): string =>
+    `(?:${deg}°(?:\\d{1,2}')?|${deg.toFixed(1)}°)`;
+  const ascDegAlt = degreeFormsRe(asc.degree);
+  const dscDegAlt = degreeFormsRe(dsc.degree);
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
 
-  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
-  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
-  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+)?Ascendant\\s+at\\s+(?:${dscDegAlt})\\s+${dscSign}\\b`, "gi");
-  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+)?Descendant\\s+at\\s+(?:${ascDegAlt})\\s+${ascSign}\\b`, "gi");
+  // "natal Ascendant ... 24°55' Aries" — degrees match Descendant → Ascendant label is wrong.
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // "natal Ascendant at 24°55' Aries" (sign-only — when degree is omitted but sign points wrong way).
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\s+(?:at\\s+)?${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\s+(?:at\\s+)?${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
   let rewrites = 0;
   const examples: string[] = [];
@@ -7022,6 +7097,10 @@ HARD RULE — applies to every sentence:
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
           fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // NATAL RETROGRADE GUARD: catch "<Planet> direct" in any prose
+          // (bullets included) when the deterministic NATAL block marks
+          // that planet retrograde. Critical for natal Chiron.
+          fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // SR-TO-NATAL ANGLE CORRECTION (corrections, not deletions): if the
           // model claims "SR <Planet> ... your Ascendant/Descendant" with the
           // wrong angle / orb / aspect, rewrite the sentence using the
@@ -7802,6 +7881,8 @@ HARD RULE — applies to every sentence:
       try {
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctSignRulershipClaimsInProse(parsedContent, postGateLog);
         // SR planet position guard — reverts any "SR <Planet> 26°21' Leo"
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
