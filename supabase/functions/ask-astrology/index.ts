@@ -3459,18 +3459,134 @@ const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
+//   "SR 7th house in Capricorn"
+//   "SR 7th house cusp is Aries"
+//   "SR Descendant in Libra"
+// using the deterministic SR House Cusps block from chart context.
+// Only rewrites when the named sign is wrong AND we have ground truth.
+// ─────────────────────────────────────────────────────────────────────────
+const correctSrHouseCuspInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseSrHouseCuspsFromContext(chartContext);
+  if (cusps.length === 0) return;
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) cuspSignByHouse[c.house] = c.sign;
+  const srAscSign = cuspSignByHouse[1];
+  const srDscSign = cuspSignByHouse[7];
+  const srMcSign = cuspSignByHouse[10];
+  const srIcSign = cuspSignByHouse[4];
+
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const ORDINAL_WORDS_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
+    first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,seventh:7,eighth:8,ninth:9,tenth:10,eleventh:11,twelfth:12,
+  };
+
+  // Pattern: "SR <ord> house [cusp] [is|in|at|=|,] <Sign>"
+  const srOrdHouseRe = new RegExp(
+    `\\bSR\\s+(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?|(?:is\\s+|=\\s*|in\\s+|at\\s+))(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+  // Pattern: "SR Ascendant/Descendant/MC/IC [is|in|at|=|,] <Sign>"
+  const srAngleRe = new RegExp(
+    `\\bSR\\s+(Ascendant|Descendant|Midheaven|MC|IC|Imum\\s+Coeli)\\s*(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(srOrdHouseRe, (full, ord, claimedSign) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const correctSign = cuspSignByHouse[houseNum];
+      if (!correctSign) return full;
+      if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return full;
+      rewrites++;
+      return full.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), correctSign);
+    });
+    next = next.replace(srAngleRe, (full, angleName, claimedSign) => {
+      const lower = String(angleName).toLowerCase();
+      let correctSign: string | undefined;
+      if (lower === "ascendant") correctSign = srAscSign;
+      else if (lower === "descendant") correctSign = srDscSign;
+      else if (lower === "midheaven" || lower === "mc") correctSign = srMcSign;
+      else if (lower === "ic" || lower === "imum coeli") correctSign = srIcSign;
+      if (!correctSign) return full;
+      if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return full;
+      rewrites++;
+      return full.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), correctSign);
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 100)} → ${next.slice(0, 100)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "sr_house_cusp_sign_corrected_in_prose", detail: { rewrites, examples } });
+    console.info("[ask-astrology] SR house cusp signs corrected in prose", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // FINAL ACCURACY REVIEW — flags suspicious sentences. Does NOT mutate.
 // Output attached to parsedContent._accuracy_review for human review.
+//
+// Surfaces (with mismatch verification — never flags claims that match truth):
+//   • ruler claims (any sign, not just Scorpio)
+//   • angle references (natal + SR Asc/Desc/MC/IC) — flag only when sign mismatches
+//   • retrograde/direct claims (phantom Rx on direct, missing Rx on retrograde)
+//   • cross-chart degree mentions (natal vs SR sign bleed)
+//   • SR house cusp mismatches
+//   • broken "vs." clauses
 // ─────────────────────────────────────────────────────────────────────────
 const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   const flags: Array<{ section: string; field: string; reason: string; snippet: string }> = [];
   const natalPos = chartContext ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/) : [];
   const srPos = chartContext ? parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR") : [];
+  const natalCusps = chartContext ? parseHouseCuspsFromContext(chartContext) : [];
+  const srCusps = chartContext ? parseSrHouseCuspsFromContext(chartContext) : [];
   const natalSign = new Map<string, string>();
   const srSign = new Map<string, string>();
   for (const p of natalPos) natalSign.set(p.planet.toLowerCase(), p.sign);
   for (const p of srPos) srSign.set(p.planet.toLowerCase(), p.sign);
+  const natalCuspByHouse: Record<number, string> = {};
+  const srCuspByHouse: Record<number, string> = {};
+  for (const c of natalCusps) natalCuspByHouse[c.house] = c.sign;
+  for (const c of srCusps) srCuspByHouse[c.house] = c.sign;
+  const natalAsc = natalCuspByHouse[1];
+  const natalDsc = natalCuspByHouse[7];
+  const natalMc = natalCuspByHouse[10];
+  const natalIc = natalCuspByHouse[4];
+  const srAsc = srCuspByHouse[1];
+  const srDsc = srCuspByHouse[7];
+  const srMc = srCuspByHouse[10];
+  const srIc = srCuspByHouse[4];
+
+  // Sign-rulership truth table (traditional + modern co-rulers).
+  const SIGN_RULERS: Record<string, string[]> = {
+    aries: ["mars"], taurus: ["venus"], gemini: ["mercury"], cancer: ["moon"],
+    leo: ["sun"], virgo: ["mercury"], libra: ["venus"], scorpio: ["mars","pluto"],
+    sagittarius: ["jupiter"], capricorn: ["saturn"], aquarius: ["saturn","uranus"],
+    pisces: ["jupiter","neptune"],
+  };
+
   const sentences = (s: string): string[] => s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
   const SKIP = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
@@ -3478,7 +3594,16 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
     "_accuracy_review","_validation","_validation_log","_validation_warning",
+    "_post_gate_safety","_final_hygiene","_sr_house_copy_warning","_source_call",
   ]);
+  const ALL_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+  const SIGN_RE = `(?:${ALL_SIGNS.join("|")})`;
+  const PLANET_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)";
+  const ORDINAL_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
+  };
+
   const visit = (node: any, sectionTitle: string) => {
     if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
     if (!node || typeof node !== "object") return;
@@ -3487,36 +3612,123 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
       if (SKIP.has(key)) continue;
       if (typeof val === "string") {
         for (const sent of sentences(val)) {
+          // Broken "vs." clause
           if (/\bvs\.\s+[A-Z][^.!?]{0,120}$/.test(sent)) {
             const tail = (sent.split(/\bvs\./)[1] || "").slice(0, 60);
             if (!/\b(?:and|than|over|while|but|nor|rather)\b/i.test(tail)) {
               flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", snippet: sent.slice(0, 200) });
             }
           }
-          const rxMatch = sent.match(/\b(?:natal|your)\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\s*(?:[\u211E℞]|Rx|retrograde)\b/i);
+
+          // Phantom Rx on direct natal planet
+          const rxMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANET_RE})\\s*(?:[\\u211E℞]|Rx|retrograde)\\b`, "i"));
           if (rxMatch) {
             const truth = natalPos.find((p) => p.planet.toLowerCase() === rxMatch[1].toLowerCase());
             if (truth && !truth.retrograde) {
               flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", snippet: sent.slice(0, 200) });
             }
           }
-          const signMatch = sent.match(/\bnatal\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+          // Missing Rx on retrograde natal planet (claimed direct)
+          const directMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANET_RE})\\s+(?:is\\s+)?direct\\b`, "i"));
+          if (directMatch) {
+            const truth = natalPos.find((p) => p.planet.toLowerCase() === directMatch[1].toLowerCase());
+            if (truth && truth.retrograde) {
+              flags.push({ section: localTitle, field: key, reason: "missing_rx_on_retrograde_natal_planet", snippet: sent.slice(0, 200) });
+            }
+          }
+
+          // Natal sign mismatch
+          const signMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANET_RE})\\b[^.!?]{0,80}?\\b(${SIGN_RE})\\b`, "i"));
           if (signMatch) {
             const truthSign = natalSign.get(signMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== signMatch[2].toLowerCase()) {
               flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
             }
           }
-          const srSignMatch = sent.match(/\bSR\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+          // SR sign mismatch
+          const srSignMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANET_RE})\\b[^.!?]{0,80}?\\b(${SIGN_RE})\\b`, "i"));
           if (srSignMatch) {
             const truthSign = srSign.get(srSignMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== srSignMatch[2].toLowerCase()) {
               flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
             }
           }
-          if (/\bScorpio\b[^.!?]{0,40}\bruled\s+by\s+(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)
-              || /\bruler\s+of\s+Scorpio\s*(?:is|=|,)?\s*(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)) {
-            flags.push({ section: localTitle, field: key, reason: "scorpio_wrong_ruler", snippet: sent.slice(0, 200) });
+
+          // Natal house cusp sign mismatch — "natal Nth house [cusp] [is|in] X"
+          const natalCuspMatch = sent.match(new RegExp(`\\bnatal\\s+(${ORDINAL_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|in\\s+|at\\s+)(${SIGN_RE})\\b`, "i"));
+          if (natalCuspMatch) {
+            const houseNum = ORDINAL_TO_NUM[natalCuspMatch[1].toLowerCase()];
+            const truthSign = natalCuspByHouse[houseNum];
+            if (truthSign && truthSign.toLowerCase() !== natalCuspMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `natal_house_cusp_mismatch (house=${houseNum} claimed=${natalCuspMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          // SR house cusp sign mismatch — "SR Nth house [cusp] [is|in] X"
+          const srCuspMatch = sent.match(new RegExp(`\\bSR\\s+(${ORDINAL_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|in\\s+|at\\s+)(${SIGN_RE})\\b`, "i"));
+          if (srCuspMatch) {
+            const houseNum = ORDINAL_TO_NUM[srCuspMatch[1].toLowerCase()];
+            const truthSign = srCuspByHouse[houseNum];
+            if (truthSign && truthSign.toLowerCase() !== srCuspMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `sr_house_cusp_mismatch (house=${houseNum} claimed=${srCuspMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+            }
+          }
+
+          // Angle references (natal Asc/Desc/MC/IC) — flag ONLY when the
+          // named sign disagrees with the placement table truth. Correct
+          // references (e.g. "natal Ascendant at 0°51' Cancer" when Asc
+          // really is in Cancer) are NOT flagged.
+          const angleChecks: Array<{ label: string; truth?: string }> = [
+            { label: "Ascendant", truth: natalAsc },
+            { label: "Descendant", truth: natalDsc },
+            { label: "Midheaven", truth: natalMc },
+            { label: "MC", truth: natalMc },
+            { label: "IC", truth: natalIc },
+          ];
+          for (const { label, truth } of angleChecks) {
+            if (!truth) continue;
+            const re = new RegExp(`\\b(?:natal\\s+|your\\s+)?${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const m = sent.match(re);
+            if (m) {
+              if (m[1].toLowerCase() !== truth.toLowerCase()) {
+                flags.push({ section: localTitle, field: key, reason: `natal_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
+              }
+              // matching reference → not flagged (silent pass)
+              break;
+            }
+          }
+          // SR angle mismatches
+          const srAngleChecks: Array<{ label: string; truth?: string }> = [
+            { label: "Ascendant", truth: srAsc },
+            { label: "Descendant", truth: srDsc },
+            { label: "Midheaven", truth: srMc },
+            { label: "MC", truth: srMc },
+            { label: "IC", truth: srIc },
+          ];
+          for (const { label, truth } of srAngleChecks) {
+            if (!truth) continue;
+            const re = new RegExp(`\\bSR\\s+${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const m = sent.match(re);
+            if (m && m[1].toLowerCase() !== truth.toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `sr_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
+              break;
+            }
+          }
+
+          // Ruler claim mismatch — "<Sign> ruled by <Planet>" or
+          // "ruler of <Sign> is <Planet>" for ANY sign (not just Scorpio).
+          const ruledByMatch = sent.match(new RegExp(`\\b(${SIGN_RE})\\b[^.!?]{0,40}?\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_RE})\\b`, "i"));
+          if (ruledByMatch) {
+            const validRulers = SIGN_RULERS[ruledByMatch[1].toLowerCase()] || [];
+            if (validRulers.length && !validRulers.includes(ruledByMatch[2].toLowerCase())) {
+              flags.push({ section: localTitle, field: key, reason: `wrong_ruler (${ruledByMatch[1]} claimed=${ruledByMatch[2]} truth=${validRulers.join("/")})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          const rulerOfMatch = sent.match(new RegExp(`\\bruler\\s+of\\s+(${SIGN_RE})\\s*(?:is|=|,)?\\s*(?:the\\s+)?(${PLANET_RE})\\b`, "i"));
+          if (rulerOfMatch) {
+            const validRulers = SIGN_RULERS[rulerOfMatch[1].toLowerCase()] || [];
+            if (validRulers.length && !validRulers.includes(rulerOfMatch[2].toLowerCase())) {
+              flags.push({ section: localTitle, field: key, reason: `wrong_ruler (${rulerOfMatch[1]} claimed=${rulerOfMatch[2]} truth=${validRulers.join("/")})`, snippet: sent.slice(0, 200) });
+            }
           }
         }
       } else {
@@ -3527,13 +3739,21 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (Array.isArray(parsedContent.sections)) {
     for (const s of parsedContent.sections) visit(s, String(s?.title || ""));
   }
+  // Dedupe identical flags (same section/field/reason/snippet)
+  const seen = new Set<string>();
+  const dedup = flags.filter((f) => {
+    const k = `${f.section}|${f.field}|${f.reason}|${f.snippet}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
   (parsedContent as any)._accuracy_review = {
     generated_at: new Date().toISOString(),
-    total_flags: flags.length,
-    flags,
+    total_flags: dedup.length,
+    flags: dedup,
   };
-  if (flags.length > 0) {
-    console.warn("[ask-astrology] accuracy review flagged sentences", { total: flags.length });
+  if (dedup.length > 0) {
+    console.warn("[ask-astrology] accuracy review flagged sentences", { total: dedup.length });
   } else {
     console.info("[ask-astrology] accuracy review clean — no flags");
   }
