@@ -7084,6 +7084,12 @@ HARD RULE — applies to every sentence:
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // HOUSE RULER PLACEMENT FIXER: rewrite any prose that puts a house
+          // ruler in the WRONG sign or house — e.g. "ruler Mars sitting in
+          // your 2nd house in Sagittarius" when natal Mars is actually in
+          // Scorpio in the 1st house. Pulls truth from NATAL Planetary
+          // Positions block, not from the cusp's own house number.
+          fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // SIGN RULERSHIP CORRECTION: scan all prose for any "<Planet>
           // rules <Sign>" / "<Sign> ruled by <Planet>" / "<Planet>, ruler of
           // <Sign>" claim and rewrite when the planet does not actually
