@@ -1920,8 +1920,20 @@ const fixDescendantCuspMentionsInProse = (
 
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
-    next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
-    next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
+    // Force any "7th house ... <Sign>" or "Descendant ... <Sign>" claim to
+    // use the deterministic dscSign (the 7th cusp from the placement table).
+    // Skip the rewrite when the named sign is ALREADY correct, so we never
+    // touch valid prose.
+    next = next.replace(wrongSeventh, (full, lead, namedSign) =>
+      String(namedSign).toLowerCase() === dscSign.toLowerCase()
+        ? full
+        : `${lead}${dscSign}`,
+    );
+    next = next.replace(wrongDescendant, (full, lead, namedSign) =>
+      String(namedSign).toLowerCase() === dscSign.toLowerCase()
+        ? full
+        : `${lead}${dscSign}`,
+    );
     next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
       fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
     );
