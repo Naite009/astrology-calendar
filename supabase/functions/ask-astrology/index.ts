@@ -1770,6 +1770,40 @@ const ORDINAL_TO_HOUSE_NUM: Record<string, number> = {
   "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
   "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
 };
+const forEachProseField = (
+  root: any,
+  skipKeys: Set<string>,
+  fn: (args: { node: any; key: string; value: string; path: string }) => void,
+) => {
+  const visit = (node: any, path: string) => {
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}]`);
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    if (node?.type === "placement_table") return;
+
+    for (const [key, val] of Object.entries(node)) {
+      if (skipKeys.has(key)) continue;
+      const childPath = `${path}.${key}`;
+
+      if (typeof val === "string") {
+        const isDirectProseField = key === "body" || key === "content" || key === "text";
+        const isBulletTextField = path.includes(".bullets[") && key === "text";
+        const isGenericStringField = !path.includes(".placement_table") && !["planet","sign","house","degrees","aspect","natal_point","symbol"].includes(key);
+
+        if (isDirectProseField || isBulletTextField || isGenericStringField) {
+          fn({ node, key, value: val, path: childPath });
+        }
+      } else {
+        visit(val, childPath);
+      }
+    }
+  };
+
+  visit(root, "$");
+};
+
 const fixDescendantCuspMentionsInProse = (
   parsedContent: any,
   chartContext: string,
