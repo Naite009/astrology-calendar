@@ -7879,6 +7879,35 @@ HARD RULE — applies to every sentence:
     // ────────────────────────────────────────────────────────────
     if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       try {
+        // PROOF-OF-COVERAGE AUDIT: walk every string field BEFORE the
+        // correctors so we can prove from the JSON which bullet/text
+        // fields were inspected. Counts paths like
+        // "sections[3].bullets[2].text" — exactly the field the user
+        // says is escaping correction. Emitted as
+        // `_post_gate_safety.coverage` so the next QA cycle has hard
+        // evidence the walker visits bullet text.
+        const stringFieldPaths: string[] = [];
+        const visitedKeys: Record<string, number> = {};
+        const walkAudit = (node: any, path: string) => {
+          if (Array.isArray(node)) {
+            for (let i = 0; i < node.length; i++) walkAudit(node[i], `${path}[${i}]`);
+            return;
+          }
+          if (!node || typeof node !== "object") return;
+          for (const [k, v] of Object.entries(node)) {
+            const childPath = `${path}.${k}`;
+            if (typeof v === "string") {
+              visitedKeys[k] = (visitedKeys[k] || 0) + 1;
+              if (k === "text" || k === "body" || k === "content") {
+                stringFieldPaths.push(childPath);
+              }
+            } else {
+              walkAudit(v, childPath);
+            }
+          }
+        };
+        try { walkAudit(parsedContent, "$"); } catch (_e) { /* non-fatal */ }
+
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
@@ -7888,15 +7917,29 @@ HARD RULE — applies to every sentence:
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
         // the AI corrupted it. Reads truth from chart context, not JSON.
         correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+
+        // Always emit coverage so we can prove bullet/text fields were
+        // inspected, even when there were no rewrites this run.
+        (parsedContent as any)._post_gate_safety = {
+          applied_at: new Date().toISOString(),
+          corrections: postGateLog,
+          coverage: {
+            total_string_fields: Object.values(visitedKeys).reduce((a, b) => a + b, 0),
+            text_body_content_fields: stringFieldPaths.length,
+            sample_paths: stringFieldPaths.slice(0, 12),
+            visited_key_counts: visitedKeys,
+          },
+        };
         if (postGateLog.length > 0) {
           console.info("[ask-astrology] post-gate safety pass applied", {
             count: postGateLog.length,
             types: [...new Set(postGateLog.map((e: any) => e?.type).filter(Boolean))],
+            coverage_text_fields: stringFieldPaths.length,
           });
-          (parsedContent as any)._post_gate_safety = {
-            applied_at: new Date().toISOString(),
-            corrections: postGateLog,
-          };
+        } else {
+          console.info("[ask-astrology] post-gate safety pass found nothing to correct", {
+            coverage_text_fields: stringFieldPaths.length,
+          });
         }
       } catch (postGateErr) {
         const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
