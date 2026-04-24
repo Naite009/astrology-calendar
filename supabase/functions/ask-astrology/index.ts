@@ -1956,7 +1956,13 @@ const fixDescendantCuspMentionsInProse = (
   const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
   const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
   const HOUSE_LEAD_RE = `\\b(${ORDINAL_WORDS_RE})\\s+house`;
-  const HOUSE_CUSP_SIGN_RE = `${HOUSE_LEAD_RE}\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`;
+  // IMPORTANT: the cusp/copula token MUST be present. Earlier versions
+  // made BOTH `(?:cusp\s+)?` and `(?:is\s+|in\s+|at\s+|=|,)?` optional,
+  // which let a phrase like "the 7th house Mars in Scorpio in the 1st"
+  // match — capturing "Scorpio" as the supposed cusp sign and triggering
+  // a wrong rewrite (Aries→Libra etc.) via fixHouseRulerClaim. Requiring
+  // an explicit `cusp ` OR an explicit copula prevents this drift.
+  const HOUSE_CUSP_SIGN_RE = `${HOUSE_LEAD_RE}\\s+(?:cusp\\s+(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?|(?:is\\s+|=\\s*|in\\s+|at\\s+))(${SIGN_NAMES_RE})\\b`;
   const houseRuledByRe = new RegExp(
     `${HOUSE_CUSP_SIGN_RE}([^.!?]{0,100}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
     "gi",
@@ -2483,7 +2489,113 @@ const correctSrPlanetPositionsInProse = (
 };
 
 
-// still swap the *labels* even when it gets the sign/degree from the chart.
+// DETERMINISTIC NATAL POSITION CORRECTOR — counterpart to
+// correctSrPlanetPositionsInProse. The AI sometimes writes
+// "your natal Uranus at 0°39' Gemini" inside an overlay/comparison
+// sentence, when in fact 0°39' Gemini is the SR Uranus position and
+// natal Uranus is somewhere completely different (e.g. 6°53' Scorpio).
+// We detect any sentence that anchors to "natal <Planet>" with a
+// degree+sign and rewrite the sign and/or degree to match the natal
+// truth from the chart context whenever:
+//   (a) the named sign matches the SR sign for that planet (i.e. the
+//       AI bled the SR position into a natal sentence), OR
+//   (b) the named degree matches the SR degree (sign-only bleed).
+// This mirrors the SR corrector's safety logic so we never touch a
+// sentence whose values already agree with the natal truth.
+const correctNatalPlanetPositionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPositions = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  if (natalPositions.length === 0) return;
+  const srPositions = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const srByPlanet = new Map<string, { sign: string; degree: number; minutes: number }>();
+  for (const p of srPositions) {
+    srByPlanet.set(p.planet.toLowerCase(), { sign: p.sign, degree: p.degree, minutes: p.minutes });
+  }
+
+  const NATAL_TARGETS = new Set([
+    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
+  ]);
+  const natalByPlanet = new Map<string, { sign: string; degree: number; minutes: number }>();
+  for (const p of natalPositions) {
+    if (NATAL_TARGETS.has(p.planet)) {
+      natalByPlanet.set(p.planet, { sign: p.sign, degree: p.degree, minutes: p.minutes });
+    }
+  }
+  if (natalByPlanet.size === 0) return;
+
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  let signRewrites = 0;
+  let degreeRewrites = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    for (const [planet, truth] of natalByPlanet.entries()) {
+      const correctSign = truth.sign;
+      const sr = srByPlanet.get(planet.toLowerCase());
+      // Anchor: must say "natal <Planet>" (case-insensitive). Optional
+      // retrograde glyph, optional copula, then degree+sign.
+      const re = new RegExp(
+        `\\bnatal\\s+${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|=|—|,)?\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+        "gi",
+      );
+      next = next.replace(re, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+        const claimedSignLower = String(claimedSign).toLowerCase();
+        const claimedDeg = parseInt(degStr, 10);
+        if (claimedSignLower === correctSign.toLowerCase() && claimedDeg === truth.degree) {
+          return match; // already correct
+        }
+        // Rewrite ONLY when the bad value matches the SR truth — that's
+        // the signature of a sign/degree bleed. If neither sign nor
+        // degree matches SR, leave it alone (could be an unrelated
+        // hallucination we don't want to silently mask).
+        const signMatchesSr = sr && claimedSignLower === sr.sign.toLowerCase();
+        const degMatchesSr = sr && claimedDeg === sr.degree;
+        if (!signMatchesSr && !degMatchesSr) return match;
+
+        if (claimedSignLower !== correctSign.toLowerCase()) signRewrites++;
+        if (claimedDeg !== truth.degree) degreeRewrites++;
+
+        const retro = retroPart || "";
+        const lead = `natal ${planet}${retro}${gap || " "}`;
+        const minOut = minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : "";
+        if (examples.length < 5) {
+          examples.push(`${match} → natal ${planet} at ${truth.degree}°${String(truth.minutes).padStart(2, "0")}' ${correctSign}`);
+        }
+        return `${lead}${truth.degree}°${minOut} ${correctSign}`;
+      });
+    }
+    if (next !== val) {
+      (node as any)[key] = next;
+    }
+  });
+
+  if (signRewrites > 0 || degreeRewrites > 0) {
+    log.push({
+      type: "natal_planet_positions_corrected_in_prose",
+      detail: { sign_rewrites: signRewrites, degree_rewrites: degreeRewrites, examples },
+    });
+    console.info("[ask-astrology] natal planet positions corrected in prose", {
+      sign_rewrites: signRewrites,
+      degree_rewrites: degreeRewrites,
+      examples,
+    });
+  }
+};
+
+
+
 // Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
 // the "natal Ascendant". This pass rewrites or strips any prose that names
 // House 7 / Descendant coordinates as Ascendant, or House 1 / Ascendant
@@ -7280,6 +7392,9 @@ HARD RULE — applies to every sentence:
           // the chart context. Prevents "SR Saturn 26°21' Leo" when the
           // truth is "SR Saturn 26°21' Pisces ℞".
           correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // NATAL POSITION COUNTERPART: catch "natal <Planet> at <wrong>" where
+          // the wrong value is actually the SR position (sign or degree bleed).
+          correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
@@ -8105,6 +8220,9 @@ HARD RULE — applies to every sentence:
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
         // the AI corrupted it. Reads truth from chart context, not JSON.
         correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
+        // bleeds Replit may have introduced or that survived the gate.
+        correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
