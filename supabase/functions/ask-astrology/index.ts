@@ -7017,6 +7017,8 @@ HARD RULE — applies to every sentence:
     //
     // Other question types still use the single-call path below — this
     // refactor is scoped to relationship readings only (per user spec).
+    // Hoisted so the post-parse hygiene block can attach _verified_activations.
+    let verifiedActivationsForResult: VerifiedActivation[] = [];
     if (isRelationshipQuestion) {
       try {
         // Re-derive pure natal / SR text blocks from sanitizedChartContext.
