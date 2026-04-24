@@ -2216,6 +2216,20 @@ const fixHouseRulerPlacementInProse = (
       return `ruler ${planet} in ${correctSign}, ${correctOrd} house`;
     });
 
+    // Pattern E — adjacent "in <Sign> <Nth> house" form. Run BEFORE
+    // rulerWithSignOnly so the more specific (sign + house) match wins.
+    next = next.replace(rulerWithSignAdjacentHouse, (full, planet, claimedSign, claimedOrd) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign || !fact.house) return full;
+      const correctOrd = ordinalForHouse(fact.house);
+      const correctSign = fact.sign;
+      if (
+        String(claimedOrd).toLowerCase() === correctOrd.toLowerCase() &&
+        String(claimedSign).toLowerCase() === correctSign.toLowerCase()
+      ) return full;
+      return `ruler ${planet} in ${correctSign} ${correctOrd} house`;
+    });
+
     next = next.replace(rulerWithSignOnly, (full, planet, claimedSign) => {
       const fact = factByPlanet.get(String(planet).toLowerCase());
       if (!fact || !fact.sign) return full;
