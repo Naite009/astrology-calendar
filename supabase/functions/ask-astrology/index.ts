@@ -1607,6 +1607,25 @@ const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number
   return out;
 };
 
+// Parse the "SR House Cusps" block emitted by AskView (format:
+// "- SR House N: D° Sign"). Returns one entry per house cusp present.
+const parseSrHouseCuspsFromContext = (chartContext: string): Array<{ house: number; sign: string; degree: number; minutes: number }> => {
+  if (!chartContext) return [];
+  const headerMatch = chartContext.match(/\nSR House Cusps:\n/);
+  if (!headerMatch) return [];
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{4,}:|\nACTIVE|\nVERIFIED|\nSR-TO-NATAL/);
+  const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+  const re = new RegExp(`-\\s+SR\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
+  const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(block)) !== null) {
+    out.push({ house: parseInt(m[1], 10), sign: m[4], degree: parseInt(m[2], 10), minutes: m[3] ? parseInt(m[3], 10) : 0 });
+  }
+  return out;
+};
+
 const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
   return positions.map((p) => ({
     planet: p.retrograde ? `${p.planet} ℞` : p.planet,
