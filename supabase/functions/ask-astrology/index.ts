@@ -4178,13 +4178,16 @@ const overrideTimingSummaryItems = (parsedContent: any) => {
 
 // ─────────────────────────────────────────────────────────────────────────
 // NON-TIMING SUMMARY ITEM ASPECT-STRIP (PERMANENT — DRIFT FIX)
-// The four strategy items in a Relationship Strategy Summary
-// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break",
-// "What This Year Is Best For") are behavioral advice — they should
-// NEVER name specific aspects (e.g., "Jupiter trine Venus"). The model
-// keeps sneaking transit/aspect references into them, which the
-// natal-aspect validator then strips, producing drift_count > 0 even
-// after regen-on-drift.
+// The three strategy items in a Relationship Strategy Summary
+// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break") are
+// behavioral advice — they should NEVER name specific aspects (e.g.,
+// "Jupiter trine Venus"). The model keeps sneaking transit/aspect
+// references into them, which the natal-aspect validator then strips,
+// producing drift_count > 0 even after regen-on-drift.
+//
+// (Note: the prior duplicate "What This Year Is Best For" item was
+// removed from the relationship summary_box scaffold — it overlapped
+// with "Best Windows" and consistently produced empty siblings.)
 //
 // This pass runs AFTER overrideTimingSummaryItems and BEFORE
 // validateReading is called the second time. It deterministically
