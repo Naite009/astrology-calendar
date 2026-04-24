@@ -3348,6 +3348,178 @@ const backfillStructuralSectionsFromChartContext = (
     console.info("[ask-astrology] structural backfill applied", { backfilled, details });
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────
+// BROKEN "X vs." BULLET STRIPPER (Paul-style malformed bullet).
+// ─────────────────────────────────────────────────────────────────────────
+const stripBrokenVsBullets = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let stripped = 0;
+  let bulletsDropped = 0;
+  const examples: string[] = [];
+  const isBroken = (s: string): boolean => {
+    const m = s.match(/\bvs\.\s+[A-Z][^.!?\n]{0,200}/);
+    if (!m) return false;
+    const tail = m[0].replace(/^\s*vs\.\s+/, "");
+    // If the tail contains another comparison anchor within first 60 chars, treat as a real comparison.
+    return !/\b(?:vs\.|and|than|over|while|but|nor|rather)\b/i.test(tail.slice(0, 60));
+  };
+  const trimVsTail = (s: string): string => {
+    const idx = s.search(/\s+\bvs\.\s+[A-Z]/);
+    if (idx === -1) return s;
+    let head = s.slice(0, idx).replace(/[\s,;:]+$/, "");
+    const openParens = (head.match(/\(/g) || []).length;
+    const closeParens = (head.match(/\)/g) || []).length;
+    if (openParens > closeParens) head += ")";
+    if (!/[.!?]$/.test(head)) head += ".";
+    return head;
+  };
+  for (const section of parsedContent.sections) {
+    if (!section || typeof section !== "object") continue;
+    if (Array.isArray(section.bullets)) {
+      const kept: any[] = [];
+      for (const b of section.bullets) {
+        const txt = typeof b === "string" ? b : (b && typeof b === "object" && typeof b.text === "string" ? b.text : null);
+        if (txt && isBroken(txt)) {
+          const fixed = trimVsTail(txt);
+          if (fixed.length >= 20) {
+            if (typeof b === "string") kept.push(fixed);
+            else kept.push({ ...b, text: fixed });
+            stripped++;
+            if (examples.length < 3) examples.push(`TRIM: ${txt.slice(0, 120)}`);
+          } else {
+            bulletsDropped++;
+            if (examples.length < 3) examples.push(`DROP: ${txt.slice(0, 120)}`);
+          }
+        } else {
+          kept.push(b);
+        }
+      }
+      section.bullets = kept;
+    }
+    if (typeof section.body === "string" && isBroken(section.body)) {
+      const before = section.body;
+      section.body = trimVsTail(section.body);
+      stripped++;
+      if (examples.length < 5) examples.push(`BODY: ${before.slice(0, 120)}`);
+    }
+  }
+  if (stripped > 0 || bulletsDropped > 0) {
+    log.push({ type: "broken_vs_bullets_repaired", detail: { repaired: stripped, dropped: bulletsDropped, examples } });
+    console.info("[ask-astrology] broken 'vs.' bullets repaired", { repaired: stripped, dropped: bulletsDropped });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// FORCE BEST WINDOWS != CAUTION WINDOWS — blank Caution if it equals Best.
+// ─────────────────────────────────────────────────────────────────────────
+const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const norm = (s: unknown): string =>
+    String(s || "").toLowerCase().replace(/[\u2013\u2014]/g, "-").replace(/[.,;:]/g, " ").replace(/\s+/g, " ").trim();
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "summary_box" || !Array.isArray(section.items)) continue;
+    const items = section.items;
+    const findItem = (name: string) =>
+      items.find((it: any) => it && typeof it === "object" && typeof it.label === "string"
+        && it.label.trim().toLowerCase() === name);
+    const best = findItem("best windows");
+    const caution = findItem("caution windows");
+    if (!best || !caution) continue;
+    const bestKey = typeof best.value === "string" ? "value" : typeof best.text === "string" ? "text" : "value";
+    const cautionKey = typeof caution.value === "string" ? "value" : typeof caution.text === "string" ? "text" : "value";
+    const bestVal = norm(best[bestKey]);
+    const cautionVal = norm(caution[cautionKey]);
+    if (!bestVal || !cautionVal) continue;
+    if (bestVal === cautionVal) {
+      caution[cautionKey] = "No strong caution windows are active in the current period.";
+      log.push({ type: "best_caution_windows_collision_resolved", detail: { collided_value: String(best[bestKey]).slice(0, 200) } });
+      console.info("[ask-astrology] Best/Caution windows collision resolved");
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// FINAL ACCURACY REVIEW — flags suspicious sentences. Does NOT mutate.
+// Output attached to parsedContent._accuracy_review for human review.
+// ─────────────────────────────────────────────────────────────────────────
+const runAccuracyReview = (parsedContent: any, chartContext: string) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const flags: Array<{ section: string; field: string; reason: string; snippet: string }> = [];
+  const natalPos = chartContext ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/) : [];
+  const srPos = chartContext ? parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR") : [];
+  const natalSign = new Map<string, string>();
+  const srSign = new Map<string, string>();
+  for (const p of natalPos) natalSign.set(p.planet.toLowerCase(), p.sign);
+  for (const p of srPos) srSign.set(p.planet.toLowerCase(), p.sign);
+  const sentences = (s: string): string[] => s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  const SKIP = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_accuracy_review","_validation","_validation_log","_validation_warning",
+  ]);
+  const visit = (node: any, sectionTitle: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
+    if (!node || typeof node !== "object") return;
+    const localTitle = typeof node.title === "string" ? node.title : sectionTitle;
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP.has(key)) continue;
+      if (typeof val === "string") {
+        for (const sent of sentences(val)) {
+          if (/\bvs\.\s+[A-Z][^.!?]{0,120}$/.test(sent)) {
+            const tail = (sent.split(/\bvs\./)[1] || "").slice(0, 60);
+            if (!/\b(?:and|than|over|while|but|nor|rather)\b/i.test(tail)) {
+              flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", snippet: sent.slice(0, 200) });
+            }
+          }
+          const rxMatch = sent.match(/\b(?:natal|your)\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\s*(?:[\u211E℞]|Rx|retrograde)\b/i);
+          if (rxMatch) {
+            const truth = natalPos.find((p) => p.planet.toLowerCase() === rxMatch[1].toLowerCase());
+            if (truth && !truth.retrograde) {
+              flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", snippet: sent.slice(0, 200) });
+            }
+          }
+          const signMatch = sent.match(/\bnatal\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+          if (signMatch) {
+            const truthSign = natalSign.get(signMatch[1].toLowerCase());
+            if (truthSign && truthSign.toLowerCase() !== signMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          const srSignMatch = sent.match(/\bSR\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+          if (srSignMatch) {
+            const truthSign = srSign.get(srSignMatch[1].toLowerCase());
+            if (truthSign && truthSign.toLowerCase() !== srSignMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          if (/\bScorpio\b[^.!?]{0,40}\bruled\s+by\s+(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)
+              || /\bruler\s+of\s+Scorpio\s*(?:is|=|,)?\s*(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)) {
+            flags.push({ section: localTitle, field: key, reason: "scorpio_wrong_ruler", snippet: sent.slice(0, 200) });
+          }
+        }
+      } else {
+        visit(val, localTitle);
+      }
+    }
+  };
+  if (Array.isArray(parsedContent.sections)) {
+    for (const s of parsedContent.sections) visit(s, String(s?.title || ""));
+  }
+  (parsedContent as any)._accuracy_review = {
+    generated_at: new Date().toISOString(),
+    total_flags: flags.length,
+    flags,
+  };
+  if (flags.length > 0) {
+    console.warn("[ask-astrology] accuracy review flagged sentences", { total: flags.length });
+  } else {
+    console.info("[ask-astrology] accuracy review clean — no flags");
+  }
+};
+
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const keptSections: any[] = [];
