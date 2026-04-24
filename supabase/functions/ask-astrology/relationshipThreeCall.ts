@@ -550,12 +550,23 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
     const marker = "VERIFIED CROSS-CHART ACTIVATIONS";
     const idx = userMsgC.indexOf(marker);
     const activationsArgLen = (callCActivationsBlock || "").length;
-    const head = userMsgC.slice(0, 200).replace(/\s+/g, " ");
+    const head = userMsgC.slice(0, 300).replace(/\s+/g, " ");
     const blockExcerpt = idx >= 0
       ? userMsgC.slice(idx, idx + 400).replace(/\s+/g, " ")
       : "(block not found in userMsgC)";
+    // Find the directive block inside the system stack and excerpt it so we
+    // can confirm at runtime that the new ABSOLUTE CONSTRAINT directive
+    // actually shipped to the model.
+    const sysJoined = sysBlocksC
+      .map((b) => (typeof b?.text === "string" ? b.text : ""))
+      .join("\n---\n");
+    const dirMarker = "ABSOLUTE CONSTRAINT FOR THIS CALL";
+    const dirIdx = sysJoined.indexOf(dirMarker);
+    const directiveExcerpt = dirIdx >= 0
+      ? sysJoined.slice(dirIdx, dirIdx + 500).replace(/\s+/g, " ")
+      : "(ABSOLUTE CONSTRAINT directive NOT FOUND in system blocks)";
     console.info(
-      `[ask-astrology][callC-diag] userMsg length=${userMsgC.length}, activationsBlock arg length=${activationsArgLen}, marker index=${idx}\n  userMsgC head(0..200): "${head}"\n  activations block excerpt: "${blockExcerpt}"`,
+      `[ask-astrology][callC-diag] userMsg length=${userMsgC.length}, activationsBlock arg length=${activationsArgLen}, marker index=${idx}, directive index=${dirIdx}\n  userMsgC head(0..300): "${head}"\n  activations block excerpt: "${blockExcerpt}"\n  directive excerpt: "${directiveExcerpt}"`,
     );
   }
   let cValue: SingleCallResult & { from_cache: boolean };
