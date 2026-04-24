@@ -854,6 +854,36 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
   forEachReadingPayload(parsedContent, (reading) => {
     const qt = String(reading?.question_type || "").toLowerCase();
     if (qt === "biography" || qt === "third_person") return;
+    // RELATIONSHIP READINGS: skip the broad mid-sentence pronoun rewrites.
+    // In relationship prose "they/them/their" almost always refers to the
+    // partner, not the reader, and the broad substitution corrupts grammar
+    // ("you has to fight", "meet you", "trust you", "love that grows you
+    // are one"). Only run the hard-coded boilerplate fixes (career stock
+    // strings) and the leading-clause swap, both of which are safe here.
+    if (qt === "relationship") {
+      const safeVisit = (node: any) => {
+        if (Array.isArray(node)) { for (const x of node) safeVisit(x); return; }
+        if (!node || typeof node !== "object") return;
+        for (const [key, val] of Object.entries(node)) {
+          if (PRONOUN_REWRITE_SAFE_KEYS.has(key)) continue;
+          if (typeof val === "string") {
+            if (val.length < 10) continue;
+            if (!CAREER_BOILERPLATE_REWRITES.some(r => new RegExp(r.pattern.source, "i").test(val))) continue;
+            const next = applyCareerBoilerplateRewrites(val);
+            if (next !== val) {
+              (node as any)[key] = next;
+              stringsTouched++;
+              sentencesRewritten++;
+              if (examples.length < 5) examples.push(`${val.slice(0, 90)} → ${next.slice(0, 90)}`);
+            }
+          } else {
+            safeVisit(val);
+          }
+        }
+      };
+      safeVisit(reading);
+      return;
+    }
     visit(reading);
   });
   if (sentencesRewritten > 0) {
