@@ -860,8 +860,15 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
             type="number"
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value) || currentYear)}
-            className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
+            className={`w-full border bg-background text-foreground rounded-sm px-3 py-2 text-sm ${
+              existingSRYears.includes(year) ? 'border-destructive' : 'border-border'
+            }`}
           />
+          {existingSRYears.includes(year) && (
+            <p className="text-[10px] text-destructive mt-1">
+              ⚠ A Solar Return for {year} already exists for {natalChart.name}. Pick a different year, or cancel and edit the existing one.
+            </p>
+          )}
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">SR Location</label>
