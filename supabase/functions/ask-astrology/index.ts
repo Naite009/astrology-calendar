@@ -7877,6 +7877,8 @@ HARD RULE — applies to every sentence:
       try {
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctSignRulershipClaimsInProse(parsedContent, postGateLog);
         // SR planet position guard — reverts any "SR <Planet> 26°21' Leo"
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
