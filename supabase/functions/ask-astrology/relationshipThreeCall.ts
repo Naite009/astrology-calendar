@@ -513,6 +513,21 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
   const bValue = (bRes as PromiseFulfilledResult<SingleCallResult & { from_cache: boolean }>).value;
 
   // ── Call C sequentially after A+B succeed ─────────────────────────────
+  // DIAGNOSTIC: confirm the verified-activations ground-truth block actually
+  // reaches Call C's user message. If it doesn't, the model has nothing to
+  // anchor its overlay prose to and will fall back to inventing aspects.
+  {
+    const marker = "VERIFIED CROSS-CHART ACTIVATIONS";
+    const idx = userMsgC.indexOf(marker);
+    const activationsArgLen = (callCActivationsBlock || "").length;
+    const head = userMsgC.slice(0, 200).replace(/\s+/g, " ");
+    const blockExcerpt = idx >= 0
+      ? userMsgC.slice(idx, idx + 400).replace(/\s+/g, " ")
+      : "(block not found in userMsgC)";
+    console.info(
+      `[ask-astrology][callC-diag] userMsg length=${userMsgC.length}, activationsBlock arg length=${activationsArgLen}, marker index=${idx}\n  userMsgC head(0..200): "${head}"\n  activations block excerpt: "${blockExcerpt}"`,
+    );
+  }
   let cValue: SingleCallResult & { from_cache: boolean };
   try {
     cValue = await runAndPersist("c", sysBlocksC, userMsgC);
