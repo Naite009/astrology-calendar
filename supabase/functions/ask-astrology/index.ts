@@ -1560,7 +1560,7 @@ const parsePositionsFromContext = (
   return out;
 };
 
-const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number; sign: string; degree: number }> => {
+const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number; sign: string; degree: number; minutes: number }> => {
   if (!chartContext) return [];
   const headerMatch = chartContext.match(/\nHouse Cusps[^:]*:\n/);
   if (!headerMatch) return [];
@@ -1568,11 +1568,11 @@ const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number
   const tail = chartContext.slice(startIdx);
   const endMatch = tail.match(/\n\s*\n|\nPlanets In Each|\nRuler Chains|\nVERIFIED/);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
-  const re = new RegExp(`-\\s+House\\s+(\\d+):\\s+(\\d+)°\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
-  const out: Array<{ house: number; sign: string; degree: number }> = [];
+  const re = new RegExp(`-\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
+  const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(block)) !== null) {
-    out.push({ house: parseInt(m[1], 10), sign: m[3], degree: parseInt(m[2], 10) });
+    out.push({ house: parseInt(m[1], 10), sign: m[4], degree: parseInt(m[2], 10), minutes: m[3] ? parseInt(m[3], 10) : 0 });
   }
   return out;
 };
