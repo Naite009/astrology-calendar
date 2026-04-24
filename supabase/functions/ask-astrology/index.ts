@@ -4127,11 +4127,12 @@ const TIMING_LABEL_PATTERNS: RegExp[] = [
   /key\s+windows?/i,
   /strongest\s+windows?/i,
   // NOTE: "What This Year Is Best For" is intentionally NOT in this list.
-  // It is a 1–2 sentence AI-written plain-English summary of the year's
-  // relational theme — no aspect names, no dates. Aspect names that slip
-  // in are stripped by stripAspectPhrasesFromNonTimingSummaryItems, which
-  // already covers this label. Keeping it AI-written prevents it from
-  // duplicating "Best Windows" (both pulled from the same transits pool).
+  // It has been removed from the relationship summary_box scaffold entirely
+  // because it duplicated "Best Windows" (both forward-action items, both
+  // pulled from the same transits pool, one always ending up empty and
+  // tripping the EMPTY_BULLET_TEXT gate). Thematic year summaries now live
+  // in the prose body of earlier sections. Same logic for the removed
+  // caution-side duplicate "What This Year Asks Of You".
 ];
 
 const isTimingLabel = (label: string): boolean => {
@@ -4177,13 +4178,16 @@ const overrideTimingSummaryItems = (parsedContent: any) => {
 
 // ─────────────────────────────────────────────────────────────────────────
 // NON-TIMING SUMMARY ITEM ASPECT-STRIP (PERMANENT — DRIFT FIX)
-// The four strategy items in a Relationship Strategy Summary
-// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break",
-// "What This Year Is Best For") are behavioral advice — they should
-// NEVER name specific aspects (e.g., "Jupiter trine Venus"). The model
-// keeps sneaking transit/aspect references into them, which the
-// natal-aspect validator then strips, producing drift_count > 0 even
-// after regen-on-drift.
+// The three strategy items in a Relationship Strategy Summary
+// ("Who to Move Toward", "Early Warning Signs", "Pattern to Break") are
+// behavioral advice — they should NEVER name specific aspects (e.g.,
+// "Jupiter trine Venus"). The model keeps sneaking transit/aspect
+// references into them, which the natal-aspect validator then strips,
+// producing drift_count > 0 even after regen-on-drift.
+//
+// (Note: the prior duplicate "What This Year Is Best For" item was
+// removed from the relationship summary_box scaffold — it overlapped
+// with "Best Windows" and consistently produced empty siblings.)
 //
 // This pass runs AFTER overrideTimingSummaryItems and BEFORE
 // validateReading is called the second time. It deterministically
@@ -4846,11 +4850,11 @@ SUMMARY_BOX TIMING SOURCE OF TRUTH (NON-NEGOTIABLE — APPLIES TO EVERY READING)
 Any timing field inside a summary_box — including but not limited to "Best Windows", "Caution Windows", "When to Act", "Extra Care Windows", "Restorative Windows", "Ideal Timing Window", "Best Timing", "Top Cities Timing", or any other label that names a date range or month — MUST be selected and summarized EXCLUSIVELY from the transits[] array already written in this same JSON's timing_section. You may NOT introduce a new aspect name, planet pairing, exact_hit_date, date_range, or month that does not already appear in transits[]. Before writing any summary_box timing field, re-read the transits[] array you just wrote and copy the relevant date_range strings verbatim (or summarize them in plain prose). If you cannot back a claim with a row from transits[], do NOT make the claim. This rule prevents the validator from stripping invented windows after the fact.
 
 BEST WINDOWS MANDATORY-NON-EMPTY RULE (NON-NEGOTIABLE — APPLIES TO EVERY READING TYPE: relationship, career, health, money, location, spiritual, general):
-The summary_box MUST contain a "Best Windows" item as a standalone labeled field. It must NEVER be empty. It must NEVER be merged with "What This Year Is Best For" — those are two distinct items with different purposes. "What This Year Is Best For" is a plain-English thematic summary with NO dates and NO planets. "Best Windows" is a date-range field that names actual forward timing windows.
+The summary_box MUST contain a "Best Windows" item as a standalone labeled field. It must NEVER be empty. "Best Windows" is the ONLY forward-action timing item in the summary_box — do NOT also add "What This Year Is Best For", "When to Act", or any other forward-timing duplicate label. Thematic year summaries with no dates belong in the prose body of earlier sections, not as a duplicate scaffold inside summary_box.
 - If Jupiter or other benefic transit windows exist in the timing_section transits[] array, list them in "Best Windows" with exact date ranges, copied verbatim from transits[].
 - If no strong forward windows exist in the current period (no Jupiter trine/sextile/conjunction to a personal point, no other clearly supportive transit), write the "Best Windows" value EXACTLY as: "No strong forward windows are active in the current period."
 - Do NOT leave the value blank, do NOT write "N/A", do NOT write "See timing section above", do NOT omit the item entirely. The hygiene gate will drop empty summary items and log empty_summary_item_dropped — that is a generation failure, not an acceptable outcome.
-- "Best Windows" and "What This Year Is Best For" are SEPARATE items. Both must be present in the summary_box items[] array. Never collapse one into the other.
+- The caution side mirrors this: "Caution Windows" is the ONLY caution-timing item — do NOT also add "What This Year Asks Of You" or any other caution-timing duplicate label.
 
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
@@ -5272,14 +5276,13 @@ Rules:
 
      TRANSIT INDEPENDENCE RULE (MANDATORY): Each transit entry is INDEPENDENT and self-contained. Do NOT reference, mention, build on, or compare to other transits within a single transit's "interpretation" string. No phrases like "as we saw with the earlier Jupiter transit", "this builds on the Saturn window above", "unlike the Mars transit later", or "echoing the previous trine". Each entry must stand alone as if the reader were seeing only that one transit.)
    11. modality_element — "Natal Elemental & Modal Balance" (NON-NEGOTIABLE — this section MUST appear between the timing_section and the summary_box. It is the 11th section of 12. It uses type "modality_element" with the EXACT structure shown in the schema example: elements[], modalities[], polarity[], dominant_element, dominant_modality, dominant_polarity, balance_interpretation. Do NOT skip it. Do NOT merge it into another section. Do NOT replace it with a narrative_section. If you only output 11 sections instead of 12, the most common reason is that you skipped THIS section — do not skip it.)
-   12. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include these items:
-      - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
-      - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
-      - "Pattern to Break": Name it bluntly. Example: "Stop treating mental chemistry as proof of compatibility — it's not."
-      - "What This Year Is Best For": A 1–2 sentence plain-English summary of the overall relational theme for this year, based on the SR chart and current transits. NO aspect names (no "Jupiter trine Venus"), NO planet names, NO dates, NO month references. Just describe what the year FEELS like relationally. Example: "This year is for learning to stay only where things are clear, not where they're exciting — the pull toward intensity is strong, but quiet steadiness is what actually grows you." Dates belong only in Best Windows.
-      - "Best Windows": Date-range timing windows copied from the timing_section transits[] above. MUST NOT be empty. If no strong forward windows exist in the current period, write EXACTLY: "No strong forward windows are active in the current period." MUST be a separate item from "What This Year Is Best For" — never merge them.
-      - "Caution Windows": Date-range timing windows copied from the timing_section transits[] above.
-      Do NOT stay safe or diplomatic. The user needs to hear the hard truth clearly. Every item must feel like advice they'd remember.
+    12. summary_box — "Relationship Strategy Summary" (MUST be decisive, direct, and slightly confrontational — like a friend who tells you the truth. Include EXACTLY these five items and NO others — do not add "What This Year Is Best For", "What This Year Asks Of You", or any other thematic-summary item to this scaffold. Thematic year summaries belong in the prose body of earlier sections, NOT as a duplicate scaffold here:
+       - "Who to Move Toward": Be specific about behavior, not type. Example: "Move toward people whose actions match their words from the first week — not the first month."
+       - "Early Warning Signs": Name the EXACT red flag for THIS person's pattern. Example: "If someone confuses you early, that's the pattern repeating — walk away sooner than you normally would."
+       - "Pattern to Break": Name it bluntly. Example: "Stop treating mental chemistry as proof of compatibility — it's not."
+       - "Best Windows": Date-range timing windows copied from the timing_section transits[] above. MUST NOT be empty. If no strong forward windows exist in the current period, write EXACTLY: "No strong forward windows are active in the current period." This is the ONLY forward-action timing item — do not duplicate it under any other label.
+       - "Caution Windows": Date-range timing windows copied from the timing_section transits[] above. MUST NOT be empty. If no strong cautionary windows exist in the current period, write EXACTLY: "No strong caution windows are active in the current period." This is the ONLY caution timing item — do not duplicate it under any other label.
+       Do NOT stay safe or diplomatic. The user needs to hear the hard truth clearly. Every item must feel like advice they'd remember.
 
       SUMMARY TRANSIT REFERENCE RULE (MANDATORY): The "Best Windows" and "Caution Windows" items in the Relationship Strategy Summary may ONLY reference transits that were named entries in the Timing Windows (timing_section) above. Do NOT introduce new transit names, new planets, new dates, or new aspects in the summary that did not appear as explicit entries in the timing_section. If a transit was not named in Timing Windows, it cannot appear here. The summary windows are a recap, not a new analysis.
 
