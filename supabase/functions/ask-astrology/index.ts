@@ -2193,6 +2193,20 @@ const fixHouseRulerPlacementInProse = (
       return `ruler ${planet} in ${correctSign} in your ${correctOrd} house`;
     });
 
+    // Pattern D — terse comma/semicolon/dash separated form. Run BEFORE
+    // rulerWithSignOnly so the more specific match wins.
+    next = next.replace(rulerWithSignAndHouseTerse, (full, planet, claimedSign, claimedOrd) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign || !fact.house) return full;
+      const correctOrd = ordinalForHouse(fact.house);
+      const correctSign = fact.sign;
+      if (
+        String(claimedOrd).toLowerCase() === correctOrd.toLowerCase() &&
+        String(claimedSign).toLowerCase() === correctSign.toLowerCase()
+      ) return full;
+      return `ruler ${planet} in ${correctSign}, ${correctOrd} house`;
+    });
+
     next = next.replace(rulerWithSignOnly, (full, planet, claimedSign) => {
       const fact = factByPlanet.get(String(planet).toLowerCase());
       if (!fact || !fact.sign) return full;
