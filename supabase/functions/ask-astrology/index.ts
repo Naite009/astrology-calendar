@@ -8086,6 +8086,17 @@ HARD RULE — applies to every sentence:
             } catch (detErr) {
               console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
             }
+            // Attach the pre-verified cross-chart activations so they survive
+            // into the downloaded JSON. The accuracy review reads this list to
+            // flag any prose aspect claim that isn't on it.
+            try {
+              (parsedContent as any)._verified_activations = {
+                count: verifiedActivationsForResult.length,
+                activations: verifiedActivationsForResult,
+              };
+            } catch (vaErr) {
+              console.warn("[ask-astrology] failed to attach _verified_activations:", vaErr);
+            }
           }
           // enforceNonZeroCoverage runs earlier in the pipeline; re-run any
           // necessary balance_interpretation generation here by calling it
