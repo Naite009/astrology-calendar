@@ -8790,6 +8790,10 @@ HARD RULE — applies to every sentence:
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // SR HOUSE CUSP CORRECTOR (post-gate): rewrite any "SR Nth house
+        // in <Sign>" / "SR Descendant in <Sign>" claim against the
+        // deterministic SR House Cusps block.
+        correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
@@ -8820,6 +8824,43 @@ HARD RULE — applies to every sentence:
         console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
       }
     }
+
+    // ────────────────────────────────────────────────────────────
+    // FINAL HYGIENE + ACCURACY REVIEW (always run, even when the
+    // post-gate path was skipped). Hygiene pass repairs broken
+    // bullets and resolves Best/Caution window collisions; accuracy
+    // review attaches `_accuracy_review` so the human reviewer can
+    // see flagged sentences in the downloaded JSON before generating
+    // the PDF. Both passes are non-blocking — failures here do not
+    // fail the job.
+    // ────────────────────────────────────────────────────────────
+    if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+      try {
+        const finalHygieneLog: HygieneLog = [];
+        stripBrokenVsBullets(parsedContent, finalHygieneLog);
+        forceBestVsCautionDistinct(parsedContent, finalHygieneLog);
+        (parsedContent as any)._final_hygiene = {
+          applied_at: new Date().toISOString(),
+          corrections: finalHygieneLog,
+        };
+        if (finalHygieneLog.length > 0) {
+          console.info("[ask-astrology] final hygiene pass applied", {
+            count: finalHygieneLog.length,
+            types: [...new Set(finalHygieneLog.map((e: any) => e?.type).filter(Boolean))],
+          });
+        }
+      } catch (hygErr) {
+        const msg = hygErr instanceof Error ? hygErr.message : String(hygErr);
+        console.warn(`[ask-astrology] final hygiene pass threw (non-fatal): ${msg}`);
+      }
+      try {
+        runAccuracyReview(parsedContent, sanitizedChartContext || "");
+      } catch (revErr) {
+        const msg = revErr instanceof Error ? revErr.message : String(revErr);
+        console.warn(`[ask-astrology] accuracy review threw (non-fatal): ${msg}`);
+      }
+    }
+
 
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
