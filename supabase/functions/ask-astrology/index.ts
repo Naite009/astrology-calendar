@@ -2157,6 +2157,15 @@ const fixHouseRulerPlacementInProse = (
     "gi",
   );
 
+  // Pattern E: adjacent form — "ruler <Planet> in [that same / the / your]?
+  // <Sign> <Nth> house" with the sign and ordinal sitting next to each other
+  // (no "in", no comma between). This catches prose like "its ruler Mars in
+  // that same Sagittarius 2nd house placement".
+  const rulerWithSignAdjacentHouse = new RegExp(
+    `\\bruler\\s+(${PLANET_NAMES_RE})\\s+in\\s+(?:that\\s+same\\s+|the\\s+|your\\s+|its\\s+)?(${SIGN_NAMES_RE})\\s+(${ORDINAL_RE})\\s+house\\b`,
+    "gi",
+  );
+
   let rewrites = 0;
   const examples: string[] = [];
   const SKIP_KEYS = new Set([
