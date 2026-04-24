@@ -4127,11 +4127,12 @@ const TIMING_LABEL_PATTERNS: RegExp[] = [
   /key\s+windows?/i,
   /strongest\s+windows?/i,
   // NOTE: "What This Year Is Best For" is intentionally NOT in this list.
-  // It is a 1–2 sentence AI-written plain-English summary of the year's
-  // relational theme — no aspect names, no dates. Aspect names that slip
-  // in are stripped by stripAspectPhrasesFromNonTimingSummaryItems, which
-  // already covers this label. Keeping it AI-written prevents it from
-  // duplicating "Best Windows" (both pulled from the same transits pool).
+  // It has been removed from the relationship summary_box scaffold entirely
+  // because it duplicated "Best Windows" (both forward-action items, both
+  // pulled from the same transits pool, one always ending up empty and
+  // tripping the EMPTY_BULLET_TEXT gate). Thematic year summaries now live
+  // in the prose body of earlier sections. Same logic for the removed
+  // caution-side duplicate "What This Year Asks Of You".
 ];
 
 const isTimingLabel = (label: string): boolean => {
