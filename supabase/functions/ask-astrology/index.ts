@@ -854,6 +854,36 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
   forEachReadingPayload(parsedContent, (reading) => {
     const qt = String(reading?.question_type || "").toLowerCase();
     if (qt === "biography" || qt === "third_person") return;
+    // RELATIONSHIP READINGS: skip the broad mid-sentence pronoun rewrites.
+    // In relationship prose "they/them/their" almost always refers to the
+    // partner, not the reader, and the broad substitution corrupts grammar
+    // ("you has to fight", "meet you", "trust you", "love that grows you
+    // are one"). Only run the hard-coded boilerplate fixes (career stock
+    // strings) and the leading-clause swap, both of which are safe here.
+    if (qt === "relationship") {
+      const safeVisit = (node: any) => {
+        if (Array.isArray(node)) { for (const x of node) safeVisit(x); return; }
+        if (!node || typeof node !== "object") return;
+        for (const [key, val] of Object.entries(node)) {
+          if (PRONOUN_REWRITE_SAFE_KEYS.has(key)) continue;
+          if (typeof val === "string") {
+            if (val.length < 10) continue;
+            if (!CAREER_BOILERPLATE_REWRITES.some(r => new RegExp(r.pattern.source, "i").test(val))) continue;
+            const next = applyCareerBoilerplateRewrites(val);
+            if (next !== val) {
+              (node as any)[key] = next;
+              stringsTouched++;
+              sentencesRewritten++;
+              if (examples.length < 5) examples.push(`${val.slice(0, 90)} → ${next.slice(0, 90)}`);
+            }
+          } else {
+            safeVisit(val);
+          }
+        }
+      };
+      safeVisit(reading);
+      return;
+    }
     visit(reading);
   });
   if (sentencesRewritten > 0) {
@@ -1986,6 +2016,121 @@ const fixDescendantCuspMentionsInProse = (
   }
 };
 
+// DETERMINISTIC RULER PLACEMENT CORRECTOR — the AI sometimes writes
+// "your 7th house cusp is Aries with its ruler Mars sitting in that same
+// 2nd house in Sagittarius" and assigns the cusp's containing house +
+// some other planet's sign to the ruler. The ruler's actual sign and
+// house come from the NATAL Planetary Positions block, NOT from the
+// cusp it rules. We scan prose for "ruler <Planet> [sitting/placed/
+// posited] in [that same/the/your] <Nth> house in <Sign>" patterns and
+// rewrite the house number AND sign to the planet's deterministic
+// natal position.
+const fixHouseRulerPlacementInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  if (natalPos.length === 0) return;
+
+  // Build a planet → { sign, house } map from deterministic context.
+  const factByPlanet = new Map<string, { sign: string; house: number | null }>();
+  for (const p of natalPos) {
+    if (!p?.planet || !p?.sign) continue;
+    factByPlanet.set(p.planet.toLowerCase(), { sign: p.sign, house: p.house ?? null });
+  }
+  if (factByPlanet.size === 0) return;
+
+  const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron)";
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const ORDINAL_RE = "(?:1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th)";
+
+  const ordinalForHouse = (h: number): string => {
+    if (h === 1) return "1st"; if (h === 2) return "2nd"; if (h === 3) return "3rd";
+    return `${h}th`;
+  };
+
+  // Pattern A: "ruler <Planet> [sitting/placed/posited/sits/lives/lands]
+  // in [that same / the / your]? <Nth> house in <Sign>"
+  const rulerWithHouseAndSign = new RegExp(
+    `\\bruler\\s+(${PLANET_NAMES_RE})\\b([^.!?\\n]{0,30}?)\\b(?:sitting|placed|posited|sits|lives|lands|sat|positioned)\\s+in\\s+(?:that\\s+same\\s+|the\\s+|your\\s+|its\\s+)?(${ORDINAL_RE})\\s+house\\s+in\\s+(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+
+  // Pattern B: "ruler <Planet> in <Sign> in [your/the] <Nth> house"
+  // (sign first, house second — the inverted order)
+  const rulerWithSignAndHouse = new RegExp(
+    `\\bruler\\s+(${PLANET_NAMES_RE})\\s+in\\s+(${SIGN_NAMES_RE})\\s+in\\s+(?:your\\s+|the\\s+|that\\s+)?(${ORDINAL_RE})\\s+house\\b`,
+    "gi",
+  );
+
+  // Pattern C: "with its ruler <Planet> in <Sign>" (only sign claimed)
+  const rulerWithSignOnly = new RegExp(
+    `\\b(?:with\\s+(?:its|the)\\s+)?ruler\\s+(${PLANET_NAMES_RE})\\s+in\\s+(${SIGN_NAMES_RE})\\b(?!\\s+in\\s+)`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+
+    next = next.replace(rulerWithHouseAndSign, (full, planet, mid, claimedOrd, claimedSign) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign || !fact.house) return full;
+      const correctOrd = ordinalForHouse(fact.house);
+      const correctSign = fact.sign;
+      if (
+        String(claimedOrd).toLowerCase() === correctOrd.toLowerCase() &&
+        String(claimedSign).toLowerCase() === correctSign.toLowerCase()
+      ) return full;
+      return `ruler ${planet}${mid}sitting in your ${correctOrd} house in ${correctSign}`;
+    });
+
+    next = next.replace(rulerWithSignAndHouse, (full, planet, claimedSign, claimedOrd) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign || !fact.house) return full;
+      const correctOrd = ordinalForHouse(fact.house);
+      const correctSign = fact.sign;
+      if (
+        String(claimedOrd).toLowerCase() === correctOrd.toLowerCase() &&
+        String(claimedSign).toLowerCase() === correctSign.toLowerCase()
+      ) return full;
+      return `ruler ${planet} in ${correctSign} in your ${correctOrd} house`;
+    });
+
+    next = next.replace(rulerWithSignOnly, (full, planet, claimedSign) => {
+      const fact = factByPlanet.get(String(planet).toLowerCase());
+      if (!fact || !fact.sign) return full;
+      if (String(claimedSign).toLowerCase() === fact.sign.toLowerCase()) return full;
+      return full.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), fact.sign);
+    });
+
+    if (next !== val) {
+      rewrites++;
+      if (examples.length < 5) examples.push(`${val.slice(0, 140)} → ${next.slice(0, 140)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({
+      type: "house_ruler_placement_corrected_in_prose",
+      detail: { rewrites, examples },
+    });
+    console.info("[ask-astrology] house ruler placement corrected in prose", { rewrites });
+  }
+};
+
+
 // DETERMINISTIC NATAL RETROGRADE CORRECTOR — the AI sometimes writes
 // "Chiron direct at 29°38' Aries" inside a bullet/parenthetical when natal
 // Chiron is actually retrograde. Same flip can hit any natal planet
@@ -2061,150 +2206,6 @@ const fixNatalRetrogradeMentionsInProse = (
     });
   }
 };
-
-// Modern co-rulers (per user spec). Used in addition to TRADITIONAL_RULER_BY_SIGN.
-// Pisces is ruled by Jupiter AND Neptune. Saturn does NOT rule Pisces.
-const SIGN_RULERS_ALL: Record<string, string[]> = {
-  Aries: ["Mars"],
-  Taurus: ["Venus"],
-  Gemini: ["Mercury"],
-  Cancer: ["Moon"],
-  Leo: ["Sun"],
-  Virgo: ["Mercury"],
-  Libra: ["Venus"],
-  Scorpio: ["Mars", "Pluto"],
-  Sagittarius: ["Jupiter"],
-  Capricorn: ["Saturn"],
-  Aquarius: ["Saturn", "Uranus"],
-  Pisces: ["Jupiter", "Neptune"],
-};
-
-// Reverse map: planet → set of signs it actually rules (traditional + modern).
-const SIGNS_RULED_BY_PLANET: Record<string, Set<string>> = (() => {
-  const m: Record<string, Set<string>> = {};
-  for (const [sign, rulers] of Object.entries(SIGN_RULERS_ALL)) {
-    for (const p of rulers) {
-      if (!m[p]) m[p] = new Set();
-      m[p].add(sign);
-    }
-  }
-  return m;
-})();
-
-// DETERMINISTIC SIGN RULERSHIP CORRECTION PASS — scans prose for any
-// "<Planet> rules <Sign>" / "<Sign>'s ruler <Planet>" / "<Planet>, ruler of
-// <Sign>" / "<Sign> is ruled by <Planet>" / "<Sign>'s modern ruler <Planet>"
-// claim and rewrites it if the planet does not actually rule that sign.
-// Uses SIGN_RULERS_ALL (traditional + modern co-rulers) as the canonical
-// truth. Critical: prevents "Saturn rules Pisces" and similar slips even
-// when the prompt instruction is ignored.
-const correctSignRulershipClaimsInProse = (parsedContent: any, log: HygieneLog) => {
-  if (!parsedContent) return;
-  const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
-  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
-
-  // Pick the best replacement planet for a given sign + claimed planet.
-  // - If the claim mentions "modern" → prefer the modern co-ruler
-  //   (Pluto for Scorpio, Uranus for Aquarius, Neptune for Pisces) when
-  //   one exists; otherwise use the traditional ruler.
-  // - If the claim mentions "traditional" → use the traditional ruler.
-  // - Otherwise → use the traditional ruler (safest default).
-  const pickReplacement = (sign: string, modifierHint: "modern" | "traditional" | null): string => {
-    const trad = TRADITIONAL_RULER_BY_SIGN[sign];
-    const all = SIGN_RULERS_ALL[sign] || [];
-    if (modifierHint === "modern") {
-      const modern = all.find((p) => p !== trad);
-      return modern || trad;
-    }
-    return trad;
-  };
-
-  const isCorrectRuler = (sign: string, planet: string): boolean => {
-    const rulers = SIGN_RULERS_ALL[sign] || [];
-    return rulers.some((r) => r.toLowerCase() === planet.toLowerCase());
-  };
-
-  // Patterns we will scan & correct. Each entry: regex + (sign group, planet group, optional modifier group).
-  const patterns: Array<{
-    re: RegExp;
-    signIdx: number;
-    planetIdx: number;
-    modifierIdx?: number;
-    label: string;
-  }> = [
-    // "<Planet> rules <Sign>"   |   "<Planet> co-rules <Sign>"
-    {
-      re: new RegExp(`\\b(${PLANET_NAMES_RE})\\s+(?:co[- ]?)?rules?\\s+(${SIGN_NAMES_RE})\\b`, "gi"),
-      signIdx: 2, planetIdx: 1, label: "planet_rules_sign",
-    },
-    // "<Sign> is ruled by <Planet>"   |   "<Sign> is co-ruled by <Planet>"
-    {
-      re: new RegExp(`\\b(${SIGN_NAMES_RE})\\s+is\\s+(?:co[- ]?)?ruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`, "gi"),
-      signIdx: 1, planetIdx: 2, label: "sign_is_ruled_by",
-    },
-    // "<Planet>, (the )?(modern|traditional) ruler of <Sign>"
-    // and "<Planet>, ruler of <Sign>"
-    {
-      re: new RegExp(`\\b(${PLANET_NAMES_RE}),\\s+(?:the\\s+)?(modern|traditional)?\\s*(?:co[- ]?)?ruler\\s+of\\s+(${SIGN_NAMES_RE})\\b`, "gi"),
-      signIdx: 3, planetIdx: 1, modifierIdx: 2, label: "planet_ruler_of_sign",
-    },
-    // "<Sign>'s (modern|traditional)? (co-)?ruler[,]? <Planet>"
-    {
-      re: new RegExp(`\\b(${SIGN_NAMES_RE})['']s\\s+(modern|traditional)?\\s*(?:co[- ]?)?ruler[,]?\\s+(${PLANET_NAMES_RE})\\b`, "gi"),
-      signIdx: 1, planetIdx: 3, modifierIdx: 2, label: "signs_ruler_planet",
-    },
-    // "ruler of <Sign>, <Planet>"  (less common but seen)
-    {
-      re: new RegExp(`\\bruler\\s+of\\s+(${SIGN_NAMES_RE}),\\s+(${PLANET_NAMES_RE})\\b`, "gi"),
-      signIdx: 1, planetIdx: 2, label: "ruler_of_sign_planet",
-    },
-  ];
-
-  let rewrites = 0;
-  const examples: string[] = [];
-  const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
-    "planet","sign","house","degrees","aspect","natal_point","symbol",
-    "tag","date","date_range","dateRange","generated_date",
-    "subject","question_type","question_asked",
-  ]);
-
-  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
-    let next = val;
-    for (const pat of patterns) {
-      next = next.replace(pat.re, (full, ...groups) => {
-        const sign = String(groups[pat.signIdx - 1] || "");
-        const claimedPlanet = String(groups[pat.planetIdx - 1] || "");
-        const modifierRaw = pat.modifierIdx ? String(groups[pat.modifierIdx - 1] || "").toLowerCase() : "";
-        const modifierHint: "modern" | "traditional" | null =
-          modifierRaw === "modern" ? "modern" :
-          modifierRaw === "traditional" ? "traditional" : null;
-        if (!sign || !claimedPlanet) return full;
-        const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
-        const planetCap = claimedPlanet.charAt(0).toUpperCase() + claimedPlanet.slice(1).toLowerCase();
-        if (isCorrectRuler(signCap, planetCap)) return full;
-        const replacement = pickReplacement(signCap, modifierHint);
-        if (!replacement || replacement.toLowerCase() === planetCap.toLowerCase()) return full;
-        rewrites++;
-        return full.replace(new RegExp(`\\b${claimedPlanet}\\b`), replacement);
-      });
-    }
-    if (next !== val) {
-      if (examples.length < 5) {
-        examples.push(val.slice(0, 160));
-      }
-      (node as any)[key] = next;
-    }
-  });
-  if (rewrites > 0) {
-    log.push({
-      type: "sign_rulership_corrected_in_prose",
-      detail: { rewrites, examples },
-    });
-    console.info("[ask-astrology] sign rulership claims corrected in prose", { rewrites });
-  }
-};
-
 
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
@@ -7113,6 +7114,12 @@ HARD RULE — applies to every sentence:
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // HOUSE RULER PLACEMENT FIXER: rewrite any prose that puts a house
+          // ruler in the WRONG sign or house — e.g. "ruler Mars sitting in
+          // your 2nd house in Sagittarius" when natal Mars is actually in
+          // Scorpio in the 1st house. Pulls truth from NATAL Planetary
+          // Positions block, not from the cusp's own house number.
+          fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // SIGN RULERSHIP CORRECTION: scan all prose for any "<Planet>
           // rules <Sign>" / "<Sign> ruled by <Planet>" / "<Planet>, ruler of
           // <Sign>" claim and rewrite when the planet does not actually
@@ -7946,6 +7953,7 @@ HARD RULE — applies to every sentence:
 
         const postGateLog: HygieneLog = [];
         fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctSignRulershipClaimsInProse(parsedContent, postGateLog);
