@@ -267,20 +267,30 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         <div className="border border-primary/30 rounded-sm p-4 bg-card space-y-3">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Select person for new Solar Return:</h4>
           <div className="flex flex-wrap gap-2">
-            {allCharts.map(c => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setSelectedNatalId(c.id);
-                  setShowInputForm(true);
-                  setEditingSRId(null);
-                  setShowAddForNewPerson(false);
-                }}
-                className="text-sm px-3 py-2 rounded-sm border border-border bg-secondary text-foreground hover:border-primary transition-all"
-              >
-                {c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}
-              </button>
-            ))}
+            {allCharts.map(c => {
+              const existingYears = getSolarReturnsForChart(c.id)
+                .map(s => s.solarReturnYear)
+                .sort((a, b) => b - a);
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setSelectedNatalId(c.id);
+                    setShowInputForm(true);
+                    setEditingSRId(null);
+                    setShowAddForNewPerson(false);
+                  }}
+                  className="text-left text-sm px-3 py-2 rounded-sm border border-border bg-secondary text-foreground hover:border-primary transition-all"
+                >
+                  <div>{c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}</div>
+                  {existingYears.length > 0 && (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      Already has: SR {existingYears.join(', ')}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
           <button onClick={() => setShowAddForNewPerson(false)} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
         </div>
@@ -318,6 +328,9 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         <SRInputForm
           natalChart={selectedNatal}
           existingSR={editingSRId ? srChartsForNatal.find(c => c.id === editingSRId) : undefined}
+          existingSRYears={srChartsForNatal
+            .filter(c => c.id !== editingSRId)
+            .map(c => c.solarReturnYear)}
           onSave={(sr) => {
             if (editingSRId) {
               updateSolarReturn(editingSRId, sr);
@@ -449,11 +462,12 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 interface SRInputFormProps {
   natalChart: NatalChart;
   existingSR?: SolarReturnChart;
+  existingSRYears?: number[];
   onSave: (sr: Partial<SolarReturnChart>) => void;
   onCancel: () => void;
 }
 
-const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormProps) => {
+const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onCancel }: SRInputFormProps) => {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(existingSR?.solarReturnYear || currentYear);
   const [location, setLocation] = useState(existingSR?.solarReturnLocation || '');
@@ -714,6 +728,10 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
 
   const handleSave = () => {
     if (!planets.Sun?.sign) return;
+    if (existingSRYears.includes(year)) {
+      toast.error(`A Solar Return for ${year} already exists for ${natalChart.name}. Pick a different year or edit the existing one.`);
+      return;
+    }
     onSave({
       name: `SR ${year} – ${natalChart.name}`,
       birthDate: natalChart.birthDate,
@@ -846,8 +864,15 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
             type="number"
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value) || currentYear)}
-            className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
+            className={`w-full border bg-background text-foreground rounded-sm px-3 py-2 text-sm ${
+              existingSRYears.includes(year) ? 'border-destructive' : 'border-border'
+            }`}
           />
+          {existingSRYears.includes(year) && (
+            <p className="text-[10px] text-destructive mt-1">
+              ⚠ A Solar Return for {year} already exists for {natalChart.name}. Pick a different year, or cancel and edit the existing one.
+            </p>
+          )}
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">SR Location</label>
