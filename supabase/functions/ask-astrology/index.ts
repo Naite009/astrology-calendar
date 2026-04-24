@@ -8563,6 +8563,42 @@ HARD RULE — applies to every sentence:
         const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
         console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
       }
+
+      // ─────────────────────────────────────────────────────────────────
+      // FINAL HYGIENE PASS (after all corrections):
+      //   1) Strip broken "vs." bullets that never finish their clause.
+      //   2) Force Best vs Caution windows to be distinct.
+      //   3) Run non-mutating accuracy review and attach _accuracy_review
+      //      to parsedContent so the downloaded JSON includes flagged
+      //      sentences for human review before PDF generation.
+      // ─────────────────────────────────────────────────────────────────
+      try {
+        const finalHygieneLog: HygieneLog = [];
+        stripBrokenVsBullets(parsedContent, finalHygieneLog);
+        forceBestVsCautionDistinct(parsedContent, finalHygieneLog);
+        if (finalHygieneLog.length > 0) {
+          (parsedContent as any)._final_hygiene = {
+            applied_at: new Date().toISOString(),
+            corrections: finalHygieneLog,
+          };
+        }
+      } catch (finalHygErr) {
+        const msg = finalHygErr instanceof Error ? finalHygErr.message : String(finalHygErr);
+        console.warn(`[ask-astrology] final hygiene pass threw (non-fatal): ${msg}`);
+      }
+
+      try {
+        runAccuracyReview(parsedContent, sanitizedChartContext || "");
+      } catch (reviewErr) {
+        const msg = reviewErr instanceof Error ? reviewErr.message : String(reviewErr);
+        console.warn(`[ask-astrology] accuracy review threw (non-fatal): ${msg}`);
+        (parsedContent as any)._accuracy_review = {
+          generated_at: new Date().toISOString(),
+          total_flags: 0,
+          flags: [],
+          error: msg,
+        };
+      }
     }
 
     // Persist final result to the ask_jobs row. The client (which may have
