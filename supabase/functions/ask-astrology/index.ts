@@ -2358,6 +2358,23 @@ const fixNatalRetrogradeMentionsInProse = (
   // preceding 10 chars. Lookbehind on Deno regex is supported.
   const directRe = new RegExp(`(?<!\\bSR\\s)\\b(${PLANET_RE})\\s+direct\\b`, "gi");
 
+  // PHANTOM RX STRIPPER — catch the inverse: "<Planet> Rx" / "<Planet> ℞" /
+  // "<Planet> retrograde" applied to a planet that is NOT retrograde in the
+  // natal table. This is the Paul-style overlay bug ("SR Venus conjunct
+  // natal Chiron Rx" when natal Chiron is direct). Same SR-context guard
+  // as above so SR retrograde mentions are untouched.
+  const phantomRxRe = new RegExp(
+    `(?<!\\bSR\\s)\\bnatal\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
+    "gi",
+  );
+  // Also catch the no-"natal" form when the surrounding sentence already
+  // names the natal chart (e.g. inside an overlay bullet that begins with
+  // "SR Venus conjunct your Chiron ℞"). We look for "your <Planet> Rx".
+  const phantomYourRxRe = new RegExp(
+    `(?<!\\bSR\\s)\\byour\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
+    "gi",
+  );
+
   let directToRetro = 0;
   let invalidRetroStripped = 0;
   const examples: string[] = [];
@@ -2368,6 +2385,13 @@ const fixNatalRetrogradeMentionsInProse = (
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
   ]);
+  const stripPhantom = (full: string, planet: string, _suffix: string): string => {
+    const isNatalRetro = natalRetro.get(String(planet).toLowerCase()) === true;
+    if (isNatalRetro) return full;
+    invalidRetroStripped++;
+    // Replace "<Planet><suffix>" with just "<Planet>".
+    return full.replace(new RegExp(`(${planet})(?:\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)`, "i"), `$1`);
+  };
   const visit = (node: any) => {
     if (Array.isArray(node)) { for (const x of node) visit(x); return; }
     if (!node || typeof node !== "object") return;
@@ -2381,6 +2405,8 @@ const fixNatalRetrogradeMentionsInProse = (
           directToRetro++;
           return `${planet} retrograde`;
         });
+        next = next.replace(phantomRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
+        next = next.replace(phantomYourRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
         if (next !== val) {
           if (examples.length < 5) examples.push(val.slice(0, 160));
           (node as any)[key] = next;
@@ -2395,10 +2421,11 @@ const fixNatalRetrogradeMentionsInProse = (
   if (directToRetro > 0 || invalidRetroStripped > 0) {
     log.push({
       type: "natal_retrograde_corrected_in_prose",
-      detail: { direct_to_retrograde: directToRetro, examples },
+      detail: { direct_to_retrograde: directToRetro, phantom_rx_stripped: invalidRetroStripped, examples },
     });
     console.info("[ask-astrology] natal retrograde corrected in prose", {
       direct_to_retrograde: directToRetro,
+      phantom_rx_stripped: invalidRetroStripped,
     });
   }
 };
