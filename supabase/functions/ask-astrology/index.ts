@@ -2259,81 +2259,55 @@ const correctSrPlanetPositionsInProse = (
   let signRewrites = 0;
   let degreeRewrites = 0;
   const examples: string[] = [];
-
-  // For each SR planet, build two patterns:
-  //   1. "<SR-qualifier> ... <Planet> [at] [<deg>°[<min>']] <WRONG_SIGN>"
-  //   2. "<Planet> [at] [<deg>°[<min>']] <WRONG_SIGN> ... <SR-qualifier>"
-  // We do this by walking each string, splitting on sentence boundaries,
-  // and only rewriting sentences that contain an SR qualifier.
   const sentenceSplit = /(?<=[.!?])\s+|\n+/;
 
-  const visit = (node: any, parentKey?: string) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x, parentKey); return; }
-    if (!node || typeof node !== "object") return;
-    // Skip placement_table sections entirely — their rows are normalized elsewhere.
-    if (node?.type === "placement_table") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        const sentences = val.split(sentenceSplit);
-        let touched = false;
-        for (let i = 0; i < sentences.length; i++) {
-          const s = sentences[i];
-          if (!s || s.length < 10) continue;
-          const isSrContext = SR_QUALIFIER_RE.test(s);
-          if (!isSrContext) continue;
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    const sentences = val.split(sentenceSplit);
+    let touched = false;
+    for (let i = 0; i < sentences.length; i++) {
+      const s = sentences[i];
+      if (!s || s.length < 10) continue;
+      const isSrContext = SR_QUALIFIER_RE.test(s);
+      if (!isSrContext) continue;
 
-          let next = s;
-          for (const [planet, truth] of srSignByPlanet.entries()) {
-            const correctSign = truth.sign;
-            const natalSign = natalByPlanet.get(planet.toLowerCase());
+      let next = s;
+      for (const [planet, truth] of srSignByPlanet.entries()) {
+        const correctSign = truth.sign;
+        const natalSign = natalByPlanet.get(planet.toLowerCase());
+        const planetSignRe = new RegExp(
+          `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|now\\s+in|currently\\s+in|=|—|,)?\\s*)(?:(\\d+)°(?:(\\d+)')?\\s+)?(${SIGN_NAMES_RE})\\b`,
+          "g",
+        );
 
-            // Pattern: "<Planet> [(at|in|sits in|=)]? [<deg>°[<min>']] <Sign>"
-            // Sign capture must NOT already be correct.
-            const planetSignRe = new RegExp(
-              `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|now\\s+in|currently\\s+in|=|—|,)?\\s*)(?:(\\d+)°(?:(\\d+)')?\\s+)?(${SIGN_NAMES_RE})\\b`,
-              "g",
-            );
+        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+          if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
+          const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
+          const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
+          if (!claimedIsNatal && !degreeMatchesSr) return match;
 
-            next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
-              if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
-              // Only rewrite if the claimed sign is the natal sign (classic
-              // "Replit reverted to natal" / "AI used natal in SR context")
-              // OR if a degree is present and matches the SR degree (in which
-              // case the sign MUST be the SR sign — degree+sign together
-              // uniquely identify a position).
-              const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
-              const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
-              if (!claimedIsNatal && !degreeMatchesSr) return match;
-
-              signRewrites++;
-              if (degStr !== undefined && parseInt(degStr, 10) !== truth.degree) {
-                degreeRewrites++;
-              }
-              const fixedDeg = degStr !== undefined ? `${truth.degree}°${minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : ""} ` : "";
-              const retro = retroPart || "";
-              const lead = degStr !== undefined ? `${planet}${retro}${gap || " "}` : `${planet}${retro}${gap || " "}`;
-              return `${lead}${fixedDeg}${correctSign}`;
-            });
+          signRewrites++;
+          if (degStr !== undefined && parseInt(degStr, 10) !== truth.degree) {
+            degreeRewrites++;
           }
+          const fixedDeg = degStr !== undefined ? `${truth.degree}°${minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : ""} ` : "";
+          const retro = retroPart || "";
+          const lead = degStr !== undefined ? `${planet}${retro}${gap || " "}` : `${planet}${retro}${gap || " "}`;
+          return `${lead}${fixedDeg}${correctSign}`;
+        });
+      }
 
-          if (next !== s) {
-            sentences[i] = next;
-            touched = true;
-            if (examples.length < 5) {
-              examples.push(`${s.slice(0, 100)} → ${next.slice(0, 100)}`);
-            }
-          }
+      if (next !== s) {
+        sentences[i] = next;
+        touched = true;
+        if (examples.length < 5) {
+          examples.push(`${s.slice(0, 100)} → ${next.slice(0, 100)}`);
         }
-        if (touched) {
-          (node as any)[key] = sentences.join(" ");
-        }
-      } else {
-        visit(val, key);
       }
     }
-  };
-  visit(parsedContent);
+    if (touched) {
+      (node as any)[key] = sentences.join(" ");
+    }
+  });
 
   if (signRewrites > 0) {
     log.push({
