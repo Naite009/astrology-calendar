@@ -2153,45 +2153,33 @@ const correctSignRulershipClaimsInProse = (parsedContent: any, log: HygieneLog) 
     "subject","question_type","question_asked",
   ]);
 
-  const visit = (node: any) => {
-    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
-    if (!node || typeof node !== "object") return;
-    for (const [key, val] of Object.entries(node)) {
-      if (SKIP_KEYS.has(key)) continue;
-      if (typeof val === "string") {
-        let next = val;
-        for (const pat of patterns) {
-          next = next.replace(pat.re, (full, ...groups) => {
-            const sign = String(groups[pat.signIdx - 1] || "");
-            const claimedPlanet = String(groups[pat.planetIdx - 1] || "");
-            const modifierRaw = pat.modifierIdx ? String(groups[pat.modifierIdx - 1] || "").toLowerCase() : "";
-            const modifierHint: "modern" | "traditional" | null =
-              modifierRaw === "modern" ? "modern" :
-              modifierRaw === "traditional" ? "traditional" : null;
-            if (!sign || !claimedPlanet) return full;
-            // Normalize capitalization for lookup.
-            const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
-            const planetCap = claimedPlanet.charAt(0).toUpperCase() + claimedPlanet.slice(1).toLowerCase();
-            if (isCorrectRuler(signCap, planetCap)) return full;
-            const replacement = pickReplacement(signCap, modifierHint);
-            if (!replacement || replacement.toLowerCase() === planetCap.toLowerCase()) return full;
-            rewrites++;
-            // Replace ONLY the planet token (preserve original casing context).
-            return full.replace(new RegExp(`\\b${claimedPlanet}\\b`), replacement);
-          });
-        }
-        if (next !== val) {
-          if (examples.length < 5) {
-            examples.push(val.slice(0, 160));
-          }
-          (node as any)[key] = next;
-        }
-      } else {
-        visit(val);
-      }
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    for (const pat of patterns) {
+      next = next.replace(pat.re, (full, ...groups) => {
+        const sign = String(groups[pat.signIdx - 1] || "");
+        const claimedPlanet = String(groups[pat.planetIdx - 1] || "");
+        const modifierRaw = pat.modifierIdx ? String(groups[pat.modifierIdx - 1] || "").toLowerCase() : "";
+        const modifierHint: "modern" | "traditional" | null =
+          modifierRaw === "modern" ? "modern" :
+          modifierRaw === "traditional" ? "traditional" : null;
+        if (!sign || !claimedPlanet) return full;
+        const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
+        const planetCap = claimedPlanet.charAt(0).toUpperCase() + claimedPlanet.slice(1).toLowerCase();
+        if (isCorrectRuler(signCap, planetCap)) return full;
+        const replacement = pickReplacement(signCap, modifierHint);
+        if (!replacement || replacement.toLowerCase() === planetCap.toLowerCase()) return full;
+        rewrites++;
+        return full.replace(new RegExp(`\\b${claimedPlanet}\\b`), replacement);
+      });
     }
-  };
-  visit(parsedContent);
+    if (next !== val) {
+      if (examples.length < 5) {
+        examples.push(val.slice(0, 160));
+      }
+      (node as any)[key] = next;
+    }
+  });
   if (rewrites > 0) {
     log.push({
       type: "sign_rulership_corrected_in_prose",
