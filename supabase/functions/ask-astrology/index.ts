@@ -8220,6 +8220,9 @@ HARD RULE — applies to every sentence:
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
         // the AI corrupted it. Reads truth from chart context, not JSON.
         correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
+        // bleeds Replit may have introduced or that survived the gate.
+        correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
