@@ -867,28 +867,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       if (currentSR.solarReturnLocation) context += `SR location: ${currentSR.solarReturnLocation}\n`;
       const srPlanets = currentSR.planets || {};
       const srCusps = currentSR.houseCusps || {};
-      const srCuspLongs: number[] = [];
-      if (Object.keys(srCusps).length > 0) {
-        for (let i = 1; i <= 12; i++) {
-          const cusp = srCusps[`house${i}` as keyof typeof srCusps];
-          if (cusp && typeof cusp === 'object' && 'sign' in cusp) {
-            const c = cusp as { sign: string; degree: number; minutes?: number };
-            srCuspLongs.push(ZODIAC.indexOf(c.sign) * 30 + c.degree + (c.minutes || 0) / 60);
-          }
-        }
-      }
+      // SR HOUSES — WHOLE SIGN (deterministic upstream fix).
+      // Replit's gate uses Whole Sign houses from the SR Ascendant; if we
+      // emit Placidus here it will recompute and warn for every reading.
+      // Whole Sign rule: house 1 = the sign on the Ascendant, then each
+      // subsequent sign = the next house. A planet's house is its sign
+      // index minus the Ascendant sign index, mod 12, plus 1.
+      const srAscCusp = srCusps['house1' as keyof typeof srCusps] as
+        { sign: string; degree: number; minutes?: number } | undefined;
+      const srAscSignIdx = srAscCusp && ZODIAC.includes(srAscCusp.sign)
+        ? ZODIAC.indexOf(srAscCusp.sign)
+        : -1;
       const calcSRHouse = (absDeg: number): number | null => {
-        if (srCuspLongs.length !== 12) return null;
-        for (let i = 0; i < 12; i++) {
-          const nextI = (i + 1) % 12;
-          let start = srCuspLongs[i];
-          let end = srCuspLongs[nextI];
-          if (end < start) end += 360;
-          let d = absDeg;
-          if (d < start) d += 360;
-          if (d >= start && d < end) return i + 1;
-        }
-        return 1;
+        if (srAscSignIdx < 0) return null;
+        const planetSignIdx = Math.floor(((absDeg % 360) + 360) % 360 / 30);
+        return ((planetSignIdx - srAscSignIdx + 12) % 12) + 1;
       };
       context += "SR Planetary Positions:\n";
       Object.entries(srPlanets).forEach(([planet, data]) => {
