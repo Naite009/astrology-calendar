@@ -3445,13 +3445,21 @@ const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
 // ─────────────────────────────────────────────────────────────────────────
 const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (!parsedContent || typeof parsedContent !== "object") return;
-  const flags: Array<{ section: string; field: string; reason: string; snippet: string }> = [];
+  const flags: Array<{ section: string; field: string; reason: string; category: string; snippet: string }> = [];
   const natalPos = chartContext ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/) : [];
   const srPos = chartContext ? parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR") : [];
   const natalSign = new Map<string, string>();
   const srSign = new Map<string, string>();
-  for (const p of natalPos) natalSign.set(p.planet.toLowerCase(), p.sign);
-  for (const p of srPos) srSign.set(p.planet.toLowerCase(), p.sign);
+  const natalDegrees = new Map<string, number>(); // planet -> integer degree-in-sign
+  const srDegrees = new Map<string, number>();
+  for (const p of natalPos) {
+    natalSign.set(p.planet.toLowerCase(), p.sign);
+    if (typeof (p as any).degree === "number") natalDegrees.set(p.planet.toLowerCase(), Math.floor((p as any).degree));
+  }
+  for (const p of srPos) {
+    srSign.set(p.planet.toLowerCase(), p.sign);
+    if (typeof (p as any).degree === "number") srDegrees.set(p.planet.toLowerCase(), Math.floor((p as any).degree));
+  }
   const sentences = (s: string): string[] => s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
   const SKIP = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
@@ -3459,7 +3467,20 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
     "_accuracy_review","_validation","_validation_log","_validation_warning",
+    "_post_gate_safety","_final_hygiene",
   ]);
+
+  // Traditional + modern rulerships used to validate ruler claims.
+  const TRAD_RULERS: Record<string, string[]> = {
+    aries: ["mars"], taurus: ["venus"], gemini: ["mercury"], cancer: ["moon"],
+    leo: ["sun"], virgo: ["mercury"], libra: ["venus"], scorpio: ["mars","pluto"],
+    sagittarius: ["jupiter"], capricorn: ["saturn"], aquarius: ["saturn","uranus"],
+    pisces: ["jupiter","neptune"],
+  };
+  const PLANETS_RX = "Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto";
+  const SIGNS_RX = "Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces";
+  const ANGLES_RX = "Ascendant|Asc|Rising|Descendant|Dsc|Midheaven|MC|IC|Imum Coeli";
+
   const visit = (node: any, sectionTitle: string) => {
     if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
     if (!node || typeof node !== "object") return;
@@ -3468,36 +3489,99 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
       if (SKIP.has(key)) continue;
       if (typeof val === "string") {
         for (const sent of sentences(val)) {
+          // ── Broken vs. clauses ──────────────────────────────────────
           if (/\bvs\.\s+[A-Z][^.!?]{0,120}$/.test(sent)) {
             const tail = (sent.split(/\bvs\./)[1] || "").slice(0, 60);
             if (!/\b(?:and|than|over|while|but|nor|rather)\b/i.test(tail)) {
-              flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", snippet: sent.slice(0, 200) });
+              flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", category: "structure", snippet: sent.slice(0, 240) });
             }
           }
-          const rxMatch = sent.match(/\b(?:natal|your)\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\s*(?:[\u211E℞]|Rx|retrograde)\b/i);
+
+          // ── Phantom Rx on direct natal planets ──────────────────────
+          const rxMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\s*(?:[\\u211E\\u211e℞]|Rx|retrograde)\\b`, "i"));
           if (rxMatch) {
             const truth = natalPos.find((p) => p.planet.toLowerCase() === rxMatch[1].toLowerCase());
             if (truth && !truth.retrograde) {
-              flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", snippet: sent.slice(0, 200) });
+              flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", category: "retrograde", snippet: sent.slice(0, 240) });
             }
           }
-          const signMatch = sent.match(/\bnatal\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+
+          // ── Direct claim on actually-retrograde natal planets ───────
+          const directMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\s+(?:is\\s+)?direct\\b`, "i"));
+          if (directMatch) {
+            const truth = natalPos.find((p) => p.planet.toLowerCase() === directMatch[1].toLowerCase());
+            if (truth && truth.retrograde) {
+              flags.push({ section: localTitle, field: key, reason: "phantom_direct_on_retrograde_natal_planet", category: "retrograde", snippet: sent.slice(0, 240) });
+            }
+          }
+
+          // ── Natal sign mismatch ─────────────────────────────────────
+          const signMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\b[^.!?]{0,80}?\\b(${SIGNS_RX})\\b`, "i"));
           if (signMatch) {
             const truthSign = natalSign.get(signMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== signMatch[2].toLowerCase()) {
-              flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+              flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, category: "cross_chart", snippet: sent.slice(0, 240) });
             }
           }
-          const srSignMatch = sent.match(/\bSR\s+(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)\b[^.!?]{0,80}?\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+
+          // ── SR sign mismatch ────────────────────────────────────────
+          const srSignMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\b[^.!?]{0,80}?\\b(${SIGNS_RX})\\b`, "i"));
           if (srSignMatch) {
             const truthSign = srSign.get(srSignMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== srSignMatch[2].toLowerCase()) {
-              flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+              flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, category: "cross_chart", snippet: sent.slice(0, 240) });
             }
           }
-          if (/\bScorpio\b[^.!?]{0,40}\bruled\s+by\s+(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)
-              || /\bruler\s+of\s+Scorpio\s*(?:is|=|,)?\s*(?:the\s+)?(Sun|Moon|Mercury|Venus|Jupiter|Saturn|Uranus|Neptune)\b/i.test(sent)) {
-            flags.push({ section: localTitle, field: key, reason: "scorpio_wrong_ruler", snippet: sent.slice(0, 200) });
+
+          // ── Cross-chart degree mismatch (natal) ─────────────────────
+          const natalDegMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANETS_RX})\\s+(?:at\\s+)?(\\d{1,2})°`, "i"));
+          if (natalDegMatch) {
+            const truthDeg = natalDegrees.get(natalDegMatch[1].toLowerCase());
+            const claimedDeg = parseInt(natalDegMatch[2], 10);
+            if (truthDeg !== undefined && Math.abs(truthDeg - claimedDeg) > 1) {
+              flags.push({ section: localTitle, field: key, reason: `natal_degree_mismatch (claimed=${claimedDeg}° truth=${truthDeg}°)`, category: "cross_chart", snippet: sent.slice(0, 240) });
+            }
+          }
+
+          // ── Cross-chart degree mismatch (SR) ────────────────────────
+          const srDegMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANETS_RX})\\s+(?:at\\s+)?(\\d{1,2})°`, "i"));
+          if (srDegMatch) {
+            const truthDeg = srDegrees.get(srDegMatch[1].toLowerCase());
+            const claimedDeg = parseInt(srDegMatch[2], 10);
+            if (truthDeg !== undefined && Math.abs(truthDeg - claimedDeg) > 1) {
+              flags.push({ section: localTitle, field: key, reason: `sr_degree_mismatch (claimed=${claimedDeg}° truth=${truthDeg}°)`, category: "cross_chart", snippet: sent.slice(0, 240) });
+            }
+          }
+
+          // ── Ruler-of-sign claims (validate against TRAD_RULERS) ─────
+          // Patterns: "ruler of <Sign> is <Planet>", "<Sign> ruled by <Planet>",
+          //           "<Planet> rules <Sign>", "<Sign>'s ruler <Planet>"
+          const rulerPatterns: Array<RegExp> = [
+            new RegExp(`\\bruler\\s+of\\s+(?:the\\s+)?(${SIGNS_RX})\\s+(?:is|=|,)?\\s*(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
+            new RegExp(`\\b(${SIGNS_RX})\\s+(?:is\\s+)?ruled\\s+by\\s+(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
+            new RegExp(`\\b(${PLANETS_RX})\\s+rules\\s+(?:the\\s+sign\\s+of\\s+)?(${SIGNS_RX})\\b`, "i"),
+            new RegExp(`\\b(${SIGNS_RX})['’]s\\s+ruler\\s*(?:is\\s+)?(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
+          ];
+          for (let i = 0; i < rulerPatterns.length; i++) {
+            const m = sent.match(rulerPatterns[i]);
+            if (!m) continue;
+            // For pattern index 2 ("<Planet> rules <Sign>"), planet/sign are swapped.
+            const sign = (i === 2 ? m[2] : m[1]).toLowerCase();
+            const planet = (i === 2 ? m[1] : m[2]).toLowerCase();
+            const allowed = TRAD_RULERS[sign] || [];
+            if (!allowed.includes(planet)) {
+              flags.push({ section: localTitle, field: key, reason: `wrong_ruler_claim (${sign}=${allowed.join("/")} claimed=${planet})`, category: "ruler", snippet: sent.slice(0, 240) });
+            }
+            break;
+          }
+
+          // ── Angle references ────────────────────────────────────────
+          // Flag any explicit angle-degree claim for human review (we cannot
+          // verify cusps deterministically here — but every angle claim is
+          // historically high-risk, so we surface them for the human to scan).
+          const angleMatch = sent.match(new RegExp(`\\b(${ANGLES_RX})\\s+(?:is\\s+)?(?:at\\s+)?(\\d{1,2})°\\s*(${SIGNS_RX})?`, "i"));
+          if (angleMatch) {
+            flags.push({ section: localTitle, field: key, reason: "angle_reference_review", category: "angle", snippet: sent.slice(0, 240) });
           }
         }
       } else {
@@ -3508,13 +3592,20 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (Array.isArray(parsedContent.sections)) {
     for (const s of parsedContent.sections) visit(s, String(s?.title || ""));
   }
+
+  // Group flags by category for easy human scanning.
+  const byCategory: Record<string, number> = {};
+  for (const f of flags) byCategory[f.category] = (byCategory[f.category] || 0) + 1;
+
   (parsedContent as any)._accuracy_review = {
     generated_at: new Date().toISOString(),
     total_flags: flags.length,
+    by_category: byCategory,
+    categories_checked: ["ruler", "angle", "retrograde", "cross_chart", "structure"],
     flags,
   };
   if (flags.length > 0) {
-    console.warn("[ask-astrology] accuracy review flagged sentences", { total: flags.length });
+    console.warn("[ask-astrology] accuracy review flagged sentences", { total: flags.length, by_category: byCategory });
   } else {
     console.info("[ask-astrology] accuracy review clean — no flags");
   }
