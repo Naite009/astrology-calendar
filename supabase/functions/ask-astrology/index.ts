@@ -2177,6 +2177,7 @@ const fixNatalRetrogradeMentionsInProse = (
   }
 };
 
+// DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
 // claim and rewrites the SIGN if it does not match the deterministic SR
 // chart context. The chart context's "SR Planetary Positions" block is the
