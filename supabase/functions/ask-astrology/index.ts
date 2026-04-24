@@ -2959,25 +2959,45 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
   const keptSections: any[] = [];
   let droppedItems = 0;
   let droppedSections = 0;
-  // Labels that must NEVER be dropped — but timing labels must be rebuilt
-  // from the actual timing data first. Only if the timing engine itself says
-  // there is no strong forward window should we fall back to the canned text.
   const SUMMARY_ITEM_BACKFILLS: Record<string, string> = {
     "best windows": "No strong forward windows are active in the current period.",
+    "caution windows": "No strong caution windows are active in the current period.",
   };
+  const isRelationshipReading = String(parsedContent?.question_type || "").toLowerCase() === "relationship";
+  const REL_ALLOWED_SUMMARY_LABELS = new Set([
+    "who to move toward",
+    "early warning signs",
+    "pattern to break",
+    "best windows",
+    "caution windows",
+  ]);
   for (const section of parsedContent.sections) {
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
       for (const item of section.items) {
         if (!item || typeof item !== "object") { keptItems.push(item); continue; }
+        const label = typeof item.label === "string" ? item.label.trim() : "";
+        const labelKey = label.toLowerCase();
+
+        if (
+          isRelationshipReading
+          && String(section.title || "").trim() === "Relationship Strategy Summary"
+          && label
+          && !REL_ALLOWED_SUMMARY_LABELS.has(labelKey)
+        ) {
+          droppedItems++;
+          log.push({
+            type: "summary_box_noncanonical_item_dropped",
+            detail: { section: section.title || "", label, reason: "relationship_summary_whitelist" },
+          });
+          continue;
+        }
+
         const valueKey = typeof item.value === "string" ? "value"
           : typeof item.text === "string" ? "text"
           : "value";
         const v = item[valueKey];
-        // Keep falsy non-strings (0, false). Only drop true empties.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
-          const label = typeof item.label === "string" ? item.label.trim() : "";
-          const labelKey = label.toLowerCase();
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
           if (backfill) {
@@ -2995,8 +3015,6 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         }
         keptItems.push(item);
       }
-      // If "Best Windows" wasn't in items at all, add it — but source it
-      // from the deterministic timing engine, not a canned fallback.
       const hasBestWindows = keptItems.some(
         (it) => it && typeof it === "object" && typeof it.label === "string"
           && it.label.trim().toLowerCase() === "best windows"
@@ -3008,6 +3026,20 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         });
         log.push({
           type: "best_windows_item_inserted",
+          detail: { section: section.title || "", reason: "missing_from_items" },
+        });
+      }
+      const hasCautionWindows = keptItems.some(
+        (it) => it && typeof it === "object" && typeof it.label === "string"
+          && it.label.trim().toLowerCase() === "caution windows"
+      );
+      if (isRelationshipReading && String(section.title || "").trim() === "Relationship Strategy Summary" && !hasCautionWindows) {
+        keptItems.push({
+          label: "Caution Windows",
+          value: buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"],
+        });
+        log.push({
+          type: "caution_windows_item_inserted",
           detail: { section: section.title || "", reason: "missing_from_items" },
         });
       }
