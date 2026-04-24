@@ -10,6 +10,12 @@ import {
   injectDeterministicModalityElement,
   overwriteAllPolarityCounts,
 } from "./relationshipThreeCall.ts";
+import {
+  computeCrossChartActivations,
+  renderActivationsBlock,
+  buildActivationRulesBlock,
+  type VerifiedActivation,
+} from "./crossChartActivations.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1469,7 +1475,7 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
 const PLACEHOLDER_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning", "_empty_summary_flags",
   "_count_sum_warnings", "_parse_error",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
   "_sr_house_copy_warning", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
@@ -3597,6 +3603,7 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     "subject","question_type","question_asked",
     "_accuracy_review","_validation","_validation_log","_validation_warning",
     "_post_gate_safety","_final_hygiene","_sr_house_copy_warning","_source_call",
+    "_verified_activations",
   ]);
   const ALL_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
   const SIGN_RE = `(?:${ALL_SIGNS.join("|")})`;
@@ -3741,6 +3748,92 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (Array.isArray(parsedContent.sections)) {
     for (const s of parsedContent.sections) visit(s, String(s?.title || ""));
   }
+
+  // ── NEW: flag any SR-to-natal aspect claim in Call C prose that is NOT
+  // in the deterministic _verified_activations list. This catches the
+  // exact failure mode that motivated the architecture change: invented
+  // overlay aspects, wrong orbs, Asc/Desc confusion.
+  const verified = (parsedContent as any)?._verified_activations?.activations as
+    | Array<{ srPoint: string; natalPoint: string; aspect: string }>
+    | undefined;
+  if (Array.isArray(verified)) {
+    const verifiedKeys = new Set<string>();
+    for (const v of verified) {
+      const sr = String(v.srPoint || "").trim().toLowerCase();
+      const nat = String(v.natalPoint || "").trim().toLowerCase();
+      const asp = String(v.aspect || "").trim().toLowerCase();
+      if (sr && nat && asp) verifiedKeys.add(`${sr}|${asp}|${nat}`);
+    }
+    const CALL_C_TITLES = new Set([
+      "where natal and solar return connect",
+      "relationship strategy summary",
+    ]);
+    const ASPECT_VERBS = "(?:conjunct|conjunction with|opposite|opposition to|opposed by|squares?|squared|trines?|trined|trining|sextiles?|sextiled|sextiling)";
+    const ASPECT_NORMALIZE: Record<string, string> = {
+      "conjunct": "conjunction", "conjunction with": "conjunction",
+      "opposite": "opposition", "opposition to": "opposition", "opposed by": "opposition",
+      "square": "square", "squares": "square", "squared": "square",
+      "trine": "trine", "trines": "trine", "trined": "trine", "trining": "trine",
+      "sextile": "sextile", "sextiles": "sextile", "sextiled": "sextile", "sextiling": "sextile",
+    };
+    const NATAL_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|North Node|Ascendant|Descendant|Midheaven|MC|IC)";
+    const SR_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|North Node)";
+    const claimRe = new RegExp(
+      `\\bSR\\s+(${SR_NAMES_RE})\\s+(${ASPECT_VERBS})\\s+(?:your\\s+|the\\s+)?(?:natal\\s+)?(${NATAL_NAMES_RE})\\b`,
+      "gi",
+    );
+    const cWalk = (node: any, sectionTitle: string) => {
+      if (Array.isArray(node)) { for (const x of node) cWalk(x, sectionTitle); return; }
+      if (!node || typeof node !== "object") return;
+      const localTitle = typeof node.title === "string" ? node.title : sectionTitle;
+      const inCallC = CALL_C_TITLES.has(localTitle.trim().toLowerCase());
+      if (inCallC) {
+        for (const [key, val] of Object.entries(node)) {
+          if (typeof val === "string") {
+            const re = new RegExp(claimRe.source, "gi");
+            let m: RegExpExecArray | null;
+            while ((m = re.exec(val)) !== null) {
+              const sr = `sr ${m[1].toLowerCase()}`;
+              const verb = m[2].toLowerCase().trim();
+              const aspNorm = ASPECT_NORMALIZE[verb] || verb.split(/\s+/)[0];
+              const nat = `natal ${m[3].toLowerCase().replace(/^mc$/, "midheaven")}`;
+              const k = `${sr}|${aspNorm}|${nat}`;
+              if (!verifiedKeys.has(k)) {
+                flags.push({
+                  section: localTitle || "(unknown)",
+                  field: key,
+                  reason: `aspect not in verified activations: "${m[0]}" — Call C may not invent SR-to-natal aspects outside the precomputed list`,
+                  snippet: m[0],
+                });
+              }
+            }
+            const orbRe = /\(([^)]*?\b(?:orb|°)[^)]*)\)/gi;
+            let om: RegExpExecArray | null;
+            while ((om = orbRe.exec(val)) !== null) {
+              if (/\d/.test(om[1])) {
+                flags.push({
+                  section: localTitle || "(unknown)",
+                  field: key,
+                  reason: "orb stated in prose — Call C must not write orbs (they are rendered separately)",
+                  snippet: om[0],
+                });
+              }
+            }
+          } else if (val && typeof val === "object") {
+            cWalk(val, localTitle);
+          }
+        }
+      } else {
+        for (const v of Object.values(node)) {
+          if (v && typeof v === "object") cWalk(v, localTitle);
+        }
+      }
+    };
+    if (Array.isArray(parsedContent.sections)) {
+      for (const s of parsedContent.sections) cWalk(s, String(s?.title || ""));
+    }
+  }
+
   // Dedupe identical flags (same section/field/reason/snippet)
   const seen = new Set<string>();
   const dedup = flags.filter((f) => {
@@ -3902,7 +3995,7 @@ const RELOCATION_PHRASE_FIXES: Array<[RegExp, string]> = [
 const HYGIENE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
   "_sr_house_copy_warning", "_source_call",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
@@ -3980,7 +4073,7 @@ const SENTENCE_DEDUPE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_sr_house_copy_warning",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_source_call",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "date_range",
@@ -4514,7 +4607,7 @@ const PHANTOM_ASPECT_SKIP_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_sr_house_copy_warning",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_source_call",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations", "_source_call",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "name",
@@ -7011,6 +7104,8 @@ HARD RULE — applies to every sentence:
     //
     // Other question types still use the single-call path below — this
     // refactor is scoped to relationship readings only (per user spec).
+    // Hoisted so the post-parse hygiene block can attach _verified_activations.
+    let verifiedActivationsForResult: VerifiedActivation[] = [];
     if (isRelationshipQuestion) {
       try {
         // Re-derive pure natal / SR text blocks from sanitizedChartContext.
@@ -7072,6 +7167,69 @@ HARD RULE — applies to every sentence:
           console.info(`[ask-astrology] 3-call: resuming with ${priorCount} prior call(s)`, Object.keys(priorOutputs));
         }
 
+
+        // ── Pre-compute verified cross-chart activations for Call C ──────
+        // This removes the model's ability to invent SR-to-natal aspects,
+        // mis-state orbs, or confuse natal Ascendant with natal Descendant.
+        // We compute every aspect deterministically from the actual chart
+        // data and Call C interprets that frozen list only.
+        let verifiedActivations: VerifiedActivation[] = [];
+        let callCActivationsBlock = "";
+        let callCRetrogradeSummary = "";
+        try {
+          const natalPositions = parsePositionsFromContext(
+            sanitizedChartContext,
+            /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n/i,
+            "",
+          );
+          const srPositions = parsePositionsFromContext(
+            sanitizedChartContext,
+            /SR\s+Planetary\s+Positions[^\n]*:\s*\n/i,
+            "SR",
+          );
+          const natalCusps = parseHouseCuspsFromContext(sanitizedChartContext);
+          if (natalPositions.length > 0 && srPositions.length > 0) {
+            verifiedActivations = computeCrossChartActivations({
+              natalPositions,
+              srPositions,
+              natalCusps,
+            });
+            verifiedActivationsForResult = verifiedActivations;
+            callCActivationsBlock = [
+              renderActivationsBlock(verifiedActivations),
+              buildActivationRulesBlock(verifiedActivations.length),
+            ].join("\n\n");
+
+            // Per-chart retrograde summary — replaces the old hardcoded
+            // leak in relationshipThreeCall.buildCallCUserMessage.
+            const retroLine = (
+              tag: string,
+              positions: typeof natalPositions,
+            ) => {
+              const rx = positions.filter((p) => p.retrograde).map((p) => p.planet);
+              const dr = positions.filter((p) => !p.retrograde).map((p) => p.planet);
+              return `${tag} retrograde: ${rx.length ? rx.join(", ") : "(none)"}\n${tag} direct: ${dr.length ? dr.join(", ") : "(none)"}`;
+            };
+            callCRetrogradeSummary = [
+              "RETROGRADE STATUS — frozen, non-negotiable:",
+              retroLine("Natal", natalPositions),
+              retroLine("SR", srPositions),
+            ].join("\n");
+
+            console.info(
+              `[ask-astrology] cross-chart activations precomputed: ${verifiedActivations.length} hit(s)`,
+              verifiedActivations.slice(0, 3).map((a) => `${a.srPoint}-${a.aspect}-${a.natalPoint} (${a.orb}°)`),
+            );
+          } else {
+            console.warn(
+              `[ask-astrology] cross-chart activations skipped — natal=${natalPositions.length} sr=${srPositions.length}`,
+            );
+          }
+        } catch (actErr: any) {
+          console.error("[ask-astrology] activations precompute failed:", actErr?.message || actErr);
+          // Non-fatal — Call C falls back to no activations block (legacy behavior).
+        }
+
         const tcStarted = Date.now();
         const tcResult = await runThreeCallRelationship({
           jobId,
@@ -7082,6 +7240,8 @@ HARD RULE — applies to every sentence:
           srChartBlock,
           effectiveCurrentDate,
           userQuestion: latestUserMessage,
+          callCActivationsBlock,
+          callCRetrogradeSummary,
           priorOutputs,
           updateJob,
         });
@@ -8013,6 +8173,17 @@ HARD RULE — applies to every sentence:
             } catch (detErr) {
               console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
             }
+            // Attach the pre-verified cross-chart activations so they survive
+            // into the downloaded JSON. The accuracy review reads this list to
+            // flag any prose aspect claim that isn't on it.
+            try {
+              (parsedContent as any)._verified_activations = {
+                count: verifiedActivationsForResult.length,
+                activations: verifiedActivationsForResult,
+              };
+            } catch (vaErr) {
+              console.warn("[ask-astrology] failed to attach _verified_activations:", vaErr);
+            }
           }
           // enforceNonZeroCoverage runs earlier in the pipeline; re-run any
           // necessary balance_interpretation generation here by calling it
@@ -8103,7 +8274,7 @@ HARD RULE — applies to every sentence:
               "_validation", "_validation_log", "_validation_warning",
               "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
               "_sr_house_copy_warning", "_source_call",
-              "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+              "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
             ]);
             const visit = (node: any): void => {
               if (Array.isArray(node)) { for (const x of node) visit(x); return; }
