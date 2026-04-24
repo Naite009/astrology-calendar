@@ -1795,27 +1795,31 @@ const fixDescendantCuspMentionsInProse = (
     return sign ? TRADITIONAL_RULER_BY_SIGN[sign] : undefined;
   };
 
-  // Match: "7th house cusp [is/in/at/=] {ascSign}" — case-insensitive.
+  // Match any 7th-house / Descendant statement that incorrectly uses the
+  // Ascendant sign. The only valid replacement is the deterministic 7th cusp
+  // sign from the House Cusps block.
   const wrongSeventh = new RegExp(
-    `\\b(7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp)?\\s*(?:is|in|at|sits in|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    `\\b((?:your\\s+|the\\s+|that\\s+)?7th\\s+(?:house\\s+)?(?:cusp|house\\s+cusp|house)?\\s*(?:is|in|at|sits in|falls in|lands in|=|,|—)?\\s*)\\b${ascSign}\\b`,
     "gi",
   );
-  // Match: "Descendant [is/in/at] {ascSign}"
   const wrongDescendant = new RegExp(
-    `\\b(Descendant\\s*(?:is|in|at|=|,|—)?\\s*)\\b${ascSign}\\b`,
+    `\\b((?:your\\s+|the\\s+)?Descendant\\s*(?:is|in|at|falls in|lands in|=|,|—)?\\s*)\\b${ascSign}\\b`,
     "gi",
   );
 
   // Match house-ruler phrasings so we can correct BOTH the cusp sign and the
-  // ruler dynamically from the deterministic House Cusps block. This covers:
-  // - "7th house cusp is Aries, ruled by Venus"
+  // ruler dynamically from the deterministic House Cusps block. This now also
+  // covers the phrasing that slipped through earlier:
+  // - "7th house cusp is Aries with its ruler Venus"
+  // - "7th house cusp Aries, its ruler is Venus"
   // - "the ruler of that 7th house is Venus"
   // - "7th house ruler is Venus"
-  // - "7th house cusp Aries, ruler Venus in Sagittarius"
   const PLANET_NAMES_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)";
   const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
-  const houseRulerRe = new RegExp(
-    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+  const HOUSE_LEAD_RE = `\\b(${ORDINAL_WORDS_RE})\\s+house`;
+  const HOUSE_CUSP_SIGN_RE = `${HOUSE_LEAD_RE}\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`;
+  const houseRuledByRe = new RegExp(
+    `${HOUSE_CUSP_SIGN_RE}([^.!?]{0,100}?)\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
     "gi",
   );
   const houseRulerOfRe = new RegExp(
@@ -1823,11 +1827,19 @@ const fixDescendantCuspMentionsInProse = (
     "gi",
   );
   const directHouseRulerRe = new RegExp(
-    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    `${HOUSE_LEAD_RE}\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+  const houseItsRulerRe = new RegExp(
+    `${HOUSE_CUSP_SIGN_RE}([^.!?]{0,100}?)\\b(?:its|the)\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
+    "gi",
+  );
+  const houseLooseItsRulerRe = new RegExp(
+    `${HOUSE_LEAD_RE}([^.!?]{0,100}?)\\b(?:its|the)\\s+ruler\\s*(?:is|=|,|—)?\\s*(?:the\\s+)?(${PLANET_NAMES_RE})\\b`,
     "gi",
   );
   const houseRulerLabelRe = new RegExp(
-    `\\b(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b([^.!?]{0,60}?)\\bruler\\s+(${PLANET_NAMES_RE})\\b`,
+    `${HOUSE_CUSP_SIGN_RE}([^.!?]{0,100}?)\\bruler\\s+(${PLANET_NAMES_RE})\\b`,
     "gi",
   );
 
@@ -1847,11 +1859,11 @@ const fixDescendantCuspMentionsInProse = (
     let changed = false;
 
     if (claimedSign && String(claimedSign).toLowerCase() !== correctSign.toLowerCase()) {
-      nextFull = nextFull.replace(new RegExp(`\\b${claimedSign}\\b`), correctSign);
+      nextFull = nextFull.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), correctSign);
       changed = true;
     }
     if (String(claimedRuler).toLowerCase() !== correctRuler.toLowerCase()) {
-      nextFull = nextFull.replace(new RegExp(`\\b${claimedRuler}\\b`), correctRuler);
+      nextFull = nextFull.replace(new RegExp(`\\b${claimedRuler}\\b`, "i"), correctRuler);
       changed = true;
     }
     if (changed) rulerRewrites++;
@@ -1876,7 +1888,7 @@ const fixDescendantCuspMentionsInProse = (
         let next = val;
         next = next.replace(wrongSeventh, (_m, lead) => `${lead}${dscSign}`);
         next = next.replace(wrongDescendant, (_m, lead) => `${lead}${dscSign}`);
-        next = next.replace(houseRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+        next = next.replace(houseRuledByRe, (full, ord, claimedSign, _mid, claimedRuler) =>
           fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
         );
         next = next.replace(houseRulerOfRe, (full, ord, claimedRuler) =>
@@ -1885,13 +1897,26 @@ const fixDescendantCuspMentionsInProse = (
         next = next.replace(directHouseRulerRe, (full, ord, claimedRuler) =>
           fixHouseRulerClaim(full, ord, claimedRuler),
         );
+        next = next.replace(houseItsRulerRe, (full, ord, claimedSign, _mid, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
+        );
+        next = next.replace(houseLooseItsRulerRe, (full, ord, _mid, claimedRuler) =>
+          fixHouseRulerClaim(full, ord, claimedRuler),
+        );
         next = next.replace(houseRulerLabelRe, (full, ord, claimedSign, _mid, claimedRuler) =>
           fixHouseRulerClaim(full, ord, claimedRuler, claimedSign),
         );
         if (next !== val) {
           rewrites++;
           if (examples.length < 5) {
-            const rulerIdx = [houseRulerRe, houseRulerOfRe, directHouseRulerRe, houseRulerLabelRe]
+            const rulerIdx = [
+              houseRuledByRe,
+              houseRulerOfRe,
+              directHouseRulerRe,
+              houseItsRulerRe,
+              houseLooseItsRulerRe,
+              houseRulerLabelRe,
+            ]
               .map((re) => val.search(re))
               .find((idx) => idx >= 0) ?? -1;
             const idx = val.search(wrongSeventh) >= 0
@@ -1899,7 +1924,7 @@ const fixDescendantCuspMentionsInProse = (
               : val.search(wrongDescendant) >= 0
                 ? val.search(wrongDescendant)
                 : Math.max(0, rulerIdx);
-            examples.push(val.slice(Math.max(0, idx - 20), idx + 120));
+            examples.push(val.slice(Math.max(0, idx - 20), idx + 140));
           }
           (node as any)[key] = next;
         }
