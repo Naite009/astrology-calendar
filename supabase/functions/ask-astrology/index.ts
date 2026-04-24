@@ -1469,6 +1469,8 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
 const PLACEHOLDER_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning", "_empty_summary_flags",
   "_count_sum_warnings", "_parse_error",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_sr_house_copy_warning", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
 ]);
@@ -1599,6 +1601,25 @@ const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number
   const endMatch = tail.match(/\n\s*\n|\nPlanets In Each|\nRuler Chains|\nVERIFIED/);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const re = new RegExp(`-\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
+  const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(block)) !== null) {
+    out.push({ house: parseInt(m[1], 10), sign: m[4], degree: parseInt(m[2], 10), minutes: m[3] ? parseInt(m[3], 10) : 0 });
+  }
+  return out;
+};
+
+// Parse the "SR House Cusps" block emitted by AskView (format:
+// "- SR House N: D° Sign"). Returns one entry per house cusp present.
+const parseSrHouseCuspsFromContext = (chartContext: string): Array<{ house: number; sign: string; degree: number; minutes: number }> => {
+  if (!chartContext) return [];
+  const headerMatch = chartContext.match(/\nSR House Cusps:\n/);
+  if (!headerMatch) return [];
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{4,}:|\nACTIVE|\nVERIFIED|\nSR-TO-NATAL/);
+  const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+  const re = new RegExp(`-\\s+SR\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
   const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(block)) !== null) {
@@ -3440,26 +3461,134 @@ const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
+//   "SR 7th house in Capricorn"
+//   "SR 7th house cusp is Aries"
+//   "SR Descendant in Libra"
+// using the deterministic SR House Cusps block from chart context.
+// Only rewrites when the named sign is wrong AND we have ground truth.
+// ─────────────────────────────────────────────────────────────────────────
+const correctSrHouseCuspInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseSrHouseCuspsFromContext(chartContext);
+  if (cusps.length === 0) return;
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) cuspSignByHouse[c.house] = c.sign;
+  const srAscSign = cuspSignByHouse[1];
+  const srDscSign = cuspSignByHouse[7];
+  const srMcSign = cuspSignByHouse[10];
+  const srIcSign = cuspSignByHouse[4];
+
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+  const ORDINAL_WORDS_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
+    first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,seventh:7,eighth:8,ninth:9,tenth:10,eleventh:11,twelfth:12,
+  };
+
+  // Pattern: "SR <ord> house [cusp] [is|in|at|=|,] <Sign>"
+  const srOrdHouseRe = new RegExp(
+    `\\bSR\\s+(${ORDINAL_WORDS_RE})\\s+house\\s+(?:cusp\\s+(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?|(?:is\\s+|=\\s*|in\\s+|at\\s+))(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+  // Pattern: "SR Ascendant/Descendant/MC/IC [is|in|at|=|,] <Sign>"
+  const srAngleRe = new RegExp(
+    `\\bSR\\s+(Ascendant|Descendant|Midheaven|MC|IC|Imum\\s+Coeli)\\s*(?:is\\s+|=\\s*|,\\s*|in\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(srOrdHouseRe, (full, ord, claimedSign) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const correctSign = cuspSignByHouse[houseNum];
+      if (!correctSign) return full;
+      if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return full;
+      rewrites++;
+      return full.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), correctSign);
+    });
+    next = next.replace(srAngleRe, (full, angleName, claimedSign) => {
+      const lower = String(angleName).toLowerCase();
+      let correctSign: string | undefined;
+      if (lower === "ascendant") correctSign = srAscSign;
+      else if (lower === "descendant") correctSign = srDscSign;
+      else if (lower === "midheaven" || lower === "mc") correctSign = srMcSign;
+      else if (lower === "ic" || lower === "imum coeli") correctSign = srIcSign;
+      if (!correctSign) return full;
+      if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return full;
+      rewrites++;
+      return full.replace(new RegExp(`\\b${claimedSign}\\b`, "i"), correctSign);
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 100)} → ${next.slice(0, 100)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "sr_house_cusp_sign_corrected_in_prose", detail: { rewrites, examples } });
+    console.info("[ask-astrology] SR house cusp signs corrected in prose", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // FINAL ACCURACY REVIEW — flags suspicious sentences. Does NOT mutate.
 // Output attached to parsedContent._accuracy_review for human review.
+//
+// Surfaces (with mismatch verification — never flags claims that match truth):
+//   • ruler claims (any sign, not just Scorpio)
+//   • angle references (natal + SR Asc/Desc/MC/IC) — flag only when sign mismatches
+//   • retrograde/direct claims (phantom Rx on direct, missing Rx on retrograde)
+//   • cross-chart degree mentions (natal vs SR sign bleed)
+//   • SR house cusp mismatches
+//   • broken "vs." clauses
 // ─────────────────────────────────────────────────────────────────────────
 const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (!parsedContent || typeof parsedContent !== "object") return;
-  const flags: Array<{ section: string; field: string; reason: string; category: string; snippet: string }> = [];
+  const flags: Array<{ section: string; field: string; reason: string; snippet: string }> = [];
   const natalPos = chartContext ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/) : [];
   const srPos = chartContext ? parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR") : [];
+  const natalCusps = chartContext ? parseHouseCuspsFromContext(chartContext) : [];
+  const srCusps = chartContext ? parseSrHouseCuspsFromContext(chartContext) : [];
   const natalSign = new Map<string, string>();
   const srSign = new Map<string, string>();
-  const natalDegrees = new Map<string, number>(); // planet -> integer degree-in-sign
-  const srDegrees = new Map<string, number>();
-  for (const p of natalPos) {
-    natalSign.set(p.planet.toLowerCase(), p.sign);
-    if (typeof (p as any).degree === "number") natalDegrees.set(p.planet.toLowerCase(), Math.floor((p as any).degree));
-  }
-  for (const p of srPos) {
-    srSign.set(p.planet.toLowerCase(), p.sign);
-    if (typeof (p as any).degree === "number") srDegrees.set(p.planet.toLowerCase(), Math.floor((p as any).degree));
-  }
+  for (const p of natalPos) natalSign.set(p.planet.toLowerCase(), p.sign);
+  for (const p of srPos) srSign.set(p.planet.toLowerCase(), p.sign);
+  const natalCuspByHouse: Record<number, string> = {};
+  const srCuspByHouse: Record<number, string> = {};
+  for (const c of natalCusps) natalCuspByHouse[c.house] = c.sign;
+  for (const c of srCusps) srCuspByHouse[c.house] = c.sign;
+  const natalAsc = natalCuspByHouse[1];
+  const natalDsc = natalCuspByHouse[7];
+  const natalMc = natalCuspByHouse[10];
+  const natalIc = natalCuspByHouse[4];
+  const srAsc = srCuspByHouse[1];
+  const srDsc = srCuspByHouse[7];
+  const srMc = srCuspByHouse[10];
+  const srIc = srCuspByHouse[4];
+
+  // Sign-rulership truth table (traditional + modern co-rulers).
+  const SIGN_RULERS: Record<string, string[]> = {
+    aries: ["mars"], taurus: ["venus"], gemini: ["mercury"], cancer: ["moon"],
+    leo: ["sun"], virgo: ["mercury"], libra: ["venus"], scorpio: ["mars","pluto"],
+    sagittarius: ["jupiter"], capricorn: ["saturn"], aquarius: ["saturn","uranus"],
+    pisces: ["jupiter","neptune"],
+  };
+
   const sentences = (s: string): string[] => s.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
   const SKIP = new Set([
     "type","title","label","name","subtitle","heading","id","kind",
@@ -3467,19 +3596,15 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
     "_accuracy_review","_validation","_validation_log","_validation_warning",
-    "_post_gate_safety","_final_hygiene",
+    "_post_gate_safety","_final_hygiene","_sr_house_copy_warning","_source_call",
   ]);
-
-  // Traditional + modern rulerships used to validate ruler claims.
-  const TRAD_RULERS: Record<string, string[]> = {
-    aries: ["mars"], taurus: ["venus"], gemini: ["mercury"], cancer: ["moon"],
-    leo: ["sun"], virgo: ["mercury"], libra: ["venus"], scorpio: ["mars","pluto"],
-    sagittarius: ["jupiter"], capricorn: ["saturn"], aquarius: ["saturn","uranus"],
-    pisces: ["jupiter","neptune"],
+  const ALL_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+  const SIGN_RE = `(?:${ALL_SIGNS.join("|")})`;
+  const PLANET_RE = "(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno)";
+  const ORDINAL_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
   };
-  const PLANETS_RX = "Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto";
-  const SIGNS_RX = "Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces";
-  const ANGLES_RX = "Ascendant|Asc|Rising|Descendant|Dsc|Midheaven|MC|IC|Imum Coeli";
 
   const visit = (node: any, sectionTitle: string) => {
     if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
@@ -3489,99 +3614,123 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
       if (SKIP.has(key)) continue;
       if (typeof val === "string") {
         for (const sent of sentences(val)) {
-          // ── Broken vs. clauses ──────────────────────────────────────
+          // Broken "vs." clause
           if (/\bvs\.\s+[A-Z][^.!?]{0,120}$/.test(sent)) {
             const tail = (sent.split(/\bvs\./)[1] || "").slice(0, 60);
             if (!/\b(?:and|than|over|while|but|nor|rather)\b/i.test(tail)) {
-              flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", category: "structure", snippet: sent.slice(0, 240) });
+              flags.push({ section: localTitle, field: key, reason: "broken_vs_clause", snippet: sent.slice(0, 200) });
             }
           }
 
-          // ── Phantom Rx on direct natal planets ──────────────────────
-          const rxMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\s*(?:[\\u211E\\u211e℞]|Rx|retrograde)\\b`, "i"));
+          // Phantom Rx on direct natal planet
+          const rxMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANET_RE})\\s*(?:[\\u211E℞]|Rx|retrograde)\\b`, "i"));
           if (rxMatch) {
             const truth = natalPos.find((p) => p.planet.toLowerCase() === rxMatch[1].toLowerCase());
             if (truth && !truth.retrograde) {
-              flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", category: "retrograde", snippet: sent.slice(0, 240) });
+              flags.push({ section: localTitle, field: key, reason: "phantom_rx_on_direct_natal_planet", snippet: sent.slice(0, 200) });
             }
           }
-
-          // ── Direct claim on actually-retrograde natal planets ───────
-          const directMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\s+(?:is\\s+)?direct\\b`, "i"));
+          // Missing Rx on retrograde natal planet (claimed direct)
+          const directMatch = sent.match(new RegExp(`\\b(?:natal|your)\\s+(${PLANET_RE})\\s+(?:is\\s+)?direct\\b`, "i"));
           if (directMatch) {
             const truth = natalPos.find((p) => p.planet.toLowerCase() === directMatch[1].toLowerCase());
             if (truth && truth.retrograde) {
-              flags.push({ section: localTitle, field: key, reason: "phantom_direct_on_retrograde_natal_planet", category: "retrograde", snippet: sent.slice(0, 240) });
+              flags.push({ section: localTitle, field: key, reason: "missing_rx_on_retrograde_natal_planet", snippet: sent.slice(0, 200) });
             }
           }
 
-          // ── Natal sign mismatch ─────────────────────────────────────
-          const signMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\b[^.!?]{0,80}?\\b(${SIGNS_RX})\\b`, "i"));
+          // Natal sign mismatch
+          const signMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANET_RE})\\b[^.!?]{0,80}?\\b(${SIGN_RE})\\b`, "i"));
           if (signMatch) {
             const truthSign = natalSign.get(signMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== signMatch[2].toLowerCase()) {
-              flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, category: "cross_chart", snippet: sent.slice(0, 240) });
+              flags.push({ section: localTitle, field: key, reason: `natal_sign_mismatch (claimed=${signMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
             }
           }
-
-          // ── SR sign mismatch ────────────────────────────────────────
-          const srSignMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANETS_RX}|Chiron|Lilith|Juno)\\b[^.!?]{0,80}?\\b(${SIGNS_RX})\\b`, "i"));
+          // SR sign mismatch
+          const srSignMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANET_RE})\\b[^.!?]{0,80}?\\b(${SIGN_RE})\\b`, "i"));
           if (srSignMatch) {
             const truthSign = srSign.get(srSignMatch[1].toLowerCase());
             if (truthSign && truthSign.toLowerCase() !== srSignMatch[2].toLowerCase()) {
-              flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, category: "cross_chart", snippet: sent.slice(0, 240) });
+              flags.push({ section: localTitle, field: key, reason: `sr_sign_mismatch (claimed=${srSignMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
             }
           }
 
-          // ── Cross-chart degree mismatch (natal) ─────────────────────
-          const natalDegMatch = sent.match(new RegExp(`\\bnatal\\s+(${PLANETS_RX})\\s+(?:at\\s+)?(\\d{1,2})°`, "i"));
-          if (natalDegMatch) {
-            const truthDeg = natalDegrees.get(natalDegMatch[1].toLowerCase());
-            const claimedDeg = parseInt(natalDegMatch[2], 10);
-            if (truthDeg !== undefined && Math.abs(truthDeg - claimedDeg) > 1) {
-              flags.push({ section: localTitle, field: key, reason: `natal_degree_mismatch (claimed=${claimedDeg}° truth=${truthDeg}°)`, category: "cross_chart", snippet: sent.slice(0, 240) });
+          // Natal house cusp sign mismatch — "natal Nth house [cusp] [is|in] X"
+          const natalCuspMatch = sent.match(new RegExp(`\\bnatal\\s+(${ORDINAL_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|in\\s+|at\\s+)(${SIGN_RE})\\b`, "i"));
+          if (natalCuspMatch) {
+            const houseNum = ORDINAL_TO_NUM[natalCuspMatch[1].toLowerCase()];
+            const truthSign = natalCuspByHouse[houseNum];
+            if (truthSign && truthSign.toLowerCase() !== natalCuspMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `natal_house_cusp_mismatch (house=${houseNum} claimed=${natalCuspMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          // SR house cusp sign mismatch — "SR Nth house [cusp] [is|in] X"
+          const srCuspMatch = sent.match(new RegExp(`\\bSR\\s+(${ORDINAL_RE})\\s+house\\s+(?:cusp\\s+)?(?:is\\s+|in\\s+|at\\s+)(${SIGN_RE})\\b`, "i"));
+          if (srCuspMatch) {
+            const houseNum = ORDINAL_TO_NUM[srCuspMatch[1].toLowerCase()];
+            const truthSign = srCuspByHouse[houseNum];
+            if (truthSign && truthSign.toLowerCase() !== srCuspMatch[2].toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `sr_house_cusp_mismatch (house=${houseNum} claimed=${srCuspMatch[2]} truth=${truthSign})`, snippet: sent.slice(0, 200) });
             }
           }
 
-          // ── Cross-chart degree mismatch (SR) ────────────────────────
-          const srDegMatch = sent.match(new RegExp(`\\bSR\\s+(${PLANETS_RX})\\s+(?:at\\s+)?(\\d{1,2})°`, "i"));
-          if (srDegMatch) {
-            const truthDeg = srDegrees.get(srDegMatch[1].toLowerCase());
-            const claimedDeg = parseInt(srDegMatch[2], 10);
-            if (truthDeg !== undefined && Math.abs(truthDeg - claimedDeg) > 1) {
-              flags.push({ section: localTitle, field: key, reason: `sr_degree_mismatch (claimed=${claimedDeg}° truth=${truthDeg}°)`, category: "cross_chart", snippet: sent.slice(0, 240) });
-            }
-          }
-
-          // ── Ruler-of-sign claims (validate against TRAD_RULERS) ─────
-          // Patterns: "ruler of <Sign> is <Planet>", "<Sign> ruled by <Planet>",
-          //           "<Planet> rules <Sign>", "<Sign>'s ruler <Planet>"
-          const rulerPatterns: Array<RegExp> = [
-            new RegExp(`\\bruler\\s+of\\s+(?:the\\s+)?(${SIGNS_RX})\\s+(?:is|=|,)?\\s*(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
-            new RegExp(`\\b(${SIGNS_RX})\\s+(?:is\\s+)?ruled\\s+by\\s+(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
-            new RegExp(`\\b(${PLANETS_RX})\\s+rules\\s+(?:the\\s+sign\\s+of\\s+)?(${SIGNS_RX})\\b`, "i"),
-            new RegExp(`\\b(${SIGNS_RX})['’]s\\s+ruler\\s*(?:is\\s+)?(?:the\\s+)?(${PLANETS_RX})\\b`, "i"),
+          // Angle references (natal Asc/Desc/MC/IC) — flag ONLY when the
+          // named sign disagrees with the placement table truth. Correct
+          // references (e.g. "natal Ascendant at 0°51' Cancer" when Asc
+          // really is in Cancer) are NOT flagged.
+          const angleChecks: Array<{ label: string; truth?: string }> = [
+            { label: "Ascendant", truth: natalAsc },
+            { label: "Descendant", truth: natalDsc },
+            { label: "Midheaven", truth: natalMc },
+            { label: "MC", truth: natalMc },
+            { label: "IC", truth: natalIc },
           ];
-          for (let i = 0; i < rulerPatterns.length; i++) {
-            const m = sent.match(rulerPatterns[i]);
-            if (!m) continue;
-            // For pattern index 2 ("<Planet> rules <Sign>"), planet/sign are swapped.
-            const sign = (i === 2 ? m[2] : m[1]).toLowerCase();
-            const planet = (i === 2 ? m[1] : m[2]).toLowerCase();
-            const allowed = TRAD_RULERS[sign] || [];
-            if (!allowed.includes(planet)) {
-              flags.push({ section: localTitle, field: key, reason: `wrong_ruler_claim (${sign}=${allowed.join("/")} claimed=${planet})`, category: "ruler", snippet: sent.slice(0, 240) });
+          for (const { label, truth } of angleChecks) {
+            if (!truth) continue;
+            const re = new RegExp(`\\b(?:natal\\s+|your\\s+)?${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const m = sent.match(re);
+            if (m) {
+              if (m[1].toLowerCase() !== truth.toLowerCase()) {
+                flags.push({ section: localTitle, field: key, reason: `natal_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
+              }
+              // matching reference → not flagged (silent pass)
+              break;
             }
-            break;
+          }
+          // SR angle mismatches
+          const srAngleChecks: Array<{ label: string; truth?: string }> = [
+            { label: "Ascendant", truth: srAsc },
+            { label: "Descendant", truth: srDsc },
+            { label: "Midheaven", truth: srMc },
+            { label: "MC", truth: srMc },
+            { label: "IC", truth: srIc },
+          ];
+          for (const { label, truth } of srAngleChecks) {
+            if (!truth) continue;
+            const re = new RegExp(`\\bSR\\s+${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const m = sent.match(re);
+            if (m && m[1].toLowerCase() !== truth.toLowerCase()) {
+              flags.push({ section: localTitle, field: key, reason: `sr_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
+              break;
+            }
           }
 
-          // ── Angle references ────────────────────────────────────────
-          // Flag any explicit angle-degree claim for human review (we cannot
-          // verify cusps deterministically here — but every angle claim is
-          // historically high-risk, so we surface them for the human to scan).
-          const angleMatch = sent.match(new RegExp(`\\b(${ANGLES_RX})\\s+(?:is\\s+)?(?:at\\s+)?(\\d{1,2})°\\s*(${SIGNS_RX})?`, "i"));
-          if (angleMatch) {
-            flags.push({ section: localTitle, field: key, reason: "angle_reference_review", category: "angle", snippet: sent.slice(0, 240) });
+          // Ruler claim mismatch — "<Sign> ruled by <Planet>" or
+          // "ruler of <Sign> is <Planet>" for ANY sign (not just Scorpio).
+          const ruledByMatch = sent.match(new RegExp(`\\b(${SIGN_RE})\\b[^.!?]{0,40}?\\bruled\\s+by\\s+(?:the\\s+)?(${PLANET_RE})\\b`, "i"));
+          if (ruledByMatch) {
+            const validRulers = SIGN_RULERS[ruledByMatch[1].toLowerCase()] || [];
+            if (validRulers.length && !validRulers.includes(ruledByMatch[2].toLowerCase())) {
+              flags.push({ section: localTitle, field: key, reason: `wrong_ruler (${ruledByMatch[1]} claimed=${ruledByMatch[2]} truth=${validRulers.join("/")})`, snippet: sent.slice(0, 200) });
+            }
+          }
+          const rulerOfMatch = sent.match(new RegExp(`\\bruler\\s+of\\s+(${SIGN_RE})\\s*(?:is|=|,)?\\s*(?:the\\s+)?(${PLANET_RE})\\b`, "i"));
+          if (rulerOfMatch) {
+            const validRulers = SIGN_RULERS[rulerOfMatch[1].toLowerCase()] || [];
+            if (validRulers.length && !validRulers.includes(rulerOfMatch[2].toLowerCase())) {
+              flags.push({ section: localTitle, field: key, reason: `wrong_ruler (${rulerOfMatch[1]} claimed=${rulerOfMatch[2]} truth=${validRulers.join("/")})`, snippet: sent.slice(0, 200) });
+            }
           }
         }
       } else {
@@ -3592,20 +3741,21 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   if (Array.isArray(parsedContent.sections)) {
     for (const s of parsedContent.sections) visit(s, String(s?.title || ""));
   }
-
-  // Group flags by category for easy human scanning.
-  const byCategory: Record<string, number> = {};
-  for (const f of flags) byCategory[f.category] = (byCategory[f.category] || 0) + 1;
-
+  // Dedupe identical flags (same section/field/reason/snippet)
+  const seen = new Set<string>();
+  const dedup = flags.filter((f) => {
+    const k = `${f.section}|${f.field}|${f.reason}|${f.snippet}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
   (parsedContent as any)._accuracy_review = {
     generated_at: new Date().toISOString(),
-    total_flags: flags.length,
-    by_category: byCategory,
-    categories_checked: ["ruler", "angle", "retrograde", "cross_chart", "structure"],
-    flags,
+    total_flags: dedup.length,
+    flags: dedup,
   };
-  if (flags.length > 0) {
-    console.warn("[ask-astrology] accuracy review flagged sentences", { total: flags.length, by_category: byCategory });
+  if (dedup.length > 0) {
+    console.warn("[ask-astrology] accuracy review flagged sentences", { total: dedup.length });
   } else {
     console.info("[ask-astrology] accuracy review clean — no flags");
   }
@@ -3752,6 +3902,8 @@ const RELOCATION_PHRASE_FIXES: Array<[RegExp, string]> = [
 const HYGIENE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_sr_house_copy_warning", "_source_call",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "name",
@@ -3828,6 +3980,7 @@ const SENTENCE_DEDUPE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_sr_house_copy_warning",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "date_range",
@@ -4361,6 +4514,7 @@ const PHANTOM_ASPECT_SKIP_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_sr_house_copy_warning",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_source_call",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "name",
@@ -5600,6 +5754,18 @@ NATAL RETROGRADE LOCK — MANDATORY:
 - If a natal planet is marked retrograde in that block, every natal sentence that mentions it MUST say "retrograde" or "Rx". You may never describe that natal planet as "direct".
 - This applies especially to natal Chiron: if natal Chiron is marked retrograde in the NATAL block, every natal mention of Chiron must say "Chiron retrograde" or "Chiron Rx".
 - Do not invent a retrograde marker on a natal planet that is direct in the NATAL block.
+
+VERIFY BEFORE WRITING — ABSOLUTE GROUND TRUTH RULE (HIGHEST PRIORITY):
+Before stating any planet's sign, degree, or house in prose, look up that exact planet in the NATAL CHART data provided in this call. Do not recall positions from memory. Do not use positions from the SR chart when writing about a natal planet, and do not use natal positions when writing about an SR planet. Read the value directly from the provided data.
+
+Concrete protocol — apply to EVERY sentence that names a planet's sign, degree, or house:
+1. Identify which chart you are writing about: NATAL or SR. The qualifier is fixed by the surrounding sentence ("natal Venus...", "SR Venus...", "your Venus..." → natal).
+2. Open the corresponding block in the chart context: "NATAL Planetary Positions" for natal, "SR Planetary Positions" for SR.
+3. Find the exact row for the planet you are about to name. Read the sign, degree, minutes, and house number directly from that row.
+4. Write the value into prose exactly as read. Do not round to a different sign. Do not substitute a sign you remember from a different chart you have seen.
+5. If the chart context does NOT contain a row for the planet you want to mention, do not write a sign or degree for it. Either omit the placement or describe it qualitatively without numeric/sign claims.
+
+This rule overrides any other generative tendency, training-data recall, or pattern-completion heuristic. The provided NATAL and SR blocks are the ONLY valid source for any planet's sign, degree, retrograde state, or house. Cross-chart contamination (using SR positions in natal sentences or natal positions in SR sentences) is the most-flagged failure mode in this system — verify the source block before every placement claim.
 
 ESSENCE OPENING MANDATORY — APPLIES TO EVERY READING (relationship, career, money, health, relocation, spiritual, timing, general):
 The VERY FIRST narrative_section of every reading MUST be titled "The Essence" (or for relationships: "The Essence of Your Relationship Style"; for career: "The Essence of How You Work"; etc.). Its "body" is a single short paragraph (2–4 sentences, ~50–90 words) that captures the entire essence of the person's style on this topic in plain, recognizable, human language — zero astrology jargon, zero planet/sign/house names. The reader must finish that paragraph and think "yes, that is exactly me." Only AFTER this Essence paragraph do you go into "Natal Relationship Architecture" / "How You Show Up at Work" / etc. and explain WHY astrologically.
@@ -7797,6 +7963,11 @@ HARD RULE — applies to every sentence:
           // NATAL POSITION COUNTERPART: catch "natal <Planet> at <wrong>" where
           // the wrong value is actually the SR position (sign or degree bleed).
           correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR HOUSE CUSP CORRECTOR: rewrite "SR Nth house in <Sign>" or
+          // "SR Descendant in <Sign>" using the deterministic SR House
+          // Cusps block. Catches the Paul-style overlay bug where the AI
+          // wrote "SR 7th house in Capricorn" when SR 7th cusp = Aries.
+          correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
           // Descendant the Ascendant (or vice versa) using the deterministic
           // House 1 / House 7 cusp data from chart context.
@@ -7932,6 +8103,7 @@ HARD RULE — applies to every sentence:
               "_validation", "_validation_log", "_validation_warning",
               "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
               "_sr_house_copy_warning", "_source_call",
+              "_post_gate_safety", "_final_hygiene", "_accuracy_review",
             ]);
             const visit = (node: any): void => {
               if (Array.isArray(node)) { for (const x of node) visit(x); return; }
@@ -8625,6 +8797,10 @@ HARD RULE — applies to every sentence:
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // SR HOUSE CUSP CORRECTOR (post-gate): rewrite any "SR Nth house
+        // in <Sign>" / "SR Descendant in <Sign>" claim against the
+        // deterministic SR House Cusps block.
+        correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
@@ -8654,43 +8830,44 @@ HARD RULE — applies to every sentence:
         const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
         console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
       }
+    }
 
-      // ─────────────────────────────────────────────────────────────────
-      // FINAL HYGIENE PASS (after all corrections):
-      //   1) Strip broken "vs." bullets that never finish their clause.
-      //   2) Force Best vs Caution windows to be distinct.
-      //   3) Run non-mutating accuracy review and attach _accuracy_review
-      //      to parsedContent so the downloaded JSON includes flagged
-      //      sentences for human review before PDF generation.
-      // ─────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────
+    // FINAL HYGIENE + ACCURACY REVIEW (always run, even when the
+    // post-gate path was skipped). Hygiene pass repairs broken
+    // bullets and resolves Best/Caution window collisions; accuracy
+    // review attaches `_accuracy_review` so the human reviewer can
+    // see flagged sentences in the downloaded JSON before generating
+    // the PDF. Both passes are non-blocking — failures here do not
+    // fail the job.
+    // ────────────────────────────────────────────────────────────
+    if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       try {
         const finalHygieneLog: HygieneLog = [];
         stripBrokenVsBullets(parsedContent, finalHygieneLog);
         forceBestVsCautionDistinct(parsedContent, finalHygieneLog);
+        (parsedContent as any)._final_hygiene = {
+          applied_at: new Date().toISOString(),
+          corrections: finalHygieneLog,
+        };
         if (finalHygieneLog.length > 0) {
-          (parsedContent as any)._final_hygiene = {
-            applied_at: new Date().toISOString(),
-            corrections: finalHygieneLog,
-          };
+          console.info("[ask-astrology] final hygiene pass applied", {
+            count: finalHygieneLog.length,
+            types: [...new Set(finalHygieneLog.map((e: any) => e?.type).filter(Boolean))],
+          });
         }
-      } catch (finalHygErr) {
-        const msg = finalHygErr instanceof Error ? finalHygErr.message : String(finalHygErr);
+      } catch (hygErr) {
+        const msg = hygErr instanceof Error ? hygErr.message : String(hygErr);
         console.warn(`[ask-astrology] final hygiene pass threw (non-fatal): ${msg}`);
       }
-
       try {
         runAccuracyReview(parsedContent, sanitizedChartContext || "");
-      } catch (reviewErr) {
-        const msg = reviewErr instanceof Error ? reviewErr.message : String(reviewErr);
+      } catch (revErr) {
+        const msg = revErr instanceof Error ? revErr.message : String(revErr);
         console.warn(`[ask-astrology] accuracy review threw (non-fatal): ${msg}`);
-        (parsedContent as any)._accuracy_review = {
-          generated_at: new Date().toISOString(),
-          total_flags: 0,
-          flags: [],
-          error: msg,
-        };
       }
     }
+
 
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
