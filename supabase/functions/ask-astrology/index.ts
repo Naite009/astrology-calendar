@@ -1475,7 +1475,7 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
 const PLACEHOLDER_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning", "_empty_summary_flags",
   "_count_sum_warnings", "_parse_error",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
   "_sr_house_copy_warning", "_source_call",
   "type", "label", "name", "planet", "aspect", "natal_point", "symbol", "tag",
   "house", "sign", "degrees", "generated_date", "birth_info",
@@ -3908,7 +3908,7 @@ const RELOCATION_PHRASE_FIXES: Array<[RegExp, string]> = [
 const HYGIENE_SAFE_KEYS = new Set([
   "_validation", "_validation_log", "_validation_warning",
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
-  "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+  "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
   "_sr_house_copy_warning", "_source_call",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
@@ -8187,7 +8187,7 @@ HARD RULE — applies to every sentence:
               "_validation", "_validation_log", "_validation_warning",
               "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
               "_sr_house_copy_warning", "_source_call",
-              "_post_gate_safety", "_final_hygiene", "_accuracy_review",
+              "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
             ]);
             const visit = (node: any): void => {
               if (Array.isArray(node)) { for (const x of node) visit(x); return; }
