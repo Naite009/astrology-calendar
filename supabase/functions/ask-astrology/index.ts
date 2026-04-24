@@ -3298,7 +3298,10 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
     }
   };
 
-  // Process placement_table rows FIRST (lower priority).
+  // Seed only sign/house from placement_table rows. Do NOT trust prose/table
+  // motion labels as a retrograde source of truth — those rows can already be
+  // wrong, and we saw that leak as "Chiron retrograde → Chiron direct" in the
+  // validation log. Deterministic chart context must own motion state.
   if (Array.isArray(parsedContent?.sections)) {
     for (const section of parsedContent.sections) {
       if (section?.type !== "placement_table") continue;
@@ -3319,18 +3322,13 @@ const buildPlacementTruthMap = (parsedContent: any, chartContext?: string): Map<
           const m = houseRaw.match(/\d+/);
           if (m) house = parseInt(m[0], 10);
         }
-        const retroRaw = String(row.retrograde ?? row.motion ?? row.position ?? "");
-        const retroBoolean = row.retrograde === true;
-        const retrograde = !/direct/i.test(retroRaw) && (
-          retroBoolean || /\bR(?:x)?\b|retrograde|\u211E/i.test(retroRaw)
-        );
-        setFact(planet, { sign, house, retrograde });
+        setFact(planet, { sign, house });
       }
     }
   }
 
   // Then overlay the deterministic NATAL positions block from chartContext
-  // as the authoritative source of truth.
+  // as the authoritative source of truth, INCLUDING retrograde state.
   const natalPositions = chartContext
     ? parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/)
     : [];
