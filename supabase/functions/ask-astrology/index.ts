@@ -1842,6 +1842,23 @@ const fixDescendantCuspMentionsInProse = (
   if (!parsedContent || !chartContext) return;
   let cusps = parseHouseCuspsFromContext(chartContext);
 
+  // DIAGNOSTIC: print the exact runtime output of parseHouseCuspsFromContext
+  // so we can verify what house 1 and house 7 actually resolve to for THIS
+  // chart. Requested explicitly during the Lauren Newman cusp regression.
+  try {
+    const h1 = cusps.find((c) => c.house === 1) || null;
+    const h7 = cusps.find((c) => c.house === 7) || null;
+    console.info("[ask-astrology][diag] parseHouseCuspsFromContext output", {
+      total_cusps_returned: cusps.length,
+      house_1: h1,
+      house_7: h7,
+      all_houses_returned: cusps.map((c) => ({ house: c.house, sign: c.sign, deg: `${c.degree}°${String(c.minutes).padStart(2, "0")}'` })),
+      context_has_house_cusps_header: /\nHouse Cusps[^:]*:\n/.test(chartContext),
+    });
+  } catch (diagErr) {
+    console.warn("[ask-astrology][diag] failed to log cusp output", diagErr);
+  }
+
   // FALLBACK: if the chart context did not contain a parseable House
   // Cusps block (so cusps.length < 12), DO NOT silently bail. Without
   // this fallback the AI's wrong "7th house cusp Libra" sentence would
