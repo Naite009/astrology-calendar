@@ -328,6 +328,9 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         <SRInputForm
           natalChart={selectedNatal}
           existingSR={editingSRId ? srChartsForNatal.find(c => c.id === editingSRId) : undefined}
+          existingSRYears={srChartsForNatal
+            .filter(c => c.id !== editingSRId)
+            .map(c => c.solarReturnYear)}
           onSave={(sr) => {
             if (editingSRId) {
               updateSolarReturn(editingSRId, sr);
