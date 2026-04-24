@@ -221,7 +221,31 @@ const DIRECTIVE_B = buildDirective(
 const DIRECTIVE_C = buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
-  `This is the OVERLAY call. The user message contains BOTH the NATAL CHART and the SOLAR RETURN CHART, presented in two clearly labeled, separate blocks. It ALSO contains a "VERIFIED CROSS-CHART ACTIVATIONS — GROUND TRUTH" block listing every SR-to-natal aspect that exists this year. You are interpreting that pre-verified list — you are NOT discovering aspects yourself. Read the strict rules in "RULES FOR USING THE VERIFIED ACTIVATIONS" and follow them without exception: do not invent aspects, do not state orbs in prose, do not reference natal points outside the list, and never confuse Ascendant with Descendant (the list labels each angle by name). When you cite a planet's sign or degree, pull the value from the matching activation entry or the labeled chart block — never from the other chart.`,
+  `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
+
+The VERIFIED CROSS-CHART ACTIVATIONS block in the user
+message is the ONLY source of cross-chart aspects you
+are permitted to reference.
+
+You MUST NOT:
+- Identify any aspect not in the verified list
+- State any orb not taken directly from the verified list
+- Reference any natal point not in the verified list
+- Write "natal Venus at X" unless X matches the
+  natalPosition field in the verified list exactly
+- Write "natal Pluto at X" unless X matches the
+  natalPosition field in the verified list exactly
+
+You MUST:
+- For each activation you interpret, copy the srPosition
+  and natalPosition values verbatim from the verified list
+- If asked to discuss an activation not in the list,
+  write "no significant activation this year" instead
+
+VIOLATION OF THIS RULE PRODUCES FACTUALLY WRONG OUTPUT
+THAT CANNOT BE CORRECTED DOWNSTREAM. Treat the verified
+activations as the only ground truth that exists for
+this call.`,
 );
 
 // ─── Anthropic call helper ──────────────────────────────────────────────────
@@ -415,6 +439,12 @@ const buildCallCUserMessage = (
     : "";
   return `User's question: ${userQuestion}
 
+REMINDER: You may only interpret activations from the
+VERIFIED CROSS-CHART ACTIVATIONS list below. Every
+planet degree you write must come from that list.
+Do not use degrees from the natal or SR placement
+tables for overlay prose — use only the verified list.
+
 You have BOTH charts in this call. They describe the same planets at different positions and are NEVER interchangeable. When you write about a natal placement, pull the value from the NATAL CHART block. When you write about an SR placement, pull the value from the SOLAR RETURN CHART block.
 
 =========================================================
@@ -520,12 +550,23 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
     const marker = "VERIFIED CROSS-CHART ACTIVATIONS";
     const idx = userMsgC.indexOf(marker);
     const activationsArgLen = (callCActivationsBlock || "").length;
-    const head = userMsgC.slice(0, 200).replace(/\s+/g, " ");
+    const head = userMsgC.slice(0, 300).replace(/\s+/g, " ");
     const blockExcerpt = idx >= 0
       ? userMsgC.slice(idx, idx + 400).replace(/\s+/g, " ")
       : "(block not found in userMsgC)";
+    // Find the directive block inside the system stack and excerpt it so we
+    // can confirm at runtime that the new ABSOLUTE CONSTRAINT directive
+    // actually shipped to the model.
+    const sysJoined = sysBlocksC
+      .map((b) => (typeof b?.text === "string" ? b.text : ""))
+      .join("\n---\n");
+    const dirMarker = "ABSOLUTE CONSTRAINT FOR THIS CALL";
+    const dirIdx = sysJoined.indexOf(dirMarker);
+    const directiveExcerpt = dirIdx >= 0
+      ? sysJoined.slice(dirIdx, dirIdx + 500).replace(/\s+/g, " ")
+      : "(ABSOLUTE CONSTRAINT directive NOT FOUND in system blocks)";
     console.info(
-      `[ask-astrology][callC-diag] userMsg length=${userMsgC.length}, activationsBlock arg length=${activationsArgLen}, marker index=${idx}\n  userMsgC head(0..200): "${head}"\n  activations block excerpt: "${blockExcerpt}"`,
+      `[ask-astrology][callC-diag] userMsg length=${userMsgC.length}, activationsBlock arg length=${activationsArgLen}, marker index=${idx}, directive index=${dirIdx}\n  userMsgC head(0..300): "${head}"\n  activations block excerpt: "${blockExcerpt}"\n  directive excerpt: "${directiveExcerpt}"`,
     );
   }
   let cValue: SingleCallResult & { from_cache: boolean };
