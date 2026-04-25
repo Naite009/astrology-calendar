@@ -2935,34 +2935,61 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
 
-  // FIX 6 — Only flip the angle label when the cited sign IMMEDIATELY
-  // follows the angle word with no intervening sign-word. The prior
-  // version allowed up to 80 chars between "Descendant" and the cited
-  // ascSign, which incorrectly matched sentences like "natal Descendant
-  // at 24°56' Aries which opposes natal Mars at 24°55' Libra" — Aries
-  // IS the dscSign (correct) but the trailing "Libra" (ascSign) inside
-  // the same sentence triggered a Descendant→Ascendant flip. The
-  // tightened pattern requires the angle word and the cited degree+sign
-  // to be adjacent (only optional copula words like "at"/"in"/"is"/"="
-  // allowed between). If the sign matches dscSign, leave it alone.
+  // FIX 6 (HARDENED) — Only flip the angle label when the cited sign
+  // token DIRECTLY belongs to the angle being referenced. Two layers of
+  // protection:
+  //   (1) Adjacency: only short copula tokens may sit between the angle
+  //       word and the degree+sign citation.
+  //   (2) Token-purity: forbid ANY zodiac sign name, planet name, or
+  //       aspect keyword from appearing between the angle word and the
+  //       cited sign. This prevents sentences like "natal Descendant at
+  //       24°56' Aries which opposes natal Mars at 24°55' Libra" from
+  //       triggering a Descendant→Ascendant flip on the trailing Libra
+  //       degree+sign substring belonging to Mars.
+  const ALL_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+  const PLANET_TOKENS = [
+    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto",
+    "Chiron","Lilith","Juno","Ceres","Pallas","Vesta","Eris","North Node","South Node","Node",
+    "MC","IC","Midheaven","Imum Coeli","Vertex","Part of Fortune","Fortune",
+  ];
+  const ASPECT_TOKENS = [
+    "conjunct","opposes","opposite","opposition","square","trine","sextile",
+    "quincunx","semisextile","sesquiquadrate","semisquare","aspect","aspects",
+  ];
+  // Build a "forbidden interloper" alternation. If any of these tokens
+  // appears between the angle word and the cited degree+sign, the match
+  // is rejected — meaning the cited sign belongs to something else.
+  const blockerAlt = [...ALL_SIGNS, ...PLANET_TOKENS, ...ASPECT_TOKENS]
+    .map((t) => t.replace(/\s+/g, "\\s+"))
+    .join("|");
+  // Adjacency window: optional short copula, then OPTIONAL "natal "/"sr "
+  // prefix, then the degree+sign — but the entire window must contain NO
+  // blocker token. We enforce this with a negative lookahead anchored at
+  // the position right after the angle word.
   const adjacent = "(?:\\s+(?:at|in|is|=|,|—|of|sits\\s+at|lands\\s+at))?\\s+";
+  const noBlockerAhead = `(?!(?:[^.\\n]{0,40}?)\\b(?:${blockerAlt})\\b[^.\\n]{0,10}?${dscDegAlt})`;
+  const noBlockerAheadAsc = `(?!(?:[^.\\n]{0,40}?)\\b(?:${blockerAlt})\\b[^.\\n]{0,10}?${ascDegAlt})`;
+
   // "natal Ascendant at 24°55' Aries" — degrees+sign match Descendant → Ascendant label is wrong.
-  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
-  // Sign-only variants, same adjacency requirement.
-  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${noBlockerAhead}${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${noBlockerAheadAsc}${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // Sign-only variants, same adjacency + token-purity requirement.
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${noBlockerAhead}${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${noBlockerAheadAsc}${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
   // SIGN-ONLY (no degree) wrong-axis claims, e.g. "your natal Ascendant
   // is in late Aries" / "the natal Ascendant in Aries". The Ascendant
   // sign is fixed by the cusp data — anything that names it as the
-  // *opposite* sign (i.e. dscSign) is by definition mislabeled.
+  // *opposite* sign (i.e. dscSign) is by definition mislabeled. We still
+  // require token-purity so a trailing planet+sign doesn't trigger.
+  const noBlockerSignAheadDsc = `(?!(?:[^.\\n]{0,40}?)\\b(?:${PLANET_TOKENS.map((t)=>t.replace(/\s+/g,"\\s+")).join("|")}|${ASPECT_TOKENS.join("|")})\\b[^.\\n]{0,10}?${dscSign})`;
+  const noBlockerSignAheadAsc = `(?!(?:[^.\\n]{0,40}?)\\b(?:${PLANET_TOKENS.map((t)=>t.replace(/\s+/g,"\\s+")).join("|")}|${ASPECT_TOKENS.join("|")})\\b[^.\\n]{0,10}?${ascSign})`;
   const wrongAscSignWord = new RegExp(
-    `\\b(?:natal\\s+|your\\s+)?Ascendant\\b(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${dscSign}\\b`,
+    `\\b(?:natal\\s+|your\\s+)?Ascendant\\b${noBlockerSignAheadDsc}(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${dscSign}\\b`,
     "gi",
   );
   const wrongDescSignWord = new RegExp(
-    `\\b(?:natal\\s+|your\\s+)?Descendant\\b(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${ascSign}\\b`,
+    `\\b(?:natal\\s+|your\\s+)?Descendant\\b${noBlockerSignAheadAsc}(?:\\s+is)?(?:\\s+in)(?:\\s+(?:early|mid|late))?\\s+${ascSign}\\b`,
     "gi",
   );
 
