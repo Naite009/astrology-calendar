@@ -8974,6 +8974,10 @@ ${natalGroundTruthLines}`
           // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
           // so identical post-rewrite copies are also caught.
           dedupeAspectsAcrossSections(parsedContent, emissionLog);
+          // Relocation-only: also dedupe outer-planet meaning sentences inside
+          // the timing_section (which the cross-section pass intentionally
+          // skips because timing data is normally repeated cell-to-cell).
+          dedupeRelocationTimingSection(parsedContent, emissionLog);
           // NEW (Defect 3): Replace relationship-domain phrases ("romanticizing
           // people") that leaked into career/money/health/relocation readings
           // with domain-appropriate wording.
