@@ -4308,6 +4308,14 @@ const runPostProcessingPipeline = (
   safeRun("runAccuracyReview", () =>
     runAccuracyReview(parsedContent, ctx),
   );
+
+  // 11. Drop summary_box items missing label or value (and empty sections).
+  // Runs LAST so any backfills produced by earlier passes (timing windows,
+  // best/caution distinctness, etc.) get a chance to populate values
+  // before this pass enforces the no-empty-item rule before the gate.
+  safeRun("dropEmptySummaryItemsAndSections", () =>
+    dropEmptySummaryItemsAndSections(parsedContent, log),
+  );
 };
 
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
@@ -4331,9 +4339,32 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
       for (const item of section.items) {
-        if (!item || typeof item !== "object") { keptItems.push(item); continue; }
+        if (!item || typeof item !== "object") {
+          // A non-object slot in items is itself invalid — drop it so the
+          // gate never sees `null` / `"string"` / etc. masquerading as an item.
+          droppedItems++;
+          log.push({
+            type: "empty_summary_item_dropped",
+            detail: { section: section.title || "", label: "", reason: "non_object_item" },
+          });
+          continue;
+        }
         const label = typeof item.label === "string" ? item.label.trim() : "";
         const labelKey = label.toLowerCase();
+
+        // VALIDATION RULE: every summary_box item must have a non-empty
+        // label. Items with blank/whitespace labels are dropped before they
+        // reach Replit's gate — the model occasionally emits bullet labels
+        // without content (or content without labels), and those orphaned
+        // entries provide no value to the user.
+        if (!label) {
+          droppedItems++;
+          log.push({
+            type: "empty_summary_item_dropped",
+            detail: { section: section.title || "", label: "", reason: "empty_label" },
+          });
+          continue;
+        }
 
         if (
           isRelationshipReading
@@ -4353,6 +4384,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           : typeof item.text === "string" ? "text"
           : "value";
         const v = item[valueKey];
+        // VALIDATION RULE: every summary_box item must have a non-empty
+        // value. We first try a deterministic backfill (timing-window or
+        // canonical-label fallback); if no backfill is available, the item
+        // is dropped so the gate never sees a label with empty content.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
@@ -4366,7 +4401,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
             continue;
           }
           droppedItems++;
-          log.push({ type: "empty_summary_item_dropped", detail: { section: section.title || "", label: item.label || "" } });
+          log.push({
+            type: "empty_summary_item_dropped",
+            detail: { section: section.title || "", label: item.label || "", reason: "empty_value" },
+          });
           continue;
         }
         keptItems.push(item);
