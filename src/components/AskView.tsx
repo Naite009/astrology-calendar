@@ -23,6 +23,7 @@ import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
+import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
 import {
   Popover,
   PopoverContent,
@@ -325,9 +326,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const currentSR = solarReturnCharts
-          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
-          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
           correctPlacementData(data, chartForRequest, currentSR),
           null,
@@ -856,11 +855,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
 
     // --- SOLAR RETURN CONTEXT ---
-    const natalId = chart.id || "";
-    const matchingSRs = solarReturnCharts
-      .filter(sr => sr.natalChartId === natalId || sr.natalChartId === "user" && activeChartId === "user")
-      .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0));
-    const currentSR = matchingSRs[0];
+    // Use the shared SR matcher so a SR linked under a stale natalChartId
+    // (e.g. re-imported chart) still gets found via name+birthDate fallback.
+    // Without this, the AI is told there is no SR data even when one exists,
+    // and SR-dependent sections regress to placeholder content.
+    const currentSR = findMatchingSolarReturn(solarReturnCharts, chart, activeChartId);
     if (currentSR) {
       context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
       if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
@@ -1463,9 +1462,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       let assistantEntry: ChatEntry;
 
       if (data.sections) {
-        const currentSR = solarReturnCharts
-          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
-          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
           correctPlacementData(data, chartForRequest, currentSR),
           timingData.section,
@@ -1610,9 +1607,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const currentSR = solarReturnCharts
-          .filter(sr => sr.natalChartId === chartIdForRequest || (sr.natalChartId === "user" && chartIdForRequest === "user"))
-          .sort((a, b) => (b.solarReturnYear || 0) - (a.solarReturnYear || 0))[0] || null;
+        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
           correctPlacementData(data, chartForRequest, currentSR),
           timingData.section,
