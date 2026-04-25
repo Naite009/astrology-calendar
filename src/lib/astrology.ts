@@ -916,6 +916,43 @@ const MOON_NAMES: Record<number, string> = {
   11: 'Cold Moon',
 };
 
+// Returns the calendar month (0-11) and year of a date in America/New_York time.
+// Used to detect Blue Moons consistently with how phases are bucketed by ET day.
+const getETMonthYear = (d: Date): { month: number; year: number } => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+  }).formatToParts(d);
+  const month = Number(parts.find((p) => p.type === 'month')?.value) - 1;
+  const year = Number(parts.find((p) => p.type === 'year')?.value);
+  return { month, year };
+};
+
+/**
+ * Determine the traditional name for a Full Moon, with Blue Moon override.
+ * A "calendar Blue Moon" is the second full moon within the same calendar month.
+ * If an earlier full moon exists within the same ET calendar month as `fullMoonDate`,
+ * this returns 'Blue Moon'; otherwise returns the traditional monthly name.
+ */
+export const getFullMoonName = (fullMoonDate: Date): string => {
+  try {
+    const { month, year } = getETMonthYear(fullMoonDate);
+    // Look ~31 days back for a prior full moon (lunation ~29.5 days).
+    const searchBack = new Date(fullMoonDate.getTime() - 31 * 24 * 60 * 60 * 1000);
+    const prev = Astronomy.SearchMoonPhase(180, searchBack, 32);
+    if (prev && prev.date.getTime() < fullMoonDate.getTime() - 60 * 1000) {
+      const prevMY = getETMonthYear(prev.date);
+      if (prevMY.month === month && prevMY.year === year) {
+        return 'Blue Moon';
+      }
+    }
+  } catch {
+    // fall through to traditional name
+  }
+  return MOON_NAMES[getETMonthYear(fullMoonDate).month] || '';
+};
+
 // Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this calendar day (Eastern Time).
 // We search for the nearest event around the day, but ONLY return it if the event's ET date matches
 // the day being rendered. IMPORTANT: We treat the incoming `date` as a calendar-day identifier
@@ -957,7 +994,12 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         position: zodiac.fullDegree,
         sign: zodiac.signName,
         emoji,
-        name: type === 'New Moon' || type === 'Full Moon' ? MOON_NAMES[date.getMonth()] : null,
+        name:
+          type === 'Full Moon'
+            ? getFullMoonName(eventDate)
+            : type === 'New Moon'
+              ? MOON_NAMES[date.getMonth()]
+              : null,
         isSupermoon: false,
         distance: Math.round(distance),
       };

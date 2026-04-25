@@ -70,6 +70,38 @@ const MOON_NAMES: Record<number, string> = {
   11: "Cold Moon",
 };
 
+// Calendar month/year in America/New_York time — keeps Blue Moon detection
+// consistent with how lunar events are bucketed by ET day elsewhere.
+const getETMonthYear = (d: Date): { month: number; year: number } => {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(d);
+  const month = Number(parts.find((p) => p.type === "month")?.value) - 1;
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  return { month, year };
+};
+
+// Returns "Blue Moon" if this Full Moon is the second within its ET calendar month,
+// otherwise the traditional monthly name.
+const getFullMoonName = (fullMoonDate: Date): string => {
+  try {
+    const { month, year } = getETMonthYear(fullMoonDate);
+    const searchBack = new Date(fullMoonDate.getTime() - 31 * 24 * 60 * 60 * 1000);
+    const prev = Astronomy.SearchMoonPhase(180, searchBack, 32);
+    if (prev && prev.date.getTime() < fullMoonDate.getTime() - 60 * 1000) {
+      const prevMY = getETMonthYear(prev.date);
+      if (prevMY.month === month && prevMY.year === year) {
+        return "Blue Moon";
+      }
+    }
+  } catch {
+    // fall through
+  }
+  return MOON_NAMES[getETMonthYear(fullMoonDate).month] || "";
+};
+
 const ZODIAC_SIGNS = [
   { name: "Aries", symbol: "♈" },
   { name: "Taurus", symbol: "♉" },
@@ -411,7 +443,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             sunSign: sunZodiac.sign,
             sunDegree: sunZodiac.degree.toString().padStart(2, "0"),
             sunMinutes: sunZodiac.minutes.toString().padStart(2, "0"),
-            name: MOON_NAMES[fullMoon.date.getMonth()] || "",
+            name: getFullMoonName(fullMoon.date),
             isSupermoon,
             distance: Math.round(distance),
             signEntryDate,
