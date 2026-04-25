@@ -141,4 +141,6 @@ export const DayTypeLegend = forwardRef<HTMLDivElement, DayTypeLegendProps>(({ i
       </div>
     </div>
   );
-};
+});
+
+DayTypeLegend.displayName = "DayTypeLegend";
