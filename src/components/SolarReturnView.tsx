@@ -334,6 +334,15 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                   </button>
                   <button
                     onClick={() => {
+                      setEditingSRId(sr.id);
+                      setShowInputForm(true);
+                    }}
+                    className="text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors shrink-0"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
                       if (confirm(`Delete SR ${sr.solarReturnYear} (${sr.solarReturnLocation || 'no location'}) for ${selectedNatal.name}?`)) {
                         deleteSolarReturn(sr.id);
                         if (selectedSRId === sr.id) setSelectedSRId(null);
