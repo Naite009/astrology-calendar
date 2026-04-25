@@ -244,15 +244,19 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
     );
     let userLocations: UserLocationsInput | undefined;
     if (activeTopic.id === "relocation") {
-      const current = relocCurrent.trim();
-      const considering1 = relocCity1.trim();
-      const considering2 = relocCity2.trim();
+      // Substitute the resolved canonical city when the resolver is confident
+      // ("wynwyd pa" → "Wynnewood, PA"). Falls back to the raw trimmed input.
+      const resolveOrRaw = (raw: string): string | undefined => {
+        const trimmed = raw.trim();
+        if (!trimmed) return undefined;
+        const match = resolveCity(trimmed);
+        return match?.canonical ?? trimmed;
+      };
+      const current = resolveOrRaw(relocCurrent);
+      const considering1 = resolveOrRaw(relocCity1);
+      const considering2 = resolveOrRaw(relocCity2);
       if (current || considering1 || considering2) {
-        userLocations = {
-          current: current || undefined,
-          considering1: considering1 || undefined,
-          considering2: considering2 || undefined,
-        };
+        userLocations = { current, considering1, considering2 };
       }
     }
     setActiveTopic(null);
