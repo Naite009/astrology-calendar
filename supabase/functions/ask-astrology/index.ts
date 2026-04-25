@@ -7419,7 +7419,7 @@ Deno.serve(async (req) => {
 
     // Kick off background processing — survives client disconnect / tab switch / HMR
     // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
-    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming }));
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations }));
 
     return new Response(JSON.stringify({ jobId, status: "queued" }), {
       status: 202,
