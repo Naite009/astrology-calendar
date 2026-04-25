@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CityInput } from "@/components/CityInput";
+import { resolveCity } from "@/lib/cityResolver";
 
 export interface UserLocationsInput {
   current?: string;
@@ -242,15 +243,19 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
     );
     let userLocations: UserLocationsInput | undefined;
     if (activeTopic.id === "relocation") {
-      const current = relocCurrent.trim();
-      const considering1 = relocCity1.trim();
-      const considering2 = relocCity2.trim();
+      // Substitute the resolved canonical city when the resolver is confident
+      // ("wynwyd pa" → "Wynnewood, PA"). Falls back to the raw trimmed input.
+      const resolveOrRaw = (raw: string): string | undefined => {
+        const trimmed = raw.trim();
+        if (!trimmed) return undefined;
+        const match = resolveCity(trimmed);
+        return match?.canonical ?? trimmed;
+      };
+      const current = resolveOrRaw(relocCurrent);
+      const considering1 = resolveOrRaw(relocCity1);
+      const considering2 = resolveOrRaw(relocCity2);
       if (current || considering1 || considering2) {
-        userLocations = {
-          current: current || undefined,
-          considering1: considering1 || undefined,
-          considering2: considering2 || undefined,
-        };
+        userLocations = { current, considering1, considering2 };
       }
     }
     setActiveTopic(null);
@@ -315,48 +320,30 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-current">
-                      Current city
-                    </label>
-                    <Input
-                      id="reloc-current"
-                      placeholder="e.g. Brooklyn, NY"
-                      value={relocCurrent}
-                      maxLength={80}
-                      onChange={(e) => setRelocCurrent(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c1">
-                      Considering #1
-                    </label>
-                    <Input
-                      id="reloc-c1"
-                      placeholder="e.g. Lisbon, Portugal"
-                      value={relocCity1}
-                      maxLength={80}
-                      onChange={(e) => setRelocCity1(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c2">
-                      Considering #2
-                    </label>
-                    <Input
-                      id="reloc-c2"
-                      placeholder="e.g. Mexico City, Mexico"
-                      value={relocCity2}
-                      maxLength={80}
-                      onChange={(e) => setRelocCity2(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
+                  <CityInput
+                    id="reloc-current"
+                    label="Current city"
+                    placeholder="e.g. Brooklyn, NY"
+                    value={relocCurrent}
+                    onChange={(v) => setRelocCurrent(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
+                  <CityInput
+                    id="reloc-c1"
+                    label="Considering #1"
+                    placeholder="e.g. Lisbon, Portugal"
+                    value={relocCity1}
+                    onChange={(v) => setRelocCity1(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
+                  <CityInput
+                    id="reloc-c2"
+                    label="Considering #2"
+                    placeholder="e.g. Mexico City, Mexico"
+                    value={relocCity2}
+                    onChange={(v) => setRelocCity2(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
                 </div>
               </div>
             )}
