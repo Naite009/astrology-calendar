@@ -1723,6 +1723,31 @@ const normalizePlacementTableRetrograde = (
     return score;
   };
 
+  // Per-row scoring against a fact map: returns a numeric match score so we
+  // can route each row independently to natal vs SR. This handles the case
+  // where a single generically-titled "Key Placements" table mixes natal
+  // and SR rows — the previous table-level routing flattened all rows to
+  // one truth map and silently mis-flagged retrogrades on the minority side
+  // (e.g. SR Neptune in a mostly-natal table).
+  const scoreRowAgainstFacts = (
+    row: any,
+    facts: Map<string, PosFact>,
+  ): number => {
+    if (!row || typeof row !== "object") return 0;
+    const baseName = String(row.planet || row.body || row.name || "")
+      .replace(RETRO_GLYPH_RE, "").trim().toLowerCase();
+    const fact = facts.get(baseName);
+    if (!fact) return 0;
+    let score = 0;
+    const rowSign = String(row.sign || row.zodiac || "").trim();
+    if (rowSign && rowSign.toLowerCase() === fact.sign.toLowerCase()) score += 2;
+    const rowDegRaw = row.degree ?? row.degrees;
+    const rowDeg = typeof rowDegRaw === "number" ? rowDegRaw
+      : typeof rowDegRaw === "string" ? parseInt(rowDegRaw.match(/\d+/)?.[0] || "", 10) : NaN;
+    if (Number.isFinite(rowDeg) && Math.abs(rowDeg - fact.degree) <= 1) score += 1;
+    return score;
+  };
+
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
     const titleLower = String(section.title || "").toLowerCase();
@@ -1730,29 +1755,16 @@ const normalizePlacementTableRetrograde = (
     const titleSaysNatal = titleLower.includes("natal");
     const rows = Array.isArray(section.rows) ? section.rows : [];
 
-    // Decide which truth map this table represents. Title wins when it is
-    // explicit. When the title is generic (e.g. "Key Placements"), score
-    // the rows against both fact maps and pick the better match. This is
-    // the fix that makes single-call paths (career, money, health, etc.)
-    // get correct retrograde flags on their SR placement tables — the
-    // original heuristic only matched titles containing "solar return" or
-    // "sr ", so generically-named SR tables fell through to natal truth
-    // and SR Uranus stayed flagged as direct.
-    let isSR: boolean;
-    let routeSource: string;
-    if (titleSaysSR && !titleSaysNatal) { isSR = true; routeSource = "title_sr"; }
-    else if (titleSaysNatal && !titleSaysSR) { isSR = false; routeSource = "title_natal"; }
-    else if (srFacts.size > 0 && natalFacts.size > 0) {
-      const natalScore = scoreTableAgainstFacts(rows, natalFacts);
-      const srScore = scoreTableAgainstFacts(rows, srFacts);
-      isSR = srScore > natalScore;
-      routeSource = `row_match(natal=${natalScore},sr=${srScore})`;
-    } else if (srFacts.size > 0 && natalFacts.size === 0) {
-      isSR = true; routeSource = "sr_only_available";
-    } else {
-      isSR = false; routeSource = "natal_default";
-    }
-    const truthMap = isSR ? srTruth : natalTruth;
+    // Table-level routing decision — used ONLY when the title is explicit OR
+    // when only one truth map is available. For generically-titled tables
+    // with both maps present, each row is routed independently below.
+    let tableLevelIsSR: boolean | null = null;
+    let tableLevelSource = "";
+    if (titleSaysSR && !titleSaysNatal) { tableLevelIsSR = true; tableLevelSource = "title_sr"; }
+    else if (titleSaysNatal && !titleSaysSR) { tableLevelIsSR = false; tableLevelSource = "title_natal"; }
+    else if (srFacts.size > 0 && natalFacts.size === 0) { tableLevelIsSR = true; tableLevelSource = "sr_only_available"; }
+    else if (srFacts.size === 0 && natalFacts.size > 0) { tableLevelIsSR = false; tableLevelSource = "natal_only_available"; }
+    // else: both maps available, generic title — route per-row
 
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
@@ -1760,6 +1772,32 @@ const normalizePlacementTableRetrograde = (
       if (!rawPlanet) continue;
       const hasGlyph = RETRO_GLYPH_RE.test(rawPlanet);
       const baseName = rawPlanet.replace(RETRO_GLYPH_RE, "").trim();
+
+      // Decide which truth map to use for THIS row. If the table title is
+      // explicit or only one chart is available, honor the table-level
+      // decision. Otherwise, score this row's sign+degree against both
+      // fact maps and pick the better match — natal Jupiter and SR Neptune
+      // can coexist in the same generic "Key Placements" table and each
+      // gets its correct retrograde flag.
+      let isSR: boolean;
+      let routeSource: string;
+      if (tableLevelIsSR !== null) {
+        isSR = tableLevelIsSR;
+        routeSource = tableLevelSource;
+      } else {
+        const natalScore = scoreRowAgainstFacts(row, natalFacts);
+        const srScore = scoreRowAgainstFacts(row, srFacts);
+        if (srScore === 0 && natalScore === 0) {
+          // Row matches neither — fall back to natal as the safer default.
+          isSR = false;
+          routeSource = "row_match_no_signal(natal_default)";
+        } else {
+          isSR = srScore > natalScore;
+          routeSource = `row_match(natal=${natalScore},sr=${srScore})`;
+        }
+      }
+      const truthMap = isSR ? srTruth : natalTruth;
+
       // Determine retrograde state. Priority:
       //   1. CHART CONTEXT (deterministic astronomy-engine truth) — overrides AI
       //   2. explicit boolean true
