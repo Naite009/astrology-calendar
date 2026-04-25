@@ -212,42 +212,66 @@ export function assessConstitutionalStrength(
 ): ConstitutionalAssessment {
   let score = 50; // baseline
   const factors: string[] = [];
+  // Track positive vs negative contributors separately so the rating
+  // requires meaningful CORROBORATION across multiple chart factors —
+  // not just one sign placement (e.g., a single Fire/Earth rising should
+  // not single-handedly push the rating to "Strong"). This prevents the
+  // "two charts with the same rising get different ratings" confusion
+  // by making it clear that the rating reflects a CHART-WIDE pattern.
+  let positiveContributors = 0;
+  let negativeContributors = 0;
 
   // Fire/Earth ascendant = more robust
   const fireEarth = ['Aries', 'Taurus', 'Leo', 'Virgo', 'Capricorn', 'Sagittarius'];
   const sensitive = ['Cancer', 'Pisces', 'Scorpio'];
 
   if (ascendantSign) {
-    if (fireEarth.includes(ascendantSign)) { score += 10; factors.push(`${ascendantSign} rising: robust constitution`); }
-    else if (sensitive.includes(ascendantSign)) { score -= 5; factors.push(`${ascendantSign} rising: sensitive constitution`); }
+    if (fireEarth.includes(ascendantSign)) { score += 10; factors.push(`${ascendantSign} rising: robust constitution (+10)`); positiveContributors++; }
+    else if (sensitive.includes(ascendantSign)) { score -= 5; factors.push(`${ascendantSign} rising: sensitive constitution (-5)`); negativeContributors++; }
   }
 
   // Sun dignity
   const sunSign = planets.Sun?.sign;
-  if (sunSign === 'Leo') { score += 10; factors.push('Sun in Leo: strong natural vitality'); }
-  else if (sunSign === 'Aries') { score += 8; factors.push('Sun in Aries: dynamic energy'); }
-  else if (sunSign === 'Pisces' || sunSign === 'Libra') { score -= 5; factors.push(`Sun in ${sunSign}: more sensitive vitality`); }
+  if (sunSign === 'Leo') { score += 10; factors.push('Sun in Leo: strong natural vitality (+10)'); positiveContributors++; }
+  else if (sunSign === 'Aries') { score += 8; factors.push('Sun in Aries: dynamic energy (+8)'); positiveContributors++; }
+  else if (sunSign === 'Pisces' || sunSign === 'Libra') { score -= 5; factors.push(`Sun in ${sunSign}: more sensitive vitality (-5)`); negativeContributors++; }
 
   // Mars condition
   const marsSign = planets.Mars?.sign;
   if (marsSign === 'Aries' || marsSign === 'Capricorn' || marsSign === 'Scorpio') {
-    score += 8; factors.push(`Mars in ${marsSign}: strong physical energy`);
+    score += 8; factors.push(`Mars in ${marsSign}: strong physical energy (+8)`); positiveContributors++;
   } else if (marsSign === 'Cancer' || marsSign === 'Libra') {
-    score -= 5; factors.push(`Mars in ${marsSign}: gentler physical energy`);
+    score -= 5; factors.push(`Mars in ${marsSign}: gentler physical energy (-5)`); negativeContributors++;
   }
 
   // Saturn condition
   if (planets.Saturn?.isRetrograde) {
-    score -= 3; factors.push('Saturn retrograde: internalized health discipline needed');
+    score -= 3; factors.push('Saturn retrograde: internalized health discipline needed (-3)'); negativeContributors++;
   }
 
   // Jupiter beneficial
   const jupSign = planets.Jupiter?.sign;
   if (jupSign === 'Sagittarius' || jupSign === 'Cancer' || jupSign === 'Pisces') {
-    score += 5; factors.push(`Jupiter in ${jupSign}: natural healing optimism`);
+    score += 5; factors.push(`Jupiter in ${jupSign}: natural healing optimism (+5)`); positiveContributors++;
   }
 
-  const rating = score >= 60 ? 'Strong' : score >= 40 ? 'Moderate' : 'Sensitive';
+  // Rating requires CORROBORATION — a single positive factor (e.g., just
+  // a Fire/Earth rising) is not enough to land "Strong." Need either a
+  // higher score OR multiple supporting factors. This is the fix for
+  // "Hannah is Strong because Virgo rising but Ben (also Virgo rising)
+  // is Moderate" — when Virgo rising is the ONLY positive, the rating
+  // now correctly lands "Moderate" for both unless other factors agree.
+  let rating: 'Strong' | 'Moderate' | 'Sensitive';
+  if (score >= 65 && positiveContributors >= 2) {
+    rating = 'Strong';
+  } else if (score >= 40) {
+    rating = 'Moderate';
+  } else {
+    rating = 'Sensitive';
+  }
+
+  // Add a baseline note so the user can read the breakdown clearly.
+  factors.unshift(`Baseline: 50 → final score ${Math.max(0, Math.min(100, score))} (${positiveContributors} support${positiveContributors === 1 ? '' : 's'}, ${negativeContributors} caution${negativeContributors === 1 ? '' : 's'})`);
 
   return { rating, score: Math.max(0, Math.min(100, score)), factors };
 }
