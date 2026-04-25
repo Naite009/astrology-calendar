@@ -773,10 +773,22 @@ export const computeDeterministicTallies = (natalChartBlock: string): Determinis
     polarityPlanets[PLANET_POLARITY[planet]].push(planet);
   }
 
+  // Emit BOTH `name` (consumed by hygiene/validators/UI) AND `tag`
+  // (legacy field) so every downstream reader works on every reading
+  // type. Without `name`, `correctModalityElementCounts`,
+  // `enforceNonZeroCoverage`, the Replit gate, and the PDF renderer all
+  // see the entries as nameless and report 0 counts even though the
+  // integer is correct in the array. The "Yang (Active)" / "Yin
+  // (Receptive)" suffix on polarity matches the prompt's stub format so
+  // the loose match in correctModalityElementCounts (firstWord = "yang"
+  // / "yin") and the explicit lookups still resolve.
   return {
-    elements: (["Fire", "Earth", "Air", "Water"] as const).map((tag) => ({ tag, count: elements[tag], planets: elementPlanets[tag] })),
-    modalities: (["Cardinal", "Fixed", "Mutable"] as const).map((tag) => ({ tag, count: modalities[tag], planets: modalityPlanets[tag] })),
-    polarity: (["Yang", "Yin"] as const).map((tag) => ({ tag, count: polarity[tag], planets: polarityPlanets[tag] })),
+    elements: (["Fire", "Earth", "Air", "Water"] as const).map((tag) => ({ name: tag, tag, count: elements[tag], planets: elementPlanets[tag] })),
+    modalities: (["Cardinal", "Fixed", "Mutable"] as const).map((tag) => ({ name: tag, tag, count: modalities[tag], planets: modalityPlanets[tag] })),
+    polarity: (["Yang", "Yin"] as const).map((tag) => {
+      const name = tag === "Yang" ? "Yang (Active)" : "Yin (Receptive)";
+      return { name, tag, count: polarity[tag], planets: polarityPlanets[tag] };
+    }),
   };
 };
 
