@@ -994,7 +994,12 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         position: zodiac.fullDegree,
         sign: zodiac.signName,
         emoji,
-        name: type === 'New Moon' || type === 'Full Moon' ? MOON_NAMES[date.getMonth()] : null,
+        name:
+          type === 'Full Moon'
+            ? getFullMoonName(eventDate)
+            : type === 'New Moon'
+              ? MOON_NAMES[date.getMonth()]
+              : null,
         isSupermoon: false,
         distance: Math.round(distance),
       };
