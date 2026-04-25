@@ -2031,7 +2031,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       Or choose a topic for a comprehensive reading:
                     </p>
                   </div>
-                  {selectedChart && !relocationFormPrompt && (
+                  {selectedChart && (
                     <AskQuickTopics
                       onSelect={handleQuickTopic}
                       chartName={selectedChart.name || "Unknown"}
@@ -2040,77 +2040,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       birthLocation={selectedChart.birthLocation || "unknown location"}
                       disabled={isLoading}
                     />
-                  )}
-                  {selectedChart && relocationFormPrompt && (
-                    <Card className="w-full max-w-lg text-left">
-                      <CardHeader>
-                        <CardTitle className="text-base">Tell me about the cities you're considering</CardTitle>
-                        <CardDescription>
-                          All fields are optional. If you fill any of them in, the reading will include a
-                          dedicated <span className="font-medium">"Your Location Choices"</span> section that
-                          analyzes those specific cities against your chart.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-current">
-                            Current city (optional)
-                          </label>
-                          <Input
-                            id="reloc-current"
-                            placeholder="e.g. Brooklyn, NY"
-                            value={relocationCurrentCity}
-                            maxLength={80}
-                            onChange={(e) => setRelocationCurrentCity(sanitizeCityField(e.target.value))}
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-c1">
-                            Considering city #1 (optional)
-                          </label>
-                          <Input
-                            id="reloc-c1"
-                            placeholder="e.g. Lisbon, Portugal"
-                            value={relocationCity1}
-                            maxLength={80}
-                            onChange={(e) => setRelocationCity1(sanitizeCityField(e.target.value))}
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-c2">
-                            Considering city #2 (optional)
-                          </label>
-                          <Input
-                            id="reloc-c2"
-                            placeholder="e.g. Mexico City, Mexico"
-                            value={relocationCity2}
-                            maxLength={80}
-                            onChange={(e) => setRelocationCity2(sanitizeCityField(e.target.value))}
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={isLoading}
-                            onClick={() => submitRelocationWithCities(true)}
-                          >
-                            Skip — just give me the general relocation reading
-                          </Button>
-                          <Button
-                            type="button"
-                            disabled={isLoading}
-                            onClick={() => submitRelocationWithCities(false)}
-                          >
-                            Generate reading
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
                   )}
                 </div>
               )}
