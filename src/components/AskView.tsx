@@ -1468,7 +1468,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return top.type;
   };
 
-  const handleSubmitDirect = async (directQuestion?: string) => {
+  const handleSubmitDirect = async (
+    directQuestion?: string,
+    userLocations?: { current?: string; considering1?: string; considering2?: string },
+  ) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
 
@@ -1510,6 +1513,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
           chartId: chartIdForRequest,
+          userLocations,
         },
         {
           signal: controller.signal,
