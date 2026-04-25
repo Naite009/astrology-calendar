@@ -9195,23 +9195,25 @@ ${natalGroundTruthLines}`
       // reading regen). After 2 passes, ship the best attempt with
       // _gate.label = "exhausted" rather than burning more credits.
       // ────────────────────────────────────────────────────────────────
-      // V2 KILL SWITCH (2026-04-22)
-      // V2 was hitting MAX_GATE_RETRIES on most jobs and burning Claude
-      // credits without healing defects. Until we can prove a retry
-      // actually fixes something, V2 ships attempt 1 as final and only
-      // RECORDS the gate verdict — no Claude healing calls.
+      // V2 KILL SWITCH (2026-04-22 → re-enabled 2026-04-25)
+      // V2 was disabled because retries were burning Claude credits without
+      // healing defects. RE-ENABLED to address upstream sloppy first-pass
+      // generations (e.g. Saturn-sextile paragraph repeated 5+ times in
+      // the Erica Broder relationship reading). Pair this with the new
+      // dedupeNarrativeSectionBodies() and general-cusp verifier so V2
+      // only retries on defects that actually warrant a regen.
       //
-      // Re-enable per-request by setting env ASK_V2_HEALING_ENABLED=true.
+      // Disable per-request by setting env ASK_V2_HEALING_ENABLED=false.
       // ────────────────────────────────────────────────────────────────
       const V2_HEALING_ENABLED =
-        (Deno.env.get("ASK_V2_HEALING_ENABLED") ?? "false").toLowerCase() === "true";
+        (Deno.env.get("ASK_V2_HEALING_ENABLED") ?? "true").toLowerCase() === "true";
       const MAX_GATE_RETRIES = V2_HEALING_ENABLED ? 2 : 0;
       const V2_WALL_CLOCK_BUDGET_MS = 120_000; // 2 min hard ceiling for the entire heal loop
       const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = V2_HEALING_ENABLED ? null : "v2_disabled_kill_switch";
       if (!V2_HEALING_ENABLED) {
-        console.warn("[ask-astrology][gate] V2 healing DISABLED via kill switch (ASK_V2_HEALING_ENABLED!=true). Shipping attempt 1 as final.");
+        console.warn("[ask-astrology][gate] V2 healing DISABLED via kill switch (ASK_V2_HEALING_ENABLED=false). Shipping attempt 1 as final.");
       }
       // Track which section titles V2 has authored so subsequent passes
       // REPLACE the V2 version instead of duplicating it.
