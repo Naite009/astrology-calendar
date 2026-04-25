@@ -1669,21 +1669,91 @@ const normalizePlacementTableRetrograde = (
   // is computed deterministically from astronomy-engine and is THE source
   // of truth — it must override any AI-authored `retrograde: false` on a
   // planet that is in fact retrograde (e.g. SR Saturn, SR Neptune).
+  // Build per-planet maps with FULL position data (sign + degree + retrograde)
+  // so we can disambiguate which chart a generically-titled placement_table
+  // (e.g. just "Key Placements") actually represents — every reading type
+  // must get correct retrograde flags, not only relationship readings whose
+  // tables are explicitly labeled "Natal Key Placements" / "Solar Return Key
+  // Placements".
+  type PosFact = { sign: string; degree: number; retrograde: boolean };
   const natalTruth = new Map<string, boolean>();
   const srTruth = new Map<string, boolean>();
+  const natalFacts = new Map<string, PosFact>();
+  const srFacts = new Map<string, PosFact>();
   if (chartContext) {
     const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
     const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
-    for (const p of natalPos) natalTruth.set(p.planet.toLowerCase(), !!p.retrograde);
-    for (const p of srPos) srTruth.set(p.planet.toLowerCase(), !!p.retrograde);
+    for (const p of natalPos) {
+      const k = p.planet.toLowerCase();
+      natalTruth.set(k, !!p.retrograde);
+      natalFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.retrograde });
+    }
+    for (const p of srPos) {
+      const k = p.planet.toLowerCase();
+      srTruth.set(k, !!p.retrograde);
+      srFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.retrograde });
+    }
   }
+
+  // Score how well a table's rows match the natal vs SR fact map. Used as a
+  // fallback when the table title is ambiguous ("Key Placements") and the
+  // SR/natal heuristic on the title alone would route every row to natal
+  // and mis-flag SR retrogrades.
+  const scoreTableAgainstFacts = (
+    rows: any[],
+    facts: Map<string, PosFact>,
+  ): number => {
+    let score = 0;
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const baseName = String(row.planet || row.body || row.name || "")
+        .replace(RETRO_GLYPH_RE, "").trim().toLowerCase();
+      const fact = facts.get(baseName);
+      if (!fact) continue;
+      // Sign match alone is the strongest signal (SR sign almost always
+      // differs from natal sign for inner planets and angles).
+      const rowSign = String(row.sign || row.zodiac || "").trim();
+      if (rowSign && rowSign.toLowerCase() === fact.sign.toLowerCase()) score += 2;
+      // Degree match (within 1°) breaks ties when sign happens to coincide.
+      const rowDegRaw = row.degree ?? row.degrees;
+      const rowDeg = typeof rowDegRaw === "number" ? rowDegRaw
+        : typeof rowDegRaw === "string" ? parseInt(rowDegRaw.match(/\d+/)?.[0] || "", 10) : NaN;
+      if (Number.isFinite(rowDeg) && Math.abs(rowDeg - fact.degree) <= 1) score += 1;
+    }
+    return score;
+  };
 
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
     const titleLower = String(section.title || "").toLowerCase();
-    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
-    const truthMap = isSR ? srTruth : natalTruth;
+    const titleSaysSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const titleSaysNatal = titleLower.includes("natal");
     const rows = Array.isArray(section.rows) ? section.rows : [];
+
+    // Decide which truth map this table represents. Title wins when it is
+    // explicit. When the title is generic (e.g. "Key Placements"), score
+    // the rows against both fact maps and pick the better match. This is
+    // the fix that makes single-call paths (career, money, health, etc.)
+    // get correct retrograde flags on their SR placement tables — the
+    // original heuristic only matched titles containing "solar return" or
+    // "sr ", so generically-named SR tables fell through to natal truth
+    // and SR Uranus stayed flagged as direct.
+    let isSR: boolean;
+    let routeSource: string;
+    if (titleSaysSR && !titleSaysNatal) { isSR = true; routeSource = "title_sr"; }
+    else if (titleSaysNatal && !titleSaysSR) { isSR = false; routeSource = "title_natal"; }
+    else if (srFacts.size > 0 && natalFacts.size > 0) {
+      const natalScore = scoreTableAgainstFacts(rows, natalFacts);
+      const srScore = scoreTableAgainstFacts(rows, srFacts);
+      isSR = srScore > natalScore;
+      routeSource = `row_match(natal=${natalScore},sr=${srScore})`;
+    } else if (srFacts.size > 0 && natalFacts.size === 0) {
+      isSR = true; routeSource = "sr_only_available";
+    } else {
+      isSR = false; routeSource = "natal_default";
+    }
+    const truthMap = isSR ? srTruth : natalTruth;
+
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
       const rawPlanet = String(row.planet || row.body || row.name || "");
@@ -1699,8 +1769,8 @@ const normalizePlacementTableRetrograde = (
       const ctxRetro = truthMap.get(baseName.toLowerCase());
       let retro: boolean;
       let source: string;
-      if (ctxRetro === true) { retro = true; source = "chart_context"; }
-      else if (ctxRetro === false) { retro = false; source = "chart_context"; }
+      if (ctxRetro === true) { retro = true; source = `chart_context[${routeSource}]`; }
+      else if (ctxRetro === false) { retro = false; source = `chart_context[${routeSource}]`; }
       else if (row.retrograde === true) { retro = true; source = "row_boolean"; }
       else if (hasGlyph) { retro = true; source = "glyph"; }
       else if (row.retrograde === false) { retro = false; source = "row_boolean"; }
