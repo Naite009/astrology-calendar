@@ -2935,12 +2935,23 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
 
-  // "natal Ascendant ... 24°55' Aries" — degrees match Descendant → Ascendant label is wrong.
-  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b${ascDegAlt}\\s+${ascSign}\\b`, "gi");
-  // "natal Ascendant at 24°55' Aries" (sign-only — when degree is omitted but sign points wrong way).
-  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\s+(?:at\\s+)?${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\s+(?:at\\s+)?${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // FIX 6 — Only flip the angle label when the cited sign IMMEDIATELY
+  // follows the angle word with no intervening sign-word. The prior
+  // version allowed up to 80 chars between "Descendant" and the cited
+  // ascSign, which incorrectly matched sentences like "natal Descendant
+  // at 24°56' Aries which opposes natal Mars at 24°55' Libra" — Aries
+  // IS the dscSign (correct) but the trailing "Libra" (ascSign) inside
+  // the same sentence triggered a Descendant→Ascendant flip. The
+  // tightened pattern requires the angle word and the cited degree+sign
+  // to be adjacent (only optional copula words like "at"/"in"/"is"/"="
+  // allowed between). If the sign matches dscSign, leave it alone.
+  const adjacent = "(?:\\s+(?:at|in|is|=|,|—|of|sits\\s+at|lands\\s+at))?\\s+";
+  // "natal Ascendant at 24°55' Aries" — degrees+sign match Descendant → Ascendant label is wrong.
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // Sign-only variants, same adjacency requirement.
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
   // SIGN-ONLY (no degree) wrong-axis claims, e.g. "your natal Ascendant
   // is in late Aries" / "the natal Ascendant in Aries". The Ascendant
