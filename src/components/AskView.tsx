@@ -1106,33 +1106,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return context;
   };
 
-  const handleQuickTopic = (prompt: string) => {
-    // Relocation Quick Topic: open the optional city-input form before submitting.
-    // Detect by the same keyword family the prompt builder uses (the auto-generated
-    // relocation prompt always contains "best cities for relocation").
-    if (/best cities for relocation|Where Should I Live/i.test(prompt)) {
-      setRelocationCurrentCity("");
-      setRelocationCity1("");
-      setRelocationCity2("");
-      setRelocationFormPrompt(prompt);
-      return;
-    }
-    void handleSubmitDirect(prompt);
-  };
-
-  const submitRelocationWithCities = (skipCities: boolean) => {
-    if (!relocationFormPrompt) return;
-    const userLocations = skipCities
-      ? undefined
-      : {
-          current: relocationCurrentCity.trim() || undefined,
-          considering1: relocationCity1.trim() || undefined,
-          considering2: relocationCity2.trim() || undefined,
-        };
-    const hasAny = userLocations && (userLocations.current || userLocations.considering1 || userLocations.considering2);
-    const promptToSend = relocationFormPrompt;
-    setRelocationFormPrompt(null);
-    void handleSubmitDirect(promptToSend, hasAny ? userLocations : undefined);
+  const handleQuickTopic = (
+    prompt: string,
+    userLocations?: { current?: string; considering1?: string; considering2?: string },
+  ) => {
+    // AskQuickTopics now collects optional relocation cities inline (in the
+    // same panel as the personal-context textarea). When the user picks the
+    // Relocation topic and fills any city field, we receive a populated
+    // userLocations object here and forward it straight to the edge function.
+    void handleSubmitDirect(prompt, userLocations);
   };
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
