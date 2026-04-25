@@ -2023,16 +2023,24 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       Or choose a topic for a comprehensive reading:
                     </p>
                   </div>
-                  {selectedChart && (
-                    <AskQuickTopics
-                      onSelect={handleQuickTopic}
-                      chartName={selectedChart.name || "Unknown"}
-                      birthDate={selectedChart.birthDate || "unknown date"}
-                      birthTime={selectedChart.birthTime || "unknown time"}
-                      birthLocation={selectedChart.birthLocation || "unknown location"}
-                      disabled={isLoading}
-                    />
-                  )}
+                  {selectedChart && (() => {
+                    const matchingSR = findMatchingSolarReturn(
+                      solarReturnCharts,
+                      selectedChart,
+                      activeChartId,
+                    );
+                    return (
+                      <AskQuickTopics
+                        onSelect={handleQuickTopic}
+                        chartName={selectedChart.name || "Unknown"}
+                        birthDate={selectedChart.birthDate || "unknown date"}
+                        birthTime={selectedChart.birthTime || "unknown time"}
+                        birthLocation={selectedChart.birthLocation || "unknown location"}
+                        currentLocation={matchingSR?.solarReturnLocation || undefined}
+                        disabled={isLoading}
+                      />
+                    );
+                  })()}
                 </div>
               )}
 

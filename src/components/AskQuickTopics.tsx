@@ -202,10 +202,24 @@ interface AskQuickTopicsProps {
   birthDate: string;
   birthTime: string;
   birthLocation: string;
+  /**
+   * Optional: the user's most recent Solar Return location. When the user
+   * opens the relocation topic, this seeds the "Current city" field so they
+   * don't have to retype where they live. They can still edit or clear it.
+   */
+  currentLocation?: string;
   disabled?: boolean;
 }
 
-export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birthLocation, disabled }: AskQuickTopicsProps) {
+export function AskQuickTopics({
+  onSelect,
+  chartName,
+  birthDate,
+  birthTime,
+  birthLocation,
+  currentLocation,
+  disabled,
+}: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
   // Relocation-only inline city inputs. Rendered next to the personal-context
@@ -226,7 +240,9 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
     if (disabled) return;
     setActiveTopic(topic);
     setPersonalContext("");
-    setRelocCurrent("");
+    // Seed Current city from the SR location when opening relocation. The
+    // resolver attached to CityInput will normalize and confirm with a check.
+    setRelocCurrent(topic.id === "relocation" ? sanitizeCityField(currentLocation || "") : "");
     setRelocCity1("");
     setRelocCity2("");
   };
