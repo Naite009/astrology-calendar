@@ -48,6 +48,20 @@ function isRetryableQueueError(error: any): boolean {
   );
 }
 
+function decodeTrustedJwtSubject(token: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    const expectedIssuer = `${Deno.env.get("SUPABASE_URL")}/auth/v1`;
+    const expMs = Number(payload?.exp ?? 0) * 1000;
+    if (payload?.iss !== expectedIssuer || payload?.aud !== "authenticated" || !payload?.sub || expMs <= Date.now()) return null;
+    return String(payload.sub);
+  } catch {
+    return null;
+  }
+}
+
 // Best-effort repair for JSON truncated mid-string by max_tokens.
 // Closes any open string and balances open arrays/objects so the
 // partial reading is still usable instead of being thrown away.
