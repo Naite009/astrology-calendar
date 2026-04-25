@@ -4189,6 +4189,127 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   }
 };
 
+// ────────────────────────────────────────────────────────────────────
+// SHARED POST-PROCESSING PIPELINE
+// ────────────────────────────────────────────────────────────────────
+// Single source of truth for every deterministic post-generation pass
+// that must run on EVERY reading type — single-call (health, career,
+// money, relocation, etc.) AND the 3-call relationship architecture.
+//
+// Both paths converge here. There must be NO equivalent of any of these
+// passes anywhere else in the file. If a fix needs to be applied to
+// "all reading types," it goes into THIS function — adding it to one of
+// the historical inline blocks would re-create the drift this refactor
+// exists to prevent.
+//
+// Order is significant. Each pass is idempotent and pure (rewrites
+// strings or table flags only — never invents content). The order
+// below mirrors the original inline pre-gate sequence so behavior is
+// preserved exactly:
+//
+//   1. normalizePlacementTableRetrograde     — table flags must agree
+//                                                with chart-context truth
+//                                                (per-row routing for
+//                                                generically-titled tables)
+//   2. injectDeterministicModalityElement    — fresh modality/element
+//                                                section from chart facts
+//   3. fixDescendantCuspMentionsInProse      — 7th-cusp / Descendant sign
+//   4. fixAscendantDescendantLabelSwapsInProse — angle label guard
+//                                                (token-purity adjacency)
+//   5. fixNatalRetrogradeMentionsInProse     — "<Planet> direct" when
+//                                                natal is retrograde
+//   6. correctSignRulershipClaimsInProse     — Pisces=Jup/Nep etc.
+//   7. correctSrPlanetPositionsInProse       — SR planet sign/degree
+//   8. stripBrokenVsBullets                  — Best/Caution bullet repair
+//   9. forceBestVsCautionDistinct            — collision resolver
+//  10. runAccuracyReview                     — attaches _accuracy_review
+//
+// Notes:
+//  - This pipeline is intentionally narrow: only the 10 passes the
+//    drift-prevention ticket calls out. Other historical passes
+//    (overrideSRHouseNumbersFromContext, correctSrPlanetHousesInProse,
+//    fixHouseRulerPlacementInProse, correctNatalPlanetPositionsInProse,
+//    correctSrHouseCuspInProse, correctUnverifiedSrAngleClaims, etc.)
+//    remain in the surrounding hygiene block; they are not on the
+//    drift-risk list and were not requested for the shared pipeline.
+//  - The function logs every action into the same HygieneLog the
+//    surrounding emission-hygiene block uses so _validation_log keeps
+//    one continuous trail.
+//  - Failures in any single pass are caught individually so one bad
+//    pass cannot prevent later passes from running.
+const runPostProcessingPipeline = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+): void => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const ctx = chartContext || "";
+
+  const safeRun = (name: string, fn: () => void) => {
+    try {
+      fn();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[ask-astrology][pipeline] ${name} threw (non-fatal): ${msg}`);
+      log.push({ type: "pipeline_pass_error", detail: { pass: name, error: msg } });
+    }
+  };
+
+  // 1. Retrograde flags on every placement_table row (per-row routing).
+  safeRun("normalizePlacementTableRetrograde", () =>
+    normalizePlacementTableRetrograde(parsedContent, log, ctx),
+  );
+
+  // 2. Deterministic modality/element section.
+  safeRun("injectDeterministicModalityElement", () => {
+    const inj = injectDeterministicModalityElement(parsedContent, ctx);
+    log.push({
+      type: "deterministic_modality_element_injected",
+      detail: { injected: inj.injected, tallies: inj.tallies },
+    });
+  });
+
+  // 3. 7th-house / Descendant cusp prose.
+  safeRun("fixDescendantCuspMentionsInProse", () =>
+    fixDescendantCuspMentionsInProse(parsedContent, ctx, log),
+  );
+
+  // 4. Ascendant/Descendant label swaps (token-purity guard).
+  safeRun("fixAscendantDescendantLabelSwapsInProse", () =>
+    fixAscendantDescendantLabelSwapsInProse(parsedContent, ctx, log),
+  );
+
+  // 5. Natal retrograde mentions in prose.
+  safeRun("fixNatalRetrogradeMentionsInProse", () =>
+    fixNatalRetrogradeMentionsInProse(parsedContent, ctx, log),
+  );
+
+  // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
+  safeRun("correctSignRulershipClaimsInProse", () =>
+    correctSignRulershipClaimsInProse(parsedContent, log),
+  );
+
+  // 7. SR planet positions in prose.
+  safeRun("correctSrPlanetPositionsInProse", () =>
+    correctSrPlanetPositionsInProse(parsedContent, ctx, log),
+  );
+
+  // 8. Strip broken Best/Caution bullets.
+  safeRun("stripBrokenVsBullets", () =>
+    stripBrokenVsBullets(parsedContent, log),
+  );
+
+  // 9. Force Best vs Caution windows distinct.
+  safeRun("forceBestVsCautionDistinct", () =>
+    forceBestVsCautionDistinct(parsedContent, log),
+  );
+
+  // 10. Accuracy review (attaches _accuracy_review to parsedContent).
+  safeRun("runAccuracyReview", () =>
+    runAccuracyReview(parsedContent, ctx),
+  );
+};
+
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   const keptSections: any[] = [];
