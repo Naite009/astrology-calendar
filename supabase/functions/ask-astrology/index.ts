@@ -4308,6 +4308,14 @@ const runPostProcessingPipeline = (
   safeRun("runAccuracyReview", () =>
     runAccuracyReview(parsedContent, ctx),
   );
+
+  // 11. Drop summary_box items missing label or value (and empty sections).
+  // Runs LAST so any backfills produced by earlier passes (timing windows,
+  // best/caution distinctness, etc.) get a chance to populate values
+  // before this pass enforces the no-empty-item rule before the gate.
+  safeRun("dropEmptySummaryItemsAndSections", () =>
+    dropEmptySummaryItemsAndSections(parsedContent, log),
+  );
 };
 
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
