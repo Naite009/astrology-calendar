@@ -702,9 +702,17 @@ export function downloadBirthdayJSONStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
-  // Calculate age at this solar return
+  // Calculate the effective Solar Return year. If srChart.solarReturnYear is missing,
+  // invalid, or matches the birth year (which would mean age 0 — never a real SR),
+  // fall back to the current calendar year so we never export a birth-year SR.
   const birthYear = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
-  const srAge = !isNaN(birthYear) ? srChart.solarReturnYear - birthYear : null;
+  const rawSrYear = Number(srChart.solarReturnYear);
+  const currentYear = new Date().getFullYear();
+  const isValidSrYear = Number.isFinite(rawSrYear)
+    && rawSrYear > 1900 && rawSrYear < 2200
+    && (isNaN(birthYear) || rawSrYear !== birthYear);
+  const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
+  const srAge = !isNaN(birthYear) ? effectiveSrYear - birthYear : null;
 
   const payload = {
     report_type: "solar_return_birthday",
@@ -713,7 +721,7 @@ export function downloadBirthdayJSONStandalone(
       cakeImageUrl,
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: srChart.solarReturnYear,
+      solarReturnYear: effectiveSrYear,
       solarReturnYearSpan: '',
       solarReturnAge: srAge,
       solarReturnLabel: srAge !== null
