@@ -443,7 +443,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             sunSign: sunZodiac.sign,
             sunDegree: sunZodiac.degree.toString().padStart(2, "0"),
             sunMinutes: sunZodiac.minutes.toString().padStart(2, "0"),
-            name: MOON_NAMES[fullMoon.date.getMonth()] || "",
+            name: getFullMoonName(fullMoon.date),
             isSupermoon,
             distance: Math.round(distance),
             signEntryDate,
