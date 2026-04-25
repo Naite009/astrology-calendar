@@ -9455,33 +9455,32 @@ ${natalGroundTruthLines}`
         try { walkAudit(parsedContent, "$"); } catch (_e) { /* non-fatal */ }
 
         const postGateLog: HygieneLog = [];
-        fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // SHARED POST-PROCESSING PIPELINE (post-gate run): same 10
+        // passes that ran pre-gate. Re-running here is idempotent and
+        // serves as defense-in-depth against any prose mutation the
+        // Replit /check-reading gate may have performed (re-asserting
+        // wrong cusps, swapping rulers, flipping retrograde flags). All
+        // six passes that USED to be inlined here for SR/natal/cusp/
+        // rulership/retrograde corrections — plus the four that were
+        // formerly in the "final hygiene + accuracy review" block
+        // (stripBrokenVsBullets, forceBestVsCautionDistinct,
+        // runAccuracyReview, injectDeterministicModalityElement) —
+        // now run together via runPostProcessingPipeline so no path-
+        // specific drift can re-appear.
+        runPostProcessingPipeline(parsedContent, sanitizedChartContext || "", postGateLog);
+        // The non-pipeline correctors (still post-gate-only because
+        // they're not on the shared-pipeline drift-prevention list)
+        // continue to run individually below.
         fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        correctSignRulershipClaimsInProse(parsedContent, postGateLog);
-        // SR planet position guard — reverts any "SR <Planet> 26°21' Leo"
-        // back to the deterministic SR sign (e.g. Pisces) when Replit or
-        // the AI corrupted it. Reads truth from chart context, not JSON.
-        correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        // SR PLANET HOUSE PROSE FIXER (post-gate): same as the in-line
-        // hygiene pass — strip any "SR <Planet> in the <wrong-Nth> house"
-        // that Replit re-introduced or that slipped past the first run.
+        // SR PLANET HOUSE PROSE FIXER (post-gate): strip any "SR <Planet>
+        // in the <wrong-Nth> house" that Replit re-introduced.
         correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        // SR HOUSE CUSP CORRECTOR (post-gate): rewrite any "SR Nth house
-        // in <Sign>" / "SR Descendant in <Sign>" claim against the
-        // deterministic SR House Cusps block.
+        // SR HOUSE CUSP CORRECTOR (post-gate).
         correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        // FIX 1 & 2 (post-gate) — SR placement table house numbers and
-        // retrograde flags must align with the deterministic chart
-        // context on EVERY reading type, not just relationship. The
-        // in-line hygiene block already runs these, but Replit's gate
-        // can revert flags or shift house numbers; rerunning here makes
-        // the safety net symmetric for health/career/money/etc.
-        normalizePlacementTableRetrograde(parsedContent, postGateLog, sanitizedChartContext || "");
+        // SR HOUSE NUMBER OVERRIDE (post-gate).
         overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
