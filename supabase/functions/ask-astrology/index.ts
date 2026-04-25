@@ -7250,22 +7250,41 @@ Deno.serve(async (req) => {
       : "";
 
     const svc = getServiceClient();
-    const { data: jobRow, error: insertErr } = await svc
-      .from("ask_jobs")
-      .insert({
-        user_id: userId,
-        chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
-        status: "queued",
-        prompt: latestUserMessage.slice(0, 4000),
-      })
-      .select("id")
-      .single();
+    let jobRow: { id: string } | null = null;
+    let insertErr: any = null;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const { data, error } = await svc
+        .from("ask_jobs")
+        .insert({
+          user_id: userId,
+          chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+          status: "queued",
+          prompt: latestUserMessage.slice(0, 4000),
+        })
+        .select("id")
+        .single();
+
+      jobRow = data as { id: string } | null;
+      insertErr = error;
+
+      if (!insertErr && jobRow) break;
+
+      console.error(`[ask-astrology] Failed to insert job row (attempt ${attempt}/3):`, insertErr);
+      if (attempt < 3 && isRetryableQueueError(insertErr)) {
+        await sleep(attempt * 1500);
+        continue;
+      }
+      break;
+    }
 
     if (insertErr || !jobRow) {
-      console.error("[ask-astrology] Failed to insert job row:", insertErr);
-      return new Response(JSON.stringify({ error: "Could not queue request. Please try again." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({
+        error: "Could not queue request. Please try again.",
+        retryable: isRetryableQueueError(insertErr),
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "30" },
       });
     }
 
