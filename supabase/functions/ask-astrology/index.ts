@@ -2973,10 +2973,33 @@ const correctUnverifiedSrAngleClaims = (
     let changed = false;
 
     // 1) Fix the angle name if the model picked the wrong end of the axis.
-    if (claimedAngle !== closerAngle) {
-      next = next.replace(angleRe, (m) => m.replace(claimedAngle, closerAngle));
+    //
+    // CRITICAL: only flip the label when we have positive sign-evidence that
+    // the cited coordinates belong to the OTHER angle. The previous
+    // "closer-by-orb" heuristic incorrectly flipped correct Descendant
+    // references when the SR planet was conjunct one angle and (by
+    // symmetry) opposition the other within the 9° angle orb — both
+    // results would be valid aspects, but only one matches the cited sign.
+    //
+    // Logic:
+    //   - If the sentence cites the Ascendant's sign → claim must be
+    //     "Ascendant"; flip Descendant→Ascendant.
+    //   - If the sentence cites the Descendant's sign → claim must be
+    //     "Descendant"; flip Ascendant→Descendant.
+    //   - If neither sign is cited, leave the label alone (no false flips).
+    const ascSignRe = new RegExp(`\\b${angles.Ascendant.sign}\\b`, "i");
+    const dscSignRe = new RegExp(`\\b${angles.Descendant.sign}\\b`, "i");
+    const citesAscSign = ascSignRe.test(next);
+    const citesDscSign = dscSignRe.test(next);
+    if (claimedAngle === "Descendant" && citesAscSign && !citesDscSign) {
+      next = next.replace(angleRe, (m) => m.replace(/Descendant/i, "Ascendant"));
+      changed = true;
+    } else if (claimedAngle === "Ascendant" && citesDscSign && !citesAscSign) {
+      next = next.replace(angleRe, (m) => m.replace(/Ascendant/i, "Descendant"));
       changed = true;
     }
+    // If the cited sign matches the claimed angle's sign (or no sign is
+    // cited at all), trust the model — do not flip purely on orb math.
 
     // 2) Fix any explicit "within X°[Y']" orb claim that disagrees with
     //    the real orb by more than 0.5°.
@@ -3807,16 +3830,39 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
                 });
               }
             }
-            const orbRe = /\(([^)]*?\b(?:orb|°)[^)]*)\)/gi;
-            let om: RegExpExecArray | null;
-            while ((om = orbRe.exec(val)) !== null) {
-              if (/\d/.test(om[1])) {
-                flags.push({
-                  section: localTitle || "(unknown)",
-                  field: key,
-                  reason: "orb stated in prose — Call C must not write orbs (they are rendered separately)",
-                  snippet: om[0],
-                });
+            // Only flag EXPLICIT orb statements — not planet-position
+            // citations like "(SR Uranus opposing natal Venus at 0°54'
+            // Sagittarius)". A real orb statement either uses the word
+            // "orb" next to a degree number, or uses an "within X°" /
+            // "tight N° orb" / "N° applying" phrasing.
+            //
+            // Examples that SHOULD flag:
+            //   "(0°15' orb)"
+            //   "(orb 0°15')"
+            //   "within 1° orb"
+            //   "tight 0° orb"
+            // Examples that should NOT flag:
+            //   "(SR Uranus opposing natal Venus at 0°54' Sagittarius)"
+            //   "(natal Sun at 28°11' Libra)"
+            const explicitOrbRes: RegExp[] = [
+              // "(0°15' orb)" or "(0° orb)" — degree number then 'orb'
+              /\(\s*\d+°(?:\s*\d{1,2}['′])?\s*orb[^)]*\)/i,
+              // "(orb 0°15')" — 'orb' then degree number
+              /\(\s*orb\s*[:=]?\s*\d+°(?:\s*\d{1,2}['′])?[^)]*\)/i,
+              // "within X°[Y']" anywhere in the parenthetical
+              /\(\s*within\s+\d+°(?:\s*\d{1,2}['′])?[^)]*\)/i,
+            ];
+            for (const orbExplicitRe of explicitOrbRes) {
+              const eom = val.match(new RegExp(orbExplicitRe.source, "gi"));
+              if (eom) {
+                for (const snip of eom) {
+                  flags.push({
+                    section: localTitle || "(unknown)",
+                    field: key,
+                    reason: "orb stated in prose — Call C must not write explicit orbs (they are rendered separately)",
+                    snippet: snip,
+                  });
+                }
               }
             }
           } else if (val && typeof val === "object") {
