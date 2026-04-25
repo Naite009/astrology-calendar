@@ -7279,12 +7279,17 @@ Deno.serve(async (req) => {
     }
 
     if (insertErr || !jobRow) {
+      const retryable = isRetryableQueueError(insertErr);
       return new Response(JSON.stringify({
         error: "Could not queue request. Please try again.",
-        retryable: isRetryableQueueError(insertErr),
+        retryable,
+        queued: false,
       }), {
-        status: 503,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "30" },
+        // Keep retryable queue failures inside the app flow instead of
+        // surfacing as a platform runtime popup. The client still retries and
+        // shows a normal toast when the queue cannot accept the job.
+        status: retryable ? 200 : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "120" },
       });
     }
 
