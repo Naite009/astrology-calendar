@@ -1,7 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+export interface UserLocationsInput {
+  current?: string;
+  considering1?: string;
+  considering2?: string;
+}
+
+const sanitizeCityField = (raw: string): string =>
+  raw.replace(/[^A-Za-z0-9 ,.\-'()]/g, "").slice(0, 80);
 
 export interface QuickTopic {
   id: string;
@@ -186,7 +196,7 @@ function buildPromptWithContext(
 }
 
 interface AskQuickTopicsProps {
-  onSelect: (prompt: string) => void;
+  onSelect: (prompt: string, userLocations?: UserLocationsInput) => void;
   chartName: string;
   birthDate: string;
   birthTime: string;
@@ -197,6 +207,12 @@ interface AskQuickTopicsProps {
 export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birthLocation, disabled }: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
+  // Relocation-only inline city inputs. Rendered next to the personal-context
+  // textarea when activeTopic.id === "relocation". All optional — empty
+  // values are filtered before the userLocations object is sent.
+  const [relocCurrent, setRelocCurrent] = useState("");
+  const [relocCity1, setRelocCity1] = useState("");
+  const [relocCity2, setRelocCity2] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -209,6 +225,9 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
     if (disabled) return;
     setActiveTopic(topic);
     setPersonalContext("");
+    setRelocCurrent("");
+    setRelocCity1("");
+    setRelocCity2("");
   };
 
   const handleSubmit = () => {
@@ -221,9 +240,25 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
       birthLocation,
       personalContext
     );
+    let userLocations: UserLocationsInput | undefined;
+    if (activeTopic.id === "relocation") {
+      const current = relocCurrent.trim();
+      const considering1 = relocCity1.trim();
+      const considering2 = relocCity2.trim();
+      if (current || considering1 || considering2) {
+        userLocations = {
+          current: current || undefined,
+          considering1: considering1 || undefined,
+          considering2: considering2 || undefined,
+        };
+      }
+    }
     setActiveTopic(null);
     setPersonalContext("");
-    onSelect(prompt);
+    setRelocCurrent("");
+    setRelocCity1("");
+    setRelocCity2("");
+    onSelect(prompt, userLocations);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -266,6 +301,65 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
                 </p>
               </div>
             </div>
+
+            {activeTopic.id === "relocation" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Your Location Choices (optional)
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Add any cities you want analyzed specifically. The reading will include a
+                    dedicated <span className="font-medium text-foreground">"Your Location Choices"</span>{" "}
+                    section that maps each one to your chart. Leave blank for the general reading.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-current">
+                      Current city
+                    </label>
+                    <Input
+                      id="reloc-current"
+                      placeholder="e.g. Brooklyn, NY"
+                      value={relocCurrent}
+                      maxLength={80}
+                      onChange={(e) => setRelocCurrent(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c1">
+                      Considering #1
+                    </label>
+                    <Input
+                      id="reloc-c1"
+                      placeholder="e.g. Lisbon, Portugal"
+                      value={relocCity1}
+                      maxLength={80}
+                      onChange={(e) => setRelocCity1(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c2">
+                      Considering #2
+                    </label>
+                    <Input
+                      id="reloc-c2"
+                      placeholder="e.g. Mexico City, Mexico"
+                      value={relocCity2}
+                      maxLength={80}
+                      onChange={(e) => setRelocCity2(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">

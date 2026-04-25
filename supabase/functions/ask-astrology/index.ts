@@ -4440,7 +4440,17 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
     total_flags: dedup.length,
     flags: dedup,
   };
-  if (dedup.length > 0) {
+  if (dedup.length > 5) {
+    // Threshold breach — surfaces in edge function logs so noisy generations
+    // are auditable. Does NOT block the reading; the gate runs separately.
+    const qt = String((parsedContent as any)?.question_type || "unknown");
+    const reasons: Record<string, number> = {};
+    for (const f of dedup) reasons[f.reason] = (reasons[f.reason] || 0) + 1;
+    console.warn(
+      `[ask-astrology][ACCURACY_REVIEW_OVER_THRESHOLD] _accuracy_review generated ${dedup.length} flags (>5) on a ${qt} reading. Manual review recommended.`,
+      { total: dedup.length, by_reason: reasons, top_examples: dedup.slice(0, 3) },
+    );
+  } else if (dedup.length > 0) {
     console.warn("[ask-astrology] accuracy review flagged sentences", { total: dedup.length });
   } else {
     console.info("[ask-astrology] accuracy review clean — no flags");
