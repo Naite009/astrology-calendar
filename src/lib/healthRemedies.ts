@@ -238,10 +238,18 @@ export function assessConstitutionalStrength(
 
   // Mars condition
   const marsSign = planets.Mars?.sign;
+  let marsScored = false;
   if (marsSign === 'Aries' || marsSign === 'Capricorn' || marsSign === 'Scorpio') {
     score += 8; factors.push(`Mars in ${marsSign}: strong physical energy (+8)`); positiveContributors++;
+    marsScored = true;
   } else if (marsSign === 'Cancer' || marsSign === 'Libra') {
     score -= 5; factors.push(`Mars in ${marsSign}: gentler physical energy (-5)`); negativeContributors++;
+  }
+
+  // Mars in fire signs (Leo/Sagittarius) — only if not already scored above.
+  // These two Mars rules are mutually exclusive; never stack.
+  if (!marsScored && (marsSign === 'Leo' || marsSign === 'Sagittarius')) {
+    score += 5; factors.push(`Mars in ${marsSign}: bold action energy (+5)`); positiveContributors++;
   }
 
   // Saturn condition
@@ -253,6 +261,18 @@ export function assessConstitutionalStrength(
   const jupSign = planets.Jupiter?.sign;
   if (jupSign === 'Sagittarius' || jupSign === 'Cancer' || jupSign === 'Pisces') {
     score += 5; factors.push(`Jupiter in ${jupSign}: natural healing optimism (+5)`); positiveContributors++;
+  }
+
+  // Moon dignity — Cancer (rulership) or Taurus (exaltation)
+  const moonSign = planets.Moon?.sign;
+  if (moonSign === 'Cancer' || moonSign === 'Taurus') {
+    score += 5; factors.push(`Moon in ${moonSign}: emotional and somatic resilience (+5)`); positiveContributors++;
+  }
+
+  // Venus dignity — Taurus/Libra (rulership) or Pisces (exaltation)
+  const venusSign = planets.Venus?.sign;
+  if (venusSign === 'Taurus' || venusSign === 'Libra' || venusSign === 'Pisces') {
+    score += 3; factors.push(`Venus in ${venusSign}: harmonizing recovery support (+3)`); positiveContributors++;
   }
 
   // Rating requires CORROBORATION — a single positive factor (e.g., just
