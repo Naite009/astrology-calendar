@@ -34,12 +34,19 @@ export function writeActiveJobId(chartId: string, jobId: string | null) {
   } catch { /* ignore quota */ }
 }
 
+export interface UserLocationsInput {
+  current?: string;
+  considering1?: string;
+  considering2?: string;
+}
+
 interface SubmitArgs {
   messages: any[];
   chartContext: string;
   currentDate: string;
   deterministicTiming: any;
   chartId: string;
+  userLocations?: UserLocationsInput;
 }
 
 /**

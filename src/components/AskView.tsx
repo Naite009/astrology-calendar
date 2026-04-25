@@ -3,6 +3,7 @@ import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Downl
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
@@ -297,6 +298,20 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [chartSearch, setChartSearch] = useState("");
+
+  // Relocation Quick Topic input form: when the user picks "Where Should I Live?",
+  // we surface this form so they can optionally name their current city plus up
+  // to two cities they're considering. All three fields are optional — clicking
+  // "Skip" submits the standard general relocation reading.
+  const [relocationFormPrompt, setRelocationFormPrompt] = useState<string | null>(null);
+  const [relocationCurrentCity, setRelocationCurrentCity] = useState("");
+  const [relocationCity1, setRelocationCity1] = useState("");
+  const [relocationCity2, setRelocationCity2] = useState("");
+
+  const sanitizeCityField = (raw: string): string => {
+    // Allow letters, spaces, commas, hyphens, apostrophes, periods. Cap at 80 chars.
+    return raw.replace(/[^A-Za-z\u00C0-\u024F\s,'.\-]/g, "").slice(0, 80);
+  };
 
   const syncThreadIds = useCallback((nextThreadIds: Record<string, string>) => {
     threadIdsRef.current = nextThreadIds;
@@ -1092,7 +1107,32 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const handleQuickTopic = (prompt: string) => {
+    // Relocation Quick Topic: open the optional city-input form before submitting.
+    // Detect by the same keyword family the prompt builder uses (the auto-generated
+    // relocation prompt always contains "best cities for relocation").
+    if (/best cities for relocation|Where Should I Live/i.test(prompt)) {
+      setRelocationCurrentCity("");
+      setRelocationCity1("");
+      setRelocationCity2("");
+      setRelocationFormPrompt(prompt);
+      return;
+    }
     void handleSubmitDirect(prompt);
+  };
+
+  const submitRelocationWithCities = (skipCities: boolean) => {
+    if (!relocationFormPrompt) return;
+    const userLocations = skipCities
+      ? undefined
+      : {
+          current: relocationCurrentCity.trim() || undefined,
+          considering1: relocationCity1.trim() || undefined,
+          considering2: relocationCity2.trim() || undefined,
+        };
+    const hasAny = userLocations && (userLocations.current || userLocations.considering1 || userLocations.considering2);
+    const promptToSend = relocationFormPrompt;
+    setRelocationFormPrompt(null);
+    void handleSubmitDirect(promptToSend, hasAny ? userLocations : undefined);
   };
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
@@ -1428,7 +1468,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return top.type;
   };
 
-  const handleSubmitDirect = async (directQuestion?: string) => {
+  const handleSubmitDirect = async (
+    directQuestion?: string,
+    userLocations?: { current?: string; considering1?: string; considering2?: string },
+  ) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
 
@@ -1470,6 +1513,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
           chartId: chartIdForRequest,
+          userLocations,
         },
         {
           signal: controller.signal,
@@ -2005,7 +2049,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       Or choose a topic for a comprehensive reading:
                     </p>
                   </div>
-                  {selectedChart && (
+                  {selectedChart && !relocationFormPrompt && (
                     <AskQuickTopics
                       onSelect={handleQuickTopic}
                       chartName={selectedChart.name || "Unknown"}
@@ -2014,6 +2058,77 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       birthLocation={selectedChart.birthLocation || "unknown location"}
                       disabled={isLoading}
                     />
+                  )}
+                  {selectedChart && relocationFormPrompt && (
+                    <Card className="w-full max-w-lg text-left">
+                      <CardHeader>
+                        <CardTitle className="text-base">Tell me about the cities you're considering</CardTitle>
+                        <CardDescription>
+                          All fields are optional. If you fill any of them in, the reading will include a
+                          dedicated <span className="font-medium">"Your Location Choices"</span> section that
+                          analyzes those specific cities against your chart.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-current">
+                            Current city (optional)
+                          </label>
+                          <Input
+                            id="reloc-current"
+                            placeholder="e.g. Brooklyn, NY"
+                            value={relocationCurrentCity}
+                            maxLength={80}
+                            onChange={(e) => setRelocationCurrentCity(sanitizeCityField(e.target.value))}
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-c1">
+                            Considering city #1 (optional)
+                          </label>
+                          <Input
+                            id="reloc-c1"
+                            placeholder="e.g. Lisbon, Portugal"
+                            value={relocationCity1}
+                            maxLength={80}
+                            onChange={(e) => setRelocationCity1(sanitizeCityField(e.target.value))}
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground" htmlFor="reloc-c2">
+                            Considering city #2 (optional)
+                          </label>
+                          <Input
+                            id="reloc-c2"
+                            placeholder="e.g. Mexico City, Mexico"
+                            value={relocationCity2}
+                            maxLength={80}
+                            onChange={(e) => setRelocationCity2(sanitizeCityField(e.target.value))}
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() => submitRelocationWithCities(true)}
+                          >
+                            Skip — just give me the general relocation reading
+                          </Button>
+                          <Button
+                            type="button"
+                            disabled={isLoading}
+                            onClick={() => submitRelocationWithCities(false)}
+                          >
+                            Generate reading
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
               )}

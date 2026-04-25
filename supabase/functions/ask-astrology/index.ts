@@ -1146,7 +1146,131 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
-// OFF-TOPIC DOMAIN PHRASES — Defect 3
+// RELOCATION TIMING-SECTION DEDUPE
+// The relocation reading's timing_section repeatedly emits the same
+// outer-planet meaning sentences ("Pluto squaring this part of your chart…",
+// "Uranus opposing your X…") across multiple windows. The cross-section
+// aspect deduper above explicitly SKIPS timing_section because timing data
+// is intentionally repeated cell-to-cell. This pass runs ONLY when
+// question_type === "relocation" and ONLY on timing_section bodies/
+// descriptions/paragraphs[].
+// Strategy: normalize each sentence (lowercase, collapse whitespace, strip
+// terminal punctuation), drop any sentence whose normalized form has already
+// appeared in any other window in the same timing_section. Also pattern-
+// matches outer-planet aspect families (Pluto+square, Uranus+opposition,
+// etc.) and keeps only the first descriptive sentence per family.
+// ──────────────────────────────────────────────────────────────────────────
+const OUTER_PLANET_ASPECT_FAMILIES: Array<{ key: string; rx: RegExp }> = [
+  { key: "pluto-square",      rx: /\bpluto\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "pluto-opposition",  rx: /\bpluto\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "pluto-conjunct",    rx: /\bpluto\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "pluto-trine",       rx: /\bpluto\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "pluto-sextile",     rx: /\bpluto\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "uranus-square",     rx: /\buranus\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "uranus-opposition", rx: /\buranus\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "uranus-conjunct",   rx: /\buranus\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "uranus-trine",      rx: /\buranus\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "uranus-sextile",    rx: /\buranus\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "neptune-square",    rx: /\bneptune\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "neptune-opposition",rx: /\bneptune\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "neptune-conjunct",  rx: /\bneptune\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "neptune-trine",     rx: /\bneptune\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "neptune-sextile",   rx: /\bneptune\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "saturn-return",     rx: /\bsaturn\s+return\b/i },
+  { key: "saturn-square",     rx: /\bsaturn\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "saturn-opposition", rx: /\bsaturn\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+];
+const dedupeRelocationTimingSection = (parsedContent: any, log: HygieneLog) => {
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt !== "relocation" && qt !== "travel" && qt !== "location") return;
+  if (!Array.isArray(parsedContent?.sections)) return;
+
+  let removedSentences = 0;
+  const examples: string[] = [];
+
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+
+    // Track normalized sentences and outer-planet families seen anywhere in
+    // THIS timing_section (across all windows/transits/entries).
+    const seenSentence = new Set<string>();
+    const seenFamily = new Set<string>();
+
+    const cleanProse = (text: string): string => {
+      if (!text || typeof text !== "string" || text.length < 20) return text;
+      const sentences = splitSentencesForMeta(text);
+      const kept: string[] = [];
+      for (const sent of sentences) {
+        const norm = sent
+          .toLowerCase()
+          .replace(/[\u2013\u2014]/g, "-")
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/[.!?]+$/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // Exact-duplicate check (across this timing_section).
+        if (norm.length >= 25 && seenSentence.has(norm)) {
+          removedSentences++;
+          if (examples.length < 5) examples.push(`exact: "${sent.slice(0, 90)}"`);
+          continue;
+        }
+
+        // Outer-planet family check.
+        let familyHit: string | null = null;
+        for (const fam of OUTER_PLANET_ASPECT_FAMILIES) {
+          if (fam.rx.test(sent)) { familyHit = fam.key; break; }
+        }
+        if (familyHit) {
+          if (seenFamily.has(familyHit)) {
+            removedSentences++;
+            if (examples.length < 5) examples.push(`family[${familyHit}]: "${sent.slice(0, 90)}"`);
+            continue;
+          }
+          seenFamily.add(familyHit);
+        }
+
+        if (norm.length >= 25) seenSentence.add(norm);
+        kept.push(sent);
+      }
+      return kept.join(" ").trim();
+    };
+
+    const walk = (node: any) => {
+      if (Array.isArray(node)) { for (const x of node) walk(x); return; }
+      if (!node || typeof node !== "object") return;
+      for (const [key, val] of Object.entries(node)) {
+        // Don't touch metadata fields (date ranges, labels, planet names, etc.)
+        if (DEDUPE_SKIP_FIELD_KEYS.has(key)) continue;
+        if (typeof val === "string") {
+          // Only clean prose-shaped fields; leave short labels alone.
+          if (key === "body" || key === "description" || key === "summary" || key === "text" || key === "paragraph") {
+            const next = cleanProse(val);
+            if (next !== val) (node as any)[key] = next;
+          } else if (val.length > 80) {
+            // Long free-text fields we don't recognize — still apply.
+            const next = cleanProse(val);
+            if (next !== val) (node as any)[key] = next;
+          }
+        } else if (val && typeof val === "object") {
+          walk(val);
+        }
+      }
+    };
+    walk(section);
+  }
+
+  if (removedSentences > 0) {
+    log.push({
+      type: "relocation_timing_duplicates_removed",
+      detail: { count: removedSentences, examples },
+    });
+    console.info("[ask-astrology] relocation timing duplicates removed", { count: removedSentences, examples });
+  }
+};
+
+
 // Aspect-interpretation library entries are sometimes written in a
 // relationship-leaning voice ("romanticizing people", "idealizing your
 // partner") and get pasted into career / money / health readings unchanged.
@@ -7019,13 +7143,14 @@ SR LOVE ACTIVATION STYLE:
      STRICT NO-CITY-RECOMMENDATION RULE: This section MUST NOT recommend cities, name top cities, rank cities, or describe what living in a specific city feels like. That work belongs ONLY in "Location Fit Profiles" and the city_comparison cards below. This section is purely about EXPLAINING the lines/method and listing the raw line data (e.g., "Venus MC line at 14°W passes through western Portugal and the UK"). Naming a line passes through a place is fine; recommending or rating that place is FORBIDDEN here.
      BODY COPY RULE — CRITICAL: The "body" field MUST be user-facing prose written directly to the reader. Do NOT echo system instructions, meta-descriptions, or developer scaffolding. Open with a clean 2-3 sentence plain-language explanation of what astrocartography lines are. Example opener: "Your astrocartography lines show where in the world specific planetary energies are strongest for you. Natal lines are permanent — they describe long-term resonance with a place. Solar Return lines shift each birthday year and show where this year's themes are most activated geographically." Then list the actual line/angle data (or, in Astrology-Based mode, the chart-derived reasoning method) in user-facing language. Keep this section to 4-6 sentences total — it is a setup section, not a recommendation section.)
   4. narrative_section — "Location Fit Profiles" (MANDATORY — this is the SINGLE per-city deep-dive section. For EACH top recommended city, provide a structured fit profile using exactly 4 bullets per city. Group cities using sub-headers in the body field. Structure per city:
-     - "body": REQUIRED, NOT OPTIONAL — must be 2-4 sentences of real prose BEFORE any city sub-headers or bullets. The body must (a) state which cities are being profiled and why these specific cities were selected (which natal/SR factors drove the shortlist — e.g., "These three cities were chosen because each activates a different supportive line: Lisbon sits near your Venus IC line, Mexico City near your Jupiter MC line, and Auckland near your Moon trine line"), (b) explain what the four-line per-city profile is measuring (Emotional, Social, Career, Energy), and (c) end with the city sub-headers (e.g., "**Lisbon, Portugal**") leading into the bullets. NEVER emit this section with an empty body and bullets only — the gate will reject it. NEVER make the body a single sentence. The body is the connective tissue that tells the reader what they're about to read.
+     - "body" (REQUIRED, 2-4 sentences, MUST be present — generating bullets without a body will fail validation): Open with a 2-4 sentence introduction that (a) names the cities being profiled, (b) states the criteria used to select them (which natal/SR placements drove the choice — e.g., "These three cities surfaced because they align with your 4th house Cancer Moon needing water proximity, your 10th house Capricorn ambition, and your SR Venus in Leo activating social visibility this year."), and (c) tells the reader what the four bullet categories below measure. Do NOT skip the body. Do NOT emit only bullets. After the intro, include the per-city sub-headers (e.g., "**Lisbon, Portugal**") followed by the 4-line profile.
      - "bullets": One bullet per city, each with 4 sub-points as the "text" field:
        { "label": "[City Name]", "text": "Emotional experience: [one sentence — how home and inner life feel here]. Social & relationship experience: [one sentence — how connection and love life feel here]. Career & public life experience: [one sentence — how work and visibility feel here]. Energy & lifestyle pace: [one sentence — how daily rhythm, motivation, and physical energy feel here]." }
      - Each sentence must describe what the person EXPERIENCES — a daily experience, a feeling, and a pattern.
      - IMAGINABILITY RULE: Every key sentence must describe something the user can picture in real life. If it sounds abstract, rewrite it.
      - FORBIDDEN: "supports emotional growth", "enhances career potential", "activates social energy"
      - REQUIRED: "you may feel...", "your social life tends to...", "career here may feel...", "the pace of life here...")
+  4b. narrative_section — "Your Location Choices" (CONDITIONAL — include this section ONLY when a "USER-SUPPLIED LOCATIONS" block appears later in the system prompt naming a current city or considering cities. Place this section AFTER "Location Fit Profiles" and BEFORE "Top Cities This Year". Follow the structure defined in the USER-SUPPLIED LOCATIONS block exactly: per user-supplied city, cover (1) Chart themes vs. this city, (2) What it offers that matches, (3) What it lacks or challenges, (4) Overall fit. The "body" field of this section is REQUIRED and must briefly introduce that this section analyzes the SPECIFIC cities the user named, distinct from the global recommendations below. If no USER-SUPPLIED LOCATIONS block is present, OMIT this section entirely.)
   5. city_comparison — "Top Cities This Year" (SR-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation. The "explanation" field here must NOT repeat the 4-line Location Fit Profile bullets verbatim — it should focus on the WHY (which lines/placements drive the score) and the THIS-YEAR-SPECIFIC angle, not re-describe daily life.)
   6. city_comparison — "This Year's Caution Zones" (SR-weighted, 2-3 caution cities)
   7. city_comparison — "Top Cities Long-Term" (natal-weighted, top 3 recommended cities with full sub-scores, tags, supports, cautions, explanation. Same anti-repetition rule: explanations focus on the LONG-TERM driver — natal lines, natal house emphasis — not the daily-life prose already in Location Fit Profiles.)
@@ -7036,11 +7161,17 @@ SR LOVE ACTIVATION STYLE:
 
   RELOCATION TRANSIT COMPLETENESS RULE (MANDATORY — applies to the entire relocation reading): If a transit is referenced ANYWHERE in the reading — including the Strategy Summary "Ideal Timing Window", any city explanation, or any narrative section — it MUST also appear as a named, standalone entry in the timing_section "Timing for a Move" array. Do not name a transit (e.g., "Jupiter trine your natal Sun, July 26 to August 20, 2026") in the summary or in a city write-up if the reader hasn't seen it as its own Timing Windows entry. Before finalizing, audit every section: every named transit must map to a Timing Windows entry, or it must be removed or genericized (e.g., "a supportive outer-planet window mid-2026" instead of naming the planet, aspect, and dates).
 
-  RELOCATION CROSS-SECTION TRANSIT UNIQUENESS RULE (MANDATORY — ZERO TOLERANCE): Each specific outer-planet transit (e.g., "Pluto square your natal Venus", "Uranus opposition your natal Sun", "Neptune trine your natal Moon") may appear in AT MOST ONE narrative paragraph across the ENTIRE timing_section. The standalone Timing Windows entries are the canonical home for each transit. If you have already written "Pluto squaring this part of your chart" in the Pluto entry, you may NOT write a second paragraph elsewhere in the timing_section that re-describes the same Pluto-square as a general theme. The same applies to "Uranus opposing", "Neptune squaring", "Saturn returning", etc. — each transit gets ONE descriptive paragraph, period. If the same transit is genuinely relevant to two different windows (e.g., a station + a return pass), reference the FIRST entry by name ("see the Pluto window above") instead of re-explaining the energy. WITHIN EACH timing entry: do not repeat the same sentence or near-paraphrase of the transit's meaning more than once. Two paragraphs is the absolute max per timing entry, and the second paragraph must add a NEW angle (best behavior, what to avoid, decision criteria) — not restate the first.
-
-
-
   RELOCATION CAUTION CITY CONTINUITY RULE (MANDATORY): Every city named in "This Year's Caution Zones" or "Long-Term Caution Zones" — and every city named in the Strategy Summary "What to Avoid" list — MUST have appeared earlier in the reading with at least a brief contextual mention, OR the caution entry itself MUST include a one-sentence note explaining why that city is being introduced for the first time at the caution stage (e.g., "Melbourne wasn't in the top recommendations because Solar Return Neptune ASC and Saturn ASC lines fall there, creating a fog-plus-pressure combination that overrides the few supports it offers"). Never drop a brand-new city name into the avoid list with no prior context — the reader should never wonder "where did this city come from?" If a caution city was not discussed earlier, lead its caution entry with one sentence locating it for the reader before describing the avoidance reasoning.
+
+  RELOCATION CROSS-SECTION UNIQUENESS RULE (MANDATORY — ZERO TOLERANCE): Each outer-planet transit (Pluto, Neptune, Uranus, Saturn) and each major eclipse may be DESCRIBED in AT MOST ONE place in the entire relocation reading — pick its best home (almost always the timing_section "Timing for a Move"). Specifically banned from repetition across sections OR across multiple windows in the same timing_section:
+    - "Pluto squaring this part of your chart" / "Pluto square your X" — describe ONCE; subsequent references must say "this same Pluto window" with NO re-explanation of the energy.
+    - "Uranus opposing your X" / "Uranus opposition" — describe ONCE; same rule.
+    - "Neptune square/trine/sextile/conjunct your X" — describe ONCE; same rule.
+    - "Saturn return" / "Saturn squaring your X" — describe ONCE; same rule.
+    - Any eclipse on the 4th/10th axis — describe ONCE; same rule.
+  If a transit spans multiple windows (e.g., Pluto retrograde-direct passes), list the additional date windows but DO NOT re-describe the meaning — write something like: "Second exact pass: [date range] (same dynamic as above, sharper window for action)." Re-explaining the same transit in two paragraphs is the single most common defect in this reading type and triggers the deterministic dedup pass — but the model is responsible for not generating duplicates in the first place.
+
+  TIMING ENTRY PARAGRAPH CAP: Each individual timing_section entry may contain AT MOST 2 paragraphs in its body/description. The second paragraph (if present) MUST add a NEW angle (best behavior during the window, what to avoid, criteria for go/no-go) — it must NOT restate the meaning of the transit in different words. If you cannot add a new angle in paragraph 2, leave the entry at one paragraph.
 
   TRADEOFFS RULE (REQUIRED — prevents generic answers):
   Every recommended place MUST include one clear downside: what might feel limiting, what might get frustrating, what this place does NOT support. No city gets a free pass.
@@ -7327,7 +7458,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId } = body;
+    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
 
     // === STATUS POLL: client polls GET-style POST with { jobId } only ===
     if (existingJobId && !messages) {
@@ -7423,7 +7554,7 @@ Deno.serve(async (req) => {
 
     // Kick off background processing — survives client disconnect / tab switch / HMR
     // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
-    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming }));
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations }));
 
     return new Response(JSON.stringify({ jobId, status: "queued" }), {
       status: 202,
@@ -7449,8 +7580,9 @@ async function processJob(args: {
   chartContext: any;
   currentDate: any;
   deterministicTiming: any;
+  userLocations?: { current?: string; considering1?: string; considering2?: string } | null;
 }) {
-  const { jobId, messages, chartContext, currentDate, deterministicTiming } = args;
+  const { jobId, messages, chartContext, currentDate, deterministicTiming, userLocations } = args;
   const svc = getServiceClient();
   const PROCESS_WALL_CLOCK_BUDGET_MS = 330_000;
   const processStartedAt = Date.now();
@@ -7737,8 +7869,57 @@ HARD RULE — applies to every sentence:
       .filter(Boolean)
       .join("\n\n");
 
+    // USER LOCATIONS BLOCK — only injected for relocation questions when the
+    // client supplied at least one of: current city, considering city #1,
+    // considering city #2. Drives the mandatory "Your Location Choices"
+    // narrative_section in the relocation reading outline.
+    const buildUserLocationsBlock = (): string | null => {
+      if (!isLocationQuestion) return null;
+      if (!userLocations || typeof userLocations !== "object") return null;
+      const sanitize = (v: unknown): string | null => {
+        if (typeof v !== "string") return null;
+        const cleaned = v.replace(/[^A-Za-z\u00C0-\u024F\s,'.\-]/g, "").trim().slice(0, 80);
+        return cleaned.length > 0 ? cleaned : null;
+      };
+      const cur = sanitize((userLocations as any).current);
+      const c1 = sanitize((userLocations as any).considering1);
+      const c2 = sanitize((userLocations as any).considering2);
+      const considering = [c1, c2].filter(Boolean) as string[];
+      if (!cur && considering.length === 0) return null;
+
+      const consideringList = considering.length > 0
+        ? considering.map((c, i) => `  ${i + 1}. ${c}`).join("\n")
+        : "  (none provided)";
+
+      return `--- USER-SUPPLIED LOCATIONS (RELOCATION READING) ---
+The user has explicitly named the following cities. Treat these as ground-truth user input.
+
+Current city: ${cur ?? "(not provided)"}
+Cities they're considering moving to:
+${consideringList}
+
+MANDATORY ADDITIONAL SECTION — "Your Location Choices":
+Insert a NEW narrative_section with title "Your Location Choices" AFTER the "Location Fit Profiles" section and BEFORE the "Top Cities This Year" city_comparison section. This section is REQUIRED whenever the user has supplied any of the cities above.
+
+For EACH user-supplied city (current city + each considering city, if provided), write a sub-section that covers, in this exact order:
+  1. CHART THEMES vs. THIS CITY — Name the 2-4 chart placements/themes most relevant to this city's energy. Translate into lived experience language: how would daily life in this city land against those placements? Use real qualities of the actual city — climate, pace, density, cost, social texture, career density, coastal/inland, urban/rural, cultural tone. Do NOT invent qualities; use widely-known characteristics. Example for Los Angeles: coastal-but-urban, image-conscious, car-dependent, career-forward (entertainment/tech/wellness), socially stimulating but transactional, high cost, bright/dry climate.
+  2. WHAT IT OFFERS THAT MATCHES — Concrete supports this city provides for this chart (1-3 specific points, behavioral language, no astrology jargon).
+  3. WHAT IT LACKS OR CHALLENGES — Concrete tradeoffs/frictions for this chart (1-3 specific points). Do NOT only list positives.
+  4. OVERALL FIT — One honest sentence: strong fit / mixed fit / poor fit / situational fit, plus the single most important reason why.
+
+REAL CITY QUALITIES — STRICT RULE: Use only widely-known qualities of the named city. If you do NOT have confident knowledge of a named city, write one sentence stating that honestly (e.g. "I don't have enough confident knowledge about [city] to map its specific qualities against your chart, so this section is general rather than location-specific.") and skip the per-step breakdown for that city. Do NOT invent statistics, neighborhoods, weather patterns, or industries you can't vouch for.
+
+CURRENT CITY HANDLING: When the user provided a current city, the sub-section for it MUST honestly assess whether the chart suggests this city is currently supporting them or working against them. Do not flatter; do not over-criticize. Use the same 4-step structure.
+
+LANGUAGE STYLE for "Your Location Choices": Same FORBIDDEN/REQUIRED phrase rules as the rest of the relocation reading apply (no "supports growth", no "enhances energy", no "you thrive in"). Use "you may feel...", "your day-to-day tends to...", "the tradeoff is that...", "what becomes harder here is..." etc.
+
+UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-supplied cities. Do NOT re-list these cities in "Top Cities This Year", "Top Cities Long-Term", or any other city_comparison card UNLESS they genuinely score in the top recommendations on their own merit. Conversely, the standard top-cities/long-term/caution sections must continue to evaluate the broader global pool — do not constrain those sections to only the user's cities.`;
+    };
+    const userLocationsBlock = buildUserLocationsBlock();
+
     const perQuestionTail = [
       compactRelationshipInstruction,
+      userLocationsBlock,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
     ]
       .filter(Boolean)
@@ -8793,6 +8974,10 @@ ${natalGroundTruthLines}`
           // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
           // so identical post-rewrite copies are also caught.
           dedupeAspectsAcrossSections(parsedContent, emissionLog);
+          // Relocation-only: also dedupe outer-planet meaning sentences inside
+          // the timing_section (which the cross-section pass intentionally
+          // skips because timing data is normally repeated cell-to-cell).
+          dedupeRelocationTimingSection(parsedContent, emissionLog);
           // NEW (Defect 3): Replace relationship-domain phrases ("romanticizing
           // people") that leaked into career/money/health/relocation readings
           // with domain-appropriate wording.
