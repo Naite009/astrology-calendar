@@ -480,6 +480,48 @@ const dedupeTimingInterpretations = (parsedContent: any) => {
   }
 };
 
+// Dedupe narrative_section bodies (and bullets[].text). The Erica Broder
+// relationship reading shipped with the same Saturn-sextile paragraph
+// repeated 5+ times inside a narrative_section.body — the timing dedup
+// above doesn't touch narrative bodies. This pass collapses exact &
+// near-duplicate paragraphs/sentences inside any narrative_section
+// before we even consider calling the external Replit gate.
+const dedupeNarrativeSectionBodies = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let changed = 0;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "narrative_section") continue;
+    if (typeof section.body === "string" && section.body.length > 0) {
+      const before = section.body;
+      const after = dedupeText(before);
+      if (after !== before) {
+        section.body = after;
+        changed++;
+        console.info("[ask-astrology] narrative body deduplicated", {
+          title: section.title,
+          before_len: before.length,
+          after_len: after.length,
+        });
+      }
+    }
+    if (Array.isArray(section.bullets)) {
+      for (const b of section.bullets) {
+        if (b && typeof b.text === "string" && b.text.length > 0) {
+          const before = b.text;
+          const after = dedupeText(before);
+          if (after !== before) {
+            b.text = after;
+            changed++;
+          }
+        }
+      }
+    }
+  }
+  if (changed > 0) {
+    console.info(`[ask-astrology] narrative dedup applied to ${changed} field(s)`);
+  }
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Enforce that balance_interpretation mentions every element/modality/
 // polarity with count≥1. If the AI omitted a non-zero category, append a
