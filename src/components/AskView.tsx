@@ -250,7 +250,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   // Track when generation started + latest job status so we can show an
   // elapsed-time counter and stage messages during the 4-7 min wait.
   const [loadingStartedAt, setLoadingStartedAt] = useState<number | null>(null);
-  const [jobStatus, setJobStatus] = useState<"queued" | "processing" | null>(null);
+  const [jobStatus, setJobStatus] = useState<"submitting" | "queued" | "processing" | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const handleStopGeneration = () => {
     if (abortControllerRef.current) {
@@ -385,6 +385,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
         // Still in-flight. Sanity check: drop if too old (server side cap is 10 min).
         const ageMs = Date.now() - new Date(row.created_at).getTime();
+        if (row.status === "queued" && ageMs > 75 * 1000) {
+          console.warn(`[AskView] Dropping queued job that never started ${jobId} (age ${Math.round(ageMs / 1000)}s)`);
+          writeActiveJobId(activeChartId, null);
+          toast.error("The report queue did not start. Please run it again.");
+          return;
+        }
+
         if (ageMs > 15 * 60 * 1000) {
           console.warn(`[AskView] Dropping stale active job ${jobId} (age ${Math.round(ageMs / 1000)}s)`);
           writeActiveJobId(activeChartId, null);
@@ -412,6 +419,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           if (err?.name === "AbortError") return;
           console.error("[AskView] Resume poll error:", err);
           writeActiveJobId(activeChartId, null);
+          if (String(err?.message || "") === "QUEUE_STALE") {
+            toast.error("The report queue did not start. Please run it again.");
+          }
         } finally {
           if (cancelled) return;
           setIsLoading(false);
@@ -1402,7 +1412,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setInput("");
     setIsLoading(true);
     setLoadingStartedAt(Date.now());
-    setJobStatus("queued");
+    setJobStatus("submitting");
 
     // Block auto-reload during long Ask generations (prevents tab-switch HMR
     // errors from killing the streaming response and discarding the result).
@@ -1502,7 +1512,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const msg = String(error?.message || "");
       if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
       else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
-      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 30 seconds and run it again.");
+      else if (msg === "QUEUE_STALE") toast.error("The report queue did not start. Please run it again.");
+      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 2 minutes and run it again.");
       else toast.error("Failed to get response. Please try again.");
     } finally {
       abortControllerRef.current = null;
@@ -1557,7 +1568,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     setEntries(trimmedEntries);
     setIsLoading(true);
     setLoadingStartedAt(Date.now());
-    setJobStatus("queued");
+    setJobStatus("submitting");
     window.__askInFlight = true;
 
     try {
@@ -1647,7 +1658,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const msg = String(error?.message || "");
       if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
       else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
-      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 30 seconds and run it again.");
+      else if (msg === "QUEUE_STALE") toast.error("The report queue did not start. Please run it again.");
+      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 2 minutes and run it again.");
       else toast.error("Failed to regenerate. Please try again.");
     } finally {
       abortControllerRef.current = null;

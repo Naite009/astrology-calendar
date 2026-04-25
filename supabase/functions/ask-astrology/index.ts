@@ -7253,28 +7253,30 @@ Deno.serve(async (req) => {
     let jobRow: { id: string } | null = null;
     let insertErr: any = null;
 
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      const { data, error } = await svc
-        .from("ask_jobs")
-        .insert({
-          user_id: userId,
-          chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
-          status: "queued",
-          prompt: latestUserMessage.slice(0, 4000),
-        })
-        .select("id")
-        .single();
+    for (let attempt = 1; attempt <= 1; attempt++) {
+      try {
+        const { data, error } = await svc
+          .from("ask_jobs")
+          .insert({
+            user_id: userId,
+            chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+            status: "queued",
+            prompt: latestUserMessage.slice(0, 4000),
+          })
+          .select("id")
+          .abortSignal(AbortSignal.timeout(10_000))
+          .single();
 
-      jobRow = data as { id: string } | null;
-      insertErr = error;
+        jobRow = data as { id: string } | null;
+        insertErr = error;
+      } catch (e) {
+        insertErr = e;
+        jobRow = null;
+      }
 
       if (!insertErr && jobRow) break;
 
-      console.error(`[ask-astrology] Failed to insert job row (attempt ${attempt}/3):`, insertErr);
-      if (attempt < 3 && isRetryableQueueError(insertErr)) {
-        await sleep(attempt * 1500);
-        continue;
-      }
+      console.error(`[ask-astrology] Failed to insert job row (attempt ${attempt}/1):`, insertErr);
       break;
     }
 

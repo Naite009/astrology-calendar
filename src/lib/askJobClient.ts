@@ -10,6 +10,7 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrolog
 const ACTIVE_JOB_KEY_PREFIX = "ask-active-job:";
 const POLL_INTERVAL_MS = 3000;
 const MAX_WAIT_MS = 10 * 60 * 1000; // 10 minutes hard ceiling
+const QUEUED_STALE_MS = 75 * 1000;
 
 export interface AskJobRow {
   id: string;
@@ -142,6 +143,11 @@ export async function pollAskJob(
       // Transient — wait & retry
     } else if (data) {
       const row = data as AskJobRow;
+      const rowAgeMs = Date.now() - new Date(row.created_at).getTime();
+      if (row.status === "queued" && rowAgeMs > QUEUED_STALE_MS) {
+        writeActiveJobId(opts.chartId, null);
+        throw new Error("QUEUE_STALE");
+      }
       if (row.status !== lastStatus) {
         lastStatus = row.status;
         opts.onProgress?.(row.status);
