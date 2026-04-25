@@ -211,6 +211,9 @@ const DIRECTIVE_A = buildDirective(
   "NATAL-ONLY",
   `This is the NATAL-ONLY call. The user message contains NATAL chart data only. There is NO Solar Return data in your context for this call. Do not write the phrase "Solar Return" anywhere in this call's output. Do not write "this year" framings — those belong to a different call. Write the sections as a portrait of the person's lifelong relational signature based on the natal chart only.
 
+NATAL PLUTO — VERIFY BEFORE WRITING (NON-NEGOTIABLE):
+The natal Pluto position is the degree Pluto occupied at the time of birth, NOT its current transiting position. For charts born after 2000, natal Pluto is in Capricorn or late Sagittarius — NEVER in Aquarius. Pluto did not enter Aquarius until 2024, so any natal Pluto in Aquarius implies a birth date in 2024 or later. Before you write any natal Pluto reference, look it up in the placement table provided in the user message and copy the sign and degree verbatim. If you would otherwise write "natal Pluto in Aquarius" for a chart born before 2024, STOP and re-read the placement table.
+
 HARD LENGTH CONSTRAINT — "How This Person Loves":
 The body of the "How This Person Loves" narrative_section MUST NOT exceed 2,000 characters total. This is a hard ceiling, not a target. If you would naturally write more, prioritize ruthlessly:
   - Lead with the 2-3 most defining placements (typically Venus, Mars, Moon, 7th-house ruler, or whichever bodies are most aspected/dignified).
@@ -296,41 +299,96 @@ ${hasRightNowBlock
 );
 
 /**
- * Scan the rendered activations block for natal Venus and natal Jupiter, then
- * emit explicit "natal X is Y — never write Z for natal X" pinned constraints.
- * Z is the SR position from the same activation line, since that's what the
- * model has been substituting in. If the planet doesn't appear in any
- * activation we skip its pin (no false ground truth).
+ * Build a per-chart, planet-by-planet "frozen, non-negotiable" natal positions
+ * block from the rendered activations. The model has been pulling SR positions
+ * through into "natal" prose for every planet (Venus, Jupiter, Pluto have all
+ * been observed offenders), so we restate the natal value for EVERY planet
+ * that appears in the activations list AND emit explicit "NEVER write <SR pos>
+ * for natal X" guards keyed off the SR positions the model has actually
+ * substituted in.
  *
  * Activation lines look like:
  *   "  3. SR Venus opposite natal Jupiter (orb 1.2°) — SR Venus at 9°15' Libra; natal Jupiter at 29°34' Taurus"
+ *
+ * For every planet we also harvest the SR-side position (e.g. "SR Pluto at
+ * 1°22' Aquarius") so the "NEVER write X for natal Pluto" line can name the
+ * exact substitution to avoid.
  */
 const buildPinnedNatalConstraints = (callCActivationsBlock: string): string => {
   if (!callCActivationsBlock) return "";
 
-  const pinnedPlanets: Array<{ name: string; label: string }> = [
-    { name: "Venus", label: "natal Venus" },
-    { name: "Jupiter", label: "natal Jupiter" },
+  // Cover the full classical set + Chiron. North/South Node and angles are
+  // handled by other guards (descendant rewrite, angle-claim rewrite).
+  const PLANETS = [
+    "Sun", "Moon", "Mercury", "Venus", "Mars",
+    "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron",
   ];
 
+  // Per-planet collect: natal position (canonical) + every SR position the
+  // model has been seen substituting (i.e. every "SR <planet> at X" line in
+  // the activations block, even when that SR planet is paired with a different
+  // natal point).
+  const natalPos = new Map<string, string>();           // planet -> "X°YY' Sign"
+  const srSeenForPlanet = new Map<string, Set<string>>(); // planet -> set of SR positions
+
+  for (const planet of PLANETS) {
+    // Capture the natal position whenever this planet appears as the natal
+    // side of any activation.
+    const natalRe = new RegExp(
+      `natal\\s+${planet}\\s+at\\s+([^;\\n]+)`,
+      "gi",
+    );
+    let m: RegExpExecArray | null;
+    while ((m = natalRe.exec(callCActivationsBlock)) !== null) {
+      const v = m[1].trim();
+      if (v && !natalPos.has(planet)) natalPos.set(planet, v);
+    }
+
+    // Capture every SR position for this planet — these are the values the
+    // model has historically misattributed to the natal side.
+    const srRe = new RegExp(
+      `SR\\s+${planet}\\s+at\\s+([^;\\n]+)`,
+      "gi",
+    );
+    const seen = new Set<string>();
+    while ((m = srRe.exec(callCActivationsBlock)) !== null) {
+      const v = m[1].trim();
+      if (v) seen.add(v);
+    }
+    if (seen.size > 0) srSeenForPlanet.set(planet, seen);
+  }
+
+  if (natalPos.size === 0) return "";
+
   const lines: string[] = [];
-  for (const { name, label } of pinnedPlanets) {
-    const re = new RegExp(
-      `SR\\s+\\S+\\s+\\S+\\s+natal\\s+${name}\\s+\\(orb[^)]+\\)\\s+—\\s+SR\\s+\\S+\\s+at\\s+([^;]+);\\s+natal\\s+${name}\\s+at\\s+([^\\n]+)`,
-      "i",
-    );
-    const m = callCActivationsBlock.match(re);
-    if (!m) continue;
-    const srPos = m[1].trim();
-    const natalPos = m[2].trim();
-    if (!srPos || !natalPos || srPos === natalPos) continue;
-    lines.push(
-      `- ${label} position is ${natalPos} — never write ${srPos} for ${label}.`,
-    );
+  for (const planet of PLANETS) {
+    const np = natalPos.get(planet);
+    if (!np) continue;
+    const sr = srSeenForPlanet.get(planet);
+    let neverPart = "";
+    if (sr) {
+      const distinct = [...sr].filter((s) => s !== np);
+      if (distinct.length > 0) {
+        neverPart = ` — NEVER write ${distinct.join(" or ")} (those are SR positions)`;
+      }
+    }
+    lines.push(`- natal ${planet} = ${np}${neverPart}`);
   }
 
   if (lines.length === 0) return "";
-  return `\nPINNED NATAL POSITIONS (do not substitute SR values):\n${lines.join("\n")}\n`;
+
+  return `
+=========================================================
+NATAL POSITIONS — FROZEN, NON-NEGOTIABLE (do not substitute SR values)
+=========================================================
+Every natal planet position you reference in this call MUST match the value
+below verbatim. Do not pull from any SR position. Do not approximate. Do not
+substitute the SR value of the same planet. If a planet is missing from this
+list, do not invent a position for it — write the section without that
+placement.
+
+${lines.join("\n")}
+`;
 };
 
 // ─── Anthropic call helper ──────────────────────────────────────────────────
