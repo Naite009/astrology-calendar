@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { DAY_TYPE_MAP } from "@/lib/astrology";
 
 interface DayTypeLegendProps {
@@ -5,7 +6,7 @@ interface DayTypeLegendProps {
   onClose: () => void;
 }
 
-export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
+export const DayTypeLegend = forwardRef<HTMLDivElement, DayTypeLegendProps>(({ isOpen, onClose }, ref) => {
   if (!isOpen) return null;
 
   const dayTypes = [
