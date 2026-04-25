@@ -965,16 +965,22 @@ export function buildFullJsonStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
-  // Calculate age at this solar return
+  // Calculate the effective Solar Return year (see downloadBirthdayJSONStandalone for rationale).
   const birthYear2 = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
-  const srAge2 = !isNaN(birthYear2) ? srChart.solarReturnYear - birthYear2 : null;
+  const rawSrYear2 = Number(srChart.solarReturnYear);
+  const currentYear2 = new Date().getFullYear();
+  const isValidSrYear2 = Number.isFinite(rawSrYear2)
+    && rawSrYear2 > 1900 && rawSrYear2 < 2200
+    && (isNaN(birthYear2) || rawSrYear2 !== birthYear2);
+  const effectiveSrYear2 = isValidSrYear2 ? rawSrYear2 : currentYear2;
+  const srAge2 = !isNaN(birthYear2) ? effectiveSrYear2 - birthYear2 : null;
 
   return {
     name: natalChart.name || '',
     cakeImageUrl,
     birthDate: natalChart.birthDate || '',
     birthLocation: natalChart.birthLocation || '',
-    solarReturnYear: srChart.solarReturnYear,
+    solarReturnYear: effectiveSrYear2,
     solarReturnYearSpan: '',
     solarReturnAge: srAge2,
     solarReturnLabel: srAge2 !== null
