@@ -69,12 +69,12 @@ export const CityInput = ({
           maxLength={80}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className={cn("text-sm pr-8", showCheck && "border-emerald-500/60")}
+          className={cn("text-sm pr-8", showCheck && "border-success/60")}
           aria-describedby={showCorrection ? `${id}-corrected` : undefined}
         />
         {showCheck && (
           <Check
-            className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500"
+            className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-success"
             aria-label="City recognized"
           />
         )}
@@ -82,7 +82,7 @@ export const CityInput = ({
       {showCorrection && (
         <p
           id={`${id}-corrected`}
-          className="text-[10px] text-emerald-600 dark:text-emerald-400"
+          className="text-[10px] text-success"
         >
           Using <span className="font-medium">{resolved!.canonical}</span>
         </p>
