@@ -745,7 +745,10 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                   </TableCell>
                   <TableCell>
                     {event.isSupermoon && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                        title="Supermoon: Full Moon occurring near perigee — within ~90% of the Moon's closest approach to Earth (under 361,000 km). It appears noticeably larger and up to ~30% brighter than an average full moon."
+                      >
                         ⭐ Supermoon
                         {event.supermoonSequence && (
                           <span className="text-muted-foreground">
@@ -754,9 +757,17 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                         )}
                       </span>
                     )}
+                    {event.name === "Blue Moon" && (
+                      <span
+                        className="ml-1 inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent-foreground"
+                        title="Blue Moon (calendar definition): the second Full Moon to fall within the same calendar month. Because the lunar cycle is ~29.5 days, this happens roughly once every 2–3 years — hence 'once in a Blue Moon.'"
+                      >
+                        🔵 Blue Moon
+                      </span>
+                    )}
                     {event.isSupermoon && (
                       <div className="mt-1 text-xs text-muted-foreground">
-                        {event.distance.toLocaleString()} km
+                        {event.distance.toLocaleString()} km from Earth
                       </div>
                     )}
                   </TableCell>
