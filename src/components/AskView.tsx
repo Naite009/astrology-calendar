@@ -1347,25 +1347,45 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     question: string,
   ): 'relationship' | 'relocation' | 'career' | 'health' | 'money' | 'spiritual' | 'general' => {
     const q = question.toLowerCase();
-    if (/\b(relocat|move to|moving to|best cit(y|ies)|where should i live|astrocartograph|new city|new place|city for)\b/.test(q)) {
-      return 'relocation';
-    }
-    if (/\b(relationship|partner|love|romance|dating|marriage|breakup|divorce|ex|crush|attraction|synastry|spouse|husband|wife|girlfriend|boyfriend)\b/.test(q)) {
-      return 'relationship';
-    }
-    if (/\b(career|job|work|promotion|business|boss|coworker|profession|vocation|industry|workplace|fired|hired|interview)\b/.test(q)) {
-      return 'career';
-    }
-    if (/\b(health|body|illness|sick|wellness|fitness|energy levels|sleep|nervous system|chronic|symptom|healing)\b/.test(q)) {
-      return 'health';
-    }
-    if (/\b(money|finance|financial|income|salary|debt|invest|wealth|earn|budget|cash|savings)\b/.test(q)) {
-      return 'money';
-    }
-    if (/\b(spiritual|soul|meditation|practice|awakening|enlighten|divine|consciousness|inner work|purpose|meaning of life|faith)\b/.test(q)) {
-      return 'spiritual';
-    }
-    return 'general';
+
+    // Score each domain by counting distinct keyword matches. This prevents
+    // incidental words (e.g. "relationship with money" inside a career prompt,
+    // or "business partner" inside a relationship prompt) from misrouting the
+    // reading. Whichever domain accumulates the most signal wins. Ties resolve
+    // by the priority order: relocation → career → relationship → health →
+    // money → spiritual → general.
+    const patterns: { type: 'relocation' | 'career' | 'relationship' | 'health' | 'money' | 'spiritual'; rx: RegExp }[] = [
+      { type: 'relocation', rx: /\b(relocat\w*|move to|moving to|best cit(?:y|ies)|where should i live|astrocartograph\w*|new city|new place|city for|cities (?:for|where)|relocation)\b/g },
+      // Note: "relationship" alone is a weak signal because it's commonly used
+      // metaphorically (relationship with money/work/self). Require it to
+      // co-occur with explicit relational vocabulary to count strongly. The
+      // standalone word still counts as 1 hit, but career/money keywords
+      // typically outnumber it in a career prompt.
+      { type: 'relationship', rx: /\b(relationship|partner|romance|romantic|dating|marriage|married|breakup|divorce|crush|attraction|synastry|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover)\b/g },
+      { type: 'career', rx: /\b(career|job|jobs|work|works|working|workplace|promotion|profession\w*|vocation\w*|industry|industries|occupation|coworker|boss|fired|hired|interview|leadership|10th house|midheaven|mc\b|ambition\w*|professional)\b/g },
+      { type: 'health', rx: /\b(health|body|illness|sick|wellness|fitness|energy levels|sleep|nervous system|chronic|symptom|healing|medical|disease|recover\w*)\b/g },
+      { type: 'money', rx: /\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|earning|budget|cash|savings|2nd house|8th house|joint ventures|resources)\b/g },
+      { type: 'spiritual', rx: /\b(spiritual\w*|soul|meditation|awakening|enlighten\w*|divine|consciousness|inner work|meaning of life|faith|sacred)\b/g },
+    ];
+
+    const scores = patterns.map(p => {
+      const matches = q.match(p.rx);
+      return { type: p.type, score: matches ? new Set(matches).size : 0 };
+    });
+
+    // Find the highest score; if everything is 0, fall back to general.
+    const top = scores.reduce((a, b) => (b.score > a.score ? b : a), { type: 'general' as any, score: 0 });
+    if (top.score === 0) return 'general';
+
+    // If career and relationship are both present, career wins when career has
+    // strictly more matches OR when career and relationship are tied (because
+    // "relationship" is frequently a metaphorical word inside non-relational
+    // prompts).
+    const career = scores.find(s => s.type === 'career')!.score;
+    const rel = scores.find(s => s.type === 'relationship')!.score;
+    if (career > 0 && rel > 0 && career >= rel) return 'career';
+
+    return top.type;
   };
 
   const handleSubmitDirect = async (directQuestion?: string) => {
