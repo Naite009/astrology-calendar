@@ -480,6 +480,48 @@ const dedupeTimingInterpretations = (parsedContent: any) => {
   }
 };
 
+// Dedupe narrative_section bodies (and bullets[].text). The Erica Broder
+// relationship reading shipped with the same Saturn-sextile paragraph
+// repeated 5+ times inside a narrative_section.body — the timing dedup
+// above doesn't touch narrative bodies. This pass collapses exact &
+// near-duplicate paragraphs/sentences inside any narrative_section
+// before we even consider calling the external Replit gate.
+const dedupeNarrativeSectionBodies = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let changed = 0;
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "narrative_section") continue;
+    if (typeof section.body === "string" && section.body.length > 0) {
+      const before = section.body;
+      const after = dedupeText(before);
+      if (after !== before) {
+        section.body = after;
+        changed++;
+        console.info("[ask-astrology] narrative body deduplicated", {
+          title: section.title,
+          before_len: before.length,
+          after_len: after.length,
+        });
+      }
+    }
+    if (Array.isArray(section.bullets)) {
+      for (const b of section.bullets) {
+        if (b && typeof b.text === "string" && b.text.length > 0) {
+          const before = b.text;
+          const after = dedupeText(before);
+          if (after !== before) {
+            b.text = after;
+            changed++;
+          }
+        }
+      }
+    }
+  }
+  if (changed > 0) {
+    console.info(`[ask-astrology] narrative dedup applied to ${changed} field(s)`);
+  }
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Enforce that balance_interpretation mentions every element/modality/
 // polarity with count≥1. If the AI omitted a non-zero category, append a
@@ -2982,6 +3024,62 @@ const correctNatalPlanetPositionsInProse = (
 };
 
 
+// GENERAL N-TH HOUSE CUSP VERIFIER. The existing fixDescendantCuspMentionsInProse
+// only catches 7th-cusp confusion with the Ascendant. The Erica Broder
+// SR reading shipped with a 7th-cusp claim of Gemini that the external
+// gate had to correct to Virgo — meaning the AI got an arbitrary cusp
+// wrong, not the special Asc/Dsc swap. This pass scans every prose
+// field for "Nth house cusp [is/in/at] {Sign}" claims and rewrites the
+// sign to whatever the deterministic House Cusps block actually says
+// for that house. Runs against ANY house 1-12.
+const NTH_CUSP_SIGN_RE = new RegExp(
+  String.raw`\b(` + ORDINAL_WORDS_RE + String.raw`)\s+house\s+cusp(?:\s+(?:is|in|at|on))?\s+(?:in\s+)?(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b`,
+  "gi",
+);
+const fixGeneralHouseCuspMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) {
+    if (c?.house && c?.sign) cuspSignByHouse[c.house] = c.sign;
+  }
+
+  let totalFixes = 0;
+  forEachProseField(parsedContent, new Set(), ({ node, key, value }) => {
+    if (!NTH_CUSP_SIGN_RE.test(value)) {
+      NTH_CUSP_SIGN_RE.lastIndex = 0;
+      return;
+    }
+    NTH_CUSP_SIGN_RE.lastIndex = 0;
+    const corrected = value.replace(NTH_CUSP_SIGN_RE, (match, ord: string, sign: string) => {
+      const houseNum = ORDINAL_TO_HOUSE_NUM[ord.toLowerCase()];
+      if (!houseNum) return match;
+      const correctSign = cuspSignByHouse[houseNum];
+      if (!correctSign || correctSign === sign) return match;
+      // Skip the 7th-vs-Asc case — the dedicated descendant fixer handles
+      // it more carefully (and we don't want double-correction).
+      if (houseNum === 7) return match;
+      totalFixes++;
+      log.push({
+        type: "general_house_cusp_corrected",
+        detail: { house: houseNum, claimed_sign: sign, correct_sign: correctSign },
+      });
+      console.warn(`[ask-astrology][cusp-fix] House ${houseNum} cusp: AI claimed ${sign}, correcting to ${correctSign}`);
+      return match.replace(sign, correctSign);
+    });
+    if (corrected !== value) node[key] = corrected;
+  });
+
+  if (totalFixes > 0) {
+    console.info(`[ask-astrology][cusp-fix] Applied ${totalFixes} general-cusp correction(s)`);
+  }
+};
+
 
 // Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
 // the "natal Ascendant". This pass rewrites or strips any prose that names
@@ -4308,6 +4406,11 @@ const runPostProcessingPipeline = (
   // 3. 7th-house / Descendant cusp prose.
   safeRun("fixDescendantCuspMentionsInProse", () =>
     fixDescendantCuspMentionsInProse(parsedContent, ctx, log),
+  );
+
+  // 3b. General "Nth house cusp is X" verifier (any house 1-12).
+  safeRun("fixGeneralHouseCuspMentionsInProse", () =>
+    fixGeneralHouseCuspMentionsInProse(parsedContent, ctx, log),
   );
 
   // 4. Ascendant/Descendant label swaps (token-purity guard).
@@ -6326,6 +6429,9 @@ The summary_box MUST contain a "Best Windows" item as a standalone labeled field
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
 
+WITHIN-SECTION REPETITION BAN — ZERO TOLERANCE: Inside a single narrative_section.body, NEVER write the same paragraph (or a near-paraphrase) more than once. Specifically: the same aspect interpretation (e.g. "your Saturn sextile your Sun means…") must appear AT MOST ONCE in any given body. The same lived-behavior claim (e.g. "you can outlast forces that break other people") must appear AT MOST ONCE. Before you finalize a body, scan it: if two paragraphs make the same point with different words, DELETE one. If two sentences in the same paragraph restate each other, KEEP the stronger one and DELETE the other. The hygiene gate runs a deterministic dedup pass and will collapse exact repeats — but if you ship a body padded with paraphrased repeats, the gate logs it as a generation defect and triggers a regeneration. Length without distinct claims is not depth, it is failure.
+
+
 NO META SENTENCES — HARD RULE: Every sentence must make a claim about the chart, the person, or a concrete recommendation. Do NOT write introductory, transitional, or self-referential sentences about the document itself. FORBIDDEN sentence patterns include (non-exhaustive): "This reading will explore...", "In this section we'll look at...", "Below, we break down...", "Let's dive into...", "First, let's consider...", "To summarize the above...", "As we'll see in the next section...", "This analysis covers...", "The following addresses...", "Now turning to...", "Before we continue...", "In conclusion,...", "To wrap up,...", "Here's what your chart says about...". If a sentence is only scaffolding and would still be true if you swapped this person's chart for someone else's, DELETE IT. Open every section directly with substance — lived behavior in sentence 1, placement in sentence 2 (per the behavior-first rule). Close every section on the last real claim, not on a meta summary.
 
 CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
@@ -8252,6 +8358,7 @@ ${natalGroundTruthLines}`
         // Deterministic dedupe of duplicated paragraphs/sentences inside any
         // timing entry's `interpretation` field (Pluto multi-pass copy-paste bug).
         dedupeTimingInterpretations(parsedContent);
+        dedupeNarrativeSectionBodies(parsedContent);
 
         // Enforce that balance_interpretation mentions every non-zero element /
         // modality / polarity. Appends a short coverage clause if the AI omitted any.
@@ -8520,6 +8627,7 @@ ${natalGroundTruthLines}`
                 // duplicated paragraphs or missing element coverage in the
                 // regenerated text get fixed before final validation.
                 dedupeTimingInterpretations(parsedContent);
+                dedupeNarrativeSectionBodies(parsedContent);
                 enforceNonZeroCoverage(parsedContent);
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
@@ -9151,23 +9259,25 @@ ${natalGroundTruthLines}`
       // reading regen). After 2 passes, ship the best attempt with
       // _gate.label = "exhausted" rather than burning more credits.
       // ────────────────────────────────────────────────────────────────
-      // V2 KILL SWITCH (2026-04-22)
-      // V2 was hitting MAX_GATE_RETRIES on most jobs and burning Claude
-      // credits without healing defects. Until we can prove a retry
-      // actually fixes something, V2 ships attempt 1 as final and only
-      // RECORDS the gate verdict — no Claude healing calls.
+      // V2 KILL SWITCH (2026-04-22 → re-enabled 2026-04-25)
+      // V2 was disabled because retries were burning Claude credits without
+      // healing defects. RE-ENABLED to address upstream sloppy first-pass
+      // generations (e.g. Saturn-sextile paragraph repeated 5+ times in
+      // the Erica Broder relationship reading). Pair this with the new
+      // dedupeNarrativeSectionBodies() and general-cusp verifier so V2
+      // only retries on defects that actually warrant a regen.
       //
-      // Re-enable per-request by setting env ASK_V2_HEALING_ENABLED=true.
+      // Disable per-request by setting env ASK_V2_HEALING_ENABLED=false.
       // ────────────────────────────────────────────────────────────────
       const V2_HEALING_ENABLED =
-        (Deno.env.get("ASK_V2_HEALING_ENABLED") ?? "false").toLowerCase() === "true";
+        (Deno.env.get("ASK_V2_HEALING_ENABLED") ?? "true").toLowerCase() === "true";
       const MAX_GATE_RETRIES = V2_HEALING_ENABLED ? 2 : 0;
       const V2_WALL_CLOCK_BUDGET_MS = 120_000; // 2 min hard ceiling for the entire heal loop
       const v2StartedAt = Date.now();
       const retryAttempts: Array<Record<string, any>> = [];
       let giveUpReason: string | null = V2_HEALING_ENABLED ? null : "v2_disabled_kill_switch";
       if (!V2_HEALING_ENABLED) {
-        console.warn("[ask-astrology][gate] V2 healing DISABLED via kill switch (ASK_V2_HEALING_ENABLED!=true). Shipping attempt 1 as final.");
+        console.warn("[ask-astrology][gate] V2 healing DISABLED via kill switch (ASK_V2_HEALING_ENABLED=false). Shipping attempt 1 as final.");
       }
       // Track which section titles V2 has authored so subsequent passes
       // REPLACE the V2 version instead of duplicating it.
