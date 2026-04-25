@@ -7977,7 +7977,7 @@ CURRENT CITY HANDLING: When the user provided a current city, the sub-section fo
 
 LANGUAGE STYLE for "Your Location Choices": Same FORBIDDEN/REQUIRED phrase rules as the rest of the relocation reading apply (no "supports growth", no "enhances energy", no "you thrive in"). Use "you may feel...", "your day-to-day tends to...", "the tradeoff is that...", "what becomes harder here is..." etc.
 
-UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-supplied cities. Do NOT re-list these cities in "Top Cities This Year", "Top Cities Long-Term", or any other city_comparison card UNLESS they genuinely score in the top recommendations on their own merit. Conversely, the standard top-cities/long-term/caution sections must continue to evaluate the broader global pool — do not constrain those sections to only the user's cities.`;
+UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-supplied cities. Do NOT re-list these cities in "Best Places Within [Country]" or "One International Option" UNLESS they genuinely score in the top recommendations on their own merit. Conversely, "Best Places Within [Country]" must continue to evaluate the broader country-wide pool — do not constrain that section to only the user's cities.`;
     };
     const userLocationsBlock = buildUserLocationsBlock();
 
