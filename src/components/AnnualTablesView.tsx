@@ -964,9 +964,18 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             entered its current zodiac sign before the exact lunar phase.
           </div>
           <div>
-            <strong className="text-foreground">Supermoon:</strong> Full Moon occurring within
-            90% of perigee (closest approach to Earth, under 361,000 km). Appears larger and
-            brighter.
+            <strong className="text-foreground">Supermoon:</strong> A Full (or New) Moon that
+            happens when the Moon is near <em>perigee</em> — its closest point to Earth in its
+            elliptical orbit. The threshold used here is under 361,000 km (within ~90% of perigee).
+            Because it's closer, a supermoon appears up to ~14% larger and ~30% brighter than an
+            average full moon, and it amplifies tidal pull. Typically 3–4 occur in a row each year.
+          </div>
+          <div>
+            <strong className="text-foreground">Blue Moon:</strong> The second Full Moon to fall
+            within the same calendar month. Since a lunar cycle is ~29.5 days and most months are
+            30–31 days, this only happens when the first Full Moon lands in the first day or two of
+            the month — roughly once every 2–3 years. The name has nothing to do with color; it's
+            the source of the phrase <em>"once in a blue moon."</em>
           </div>
         </div>
       </section>
