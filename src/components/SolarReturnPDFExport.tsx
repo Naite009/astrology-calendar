@@ -2739,11 +2739,22 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       house: (profYear as any).house || (profYear as any).houseNumber || null,
     } : null;
 
+    // Compute the effective Solar Return year — fall back to the current calendar
+    // year if srChart.solarReturnYear is missing, invalid, or accidentally equal
+    // to the birth year (which would yield age 0 — never a real SR).
+    const birthYear3 = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
+    const rawSrYear3 = Number(srChart.solarReturnYear);
+    const currentYear3 = new Date().getFullYear();
+    const isValidSrYear3 = Number.isFinite(rawSrYear3)
+      && rawSrYear3 > 1900 && rawSrYear3 < 2200
+      && (isNaN(birthYear3) || rawSrYear3 !== birthYear3);
+    const effectiveSrYear3 = isValidSrYear3 ? rawSrYear3 : currentYear3;
+
     return {
       name: natalChart.name || '',
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: srChart.solarReturnYear,
+      solarReturnYear: effectiveSrYear3,
       natalSun:    natalChart.planets?.Sun?.sign   || '',
       natalMoon:   natalChart.planets?.Moon?.sign  || '',
       natalRising: natalChart.houseCusps?.house1?.sign || '',
