@@ -7963,7 +7963,7 @@ Cities they're considering moving to:
 ${consideringList}
 
 MANDATORY ADDITIONAL SECTION — "Your Location Choices":
-Insert a NEW narrative_section with title "Your Location Choices" AFTER the "Location Fit Profiles" section and BEFORE the "Top Cities This Year" city_comparison section. This section is REQUIRED whenever the user has supplied any of the cities above.
+Insert a NEW narrative_section with title "Your Location Choices" AFTER the "Location Fit Profiles" section and BEFORE the "Best Places Within [Country]" city_comparison section. This section is REQUIRED whenever the user has supplied any of the cities above.
 
 For EACH user-supplied city (current city + each considering city, if provided), write a sub-section that covers, in this exact order:
   1. CHART THEMES vs. THIS CITY — Name the 2-4 chart placements/themes most relevant to this city's energy. Translate into lived experience language: how would daily life in this city land against those placements? Use real qualities of the actual city — climate, pace, density, cost, social texture, career density, coastal/inland, urban/rural, cultural tone. Do NOT invent qualities; use widely-known characteristics. Example for Los Angeles: coastal-but-urban, image-conscious, car-dependent, career-forward (entertainment/tech/wellness), socially stimulating but transactional, high cost, bright/dry climate.
