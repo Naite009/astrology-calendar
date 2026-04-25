@@ -302,6 +302,65 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
               </div>
             </div>
 
+            {activeTopic.id === "relocation" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Your Location Choices (optional)
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Add any cities you want analyzed specifically. The reading will include a
+                    dedicated <span className="font-medium text-foreground">"Your Location Choices"</span>{" "}
+                    section that maps each one to your chart. Leave blank for the general reading.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-current">
+                      Current city
+                    </label>
+                    <Input
+                      id="reloc-current"
+                      placeholder="e.g. Brooklyn, NY"
+                      value={relocCurrent}
+                      maxLength={80}
+                      onChange={(e) => setRelocCurrent(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c1">
+                      Considering #1
+                    </label>
+                    <Input
+                      id="reloc-c1"
+                      placeholder="e.g. Lisbon, Portugal"
+                      value={relocCity1}
+                      maxLength={80}
+                      onChange={(e) => setRelocCity1(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c2">
+                      Considering #2
+                    </label>
+                    <Input
+                      id="reloc-c2"
+                      placeholder="e.g. Mexico City, Mexico"
+                      value={relocCity2}
+                      maxLength={80}
+                      onChange={(e) => setRelocCity2(sanitizeCityField(e.target.value))}
+                      disabled={disabled}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
                 Anything additional you'd like included in this reading?
