@@ -19,31 +19,34 @@ export const useAuth = () => {
           return;
         }
 
-        if (!session?.user && !explicitSignOutRef.current) {
+        const recoveredSession = session ?? readCachedSupabaseSession();
+
+        if (!recoveredSession?.user && !explicitSignOutRef.current) {
           console.info('[useAuth] Ignoring transient null session event', event);
+          setIsLoading(false);
           return;
         }
 
-        setSession(session);
-        setUser(session?.user ?? null);
+        setSession(recoveredSession);
+        setUser(recoveredSession?.user ?? null);
         setIsLoading(false);
         explicitSignOutRef.current = false;
 
         // The moment we have a user, attach any anonymous charts on this
         // device to their account so charts persist across devices forever.
         // Fire-and-forget — never await inside onAuthStateChange.
-        if (session?.user?.id) {
-          void claimAnonymousChartsForUser(session.user.id);
+        if (recoveredSession?.user?.id) {
+          void claimAnonymousChartsForUser(recoveredSession.user.id);
         }
       }
     );
 
-    // THEN check for existing session
+    // THEN check for existing session, but never let a flaky refresh request
+    // keep the whole app stuck on "Reconnecting".
     void (async () => {
-      await waitForInitialSessionRestore();
+      const session = await getSessionSafely('app auth session restore');
       restorePendingRef.current = false;
 
-      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
