@@ -31,6 +31,23 @@ const getServiceClient = () => createClient(
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function isRetryableQueueError(error: any): boolean {
+  const status = Number(error?.status ?? error?.code ?? error?.error_code ?? 0);
+  const text = JSON.stringify(error ?? {}).toLowerCase();
+  return (
+    status === 522 ||
+    status === 503 ||
+    status === 504 ||
+    status === 544 ||
+    text.includes("connection timed out") ||
+    text.includes("connection timeout") ||
+    text.includes("failed to fetch") ||
+    text.includes("network")
+  );
+}
+
 // Best-effort repair for JSON truncated mid-string by max_tokens.
 // Closes any open string and balances open arrays/objects so the
 // partial reading is still usable instead of being thrown away.
