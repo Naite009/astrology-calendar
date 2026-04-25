@@ -4,8 +4,8 @@ import { Loader2, Sparkles } from "lucide-react";
 interface AskGenerationStatusProps {
   /** When generation started (ms since epoch). */
   startedAt: number;
-  /** Latest status from the job poller: queued | processing (or null while submitting). */
-  jobStatus?: "queued" | "processing" | null;
+  /** Latest status from the job poller, or submitting while creating the job row. */
+  jobStatus?: "submitting" | "queued" | "processing" | null;
 }
 
 /**
@@ -39,16 +39,19 @@ export function AskGenerationStatus({ startedAt, jobStatus }: AskGenerationStatu
 
   const elapsedMs = now - startedAt;
   const elapsedSec = Math.floor(elapsedMs / 1000);
+  const isSubmitting = jobStatus === "submitting";
   const isQueued = jobStatus === "queued";
 
-  const message = isQueued
+  const message = isSubmitting
+    ? "Connecting to the report queue…"
+    : isQueued
     ? "Queued — waiting for the AI to start…"
     : "Generating your reading…";
 
   // Typical durations from observed Sonnet runs: 4–6 minutes.
   // Surface a stronger hint after 7 minutes so the user knows it's running long
   // but hasn't necessarily failed.
-  const showTypicalHint = !isQueued && elapsedSec >= 60 && elapsedSec < 420;
+  const showTypicalHint = !isSubmitting && !isQueued && elapsedSec >= 60 && elapsedSec < 420;
   const showLongHint = elapsedSec >= 420;
 
   return (
