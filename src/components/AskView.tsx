@@ -299,19 +299,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [chartSearch, setChartSearch] = useState("");
 
-  // Relocation Quick Topic input form: when the user picks "Where Should I Live?",
-  // we surface this form so they can optionally name their current city plus up
-  // to two cities they're considering. All three fields are optional — clicking
-  // "Skip" submits the standard general relocation reading.
-  const [relocationFormPrompt, setRelocationFormPrompt] = useState<string | null>(null);
-  const [relocationCurrentCity, setRelocationCurrentCity] = useState("");
-  const [relocationCity1, setRelocationCity1] = useState("");
-  const [relocationCity2, setRelocationCity2] = useState("");
+  // Relocation Quick Topic city inputs are now collected inline inside
+  // AskQuickTopics. The userLocations object is delivered straight to
+  // handleQuickTopic via the AskQuickTopics onSelect callback, so AskView
+  // no longer needs to host its own city-input state.
 
-  const sanitizeCityField = (raw: string): string => {
-    // Allow letters, spaces, commas, hyphens, apostrophes, periods. Cap at 80 chars.
-    return raw.replace(/[^A-Za-z\u00C0-\u024F\s,'.\-]/g, "").slice(0, 80);
-  };
 
   const syncThreadIds = useCallback((nextThreadIds: Record<string, string>) => {
     threadIdsRef.current = nextThreadIds;
