@@ -903,7 +903,7 @@ export function downloadBirthdayJSONStandalone(
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${srChart.solarReturnYear}.json`;
+  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${effectiveSrYear}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
