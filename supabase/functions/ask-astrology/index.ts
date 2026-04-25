@@ -2021,7 +2021,16 @@ const normalizePlacementTableRetrograde = (
       const rawPlanet = String(row.planet || row.body || row.name || "");
       if (!rawPlanet) continue;
       const hasGlyph = RETRO_GLYPH_RE.test(rawPlanet);
-      const baseName = rawPlanet.replace(RETRO_GLYPH_RE, "").trim();
+      // Strip retrograde glyph AND any leading chart-prefix the AI may have
+      // emitted ("SR Mercury", "Natal Mercury", "Solar Return Mercury") so the
+      // truth-map lookup hits its bare-planet key (e.g. "mercury"). Without
+      // this strip, "SR Mercury ℞" → baseName "SR Mercury" → lookup misses
+      // and the deterministic Rx flag from chart context never gets written
+      // back into the placement table row.
+      const baseName = rawPlanet
+        .replace(RETRO_GLYPH_RE, "")
+        .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
+        .trim();
 
       // Decide which truth map to use for THIS row. If the table title is
       // explicit or only one chart is available, honor the table-level
