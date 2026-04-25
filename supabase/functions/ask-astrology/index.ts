@@ -2973,10 +2973,33 @@ const correctUnverifiedSrAngleClaims = (
     let changed = false;
 
     // 1) Fix the angle name if the model picked the wrong end of the axis.
-    if (claimedAngle !== closerAngle) {
-      next = next.replace(angleRe, (m) => m.replace(claimedAngle, closerAngle));
+    //
+    // CRITICAL: only flip the label when we have positive sign-evidence that
+    // the cited coordinates belong to the OTHER angle. The previous
+    // "closer-by-orb" heuristic incorrectly flipped correct Descendant
+    // references when the SR planet was conjunct one angle and (by
+    // symmetry) opposition the other within the 9° angle orb — both
+    // results would be valid aspects, but only one matches the cited sign.
+    //
+    // Logic:
+    //   - If the sentence cites the Ascendant's sign → claim must be
+    //     "Ascendant"; flip Descendant→Ascendant.
+    //   - If the sentence cites the Descendant's sign → claim must be
+    //     "Descendant"; flip Ascendant→Descendant.
+    //   - If neither sign is cited, leave the label alone (no false flips).
+    const ascSignRe = new RegExp(`\\b${angles.Ascendant.sign}\\b`, "i");
+    const dscSignRe = new RegExp(`\\b${angles.Descendant.sign}\\b`, "i");
+    const citesAscSign = ascSignRe.test(next);
+    const citesDscSign = dscSignRe.test(next);
+    if (claimedAngle === "Descendant" && citesAscSign && !citesDscSign) {
+      next = next.replace(angleRe, (m) => m.replace(/Descendant/i, "Ascendant"));
+      changed = true;
+    } else if (claimedAngle === "Ascendant" && citesDscSign && !citesAscSign) {
+      next = next.replace(angleRe, (m) => m.replace(/Ascendant/i, "Descendant"));
       changed = true;
     }
+    // If the cited sign matches the claimed angle's sign (or no sign is
+    // cited at all), trust the model — do not flip purely on orb math.
 
     // 2) Fix any explicit "within X°[Y']" orb claim that disagrees with
     //    the real orb by more than 0.5°.
