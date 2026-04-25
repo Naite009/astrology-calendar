@@ -7482,10 +7482,42 @@ HARD RULE — applies to every sentence:
               natalCusps,
             });
             verifiedActivationsForResult = verifiedActivations;
+
+            // FIX 5 — NATAL POSITIONS GROUND TRUTH BLOCK (per-chart, deterministic).
+            // Forces Call C to write each natal planet's exact sign and degree
+            // verbatim from this list. Replaces "natal Venus 9°15' Libra" /
+            // "natal Jupiter 24°24' Cancer" position-bleed errors that drift
+            // in from the AI's memory of other charts. The list is built from
+            // the same parsed natalPositions used for activations, so it
+            // adapts to every chart automatically.
+            const fmtPos = (p: typeof natalPositions[number]) => {
+              const mins = String(p.minutes).padStart(2, "0");
+              const rx = p.retrograde ? " ℞" : "";
+              return `  - natal ${p.planet} = ${p.degree}°${mins}' ${p.sign}${rx}`;
+            };
+            const natalGroundTruthLines = natalPositions
+              .filter((p) => /^(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|North Node|South Node|Lilith|Juno|Ascendant|Descendant|MC|IC|Midheaven)$/i.test(p.planet))
+              .map(fmtPos)
+              .join("\n");
+            const natalGroundTruthBlock = natalGroundTruthLines
+              ? `=========================================================
+NATAL POSITIONS — GROUND TRUTH (frozen, non-negotiable)
+=========================================================
+Whenever you reference a natal planet's sign or degree in Call C prose, the
+value MUST come from this list. Do not pull from any other chart, do not
+default to memorized examples, do not approximate. If the list says natal
+Venus is at 0°54' Sagittarius, never write 9°15' Libra. If the list says
+natal Jupiter is at 29°34' Taurus, never write 24°24' Cancer. The same rule
+applies to every other natal point below.
+
+${natalGroundTruthLines}`
+              : "";
+
             callCActivationsBlock = [
+              natalGroundTruthBlock,
               renderActivationsBlock(verifiedActivations),
               buildActivationRulesBlock(verifiedActivations.length),
-            ].join("\n\n");
+            ].filter(Boolean).join("\n\n");
 
             // Per-chart retrograde summary — replaces the old hardcoded
             // leak in relationshipThreeCall.buildCallCUserMessage.
