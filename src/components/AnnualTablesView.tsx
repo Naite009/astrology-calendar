@@ -102,6 +102,34 @@ const getFullMoonName = (fullMoonDate: Date): string => {
   return MOON_NAMES[getETMonthYear(fullMoonDate).month] || "";
 };
 
+// Sign-flavored meanings for the two quarter moons.
+// First Quarter (waxing) = push, decide, act through this sign's style.
+// Last Quarter (waning) = release, forgive, clear out this sign's shadow.
+const QUARTER_MEANINGS: Record<string, { first: string; last: string }> = {
+  Aries:       { first: "Start it. Make the bold first move you've been delaying.",            last: "Drop the fight that's only feeding your ego." },
+  Taurus:      { first: "Plant something real — a habit, a budget, a body practice.",          last: "Loosen your grip on what you're holding for safety alone." },
+  Gemini:      { first: "Send the message. Ask the question. Speak the idea aloud.",            last: "Quiet the mental loop and unfollow the noise." },
+  Cancer:      { first: "Tend to home, family, or the inner child — make it nourishing.",      last: "Release a guilt or a caretaking role that isn't yours." },
+  Leo:         { first: "Show up visibly. Claim credit. Create something with your name on it.", last: "Let go of needing applause to feel worthy." },
+  Virgo:       { first: "Refine the system. Fix the one detail blocking everything else.",     last: "Forgive yourself for what wasn't perfect." },
+  Libra:       { first: "Have the honest conversation. Set the terms of the relationship.",    last: "Release the urge to keep peace by abandoning yourself." },
+  Scorpio:     { first: "Commit fully. Go deeper into the truth you've been circling.",        last: "Let go of a resentment, a secret, or a tie that drains you." },
+  Sagittarius: { first: "Take the leap toward the bigger vision. Book it. Pitch it.",          last: "Drop the belief or story you've outgrown." },
+  Capricorn:   { first: "Make the structural move — career, contract, long-game step.",        last: "Release the pressure to do it all alone." },
+  Aquarius:    { first: "Break the pattern. Try the unconventional path.",                     last: "Let go of an identity or group that no longer fits." },
+  Pisces:      { first: "Act on the intuition or the dream. Trust the soft pull.",             last: "Forgive, surrender, and clear what you've been absorbing from others." },
+};
+
+const getQuarterMeaning = (type: "First Quarter" | "Last Quarter", sign: string): string => {
+  const entry = QUARTER_MEANINGS[sign];
+  if (!entry) {
+    return type === "First Quarter"
+      ? "Take action, overcome obstacles, push forward"
+      : "Release, let go, forgive, clear space";
+  }
+  return type === "First Quarter" ? entry.first : entry.last;
+};
+
 const ZODIAC_SIGNS = [
   { name: "Aries", symbol: "♈" },
   { name: "Taurus", symbol: "♉" },
@@ -870,9 +898,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                   </TableCell>
                   <TableCell>
                     <span className="text-xs text-muted-foreground">
-                      {event.type === "First Quarter"
-                        ? "Take action, overcome obstacles, push forward"
-                        : "Release, let go, forgive, clear space"}
+                      {getQuarterMeaning(event.type, event.moonSign)}
                     </span>
                   </TableCell>
                 </TableRow>
