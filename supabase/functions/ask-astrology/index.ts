@@ -5811,7 +5811,10 @@ const requestMissingBullets = async (
   return patched;
 };
 
-const SYSTEM_PROMPT = `BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
+const SYSTEM_PROMPT = `SECTION BODY LENGTH CAP — MANDATORY (NON-NEGOTIABLE, applies to EVERY reading type and EVERY narrative section):
+Each narrative section "body" string in your JSON output MUST NOT exceed 2,000 characters. This cap is hard. It applies to "How This Person Loves", "Your Career Foundation", "Hidden Strengths", "The Growth Edge", "Solar Return Career Indicators", overlay sections, relationship architecture sections, and every other narrative body across every reading type. Before you finish writing a section body, count its characters. If it is approaching or over 2,000 characters, STOP and prioritize: (1) the single most important placement that anchors the section, (2) the one or two patterns that most directly answer the user's question, (3) one concrete behavioral takeaway. CUT the rest — secondary placements, supporting aspects, parallel restatements, and "additionally" / "furthermore" elaborations. Do NOT pad. Do NOT enumerate every aspect. Do NOT restate the same idea in three different ways. A 1,500-character body that names the 2 most decisive placements with clear behavioral language is ALWAYS better than a 4,000-character body that lists every relevant placement. The summary_box and short labeled fields (titles, subtitles, single-line callouts) are not subject to this cap, but every multi-sentence narrative body is.
+
+BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
 
 CHART REFERENCE RULES — MANDATORY (NON-NEGOTIABLE, applies to EVERY reading type):
 When writing any section that interprets NATAL placements, you may ONLY reference positions from the NATAL planetary positions table provided in the chart context. You may NOT use Solar Return (SR) planet positions, signs, degrees, houses, or retrograde status in natal prose under any circumstances. When writing any section that interprets SOLAR RETURN placements, you may ONLY reference positions from the SR planetary positions table provided in the chart context. Before writing any planet's sign, degree, house, or retrograde status in prose, verify it against the correct table (NATAL section vs. SR section). The natal table is the absolute source of truth for the natal chart — natal positions never change regardless of what the SR chart shows that year. If a planet's sign in your sentence does not match the natal table for a natal section (or the SR table for an SR section), STOP and rewrite the sentence using the correct sign from the correct table. This applies to every planet (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, Lilith, Juno, Nodes) and to every section without exception.
@@ -8225,28 +8228,32 @@ HARD RULE — applies to every sentence:
           // modality_element section exists with correct counts before
           // backfillRelationshipSectionBodies tries to read it).
           overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
-          // 3-CALL RELATIONSHIP: inject a deterministic modality_element
-          // section (and overwrite any AI-authored polarity counts) using
-          // the new planet-identity rule (Sun/Mercury/Mars/Jupiter/Saturn/
-          // Uranus = Yang, Moon/Venus/Neptune/Pluto = Yin → always sums 10).
+          // DETERMINISTIC TALLIES — applies to ALL reading types (career,
+          // money, health, relocation, relationship, etc.), not just the
+          // 3-call relationship architecture. The polarity counts and
+          // element/modality tallies are computed from the chart context
+          // and are independent of question_type. Previously this only ran
+          // when isRelationshipQuestion was true, which left career/money/
+          // health readings with polarity counts of 0.
           // CRITICAL ORDER: this MUST run BEFORE backfillRelationshipSectionBodies
           // so the modality_element section exists with deterministic counts +
           // a populated balance_interpretation/body when the body backfill
           // copies balance_interpretation into body.
+          try {
+            const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
+            const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
+            emissionLog.push({
+              type: "deterministic_tallies_injected",
+              detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies, reading_type: isRelationshipQuestion ? "relationship" : "single_call" },
+            });
+          } catch (detErr) {
+            console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
+          }
+          // Attach the pre-verified cross-chart activations so they survive
+          // into the downloaded JSON. The accuracy review reads this list to
+          // flag any prose aspect claim that isn't on it. Relationship-only
+          // since verifiedActivationsForResult is built in the 3-call path.
           if (isRelationshipQuestion && (parsedContent as any)?._three_call?.enabled) {
-            try {
-              const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
-              const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
-              emissionLog.push({
-                type: "deterministic_tallies_injected",
-                detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies },
-              });
-            } catch (detErr) {
-              console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
-            }
-            // Attach the pre-verified cross-chart activations so they survive
-            // into the downloaded JSON. The accuracy review reads this list to
-            // flag any prose aspect claim that isn't on it.
             try {
               (parsedContent as any)._verified_activations = {
                 count: verifiedActivationsForResult.length,
