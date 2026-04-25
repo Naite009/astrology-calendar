@@ -7734,8 +7734,57 @@ HARD RULE — applies to every sentence:
       .filter(Boolean)
       .join("\n\n");
 
+    // USER LOCATIONS BLOCK — only injected for relocation questions when the
+    // client supplied at least one of: current city, considering city #1,
+    // considering city #2. Drives the mandatory "Your Location Choices"
+    // narrative_section in the relocation reading outline.
+    const buildUserLocationsBlock = (): string | null => {
+      if (!isLocationQuestion) return null;
+      if (!userLocations || typeof userLocations !== "object") return null;
+      const sanitize = (v: unknown): string | null => {
+        if (typeof v !== "string") return null;
+        const cleaned = v.replace(/[^A-Za-z\u00C0-\u024F\s,'.\-]/g, "").trim().slice(0, 80);
+        return cleaned.length > 0 ? cleaned : null;
+      };
+      const cur = sanitize((userLocations as any).current);
+      const c1 = sanitize((userLocations as any).considering1);
+      const c2 = sanitize((userLocations as any).considering2);
+      const considering = [c1, c2].filter(Boolean) as string[];
+      if (!cur && considering.length === 0) return null;
+
+      const consideringList = considering.length > 0
+        ? considering.map((c, i) => `  ${i + 1}. ${c}`).join("\n")
+        : "  (none provided)";
+
+      return `--- USER-SUPPLIED LOCATIONS (RELOCATION READING) ---
+The user has explicitly named the following cities. Treat these as ground-truth user input.
+
+Current city: ${cur ?? "(not provided)"}
+Cities they're considering moving to:
+${consideringList}
+
+MANDATORY ADDITIONAL SECTION — "Your Location Choices":
+Insert a NEW narrative_section with title "Your Location Choices" AFTER the "Location Fit Profiles" section and BEFORE the "Top Cities This Year" city_comparison section. This section is REQUIRED whenever the user has supplied any of the cities above.
+
+For EACH user-supplied city (current city + each considering city, if provided), write a sub-section that covers, in this exact order:
+  1. CHART THEMES vs. THIS CITY — Name the 2-4 chart placements/themes most relevant to this city's energy. Translate into lived experience language: how would daily life in this city land against those placements? Use real qualities of the actual city — climate, pace, density, cost, social texture, career density, coastal/inland, urban/rural, cultural tone. Do NOT invent qualities; use widely-known characteristics. Example for Los Angeles: coastal-but-urban, image-conscious, car-dependent, career-forward (entertainment/tech/wellness), socially stimulating but transactional, high cost, bright/dry climate.
+  2. WHAT IT OFFERS THAT MATCHES — Concrete supports this city provides for this chart (1-3 specific points, behavioral language, no astrology jargon).
+  3. WHAT IT LACKS OR CHALLENGES — Concrete tradeoffs/frictions for this chart (1-3 specific points). Do NOT only list positives.
+  4. OVERALL FIT — One honest sentence: strong fit / mixed fit / poor fit / situational fit, plus the single most important reason why.
+
+REAL CITY QUALITIES — STRICT RULE: Use only widely-known qualities of the named city. If you do NOT have confident knowledge of a named city, write one sentence stating that honestly (e.g. "I don't have enough confident knowledge about [city] to map its specific qualities against your chart, so this section is general rather than location-specific.") and skip the per-step breakdown for that city. Do NOT invent statistics, neighborhoods, weather patterns, or industries you can't vouch for.
+
+CURRENT CITY HANDLING: When the user provided a current city, the sub-section for it MUST honestly assess whether the chart suggests this city is currently supporting them or working against them. Do not flatter; do not over-criticize. Use the same 4-step structure.
+
+LANGUAGE STYLE for "Your Location Choices": Same FORBIDDEN/REQUIRED phrase rules as the rest of the relocation reading apply (no "supports growth", no "enhances energy", no "you thrive in"). Use "you may feel...", "your day-to-day tends to...", "the tradeoff is that...", "what becomes harder here is..." etc.
+
+UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-supplied cities. Do NOT re-list these cities in "Top Cities This Year", "Top Cities Long-Term", or any other city_comparison card UNLESS they genuinely score in the top recommendations on their own merit. Conversely, the standard top-cities/long-term/caution sections must continue to evaluate the broader global pool — do not constrain those sections to only the user's cities.`;
+    };
+    const userLocationsBlock = buildUserLocationsBlock();
+
     const perQuestionTail = [
       compactRelationshipInstruction,
+      userLocationsBlock,
       `--- CURRENT LOCAL DATE ---\n${effectiveCurrentDate}`,
     ]
       .filter(Boolean)
