@@ -3,10 +3,23 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart } from './useNatalChart';
 import { toast } from 'sonner';
-import { waitForInitialSessionRestore } from '@/lib/sessionKeepAlive';
+import { getCachedUserId, getSessionSafely, readCachedSupabaseSession } from '@/lib/supabaseSessionRecovery';
 
 const DEVICE_ID_KEY = 'astro_device_id';
 const LAST_SYNC_KEY = 'astro_last_cloud_sync';
+const CLOUD_REQUEST_TIMEOUT_MS = 8_000;
+const RESTORE_RETRY_DELAYS_MS = [0, 1_500, 3_000];
+
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+const withTimeout = async <T,>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> => {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    }),
+  ]);
+};
 
 // Generate a unique device ID on first visit (fallback for anonymous users)
 const getOrCreateDeviceId = (): string => {
@@ -67,30 +80,34 @@ export const useCloudBackup = (
 
   // Listen for auth state changes
   useEffect(() => {
+    const hydrateFromCachedSession = (session = readCachedSupabaseSession()) => {
+      setUser(session?.user ?? null);
+      setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+      setAuthChecked(true);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!session?.user && restorePendingRef.current) {
           return;
         }
 
-        setUser(session?.user ?? null);
-        setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+        const recoveredSession = session ?? readCachedSupabaseSession();
+        setUser(recoveredSession?.user ?? null);
+        setState(prev => ({ ...prev, isAuthenticated: !!recoveredSession?.user }));
         setAuthChecked(true);
 
         // When user logs in, trigger a sync to fetch their charts
-        if (event === 'SIGNED_IN' && session?.user) {
+        if (event === 'SIGNED_IN' && recoveredSession?.user) {
           initialCheckDoneRef.current = false; // Reset to allow re-check
         }
       }
     );
 
     void (async () => {
-      await waitForInitialSessionRestore();
+      const session = await getSessionSafely('cloud backup session restore');
       restorePendingRef.current = false;
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
-      setAuthChecked(true);
+      hydrateFromCachedSession(session);
     })();
 
     return () => subscription.unsubscribe();
@@ -98,41 +115,48 @@ export const useCloudBackup = (
 
   // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {
-    try {
-      let query = supabase
-        .from('device_charts')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      
-      // If authenticated, fetch by user_id; otherwise by device_id
-      if (user?.id) {
-        query = query.eq('user_id', user.id);
-      } else {
-        query = query.eq('device_id', deviceId.current);
-      }
-      
-      const { data, error } = await query;
+    const cachedUserId = user?.id ?? getCachedUserId();
 
-      if (error) {
-        console.error('[CloudBackup] Error fetching cloud charts:', error);
-        return [];
-      }
+    for (const [attemptIndex, delayMs] of RESTORE_RETRY_DELAYS_MS.entries()) {
+      if (delayMs > 0) await wait(delayMs);
 
-      // Transform database response to CloudChart type
-      return (data || []).map(row => ({
-        id: row.id,
-        device_id: row.device_id,
-        chart_id: row.chart_id,
-        chart_data: row.chart_data as unknown as NatalChart,
-        chart_name: row.chart_name,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        user_id: (row as unknown as CloudChart).user_id,
-      })) as CloudChart[];
-    } catch (err) {
-      console.error('[CloudBackup] Exception fetching cloud charts:', err);
-      return [];
+      try {
+        let query = supabase
+          .from('device_charts')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        // If authenticated, fetch by user_id; otherwise by device_id
+        if (cachedUserId) {
+          query = query.eq('user_id', cachedUserId);
+        } else {
+          query = query.eq('device_id', deviceId.current);
+        }
+        
+        const { data, error } = await withTimeout(query, CLOUD_REQUEST_TIMEOUT_MS, 'device_charts fetch');
+
+        if (error) {
+          console.error('[CloudBackup] Error fetching cloud charts:', error);
+          continue;
+        }
+
+        // Transform database response to CloudChart type
+        return (data || []).map(row => ({
+          id: row.id,
+          device_id: row.device_id,
+          chart_id: row.chart_id,
+          chart_data: row.chart_data as unknown as NatalChart,
+          chart_name: row.chart_name,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          user_id: (row as unknown as CloudChart).user_id,
+        })) as CloudChart[];
+      } catch (err) {
+        console.error(`[CloudBackup] Exception fetching cloud charts (attempt ${attemptIndex + 1}):`, err);
+      }
     }
+
+    return [];
   }, [user]);
 
   // Sync a single chart to cloud
@@ -455,6 +479,7 @@ export const useCloudBackup = (
     if (initialCheckDoneRef.current) return;
     initialCheckDoneRef.current = true;
 
+    let cancelled = false;
     const checkAndRestore = async () => {
       // Check if local storage is empty
       const hasLocalUser = userNatalChart && userNatalChart.name;
@@ -462,11 +487,12 @@ export const useCloudBackup = (
       const localSavedCount = savedCharts.length;
       
       // Always check cloud to see if there are more charts than local
-      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? 'device' });
+      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? getCachedUserId() ?? 'device' });
       const cloudCharts = await fetchCloudCharts();
+      if (cancelled) return;
       
       // Count non-user charts in cloud
-      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user').length;
+      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user' && !c.chart_id.startsWith('sr_')).length;
       
       if (!hasLocalUser && !hasLocalSaved && cloudCharts.length > 0) {
         // Local is completely empty, restore everything from cloud
@@ -486,7 +512,10 @@ export const useCloudBackup = (
       }
     };
 
-    checkAndRestore();
+    void checkAndRestore();
+    return () => {
+      cancelled = true;
+    };
   }, [authChecked, user?.id, userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
 
   // Sync whenever charts change

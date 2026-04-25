@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { DAY_TYPE_MAP } from "@/lib/astrology";
 
 interface DayTypeLegendProps {
@@ -5,7 +6,7 @@ interface DayTypeLegendProps {
   onClose: () => void;
 }
 
-export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
+export const DayTypeLegend = forwardRef<HTMLDivElement, DayTypeLegendProps>(({ isOpen, onClose }, ref) => {
   if (!isOpen) return null;
 
   const dayTypes = [
@@ -34,8 +35,8 @@ export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div 
+    <div ref={ref} className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4" onClick={onClose}>
+      <div
         className="bg-background border border-border rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -140,4 +141,6 @@ export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
       </div>
     </div>
   );
-};
+});
+
+DayTypeLegend.displayName = "DayTypeLegend";
