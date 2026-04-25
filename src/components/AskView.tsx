@@ -3,6 +3,7 @@ import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Downl
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SolarReturnChart } from "@/hooks/useSolarReturnChart";
