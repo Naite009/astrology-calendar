@@ -44,6 +44,15 @@ interface SubmitArgs {
 /**
  * Submit a new Ask job. Returns the jobId (already persisted to localStorage).
  */
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function isRetryableSubmitStatus(status: number): boolean {
+  return status === 500 || status === 503 || status === 504 || status === 522 || status === 544;
+}
+
+/**
+ * Submit a new Ask job. Returns the jobId (already persisted to localStorage).
+ */
 export async function submitAskJob(args: SubmitArgs): Promise<string> {
   // CRITICAL: Use the user's session JWT (not the publishable key) so the
   // edge function can resolve auth.uid() and stamp the job's user_id.
@@ -51,27 +60,41 @@ export async function submitAskJob(args: SubmitArgs): Promise<string> {
   // the authenticated client from reading them — UI gets stuck on "Queued".
   const { data: { session } } = await supabase.auth.getSession();
   const bearer = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      Authorization: `Bearer ${bearer}`,
-    },
-    body: JSON.stringify(args),
-  });
 
-  if (resp.status === 429) throw new Error("RATE_LIMIT");
-  if (resp.status === 402) throw new Error("CREDITS_EXHAUSTED");
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(`Failed to queue request: ${resp.status} ${text.slice(0, 200)}`);
+  let lastErrorText = "";
+  let lastStatus = 0;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${bearer}`,
+      },
+      body: JSON.stringify(args),
+    });
+
+    if (resp.status === 429) throw new Error("RATE_LIMIT");
+    if (resp.status === 402) throw new Error("CREDITS_EXHAUSTED");
+
+    if (resp.ok) {
+      const data = await resp.json();
+      if (!data?.jobId) throw new Error("Submit returned no jobId");
+      writeActiveJobId(args.chartId, data.jobId);
+      return data.jobId as string;
+    }
+
+    lastStatus = resp.status;
+    lastErrorText = await resp.text().catch(() => "");
+    if (attempt < 3 && isRetryableSubmitStatus(resp.status)) {
+      await sleep(attempt * 2000);
+      continue;
+    }
+    break;
   }
 
-  const data = await resp.json();
-  if (!data?.jobId) throw new Error("Submit returned no jobId");
-  writeActiveJobId(args.chartId, data.jobId);
-  return data.jobId as string;
+  throw new Error(`QUEUE_RETRYABLE:${lastStatus}:${lastErrorText.slice(0, 200)}`);
 }
 
 /**
