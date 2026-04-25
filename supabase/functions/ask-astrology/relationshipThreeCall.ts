@@ -524,9 +524,14 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
   } = args;
 
   // Build the 3 system-block stacks (shared master + per-call directive).
+  // Call C's directive is per-chart: we extract natal Venus/Jupiter positions
+  // from the verified activations and pin them inline so the model can't
+  // substitute the SR position into "natal" prose.
+  const pinnedNatalConstraints = buildPinnedNatalConstraints(callCActivationsBlock || "");
+  const directiveC = buildDirectiveC(pinnedNatalConstraints);
   const sysBlocksA = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, DIRECTIVE_A, effectiveCurrentDate);
   const sysBlocksB = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, DIRECTIVE_B, effectiveCurrentDate);
-  const sysBlocksC = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, DIRECTIVE_C, effectiveCurrentDate);
+  const sysBlocksC = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, directiveC, effectiveCurrentDate);
 
   const userMsgA = buildCallAUserMessage(natalChartBlock, userQuestion);
   const userMsgB = buildCallBUserMessage(srChartBlock, userQuestion);
