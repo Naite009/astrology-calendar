@@ -479,6 +479,7 @@ export const useCloudBackup = (
     if (initialCheckDoneRef.current) return;
     initialCheckDoneRef.current = true;
 
+    let cancelled = false;
     const checkAndRestore = async () => {
       // Check if local storage is empty
       const hasLocalUser = userNatalChart && userNatalChart.name;
@@ -486,11 +487,12 @@ export const useCloudBackup = (
       const localSavedCount = savedCharts.length;
       
       // Always check cloud to see if there are more charts than local
-      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? 'device' });
+      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? getCachedUserId() ?? 'device' });
       const cloudCharts = await fetchCloudCharts();
+      if (cancelled) return;
       
       // Count non-user charts in cloud
-      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user').length;
+      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user' && !c.chart_id.startsWith('sr_')).length;
       
       if (!hasLocalUser && !hasLocalSaved && cloudCharts.length > 0) {
         // Local is completely empty, restore everything from cloud
@@ -510,7 +512,10 @@ export const useCloudBackup = (
       }
     };
 
-    checkAndRestore();
+    void checkAndRestore();
+    return () => {
+      cancelled = true;
+    };
   }, [authChecked, user?.id, userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
 
   // Sync whenever charts change
