@@ -723,6 +723,23 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
   const aValue = (aRes as PromiseFulfilledResult<SingleCallResult & { from_cache: boolean }>).value;
   const bValue = (bRes as PromiseFulfilledResult<SingleCallResult & { from_cache: boolean }>).value;
 
+  // ── Build Call C inputs (depend on Call B's output for "Right Now") ───
+  const pinnedNatalConstraints = buildPinnedNatalConstraints(callCActivationsBlock || "");
+  const rightNowBlock = buildRightNowBlock(bValue.json, effectiveCurrentDate);
+  const hasRightNowBlock = /GROUND TRUTH \((?!0 found)/.test(rightNowBlock);
+  const directiveC = buildDirectiveC(pinnedNatalConstraints, hasRightNowBlock);
+  const sysBlocksC = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, directiveC, effectiveCurrentDate);
+  const userMsgC = buildCallCUserMessage(
+    natalChartBlock,
+    srChartBlock,
+    userQuestion,
+    callCActivationsBlock || "",
+    callCRetrogradeSummary || "",
+    rightNowBlock,
+    effectiveCurrentDate,
+  );
+  console.info(`[3call] Right Now block built: hasRightNow=${hasRightNowBlock}, blockLen=${rightNowBlock.length}`);
+
   // ── Call C sequentially after A+B succeed ─────────────────────────────
   // DIAGNOSTIC: confirm the verified-activations ground-truth block actually
   // reaches Call C's user message. If it doesn't, the model has nothing to
