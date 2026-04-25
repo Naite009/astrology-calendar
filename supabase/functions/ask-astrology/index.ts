@@ -9317,6 +9317,14 @@ ${natalGroundTruthLines}`
         // in <Sign>" / "SR Descendant in <Sign>" claim against the
         // deterministic SR House Cusps block.
         correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // FIX 1 & 2 (post-gate) — SR placement table house numbers and
+        // retrograde flags must align with the deterministic chart
+        // context on EVERY reading type, not just relationship. The
+        // in-line hygiene block already runs these, but Replit's gate
+        // can revert flags or shift house numbers; rerunning here makes
+        // the safety net symmetric for health/career/money/etc.
+        normalizePlacementTableRetrograde(parsedContent, postGateLog, sanitizedChartContext || "");
+        overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
