@@ -8294,6 +8294,7 @@ ${natalGroundTruthLines}`
         // Deterministic dedupe of duplicated paragraphs/sentences inside any
         // timing entry's `interpretation` field (Pluto multi-pass copy-paste bug).
         dedupeTimingInterpretations(parsedContent);
+        dedupeNarrativeSectionBodies(parsedContent);
 
         // Enforce that balance_interpretation mentions every non-zero element /
         // modality / polarity. Appends a short coverage clause if the AI omitted any.
