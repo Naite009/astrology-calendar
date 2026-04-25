@@ -40,6 +40,10 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 43 33% 98%;
 
+    /* Success state (used by inline validation checks) */
+    --success: 145 65% 38%;
+    --success-foreground: 43 33% 98%;
+
     /* Warm stone borders */
     --border: 40 12% 88%;
     --input: 40 12% 88%;
