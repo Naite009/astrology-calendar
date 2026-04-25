@@ -250,7 +250,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   // Track when generation started + latest job status so we can show an
   // elapsed-time counter and stage messages during the 4-7 min wait.
   const [loadingStartedAt, setLoadingStartedAt] = useState<number | null>(null);
-  const [jobStatus, setJobStatus] = useState<"queued" | "processing" | null>(null);
+  const [jobStatus, setJobStatus] = useState<"submitting" | "queued" | "processing" | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const handleStopGeneration = () => {
     if (abortControllerRef.current) {
@@ -385,6 +385,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
         // Still in-flight. Sanity check: drop if too old (server side cap is 10 min).
         const ageMs = Date.now() - new Date(row.created_at).getTime();
+        if (row.status === "queued" && ageMs > 75 * 1000) {
+          console.warn(`[AskView] Dropping queued job that never started ${jobId} (age ${Math.round(ageMs / 1000)}s)`);
+          writeActiveJobId(activeChartId, null);
+          toast.error("The report queue did not start. Please run it again.");
+          return;
+        }
+
         if (ageMs > 15 * 60 * 1000) {
           console.warn(`[AskView] Dropping stale active job ${jobId} (age ${Math.round(ageMs / 1000)}s)`);
           writeActiveJobId(activeChartId, null);
@@ -412,6 +419,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           if (err?.name === "AbortError") return;
           console.error("[AskView] Resume poll error:", err);
           writeActiveJobId(activeChartId, null);
+          if (String(err?.message || "") === "QUEUE_STALE") {
+            toast.error("The report queue did not start. Please run it again.");
+          }
         } finally {
           if (cancelled) return;
           setIsLoading(false);
