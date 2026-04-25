@@ -345,6 +345,7 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
                     onChange={(v) => setRelocCity2(sanitizeCityField(v))}
                     disabled={disabled}
                   />
+                </div>
               </div>
             )}
 
