@@ -321,49 +321,30 @@ export function AskQuickTopics({ onSelect, chartName, birthDate, birthTime, birt
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-current">
-                      Current city
-                    </label>
-                    <Input
-                      id="reloc-current"
-                      placeholder="e.g. Brooklyn, NY"
-                      value={relocCurrent}
-                      maxLength={80}
-                      onChange={(e) => setRelocCurrent(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c1">
-                      Considering #1
-                    </label>
-                    <Input
-                      id="reloc-c1"
-                      placeholder="e.g. Lisbon, Portugal"
-                      value={relocCity1}
-                      maxLength={80}
-                      onChange={(e) => setRelocCity1(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground" htmlFor="reloc-c2">
-                      Considering #2
-                    </label>
-                    <Input
-                      id="reloc-c2"
-                      placeholder="e.g. Mexico City, Mexico"
-                      value={relocCity2}
-                      maxLength={80}
-                      onChange={(e) => setRelocCity2(sanitizeCityField(e.target.value))}
-                      disabled={disabled}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+                  <CityInput
+                    id="reloc-current"
+                    label="Current city"
+                    placeholder="e.g. Brooklyn, NY"
+                    value={relocCurrent}
+                    onChange={(v) => setRelocCurrent(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
+                  <CityInput
+                    id="reloc-c1"
+                    label="Considering #1"
+                    placeholder="e.g. Lisbon, Portugal"
+                    value={relocCity1}
+                    onChange={(v) => setRelocCity1(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
+                  <CityInput
+                    id="reloc-c2"
+                    label="Considering #2"
+                    placeholder="e.g. Mexico City, Mexico"
+                    value={relocCity2}
+                    onChange={(v) => setRelocCity2(sanitizeCityField(v))}
+                    disabled={disabled}
+                  />
               </div>
             )}
 
