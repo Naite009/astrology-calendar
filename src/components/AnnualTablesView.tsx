@@ -745,7 +745,10 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                   </TableCell>
                   <TableCell>
                     {event.isSupermoon && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                        title="Supermoon: Full Moon occurring near perigee — within ~90% of the Moon's closest approach to Earth (under 361,000 km). It appears noticeably larger and up to ~30% brighter than an average full moon."
+                      >
                         ⭐ Supermoon
                         {event.supermoonSequence && (
                           <span className="text-muted-foreground">
@@ -754,9 +757,17 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                         )}
                       </span>
                     )}
+                    {event.name === "Blue Moon" && (
+                      <span
+                        className="ml-1 inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent-foreground"
+                        title="Blue Moon (calendar definition): the second Full Moon to fall within the same calendar month. Because the lunar cycle is ~29.5 days, this happens roughly once every 2–3 years — hence 'once in a Blue Moon.'"
+                      >
+                        🔵 Blue Moon
+                      </span>
+                    )}
                     {event.isSupermoon && (
                       <div className="mt-1 text-xs text-muted-foreground">
-                        {event.distance.toLocaleString()} km
+                        {event.distance.toLocaleString()} km from Earth
                       </div>
                     )}
                   </TableCell>
@@ -953,9 +964,18 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             entered its current zodiac sign before the exact lunar phase.
           </div>
           <div>
-            <strong className="text-foreground">Supermoon:</strong> Full Moon occurring within
-            90% of perigee (closest approach to Earth, under 361,000 km). Appears larger and
-            brighter.
+            <strong className="text-foreground">Supermoon:</strong> A Full (or New) Moon that
+            happens when the Moon is near <em>perigee</em> — its closest point to Earth in its
+            elliptical orbit. The threshold used here is under 361,000 km (within ~90% of perigee).
+            Because it's closer, a supermoon appears up to ~14% larger and ~30% brighter than an
+            average full moon, and it amplifies tidal pull. Typically 3–4 occur in a row each year.
+          </div>
+          <div>
+            <strong className="text-foreground">Blue Moon:</strong> The second Full Moon to fall
+            within the same calendar month. Since a lunar cycle is ~29.5 days and most months are
+            30–31 days, this only happens when the first Full Moon lands in the first day or two of
+            the month — roughly once every 2–3 years. The name has nothing to do with color; it's
+            the source of the phrase <em>"once in a blue moon."</em>
           </div>
         </div>
       </section>
