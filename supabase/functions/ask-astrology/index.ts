@@ -8563,6 +8563,7 @@ ${natalGroundTruthLines}`
                 // duplicated paragraphs or missing element coverage in the
                 // regenerated text get fixed before final validation.
                 dedupeTimingInterpretations(parsedContent);
+                dedupeNarrativeSectionBodies(parsedContent);
                 enforceNonZeroCoverage(parsedContent);
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
