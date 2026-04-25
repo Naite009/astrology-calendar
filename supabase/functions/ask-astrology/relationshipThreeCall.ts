@@ -209,7 +209,14 @@ Output: a single JSON object, no prose before or after, no markdown code fences.
 const DIRECTIVE_A = buildDirective(
   CALL_A_SECTIONS,
   "NATAL-ONLY",
-  `This is the NATAL-ONLY call. The user message contains NATAL chart data only. There is NO Solar Return data in your context for this call. Do not write the phrase "Solar Return" anywhere in this call's output. Do not write "this year" framings — those belong to a different call. Write the sections as a portrait of the person's lifelong relational signature based on the natal chart only.`,
+  `This is the NATAL-ONLY call. The user message contains NATAL chart data only. There is NO Solar Return data in your context for this call. Do not write the phrase "Solar Return" anywhere in this call's output. Do not write "this year" framings — those belong to a different call. Write the sections as a portrait of the person's lifelong relational signature based on the natal chart only.
+
+HARD LENGTH CONSTRAINT — "How This Person Loves":
+The body of the "How This Person Loves" narrative_section MUST NOT exceed 2,000 characters total. This is a hard ceiling, not a target. If you would naturally write more, prioritize ruthlessly:
+  - Lead with the 2-3 most defining placements (typically Venus, Mars, Moon, 7th-house ruler, or whichever bodies are most aspected/dignified).
+  - Cut secondary placements rather than shorten every paragraph into fragments.
+  - Do not list every relevant placement — choose the ones that drive behavior.
+Treat 1,500 characters as the soft target and 2,000 as the absolute ceiling. Other narrative_section bodies in this call follow their normal length guidance and are not affected by this rule.`,
 );
 
 const DIRECTIVE_B = buildDirective(
@@ -218,7 +225,15 @@ const DIRECTIVE_B = buildDirective(
   `This is the SR-ONLY call. The user message contains SOLAR RETURN chart data only. There is NO natal chart data in your context for this call. Write the sections as a portrait of THIS YEAR'S relational weather based on the Solar Return chart only. You may say "this year" / "the next 12 months" / "Solar Return". Do not reference natal placements — they aren't in your context for this call.`,
 );
 
-const DIRECTIVE_C = buildDirective(
+/**
+ * Build the per-chart Call C directive. We inject explicit "natal X is Y, never
+ * write Z" lines for any planet that the model has historically swapped with
+ * its SR counterpart (Venus and Jupiter are the recurring offenders). The
+ * verified activations list already contains the correct values, but the model
+ * has been pulling SR positions through into "natal" prose, so we restate the
+ * constraint planet-by-planet using the activations as the source of truth.
+ */
+const buildDirectiveC = (pinnedConstraints: string): string => buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
   `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
@@ -241,12 +256,50 @@ You MUST:
   and natalPosition values verbatim from the verified list
 - If asked to discuss an activation not in the list,
   write "no significant activation this year" instead
-
+${pinnedConstraints}
 VIOLATION OF THIS RULE PRODUCES FACTUALLY WRONG OUTPUT
 THAT CANNOT BE CORRECTED DOWNSTREAM. Treat the verified
 activations as the only ground truth that exists for
 this call.`,
 );
+
+/**
+ * Scan the rendered activations block for natal Venus and natal Jupiter, then
+ * emit explicit "natal X is Y — never write Z for natal X" pinned constraints.
+ * Z is the SR position from the same activation line, since that's what the
+ * model has been substituting in. If the planet doesn't appear in any
+ * activation we skip its pin (no false ground truth).
+ *
+ * Activation lines look like:
+ *   "  3. SR Venus opposite natal Jupiter (orb 1.2°) — SR Venus at 9°15' Libra; natal Jupiter at 29°34' Taurus"
+ */
+const buildPinnedNatalConstraints = (callCActivationsBlock: string): string => {
+  if (!callCActivationsBlock) return "";
+
+  const pinnedPlanets: Array<{ name: string; label: string }> = [
+    { name: "Venus", label: "natal Venus" },
+    { name: "Jupiter", label: "natal Jupiter" },
+  ];
+
+  const lines: string[] = [];
+  for (const { name, label } of pinnedPlanets) {
+    const re = new RegExp(
+      `SR\\s+\\S+\\s+\\S+\\s+natal\\s+${name}\\s+\\(orb[^)]+\\)\\s+—\\s+SR\\s+\\S+\\s+at\\s+([^;]+);\\s+natal\\s+${name}\\s+at\\s+([^\\n]+)`,
+      "i",
+    );
+    const m = callCActivationsBlock.match(re);
+    if (!m) continue;
+    const srPos = m[1].trim();
+    const natalPos = m[2].trim();
+    if (!srPos || !natalPos || srPos === natalPos) continue;
+    lines.push(
+      `- ${label} position is ${natalPos} — never write ${srPos} for ${label}.`,
+    );
+  }
+
+  if (lines.length === 0) return "";
+  return `\nPINNED NATAL POSITIONS (do not substitute SR values):\n${lines.join("\n")}\n`;
+};
 
 // ─── Anthropic call helper ──────────────────────────────────────────────────
 
