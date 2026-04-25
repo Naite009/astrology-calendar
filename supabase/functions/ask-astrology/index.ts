@@ -1146,7 +1146,131 @@ const dedupeAspectsAcrossSections = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
-// OFF-TOPIC DOMAIN PHRASES — Defect 3
+// RELOCATION TIMING-SECTION DEDUPE
+// The relocation reading's timing_section repeatedly emits the same
+// outer-planet meaning sentences ("Pluto squaring this part of your chart…",
+// "Uranus opposing your X…") across multiple windows. The cross-section
+// aspect deduper above explicitly SKIPS timing_section because timing data
+// is intentionally repeated cell-to-cell. This pass runs ONLY when
+// question_type === "relocation" and ONLY on timing_section bodies/
+// descriptions/paragraphs[].
+// Strategy: normalize each sentence (lowercase, collapse whitespace, strip
+// terminal punctuation), drop any sentence whose normalized form has already
+// appeared in any other window in the same timing_section. Also pattern-
+// matches outer-planet aspect families (Pluto+square, Uranus+opposition,
+// etc.) and keeps only the first descriptive sentence per family.
+// ──────────────────────────────────────────────────────────────────────────
+const OUTER_PLANET_ASPECT_FAMILIES: Array<{ key: string; rx: RegExp }> = [
+  { key: "pluto-square",      rx: /\bpluto\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "pluto-opposition",  rx: /\bpluto\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "pluto-conjunct",    rx: /\bpluto\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "pluto-trine",       rx: /\bpluto\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "pluto-sextile",     rx: /\bpluto\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "uranus-square",     rx: /\buranus\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "uranus-opposition", rx: /\buranus\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "uranus-conjunct",   rx: /\buranus\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "uranus-trine",      rx: /\buranus\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "uranus-sextile",    rx: /\buranus\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "neptune-square",    rx: /\bneptune\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "neptune-opposition",rx: /\bneptune\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+  { key: "neptune-conjunct",  rx: /\bneptune\s+(?:is\s+)?conjunct(?:ing)?\b/i },
+  { key: "neptune-trine",     rx: /\bneptune\s+(?:is\s+)?trin(?:e|ing)\b/i },
+  { key: "neptune-sextile",   rx: /\bneptune\s+(?:is\s+)?sextil(?:e|ing)\b/i },
+  { key: "saturn-return",     rx: /\bsaturn\s+return\b/i },
+  { key: "saturn-square",     rx: /\bsaturn\s+(?:is\s+)?squar(?:e|ing)\b/i },
+  { key: "saturn-opposition", rx: /\bsaturn\s+(?:is\s+)?oppos(?:e|ing|ition|ite)\b/i },
+];
+const dedupeRelocationTimingSection = (parsedContent: any, log: HygieneLog) => {
+  const qt = String(parsedContent?.question_type || "").toLowerCase();
+  if (qt !== "relocation" && qt !== "travel" && qt !== "location") return;
+  if (!Array.isArray(parsedContent?.sections)) return;
+
+  let removedSentences = 0;
+  const examples: string[] = [];
+
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+
+    // Track normalized sentences and outer-planet families seen anywhere in
+    // THIS timing_section (across all windows/transits/entries).
+    const seenSentence = new Set<string>();
+    const seenFamily = new Set<string>();
+
+    const cleanProse = (text: string): string => {
+      if (!text || typeof text !== "string" || text.length < 20) return text;
+      const sentences = splitSentencesForMeta(text);
+      const kept: string[] = [];
+      for (const sent of sentences) {
+        const norm = sent
+          .toLowerCase()
+          .replace(/[\u2013\u2014]/g, "-")
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/[.!?]+$/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // Exact-duplicate check (across this timing_section).
+        if (norm.length >= 25 && seenSentence.has(norm)) {
+          removedSentences++;
+          if (examples.length < 5) examples.push(`exact: "${sent.slice(0, 90)}"`);
+          continue;
+        }
+
+        // Outer-planet family check.
+        let familyHit: string | null = null;
+        for (const fam of OUTER_PLANET_ASPECT_FAMILIES) {
+          if (fam.rx.test(sent)) { familyHit = fam.key; break; }
+        }
+        if (familyHit) {
+          if (seenFamily.has(familyHit)) {
+            removedSentences++;
+            if (examples.length < 5) examples.push(`family[${familyHit}]: "${sent.slice(0, 90)}"`);
+            continue;
+          }
+          seenFamily.add(familyHit);
+        }
+
+        if (norm.length >= 25) seenSentence.add(norm);
+        kept.push(sent);
+      }
+      return kept.join(" ").trim();
+    };
+
+    const walk = (node: any) => {
+      if (Array.isArray(node)) { for (const x of node) walk(x); return; }
+      if (!node || typeof node !== "object") return;
+      for (const [key, val] of Object.entries(node)) {
+        // Don't touch metadata fields (date ranges, labels, planet names, etc.)
+        if (DEDUPE_SKIP_FIELD_KEYS.has(key)) continue;
+        if (typeof val === "string") {
+          // Only clean prose-shaped fields; leave short labels alone.
+          if (key === "body" || key === "description" || key === "summary" || key === "text" || key === "paragraph") {
+            const next = cleanProse(val);
+            if (next !== val) (node as any)[key] = next;
+          } else if (val.length > 80) {
+            // Long free-text fields we don't recognize — still apply.
+            const next = cleanProse(val);
+            if (next !== val) (node as any)[key] = next;
+          }
+        } else if (val && typeof val === "object") {
+          walk(val);
+        }
+      }
+    };
+    walk(section);
+  }
+
+  if (removedSentences > 0) {
+    log.push({
+      type: "relocation_timing_duplicates_removed",
+      detail: { count: removedSentences, examples },
+    });
+    console.info("[ask-astrology] relocation timing duplicates removed", { count: removedSentences, examples });
+  }
+};
+
+
 // Aspect-interpretation library entries are sometimes written in a
 // relationship-leaning voice ("romanticizing people", "idealizing your
 // partner") and get pasted into career / money / health readings unchanged.
