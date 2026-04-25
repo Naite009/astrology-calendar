@@ -1639,9 +1639,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const getReadingsForExport = useCallback((): { chartMeta: any; readings: StructuredReading[] } | null => {
-    // First try current entries
-    const currentReadings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
-    if (currentReadings.length > 0 && selectedChart) {
+    // Export ONLY the most recent reading in the active chat. If a user runs
+    // a relationship reading and then a career reading in the same session,
+    // the download must contain just the career reading they just generated —
+    // not every prior reading still in chat history. (Bug fix: previously
+    // the export accumulated all assistant readings, so the JSON would
+    // include the older relationship reading alongside the new career one.)
+    const allReadings = entries.filter(e => e.role === "assistant" && e.reading).map(e => e.reading!);
+    if (allReadings.length > 0 && selectedChart) {
+      const mostRecent = allReadings[allReadings.length - 1];
       return {
         chartMeta: {
           name: selectedChart.name,
@@ -1649,13 +1655,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           birthTime: selectedChart.birthTime,
           birthLocation: formatLocationTitleCase(selectedChart.birthLocation || ""),
         },
-        readings: currentReadings,
+        readings: [mostRecent],
       };
     }
-    // Fallback: load last persisted reading
+    // Fallback: load last persisted reading (already a single most-recent snapshot)
     const lastReading = loadLastReading(activeChartId);
     if (lastReading) {
-      return { chartMeta: lastReading.chart, readings: lastReading.readings };
+      const readings = lastReading.readings || [];
+      const mostRecent = readings.length > 0 ? [readings[readings.length - 1]] : [];
+      return { chartMeta: lastReading.chart, readings: mostRecent };
     }
     return null;
   }, [entries, selectedChart, activeChartId]);
