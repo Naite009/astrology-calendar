@@ -80,30 +80,34 @@ export const useCloudBackup = (
 
   // Listen for auth state changes
   useEffect(() => {
+    const hydrateFromCachedSession = (session = readCachedSupabaseSession()) => {
+      setUser(session?.user ?? null);
+      setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+      setAuthChecked(true);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!session?.user && restorePendingRef.current) {
           return;
         }
 
-        setUser(session?.user ?? null);
-        setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+        const recoveredSession = session ?? readCachedSupabaseSession();
+        setUser(recoveredSession?.user ?? null);
+        setState(prev => ({ ...prev, isAuthenticated: !!recoveredSession?.user }));
         setAuthChecked(true);
 
         // When user logs in, trigger a sync to fetch their charts
-        if (event === 'SIGNED_IN' && session?.user) {
+        if (event === 'SIGNED_IN' && recoveredSession?.user) {
           initialCheckDoneRef.current = false; // Reset to allow re-check
         }
       }
     );
 
     void (async () => {
-      await waitForInitialSessionRestore();
+      const session = await getSessionSafely('cloud backup session restore');
       restorePendingRef.current = false;
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
-      setAuthChecked(true);
+      hydrateFromCachedSession(session);
     })();
 
     return () => subscription.unsubscribe();
@@ -112,19 +116,20 @@ export const useCloudBackup = (
   // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {
     try {
+      const cachedUserId = user?.id ?? getCachedUserId();
       let query = supabase
         .from('device_charts')
         .select('*')
         .order('updated_at', { ascending: false });
       
       // If authenticated, fetch by user_id; otherwise by device_id
-      if (user?.id) {
-        query = query.eq('user_id', user.id);
+      if (cachedUserId) {
+        query = query.eq('user_id', cachedUserId);
       } else {
         query = query.eq('device_id', deviceId.current);
       }
       
-      const { data, error } = await query;
+      const { data, error } = await withTimeout(query, CLOUD_REQUEST_TIMEOUT_MS, 'device_charts fetch');
 
       if (error) {
         console.error('[CloudBackup] Error fetching cloud charts:', error);
