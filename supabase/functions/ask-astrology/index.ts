@@ -2005,6 +2005,21 @@ const normalizePlacementTableRetrograde = (
     const titleSaysNatal = titleLower.includes("natal");
     const rows = Array.isArray(section.rows) ? section.rows : [];
 
+    // Diagnostic: log truth-map keys vs the planet-name strings the AI
+    // actually emitted in this placement_table. This proves any lookup
+    // mismatch (e.g. AI wrote "SR Mercury ℞", truth keys are bare "mercury")
+    // and verifies the prefix-stripping fix above is hitting.
+    if (rows.length > 0) {
+      console.info("[ask-astrology] placement_table normalize debug", {
+        title: section.title || "?",
+        sr_truth_keys: Array.from(srTruth.keys()),
+        natal_truth_keys: Array.from(natalTruth.keys()),
+        ai_planet_names: rows
+          .map((r: any) => (r && typeof r === "object" ? String(r.planet || r.body || r.name || "") : ""))
+          .filter(Boolean),
+      });
+    }
+
     // Table-level routing decision — used ONLY when the title is explicit OR
     // when only one truth map is available. For generically-titled tables
     // with both maps present, each row is routed independently below.
