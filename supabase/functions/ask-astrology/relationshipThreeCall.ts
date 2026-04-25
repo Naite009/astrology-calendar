@@ -233,7 +233,7 @@ const DIRECTIVE_B = buildDirective(
  * has been pulling SR positions through into "natal" prose, so we restate the
  * constraint planet-by-planet using the activations as the source of truth.
  */
-const buildDirectiveC = (pinnedConstraints: string): string => buildDirective(
+const buildDirectiveC = (pinnedConstraints: string, hasRightNowBlock: boolean): string => buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
   `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
@@ -260,7 +260,39 @@ ${pinnedConstraints}
 VIOLATION OF THIS RULE PRODUCES FACTUALLY WRONG OUTPUT
 THAT CANNOT BE CORRECTED DOWNSTREAM. Treat the verified
 activations as the only ground truth that exists for
-this call.`,
+this call.
+
+=========================================================
+MANDATORY CLOSING PARAGRAPH — "The Year's Overarching Theme"
+=========================================================
+After writing the body of the "Where Natal and Solar Return Connect" section (which interprets each verified activation), the SAME body string MUST end with one final closing paragraph. This closing paragraph:
+- Begins on its own line with the bold heading: **The Year's Overarching Theme**
+- Is exactly ONE paragraph (3–5 sentences). Not a list. Not bullets.
+- Synthesizes ALL the activations above into one cohesive story — what do they point toward together?
+- Names the single most important thing this year is asking of this person in their relationships.
+- Uses plain behavioral language (no jargon, no planet names if avoidable, no orbs).
+- Is decisive and direct — like a final takeaway, not a recap.
+This closing paragraph is part of the "body" string of the same narrative_section, appended to the end. It is NOT a separate section.
+
+=========================================================
+"Relationship Strategy Summary" — REQUIRED ITEMS (this call)
+=========================================================
+The summary_box "items" array MUST contain EXACTLY these six labels in this order, and NO others:
+  1. "Who to Move Toward"
+  2. "Early Warning Signs"
+  3. "Pattern to Break"
+  4. "Right Now"
+  5. "Best Windows"
+  6. "Caution Windows"
+
+The "Right Now" item rules (NON-NEGOTIABLE):
+${hasRightNowBlock
+  ? `- Use ONLY the transit(s) listed in the "RIGHT NOW TRANSIT WINDOWS" block in the user message. That block contains the 1–2 transits whose exact peak falls within ±14 days of the current date.
+- Identify those transit(s) by name in plain language and tell the person — in 2 to 4 sentences — what that specific transit is asking of them in this exact moment (this week / this month). Lead with the lived behavior or feeling first, name the transit second.
+- If the block lists more than one transit, weave them into a single coherent "right now" picture — do NOT bullet-list them.
+- Do NOT invent transits. Do NOT pull from the verified cross-chart activations list (those are year-long, not "right now"). Do NOT cite any transit not in the RIGHT NOW block.`
+  : `- The "RIGHT NOW TRANSIT WINDOWS" block in the user message lists ZERO transits within ±14 days of the current date. Therefore, write the "Right Now" value EXACTLY as: "No major outer-planet transit is within two weeks of exact peak right now — this is a quieter moment to integrate what's already in motion rather than wait for a single window to open." Do NOT invent a transit to fill the slot.`}
+- Do NOT include "What This Year Is Best For", "What This Year Asks Of You", or any other label outside the six listed above.`,
 );
 
 /**
@@ -483,6 +515,8 @@ const buildCallCUserMessage = (
   userQuestion: string,
   callCActivationsBlock: string,
   callCRetrogradeSummary: string,
+  rightNowBlock: string,
+  effectiveCurrentDate: string,
 ): string => {
   const retroBlock = callCRetrogradeSummary
     ? `\n${callCRetrogradeSummary}\n`
@@ -490,7 +524,12 @@ const buildCallCUserMessage = (
   const activationsBlock = callCActivationsBlock
     ? `\n\n${callCActivationsBlock}\n`
     : "";
+  const rightNow = rightNowBlock
+    ? `\n\n${rightNowBlock}\n`
+    : "";
   return `User's question: ${userQuestion}
+
+CURRENT DATE (use this for the "Right Now" item): ${effectiveCurrentDate}
 
 REMINDER: You may only interpret activations from the
 VERIFIED CROSS-CHART ACTIVATIONS list below. Every
@@ -511,8 +550,103 @@ SOLAR RETURN CHART — use ONLY for SR references
 =========================================================
 
 ${srChartBlock}
-${retroBlock}${activationsBlock}`;
+${retroBlock}${activationsBlock}${rightNow}`;
 };
+
+/**
+ * Compute the "RIGHT NOW TRANSIT WINDOWS" block from Call B's Relationship
+ * Timing Windows output. Picks at most 2 transits whose exact peak (parsed
+ * from date_range) falls within ±14 days of the current date. Returns a
+ * "0 found" block if none qualify so the directive's empty-state branch fires.
+ */
+const buildRightNowBlock = (callBJson: any, effectiveCurrentDate: string): string => {
+  const now = new Date(effectiveCurrentDate);
+  const nowMs = isNaN(now.getTime()) ? Date.now() : now.getTime();
+  const WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+  const emptyBlock = (reason: string) => `=========================================================
+RIGHT NOW TRANSIT WINDOWS — GROUND TRUTH (0 found)
+=========================================================
+${reason} Write the "Right Now" summary item per the empty-state instruction in the directive.`;
+
+  const sections = Array.isArray(callBJson?.sections) ? callBJson.sections : [];
+  const timing = sections.find((s: any) =>
+    s?.type === "timing_section"
+    && typeof s?.title === "string"
+    && /timing\s+windows?/i.test(s.title)
+  );
+  const transits = Array.isArray(timing?.transits) ? timing.transits : [];
+  if (transits.length === 0) {
+    return emptyBlock("No timing windows were generated in Call B, so no \"right now\" transit can be cited.");
+  }
+
+  const parseRangeMidpoint = (raw: string): number | null => {
+    if (!raw || typeof raw !== "string") return null;
+    const cleaned = raw.replace(/[–—]/g, "-").trim();
+    const tryParse = (s: string): number | null => {
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) return d.getTime();
+      const mY = s.match(/^([A-Za-z]+)\s+(\d{4})$/);
+      if (mY) {
+        const d2 = new Date(`${mY[1]} 15, ${mY[2]}`);
+        if (!isNaN(d2.getTime())) return d2.getTime();
+      }
+      return null;
+    };
+    // Split on " to " or " - " (latter only when followed by capital/digit)
+    const parts = cleaned.split(/\s+to\s+|\s+-\s+(?=[A-Z0-9])/i);
+    if (parts.length >= 2) {
+      const yearMatch = parts[parts.length - 1].match(/\b(\d{4})\b/);
+      const head = /\d{4}/.test(parts[0])
+        ? parts[0]
+        : (yearMatch ? `${parts[0]}, ${yearMatch[1]}` : parts[0]);
+      const startMs = tryParse(head);
+      const endMs = tryParse(parts[parts.length - 1]);
+      if (startMs != null && endMs != null) return Math.round((startMs + endMs) / 2);
+      if (startMs != null) return startMs;
+      if (endMs != null) return endMs;
+    }
+    return tryParse(cleaned);
+  };
+
+  const scored = transits
+    .map((t: any) => {
+      const peakMs = parseRangeMidpoint(t?.date_range || "");
+      if (peakMs == null) return null;
+      const distance = Math.abs(peakMs - nowMs);
+      return { t, peakMs, distance };
+    })
+    .filter((x: any) => x && x.distance <= WINDOW_MS)
+    .sort((a: any, b: any) => a.distance - b.distance)
+    .slice(0, 2);
+
+  if (scored.length === 0) {
+    return emptyBlock(`No transit listed in Relationship Timing Windows has its exact peak within ±14 days of the current date (${effectiveCurrentDate}).`);
+  }
+
+  const lines = scored.map((s: any, i: number) => {
+    const t = s.t;
+    const planet = String(t.planet || "").trim();
+    const aspect = String(t.aspect || "").trim();
+    const natalPoint = String(t.natal_point || "").trim();
+    const dateRange = String(t.date_range || "").trim();
+    const interp = String(t.interpretation || "").trim().slice(0, 400);
+    const days = Math.round(s.distance / (24 * 60 * 60 * 1000));
+    return `  ${i + 1}. ${planet} ${aspect} ${natalPoint} — date_range: "${dateRange}" — peak is ~${days} day(s) from current date — Call B's interpretation: "${interp}"`;
+  }).join("\n");
+
+  return `=========================================================
+RIGHT NOW TRANSIT WINDOWS — GROUND TRUTH (${scored.length} found)
+=========================================================
+The following transit(s) from Call B's Relationship Timing Windows have their exact peak within ±14 days of the current date (${effectiveCurrentDate}). The "Right Now" item in the Relationship Strategy Summary MUST be written from this list and ONLY from this list.
+
+${lines}
+
+Rules for using this block:
+- Lead with the lived behavior the person would feel this week / this month, then name the transit by name (e.g., "Saturn squaring your natal Venus right now").
+- Do NOT invent additional transits. Do NOT pull from the verified cross-chart activations list (those are year-long, not "right now").
+- 2 to 4 sentences total for the "Right Now" value, regardless of how many transits are in the block.`;
+};
+
 
 export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<ThreeCallResult> => {
   const overallStart = Date.now();
@@ -523,25 +657,14 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
     priorOutputs, updateJob,
   } = args;
 
-  // Build the 3 system-block stacks (shared master + per-call directive).
-  // Call C's directive is per-chart: we extract natal Venus/Jupiter positions
-  // from the verified activations and pin them inline so the model can't
-  // substitute the SR position into "natal" prose.
-  const pinnedNatalConstraints = buildPinnedNatalConstraints(callCActivationsBlock || "");
-  const directiveC = buildDirectiveC(pinnedNatalConstraints);
+  // Build A and B system stacks now. Call C's directive + user message are
+  // built AFTER A+B settle so we can derive the "Right Now" block from Call B's
+  // Relationship Timing Windows output.
   const sysBlocksA = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, DIRECTIVE_A, effectiveCurrentDate);
   const sysBlocksB = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, DIRECTIVE_B, effectiveCurrentDate);
-  const sysBlocksC = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, directiveC, effectiveCurrentDate);
 
   const userMsgA = buildCallAUserMessage(natalChartBlock, userQuestion);
   const userMsgB = buildCallBUserMessage(srChartBlock, userQuestion);
-  const userMsgC = buildCallCUserMessage(
-    natalChartBlock,
-    srChartBlock,
-    userQuestion,
-    callCActivationsBlock || "",
-    callCRetrogradeSummary || "",
-  );
 
   // Helper that runs a single call, persists its output on success, and
   // patches call_status. Reuses prior output if present.
@@ -599,6 +722,23 @@ export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<Thr
 
   const aValue = (aRes as PromiseFulfilledResult<SingleCallResult & { from_cache: boolean }>).value;
   const bValue = (bRes as PromiseFulfilledResult<SingleCallResult & { from_cache: boolean }>).value;
+
+  // ── Build Call C inputs (depend on Call B's output for "Right Now") ───
+  const pinnedNatalConstraints = buildPinnedNatalConstraints(callCActivationsBlock || "");
+  const rightNowBlock = buildRightNowBlock(bValue.json, effectiveCurrentDate);
+  const hasRightNowBlock = /GROUND TRUTH \((?!0 found)/.test(rightNowBlock);
+  const directiveC = buildDirectiveC(pinnedNatalConstraints, hasRightNowBlock);
+  const sysBlocksC = buildSharedSystemBlocks(masterSystemPrompt, chartScopedRulesShared, directiveC, effectiveCurrentDate);
+  const userMsgC = buildCallCUserMessage(
+    natalChartBlock,
+    srChartBlock,
+    userQuestion,
+    callCActivationsBlock || "",
+    callCRetrogradeSummary || "",
+    rightNowBlock,
+    effectiveCurrentDate,
+  );
+  console.info(`[3call] Right Now block built: hasRightNow=${hasRightNowBlock}, blockLen=${rightNowBlock.length}`);
 
   // ── Call C sequentially after A+B succeed ─────────────────────────────
   // DIAGNOSTIC: confirm the verified-activations ground-truth block actually
