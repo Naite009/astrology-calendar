@@ -7323,7 +7323,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId } = body;
+    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
 
     // === STATUS POLL: client polls GET-style POST with { jobId } only ===
     if (existingJobId && !messages) {
