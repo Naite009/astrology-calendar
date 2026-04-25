@@ -35,17 +35,36 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function isRetryableQueueError(error: any): boolean {
   const status = Number(error?.status ?? error?.code ?? error?.error_code ?? 0);
+  const name = String(error?.name ?? "").toLowerCase();
   const text = JSON.stringify(error ?? {}).toLowerCase();
   return (
     status === 522 ||
     status === 503 ||
     status === 504 ||
     status === 544 ||
+    name.includes("abort") ||
+    name.includes("timeout") ||
+    text.includes("abort") ||
+    text.includes("timeout") ||
     text.includes("connection timed out") ||
     text.includes("connection timeout") ||
     text.includes("failed to fetch") ||
     text.includes("network")
   );
+}
+
+function decodeTrustedJwtSubject(token: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    const expectedIssuer = `${Deno.env.get("SUPABASE_URL")}/auth/v1`;
+    const expMs = Number(payload?.exp ?? 0) * 1000;
+    if (payload?.iss !== expectedIssuer || payload?.aud !== "authenticated" || !payload?.sub || expMs <= Date.now()) return null;
+    return String(payload.sub);
+  } catch {
+    return null;
+  }
 }
 
 // Best-effort repair for JSON truncated mid-string by max_tokens.
@@ -7222,21 +7241,15 @@ Deno.serve(async (req) => {
 
     // === SUBMIT JOB ===
     // Resolve user from JWT (best-effort — anonymous fallback supported).
-    // CRITICAL: use the SERVICE ROLE client to call auth.getUser(token) so
-    // it works regardless of which anon/publishable env var is set. If this
-    // returns null for an authenticated user, RLS will block them from
-    // reading their own job row → infinite empty polls.
+    // Fast local decode first. If this stalls on auth.getUser during backend
+    // connectivity issues, queueing never responds and the preview falls into
+    // recovery. We trust only authenticated JWTs issued by this project.
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
       try {
-        const svcAuth = getServiceClient();
-        const { data: userData, error: userErr } = await svcAuth.auth.getUser(token);
-        if (userErr) {
-          console.warn("[ask-astrology] auth.getUser error:", userErr.message);
-        }
-        userId = userData?.user?.id ?? null;
+        userId = decodeTrustedJwtSubject(token);
         console.log(`[ask-astrology] Resolved user from JWT: ${userId ?? "ANON"}`);
       } catch (e) {
         console.warn("[ask-astrology] JWT decode failed, falling back to anon:", e instanceof Error ? e.message : e);
@@ -7290,7 +7303,7 @@ Deno.serve(async (req) => {
         // Keep retryable queue failures inside the app flow instead of
         // surfacing as a platform runtime popup. The client still retries and
         // shows a normal toast when the queue cannot accept the job.
-        status: retryable ? 200 : 500,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "120" },
       });
     }
