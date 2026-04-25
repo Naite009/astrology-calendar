@@ -8382,6 +8382,13 @@ HARD RULE — applies to every sentence:
           // not from whatever the AI copied from natal. This kills the
           // Replit gate's "recomputed N SR house number(s)" fix.
           overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR PLANET HOUSE PROSE FIXER: scrub "SR <Planet> in the <Nth>
+          // house" sentences when the named house disagrees with the
+          // deterministic SR house from the chart context. The override
+          // above only touches the placement_table; without this pass the
+          // table is right while the prose still tells the user the wrong
+          // house (e.g. "SR Pluto in the 5th house" when SR Pluto is in 6).
+          correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
