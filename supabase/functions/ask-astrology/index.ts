@@ -1822,24 +1822,71 @@ const overrideSRHouseNumbersFromContext = (
 ) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections) || !chartContext) return;
   const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
   if (srPos.length === 0) return;
   const houseMap = new Map<string, number>();
+  type PosFact = { sign: string; degree: number };
+  const srFacts = new Map<string, PosFact>();
+  const natalFacts = new Map<string, PosFact>();
   for (const p of srPos) {
-    if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+    const k = p.planet.toLowerCase();
+    if (p.house != null) houseMap.set(k, p.house);
+    srFacts.set(k, { sign: p.sign, degree: p.degree });
+  }
+  for (const p of natalPos) {
+    natalFacts.set(p.planet.toLowerCase(), { sign: p.sign, degree: p.degree });
   }
   if (houseMap.size === 0) return;
+
+  // Score table rows against natal vs SR fact maps to disambiguate
+  // generically-titled tables (e.g. "Key Placements") on single-call paths
+  // (career, money, health, relocation). Without this, the SR house
+  // override only ran on tables whose title literally contained "solar
+  // return" or "sr ", leaving SR planet houses wrong on every other path.
+  const RETRO_GLYPH = /\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i;
+  const scoreTableAgainstFacts = (rows: any[], facts: Map<string, PosFact>): number => {
+    let score = 0;
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const baseName = String(row.planet || row.body || row.name || "")
+        .replace(RETRO_GLYPH, "").trim().toLowerCase();
+      const fact = facts.get(baseName);
+      if (!fact) continue;
+      const rowSign = String(row.sign || row.zodiac || "").trim();
+      if (rowSign && rowSign.toLowerCase() === fact.sign.toLowerCase()) score += 2;
+      const rowDegRaw = row.degree ?? row.degrees;
+      const rowDeg = typeof rowDegRaw === "number" ? rowDegRaw
+        : typeof rowDegRaw === "string" ? parseInt(rowDegRaw.match(/\d+/)?.[0] || "", 10) : NaN;
+      if (Number.isFinite(rowDeg) && Math.abs(rowDeg - fact.degree) <= 1) score += 1;
+    }
+    return score;
+  };
+
   let overridden = 0;
   const examples: string[] = [];
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
     const titleLower = String(section.title || "").toLowerCase();
-    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
-    if (!isSR) continue;
+    const titleSaysSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const titleSaysNatal = titleLower.includes("natal");
     const rows = Array.isArray(section.rows) ? section.rows : [];
+
+    let isSR: boolean;
+    if (titleSaysSR && !titleSaysNatal) isSR = true;
+    else if (titleSaysNatal && !titleSaysSR) isSR = false;
+    else if (srFacts.size > 0 && natalFacts.size > 0) {
+      const natalScore = scoreTableAgainstFacts(rows, natalFacts);
+      const srScore = scoreTableAgainstFacts(rows, srFacts);
+      isSR = srScore > natalScore;
+    } else {
+      isSR = srFacts.size > 0 && natalFacts.size === 0;
+    }
+    if (!isSR) continue;
+
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
       const baseName = String(row.planet || row.body || row.name || "")
-        .replace(/\s*[\u211E℞]\s*$|\s+(Rx|R)\s*$/i, "").trim().toLowerCase();
+        .replace(RETRO_GLYPH, "").trim().toLowerCase();
       if (!baseName) continue;
       const truthHouse = houseMap.get(baseName);
       if (truthHouse == null) continue;
@@ -1866,6 +1913,102 @@ const overrideSRHouseNumbersFromContext = (
     });
     console.info("[ask-astrology] SR house numbers overridden from context", {
       overridden,
+      examples,
+    });
+  }
+};
+
+// DETERMINISTIC SR PLANET HOUSE PROSE CORRECTOR — the AI emits sentences
+// like "SR Pluto in the 5th house" or "SR Venus sits in your 7th house"
+// where the named house number disagrees with the deterministic SR house
+// from the chart context. The placement_table override above only fixes
+// the table; this pass scrubs the prose. Without it the table is right
+// while the prose still tells the user the wrong house.
+const correctSrPlanetHousesInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPos.length === 0) return;
+  const houseMap = new Map<string, number>();
+  for (const p of srPos) {
+    if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+  }
+  if (houseMap.size === 0) return;
+
+  const PROSE_PLANETS = [
+    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
+  ];
+  const PLANET_RE = PROSE_PLANETS.join("|");
+  const NUM_TO_ORD: Record<number, string> = {
+    1:"1st",2:"2nd",3:"3rd",4:"4th",5:"5th",6:"6th",7:"7th",8:"8th",9:"9th",10:"10th",11:"11th",12:"12th",
+  };
+  const NUM_TO_WORD: Record<number, string> = {
+    1:"first",2:"second",3:"third",4:"fourth",5:"fifth",6:"sixth",7:"seventh",
+    8:"eighth",9:"ninth",10:"tenth",11:"eleventh",12:"twelfth",
+  };
+  const ORD_TO_NUM: Record<string, number> = {
+    "1st":1,"first":1,"2nd":2,"second":2,"3rd":3,"third":3,"4th":4,"fourth":4,
+    "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
+    "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
+  };
+  const ORD_RE = "(?:1st|first|2nd|second|3rd|third|4th|fourth|5th|fifth|6th|sixth|7th|seventh|8th|eighth|9th|ninth|10th|tenth|11th|eleventh|12th|twelfth)";
+
+  // Pattern: "SR <Planet> ... <Nth> house" within ~140 chars after SR
+  // qualifier. We require an explicit SR qualifier ("SR" or "Solar Return"
+  // or "this year['s]") in the same window so we never rewrite natal prose.
+  // Two regex variants:
+  //   (a) "SR <Planet> [optional ℞] [optional sign/degree blob up to ~80
+  //        chars] in (?:the|your) <ord> house"
+  //   (b) "SR <Planet> ... sits/lands/falls/located in (?:the|your) <ord>
+  //        house"
+  const planetHouseRe = new RegExp(
+    `\\b(SR|Solar\\s+Return|This\\s+year(?:'s)?|This\\s+year)\\s+(${PLANET_RE})\\b([\\s\\S]{0,140}?\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+)(${ORD_RE})\\s+house\\b`,
+    "gi",
+  );
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  let rewrites = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(planetHouseRe, (full, _qual, planet, gap, claimedOrd) => {
+      const truthHouse = houseMap.get(String(planet).toLowerCase());
+      if (truthHouse == null) return full;
+      const claimedNum = ORD_TO_NUM[String(claimedOrd).toLowerCase()];
+      if (!claimedNum || claimedNum === truthHouse) return full;
+      // Preserve the original wording style (numeric "5th" vs word "fifth")
+      // when emitting the corrected ordinal.
+      const isWordStyle = /^[a-z]+$/i.test(String(claimedOrd));
+      const correctOrd = isWordStyle ? NUM_TO_WORD[truthHouse] : NUM_TO_ORD[truthHouse];
+      rewrites++;
+      const rebuilt = full.replace(new RegExp(`\\b${claimedOrd}\\s+house\\b`, "i"), `${correctOrd} house`);
+      if (examples.length < 5) {
+        examples.push(`${full.slice(0, 120)} → ${rebuilt.slice(0, 120)}`);
+      }
+      return rebuilt;
+    });
+    if (next !== val) {
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({
+      type: "sr_planet_houses_corrected_in_prose",
+      detail: { rewrites, examples },
+    });
+    console.info("[ask-astrology] SR planet houses corrected in prose", {
+      rewrites,
       examples,
     });
   }
@@ -8239,6 +8382,13 @@ HARD RULE — applies to every sentence:
           // not from whatever the AI copied from natal. This kills the
           // Replit gate's "recomputed N SR house number(s)" fix.
           overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // SR PLANET HOUSE PROSE FIXER: scrub "SR <Planet> in the <Nth>
+          // house" sentences when the named house disagrees with the
+          // deterministic SR house from the chart context. The override
+          // above only touches the placement_table; without this pass the
+          // table is right while the prose still tells the user the wrong
+          // house (e.g. "SR Pluto in the 5th house" when SR Pluto is in 6).
+          correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
           // 7th house cusp / Descendant with the Ascendant's sign.
           fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
@@ -9113,6 +9263,10 @@ HARD RULE — applies to every sentence:
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
         // the AI corrupted it. Reads truth from chart context, not JSON.
         correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // SR PLANET HOUSE PROSE FIXER (post-gate): same as the in-line
+        // hygiene pass — strip any "SR <Planet> in the <wrong-Nth> house"
+        // that Replit re-introduced or that slipped past the first run.
+        correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
