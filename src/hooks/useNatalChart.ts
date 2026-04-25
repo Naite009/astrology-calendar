@@ -352,6 +352,12 @@ export const useNatalChart = () => {
     }
   }, [selectedChartForTiming, savedCharts, userNatalChart]);
 
+  const replaceSavedCharts = (charts: NatalChart[]) => {
+    const validCharts = charts.filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'));
+    saveWithRollingBackups('savedCharts', validCharts);
+    setSavedCharts(validCharts);
+  };
+
   const saveUserNatalChart = (chart: NatalChart) => {
     // Prevent saving empty/invalid chart data
     if (!isValidChart(chart)) {
@@ -373,8 +379,7 @@ export const useNatalChart = () => {
     const newChart = { ...chart, id: Date.now().toString() };
     const updated = [...savedCharts, newChart];
 
-    saveWithRollingBackups('savedCharts', updated);
-    setSavedCharts(updated);
+    replaceSavedCharts(updated);
     return newChart;
   };
 
@@ -387,15 +392,13 @@ export const useNatalChart = () => {
       return;
     }
 
-    saveWithRollingBackups('savedCharts', updated);
-    setSavedCharts(updated);
+    replaceSavedCharts(updated);
   };
 
   const deleteChart = (id: string) => {
     const updated = savedCharts.filter((c) => c.id !== id);
 
-    saveWithRollingBackups('savedCharts', updated);
-    setSavedCharts(updated);
+    replaceSavedCharts(updated);
   };
 
   const selectChartForTiming = (id: string) => {
@@ -412,6 +415,6 @@ export const useNatalChart = () => {
     updateChart,
     deleteChart,
     selectChartForTiming,
-    setSavedCharts,
+    setSavedCharts: replaceSavedCharts,
   };
 };
