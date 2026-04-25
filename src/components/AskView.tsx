@@ -2130,6 +2130,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                       </CardContent>
                     </Card>
                   )}
+                </div>
+              )}
 
               {entries.map((entry, index) => (
                 <div key={index}>
