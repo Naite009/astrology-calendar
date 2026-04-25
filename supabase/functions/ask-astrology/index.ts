@@ -7445,8 +7445,9 @@ async function processJob(args: {
   chartContext: any;
   currentDate: any;
   deterministicTiming: any;
+  userLocations?: { current?: string; considering1?: string; considering2?: string } | null;
 }) {
-  const { jobId, messages, chartContext, currentDate, deterministicTiming } = args;
+  const { jobId, messages, chartContext, currentDate, deterministicTiming, userLocations } = args;
   const svc = getServiceClient();
   const PROCESS_WALL_CLOCK_BUDGET_MS = 330_000;
   const processStartedAt = Date.now();
