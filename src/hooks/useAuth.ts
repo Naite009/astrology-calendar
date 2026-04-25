@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { claimAnonymousChartsForUser } from '@/lib/claimAnonymousCharts';
-import { waitForInitialSessionRestore } from '@/lib/sessionKeepAlive';
+import { getSessionSafely, readCachedSupabaseSession } from '@/lib/supabaseSessionRecovery';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
