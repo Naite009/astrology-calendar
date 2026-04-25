@@ -106,18 +106,18 @@ const getFullMoonName = (fullMoonDate: Date): string => {
 // First Quarter (waxing) = push, decide, act through this sign's style.
 // Last Quarter (waning) = release, forgive, clear out this sign's shadow.
 const QUARTER_MEANINGS: Record<string, { first: string; last: string }> = {
-  Aries:       { first: "Start it. Make the bold first move you've been delaying.",            last: "Drop the fight that's only feeding your ego." },
-  Taurus:      { first: "Plant something real — a habit, a budget, a body practice.",          last: "Loosen your grip on what you're holding for safety alone." },
-  Gemini:      { first: "Send the message. Ask the question. Speak the idea aloud.",            last: "Quiet the mental loop and unfollow the noise." },
-  Cancer:      { first: "Tend to home, family, or the inner child — make it nourishing.",      last: "Release a guilt or a caretaking role that isn't yours." },
-  Leo:         { first: "Show up visibly. Claim credit. Create something with your name on it.", last: "Let go of needing applause to feel worthy." },
-  Virgo:       { first: "Refine the system. Fix the one detail blocking everything else.",     last: "Forgive yourself for what wasn't perfect." },
-  Libra:       { first: "Have the honest conversation. Set the terms of the relationship.",    last: "Release the urge to keep peace by abandoning yourself." },
-  Scorpio:     { first: "Commit fully. Go deeper into the truth you've been circling.",        last: "Let go of a resentment, a secret, or a tie that drains you." },
-  Sagittarius: { first: "Take the leap toward the bigger vision. Book it. Pitch it.",          last: "Drop the belief or story you've outgrown." },
-  Capricorn:   { first: "Make the structural move — career, contract, long-game step.",        last: "Release the pressure to do it all alone." },
-  Aquarius:    { first: "Break the pattern. Try the unconventional path.",                     last: "Let go of an identity or group that no longer fits." },
-  Pisces:      { first: "Act on the intuition or the dream. Trust the soft pull.",             last: "Forgive, surrender, and clear what you've been absorbing from others." },
+  Aries:       { first: "Make the first move you've been putting off — send the text, sign up, start the thing.", last: "Stop arguing just to win. Walk away from the fight that's not worth it." },
+  Taurus:      { first: "Build one steady habit this week — save some money, cook a real meal, go to bed earlier.", last: "Let go of something you're keeping just because it feels safe — a job, a routine, an old shirt." },
+  Gemini:      { first: "Send the message. Ask the question. Say the thing out loud instead of in your head.", last: "Put the phone down. Mute the group chat. Stop reading the same drama on repeat." },
+  Cancer:      { first: "Take care of your home or family this week — clean your room, call someone you love, cook for yourself.", last: "Stop feeling guilty for things that aren't your fault. You're not in charge of everyone else's feelings." },
+  Leo:         { first: "Be seen. Post the thing, perform the thing, raise your hand in class.",   last: "Stop needing likes or compliments to feel okay about yourself." },
+  Virgo:       { first: "Fix the one small thing that's been bugging you — your desk, your schedule, that one assignment.", last: "Forgive yourself for messing up. Done is better than perfect." },
+  Libra:       { first: "Have the honest talk you've been avoiding — with a friend, a parent, a crush.", last: "Stop saying yes when you mean no just to keep someone happy. Your feelings count too." },
+  Scorpio:     { first: "Go all-in on something you actually care about. No more half-trying.",     last: "Let go of a grudge, a secret, or a friendship that drains you every time." },
+  Sagittarius: { first: "Try something new and bigger than your usual — a class, a trip, a goal.",  last: "Drop a belief you've outgrown — about yourself, school, religion, or how life 'should' look." },
+  Capricorn:   { first: "Take a real step toward a long-term goal — apply, plan, commit.",          last: "Ask for help. You don't have to handle everything alone." },
+  Aquarius:    { first: "Do it your own way for once. Skip what 'everyone else' is doing.",         last: "Let go of a friend group or label that doesn't fit you anymore." },
+  Pisces:      { first: "Trust your gut and act on it — even if you can't fully explain why.",      last: "Stop carrying other people's bad moods. Take a break, sleep, get some space." },
 };
 
 const getQuarterMeaning = (type: "First Quarter" | "Last Quarter", sign: string): string => {
