@@ -7406,10 +7406,10 @@ MULTI-PASS TRANSIT PRECISION (MANDATORY FOR OUTER PLANETS):
 - Prefer specific future labels like "May 2026", "late June 2026", or "May 12-28, 2026" over vague labels like "mid 2025" or generic labels like "January of any year".
 - In summary_box timing answers, the "When" item must mention the earliest future window and at least one later backup window.
 
-For city_comparison sections, use this enhanced structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). Separate recommended cities from caution cities into DIFFERENT city_comparison sections:
+For city_comparison sections, use this enhanced structure. IMPORTANT: Use whole-number scores only (1-10, no decimals). For relocation readings, recommended and caution information lives in the same city card via the "supports" and "cautions" fields — do not split into separate sections:
 {
   "type": "city_comparison",
-  "title": "Top Cities This Year",
+  "title": "Best Places Within the United States",
   "cities": [
     {
       "name": "Lisbon",
