@@ -9263,6 +9263,10 @@ HARD RULE — applies to every sentence:
         // back to the deterministic SR sign (e.g. Pisces) when Replit or
         // the AI corrupted it. Reads truth from chart context, not JSON.
         correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // SR PLANET HOUSE PROSE FIXER (post-gate): same as the in-line
+        // hygiene pass — strip any "SR <Planet> in the <wrong-Nth> house"
+        // that Replit re-introduced or that slipped past the first run.
+        correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
