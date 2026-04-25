@@ -50,8 +50,11 @@ export const CityInput = ({
   }, [next?.canonical, next?.confidence, trimmed]);
 
   const showCheck = !!resolved && trimmed.length >= 2;
-  const showCorrection =
-    !!resolved && resolved.corrected && resolved.canonical.toLowerCase() !== trimmed.toLowerCase();
+  // Always surface the canonical city we're going to use whenever a match is
+  // active — even when the user typed it perfectly. This makes it explicit
+  // what gets sent to the reading and prevents the "Using …" line from
+  // disappearing as you finish typing.
+  const showCanonical = showCheck;
 
   return (
     <div className="space-y-1">
@@ -70,7 +73,7 @@ export const CityInput = ({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           className={cn("text-sm pr-8", showCheck && "border-success/60")}
-          aria-describedby={showCorrection ? `${id}-corrected` : undefined}
+          aria-describedby={showCanonical ? `${id}-corrected` : undefined}
         />
         {showCheck && (
           <Check
@@ -79,7 +82,7 @@ export const CityInput = ({
           />
         )}
       </div>
-      {showCorrection && (
+      {showCanonical && (
         <p
           id={`${id}-corrected`}
           className="text-[10px] text-success"
