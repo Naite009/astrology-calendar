@@ -1217,6 +1217,15 @@ export function buildFullJsonStandalone(
 // ── Replace em-dashes and en-dashes with proper punctuation ──
 function stripDashes(text: string, _personName?: string): string {
   if (typeof text !== 'string') return text;
+  // Skip label-only strings (single short capitalized token like "Aquarius", "Sun",
+  // "Conjunction"). These are raw field values and must be returned untouched —
+  // do NOT append a trailing period or apply prose-cleanup to them.
+  const rawTrimmed = text.trim();
+  if (/^[A-Z][a-zA-Z]{1,20}\.?$/.test(rawTrimmed)) {
+    // Strip any trailing period that may already be present so the value is the
+    // raw label only (e.g. "Aquarius" not "Aquarius.").
+    return rawTrimmed.replace(/\.$/, '');
+  }
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
