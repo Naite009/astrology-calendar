@@ -8225,28 +8225,32 @@ HARD RULE — applies to every sentence:
           // modality_element section exists with correct counts before
           // backfillRelationshipSectionBodies tries to read it).
           overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
-          // 3-CALL RELATIONSHIP: inject a deterministic modality_element
-          // section (and overwrite any AI-authored polarity counts) using
-          // the new planet-identity rule (Sun/Mercury/Mars/Jupiter/Saturn/
-          // Uranus = Yang, Moon/Venus/Neptune/Pluto = Yin → always sums 10).
+          // DETERMINISTIC TALLIES — applies to ALL reading types (career,
+          // money, health, relocation, relationship, etc.), not just the
+          // 3-call relationship architecture. The polarity counts and
+          // element/modality tallies are computed from the chart context
+          // and are independent of question_type. Previously this only ran
+          // when isRelationshipQuestion was true, which left career/money/
+          // health readings with polarity counts of 0.
           // CRITICAL ORDER: this MUST run BEFORE backfillRelationshipSectionBodies
           // so the modality_element section exists with deterministic counts +
           // a populated balance_interpretation/body when the body backfill
           // copies balance_interpretation into body.
+          try {
+            const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
+            const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
+            emissionLog.push({
+              type: "deterministic_tallies_injected",
+              detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies, reading_type: isRelationshipQuestion ? "relationship" : "single_call" },
+            });
+          } catch (detErr) {
+            console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
+          }
+          // Attach the pre-verified cross-chart activations so they survive
+          // into the downloaded JSON. The accuracy review reads this list to
+          // flag any prose aspect claim that isn't on it. Relationship-only
+          // since verifiedActivationsForResult is built in the 3-call path.
           if (isRelationshipQuestion && (parsedContent as any)?._three_call?.enabled) {
-            try {
-              const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
-              const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
-              emissionLog.push({
-                type: "deterministic_tallies_injected",
-                detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies },
-              });
-            } catch (detErr) {
-              console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
-            }
-            // Attach the pre-verified cross-chart activations so they survive
-            // into the downloaded JSON. The accuracy review reads this list to
-            // flag any prose aspect claim that isn't on it.
             try {
               (parsedContent as any)._verified_activations = {
                 count: verifiedActivationsForResult.length,
