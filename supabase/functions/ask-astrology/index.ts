@@ -35,12 +35,17 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function isRetryableQueueError(error: any): boolean {
   const status = Number(error?.status ?? error?.code ?? error?.error_code ?? 0);
+  const name = String(error?.name ?? "").toLowerCase();
   const text = JSON.stringify(error ?? {}).toLowerCase();
   return (
     status === 522 ||
     status === 503 ||
     status === 504 ||
     status === 544 ||
+    name.includes("abort") ||
+    name.includes("timeout") ||
+    text.includes("abort") ||
+    text.includes("timeout") ||
     text.includes("connection timed out") ||
     text.includes("connection timeout") ||
     text.includes("failed to fetch") ||
@@ -7298,7 +7303,7 @@ Deno.serve(async (req) => {
         // Keep retryable queue failures inside the app flow instead of
         // surfacing as a platform runtime popup. The client still retries and
         // shows a normal toast when the queue cannot accept the job.
-        status: retryable ? 200 : 500,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "120" },
       });
     }
