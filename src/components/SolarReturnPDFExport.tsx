@@ -702,9 +702,17 @@ export function downloadBirthdayJSONStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
-  // Calculate age at this solar return
+  // Calculate the effective Solar Return year. If srChart.solarReturnYear is missing,
+  // invalid, or matches the birth year (which would mean age 0 — never a real SR),
+  // fall back to the current calendar year so we never export a birth-year SR.
   const birthYear = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
-  const srAge = !isNaN(birthYear) ? srChart.solarReturnYear - birthYear : null;
+  const rawSrYear = Number(srChart.solarReturnYear);
+  const currentYear = new Date().getFullYear();
+  const isValidSrYear = Number.isFinite(rawSrYear)
+    && rawSrYear > 1900 && rawSrYear < 2200
+    && (isNaN(birthYear) || rawSrYear !== birthYear);
+  const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
+  const srAge = !isNaN(birthYear) ? effectiveSrYear - birthYear : null;
 
   const payload = {
     report_type: "solar_return_birthday",
@@ -713,7 +721,7 @@ export function downloadBirthdayJSONStandalone(
       cakeImageUrl,
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: srChart.solarReturnYear,
+      solarReturnYear: effectiveSrYear,
       solarReturnYearSpan: '',
       solarReturnAge: srAge,
       solarReturnLabel: srAge !== null
@@ -895,7 +903,7 @@ export function downloadBirthdayJSONStandalone(
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${srChart.solarReturnYear}.json`;
+  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${effectiveSrYear}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -957,16 +965,22 @@ export function buildFullJsonStandalone(
     ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
-  // Calculate age at this solar return
+  // Calculate the effective Solar Return year (see downloadBirthdayJSONStandalone for rationale).
   const birthYear2 = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
-  const srAge2 = !isNaN(birthYear2) ? srChart.solarReturnYear - birthYear2 : null;
+  const rawSrYear2 = Number(srChart.solarReturnYear);
+  const currentYear2 = new Date().getFullYear();
+  const isValidSrYear2 = Number.isFinite(rawSrYear2)
+    && rawSrYear2 > 1900 && rawSrYear2 < 2200
+    && (isNaN(birthYear2) || rawSrYear2 !== birthYear2);
+  const effectiveSrYear2 = isValidSrYear2 ? rawSrYear2 : currentYear2;
+  const srAge2 = !isNaN(birthYear2) ? effectiveSrYear2 - birthYear2 : null;
 
   return {
     name: natalChart.name || '',
     cakeImageUrl,
     birthDate: natalChart.birthDate || '',
     birthLocation: natalChart.birthLocation || '',
-    solarReturnYear: srChart.solarReturnYear,
+    solarReturnYear: effectiveSrYear2,
     solarReturnYearSpan: '',
     solarReturnAge: srAge2,
     solarReturnLabel: srAge2 !== null
@@ -1217,6 +1231,15 @@ export function buildFullJsonStandalone(
 // ── Replace em-dashes and en-dashes with proper punctuation ──
 function stripDashes(text: string, _personName?: string): string {
   if (typeof text !== 'string') return text;
+  // Skip label-only strings (single short capitalized token like "Aquarius", "Sun",
+  // "Conjunction"). These are raw field values and must be returned untouched —
+  // do NOT append a trailing period or apply prose-cleanup to them.
+  const rawTrimmed = text.trim();
+  if (/^[A-Z][a-zA-Z]{1,20}\.?$/.test(rawTrimmed)) {
+    // Strip any trailing period that may already be present so the value is the
+    // raw label only (e.g. "Aquarius" not "Aquarius.").
+    return rawTrimmed.replace(/\.$/, '');
+  }
   let result = text
     .replace(/\s*[\u2014]\s*/g, '. ')   // em-dash → period + space
     .replace(/\s*[\u2013]\s*/g, ', ')    // en-dash → comma + space
@@ -2716,11 +2739,22 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       house: (profYear as any).house || (profYear as any).houseNumber || null,
     } : null;
 
+    // Compute the effective Solar Return year — fall back to the current calendar
+    // year if srChart.solarReturnYear is missing, invalid, or accidentally equal
+    // to the birth year (which would yield age 0 — never a real SR).
+    const birthYear3 = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
+    const rawSrYear3 = Number(srChart.solarReturnYear);
+    const currentYear3 = new Date().getFullYear();
+    const isValidSrYear3 = Number.isFinite(rawSrYear3)
+      && rawSrYear3 > 1900 && rawSrYear3 < 2200
+      && (isNaN(birthYear3) || rawSrYear3 !== birthYear3);
+    const effectiveSrYear3 = isValidSrYear3 ? rawSrYear3 : currentYear3;
+
     return {
       name: natalChart.name || '',
       birthDate: natalChart.birthDate || '',
       birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: srChart.solarReturnYear,
+      solarReturnYear: effectiveSrYear3,
       natalSun:    natalChart.planets?.Sun?.sign   || '',
       natalMoon:   natalChart.planets?.Moon?.sign  || '',
       natalRising: natalChart.houseCusps?.house1?.sign || '',
