@@ -1269,16 +1269,19 @@ const FRAGMENT_EXPANSIONS: Record<string, string> = {
 
 function expandFragments(text: string): string {
   if (typeof text !== 'string') return text;
-  // Replace standalone fragment sentences (2-3 words ending in period)
+  // Skip label-only strings (single short capitalized token, with or without trailing period).
+  // These are field values like sign names ("Aquarius") or planet names ("Sun"), not prose,
+  // and must NOT be wrapped with phrase templates.
+  const trimmed = text.trim();
+  if (/^[A-Z][a-zA-Z]{1,20}\.?$/.test(trimmed)) return text;
+  // Skip very short strings overall — only run this expansion on real prose (≥ 30 chars).
+  if (trimmed.length < 30) return text;
+  // Replace standalone fragment sentences (2-3 words ending in period) only when they
+  // match a known FRAGMENT_EXPANSIONS key. Never inject a generic "This is a time of …"
+  // wrapper, since that mangles raw field values that happen to be short.
   return text.replace(/(?:^|(?<=\.\s))([A-Z][a-z]+(?:\s[a-z]+){0,2})\.\s*/g, (match, fragment) => {
     const key = fragment.toLowerCase().trim();
     if (FRAGMENT_EXPANSIONS[key]) return FRAGMENT_EXPANSIONS[key] + ' ';
-    // If it's a very short "sentence" (≤ 4 words), flag it but leave it
-    const words = fragment.split(/\s+/);
-    if (words.length <= 2) {
-      // Expand generic 2-word fragments by making them complete sentences
-      return `This is a time of ${fragment.toLowerCase()}. `;
-    }
     return match;
   });
 }
