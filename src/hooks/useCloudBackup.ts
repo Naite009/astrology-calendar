@@ -3,10 +3,23 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart } from './useNatalChart';
 import { toast } from 'sonner';
-import { waitForInitialSessionRestore } from '@/lib/sessionKeepAlive';
+import { getCachedUserId, getSessionSafely, readCachedSupabaseSession } from '@/lib/supabaseSessionRecovery';
 
 const DEVICE_ID_KEY = 'astro_device_id';
 const LAST_SYNC_KEY = 'astro_last_cloud_sync';
+const CLOUD_REQUEST_TIMEOUT_MS = 8_000;
+const RESTORE_RETRY_DELAYS_MS = [0, 1_500, 3_000];
+
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+const withTimeout = async <T,>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> => {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    }),
+  ]);
+};
 
 // Generate a unique device ID on first visit (fallback for anonymous users)
 const getOrCreateDeviceId = (): string => {
