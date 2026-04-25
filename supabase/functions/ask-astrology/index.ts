@@ -7236,21 +7236,15 @@ Deno.serve(async (req) => {
 
     // === SUBMIT JOB ===
     // Resolve user from JWT (best-effort — anonymous fallback supported).
-    // CRITICAL: use the SERVICE ROLE client to call auth.getUser(token) so
-    // it works regardless of which anon/publishable env var is set. If this
-    // returns null for an authenticated user, RLS will block them from
-    // reading their own job row → infinite empty polls.
+    // Fast local decode first. If this stalls on auth.getUser during backend
+    // connectivity issues, queueing never responds and the preview falls into
+    // recovery. We trust only authenticated JWTs issued by this project.
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
       try {
-        const svcAuth = getServiceClient();
-        const { data: userData, error: userErr } = await svcAuth.auth.getUser(token);
-        if (userErr) {
-          console.warn("[ask-astrology] auth.getUser error:", userErr.message);
-        }
-        userId = userData?.user?.id ?? null;
+        userId = decodeTrustedJwtSubject(token);
         console.log(`[ask-astrology] Resolved user from JWT: ${userId ?? "ANON"}`);
       } catch (e) {
         console.warn("[ask-astrology] JWT decode failed, falling back to anon:", e instanceof Error ? e.message : e);
