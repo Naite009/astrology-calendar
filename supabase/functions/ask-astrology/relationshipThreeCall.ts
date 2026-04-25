@@ -211,6 +211,9 @@ const DIRECTIVE_A = buildDirective(
   "NATAL-ONLY",
   `This is the NATAL-ONLY call. The user message contains NATAL chart data only. There is NO Solar Return data in your context for this call. Do not write the phrase "Solar Return" anywhere in this call's output. Do not write "this year" framings — those belong to a different call. Write the sections as a portrait of the person's lifelong relational signature based on the natal chart only.
 
+NATAL PLUTO — VERIFY BEFORE WRITING (NON-NEGOTIABLE):
+The natal Pluto position is the degree Pluto occupied at the time of birth, NOT its current transiting position. For charts born after 2000, natal Pluto is in Capricorn or late Sagittarius — NEVER in Aquarius. Pluto did not enter Aquarius until 2024, so any natal Pluto in Aquarius implies a birth date in 2024 or later. Before you write any natal Pluto reference, look it up in the placement table provided in the user message and copy the sign and degree verbatim. If you would otherwise write "natal Pluto in Aquarius" for a chart born before 2024, STOP and re-read the placement table.
+
 HARD LENGTH CONSTRAINT — "How This Person Loves":
 The body of the "How This Person Loves" narrative_section MUST NOT exceed 2,000 characters total. This is a hard ceiling, not a target. If you would naturally write more, prioritize ruthlessly:
   - Lead with the 2-3 most defining placements (typically Venus, Mars, Moon, 7th-house ruler, or whichever bodies are most aspected/dignified).
