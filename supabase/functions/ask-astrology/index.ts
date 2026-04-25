@@ -3024,6 +3024,62 @@ const correctNatalPlanetPositionsInProse = (
 };
 
 
+// GENERAL N-TH HOUSE CUSP VERIFIER. The existing fixDescendantCuspMentionsInProse
+// only catches 7th-cusp confusion with the Ascendant. The Erica Broder
+// SR reading shipped with a 7th-cusp claim of Gemini that the external
+// gate had to correct to Virgo — meaning the AI got an arbitrary cusp
+// wrong, not the special Asc/Dsc swap. This pass scans every prose
+// field for "Nth house cusp [is/in/at] {Sign}" claims and rewrites the
+// sign to whatever the deterministic House Cusps block actually says
+// for that house. Runs against ANY house 1-12.
+const NTH_CUSP_SIGN_RE = new RegExp(
+  String.raw`\b(` + ORDINAL_WORDS_RE + String.raw`)\s+house\s+cusp(?:\s+(?:is|in|at|on))?\s+(?:in\s+)?(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b`,
+  "gi",
+);
+const fixGeneralHouseCuspMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const cusps = parseHouseCuspsFromContext(chartContext);
+  if (cusps.length < 12) return;
+  const cuspSignByHouse: Record<number, string> = {};
+  for (const c of cusps) {
+    if (c?.house && c?.sign) cuspSignByHouse[c.house] = c.sign;
+  }
+
+  let totalFixes = 0;
+  forEachProseField(parsedContent, new Set(), ({ node, key, value }) => {
+    if (!NTH_CUSP_SIGN_RE.test(value)) {
+      NTH_CUSP_SIGN_RE.lastIndex = 0;
+      return;
+    }
+    NTH_CUSP_SIGN_RE.lastIndex = 0;
+    const corrected = value.replace(NTH_CUSP_SIGN_RE, (match, ord: string, sign: string) => {
+      const houseNum = ORDINAL_TO_HOUSE_NUM[ord.toLowerCase()];
+      if (!houseNum) return match;
+      const correctSign = cuspSignByHouse[houseNum];
+      if (!correctSign || correctSign === sign) return match;
+      // Skip the 7th-vs-Asc case — the dedicated descendant fixer handles
+      // it more carefully (and we don't want double-correction).
+      if (houseNum === 7) return match;
+      totalFixes++;
+      log.push({
+        type: "general_house_cusp_corrected",
+        detail: { house: houseNum, claimed_sign: sign, correct_sign: correctSign },
+      });
+      console.warn(`[ask-astrology][cusp-fix] House ${houseNum} cusp: AI claimed ${sign}, correcting to ${correctSign}`);
+      return match.replace(sign, correctSign);
+    });
+    if (corrected !== value) node[key] = corrected;
+  });
+
+  if (totalFixes > 0) {
+    console.info(`[ask-astrology][cusp-fix] Applied ${totalFixes} general-cusp correction(s)`);
+  }
+};
+
 
 // Example failure: calling the natal Descendant (House 7 cusp, Aries 24°55')
 // the "natal Ascendant". This pass rewrites or strips any prose that names
