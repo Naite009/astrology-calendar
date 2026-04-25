@@ -4595,6 +4595,7 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     "who to move toward",
     "early warning signs",
     "pattern to break",
+    "right now",
     "best windows",
     "caution windows",
   ]);
