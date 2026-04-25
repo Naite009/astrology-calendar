@@ -233,7 +233,7 @@ const DIRECTIVE_B = buildDirective(
  * has been pulling SR positions through into "natal" prose, so we restate the
  * constraint planet-by-planet using the activations as the source of truth.
  */
-const buildDirectiveC = (pinnedConstraints: string): string => buildDirective(
+const buildDirectiveC = (pinnedConstraints: string, hasRightNowBlock: boolean): string => buildDirective(
   CALL_C_SECTIONS,
   "OVERLAY",
   `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
@@ -260,7 +260,39 @@ ${pinnedConstraints}
 VIOLATION OF THIS RULE PRODUCES FACTUALLY WRONG OUTPUT
 THAT CANNOT BE CORRECTED DOWNSTREAM. Treat the verified
 activations as the only ground truth that exists for
-this call.`,
+this call.
+
+=========================================================
+MANDATORY CLOSING PARAGRAPH — "The Year's Overarching Theme"
+=========================================================
+After writing the body of the "Where Natal and Solar Return Connect" section (which interprets each verified activation), the SAME body string MUST end with one final closing paragraph. This closing paragraph:
+- Begins on its own line with the bold heading: **The Year's Overarching Theme**
+- Is exactly ONE paragraph (3–5 sentences). Not a list. Not bullets.
+- Synthesizes ALL the activations above into one cohesive story — what do they point toward together?
+- Names the single most important thing this year is asking of this person in their relationships.
+- Uses plain behavioral language (no jargon, no planet names if avoidable, no orbs).
+- Is decisive and direct — like a final takeaway, not a recap.
+This closing paragraph is part of the "body" string of the same narrative_section, appended to the end. It is NOT a separate section.
+
+=========================================================
+"Relationship Strategy Summary" — REQUIRED ITEMS (this call)
+=========================================================
+The summary_box "items" array MUST contain EXACTLY these six labels in this order, and NO others:
+  1. "Who to Move Toward"
+  2. "Early Warning Signs"
+  3. "Pattern to Break"
+  4. "Right Now"
+  5. "Best Windows"
+  6. "Caution Windows"
+
+The "Right Now" item rules (NON-NEGOTIABLE):
+${hasRightNowBlock
+  ? `- Use ONLY the transit(s) listed in the "RIGHT NOW TRANSIT WINDOWS" block in the user message. That block contains the 1–2 transits whose exact peak falls within ±14 days of the current date.
+- Identify those transit(s) by name in plain language and tell the person — in 2 to 4 sentences — what that specific transit is asking of them in this exact moment (this week / this month). Lead with the lived behavior or feeling first, name the transit second.
+- If the block lists more than one transit, weave them into a single coherent "right now" picture — do NOT bullet-list them.
+- Do NOT invent transits. Do NOT pull from the verified cross-chart activations list (those are year-long, not "right now"). Do NOT cite any transit not in the RIGHT NOW block.`
+  : `- The "RIGHT NOW TRANSIT WINDOWS" block in the user message lists ZERO transits within ±14 days of the current date. Therefore, write the "Right Now" value EXACTLY as: "No major outer-planet transit is within two weeks of exact peak right now — this is a quieter moment to integrate what's already in motion rather than wait for a single window to open." Do NOT invent a transit to fill the slot.`}
+- Do NOT include "What This Year Is Best For", "What This Year Asks Of You", or any other label outside the six listed above.`,
 );
 
 /**
