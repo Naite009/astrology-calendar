@@ -2935,12 +2935,23 @@ const fixAscendantDescendantLabelSwapsInProse = (
   const ascSign = asc.sign;
   const dscSign = dsc.sign;
 
-  // "natal Ascendant ... 24°55' Aries" — degrees match Descendant → Ascendant label is wrong.
-  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b([^.!?\\n]{0,80})\\b${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b([^.!?\\n]{0,80})\\b${ascDegAlt}\\s+${ascSign}\\b`, "gi");
-  // "natal Ascendant at 24°55' Aries" (sign-only — when degree is omitted but sign points wrong way).
-  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\s+(?:at\\s+)?${dscDegAlt}\\s+${dscSign}\\b`, "gi");
-  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\s+(?:at\\s+)?${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // FIX 6 — Only flip the angle label when the cited sign IMMEDIATELY
+  // follows the angle word with no intervening sign-word. The prior
+  // version allowed up to 80 chars between "Descendant" and the cited
+  // ascSign, which incorrectly matched sentences like "natal Descendant
+  // at 24°56' Aries which opposes natal Mars at 24°55' Libra" — Aries
+  // IS the dscSign (correct) but the trailing "Libra" (ascSign) inside
+  // the same sentence triggered a Descendant→Ascendant flip. The
+  // tightened pattern requires the angle word and the cited degree+sign
+  // to be adjacent (only optional copula words like "at"/"in"/"is"/"="
+  // allowed between). If the sign matches dscSign, leave it alone.
+  const adjacent = "(?:\\s+(?:at|in|is|=|,|—|of|sits\\s+at|lands\\s+at))?\\s+";
+  // "natal Ascendant at 24°55' Aries" — degrees+sign match Descendant → Ascendant label is wrong.
+  const wrongAscLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescLabel = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
+  // Sign-only variants, same adjacency requirement.
+  const wrongAscSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Ascendant\\b${adjacent}${dscDegAlt}\\s+${dscSign}\\b`, "gi");
+  const wrongDescSignOnly = new RegExp(`\\b(?:natal\\s+|your\\s+)?Descendant\\b${adjacent}${ascDegAlt}\\s+${ascSign}\\b`, "gi");
 
   // SIGN-ONLY (no degree) wrong-axis claims, e.g. "your natal Ascendant
   // is in late Aries" / "the natal Ascendant in Aries". The Ascendant
@@ -7482,10 +7493,42 @@ HARD RULE — applies to every sentence:
               natalCusps,
             });
             verifiedActivationsForResult = verifiedActivations;
+
+            // FIX 5 — NATAL POSITIONS GROUND TRUTH BLOCK (per-chart, deterministic).
+            // Forces Call C to write each natal planet's exact sign and degree
+            // verbatim from this list. Replaces "natal Venus 9°15' Libra" /
+            // "natal Jupiter 24°24' Cancer" position-bleed errors that drift
+            // in from the AI's memory of other charts. The list is built from
+            // the same parsed natalPositions used for activations, so it
+            // adapts to every chart automatically.
+            const fmtPos = (p: typeof natalPositions[number]) => {
+              const mins = String(p.minutes).padStart(2, "0");
+              const rx = p.retrograde ? " ℞" : "";
+              return `  - natal ${p.planet} = ${p.degree}°${mins}' ${p.sign}${rx}`;
+            };
+            const natalGroundTruthLines = natalPositions
+              .filter((p) => /^(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|North Node|South Node|Lilith|Juno|Ascendant|Descendant|MC|IC|Midheaven)$/i.test(p.planet))
+              .map(fmtPos)
+              .join("\n");
+            const natalGroundTruthBlock = natalGroundTruthLines
+              ? `=========================================================
+NATAL POSITIONS — GROUND TRUTH (frozen, non-negotiable)
+=========================================================
+Whenever you reference a natal planet's sign or degree in Call C prose, the
+value MUST come from this list. Do not pull from any other chart, do not
+default to memorized examples, do not approximate. If the list says natal
+Venus is at 0°54' Sagittarius, never write 9°15' Libra. If the list says
+natal Jupiter is at 29°34' Taurus, never write 24°24' Cancer. The same rule
+applies to every other natal point below.
+
+${natalGroundTruthLines}`
+              : "";
+
             callCActivationsBlock = [
+              natalGroundTruthBlock,
               renderActivationsBlock(verifiedActivations),
               buildActivationRulesBlock(verifiedActivations.length),
-            ].join("\n\n");
+            ].filter(Boolean).join("\n\n");
 
             // Per-chart retrograde summary — replaces the old hardcoded
             // leak in relationshipThreeCall.buildCallCUserMessage.
@@ -9274,6 +9317,14 @@ HARD RULE — applies to every sentence:
         // in <Sign>" / "SR Descendant in <Sign>" claim against the
         // deterministic SR House Cusps block.
         correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
+        // FIX 1 & 2 (post-gate) — SR placement table house numbers and
+        // retrograde flags must align with the deterministic chart
+        // context on EVERY reading type, not just relationship. The
+        // in-line hygiene block already runs these, but Replit's gate
+        // can revert flags or shift house numbers; rerunning here makes
+        // the safety net symmetric for health/career/money/etc.
+        normalizePlacementTableRetrograde(parsedContent, postGateLog, sanitizedChartContext || "");
+        overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
