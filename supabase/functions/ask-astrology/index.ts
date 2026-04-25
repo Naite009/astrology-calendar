@@ -4408,6 +4408,11 @@ const runPostProcessingPipeline = (
     fixDescendantCuspMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 3b. General "Nth house cusp is X" verifier (any house 1-12).
+  safeRun("fixGeneralHouseCuspMentionsInProse", () =>
+    fixGeneralHouseCuspMentionsInProse(parsedContent, ctx, log),
+  );
+
   // 4. Ascendant/Descendant label swaps (token-purity guard).
   safeRun("fixAscendantDescendantLabelSwapsInProse", () =>
     fixAscendantDescendantLabelSwapsInProse(parsedContent, ctx, log),
