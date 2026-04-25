@@ -6902,7 +6902,7 @@ SR LOVE ACTIVATION STYLE:
   THIS YEAR VS LONG-TERM RULE:
   If Solar Return data is available, explicitly distinguish: what kind of place works THIS YEAR vs what kind of place works LONG-TERM. Explain the difference clearly in the Decision Synthesis and Summary.
 
-  LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields, "Best Places to Live" section, and "Location Fit Profiles"):
+  LOCATION EXPERIENCE TRANSLATION (MANDATORY — applies to ALL city_comparison "explanation" fields and "Location Fit Profiles"):
   Do NOT describe locations using abstract astrology meanings. For EVERY recommended or caution city, the explanation MUST cover:
   - How the person will FEEL living there day-to-day (emotional texture, not abstract "energy")
   - How their behavior may change (what they do differently, how they show up)
