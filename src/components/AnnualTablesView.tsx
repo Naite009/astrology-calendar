@@ -898,9 +898,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                   </TableCell>
                   <TableCell>
                     <span className="text-xs text-muted-foreground">
-                      {event.type === "First Quarter"
-                        ? "Take action, overcome obstacles, push forward"
-                        : "Release, let go, forgive, clear space"}
+                      {getQuarterMeaning(event.type, event.moonSign)}
                     </span>
                   </TableCell>
                 </TableRow>
