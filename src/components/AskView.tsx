@@ -1107,7 +1107,32 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   const handleQuickTopic = (prompt: string) => {
+    // Relocation Quick Topic: open the optional city-input form before submitting.
+    // Detect by the same keyword family the prompt builder uses (the auto-generated
+    // relocation prompt always contains "best cities for relocation").
+    if (/best cities for relocation|Where Should I Live/i.test(prompt)) {
+      setRelocationCurrentCity("");
+      setRelocationCity1("");
+      setRelocationCity2("");
+      setRelocationFormPrompt(prompt);
+      return;
+    }
     void handleSubmitDirect(prompt);
+  };
+
+  const submitRelocationWithCities = (skipCities: boolean) => {
+    if (!relocationFormPrompt) return;
+    const userLocations = skipCities
+      ? undefined
+      : {
+          current: relocationCurrentCity.trim() || undefined,
+          considering1: relocationCity1.trim() || undefined,
+          considering2: relocationCity2.trim() || undefined,
+        };
+    const hasAny = userLocations && (userLocations.current || userLocations.considering1 || userLocations.considering2);
+    const promptToSend = relocationFormPrompt;
+    setRelocationFormPrompt(null);
+    void handleSubmitDirect(promptToSend, hasAny ? userLocations : undefined);
   };
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
