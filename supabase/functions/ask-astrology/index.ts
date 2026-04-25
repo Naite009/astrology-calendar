@@ -7254,19 +7254,25 @@ Deno.serve(async (req) => {
     let insertErr: any = null;
 
     for (let attempt = 1; attempt <= 1; attempt++) {
-      const { data, error } = await svc
-        .from("ask_jobs")
-        .insert({
-          user_id: userId,
-          chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
-          status: "queued",
-          prompt: latestUserMessage.slice(0, 4000),
-        })
-        .select("id")
-        .single();
+      try {
+        const { data, error } = await svc
+          .from("ask_jobs")
+          .insert({
+            user_id: userId,
+            chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+            status: "queued",
+            prompt: latestUserMessage.slice(0, 4000),
+          })
+          .select("id")
+          .abortSignal(AbortSignal.timeout(10_000))
+          .single();
 
-      jobRow = data as { id: string } | null;
-      insertErr = error;
+        jobRow = data as { id: string } | null;
+        insertErr = error;
+      } catch (e) {
+        insertErr = e;
+        jobRow = null;
+      }
 
       if (!insertErr && jobRow) break;
 
