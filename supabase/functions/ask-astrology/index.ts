@@ -430,7 +430,28 @@ const normalizeForCompare = (s: string): string =>
 
 const dedupeText = (text: string): string => {
   if (typeof text !== "string" || text.length === 0) return text;
-  // First, collapse repeated paragraphs (split on blank lines).
+
+  // Step 0: Catch the "exact same content concatenated to itself" case.
+  // The AI sometimes emits the entire paragraph block twice back-to-back
+  // (with or without a blank line between). Detect by checking if the first
+  // half normalizes equal to the second half.
+  const trimmedAll = text.trim();
+  if (trimmedAll.length > 80 && trimmedAll.length % 2 <= 4) {
+    const mid = Math.floor(trimmedAll.length / 2);
+    // Try a small window around the midpoint for an exact split point
+    // (handles a possible "\n\n" or whitespace at the seam).
+    for (let offset = -4; offset <= 4; offset++) {
+      const m = mid + offset;
+      if (m <= 20 || m >= trimmedAll.length - 20) continue;
+      const left = normalizeForCompare(trimmedAll.slice(0, m));
+      const right = normalizeForCompare(trimmedAll.slice(m));
+      if (left && left === right) {
+        return trimmedAll.slice(0, m).trim();
+      }
+    }
+  }
+
+  // Step 1: collapse repeated paragraphs (split on blank lines).
   const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
   const seenParas = new Set<string>();
   const dedupedParas: string[] = [];
@@ -441,20 +462,47 @@ const dedupeText = (text: string): string => {
       dedupedParas.push(para);
     }
   }
-  // Then, within each remaining paragraph, collapse immediate repeated sentences.
+
+  // Step 2: within each remaining paragraph, collapse ANY repeated sentence
+  // (not just immediately-consecutive ones). The AI sometimes interleaves
+  // a duplicate sentence a few sentences apart within the same paragraph.
   const cleaned = dedupedParas.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
+    const seen = new Set<string>();
     const out: string[] = [];
-    let prev = "";
     for (const raw of sentences) {
       const norm = normalizeForCompare(raw);
-      if (norm && norm === prev) continue;
+      if (!norm) {
+        out.push(raw);
+        continue;
+      }
+      if (seen.has(norm)) continue;
+      seen.add(norm);
       out.push(raw);
-      prev = norm;
     }
     return out.join("").trim();
   });
-  return cleaned.join("\n\n");
+
+  // Step 3: cross-paragraph sentence dedup. If the same sentence appears
+  // in paragraph A and paragraph B, drop the later occurrence.
+  const globalSeen = new Set<string>();
+  const finalParas = cleaned.map((para) => {
+    const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
+    const out: string[] = [];
+    for (const raw of sentences) {
+      const norm = normalizeForCompare(raw);
+      if (!norm) {
+        out.push(raw);
+        continue;
+      }
+      if (globalSeen.has(norm)) continue;
+      globalSeen.add(norm);
+      out.push(raw);
+    }
+    return out.join("").trim();
+  }).filter(Boolean);
+
+  return finalParas.join("\n\n");
 };
 
 const dedupeTimingInterpretations = (parsedContent: any) => {
