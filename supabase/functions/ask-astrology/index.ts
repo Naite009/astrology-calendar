@@ -7039,6 +7039,16 @@ SR LOVE ACTIVATION STYLE:
 
   RELOCATION CAUTION CITY CONTINUITY RULE (MANDATORY): Every city named in "This Year's Caution Zones" or "Long-Term Caution Zones" — and every city named in the Strategy Summary "What to Avoid" list — MUST have appeared earlier in the reading with at least a brief contextual mention, OR the caution entry itself MUST include a one-sentence note explaining why that city is being introduced for the first time at the caution stage (e.g., "Melbourne wasn't in the top recommendations because Solar Return Neptune ASC and Saturn ASC lines fall there, creating a fog-plus-pressure combination that overrides the few supports it offers"). Never drop a brand-new city name into the avoid list with no prior context — the reader should never wonder "where did this city come from?" If a caution city was not discussed earlier, lead its caution entry with one sentence locating it for the reader before describing the avoidance reasoning.
 
+  RELOCATION CROSS-SECTION UNIQUENESS RULE (MANDATORY — ZERO TOLERANCE): Each outer-planet transit (Pluto, Neptune, Uranus, Saturn) and each major eclipse may be DESCRIBED in AT MOST ONE place in the entire relocation reading — pick its best home (almost always the timing_section "Timing for a Move"). Specifically banned from repetition across sections OR across multiple windows in the same timing_section:
+    - "Pluto squaring this part of your chart" / "Pluto square your X" — describe ONCE; subsequent references must say "this same Pluto window" with NO re-explanation of the energy.
+    - "Uranus opposing your X" / "Uranus opposition" — describe ONCE; same rule.
+    - "Neptune square/trine/sextile/conjunct your X" — describe ONCE; same rule.
+    - "Saturn return" / "Saturn squaring your X" — describe ONCE; same rule.
+    - Any eclipse on the 4th/10th axis — describe ONCE; same rule.
+  If a transit spans multiple windows (e.g., Pluto retrograde-direct passes), list the additional date windows but DO NOT re-describe the meaning — write something like: "Second exact pass: [date range] (same dynamic as above, sharper window for action)." Re-explaining the same transit in two paragraphs is the single most common defect in this reading type and triggers the deterministic dedup pass — but the model is responsible for not generating duplicates in the first place.
+
+  TIMING ENTRY PARAGRAPH CAP: Each individual timing_section entry may contain AT MOST 2 paragraphs in its body/description. The second paragraph (if present) MUST add a NEW angle (best behavior during the window, what to avoid, criteria for go/no-go) — it must NOT restate the meaning of the transit in different words. If you cannot add a new angle in paragraph 2, leave the entry at one paragraph.
+
   TRADEOFFS RULE (REQUIRED — prevents generic answers):
   Every recommended place MUST include one clear downside: what might feel limiting, what might get frustrating, what this place does NOT support. No city gets a free pass.
 
