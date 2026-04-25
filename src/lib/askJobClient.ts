@@ -80,6 +80,15 @@ export async function submitAskJob(args: SubmitArgs): Promise<string> {
 
     if (resp.ok) {
       const data = await resp.json();
+      if (data?.retryable && data?.queued === false) {
+        lastStatus = 503;
+        lastErrorText = data.error || "Queue temporarily unavailable";
+        if (attempt < 3) {
+          await sleep(attempt * 2000);
+          continue;
+        }
+        break;
+      }
       if (!data?.jobId) throw new Error("Submit returned no jobId");
       writeActiveJobId(args.chartId, data.jobId);
       return data.jobId as string;
