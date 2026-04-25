@@ -515,6 +515,8 @@ const buildCallCUserMessage = (
   userQuestion: string,
   callCActivationsBlock: string,
   callCRetrogradeSummary: string,
+  rightNowBlock: string,
+  effectiveCurrentDate: string,
 ): string => {
   const retroBlock = callCRetrogradeSummary
     ? `\n${callCRetrogradeSummary}\n`
@@ -522,7 +524,12 @@ const buildCallCUserMessage = (
   const activationsBlock = callCActivationsBlock
     ? `\n\n${callCActivationsBlock}\n`
     : "";
+  const rightNow = rightNowBlock
+    ? `\n\n${rightNowBlock}\n`
+    : "";
   return `User's question: ${userQuestion}
+
+CURRENT DATE (use this for the "Right Now" item): ${effectiveCurrentDate}
 
 REMINDER: You may only interpret activations from the
 VERIFIED CROSS-CHART ACTIVATIONS list below. Every
@@ -543,8 +550,103 @@ SOLAR RETURN CHART — use ONLY for SR references
 =========================================================
 
 ${srChartBlock}
-${retroBlock}${activationsBlock}`;
+${retroBlock}${activationsBlock}${rightNow}`;
 };
+
+/**
+ * Compute the "RIGHT NOW TRANSIT WINDOWS" block from Call B's Relationship
+ * Timing Windows output. Picks at most 2 transits whose exact peak (parsed
+ * from date_range) falls within ±14 days of the current date. Returns a
+ * "0 found" block if none qualify so the directive's empty-state branch fires.
+ */
+const buildRightNowBlock = (callBJson: any, effectiveCurrentDate: string): string => {
+  const now = new Date(effectiveCurrentDate);
+  const nowMs = isNaN(now.getTime()) ? Date.now() : now.getTime();
+  const WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+  const emptyBlock = (reason: string) => `=========================================================
+RIGHT NOW TRANSIT WINDOWS — GROUND TRUTH (0 found)
+=========================================================
+${reason} Write the "Right Now" summary item per the empty-state instruction in the directive.`;
+
+  const sections = Array.isArray(callBJson?.sections) ? callBJson.sections : [];
+  const timing = sections.find((s: any) =>
+    s?.type === "timing_section"
+    && typeof s?.title === "string"
+    && /timing\s+windows?/i.test(s.title)
+  );
+  const transits = Array.isArray(timing?.transits) ? timing.transits : [];
+  if (transits.length === 0) {
+    return emptyBlock("No timing windows were generated in Call B, so no \"right now\" transit can be cited.");
+  }
+
+  const parseRangeMidpoint = (raw: string): number | null => {
+    if (!raw || typeof raw !== "string") return null;
+    const cleaned = raw.replace(/[–—]/g, "-").trim();
+    const tryParse = (s: string): number | null => {
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) return d.getTime();
+      const mY = s.match(/^([A-Za-z]+)\s+(\d{4})$/);
+      if (mY) {
+        const d2 = new Date(`${mY[1]} 15, ${mY[2]}`);
+        if (!isNaN(d2.getTime())) return d2.getTime();
+      }
+      return null;
+    };
+    // Split on " to " or " - " (latter only when followed by capital/digit)
+    const parts = cleaned.split(/\s+to\s+|\s+-\s+(?=[A-Z0-9])/i);
+    if (parts.length >= 2) {
+      const yearMatch = parts[parts.length - 1].match(/\b(\d{4})\b/);
+      const head = /\d{4}/.test(parts[0])
+        ? parts[0]
+        : (yearMatch ? `${parts[0]}, ${yearMatch[1]}` : parts[0]);
+      const startMs = tryParse(head);
+      const endMs = tryParse(parts[parts.length - 1]);
+      if (startMs != null && endMs != null) return Math.round((startMs + endMs) / 2);
+      if (startMs != null) return startMs;
+      if (endMs != null) return endMs;
+    }
+    return tryParse(cleaned);
+  };
+
+  const scored = transits
+    .map((t: any) => {
+      const peakMs = parseRangeMidpoint(t?.date_range || "");
+      if (peakMs == null) return null;
+      const distance = Math.abs(peakMs - nowMs);
+      return { t, peakMs, distance };
+    })
+    .filter((x: any) => x && x.distance <= WINDOW_MS)
+    .sort((a: any, b: any) => a.distance - b.distance)
+    .slice(0, 2);
+
+  if (scored.length === 0) {
+    return emptyBlock(`No transit listed in Relationship Timing Windows has its exact peak within ±14 days of the current date (${effectiveCurrentDate}).`);
+  }
+
+  const lines = scored.map((s: any, i: number) => {
+    const t = s.t;
+    const planet = String(t.planet || "").trim();
+    const aspect = String(t.aspect || "").trim();
+    const natalPoint = String(t.natal_point || "").trim();
+    const dateRange = String(t.date_range || "").trim();
+    const interp = String(t.interpretation || "").trim().slice(0, 400);
+    const days = Math.round(s.distance / (24 * 60 * 60 * 1000));
+    return `  ${i + 1}. ${planet} ${aspect} ${natalPoint} — date_range: "${dateRange}" — peak is ~${days} day(s) from current date — Call B's interpretation: "${interp}"`;
+  }).join("\n");
+
+  return `=========================================================
+RIGHT NOW TRANSIT WINDOWS — GROUND TRUTH (${scored.length} found)
+=========================================================
+The following transit(s) from Call B's Relationship Timing Windows have their exact peak within ±14 days of the current date (${effectiveCurrentDate}). The "Right Now" item in the Relationship Strategy Summary MUST be written from this list and ONLY from this list.
+
+${lines}
+
+Rules for using this block:
+- Lead with the lived behavior the person would feel this week / this month, then name the transit by name (e.g., "Saturn squaring your natal Venus right now").
+- Do NOT invent additional transits. Do NOT pull from the verified cross-chart activations list (those are year-long, not "right now").
+- 2 to 4 sentences total for the "Right Now" value, regardless of how many transits are in the block.`;
+};
+
 
 export const runThreeCallRelationship = async (args: ThreeCallArgs): Promise<ThreeCallResult> => {
   const overallStart = Date.now();
