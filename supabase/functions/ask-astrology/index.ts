@@ -31,6 +31,23 @@ const getServiceClient = () => createClient(
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function isRetryableQueueError(error: any): boolean {
+  const status = Number(error?.status ?? error?.code ?? error?.error_code ?? 0);
+  const text = JSON.stringify(error ?? {}).toLowerCase();
+  return (
+    status === 522 ||
+    status === 503 ||
+    status === 504 ||
+    status === 544 ||
+    text.includes("connection timed out") ||
+    text.includes("connection timeout") ||
+    text.includes("failed to fetch") ||
+    text.includes("network")
+  );
+}
+
 // Best-effort repair for JSON truncated mid-string by max_tokens.
 // Closes any open string and balances open arrays/objects so the
 // partial reading is still usable instead of being thrown away.
@@ -7233,22 +7250,41 @@ Deno.serve(async (req) => {
       : "";
 
     const svc = getServiceClient();
-    const { data: jobRow, error: insertErr } = await svc
-      .from("ask_jobs")
-      .insert({
-        user_id: userId,
-        chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
-        status: "queued",
-        prompt: latestUserMessage.slice(0, 4000),
-      })
-      .select("id")
-      .single();
+    let jobRow: { id: string } | null = null;
+    let insertErr: any = null;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const { data, error } = await svc
+        .from("ask_jobs")
+        .insert({
+          user_id: userId,
+          chart_id: typeof chartId === "string" && chartId.length > 0 ? chartId : "unknown",
+          status: "queued",
+          prompt: latestUserMessage.slice(0, 4000),
+        })
+        .select("id")
+        .single();
+
+      jobRow = data as { id: string } | null;
+      insertErr = error;
+
+      if (!insertErr && jobRow) break;
+
+      console.error(`[ask-astrology] Failed to insert job row (attempt ${attempt}/3):`, insertErr);
+      if (attempt < 3 && isRetryableQueueError(insertErr)) {
+        await sleep(attempt * 1500);
+        continue;
+      }
+      break;
+    }
 
     if (insertErr || !jobRow) {
-      console.error("[ask-astrology] Failed to insert job row:", insertErr);
-      return new Response(JSON.stringify({ error: "Could not queue request. Please try again." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({
+        error: "Could not queue request. Please try again.",
+        retryable: isRetryableQueueError(insertErr),
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "30" },
       });
     }
 

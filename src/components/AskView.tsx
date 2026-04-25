@@ -1502,6 +1502,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const msg = String(error?.message || "");
       if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
       else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
+      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 30 seconds and run it again.");
       else toast.error("Failed to get response. Please try again.");
     } finally {
       abortControllerRef.current = null;
@@ -1643,7 +1644,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
       console.error("Regenerate error:", error);
-      toast.error("Failed to regenerate. Please try again.");
+      const msg = String(error?.message || "");
+      if (msg === "RATE_LIMIT") toast.error("Rate limit exceeded. Please wait a moment and try again.");
+      else if (msg === "CREDITS_EXHAUSTED") toast.error("AI credits exhausted. Please add credits to continue.");
+      else if (msg.startsWith("QUEUE_RETRYABLE:")) toast.error("The report queue is temporarily busy. I retried it 3 times — please wait 30 seconds and run it again.");
+      else toast.error("Failed to regenerate. Please try again.");
     } finally {
       abortControllerRef.current = null;
       setIsLoading(false);
