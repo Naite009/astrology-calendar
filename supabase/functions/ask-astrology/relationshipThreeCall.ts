@@ -799,12 +799,19 @@ export const computeDeterministicTallies = (natalChartBlock: string): Determinis
  * coverage clause that names every non-zero element/modality/polarity.
  */
 export const buildModalityElementSection = (tallies: DeterministicTallies): any => {
+  const pickDominant = (arr: Array<{ name: string; count: number }>): string => {
+    const max = arr.reduce((a, b) => (b.count > a.count ? b : a), arr[0]);
+    return max?.name ?? "";
+  };
   return {
     type: "modality_element",
     title: "Natal Elemental & Modal Balance",
     elements: tallies.elements,
     modalities: tallies.modalities,
     polarity: tallies.polarity,
+    dominant_element: pickDominant(tallies.elements as any),
+    dominant_modality: pickDominant(tallies.modalities as any),
+    dominant_polarity: pickDominant(tallies.polarity as any),
     balance_interpretation: "",
     body: "",
     _deterministic: true,
