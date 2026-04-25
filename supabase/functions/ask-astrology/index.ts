@@ -8599,13 +8599,6 @@ ${natalGroundTruthLines}`
           // and Natal Elemental & Modal Balance can NEVER disappear, regardless
           // of what the AI returns. The AI is responsible for prose only.
           backfillStructuralSectionsFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
-          // RETROGRADE NORMALIZATION: every placement_table row must carry
-          // BOTH a `retrograde: boolean` field (read by the external Replit
-          // /check-reading gate) AND the "℞" glyph appended to the planet
-          // name (consumed by the PDF renderer). This pass reconciles the
-          // two representations on every row, killing RETROGRADE_STATE_MISMATCH
-          // false positives without changing any prose.
-          normalizePlacementTableRetrograde(parsedContent, emissionLog, sanitizedChartContext || "");
           // SR HOUSE OVERRIDE: SR placement table house numbers must come
           // from the SR Planetary Positions block (deterministic truth),
           // not from whatever the AI copied from natal. This kills the
@@ -8618,31 +8611,12 @@ ${natalGroundTruthLines}`
           // table is right while the prose still tells the user the wrong
           // house (e.g. "SR Pluto in the 5th house" when SR Pluto is in 6).
           correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // 7TH HOUSE / DESCENDANT FIXER: rewrite any prose that named the
-          // 7th house cusp / Descendant with the Ascendant's sign.
-          fixDescendantCuspMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // HOUSE RULER PLACEMENT FIXER: rewrite any prose that puts a house
           // ruler in the WRONG sign or house — e.g. "ruler Mars sitting in
           // your 2nd house in Sagittarius" when natal Mars is actually in
           // Scorpio in the 1st house. Pulls truth from NATAL Planetary
           // Positions block, not from the cusp's own house number.
           fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // SIGN RULERSHIP CORRECTION: scan all prose for any "<Planet>
-          // rules <Sign>" / "<Sign> ruled by <Planet>" / "<Planet>, ruler of
-          // <Sign>" claim and rewrite when the planet does not actually
-          // rule that sign. Uses traditional + modern co-ruler map (Pisces =
-          // Jupiter/Neptune, never Saturn; Aquarius = Saturn/Uranus;
-          // Scorpio = Mars/Pluto). Prevents the prompt-only rule from
-          // slipping through into the final reading.
-          correctSignRulershipClaimsInProse(parsedContent, emissionLog);
-          // SR PLANET POSITION CORRECTION: scan all prose for any
-          // "SR <Planet> [at] <deg>°[<min>'] <Sign>" claim that uses the
-          // wrong sign (typically the natal sign leaking into SR context,
-          // or a sign whose degree number matches the deterministic SR
-          // degree). Reads truth from the SR Planetary Positions block in
-          // the chart context. Prevents "SR Saturn 26°21' Leo" when the
-          // truth is "SR Saturn 26°21' Pisces ℞".
-          correctSrPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // NATAL POSITION COUNTERPART: catch "natal <Planet> at <wrong>" where
           // the wrong value is actually the SR position (sign or degree bleed).
           correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
@@ -8651,14 +8625,6 @@ ${natalGroundTruthLines}`
           // Cusps block. Catches the Paul-style overlay bug where the AI
           // wrote "SR 7th house in Capricorn" when SR 7th cusp = Aries.
           correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // ANGLE AXIS LABEL GUARD: rewrite any prose that calls the natal
-          // Descendant the Ascendant (or vice versa) using the deterministic
-          // House 1 / House 7 cusp data from chart context.
-          fixAscendantDescendantLabelSwapsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
-          // NATAL RETROGRADE GUARD: catch "<Planet> direct" in any prose
-          // (bullets included) when the deterministic NATAL block marks
-          // that planet retrograde. Critical for natal Chiron.
-          fixNatalRetrogradeMentionsInProse(parsedContent, sanitizedChartContext || "", emissionLog);
           // SR-TO-NATAL ANGLE CORRECTION (corrections, not deletions): if the
           // model claims "SR <Planet> ... your Ascendant/Descendant" with the
           // wrong angle / orb / aspect, rewrite the sentence using the
@@ -8677,26 +8643,32 @@ ${natalGroundTruthLines}`
           // modality_element section exists with correct counts before
           // backfillRelationshipSectionBodies tries to read it).
           overwritePolarityFromChartContext(parsedContent, sanitizedChartContext || "", emissionLog);
-          // DETERMINISTIC TALLIES — applies to ALL reading types (career,
-          // money, health, relocation, relationship, etc.), not just the
-          // 3-call relationship architecture. The polarity counts and
-          // element/modality tallies are computed from the chart context
-          // and are independent of question_type. Previously this only ran
-          // when isRelationshipQuestion was true, which left career/money/
-          // health readings with polarity counts of 0.
+          // ────────────────────────────────────────────────────────────
+          // SHARED POST-PROCESSING PIPELINE — single source of truth for
+          // every deterministic post-generation pass that must run on
+          // every reading type (single-call AND 3-call relationship).
+          // The 10 passes inside (retrograde normalize, modality inject,
+          // descendant-cusp, asc/dsc label, natal retro, sign rulership,
+          // SR positions, broken-vs strip, best/caution distinct,
+          // accuracy review) used to live as inline calls here; moving
+          // them into one function eliminates per-path drift.
+          //
           // CRITICAL ORDER: this MUST run BEFORE backfillRelationshipSectionBodies
           // so the modality_element section exists with deterministic counts +
           // a populated balance_interpretation/body when the body backfill
           // copies balance_interpretation into body.
+          runPostProcessingPipeline(parsedContent, sanitizedChartContext || "", emissionLog);
+          // OVERWRITE-ALL POLARITY COUNTS — separate from the pipeline
+          // because it pairs with the in-pipeline modality injection but
+          // is not itself on the shared-pipeline drift-prevention list.
           try {
-            const inj = injectDeterministicModalityElement(parsedContent, sanitizedChartContext || "");
             const ow = overwriteAllPolarityCounts(parsedContent, sanitizedChartContext || "");
             emissionLog.push({
-              type: "deterministic_tallies_injected",
-              detail: { injected: inj.injected, polarity_overwritten: ow, tallies: inj.tallies, reading_type: isRelationshipQuestion ? "relationship" : "single_call" },
+              type: "deterministic_polarity_overwritten",
+              detail: { polarity_overwritten: ow, reading_type: isRelationshipQuestion ? "relationship" : "single_call" },
             });
           } catch (detErr) {
-            console.warn("[ask-astrology] deterministic tallies injection threw:", detErr);
+            console.warn("[ask-astrology] polarity overwrite threw:", detErr);
           }
           // Attach the pre-verified cross-chart activations so they survive
           // into the downloaded JSON. The accuracy review reads this list to
