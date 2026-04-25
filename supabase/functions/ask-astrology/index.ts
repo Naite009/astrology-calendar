@@ -6877,10 +6877,35 @@ async function processJob(args: {
       ? [...messages].reverse().find((message: any) => message?.role === "user" && typeof message.content === "string")?.content ?? ""
       : "";
     const normalizedQuestion = latestUserMessage.toLowerCase();
-    const isRelationshipQuestion = /\b(relationship|love|dating|romance|partner|marriage)\b/.test(normalizedQuestion);
+
+    // Detect competing intents BEFORE deciding the relationship branch.
+    // Bug history: a career prompt that contained the phrase "relationship
+    // with money" or "joint ventures with a partner" used to match the bare
+    // /relationship|partner/ regex and route the entire reading down the
+    // 3-call relationship architecture, which forces a relationship-shaped
+    // output regardless of the actual question. We now score each domain by
+    // counting distinct keyword matches and only enter the relationship
+    // branch when relationship signal is the clear winner.
+    const countDistinct = (rx: RegExp): number => {
+      const m = normalizedQuestion.match(rx);
+      return m ? new Set(m).size : 0;
+    };
+    const relationshipScore = countDistinct(/\b(relationship|romance|romantic|dating|marriage|married|breakup|divorce|crush|attraction|synastry|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life)\b/g);
+    const careerScore = countDistinct(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|industry|industries|occupation|coworker|boss|fired|hired|interview|leadership|10th house|midheaven|\bmc\b|professional)\b/g);
+    const moneyScore = countDistinct(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|earning|budget|cash|savings|2nd house|8th house|joint ventures)\b/g);
+    const healthScore = countDistinct(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g);
+    const isRelationshipQuestion =
+      relationshipScore > 0 &&
+      relationshipScore > careerScore &&
+      relationshipScore > moneyScore &&
+      relationshipScore > healthScore;
+
     const isLocationQuestion = /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
     const wantsFocusedReading = /(compact mode|please be brief|keep it short|relationship-only compact)/.test(normalizedQuestion);
     const compactRelationshipMode = isRelationshipQuestion && wantsFocusedReading;
+    console.info(
+      `[ask-astrology] question routing: relationship=${relationshipScore} career=${careerScore} money=${moneyScore} health=${healthScore} → ${isRelationshipQuestion ? "RELATIONSHIP_3CALL" : "SINGLE_CALL"}`,
+    );
 
     let sanitizedChartContext = typeof chartContext === 'string' ? chartContext : '';
     sanitizedChartContext = sanitizedChartContext
