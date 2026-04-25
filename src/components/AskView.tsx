@@ -180,16 +180,47 @@ function getLastReadingKey(chartId: string) {
   return `${LAST_READING_KEY_PREFIX}${chartId}`;
 }
 
-function saveLastReading(chartId: string, chartMeta: { name: string; birthDate?: string; birthTime?: string; birthLocation?: string }, readings: StructuredReading[]) {
+function evictOldAskReadings(keepKey: string) {
+  // When localStorage is full, drop every other ask-last-reading:* entry to make
+  // room for the one the user just generated. Without this the export silently
+  // returns a stale reading from a different chart.
   try {
-    const payload = {
-      chart: chartMeta,
-      savedAt: new Date().toISOString(),
-      readings,
-    };
-    localStorage.setItem(getLastReadingKey(chartId), JSON.stringify(payload));
+    const toRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(LAST_READING_KEY_PREFIX) && k !== keepKey) {
+        toRemove.push(k);
+      }
+    }
+    toRemove.forEach((k) => {
+      try { localStorage.removeItem(k); } catch { /* ignore */ }
+    });
+    return toRemove.length;
+  } catch {
+    return 0;
+  }
+}
+
+function saveLastReading(chartId: string, chartMeta: { name: string; birthDate?: string; birthTime?: string; birthLocation?: string }, readings: StructuredReading[]) {
+  const key = getLastReadingKey(chartId);
+  const payload = {
+    chart: chartMeta,
+    savedAt: new Date().toISOString(),
+    readings,
+  };
+  const serialized = JSON.stringify(payload);
+  try {
+    localStorage.setItem(key, serialized);
   } catch (err) {
-    console.error("[AskView] Failed to persist last reading", err);
+    // Quota exceeded — evict every OTHER cached ask reading and retry once so
+    // at least the freshly generated reading survives a page reload.
+    const evicted = evictOldAskReadings(key);
+    console.warn(`[AskView] localStorage quota hit while saving last reading; evicted ${evicted} older ask reading(s) and retrying`, err);
+    try {
+      localStorage.setItem(key, serialized);
+    } catch (retryErr) {
+      console.error("[AskView] Still cannot persist last reading after eviction; export will rely on in-memory state only", retryErr);
+    }
   }
 }
 
