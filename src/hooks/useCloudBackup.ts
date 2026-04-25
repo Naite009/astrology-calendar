@@ -115,42 +115,48 @@ export const useCloudBackup = (
 
   // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {
-    try {
-      const cachedUserId = user?.id ?? getCachedUserId();
-      let query = supabase
-        .from('device_charts')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      
-      // If authenticated, fetch by user_id; otherwise by device_id
-      if (cachedUserId) {
-        query = query.eq('user_id', cachedUserId);
-      } else {
-        query = query.eq('device_id', deviceId.current);
-      }
-      
-      const { data, error } = await withTimeout(query, CLOUD_REQUEST_TIMEOUT_MS, 'device_charts fetch');
+    const cachedUserId = user?.id ?? getCachedUserId();
 
-      if (error) {
-        console.error('[CloudBackup] Error fetching cloud charts:', error);
-        return [];
-      }
+    for (const [attemptIndex, delayMs] of RESTORE_RETRY_DELAYS_MS.entries()) {
+      if (delayMs > 0) await wait(delayMs);
 
-      // Transform database response to CloudChart type
-      return (data || []).map(row => ({
-        id: row.id,
-        device_id: row.device_id,
-        chart_id: row.chart_id,
-        chart_data: row.chart_data as unknown as NatalChart,
-        chart_name: row.chart_name,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        user_id: (row as unknown as CloudChart).user_id,
-      })) as CloudChart[];
-    } catch (err) {
-      console.error('[CloudBackup] Exception fetching cloud charts:', err);
-      return [];
+      try {
+        let query = supabase
+          .from('device_charts')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        // If authenticated, fetch by user_id; otherwise by device_id
+        if (cachedUserId) {
+          query = query.eq('user_id', cachedUserId);
+        } else {
+          query = query.eq('device_id', deviceId.current);
+        }
+        
+        const { data, error } = await withTimeout(query, CLOUD_REQUEST_TIMEOUT_MS, 'device_charts fetch');
+
+        if (error) {
+          console.error('[CloudBackup] Error fetching cloud charts:', error);
+          continue;
+        }
+
+        // Transform database response to CloudChart type
+        return (data || []).map(row => ({
+          id: row.id,
+          device_id: row.device_id,
+          chart_id: row.chart_id,
+          chart_data: row.chart_data as unknown as NatalChart,
+          chart_name: row.chart_name,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          user_id: (row as unknown as CloudChart).user_id,
+        })) as CloudChart[];
+      } catch (err) {
+        console.error(`[CloudBackup] Exception fetching cloud charts (attempt ${attemptIndex + 1}):`, err);
+      }
     }
+
+    return [];
   }, [user]);
 
   // Sync a single chart to cloud
