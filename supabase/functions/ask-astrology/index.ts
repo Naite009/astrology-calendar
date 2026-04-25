@@ -7371,9 +7371,10 @@ GEOGRAPHIC ACCURACY RULES:
 - Double-check all city/state pairings for US cities. Use correct state abbreviations (e.g., Atlanta is GA not TN, Portland OR vs Portland ME, Kansas City MO vs KS). Never guess — if unsure, omit the state rather than use a wrong one.
 
 CAUTION CITY RULES (ALL READING TYPES WITH ASTROCARTOGRAPHY):
-- You MUST include at least 2 caution cities PER TIMEFRAME (i.e., 2 for "This Year" and 2 for "Long Term" when both are present). This is a hard minimum — do NOT return only 1 caution city.
+- For relocation readings using the "Best Places Within [Country]" structure: each city card MUST include a populated "cautions" field — every city has at least one tradeoff. There is no separate caution-zone section.
+- For other reading types (career, money, health) that still use timeframe-based city_comparison sections: include at least 2 caution cities per timeframe when applicable.
 - If the astrocartography data contains fewer than 2 cities with clearly challenging lines for a timeframe, still pick the 2 lowest-scored or most malefic-adjacent cities from the data and label them as caution zones.
-- Caution cities should highlight Saturn DSC/IC, Pluto DSC/IC, Mars DSC lines and explain the specific difficulty.
+- Caution descriptions should highlight Saturn DSC/IC, Pluto DSC/IC, Mars DSC lines and explain the specific difficulty.
 
 TRANSIT FORMAT RULES:
 - For every transit in timing_section, include the exact degree (e.g., "Jupiter at 14°22' Cancer conjunct natal Venus at 15°01' Cancer") and an approximate date range (e.g., "active May 8–June 2, 2026"), not just "enters sign" or "transits Cancer."
