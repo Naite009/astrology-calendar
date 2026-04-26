@@ -1928,6 +1928,7 @@ interface ParsedPosition {
   sign: string;
   house: number | null;
   retrograde: boolean;
+  isRetrograde: boolean;
 }
 
 const ZODIAC_SIGNS_FOR_PARSE = [
@@ -1990,6 +1991,7 @@ const parsePositionsFromContext = (
       sign: m[4],
       house: m[5] ? parseInt(m[5], 10) : null,
       retrograde: !!m[6],
+      isRetrograde: !!m[6],
     });
   }
   return out;
@@ -2087,8 +2089,8 @@ const normalizePlacementTableRetrograde = (
     }
     for (const p of srPos) {
       const k = p.planet.toLowerCase();
-      srTruth.set(k, !!p.retrograde);
-      srFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.retrograde });
+      srTruth.set(k, !!p.isRetrograde);
+      srFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.isRetrograde });
     }
   }
 
