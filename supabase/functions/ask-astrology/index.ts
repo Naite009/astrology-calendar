@@ -9847,7 +9847,39 @@ ${natalGroundTruthLines}`
     }
 
     // ────────────────────────────────────────────────────────────
-    // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading) — V2
+    // RELATIONSHIP CONTRACT v2.0 — informational pre-gate audit
+    // Runs against the fully-cleaned parsedContent, attaches
+    // `_relationship_contract` to the payload. Never throws, never
+    // mutates content. The UI banner reads `_gate.ok` for hard-block
+    // semantics; this object provides typed contract-level reasons.
+    // ────────────────────────────────────────────────────────────
+    if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+      try {
+        const verdict = enforceRelationshipContract(parsedContent, sanitizedChartContext || undefined);
+        (parsedContent as any)._relationship_contract = {
+          version: "2.0",
+          ok: verdict.ok,
+          checked_rules: verdict.checked,
+          defect_count: verdict.defects.length,
+          hard_defect_count: verdict.defects.filter((d) => d.severity === "hard").length,
+          defects: verdict.defects,
+        };
+        console.info("[ask-astrology][contract] verdict", {
+          ok: verdict.ok,
+          defects: verdict.defects.length,
+          hard: verdict.defects.filter((d) => d.severity === "hard").length,
+        });
+      } catch (contractErr) {
+        console.error("[ask-astrology][contract] enforcer threw:", contractErr);
+        (parsedContent as any)._relationship_contract = {
+          version: "2.0",
+          ok: false,
+          error: contractErr instanceof Error ? contractErr.message : String(contractErr),
+        };
+      }
+    }
+
+    // ────────────────────────────────────────────────────────────
     // V1.2: Hoisted out of hygiene so it runs even when hygiene throws.
     // V2:   When the gate returns MISSING_REQUIRED_SECTION defects, we
     //       re-prompt Claude to author exactly those sections, append
