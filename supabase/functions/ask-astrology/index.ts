@@ -795,7 +795,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
         Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "live in your body and your calendar — you trust what you can see, build, and repeat, and you relax once the practical side is handled",
+        Earth: "live through groundedness, patience, and building — you trust what can be made practical, repeated, and steadily improved over time",
         Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
         Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
@@ -815,7 +815,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
           weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "adapts — you think in possibilities, change plans easily, and get restless inside rigid systems",
+          lead: "moves through adaptability and responsiveness — you adjust to what is actually happening, pivot when the conditions change, and read the room before locking into one plan",
           weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
