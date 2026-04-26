@@ -4798,6 +4798,16 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     "best windows",
     "caution windows",
   ]);
+  // ORPHAN-CITIES GUARD: if the reading has no city_comparison section,
+  // any summary_box item whose label references cities (e.g. "Caution
+  // cities", "Top cities", "Best cities", "Recommended cities") is a
+  // dangling reference to a section that was never produced — drop it
+  // before the gate sees it. This is the Ben bug: city section was
+  // omitted but the summary still cited "Caution cities".
+  const hasCityComparisonSection = Array.isArray(parsedContent.sections)
+    && parsedContent.sections.some((s: any) => s?.type === "city_comparison"
+      && Array.isArray(s?.cities) && s.cities.length > 0);
+  const CITY_LABEL_RE = /\b(cities|city)\b/i;
   for (const section of parsedContent.sections) {
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
