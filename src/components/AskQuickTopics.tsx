@@ -289,8 +289,21 @@ export function AskQuickTopics({
       birthDate,
       birthTime,
       birthLocation,
-      personalContext
+      personalContext,
+      activeTopic.id === "career" ? excludedFields : undefined,
     );
+    // Persist the excluded-fields list per chart on submit.
+    if (activeTopic.id === "career" && typeof window !== "undefined") {
+      try {
+        if (excludedFields.trim()) {
+          window.localStorage.setItem(excludedFieldsKey, excludedFields.trim());
+        } else {
+          window.localStorage.removeItem(excludedFieldsKey);
+        }
+      } catch {
+        /* localStorage quota — non-fatal */
+      }
+    }
     let userLocations: UserLocationsInput | undefined;
     if (activeTopic.id === "relocation") {
       // Substitute the resolved canonical city when the resolver is confident
