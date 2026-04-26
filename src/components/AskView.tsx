@@ -1958,7 +1958,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
-      const apiMessages = trimmedEntries
+      if (portraitReadingType === 'solar_return') {
+        const srForRequest = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
+        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, srForRequest);
+      }
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
