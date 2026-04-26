@@ -492,6 +492,29 @@ const normalizeForFuzzyCompare = (s: string): string => {
   return out;
 };
 
+// FIX 2 — Token-set Jaccard similarity for catching near-duplicate
+// sentences inside a single body field. The strict + fuzzy normalizers
+// above only collapse sentences that hash to the SAME canonical key.
+// They miss sentences that say the same thing in slightly different
+// wording — e.g. "your drive runs into walls (your own internalized
+// 'no')" vs. "your drive keeps hitting internal walls". Jaccard over
+// tokenized content words (after stripping pronouns / aux verbs / fillers
+// / punctuation) catches these. Threshold tuned so sentences sharing
+// >=70% of their content tokens are treated as duplicates.
+const SIMILARITY_THRESHOLD = 0.7;
+const SIMILARITY_MIN_TOKENS = 5;
+const tokensFor = (s: string): Set<string> => {
+  const tokens = normalizeForFuzzyCompare(s).split(" ").filter(Boolean);
+  return new Set(tokens);
+};
+const jaccardSimilarity = (a: Set<string>, b: Set<string>): number => {
+  if (a.size === 0 || b.size === 0) return 0;
+  let intersection = 0;
+  for (const t of a) if (b.has(t)) intersection++;
+  const union = a.size + b.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+};
+
 const dedupeText = (text: string): string => {
   if (typeof text !== "string" || text.length === 0) return text;
 
