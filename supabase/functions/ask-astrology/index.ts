@@ -2043,6 +2043,118 @@ const buildRowsFromPositions = (positions: ParsedPosition[]): any[] => {
   }));
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// ENSURE SR PLACEMENT TABLE EXISTS (Career/Health/Money/etc. fix)
+// ─────────────────────────────────────────────────────────────────────────
+// Single-call reading types (career, health, money, relocation, spiritual,
+// timing) only require ONE generic "Key Placements" table in their schema,
+// which the AI fills with NATAL data. But the prose for these readings
+// frequently discusses SR planets (e.g. "SR Jupiter retrograde in the SR
+// 10th house"). The Replit /check-reading gate then can't find an SR
+// placement_table to corroborate the retrograde claim and flags
+// RETROGRADE_STATE_MISMATCH — even though chart context says the planet
+// IS retrograde at the SR moment.
+//
+// Fix: when SR positions exist in the chart context AND the prose
+// references SR planets AND no SR placement table is present, inject one
+// from chart context. This gives the gate the truth it needs without
+// touching the prose.
+const ensureSolarReturnPlacementTable = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections) || !chartContext) return;
+
+  const srPositions = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPositions.length === 0) return;
+
+  // Already has an SR placement_table? Nothing to do.
+  const hasSRTable = parsedContent.sections.some((s: any) => {
+    if (s?.type !== "placement_table") return false;
+    const t = String(s?.title || "").toLowerCase();
+    return t.includes("solar return") || /\bsr\b/.test(t);
+  });
+  if (hasSRTable) return;
+
+  // Does the prose actually discuss SR planets? If not, no need.
+  let mentionsSR = false;
+  const SR_MENTION = /\b(?:SR|Solar\s+Return)\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Ascendant|Midheaven|MC|ASC|North\s+Node|South\s+Node|House)\b/i;
+  const scan = (node: any): void => {
+    if (mentionsSR) return;
+    if (Array.isArray(node)) { for (const x of node) { scan(x); if (mentionsSR) return; } return; }
+    if (!node || typeof node !== "object") return;
+    for (const v of Object.values(node)) {
+      if (typeof v === "string") {
+        if (SR_MENTION.test(v)) { mentionsSR = true; return; }
+      } else {
+        scan(v);
+        if (mentionsSR) return;
+      }
+    }
+  };
+  scan(parsedContent);
+  if (!mentionsSR) return;
+
+  // Build the SR table from chart context (deterministic truth — including
+  // (R) flags from the SR Planetary Positions block).
+  const srRows = buildRowsFromPositions(srPositions);
+  // Append SR angles from SR house cusps if available (1=ASC, 4=IC, 7=DSC, 10=MC).
+  const srCusps = parseSrHouseCuspsFromContext(chartContext);
+  if (srCusps.length > 0) {
+    const angles = [
+      { house: 1, label: "Ascendant" },
+      { house: 4, label: "IC" },
+      { house: 7, label: "Descendant" },
+      { house: 10, label: "Midheaven" },
+    ];
+    for (const ang of angles) {
+      const c = srCusps.find((h) => h.house === ang.house);
+      if (c) {
+        srRows.push({
+          planet: ang.label,
+          sign: c.sign,
+          degrees: `${c.degree}°${String(c.minutes).padStart(2, "0")}'`,
+          house: ang.house,
+          retrograde: false,
+        });
+      }
+    }
+  }
+
+  const srTable = {
+    type: "placement_table",
+    title: "Solar Return Key Placements",
+    rows: srRows,
+    _injected_from_chart_context: true,
+  };
+
+  // Insert directly after the natal placement_table if present, else at index 0.
+  let insertAt = 0;
+  for (let i = 0; i < parsedContent.sections.length; i++) {
+    const s = parsedContent.sections[i];
+    if (s?.type === "placement_table") {
+      insertAt = i + 1;
+      break;
+    }
+  }
+  parsedContent.sections.splice(insertAt, 0, srTable);
+
+  log.push({
+    type: "sr_placement_table_injected",
+    detail: {
+      reason: "missing_sr_table_with_sr_prose_references",
+      rows: srRows.length,
+      retrograde_planets: srPositions.filter((p) => p.retrograde).map((p) => p.planet),
+      inserted_at: insertAt,
+    },
+  });
+  console.info("[ask-astrology] injected SR placement_table from chart context", {
+    rows: srRows.length,
+    retrograde_planets: srPositions.filter((p) => p.retrograde).map((p) => p.planet),
+  });
+};
+
 // Normalize every placement_table row so that each row has BOTH:
 //   - a `retrograde: boolean` field (what the external Replit /check-reading
 //     gate parses), AND
