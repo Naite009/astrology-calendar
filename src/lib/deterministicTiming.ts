@@ -235,6 +235,7 @@ const buildPlanetNamedFallback = (
     health: 'as it lives in your body and physical patterns',
     money: 'as it expresses in your financial life',
     spiritual: 'as it expresses in your inner and spiritual life',
+    natal: 'as it lives at the core of who you are',
     general: 'as it expresses in your life right now',
   };
   const lens = lensByType[readingType] ?? lensByType.general;
