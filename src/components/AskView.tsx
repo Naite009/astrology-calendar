@@ -420,7 +420,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         // Terminal states: apply immediately, no toast/timer.
         if (row.status === "completed" || row.status === "failed") {
           writeActiveJobId(activeChartId, null);
-          applyCompletedJob(row);
+          await applyCompletedJob(row);
           return;
         }
 
