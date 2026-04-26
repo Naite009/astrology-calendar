@@ -2119,15 +2119,29 @@ const normalizePlacementTableRetrograde = (
         .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
         .trim();
 
-      // Decide which truth map to use for THIS row. If the table title is
-      // explicit or only one chart is available, honor the table-level
-      // decision. Otherwise, score this row's sign+degree against both
-      // fact maps and pick the better match — natal Jupiter and SR Neptune
-      // can coexist in the same generic "Key Placements" table and each
-      // gets its correct retrograde flag.
+      // Decide which truth map to use for THIS row. Priority order:
+      //   1. Explicit chart prefix on the row's planet name itself
+      //      ("SR Mercury", "Solar Return Mercury", "Natal Mercury") —
+      //      strongest signal because the AI already declared which chart
+      //      this row belongs to. Trust it OVER sign/degree scoring,
+      //      because at this point in the pipeline the AI may have written
+      //      the wrong sign/degree (those get corrected later) — using a
+      //      wrong-sign row to score against truth maps would mis-route
+      //      the row and silently lose the SR retrograde flag (the exact
+      //      bug seen on career readings: SR Mercury Rx → routed to natal
+      //      → flag stays false).
+      //   2. Table-level decision (explicit title or single chart).
+      //   3. Per-row sign+degree scoring against both maps.
+      const rowPrefixSR =
+        /^\s*(?:SR|Solar\s+Return)\s+/i.test(rawPlanet) ? true
+        : /^\s*Natal\s+/i.test(rawPlanet) ? false
+        : null;
       let isSR: boolean;
       let routeSource: string;
-      if (tableLevelIsSR !== null) {
+      if (rowPrefixSR !== null && (rowPrefixSR ? srFacts.size > 0 : natalFacts.size > 0)) {
+        isSR = rowPrefixSR;
+        routeSource = `row_prefix(${rowPrefixSR ? "sr" : "natal"})`;
+      } else if (tableLevelIsSR !== null) {
         isSR = tableLevelIsSR;
         routeSource = tableLevelSource;
       } else {
