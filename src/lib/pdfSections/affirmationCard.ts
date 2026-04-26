@@ -108,8 +108,107 @@ function getYearMessage(
   return { body, closing: closings[profHouse] || 'Trust yourself. You know more than you think you do. -- Benjamin Spock' };
 }
 
-/**
- * Combined closing page: "Take This With You"
+// ── Chart-specific closing send-off ──────────────────────────────────────
+// Built from the SR Ascendant, SR Sun house, and the single most powerful
+// SR-to-natal aspect. Returns three short paragraphs that read like the
+// last thing a trusted astrologer says before you leave the room.
+const SR_ASC_THEME: Record<string, string> = {
+  Aries: 'a year of starting things and trusting the first move',
+  Taurus: 'a year of building something steady and refusing to be rushed',
+  Gemini: 'a year of voice, ideas, and saying what you actually think',
+  Cancer: 'a year of tending what is yours and letting people in closer',
+  Leo: 'a year of stepping forward and being seen on purpose',
+  Virgo: 'a year of refining the work and trusting your own standards',
+  Libra: 'a year of relationships and the choices they ask of you',
+  Scorpio: 'a year of going deeper than you usually let yourself go',
+  Sagittarius: 'a year of widening your life and trusting where it points',
+  Capricorn: 'a year of building something that holds and showing up for it',
+  Aquarius: 'a year of doing it your own way and not apologizing for that',
+  Pisces: 'a year of feeling more, sensing more, and trusting what comes through',
+};
+
+const SR_SUN_HOUSE_FOCUS: Record<number, string> = {
+  1: 'how you show up and who you are becoming',
+  2: 'what you are worth and what you actually want to own',
+  3: 'your voice and the conversations you are ready to have',
+  4: 'home, family, and the foundation you are quietly rebuilding',
+  5: 'joy, creativity, and what makes you feel alive',
+  6: 'the daily work and the body that carries it',
+  7: 'partnership and the people across the table from you',
+  8: 'what is ending, what is changing, and what is being shared',
+  9: 'a wider life — travel, study, belief, perspective',
+  10: 'your work in the world and how it is being seen',
+  11: 'your people, your circle, and what you are building together',
+  12: 'inner work, rest, and the quiet things that are not yet visible',
+};
+
+const ASPECT_ASK: Record<string, string> = {
+  Conjunction: 'fuse this part of you with what the year is doing',
+  Opposition: 'hold the tension instead of collapsing one side of it',
+  Square: 'do the thing the friction is pointing at, not the easier thing',
+  Trine: 'use the ease — do not mistake it for permission to coast',
+  Sextile: 'take the opening when it shows up; it will not knock twice',
+};
+
+function buildClosingSendOff(
+  name: string,
+  a: SolarReturnAnalysis,
+  srChart: SolarReturnChart,
+): { line1: string; line2: string; line3: string } {
+  const srAscSign =
+    a.yearlyTheme?.ascendantSign ||
+    srChart.houseCusps?.house1?.sign ||
+    srChart.planets?.Ascendant?.sign ||
+    '';
+  const srSunHouse = a.sunHouse?.house ?? null;
+  const ascTheme = SR_ASC_THEME[srAscSign] || 'a year that is asking you to show up as yourself';
+  const sunFocus = srSunHouse ? SR_SUN_HOUSE_FOCUS[srSunHouse] || '' : '';
+
+  // Strongest SR-to-natal aspect = tightest orb, preferring outer-planet hits
+  // because those carry the year's structural weight. Falls back to the
+  // tightest aspect overall.
+  const STRUCTURAL = new Set(['Saturn', 'Uranus', 'Neptune', 'Pluto', 'Jupiter']);
+  const aspects = Array.isArray(a.srToNatalAspects) ? a.srToNatalAspects : [];
+  let strongest: any = null;
+  for (const asp of aspects) {
+    if (!asp) continue;
+    if (!STRUCTURAL.has(asp.planet1) && !STRUCTURAL.has(asp.planet2)) continue;
+    if (!strongest || (asp.orb ?? 99) < (strongest.orb ?? 99)) strongest = asp;
+  }
+  if (!strongest && aspects.length > 0) {
+    strongest = [...aspects].sort((x, y) => (x.orb ?? 99) - (y.orb ?? 99))[0];
+  }
+
+  let definingTheme: string;
+  if (strongest) {
+    const aspectAsk = ASPECT_ASK[strongest.type] || `let this ${strongest.type?.toLowerCase() || 'contact'} actually move you`;
+    definingTheme =
+      `${name}, this Solar Return is ${ascTheme}` +
+      (sunFocus ? `, with the year's center of gravity sitting in ${sunFocus}` : '') +
+      `. The clearest signal in your chart is SR ${strongest.planet1} ${strongest.type?.toLowerCase()} natal ${strongest.planet2} — that is the one to listen to.`;
+  } else {
+    definingTheme =
+      `${name}, this Solar Return is ${ascTheme}` +
+      (sunFocus ? `, with the year's center of gravity sitting in ${sunFocus}` : '') +
+      '.';
+  }
+
+  const ask = strongest
+    ? `What this year is actually asking of you is to ${ASPECT_ASK[strongest.type]?.replace(/^./, c => c.toLowerCase()) || 'meet what is in front of you with both hands'}.`
+    : sunFocus
+      ? `What this year is actually asking of you is to put your real attention on ${sunFocus}.`
+      : `What this year is actually asking of you is to stop hedging and meet it.`;
+
+  // Send-off: specific, warm, earned. References SR Ascendant + Sun house so
+  // it reads as written for this chart, not as a template.
+  const sendOff = sunFocus
+    ? `Go live the year, ${name} — the one with ${srAscSign} on the door and the work happening in ${sunFocus}. I will see you on the other side of it.`
+    : `Go live the year, ${name} — the one with ${srAscSign} on the door. I will see you on the other side of it.`;
+
+  return { line1: definingTheme, line2: ask, line3: sendOff };
+}
+
+
  * Merges the affirmation card content + closing letter into a single elegant page.
  */
 export function generateAffirmationCard(
