@@ -2633,10 +2633,15 @@ const correctSrPlanetHousesInProse = (
 ) => {
   if (!parsedContent || !chartContext) return;
   const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
-  if (srPos.length === 0) return;
   const houseMap = new Map<string, number>();
   for (const p of srPos) {
     if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+  }
+  // Override with the SR ANALYSIS injection (birthday-engine truth) when
+  // present — same priority used by factsAwareRetrogradeSweep.
+  const injection = parseSrAnalysisInjection(chartContext);
+  if (injection.srHouse.size > 0) {
+    for (const [planet, h] of injection.srHouse.entries()) houseMap.set(planet, h);
   }
   if (houseMap.size === 0) return;
 
