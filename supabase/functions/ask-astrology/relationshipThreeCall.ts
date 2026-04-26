@@ -1065,22 +1065,39 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
  */
 export const injectDeterministicModalityElement = (
   parsedContent: any,
-  natalChartBlock: string,
+  chartContext: string,
 ): { injected: boolean; tallies: DeterministicTallies } => {
   if (!parsedContent || !Array.isArray(parsedContent.sections)) {
     return { injected: false, tallies: { elements: [], modalities: [], polarity: [] } };
   }
-  const tallies = computeDeterministicTallies(natalChartBlock);
-  const newSection = buildModalityElementSection(tallies);
 
   const isNonEmptyString = (v: unknown): v is string =>
     typeof v === "string" && v.trim().length > 0;
 
+  // Detect whether the existing modality_element section is SR-flavored
+  // by its title. If so, deterministic counts MUST be computed from the
+  // SR Planetary Positions block, not the natal block — otherwise the
+  // section's prose ends up describing natal element/modality balance
+  // under an SR title and the external gate flags BALANCE_CLAIM_MISMATCH.
+  const existingIdx = parsedContent.sections.findIndex((s: any) => s?.type === "modality_element");
+  const existing = existingIdx >= 0 ? parsedContent.sections[existingIdx] : null;
+  const existingTitle = isNonEmptyString(existing?.title) ? existing.title : "";
+  const isSrSection = /\b(solar\s*return|sr)\b/i.test(existingTitle);
+
+  // Pick the right block. If the caller passed the full chartContext,
+  // we extract the matching block; if they passed a pre-isolated natal
+  // block (relationship 3-call path), the extractor falls back to the
+  // input string and behavior is unchanged.
+  const tallies = computeDeterministicTallies(chartContext, { source: isSrSection ? "SR" : "NATAL" });
+  const newSection = buildModalityElementSection(tallies);
+  if (isSrSection) {
+    newSection.title = existingTitle || "Solar Return Elemental & Modal Balance";
+  }
+
   // Replace any existing modality_element section, otherwise insert at the
   // canonical slot (just before the summary_box at the end).
-  const existingIdx = parsedContent.sections.findIndex((s: any) => s?.type === "modality_element");
   if (existingIdx >= 0) {
-    const prev = parsedContent.sections[existingIdx] || {};
+    const prev = existing || {};
     // Preserve AI-authored prose so the body backfill has source material.
     if (isNonEmptyString(prev.body)) newSection.body = prev.body;
     if (isNonEmptyString(prev.balance_interpretation)) {
