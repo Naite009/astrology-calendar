@@ -255,6 +255,7 @@ const getContextPhrase = (readingType: TimingReadingType): string => {
     health: 'In terms of your physical energy and wellbeing,',
     money: 'In your financial life,',
     spiritual: 'In your inner and spiritual life,',
+    natal: 'At the natal level,',
     general: 'In your life overall,',
   };
   return phrases[readingType] ?? 'In your life,';
