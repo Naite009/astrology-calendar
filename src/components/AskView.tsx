@@ -1733,6 +1733,43 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             ? `Solar Return ${solarReturnYear}`
             : "Solar Return";
 
+      // ── AUTHORITATIVE SR PLANET PLACEMENT MAP ─────────────────────────
+      // Build a flat planet → {sign, degree, retrograde, srHouse, natalHouse}
+      // map directly from the houseOverlays the deterministic SR engine
+      // already produced. This is the SAME house engine that powers the
+      // birthday Solar Return JSON / PDF, so the values here are guaranteed
+      // to match the user-facing report. The model (and the post-pass
+      // verification on the server) must treat this as the single source of
+      // truth for SR planet houses — never re-derive.
+      const srPlanetPlacements: Record<string, {
+        sign: string;
+        degree: number;
+        minutes: number;
+        retrograde: boolean;
+        srHouse: number | null;
+        natalHouse: number | null;
+      }> = {};
+      try {
+        const overlays = Array.isArray(a.houseOverlays) ? a.houseOverlays : [];
+        for (const o of overlays) {
+          const planet = String((o as any).planet || "").trim();
+          if (!planet) continue;
+          const srPos = (srChart.planets as any)?.[planet];
+          const isRet = !!(srPos && (srPos.isRetrograde === true || (srPos as any).retrograde === true));
+          const degMatch = String((o as any).srDegree || "").match(/(\d+)°(\d+)?/);
+          const deg = degMatch ? parseInt(degMatch[1], 10) : (srPos?.degree ?? 0);
+          const min = degMatch && degMatch[2] ? parseInt(degMatch[2], 10) : (srPos?.minutes ?? 0);
+          srPlanetPlacements[planet] = {
+            sign: (o as any).srSign || srPos?.sign || "",
+            degree: deg,
+            minutes: min,
+            retrograde: isRet,
+            srHouse: (o as any).srHouse ?? null,
+            natalHouse: (o as any).natalHouse ?? null,
+          };
+        }
+      } catch {}
+
       const payload: Record<string, unknown> = {
         solarReturnYear,
         solarReturnAge,
@@ -1746,6 +1783,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         srMoonAspects: a.srMoonAspects,
         houseOverlays: a.houseOverlays,
         srHouseThemes,
+        srPlanetPlacements,
         natalSun,
         natalMoon,
         natalRising,
@@ -1762,6 +1800,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         "build your prose from them rather than re-deriving. The natal portrait data gives " +
         "you the permanent baseline; the SR data tells you what this specific year is doing " +
         "to that baseline.\n\n" +
+        "CRITICAL — SR PLANET HOUSES: For every claim about which house an SR planet is in " +
+        "(in the central theme, any narrative section, the closing message, or anywhere " +
+        "else), the only authoritative source is `srPlanetPlacements[<Planet>].srHouse` " +
+        "below (cross-validated by `houseOverlays` and the `SR Planetary Positions` block " +
+        "in the chart context). Do NOT infer SR houses from sign, do NOT copy natal houses, " +
+        "and do NOT compute Whole Sign houses from the SR Ascendant. If `srPlanetPlacements` " +
+        "says SR Mercury is in house 8, write 8th house — never 5th.\n\n" +
         JSON.stringify(payload, null, 2) +
         "\n--- END SOLAR RETURN ANALYSIS ---\n"
       );
