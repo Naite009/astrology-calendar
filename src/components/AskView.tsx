@@ -1444,11 +1444,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   };
 
   // ── NATAL PORTRAIT INJECTION ─────────────────────────────────────
-  // For natal-only readings (Quick Topic "🌟 Natal"), enrich the
-  // chartContext with the pre-calculated Natal Portrait so the AI uses
-  // it as the primary source of truth for synthesis, themes, dominant
-  // planets, life direction, and patterns. Additive — placement table
-  // context is preserved.
+  // For every reading type, enrich chartContext with the pre-calculated
+  // Natal Portrait. Per-type field selection: a base set goes to all
+  // reading types; some types add extra domain-specific blocks.
+  // Additive — placement table context is preserved.
   const isNatalReadingPrompt = (question: string): boolean => {
     if (!question) return false;
     const q = question.toLowerCase();
@@ -1459,34 +1458,152 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
   };
 
-  const buildNatalPortraitBlock = (chart: NatalChart | null): string => {
+  const isSolarReturnReadingPrompt = (question: string): boolean => {
+    if (!question) return false;
+    const q = question.toLowerCase();
+    return (
+      q.includes('"question_type" in your json output must be exactly "solar_return"') ||
+      q.includes("solar return reading for this birthday year")
+    );
+  };
+
+  const buildNatalPortraitBlock = (
+    chart: NatalChart | null,
+    readingType:
+      | 'natal'
+      | 'solar_return'
+      | 'relationship'
+      | 'relocation'
+      | 'career'
+      | 'health'
+      | 'money'
+      | 'spiritual'
+      | 'general',
+  ): string => {
     if (!chart) return "";
     try {
       const portrait = generateNatalPortrait(chart);
-      const payload = {
+
+      // Base set — sent for every reading type.
+      const basePayload: Record<string, unknown> = {
         lifePurpose: portrait.lifePurpose,
-        topThemes: portrait.topThemes,
         dominantPlanets: portrait.dominantPlanets,
         patterns: portrait.patterns,
         minorBodyPatterns: portrait.minorBodyPatterns,
+        houseEmphasis: portrait.houseEmphasis,
         lifetimeWisdom: portrait.lifetimeWisdom,
         powerPortrait: portrait.powerPortrait,
-        relationshipBlueprint: portrait.relationshipBlueprint,
-        careerMoneyMap: portrait.careerMoneyMap,
-        emotionalArchitecture: portrait.emotionalArchitecture,
-        healthVitality: portrait.healthVitality,
-        shadowGrowth: portrait.shadowGrowth,
-        spiritualKarmic: portrait.spiritualKarmic,
-        houseEmphasis: portrait.houseEmphasis,
       };
+
+      let payload: Record<string, unknown> = {};
+      let headerNote = "";
+
+      switch (readingType) {
+        case 'natal':
+          // Natal reading: full portrait (matches prior behavior).
+          payload = {
+            lifePurpose: portrait.lifePurpose,
+            topThemes: portrait.topThemes,
+            dominantPlanets: portrait.dominantPlanets,
+            patterns: portrait.patterns,
+            minorBodyPatterns: portrait.minorBodyPatterns,
+            lifetimeWisdom: portrait.lifetimeWisdom,
+            powerPortrait: portrait.powerPortrait,
+            relationshipBlueprint: portrait.relationshipBlueprint,
+            careerMoneyMap: portrait.careerMoneyMap,
+            emotionalArchitecture: portrait.emotionalArchitecture,
+            healthVitality: portrait.healthVitality,
+            shadowGrowth: portrait.shadowGrowth,
+            spiritualKarmic: portrait.spiritualKarmic,
+            houseEmphasis: portrait.houseEmphasis,
+          };
+          headerNote =
+            "For natal readings, treat this block as authoritative for patterns, dominant planets, themes, life direction, and synthesis.";
+          break;
+
+        case 'relationship':
+          payload = { ...basePayload, relationshipBlueprint: portrait.relationshipBlueprint };
+          headerNote =
+            "For relationship readings, the relationshipBlueprint section names the natal love/partnership baseline. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'career':
+          payload = { ...basePayload, careerMoneyMap: portrait.careerMoneyMap };
+          headerNote =
+            "For career readings, the careerMoneyMap section names the natal vocational baseline. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'health':
+          payload = { ...basePayload, healthVitality: portrait.healthVitality };
+          headerNote =
+            "For health readings, the healthVitality section names the natal vitality baseline. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'money':
+          payload = { ...basePayload, careerMoneyMap: portrait.careerMoneyMap };
+          headerNote =
+            "For money readings, the careerMoneyMap section names the natal earning/resources baseline. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'spiritual':
+          // Spiritual: double-weight lifetimeWisdom + add spiritualKarmic.
+          // Place lifetimeWisdom FIRST in payload so it appears at the top
+          // of the serialized JSON, then again under the base block.
+          payload = {
+            lifetimeWisdom: portrait.lifetimeWisdom,
+            spiritualKarmic: portrait.spiritualKarmic,
+            ...basePayload,
+          };
+          headerNote =
+            "For spiritual readings, lifetimeWisdom and spiritualKarmic carry the soul-direction signal — lifetimeWisdom is doubled here on purpose. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'relocation':
+          // Base only — powerPortrait is already in base.
+          payload = { ...basePayload };
+          headerNote =
+            "For relocation readings, powerPortrait names the natal energy/sustainability pattern that any new location has to fit. Treat the base portrait as the permanent who-you-are layer.";
+          break;
+
+        case 'solar_return':
+          payload = {
+            lifePurpose: portrait.lifePurpose,
+            topThemes: portrait.topThemes,
+            dominantPlanets: portrait.dominantPlanets,
+            patterns: portrait.patterns,
+            minorBodyPatterns: portrait.minorBodyPatterns,
+            houseEmphasis: portrait.houseEmphasis,
+            lifetimeWisdom: portrait.lifetimeWisdom,
+            powerPortrait: portrait.powerPortrait,
+            relationshipBlueprint: portrait.relationshipBlueprint,
+            careerMoneyMap: portrait.careerMoneyMap,
+            emotionalArchitecture: portrait.emotionalArchitecture,
+            healthVitality: portrait.healthVitality,
+            shadowGrowth: portrait.shadowGrowth,
+            spiritualKarmic: portrait.spiritualKarmic,
+          };
+          headerNote =
+            "For Solar Return readings, the natal portrait describes the permanent baseline. The Solar Return data (separately provided) describes what THIS year is doing to that baseline. Always interpret SR placements in relationship to the natal layer below — never in isolation.";
+          break;
+
+        case 'general':
+        default:
+          payload = { ...basePayload };
+          headerNote =
+            "Treat the base portrait as the permanent who-you-are layer when answering this question.";
+          break;
+      }
+
       return (
         "\n\n--- NATAL PORTRAIT (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---\n" +
         "The following is deterministic, pre-computed natal-portrait data for this chart. " +
-        "For natal readings, treat this block as authoritative for patterns, dominant planets, " +
-        "themes, life direction, and synthesis. Do NOT contradict it. Build prose interpretations " +
-        "from it rather than re-deriving from scratch. Where it gives a synthesis or interpretation, " +
-        "expand it into plain conversational language with one concrete real-life example — do not " +
-        "just repeat it verbatim.\n\n" +
+        "Use it as your primary source of truth for who this person is at the natal level. " +
+        "Do NOT contradict it. When the portrait data gives you a synthesis or interpretation, " +
+        "expand it into plain conversational language with one concrete real-life example rather " +
+        "than repeating it verbatim. The natal portrait describes the permanent baseline. The " +
+        "Solar Return data (where present) describes what this specific year is doing to that " +
+        "baseline.\n" +
+        headerNote + "\n\n" +
         JSON.stringify(payload, null, 2) +
         "\n--- END NATAL PORTRAIT ---\n"
       );
@@ -1495,6 +1612,27 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       return "";
     }
   };
+
+  // Resolve which portrait variant to inject for a given user question.
+  // Natal and Solar Return are detected via Quick Topic markers; everything
+  // else uses the existing detectReadingType() domain heuristic.
+  const resolvePortraitReadingType = (
+    question: string,
+  ):
+    | 'natal'
+    | 'solar_return'
+    | 'relationship'
+    | 'relocation'
+    | 'career'
+    | 'health'
+    | 'money'
+    | 'spiritual'
+    | 'general' => {
+    if (isNatalReadingPrompt(question)) return 'natal';
+    if (isSolarReturnReadingPrompt(question)) return 'solar_return';
+    return detectReadingType(question);
+  };
+
 
   const handleSubmitDirect = async (
     directQuestion?: string,
@@ -1522,11 +1660,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
     try {
       const readingType = detectReadingType(question);
+      const portraitReadingType = resolvePortraitReadingType(question);
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
-      if (isNatalReadingPrompt(question)) {
-        chartContext += buildNatalPortraitBlock(chartForRequest);
-      }
+      chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
@@ -1683,11 +1820,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartNameForRequest = chartForRequest?.name || "Unknown";
       const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
       const readingType = detectReadingType(lastUserQuestion);
+      const portraitReadingType = resolvePortraitReadingType(lastUserQuestion);
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
-      if (isNatalReadingPrompt(lastUserQuestion)) {
-        chartContext += buildNatalPortraitBlock(chartForRequest);
-      }
+      chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
