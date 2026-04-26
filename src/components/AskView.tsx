@@ -1443,7 +1443,60 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return top.type;
   };
 
-  const handleSubmitDirect = async (
+  // ── NATAL PORTRAIT INJECTION ─────────────────────────────────────
+  // For natal-only readings (Quick Topic "🌟 Natal"), enrich the
+  // chartContext with the pre-calculated Natal Portrait so the AI uses
+  // it as the primary source of truth for synthesis, themes, dominant
+  // planets, life direction, and patterns. Additive — placement table
+  // context is preserved.
+  const isNatalReadingPrompt = (question: string): boolean => {
+    if (!question) return false;
+    const q = question.toLowerCase();
+    return (
+      q.includes('"question_type" in your json output must be exactly "natal"') ||
+      q.includes("natal-only reading") ||
+      q.includes("natal only reading")
+    );
+  };
+
+  const buildNatalPortraitBlock = (chart: NatalChart | null): string => {
+    if (!chart) return "";
+    try {
+      const portrait = generateNatalPortrait(chart);
+      const payload = {
+        lifePurpose: portrait.lifePurpose,
+        topThemes: portrait.topThemes,
+        dominantPlanets: portrait.dominantPlanets,
+        patterns: portrait.patterns,
+        minorBodyPatterns: portrait.minorBodyPatterns,
+        lifetimeWisdom: portrait.lifetimeWisdom,
+        powerPortrait: portrait.powerPortrait,
+        relationshipBlueprint: portrait.relationshipBlueprint,
+        careerMoneyMap: portrait.careerMoneyMap,
+        emotionalArchitecture: portrait.emotionalArchitecture,
+        healthVitality: portrait.healthVitality,
+        shadowGrowth: portrait.shadowGrowth,
+        spiritualKarmic: portrait.spiritualKarmic,
+        houseEmphasis: portrait.houseEmphasis,
+      };
+      return (
+        "\n\n--- NATAL PORTRAIT (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---\n" +
+        "The following is deterministic, pre-computed natal-portrait data for this chart. " +
+        "For natal readings, treat this block as authoritative for patterns, dominant planets, " +
+        "themes, life direction, and synthesis. Do NOT contradict it. Build prose interpretations " +
+        "from it rather than re-deriving from scratch. Where it gives a synthesis or interpretation, " +
+        "expand it into plain conversational language with one concrete real-life example — do not " +
+        "just repeat it verbatim.\n\n" +
+        JSON.stringify(payload, null, 2) +
+        "\n--- END NATAL PORTRAIT ---\n"
+      );
+    } catch (err) {
+      console.warn("[AskView] Failed to build natal portrait block:", err);
+      return "";
+    }
+  };
+
+
     directQuestion?: string,
     userLocations?: { current?: string; considering1?: string; considering2?: string },
   ) => {
