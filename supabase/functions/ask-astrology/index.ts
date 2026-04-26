@@ -10768,6 +10768,7 @@ ${natalGroundTruthLines}`
                 dedupeTimingInterpretations(parsedContent);
                 dedupeNarrativeSectionBodies(parsedContent);
                 enforceNonZeroCoverage(parsedContent);
+                correctModalityElementBodyClaims(parsedContent);
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
                   `[ask-astrology] regen-on-drift complete (rewrote ${result.regenerated} field(s)); ` +
