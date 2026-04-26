@@ -474,11 +474,19 @@ const CONTRACTION_MAP: Array<[RegExp, string]> = [
 ];
 const PRONOUN_FILLER_RE =
   /\b(?:you|your|yours|yourself|they|them|their|theirs|themselves|he|him|his|himself|she|her|hers|herself|it|its|itself|the|a|an)\b/g;
+// Auxiliary / linking verbs whose conjugations the AI swaps when it
+// rewrites a sentence with a pronoun fix (e.g. "you doesn't wait" →
+// "you do not wait"). Collapsing these to a single token lets the
+// fuzzy-compare pair near-identical sentences that differ only in
+// subject-verb agreement.
+const AUX_VERB_RE =
+  /\b(?:do|does|did|is|are|was|were|be|been|being|has|have|had|will|would|shall|should|can|could|may|might|must)\b/g;
 
 const normalizeForFuzzyCompare = (s: string): string => {
   let out = s.toLowerCase().replace(/[\u2018\u2019]/g, "'");
   for (const [re, rep] of CONTRACTION_MAP) out = out.replace(re, rep);
   out = out.replace(PRONOUN_FILLER_RE, " ");
+  out = out.replace(AUX_VERB_RE, " ");
   out = out.replace(/[.,!?;:"()\[\]\u2013\u2014—–\-]/g, " ");
   out = out.replace(/\s+/g, " ").trim();
   return out;
