@@ -3652,7 +3652,28 @@ const factsAwareRetrogradeSweep = (
 
   let strippedFalseRetro = 0;
   let flippedDirectToRetro = 0;
+  let correctedHouseClaims = 0;
   const examples: string[] = [];
+  const houseExamples: string[] = [];
+
+  // Ordinal forms we accept in prose: "5th", "fifth", "five", or bare "5"
+  // when used in a "<Planet> in the X house" / "house X" frame.
+  const HOUSE_ORDINAL_WORDS: Record<string, number> = {
+    first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6,
+    seventh: 7, eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12,
+    "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6,
+    "7th": 7, "8th": 8, "9th": 9, "10th": 10, "11th": 11, "12th": 12,
+  };
+  const houseToOrdinal = (n: number): string => {
+    const map = ["", "1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th"];
+    return map[n] || `${n}th`;
+  };
+  const parseHouseToken = (token: string): number | null => {
+    const t = token.toLowerCase().trim();
+    if (HOUSE_ORDINAL_WORDS[t] !== undefined) return HOUSE_ORDINAL_WORDS[t];
+    const n = parseInt(t, 10);
+    return Number.isFinite(n) && n >= 1 && n <= 12 ? n : null;
+  };
 
   // Skip purely structural/identifier keys.
   const SKIP_KEYS = new Set([
