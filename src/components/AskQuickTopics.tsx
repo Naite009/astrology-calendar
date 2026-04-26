@@ -113,6 +113,7 @@ SECTION 12: THE YEAR'S SINGLE MOST IMPORTANT MESSAGE — If this person came to 
 STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "The Year's Central Theme", "Emotional Tone of the Year", "Communication and Thinking This Year", "Love and Relationships This Year", "Energy, Drive, and Conflict This Year", "Where Growth and Luck Live This Year", "Where Pressure and Discipline Come In", "The SR House Emphasis", "Key SR-to-Natal Activations", "What Is Being Left Behind", "The Year's Single Most Important Message"). The Timing Windows section MUST be a timing_section titled "Solar Return Timing Windows" with a transits[] array. Precede the narrative sections with TWO placement_tables: "Natal Key Placements" and "Solar Return Key Placements". End with a modality_element titled "Solar Return Elemental & Modal Balance" and a summary_box titled "Solar Return Strategy Summary" with items: "Year's Theme", "Where to Focus", "What to Release", "Most Important Message".`,
   },
   {
+    id: "relocation",
     label: "Where Should I Live?",
     icon: <MapPin className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
