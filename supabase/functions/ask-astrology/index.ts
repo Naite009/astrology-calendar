@@ -8183,7 +8183,7 @@ SR LOVE ACTIVATION STYLE:
   - "The Pattern and the Gift" (Chiron) MUST be written as a real-life behavior pattern someone would recognize from their own life, then end with the version where it becomes a strength.
   - SECTION-BULLETS RULE: Bullets ("• Takeaway: …") are REQUIRED ONLY at the end of section 10 ("Generational Placement") and section 11 ("Patterns and Themes"). Each of those two sections must end with 2–3 single-sentence, plain-language takeaway bullets, labeled simply "Takeaway:". Do NOT add bullets to ANY other natal section — sections 2–9, 12, 13, the modality_element, or the summary_box must remain pure prose / their existing structure.
 
-- For question_type "solar_return": Use this EXACT section order — do NOT rearrange, combine, or skip:
+- For question_type "solar_return": You have access to pre-calculated Solar Return data injected into this prompt under the heading "--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---". Use it as your primary source of truth. Do not contradict it. The profection year, Time Lord, moon phase, stelliums, and SR-to-natal aspects are already calculated — build your prose from them rather than re-deriving. The natal portrait data gives you the permanent baseline; the SR data tells you what this specific year is doing to that baseline. Use this EXACT section order — do NOT rearrange, combine, or skip:
   1. placement_table — "Natal Key Placements"
   2. placement_table — "Solar Return Key Placements"
   3. narrative_section — "The Year's Central Theme" (SR Ascendant sign + SR Sun house — open by naming both explicitly)
