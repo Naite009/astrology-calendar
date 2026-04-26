@@ -35,6 +35,7 @@ export type TimingReadingType =
   | 'health'
   | 'money'
   | 'spiritual'
+  | 'natal'
   | 'general';
 
 // ─────────────────────────────────────────────────────────────────────────────
