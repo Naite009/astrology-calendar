@@ -182,6 +182,7 @@ export interface StructuredReading {
     drift_count?: number;
   };
   _gate?: GateReport;
+  _relationship_contract?: ContractReport;
 }
 
 function PlacementTable({ section }: { section: PlacementTableSection }) {
