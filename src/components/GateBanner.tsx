@@ -106,9 +106,9 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
     const status = report?.status;
     const errorMsg = report?.error;
     return (
-      <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 space-y-2">
+      <div className="rounded-lg border-2 border-destructive/50 bg-destructive/5 p-3 space-y-2">
         <div className="flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
           <div className="space-y-1">
             <p className="text-sm font-semibold text-foreground">
               UNVALIDATED — external validation did not run
