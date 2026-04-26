@@ -8057,6 +8057,58 @@ SR LOVE ACTIVATION STYLE:
   7. modality_element — "Natal Elemental & Modal Balance"
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
   MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
+- For question_type "natal": Use this EXACT section order — do NOT rearrange, combine, or skip:
+  1. placement_table — "Natal Key Placements"
+  2. narrative_section — "Who You Are" (Sun sign+house+aspects, Rising sign, Moon sign+house+emotional needs — the core identity triangle)
+  3. narrative_section — "How You Think and Communicate" (Mercury sign+house+aspects with one concrete real-life example)
+  4. narrative_section — "How You Love" (Venus sign+house+aspects with one concrete real-life example)
+  5. narrative_section — "How You Act and Pursue" (Mars sign+house+aspects with one concrete real-life example)
+  6. narrative_section — "Where You Grow and Get Lucky" (Jupiter sign+house with one concrete real-life example)
+  7. narrative_section — "Where You Are Being Tested" (Saturn sign+house+major aspects with one concrete real-life example)
+  8. narrative_section — "Soul Purpose and Life Direction" (North Node sign+house, South Node default to leave behind)
+  9. narrative_section — "The Pattern and the Gift" (Chiron sign+house — write as a recognizable behavior pattern, not abstract symbolism)
+  10. narrative_section — "Generational Placement" (Uranus, Neptune, Pluto by sign and house — collective mission personalized by house)
+  11. narrative_section — "Patterns and Themes" (dominant element + modality, any stelliums, what the overall chart says beyond individual planets)
+  12. narrative_section — "Where You Are in Your Life Cycles" (current Saturn cycle/return, current Jupiter cycle, progressed Moon phase if available — use only pre-computed transit/return data)
+  13. narrative_section — "The Overarching Message" (the most honest grounded answer to "why am I here and what am I supposed to do with my life" — plain, direct, specific to this chart, not generic)
+  14. modality_element — "Natal Elemental & Modal Balance"
+  15. summary_box — "Natal Strategy Summary" with items: "Core Identity", "Life Lesson", "Soul Direction", "Overarching Message"
+
+  NATAL VOICE RULES (NON-NEGOTIABLE — apply to every narrative_section in a natal reading):
+  - STRICT 2nd person ("you" / "your") throughout. Speak directly to the person as if in a live reading, not writing an essay about them.
+  - Every placement gets ONE concrete real-life example of how it shows up — something that could happen in a week or a month — not just the principle.
+  - Do NOT stack more than two abstract ideas in a row without grounding them in a real scenario.
+  - FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal". FORBIDDEN: "activation" (use "this transit" instead). FORBIDDEN: "calling" used as a noun.
+  - Each narrative_section body: 200–400 words. Never exceed 500.
+  - NATAL-ONLY: Do NOT reference Solar Return placements, SR planets, or this-year-specific transits anywhere. This reading is natal-only.
+  - "The Pattern and the Gift" (Chiron) MUST be written as a real-life behavior pattern someone would recognize from their own life, then end with the version where it becomes a strength.
+
+- For question_type "solar_return": Use this EXACT section order — do NOT rearrange, combine, or skip:
+  1. placement_table — "Natal Key Placements"
+  2. placement_table — "Solar Return Key Placements"
+  3. narrative_section — "The Year's Central Theme" (SR Ascendant sign + SR Sun house — open by naming both explicitly)
+  4. narrative_section — "Emotional Tone of the Year" (SR Moon sign+house, bridged to natal Moon baseline)
+  5. narrative_section — "Communication and Thinking This Year" (SR Mercury sign+house+retrograde status — name retrograde explicitly if applicable)
+  6. narrative_section — "Love and Relationships This Year" (SR Venus sign+house, shift from natal Venus)
+  7. narrative_section — "Energy, Drive, and Conflict This Year" (SR Mars sign+house, where friction is likely)
+  8. narrative_section — "Where Growth and Luck Live This Year" (SR Jupiter sign+house, the year's biggest opportunity)
+  9. narrative_section — "Where Pressure and Discipline Come In" (SR Saturn sign+house, what to take seriously)
+  10. narrative_section — "The SR House Emphasis" (which houses have 2+ SR planets, bridged to what already lives in those natal houses)
+  11. narrative_section — "Key SR-to-Natal Activations" (3–5 most significant SR-to-natal aspects with degrees and one concrete real-life situation each)
+  12. timing_section — "Solar Return Timing Windows" (3–5 most significant transit windows in next 12–18 months — use ONLY pre-computed transit data; each entry needs planet, natal point, date range, peak date, concrete scenario)
+  13. narrative_section — "What Is Being Left Behind" (what is ending/releasing/completing this year — frame as necessary and clarifying, not as loss)
+  14. narrative_section — "The Year's Single Most Important Message" (the most honest grounded answer to "what do I most need to know about this year" — plain, direct, specific to this chart, not generic)
+  15. modality_element — "Solar Return Elemental & Modal Balance"
+  16. summary_box — "Solar Return Strategy Summary" with items: "Year's Theme", "Where to Focus", "What to Release", "Most Important Message"
+
+  SOLAR RETURN VOICE RULES (NON-NEGOTIABLE — apply to every section in a solar_return reading):
+  - STRICT 2nd person ("you" / "your") throughout. Speak directly to the person as if in a live reading.
+  - Every placement gets ONE concrete real-life example of how it shows up — something that could happen in a week or a month — not just the principle.
+  - Do NOT stack more than two abstract ideas in a row without grounding them in a real scenario.
+  - FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal". FORBIDDEN: "activation" (use "this transit" instead). FORBIDDEN: "calling" used as a noun.
+  - Each narrative_section body: 200–400 words. Never exceed 500.
+  - DUAL-CHART RULE: EVERY SR placement MUST be interpreted in relationship to the natal chart. NEVER interpret an SR placement in isolation — always bridge it to the natal baseline (e.g., "SR Venus in Scorpio in your 5th lands on a natal Venus that already runs in Libra in your 4th, so this year amplifies depth on top of your usual diplomatic baseline").
+
 - For question_type "spiritual": Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Soul's Foundation" (North Node sign/house for destiny direction, South Node for past-life gifts to release)
