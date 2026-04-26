@@ -186,14 +186,31 @@ function buildPromptWithContext(
   birthDate: string,
   birthTime: string,
   birthLocation: string,
-  personalContext?: string
+  personalContext?: string,
+  excludedFields?: string,
 ): string {
   const basePrompt = topic.prompt(name, birthDate, birthTime, birthLocation);
-  if (!personalContext?.trim()) return basePrompt;
 
-  const contextBlock = `\n\nPERSONAL CONTEXT: The person specifically wants to know about: "${personalContext.trim()}"\nWeave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style, environmental preferences, career direction). Address their specific situation through the lens of their chart placements.`;
+  let prompt = basePrompt;
+  if (personalContext?.trim()) {
+    prompt += `\n\nPERSONAL CONTEXT: The person specifically wants to know about: "${personalContext.trim()}"\nWeave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style, environmental preferences, career direction). Address their specific situation through the lens of their chart placements.`;
+  }
 
-  return basePrompt + contextBlock;
+  // Hard-exclusion guard for career-style readings. The AI tends to default
+  // to finance/business/VC examples for any 10th-house heavy chart even when
+  // the user has explicitly said those fields don't interest them. We surface
+  // the exclusion list AND tell the AI to rank-order the remaining fields it
+  // does propose so the gate / post-processor can verify nothing on the list
+  // appears in best_fit recommendations.
+  const excluded = (excludedFields || "")
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (excluded.length > 0) {
+    prompt += `\n\nEXCLUDED FIELDS (HARD CONSTRAINT): The user has explicitly excluded the following career fields/industries from any "best fit", "primary recommendation", or "ideal field" suggestions: ${excluded.map((e) => `"${e}"`).join(", ")}. You MUST NOT recommend these fields as primary career paths. You MAY mention them only when: (a) explicitly noting they are NOT a fit for this person, or (b) acknowledging the chart shows the energy but explaining why the user's stated preference takes precedence. In every "best fit" / "ideal field" / "primary career direction" output, choose alternative fields that match the chart symbolism without falling into the excluded list. If your reading exposes a structured ranking, separate it into "best_fit", "possible_but_not_primary", and "poor_fit_or_user_rejected" — and place every excluded field strictly into "poor_fit_or_user_rejected".`;
+  }
+
+  return prompt;
 }
 
 interface AskQuickTopicsProps {
@@ -222,6 +239,13 @@ export function AskQuickTopics({
 }: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
+  // Career-only: hard-exclusion list. Persisted per-chart in localStorage so
+  // the user doesn't have to retype "not finance, not business" every time.
+  const excludedFieldsKey = `ask-excluded-career-fields:${chartName}`;
+  const [excludedFields, setExcludedFields] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    try { return window.localStorage.getItem(excludedFieldsKey) || ""; } catch { return ""; }
+  });
   // Relocation-only inline city inputs. Rendered next to the personal-context
   // textarea when activeTopic.id === "relocation". All optional — empty
   // values are filtered before the userLocations object is sent.
@@ -235,6 +259,16 @@ export function AskQuickTopics({
       textareaRef.current.focus();
     }
   }, [activeTopic]);
+
+  // Re-hydrate excluded fields whenever the chart changes (one entry per chart).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      setExcludedFields(window.localStorage.getItem(excludedFieldsKey) || "");
+    } catch {
+      setExcludedFields("");
+    }
+  }, [excludedFieldsKey]);
 
   const handleTopicClick = (topic: QuickTopic) => {
     if (disabled) return;
@@ -255,8 +289,21 @@ export function AskQuickTopics({
       birthDate,
       birthTime,
       birthLocation,
-      personalContext
+      personalContext,
+      activeTopic.id === "career" ? excludedFields : undefined,
     );
+    // Persist the excluded-fields list per chart on submit.
+    if (activeTopic.id === "career" && typeof window !== "undefined") {
+      try {
+        if (excludedFields.trim()) {
+          window.localStorage.setItem(excludedFieldsKey, excludedFields.trim());
+        } else {
+          window.localStorage.removeItem(excludedFieldsKey);
+        }
+      } catch {
+        /* localStorage quota — non-fatal */
+      }
+    }
     let userLocations: UserLocationsInput | undefined;
     if (activeTopic.id === "relocation") {
       // Substitute the resolved canonical city when the resolver is confident
@@ -361,6 +408,32 @@ export function AskQuickTopics({
                     disabled={disabled}
                   />
                 </div>
+              </div>
+            )}
+
+            {activeTopic.id === "career" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Excluded fields (optional)
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Comma-separated list of career fields/industries you don't
+                    want recommended (e.g.,{" "}
+                    <span className="font-mono text-foreground">finance, business, venture capital</span>).
+                    The reading will avoid these in "best fit" suggestions and
+                    list them under "poor fit / user-rejected" instead. Saved
+                    per chart.
+                  </p>
+                </div>
+                <Textarea
+                  value={excludedFields}
+                  onChange={(e) => setExcludedFields(e.target.value)}
+                  placeholder="e.g., finance, business, venture capital"
+                  className="min-h-[48px] text-sm resize-none"
+                  rows={2}
+                  disabled={disabled}
+                />
               </div>
             )}
 

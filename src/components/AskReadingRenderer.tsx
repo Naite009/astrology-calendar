@@ -3,6 +3,7 @@ import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
 import { DriftBanner } from "./DriftBanner";
+import { GateBanner, GateReport } from "./GateBanner";
 
 // Types for structured reading
 export interface PlacementRow {
@@ -180,6 +181,7 @@ export interface StructuredReading {
     stripped_planets?: Array<{ section: string; phrase: string }>;
     drift_count?: number;
   };
+  _gate?: GateReport;
 }
 
 function PlacementTable({ section }: { section: PlacementTableSection }) {
@@ -1160,6 +1162,9 @@ export function ReadingRenderer({
 }) {
   return (
     <div className="space-y-4">
+      {/* Gate banner — only renders if Replit validation gate failed */}
+      <GateBanner report={reading._gate} onRegenerate={onRegenerate} />
+
       {/* Drift banner — only renders if validator caught issues */}
       <DriftBanner report={reading._validation} onRegenerate={onRegenerate} />
 
