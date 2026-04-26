@@ -27,6 +27,7 @@ import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskR
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
+import { correctSrPlanetsRetrograde } from "@/lib/srRetrogradeTruth";
 import {
   Popover,
   PopoverContent,
@@ -914,7 +915,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
       if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
       if (currentSR.solarReturnLocation) context += `SR location: ${currentSR.solarReturnLocation}\n`;
-      const srPlanets = currentSR.planets || {};
+      // Override stored isRetrograde flags with the deterministic truth at the
+      // exact SR moment. Stored SRs created before the auto-calculator (or
+      // imported via vision/manual entry) sometimes lack retrograde flags,
+      // which made the SR Planetary Positions block say e.g. "SR Mercury
+      // direct" when astronomy-engine clearly shows it retrograde. The
+      // placement table downstream then mismatches and the gate raises
+      // RETROGRADE_STATE_MISMATCH. Recomputing here is cheap and never wrong.
+      const srPlanets = correctSrPlanetsRetrograde(
+        currentSR.planets || {},
+        currentSR.solarReturnDateTime,
+      );
       const srCusps = currentSR.houseCusps || {};
       // SR HOUSES — WHOLE SIGN (deterministic upstream fix).
       // Replit's gate uses Whole Sign houses from the SR Ascendant; if we
@@ -1198,7 +1209,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     };
 
     const natalTruth = buildTruthMap(chart.planets, chart.houseCusps);
-    const srTruth = srChart ? buildTruthMap(srChart.planets, srChart.houseCusps) : {};
+    // Apply the same deterministic retrograde correction here so the truth
+    // map used to overwrite placement_table rows agrees with the SR
+    // Planetary Positions block emitted into chartContext above.
+    const srTruth = srChart
+      ? buildTruthMap(
+          correctSrPlanetsRetrograde(srChart.planets || {}, (srChart as { solarReturnDateTime?: string }).solarReturnDateTime),
+          srChart.houseCusps,
+        )
+      : {};
 
     // Normalize planet name from AI output to our key
     const normalize = (name: string): string => {
