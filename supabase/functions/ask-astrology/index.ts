@@ -5206,9 +5206,129 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   }
 };
 
-// ────────────────────────────────────────────────────────────────────
-// SHARED POST-PROCESSING PIPELINE
-// ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
+// TIMING-WINDOW ANTI-RESTATEMENT CLEANUP
+// Detect timing window descriptions where sentence 2 restates sentence 1's
+// theme phrase (e.g. "touches your appetite for professional disruption.
+// Pressure builds around your appetite for professional disruption ...").
+// When the same noun-phrase appears in both sentences anchored by phrases
+// like "touches your" / "pressure builds around your" / "asks you to
+// confront your", drop the duplicate clause from sentence 2 so the two
+// sentences add different information.
+// ─────────────────────────────────────────────────────────────────────────
+const dedupeTimingWindowRestatement = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let rewrites = 0;
+  const examples: string[] = [];
+  const ANCHOR_RE = /\b(?:touches|pressure builds around|asks you to confront|works on|reshapes|squeezes|presses on)\s+(?:your|the)\s+([^.;,—\n]{8,120})/i;
+  const sentenceSplit = /(?<=[.!?])\s+/;
+
+  const cleanForCompare = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+
+  const cleanWindowDescription = (desc: string): string => {
+    if (!desc || typeof desc !== "string") return desc;
+    const sentences = desc.split(sentenceSplit);
+    if (sentences.length < 2) return desc;
+    const first = sentences[0];
+    const m = first.match(ANCHOR_RE);
+    if (!m) return desc;
+    const themeKey = cleanForCompare(m[1]);
+    if (themeKey.length < 8) return desc;
+    let changed = false;
+    for (let i = 1; i < sentences.length; i++) {
+      const s = sentences[i];
+      const cleaned = cleanForCompare(s);
+      if (!cleaned.includes(themeKey)) continue;
+      // Strip the restated theme phrase out of sentence i. Try a targeted
+      // removal first ("around your <theme>..." / "on your <theme>...").
+      const stripRe = new RegExp(
+        `\\s*(?:around|on|with|about|of)\\s+(?:your|the)\\s+${m[1].trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[—,;:-]?`,
+        "i",
+      );
+      const stripped = s.replace(stripRe, " ").replace(/\s{2,}/g, " ").trim();
+      if (stripped !== s && stripped.length > 12) {
+        sentences[i] = stripped;
+        changed = true;
+      } else if (cleaned.startsWith(themeKey) || cleaned.length - themeKey.length < 20) {
+        // Sentence 2 is essentially the same as the theme — drop it.
+        sentences.splice(i, 1);
+        i--;
+        changed = true;
+      }
+    }
+    if (!changed) return desc;
+    return sentences.join(" ").replace(/\s{2,}/g, " ").trim();
+  };
+
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+    const buckets: any[][] = [];
+    if (Array.isArray(section.windows)) buckets.push(section.windows);
+    if (Array.isArray(section.transits)) buckets.push(section.transits);
+    if (Array.isArray(section.entries)) buckets.push(section.entries);
+    for (const arr of buckets) {
+      for (const w of arr) {
+        if (!w || typeof w !== "object") continue;
+        for (const f of ["description", "body", "text", "meaning", "note"]) {
+          const original = w[f];
+          if (typeof original !== "string") continue;
+          const next = cleanWindowDescription(original);
+          if (next !== original) {
+            w[f] = next;
+            rewrites++;
+            if (examples.length < 5) examples.push(`${original.slice(0, 100)} → ${next.slice(0, 100)}`);
+          }
+        }
+      }
+    }
+  }
+  if (rewrites > 0) {
+    log.push({ type: "timing_window_restatement_dedup", detail: { rewrites, examples } });
+    console.info("[ask-astrology] timing window restatement deduped", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// SUBTITLE CONTAMINATION CLEANUP
+// Strip parenthetical interpretive/aspect-description fragments from
+// section subtitles so subtitles only carry placement metadata (planet,
+// sign, house). Example failure to clean:
+//   "SR Jupiter ( — meaning, faith, and growth get worked out privately
+//    before being expressed outwardly) in Cancer · SR 11th House"
+// becomes:
+//   "SR Jupiter in Cancer · SR 11th House"
+// ─────────────────────────────────────────────────────────────────────────
+const stripParentheticalFromSubtitles = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let cleaned = 0;
+  const examples: string[] = [];
+  const PAREN_RE = /\s*\(\s*[—–-]?[^()]*\)\s*/g;
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    if (typeof node.subtitle === "string" && node.subtitle.includes("(")) {
+      const original = node.subtitle;
+      let next = original.replace(PAREN_RE, " ").replace(/\s{2,}/g, " ").replace(/\s+([·,])/g, "$1").trim();
+      // Collapse any leftover " in " / " · " spacing artifacts.
+      next = next.replace(/\s+in\s+/g, " in ").replace(/\s*·\s*/g, " · ");
+      if (next !== original && next.length > 0) {
+        node.subtitle = next;
+        cleaned++;
+        if (examples.length < 5) examples.push(`${original} → ${next}`);
+      }
+    }
+    for (const v of Object.values(node)) visit(v);
+  };
+  visit(parsedContent);
+  if (cleaned > 0) {
+    log.push({ type: "subtitle_parenthetical_stripped", detail: { cleaned, examples } });
+    console.info("[ask-astrology] subtitle parentheticals stripped", { cleaned, examples });
+  }
+};
+
+
 // Single source of truth for every deterministic post-generation pass
 // that must run on EVERY reading type — single-call (health, career,
 // money, relocation, etc.) AND the 3-call relationship architecture.
