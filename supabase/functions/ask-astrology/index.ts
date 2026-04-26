@@ -8221,7 +8221,7 @@ SR LOVE ACTIVATION STYLE:
   ANTI-HALLUCINATION: Never claim line positions without data. Never invent relocated angles without calculations. Frame as "strongest matches" not certainties. Always state the analysis mode.
   
   Do NOT assume the user's current location. Never rate a presumed "current location." Only compare recommended cities. Tone must be practical and honest — no fluff.
-- For question_type "career": Use this EXACT section order:
+- For question_type "career": INHERITS UNIVERSAL BASE — BASE RULES 1–8 are non-overridable for this reading type. Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Career Foundation" (10th house cusp sign, its ruler, Sun sign/house, MC degree)
   3. narrative_section — "Hidden Strengths" (6th house for daily work style, 2nd house for earning style, 8th house for joint ventures/investments)
