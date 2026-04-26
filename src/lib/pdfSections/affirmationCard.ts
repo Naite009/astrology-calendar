@@ -312,39 +312,50 @@ export function generateAffirmationCard(
   ctx.y += card2H + 18;
 
   // ── Closing quote ──
+  // ── Chart-specific closing send-off ──
+  // Replaces the old generic closing quote + "Trust your inner wisdom"
+  // sign-off. Built from this person's SR Ascendant, SR Sun house, and
+  // tightest SR-to-natal aspect — the last thing a trusted astrologer
+  // would say before you leave the room.
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
   doc.line(cx - 36, ctx.y, cx + 36, ctx.y);
-
-  const dashIdx = closing.lastIndexOf(' -- ');
-  const quoteText = dashIdx > 0 ? closing.slice(0, dashIdx) : closing;
-  const attribution = dashIdx > 0 ? closing.slice(dashIdx + 4) : '';
-
   ctx.y += 18;
-  doc.setFont('times', 'italic'); doc.setFontSize(14);
-  doc.setTextColor(...CHARCOAL);
-  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.55);
-  for (const line of quoteLines) {
-    doc.text(line, cx, ctx.y, { align: 'center' });
-    ctx.y += 18;
-  }
 
-  if (attribution) {
-    ctx.y += 4;
-    doc.setFont('times', 'normal'); doc.setFontSize(7);
-    doc.setTextColor(...MUTED);
-    doc.setCharSpace(2.5);
-    doc.text(`-- ${attribution.toUpperCase()}`, cx, ctx.y, { align: 'center' });
-    doc.setCharSpace(0);
-  }
+  const sendOffMaxW = pw - margin * 2 - 8;
 
-  // ── Happy Birthday sign-off ──
-  ctx.y += 22;
+  // Line 1: defining theme of the year (italic, larger)
   doc.setFont('times', 'italic'); doc.setFontSize(12);
+  doc.setTextColor(...CHARCOAL);
+  const line1Lines: string[] = doc.splitTextToSize(sendOff.line1, sendOffMaxW);
+  for (const line of line1Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 16;
+  }
+
+  ctx.y += 8;
+
+  // Line 2: what the year is asking
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
   doc.setTextColor(...INK);
-  doc.text('Happy Birthday. Trust your inner wisdom.', cx, ctx.y, { align: 'center' });
+  const line2Lines: string[] = doc.splitTextToSize(sendOff.line2, sendOffMaxW);
+  for (const line of line2Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 14;
+  }
+
+  ctx.y += 12;
+
+  // Line 3: send-off
+  doc.setFont('times', 'italic'); doc.setFontSize(11);
+  doc.setTextColor(...INK);
+  const line3Lines: string[] = doc.splitTextToSize(sendOff.line3, sendOffMaxW);
+  for (const line of line3Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 15;
+  }
 
   // Bottom diamond
-  ctx.y += 20;
+  ctx.y += 16;
   doc.setFillColor(...GOLD);
   doc.triangle(cx, ctx.y - 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
   doc.triangle(cx, ctx.y + 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
