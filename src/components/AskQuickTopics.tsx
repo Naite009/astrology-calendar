@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send } from "lucide-react";
+import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, Sparkles, Sun } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CityInput } from "@/components/CityInput";
@@ -24,6 +24,94 @@ export interface QuickTopic {
 const today = () => new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
 export const QUICK_TOPICS: QuickTopic[] = [
+  {
+    id: "natal",
+    label: "🌟 Natal",
+    icon: <Sparkles className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using ONLY the full natal chart for ${name}, born ${date} at ${time} in ${loc}, provide a complete professional natal chart reading focused on soul purpose and why this person is here. Today's date is ${today()}. All timing must be future-relative to today. Do NOT use Solar Return data anywhere in this reading — this is a natal-only reading. The "question_type" in your JSON output MUST be exactly "natal".
+
+VOICE RULES (NON-NEGOTIABLE — apply to every section and every bullet):
+- Write as if speaking directly to the person in a live reading, not writing an essay about them. Second person ("you", "your") throughout.
+- Every placement gets one concrete real-life example of how it shows up — something that could happen in a week or a month — not just the principle.
+- Do not stack more than two abstract ideas in a row without grounding them in a real scenario.
+- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal". FORBIDDEN: "activation" — say "this transit" instead. FORBIDDEN: "calling" used as a noun.
+- Each section body: 200–400 words. Never exceed 500.
+- Example of what NOT to write: "The wound around partnership is visible and asking to be looked at directly."
+- Example of what TO write: "You may find yourself replaying an old argument or realizing mid-conversation that you've been accepting less than you actually want — that's this transit doing its job."
+
+Use this EXACT section order — do NOT rearrange, combine, or skip:
+
+SECTION 1: WHO YOU ARE — Sun sign, house, and aspects. Rising sign and how you move through the world. Moon sign, house, and emotional needs. The core identity triangle. Open by naming the three placements explicitly, then weave them into a single portrait.
+
+SECTION 2: HOW YOU THINK AND COMMUNICATE — Mercury sign, house, aspects. How you process information and express yourself. Concrete example of a conversation, a decision style, or a way you write/speak.
+
+SECTION 3: HOW YOU LOVE — Venus sign, house, aspects. What you value, how you attract and receive love, what you need in relationships. Concrete example of how this shows up in dating, friendship, or partnership.
+
+SECTION 4: HOW YOU ACT AND PURSUE — Mars sign, house, aspects. Drive, ambition, conflict style, physical energy. Concrete example of how you go after something or handle confrontation.
+
+SECTION 5: WHERE YOU GROW AND GET LUCKY — Jupiter sign and house. Where expansion comes naturally. What beliefs and attitudes open doors. Concrete example of where doors tend to open for you.
+
+SECTION 6: WHERE YOU ARE BEING TESTED — Saturn sign, house, and major aspects. The life lesson. What requires discipline and long-term effort. What gets harder before it gets easier. Concrete example of the kind of situation where this shows up.
+
+SECTION 7: SOUL PURPOSE AND LIFE DIRECTION — North Node sign and house. What this lifetime is calling you toward (use "calling you toward" as a verb phrase, never "your calling" as a noun). South Node as the default comfort zone that needs to be left behind. Concrete example of the South Node default and the North Node stretch.
+
+SECTION 8: THE PATTERN AND THE GIFT — Chiron sign and house. The core recurring pattern and how it becomes a source of strength. Write this as a real-life behavior pattern someone would recognize from their own life — not abstract symbolism. Concrete example of the pattern repeating, then the version where it becomes the gift.
+
+SECTION 9: GENERATIONAL PLACEMENT — Uranus, Neptune, Pluto by sign and house. What your generation is here to transform, and how your specific house placements personalize that collective mission.
+
+SECTION 10: PATTERNS AND THEMES — Dominant element and modality. Any stelliums (3+ planets in one sign or house). What the overall chart is saying beyond individual planets.
+
+SECTION 11: WHERE YOU ARE IN YOUR LIFE CYCLES — Current Saturn cycle (which return, which house Saturn is currently transiting), current Jupiter cycle, progressed Moon phase if available. What stage of life you are actually in right now. Use only pre-computed transit/return data from the chart context — do not estimate dates yourself.
+
+SECTION 12: THE OVERARCHING MESSAGE — If this person came to a professional astrologer asking "why am I here and what am I supposed to do with my life," what is the most honest and grounded answer the chart gives? Write this as if looking the person in the eye and telling them the truth — plain, direct, specific to this chart, not generic.
+
+STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "Who You Are", "How You Think and Communicate", "How You Love", "How You Act and Pursue", "Where You Grow and Get Lucky", "Where You Are Being Tested", "Soul Purpose and Life Direction", "The Pattern and the Gift", "Generational Placement", "Patterns and Themes", "Where You Are in Your Life Cycles", "The Overarching Message"). Precede the narrative sections with a placement_table titled "Natal Key Placements". End with a modality_element section "Natal Elemental & Modal Balance" and a summary_box titled "Natal Strategy Summary" with items: "Core Identity", "Life Lesson", "Soul Direction", "Overarching Message".`,
+  },
+  {
+    id: "solar_return",
+    label: "☀️ Solar Return",
+    icon: <Sun className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using BOTH the full natal chart AND the current Solar Return chart for ${name}, born ${date} at ${time} in ${loc}, provide a complete professional Solar Return reading for this birthday year. Today's date is ${today()}. All timing must be future-relative to today. Every SR placement MUST be interpreted in relationship to the natal chart — never interpret a Solar Return placement in isolation. The "question_type" in your JSON output MUST be exactly "solar_return".
+
+VOICE RULES (NON-NEGOTIABLE — apply to every section and every bullet):
+- Write as if speaking directly to the person in a live reading, not writing an essay about them. Second person ("you", "your") throughout.
+- Every placement gets one concrete real-life example of how it shows up — something that could happen in a week or a month — not just the principle.
+- Do not stack more than two abstract ideas in a row without grounding them in a real scenario.
+- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal". FORBIDDEN: "activation" — say "this transit" instead. FORBIDDEN: "calling" used as a noun.
+- Each section body: 200–400 words. Never exceed 500.
+- Example of what NOT to write: "The wound around partnership is visible and asking to be looked at directly."
+- Example of what TO write: "You may find yourself replaying an old argument or realizing mid-conversation that you've been accepting less than you actually want — that's this transit doing its job."
+
+Use this EXACT section order — do NOT rearrange, combine, or skip:
+
+SECTION 1: THE YEAR'S CENTRAL THEME — SR Ascendant sign and what it says about this year's overall energy and approach. SR Sun house and what life area is the year's primary focus. Open by naming SR ASC sign and SR Sun house explicitly.
+
+SECTION 2: EMOTIONAL TONE OF THE YEAR — SR Moon sign and house. How you will feel on the inside this year. What emotional needs are foregrounded. Bridge to the natal Moon: how this shifts the emotional baseline.
+
+SECTION 3: COMMUNICATION AND THINKING THIS YEAR — SR Mercury sign, house, and retrograde status (if SR Mercury is retrograde, name it explicitly and explain the year's mental rhythm). How the mind is working this year. What kinds of conversations and decisions are favored or require extra caution.
+
+SECTION 4: LOVE AND RELATIONSHIPS THIS YEAR — SR Venus sign and house. What you value and attract this year. How this shifts from the natal Venus baseline.
+
+SECTION 5: ENERGY, DRIVE, AND CONFLICT THIS YEAR — SR Mars sign and house. How you will act and assert yourself this year. Where friction is likely. Where to direct effort.
+
+SECTION 6: WHERE GROWTH AND LUCK LIVE THIS YEAR — SR Jupiter sign and house. The year's biggest opportunity. What expands if pursued.
+
+SECTION 7: WHERE PRESSURE AND DISCIPLINE COME IN — SR Saturn sign and house. What the year is asking you to take seriously, slow down for, or commit to.
+
+SECTION 8: THE SR HOUSE EMPHASIS — Which houses are most loaded this year (2+ planets). What life areas are being activated this year. How this compares to the natal house emphasis. Bridge SR house clusters back to what already lives in those natal houses.
+
+SECTION 9: KEY SR-TO-NATAL ACTIVATIONS — The 3–5 most significant aspects between SR planets and natal planets. For each: name the exact aspect (SR planet + aspect + natal planet, with degrees), what it means in plain terms, and one specific real-life situation it is most likely to show up in. Use "this transit" rather than "activation" in prose.
+
+SECTION 10: TIMING WINDOWS — The 3–5 most significant transit windows in the next 12–18 months. For each: planet, natal point being hit, date range (applying → exact → separating), peak date, and one concrete scenario of how it might actually show up. Cite ONLY transits that appear in the pre-computed transit data in the chart context. Do not invent dates.
+
+SECTION 11: WHAT IS BEING LEFT BEHIND — What the SR chart suggests is ending, releasing, or completing this year. Frame this as necessary and clarifying, not as loss. Concrete example of what kind of thing tends to fall away.
+
+SECTION 12: THE YEAR'S SINGLE MOST IMPORTANT MESSAGE — If this person came to a professional astrologer for a birthday reading asking "what do I most need to know about this year," what does the chart say? Write this as if looking the person in the eye — plain, direct, specific to this chart, not generic.
+
+STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "The Year's Central Theme", "Emotional Tone of the Year", "Communication and Thinking This Year", "Love and Relationships This Year", "Energy, Drive, and Conflict This Year", "Where Growth and Luck Live This Year", "Where Pressure and Discipline Come In", "The SR House Emphasis", "Key SR-to-Natal Activations", "What Is Being Left Behind", "The Year's Single Most Important Message"). The Timing Windows section MUST be a timing_section titled "Solar Return Timing Windows" with a transits[] array. Precede the narrative sections with TWO placement_tables: "Natal Key Placements" and "Solar Return Key Placements". End with a modality_element titled "Solar Return Elemental & Modal Balance" and a summary_box titled "Solar Return Strategy Summary" with items: "Year's Theme", "Where to Focus", "What to Release", "Most Important Message".`,
+  },
   {
     id: "relocation",
     label: "Where Should I Live?",
@@ -447,7 +535,11 @@ export function AskQuickTopics({
                 onChange={(e) => setPersonalContext(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  activeTopic.id === "relationship"
+                  activeTopic.id === "natal"
+                    ? 'e.g., "I want to understand why I keep ending up in the same situations"'
+                    : activeTopic.id === "solar_return"
+                    ? 'e.g., "I want to know what this birthday year is really about"'
+                    : activeTopic.id === "relationship"
                     ? 'e.g., "I met someone earthy, should I pursue it?"'
                     : activeTopic.id === "relocation"
                     ? 'e.g., "I got a job offer in Denver"'
