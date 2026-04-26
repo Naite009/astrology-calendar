@@ -915,17 +915,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
       if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
       if (currentSR.solarReturnLocation) context += `SR location: ${currentSR.solarReturnLocation}\n`;
-      // Override stored isRetrograde flags with the deterministic truth at the
-      // exact SR moment. Stored SRs created before the auto-calculator (or
-      // imported via vision/manual entry) sometimes lack retrograde flags,
-      // which made the SR Planetary Positions block say e.g. "SR Mercury
-      // direct" when astronomy-engine clearly shows it retrograde. The
-      // placement table downstream then mismatches and the gate raises
-      // RETROGRADE_STATE_MISMATCH. Recomputing here is cheap and never wrong.
-      const srPlanets = correctSrPlanetsRetrograde(
-        currentSR.planets || {},
-        currentSR.solarReturnDateTime,
-      );
+      // Use the verified SR planet data from the saved chart record as-is.
+      // The user verifies retrograde status at chart-image upload time; that
+      // verified data is the source of truth and must not be overridden by
+      // any ephemeris recalculation downstream.
+      const srPlanets = currentSR.planets || {};
       const srCusps = currentSR.houseCusps || {};
       // SR HOUSES — WHOLE SIGN (deterministic upstream fix).
       // Replit's gate uses Whole Sign houses from the SR Ascendant; if we
