@@ -10601,7 +10601,6 @@ ${natalGroundTruthLines}`
       //                   the user knows no validation happened, not that
       //                   validation ran and flagged things.
       const finalOk = final?.ok === true;
-      const finalRanOk = typeof final?.status === "number" && final.status === 200;
       const finalGateUnreachable = !!final?.error || (typeof final?.status === "number" && final.status !== 200);
       const v2Ran = retryAttempts.length > 0;
       const gateLabel = finalOk
