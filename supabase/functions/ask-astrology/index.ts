@@ -8143,6 +8143,17 @@ TRANSIT FORMAT RULES:
 - When the chart data provides pre-computed exact hit dates, include them as a specific "exact_date" within the position field (e.g., "exact May 18, 2026"). When exact dates are unavailable, use the narrowest possible date range — never round to a full month if a 2-week window is determinable.
 - Vague transit descriptions like "Jupiter enters Cancer" are NOT sufficient — always specify the natal point being activated and the degree.
 
+TRANSIT INTERPRETATION SPECIFICITY RULE (MANDATORY — applies to ALL reading types and ALL transit interpretations, anywhere in the reading): Every transit interpretation MUST follow these three rules without exception:
+  (1) NAME THE SPECIFIC NATAL POINT BEING HIT, with sign and (when available) house. Write "Pluto squaring your natal Mars in Scorpio in your 5th house" — NOT "Pluto squaring this part of your chart", NOT "Pluto squaring your chart", NOT "the Pluto square activating you", NOT "this transit hitting your natal placements". Generic chart-pointing language is forbidden. The natal point's planet + sign (and house if available) MUST be named explicitly inside the interpretation sentence itself.
+  (2) GIVE ONE CONCRETE REAL-LIFE SCENARIO that is specific to what THAT natal point means for THIS person — a situation that could plausibly happen in a week or a month. Do NOT write a generic textbook description of what that planet or aspect does in general (e.g., "brings intensity and power dynamics to the surface"). The scenario must be grounded in what the natal point actually rules in this chart.
+  (3) NEVER end with a generic closer. The phrase "awareness is the work" is BANNED. So are: "the work is in the awareness", "the lesson is to stay present", "this is an opportunity for growth", "honor the process", "trust the process", "lean into the discomfort", "the universe is asking you to…", and any other horoscope-style closing platitude. End the interpretation on the specific real-life scenario instead — let the scene be the closer.
+
+Example of what NOT to write: "Pluto squaring this part of your chart brings intensity and power dynamics to the surface — awareness is the work."
+
+Example of what TO write: "Pluto squaring your natal Mars in Scorpio means the way you go after what you want — and the way you fight for it — is under pressure to change. You may find yourself in a situation where the direct approach you'd normally take backfires, and the real work is figuring out whether you're pushing because it's right or because backing down feels like losing."
+
+Before finalizing any transit entry, re-read its interpretation and verify: (a) the specific natal planet + sign is named in the sentence, (b) there is a concrete scenario the reader could picture happening to them, (c) it does NOT end on a generic platitude. If any of the three checks fails, rewrite the interpretation.
+
 MULTI-PASS TRANSIT PRECISION (MANDATORY FOR OUTER PLANETS):
 - For Jupiter, Saturn, Uranus, Neptune, and Pluto transits to natal points, CHECK if the transiting planet will retrograde back over the natal point during its active period.
 - If retrograde motion occurs, you MUST report EACH PASS as a SEPARATE transit entry:
@@ -8527,6 +8538,12 @@ PROSE-OVER-BULLETS RULE (MANDATORY in compact mode): For "How You Love", "This Y
 OPENING RULE for How You Love: The "How You Love" section body must NOT open with a planet name, house number, or sign. It must open with a sentence describing something the person actually does, experiences, or feels in relationships — something they would immediately recognize from their own life. The placement that explains it comes in the second sentence. Example of correct opening: "You don't fall for people quickly — and when you do, you need a long time to feel safe enough to show it. That comes from Saturn at 6°41' Cancer sitting in your 1st house conjunct your Moon, ruling a Capricorn 7th house." Example of wrong opening: "Venus sits in Taurus in your 11th house, your 7th house cusp is Capricorn..."
 
 SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When checking SR-to-natal overlaps, if a connection is outside the 3° orb or does not genuinely exist, say so in one sentence and move on. Example: "SR Venus at 27° Aries lands near natal Mercury at 27° Aries — that's a real overlap worth noting. SR Jupiter at 15° Cancer doesn't make a tight aspect to any natal relationship point, so I won't manufacture one." This honesty is what makes the reading feel trustworthy. Never invent a connection to fill space.
+
+CALL C PARAGRAPH STRUCTURE RULE (MANDATORY for "Where Natal and Solar Return Connect" — applies to all charts, not just this one): The body of this section must NEVER be written as one long unbroken block of prose. Required structure:
+  (a) ONE opening paragraph of 3–4 sentences MAXIMUM that states the year's overarching relationship theme (the through-line connecting the natal baseline to what Solar Return is activating).
+  (b) THEN each major SR-to-natal activation gets ITS OWN paragraph of 3–5 sentences. No activation may be buried inside a longer block — every activation starts a NEW paragraph (separate it with a blank line / "\n\n" inside the body string).
+  (c) ONE closing paragraph of 2–4 sentences that ties the activations back together into the year's relational arc.
+Paragraphs in the "body" string are separated by "\n\n" (double newline). Do NOT collapse activations into commas or semicolons inside the same paragraph. Do NOT write "First, X. Second, Y. Third, Z." inside a single paragraph — each one is its own paragraph. The reader must be able to scan the section and see each activation as a visually distinct block.
 
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
