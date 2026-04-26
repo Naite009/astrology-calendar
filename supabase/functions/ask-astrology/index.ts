@@ -10463,6 +10463,11 @@ ${natalGroundTruthLines}`
         // modality / polarity. Appends a short coverage clause if the AI omitted any.
         enforceNonZeroCoverage(parsedContent);
 
+        // Correct any AI-authored dominance claim in modality_element body /
+        // balance_interpretation that contradicts the deterministic counts.
+        // The external gate flags BALANCE_CLAIM_MISMATCH otherwise.
+        correctModalityElementBodyClaims(parsedContent);
+
         // (Legacy single-field count corrector removed — validateReading() at the
         // end of this block now handles balance_interpretation along with every
         // other string field in the reading. Keeping both would double-log fixes.)
