@@ -108,6 +108,106 @@ function getYearMessage(
   return { body, closing: closings[profHouse] || 'Trust yourself. You know more than you think you do. -- Benjamin Spock' };
 }
 
+// ── Chart-specific closing send-off ──────────────────────────────────────
+// Built from the SR Ascendant, SR Sun house, and the single most powerful
+// SR-to-natal aspect. Returns three short paragraphs that read like the
+// last thing a trusted astrologer says before you leave the room.
+const SR_ASC_THEME: Record<string, string> = {
+  Aries: 'a year of starting things and trusting the first move',
+  Taurus: 'a year of building something steady and refusing to be rushed',
+  Gemini: 'a year of voice, ideas, and saying what you actually think',
+  Cancer: 'a year of tending what is yours and letting people in closer',
+  Leo: 'a year of stepping forward and being seen on purpose',
+  Virgo: 'a year of refining the work and trusting your own standards',
+  Libra: 'a year of relationships and the choices they ask of you',
+  Scorpio: 'a year of going deeper than you usually let yourself go',
+  Sagittarius: 'a year of widening your life and trusting where it points',
+  Capricorn: 'a year of building something that holds and showing up for it',
+  Aquarius: 'a year of doing it your own way and not apologizing for that',
+  Pisces: 'a year of feeling more, sensing more, and trusting what comes through',
+};
+
+const SR_SUN_HOUSE_FOCUS: Record<number, string> = {
+  1: 'how you show up and who you are becoming',
+  2: 'what you are worth and what you actually want to own',
+  3: 'your voice and the conversations you are ready to have',
+  4: 'home, family, and the foundation you are quietly rebuilding',
+  5: 'joy, creativity, and what makes you feel alive',
+  6: 'the daily work and the body that carries it',
+  7: 'partnership and the people across the table from you',
+  8: 'what is ending, what is changing, and what is being shared',
+  9: 'a wider life — travel, study, belief, perspective',
+  10: 'your work in the world and how it is being seen',
+  11: 'your people, your circle, and what you are building together',
+  12: 'inner work, rest, and the quiet things that are not yet visible',
+};
+
+const ASPECT_ASK: Record<string, string> = {
+  Conjunction: 'fuse this part of you with what the year is doing',
+  Opposition: 'hold the tension instead of collapsing one side of it',
+  Square: 'do the thing the friction is pointing at, not the easier thing',
+  Trine: 'use the ease — do not mistake it for permission to coast',
+  Sextile: 'take the opening when it shows up; it will not knock twice',
+};
+
+function buildClosingSendOff(
+  name: string,
+  a: SolarReturnAnalysis,
+  srChart: SolarReturnChart,
+): { line1: string; line2: string; line3: string } {
+  const srAscSign =
+    a.yearlyTheme?.ascendantSign ||
+    srChart.houseCusps?.house1?.sign ||
+    srChart.planets?.Ascendant?.sign ||
+    '';
+  const srSunHouse = a.sunHouse?.house ?? null;
+  const ascTheme = SR_ASC_THEME[srAscSign] || 'a year that is asking you to show up as yourself';
+  const sunFocus = srSunHouse ? SR_SUN_HOUSE_FOCUS[srSunHouse] || '' : '';
+
+  // Strongest SR-to-natal aspect = tightest orb, preferring outer-planet hits
+  // because those carry the year's structural weight. Falls back to the
+  // tightest aspect overall.
+  const STRUCTURAL = new Set(['Saturn', 'Uranus', 'Neptune', 'Pluto', 'Jupiter']);
+  const aspects = Array.isArray(a.srToNatalAspects) ? a.srToNatalAspects : [];
+  let strongest: any = null;
+  for (const asp of aspects) {
+    if (!asp) continue;
+    if (!STRUCTURAL.has(asp.planet1) && !STRUCTURAL.has(asp.planet2)) continue;
+    if (!strongest || (asp.orb ?? 99) < (strongest.orb ?? 99)) strongest = asp;
+  }
+  if (!strongest && aspects.length > 0) {
+    strongest = [...aspects].sort((x, y) => (x.orb ?? 99) - (y.orb ?? 99))[0];
+  }
+
+  let definingTheme: string;
+  if (strongest) {
+    const aspectAsk = ASPECT_ASK[strongest.type] || `let this ${strongest.type?.toLowerCase() || 'contact'} actually move you`;
+    definingTheme =
+      `${name}, this Solar Return is ${ascTheme}` +
+      (sunFocus ? `, with the year's center of gravity sitting in ${sunFocus}` : '') +
+      `. The clearest signal in your chart is SR ${strongest.planet1} ${strongest.type?.toLowerCase()} natal ${strongest.planet2} — that is the one to listen to.`;
+  } else {
+    definingTheme =
+      `${name}, this Solar Return is ${ascTheme}` +
+      (sunFocus ? `, with the year's center of gravity sitting in ${sunFocus}` : '') +
+      '.';
+  }
+
+  const ask = strongest
+    ? `What this year is actually asking of you is to ${ASPECT_ASK[strongest.type]?.replace(/^./, c => c.toLowerCase()) || 'meet what is in front of you with both hands'}.`
+    : sunFocus
+      ? `What this year is actually asking of you is to put your real attention on ${sunFocus}.`
+      : `What this year is actually asking of you is to stop hedging and meet it.`;
+
+  // Send-off: specific, warm, earned. References SR Ascendant + Sun house so
+  // it reads as written for this chart, not as a template.
+  const sendOff = sunFocus
+    ? `Go live the year, ${name} — the one with ${srAscSign} on the door and the work happening in ${sunFocus}. I will see you on the other side of it.`
+    : `Go live the year, ${name} — the one with ${srAscSign} on the door. I will see you on the other side of it.`;
+
+  return { line1: definingTheme, line2: ask, line3: sendOff };
+}
+
 /**
  * Combined closing page: "Take This With You"
  * Merges the affirmation card content + closing letter into a single elegant page.
@@ -130,7 +230,8 @@ export function generateAffirmationCard(
   const hasJupiterAngular = a.angularPlanets?.includes('Jupiter') || false;
 
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
-  const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
+  const { body } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
+  const sendOff = buildClosingSendOff(name, a, srChart);
 
   // Full-bleed white page
   doc.setFillColor(255, 255, 255);
@@ -154,20 +255,11 @@ export function generateAffirmationCard(
   doc.line(cx - 60, ctx.y, cx + 60, ctx.y);
   ctx.y += 20;
 
-  // Opening letter — condensed
-  const letterLines = [
-    `${name},`,
-    '',
-    'This report is a map, not a mandate. The planets describe the weather',
-    'of your year -- they do not decide what you build in it.',
-    'Use what resonates. Return to these pages when you need orientation.',
-  ];
+  // Opening salutation — chart-specific closing is rendered after the cards.
   doc.setFont('times', 'normal'); doc.setFontSize(10.5);
   doc.setTextColor(...INK);
-  for (const line of letterLines) {
-    doc.text(line, cx, ctx.y, { align: 'center' });
-    ctx.y += line === '' ? 8 : 14;
-  }
+  doc.text(`${name},`, cx, ctx.y, { align: 'center' });
+  ctx.y += 14;
 
   ctx.y += 14;
 
@@ -220,39 +312,50 @@ export function generateAffirmationCard(
   ctx.y += card2H + 18;
 
   // ── Closing quote ──
+  // ── Chart-specific closing send-off ──
+  // Replaces the old generic closing quote + "Trust your inner wisdom"
+  // sign-off. Built from this person's SR Ascendant, SR Sun house, and
+  // tightest SR-to-natal aspect — the last thing a trusted astrologer
+  // would say before you leave the room.
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
   doc.line(cx - 36, ctx.y, cx + 36, ctx.y);
-
-  const dashIdx = closing.lastIndexOf(' -- ');
-  const quoteText = dashIdx > 0 ? closing.slice(0, dashIdx) : closing;
-  const attribution = dashIdx > 0 ? closing.slice(dashIdx + 4) : '';
-
   ctx.y += 18;
-  doc.setFont('times', 'italic'); doc.setFontSize(14);
-  doc.setTextColor(...CHARCOAL);
-  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.55);
-  for (const line of quoteLines) {
-    doc.text(line, cx, ctx.y, { align: 'center' });
-    ctx.y += 18;
-  }
 
-  if (attribution) {
-    ctx.y += 4;
-    doc.setFont('times', 'normal'); doc.setFontSize(7);
-    doc.setTextColor(...MUTED);
-    doc.setCharSpace(2.5);
-    doc.text(`-- ${attribution.toUpperCase()}`, cx, ctx.y, { align: 'center' });
-    doc.setCharSpace(0);
-  }
+  const sendOffMaxW = pw - margin * 2 - 8;
 
-  // ── Happy Birthday sign-off ──
-  ctx.y += 22;
+  // Line 1: defining theme of the year (italic, larger)
   doc.setFont('times', 'italic'); doc.setFontSize(12);
+  doc.setTextColor(...CHARCOAL);
+  const line1Lines: string[] = doc.splitTextToSize(sendOff.line1, sendOffMaxW);
+  for (const line of line1Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 16;
+  }
+
+  ctx.y += 8;
+
+  // Line 2: what the year is asking
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
   doc.setTextColor(...INK);
-  doc.text('Happy Birthday. Trust your inner wisdom.', cx, ctx.y, { align: 'center' });
+  const line2Lines: string[] = doc.splitTextToSize(sendOff.line2, sendOffMaxW);
+  for (const line of line2Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 14;
+  }
+
+  ctx.y += 12;
+
+  // Line 3: send-off
+  doc.setFont('times', 'italic'); doc.setFontSize(11);
+  doc.setTextColor(...INK);
+  const line3Lines: string[] = doc.splitTextToSize(sendOff.line3, sendOffMaxW);
+  for (const line of line3Lines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 15;
+  }
 
   // Bottom diamond
-  ctx.y += 20;
+  ctx.y += 16;
   doc.setFillColor(...GOLD);
   doc.triangle(cx, ctx.y - 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
   doc.triangle(cx, ctx.y + 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
