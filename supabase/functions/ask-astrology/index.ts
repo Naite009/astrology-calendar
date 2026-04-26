@@ -1575,6 +1575,153 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// CROSS-CHART DOMINANCE CLAIM CORRECTOR
+//
+// The previous corrector only checks a modality_element body against the
+// SAME section's count arrays. The Replit gate also flags BALANCE_CLAIM_MISMATCH
+// when a section's body makes a CROSS-CHART claim — e.g., the SR balance
+// section's body says "your natal Fire-dominant baseline" but the natal
+// chart is actually Earth-dominant. The gate recomputes natal counts from
+// the chart context and disagrees, even though the SR section's own
+// counts/dominant fields are correct.
+//
+// This pass parses BOTH natal and SR deterministic tallies and rewrites any
+// "natal <wrong>-dominant" / "SR <wrong>-dominant" claim in any narrative
+// or modality_element body field to the correct dominant element/modality
+// for THAT chart. Idempotent. Pure.
+// ─────────────────────────────────────────────────────────────────────────
+const correctCrossChartBalanceClaims = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const ELEMENTS = ["fire", "earth", "air", "water"];
+  const MODALITIES = ["cardinal", "fixed", "mutable"];
+  const pickRoot = (
+    arr: Array<{ name?: string; tag?: string; count: number }>,
+    allowed: string[],
+  ): string | null => {
+    let best: { root: string; count: number } | null = null;
+    for (const item of arr) {
+      if (!item || typeof item.count !== "number") continue;
+      const root = String(item.name ?? item.tag ?? "").split(/[\s(]/)[0].toLowerCase();
+      if (!allowed.includes(root)) continue;
+      if (!best || item.count > best.count) best = { root, count: item.count };
+    }
+    return best?.root ?? null;
+  };
+
+  const natalTallies = computeDeterministicTallies(chartContext, { source: "NATAL" });
+  const srTallies = computeDeterministicTallies(chartContext, { source: "SR" });
+  const natalDomEl = pickRoot(natalTallies.elements as any, ELEMENTS);
+  const natalDomMod = pickRoot(natalTallies.modalities as any, MODALITIES);
+  const srDomEl = pickRoot(srTallies.elements as any, ELEMENTS);
+  const srDomMod = pickRoot(srTallies.modalities as any, MODALITIES);
+
+  // No data parsed — nothing to validate against.
+  if (!natalDomEl && !srDomEl && !natalDomMod && !srDomMod) return;
+
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // Build cross-chart claim regex. Captures (qualifier)(spaces)(root)(suffix).
+  // Matches forms like:
+  //   "natal Fire-dominant baseline"
+  //   "your natal earth-heavy chart"
+  //   "SR water-dominant year"
+  //   "this year's air-leaning energy"
+  //   "your natal chart is fire-dominant"
+  //   "natal chart leans heavily into Water"
+  //   "natally, you are predominantly earth"
+  const NAT_QUAL = "(?:your\\s+)?natal(?:\\s+chart)?|natally";
+  const SR_QUAL = "(?:your\\s+)?(?:SR|Solar\\s+Return|this\\s+year(?:'s)?)(?:\\s+chart)?";
+  const CLAIM_BODY = (group: string[]) =>
+    [
+      `(${group.join("|")})-(?:dominant|heavy|forward|leaning)`,
+      `(?:predominantly|primarily|mostly|largely|chiefly|mainly|heavily)\\s+(${group.join("|")})`,
+      `heavy\\s+(?:on|in)\\s+(${group.join("|")})`,
+      `(?:led|leads|dominated)\\s+by\\s+(${group.join("|")})`,
+      `leans\\s+(?:heavily\\s+)?(?:into|toward)\\s+(${group.join("|")})`,
+      `(${group.join("|")})\\s+(?:dominant|dominates|leads)`,
+    ].join("|");
+
+  let rewrites = 0;
+  const examples: string[] = [];
+
+  const tryRewriteForChart = (
+    raw: string,
+    qualifierPattern: string,
+    truthEl: string | null,
+    truthMod: string | null,
+  ): string => {
+    let next = raw;
+    const fixGroup = (group: string[], correctRoot: string | null) => {
+      if (!correctRoot) return;
+      const re = new RegExp(
+        `\\b(${qualifierPattern})\\b[^.!?\\n]{0,80}?(?:${CLAIM_BODY(group)})`,
+        "gi",
+      );
+      next = next.replace(re, (match) => {
+        const lower = match.toLowerCase();
+        const wrongRoot = group.find(
+          (g) => g !== correctRoot && new RegExp(`\\b${g}\\b`, "i").test(lower),
+        );
+        if (!wrongRoot) return match;
+        const rootRe = new RegExp(`\\b${wrongRoot}\\b`, "gi");
+        const rebuilt = match.replace(rootRe, (m) =>
+          m[0] === m[0].toUpperCase() ? cap(correctRoot) : correctRoot,
+        );
+        if (examples.length < 6) {
+          examples.push(`${match.slice(0, 100)} → ${rebuilt.slice(0, 100)}`);
+        }
+        rewrites++;
+        return rebuilt;
+      });
+    };
+    fixGroup(ELEMENTS, truthEl);
+    fixGroup(MODALITIES, truthMod);
+    return next;
+  };
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
+    "_retrograde_repair","elements","modalities","polarity",
+    "dominant_element","dominant_modality","dominant_polarity",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value }) => {
+    let next = value;
+    next = tryRewriteForChart(next, NAT_QUAL, natalDomEl, natalDomMod);
+    next = tryRewriteForChart(next, SR_QUAL, srDomEl, srDomMod);
+    if (next !== value) (node as any)[key] = next;
+  });
+
+  if (rewrites > 0) {
+    log.push({
+      type: "cross_chart_balance_claims_corrected",
+      detail: {
+        rewrites,
+        natal_dominant: { element: natalDomEl, modality: natalDomMod },
+        sr_dominant: { element: srDomEl, modality: srDomMod },
+        examples,
+      },
+    });
+    console.info("[ask-astrology] cross-chart balance claims corrected", {
+      rewrites,
+      natal_dominant: { element: natalDomEl, modality: natalDomMod },
+      sr_dominant: { element: srDomEl, modality: srDomMod },
+      examples,
+    });
+  }
+};
+
 
 // Aspect-interpretation library entries are sometimes written in a
 // relationship-leaning voice ("romanticizing people", "idealizing your
