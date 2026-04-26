@@ -19,25 +19,61 @@ export type GateReport = {
   label?: string;
 };
 
+/**
+ * Mirrors `_relationship_contract` attached by the edge function. This is
+ * the in-house contract verdict (independent of the external Replit gate).
+ * Hard defects here mean a chart/prose mismatch the contract considers
+ * unacceptable even when the external gate passed.
+ */
+export type ContractReport = {
+  version?: string;
+  ok?: boolean;
+  defect_count?: number;
+  hard_defect_count?: number;
+  checked_rules?: string[];
+  defects?: Array<{
+    code?: string;
+    severity?: string;
+    path?: string;
+    message?: string;
+  }>;
+  error?: string;
+};
+
 interface GateBannerProps {
   report: GateReport | null | undefined;
+  contract?: ContractReport | null | undefined;
   onRegenerate?: () => void;
 }
 
 /**
- * Renders a prominent warning when the Replit validation gate failed
- * (`_gate.ok === false`). The reading is still rendered below so the user
- * can read what was generated, but the banner makes clear that one or more
- * checks did not pass and surfaces the defect codes for transparency.
+ * Renders a prominent warning when EITHER the external Replit validation
+ * gate (`_gate.ok === false`) OR the in-house relationship contract
+ * (`_relationship_contract.ok === false`) failed. The reading is still
+ * rendered below so the user can read what was generated, but the banner
+ * makes clear that one or more checks did not pass and surfaces the
+ * defect codes for transparency.
  *
- * Hidden entirely when the gate passed or no gate ran (back-compat).
+ * Hidden entirely when both checks passed (or did not run).
  */
-export const GateBanner = ({ report, onRegenerate }: GateBannerProps) => {
+export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) => {
   const [expanded, setExpanded] = useState(false);
-  if (!report || report.ok !== false) return null;
+  const gateFailed = report?.ok === false;
+  const contractFailed = contract?.ok === false;
+  if (!gateFailed && !contractFailed) return null;
 
-  const defects = Array.isArray(report.defects) ? report.defects : [];
+  const gateDefects = Array.isArray(report?.defects) ? report!.defects! : [];
+  const contractDefects = Array.isArray(contract?.defects) ? contract!.defects! : [];
+  // Combine, tagging the source so the user can see at a glance which
+  // layer flagged each defect (gate = external Replit, contract = in-house).
+  const defects = [
+    ...gateDefects.map((d) => ({ ...d, _source: "gate" as const })),
+    ...contractDefects.map((d) => ({ ...d, _source: "contract" as const })),
+  ];
   const defectCount = defects.length;
+  const failingLayers: string[] = [];
+  if (gateFailed) failingLayers.push("external gate");
+  if (contractFailed) failingLayers.push("relationship contract");
 
   return (
     <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
@@ -48,6 +84,7 @@ export const GateBanner = ({ report, onRegenerate }: GateBannerProps) => {
             <p className="text-sm font-medium text-foreground">
               Validation did not pass
               {defectCount > 0 ? ` — ${defectCount} issue${defectCount === 1 ? "" : "s"} flagged` : ""}
+              {failingLayers.length > 0 ? ` (${failingLayers.join(" + ")})` : ""}
             </p>
             <p className="text-xs text-muted-foreground">
               The reading below was generated, but at least one consistency
@@ -75,6 +112,9 @@ export const GateBanner = ({ report, onRegenerate }: GateBannerProps) => {
             {defects.slice(0, 20).map((d, i) => (
               <li key={i}>
                 <span className="font-medium text-foreground">{d.code || "issue"}</span>
+                <span className="ml-1 inline-block rounded bg-muted px-1 py-0 text-[10px] uppercase text-muted-foreground">
+                  {d._source}
+                </span>
                 {d.message ? <> — {d.message}</> : null}
                 {d.path ? <span className="text-muted-foreground/70"> · {d.path}</span> : null}
               </li>
