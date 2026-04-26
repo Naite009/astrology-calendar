@@ -1,79 +1,67 @@
-## Review of the three flagged items
+## What I found (read the code, not just the symptoms)
 
-I checked each of the three issues against the actual code. Verdict: **all three are real, two are quick deterministic fixes, one is a content-depth upgrade.** I'd also flag two related issues worth bundling.
+**BASE RULE 10 did NOT regress in code.** I verified directly:
+- The rule text is still in the shared base block at `supabase/functions/ask-astrology/index.ts:9107–9108`.
+- All 11 inheritance lines + the forward-compat clause still read **"BASE RULES 1–10"** (relationship, relocation, career, health, money, natal, solar_return, spiritual, timing, general, plus the "any new question_type" forward-compat clause). I grepped — there is not a single remaining `BASE RULES 1–9`.
+- The deterministic corrector `acknowledgeNatalRetrogradesFromContext` is still defined (lines 3531–3607) and still wired into `safeRun` at line 6439–6440.
 
----
+So the "regression" is not the rule disappearing. It's something subtler, and it's a real bug. Two real problems, distinct from each other:
 
-### 1. ✅ Confirmed: `srRisingDesc` ignores the natal Rising contrast
+### Problem 1 — `acknowledgeNatalRetrogradesFromContext` has a too-lenient gate
 
-**Where it lives:** `src/components/SolarReturnPDFExport.tsx` lines 740 and 999. Both export sites do:
+The corrector's `hasAcknowledgment` regex at line 3577–3581 treats **any of `retrograde | Rx | R | ℞`** within 160 chars of the planet name as "already acknowledged." But BASE RULE 10 explicitly says *"A bare ℞ symbol is not enough — write one sentence explaining what that natal retrograde means for this person specifically."*
 
-```ts
-srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || ''
-```
+So when the AI writes `"your natal Venus ℞ in Aries colors how you receive…"` the corrector sees the `℞` symbol and skips injection. The Replit gate, which evaluates the prose as a human reader would, correctly flags it as a missing plain-language acknowledgment — and the gate's auto-fix list shows up as "natal Venus / Jupiter / Uranus retrograde omissions" *fixed*. That's what the user is seeing in the gate JSON. The local corrector never injected the proper sentence because its detector was satisfied by the symbol.
 
-That just looks up a static per-sign blurb (Virgo → "competent, thoughtful, detail-oriented"). There is no awareness of natal Rising at all. For Nicki, this is a Scorpio-rising person presenting as Virgo for the year — astrologically the most interesting thing about the SR Ascendant — and it goes unmentioned.
+This is why it appeared to work last reading and not this one: it depends on whether the AI happened to write `"is retrograde"` (which is a plain-language phrase the gate accepts) vs. just `"℞"` (which the gate rejects). The local guardrail was supposed to be a backstop and it isn't backing up correctly.
 
-**Fix:** Add a new exported field `srRisingContrast` that is populated only when SR Rising ≠ natal Rising. Build it from a small lookup table of "natal X presenting as SR Y" pairings so it stays deterministic. Keep the existing `srRisingDesc` so the Replit renderer doesn't lose its default copy. Both export sites get the same field.
+**Fix:** tighten `hasAcknowledgment` so it only counts as "acknowledged" if there is a plain-language phrase (`retrograde`, `Rx`, or `R`) within range AND the sentence containing that match is at least ~10 words long (i.e., not just a placement-table cell or a parenthetical glyph). The bare `℞` and standalone `Rx` glyph in a label/cell should NOT satisfy the gate. If the only mention of "retrograde" within range is a single word in a glyph-style fragment, treat it as unacknowledged and inject the sentence from `NATAL_RX_ACK_BY_PLANET`.
 
-Example output for Scorpio→Virgo: *"Your natal Scorpio Rising — intense, private, watching beneath the surface — is wearing a Virgo coat this year. People will read you as more measured, precise, and useful than your default. The watcher is still there; it's just running through a checklist now."*
+I'll also add an emission log entry (`natal_retrograde_acknowledgment_injected` is already there but currently silent when count=0) so the next run shows which planets were checked and which got injected vs. skipped — that way the next time the user asks "did this fire?" it's visible in the emission list.
 
----
+### Problem 2 — Natal Uranus position keeps being written wrong, and the post-corrector isn't catching it
 
-### 2. ✅ Confirmed: `profectionYear.age` can be 0 — real bug
+The validation facts already include the canonical natal Uranus position (`positions[]` in `ValidationFacts` carries sign + degree + abs_degree + house + retrograde for every planet — see `supabase/functions/ask-astrology/validationFacts.ts`). So the ground truth IS in the facts object — the user's premise that it's missing from canonical facts is wrong.
 
-**Where it lives:** `src/lib/solarReturnAnalysis.ts` lines 962–966:
+The actual issue is `correctNatalPlanetPositionsInProse` at line 4731 **isn't catching the Uranus case for this chart** because its prose pattern is too narrow. The AI is writing things like *"your natal Uranus at 0°09' Gemini"* — that's the SR Uranus position bleeding into a natal sentence. The corrector should:
+- Identify the natal-qualified mention (`natal Uranus`, `your natal Uranus`, `your Uranus` in a natal context)
+- Extract the degree+sign claim adjacent to it
+- Compare against the natal facts position (`Libra 0°30'`)
+- Surgically rewrite the degree/sign
 
-```ts
-if (natalChart.birthDate && srChart.solarReturnYear) {
-  const birthYear = parseInt(natalChart.birthDate.slice(0, 4), 10);
-  if (!isNaN(birthYear)) {
-    const age = srChart.solarReturnYear - birthYear;
-```
+I'll inspect the existing corrector's regex and broaden it to handle:
+- `"your natal <Planet> at <deg>°<min>' <Sign>"` (already covered, presumably)
+- `"<Planet> at <deg>°<min>' <Sign>"` when the surrounding sentence is in a natal-qualified context (currently the gap)
+- `"natal <Planet> in <Sign>"` (sign-only claims with no degree)
 
-If `srChart.solarReturnYear` is missing, equals the birth year, or got stamped with the natal year by a stale cache/import, `age` collapses to `0` (or even negative). The PDF export at `SolarReturnPDFExport.tsx:708–715` already has a guard (`effectiveSrYear` falls back to current calendar year and computes `srAge`), but **`mappedProfectionYear` at lines 693–696 and 957–960 still spreads the raw `profYear` and never overwrites `age`**. So the JSON exports the bad `age: 0` while the rest of the report uses the corrected age. That's exactly the symptom described.
+I'll also add a log line that prints, for each planet checked, the natal facts truth value vs. what was found in prose, so future failures are diagnosable.
 
-**Fix (two layers, both needed):**
+## Plan (small, targeted, no scope creep)
 
-a. **Source fix** in `solarReturnAnalysis.ts`: replicate the same `effectiveSrYear` guard used in the PDF export (reject birthYear collisions and out-of-range values, fall back to current year). This stops `age: 0` at the source for every consumer, not just the JSON export.
+**File:** `supabase/functions/ask-astrology/index.ts` only.
 
-b. **Export fix** in `SolarReturnPDFExport.tsx`: in both `mappedProfectionYear` blocks, explicitly overwrite `age: srAge ?? profYear.age` so the JSON can never ship a stale 0 even if the analysis layer ever regresses.
+1. **Tighten `hasAcknowledgment`** in `acknowledgeNatalRetrogradesFromContext` (around line 3576):
+   - Require a plain-language word (`retrograde` | `Rx`) — drop `℞` and bare `R\b` from the satisfaction regex.
+   - Additionally require the containing sentence to be ≥ 8 words (block satisfaction by a placement-table cell or parenthetical).
+   - Add a `natal_retrograde_acknowledgment_checked` log entry when retrograde planets are present, listing planets checked, planets injected, and planets skipped-as-already-acknowledged. This makes regressions visible in logs even when injection count is 0.
 
----
+2. **Broaden `correctNatalPlanetPositionsInProse`** (around line 4731):
+   - Read existing patterns; widen so a `<Planet> at <deg>°<min>' <Sign>` claim inside a sentence that contains a natal qualifier (`natal`, `your natal`, `birth chart`, `at birth`) anywhere in the same sentence is rewritten using the canonical facts.
+   - Add a "sign-only" branch: `natal <Planet> in <Sign>` rewrites the sign when wrong, leaving degree if not present.
+   - Emit example diffs in the log for each rewrite (the function already logs counts; add up to 5 examples).
 
-### 3. ⚠️ Confirmed: SR-to-natal aspect prose is template-driven (Tier 1/2 limitation, not a bug)
+3. **Verification (no code change):**
+   - Confirm BASE RULE 10 text and all 11 inheritance lines still read "BASE RULES 1–10" (already verified above — no edit needed).
+   - Re-run `rg "BASE RULES 1.{0,3}9\b"` to ensure zero matches.
 
-**Where it lives:** `src/lib/solarReturnAspectInterp.ts`. `generateSRtoNatalInterpretation()` first tries `getSRNatalPairInterp(srP, natP, aspectType)` for a hand-written pair entry. If none exists, it falls through to `buildGenericFeeling` / `buildGenericMeaning` / `buildGenericAdvice` — which is where every sextile reads like every sextile and every square reads like every square.
+4. **Deploy** the `ask-astrology` edge function.
 
-You're right that this isn't wrong — it's just generic. The realistic path is not "write 10 × 10 × 8 = 800 unique pair entries," it's **make the generic builder less generic** by injecting three pieces of information it already has access to but isn't using:
+## What I am NOT doing
 
-- **Orb tightness band** — "0–1° exact and pressing all year" vs "1–3° clearly active" vs "3°+ background hum." Already computed (`tightness` on line 194), but only stuffed into `whatItMeans`, never into `howItFeels` or `whatToDo`.
-- **House overlays** — `analysis.houseOverlays` knows which natal house the SR planet is sitting in and which natal house the natal planet rules. The generic builder ignores both.
-- **Aspect direction** (applying vs separating) — already in `srToNatalAspects` for many entries; surface it.
+- Not touching the elemental-balance corrector, the SR house corrector, the cross-chart balance corrector, the timing pipeline, or the prompt body outside BASE RULE 10. Those are stable.
+- Not adding a new "canonical natal Uranus" hardcoded constant for Nicki — the facts JSON already carries the truth for every chart, and a per-user hardcode would be the wrong abstraction. The fix is to make the existing corrector catch the existing wrong prose.
+- Not changing `NATAL_RX_ACK_BY_PLANET` sentences.
 
-**Fix:** Rewrite `buildGenericFeeling` / `buildGenericMeaning` / `buildGenericAdvice` to take an optional `context` arg `{ orb, srHouse, natalHouse, applying }` and weave those specifics into the sentence templates. Then expand the explicit pair table (`getSRNatalPairInterp`) by ~20–30 high-value pairs that come up constantly in real charts — Mars/Saturn, Saturn/Moon, Jupiter/Sun, Pluto/Venus, Uranus/Mercury, Neptune/Sun across all 8 aspect types. That's a much smaller lift than full coverage and removes the "every sextile sounds the same" feeling on the placements clients actually notice.
+## Why this should hold across deployments
 
-Scope-wise I'd cap this at ~40–50 new pair entries and the generic-builder context upgrade for this round, then iterate from real reports.
-
----
-
-### Two additional suggestions (you didn't ask, you asked me to add if beneficial)
-
-**A. Profection wheel age field is also being read by PDF/UI rendering.** `SolarReturnPDFExport.tsx` lines 1671, 1696, 1703, 1919, 1925 all read `analysis.profectionYear.age` directly. If the source-layer fix in #2a lands, these are automatically correct. If only the export-layer fix lands, these still display "You are 0 years old…" in the printed PDF. **This is why fix 2a is non-negotiable** — the bug isn't just JSON cosmetics, it'll surface in the printed report too.
-
-**B. The Profection Time Lord interpretation hardcodes generic Mars-as-Time-Lord copy.** While I was in `solarReturnAnalysis.ts` around line 1021, I noticed `buildProfectionSynthesis(timeLord, houseNumber)` doesn't take the Time Lord's actual SR placement into account — only its name and the activated house. For Nicki, Mars-as-Time-Lord in Aries (domicile) in the SR 8th is *exceptionally* powerful and the synthesis prose doesn't mention dignity or the SR house Mars actually sits in. I'd add an optional enhancement to pass `timeLordSRHouse`, `timeLordSRSign`, and a computed `dignity` into `buildProfectionSynthesis` so the closing line can say something like *"Mars in domicile in your SR 8th gives this year unusual force in matters of shared resources, depth, and other people's money — your Time Lord is at full strength."* This is a 30-line change; happy to include it or defer.
-
----
-
-## Files to change
-
-- `src/lib/solarReturnAnalysis.ts` — guard against `solarReturnYear === birthYear` / missing year collapsing `age` to 0 (fix 2a). Optionally enhance `buildProfectionSynthesis` to use Time Lord placement + dignity (suggestion B).
-- `src/components/SolarReturnPDFExport.tsx` — add `srRisingContrast` field at both export sites (fix 1); overwrite `mappedProfectionYear.age` with computed `srAge` at both sites (fix 2b).
-- `src/lib/solarReturnAspectInterp.ts` — extend `buildGeneric*` builders to accept `{ orb, srHouse, natalHouse, applying }` and weave specifics into the prose; add ~40–50 new high-value pair entries to `getSRNatalPairInterp` (fix 3).
-- (No edge function or backend changes. No deploy needed.)
-
-## What I want you to confirm before I implement
-
-1. **Suggestion B** (Time Lord dignity + SR placement woven into the profection synthesis) — include it this round, or defer?
-2. **Aspect pair expansion size** — ~40–50 new entries this round feels right to me. If you want a different cap (smaller and faster, or larger and more comprehensive), say so now.
-3. The `srRisingContrast` line is *additive* — `srRisingDesc` stays as-is so the Replit renderer's existing layout keeps working. Confirm that's the right call vs. replacing the field outright.
+The two changes are orthogonal to elemental balance and to the SR pipeline, so a future fix in either of those areas can't silently undo this. Both changes are inside their own named functions and have explicit emission logs, so a regression will be visible in the next run's log line list rather than silent.
