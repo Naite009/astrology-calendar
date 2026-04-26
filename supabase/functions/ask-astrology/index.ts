@@ -8072,8 +8072,8 @@ SR LOVE ACTIVATION STYLE:
   7. narrative_section — "Where You Are Being Tested" (Saturn sign+house+major aspects with one concrete real-life example)
   8. narrative_section — "Soul Purpose and Life Direction" (North Node sign+house, South Node default to leave behind)
   9. narrative_section — "The Pattern and the Gift" (Chiron sign+house — write as a recognizable behavior pattern, not abstract symbolism)
-  10. narrative_section — "Generational Placement" (Uranus, Neptune, Pluto by sign and house — collective mission personalized by house)
-  11. narrative_section — "Patterns and Themes" (dominant element + modality, any stelliums, what the overall chart says beyond individual planets)
+  10. narrative_section — "Generational Placement" (Uranus, Neptune, Pluto by sign and house — collective mission personalized by house). MANDATORY: After the body prose, append 2–3 bullets in the body text using the format "• Takeaway: <single plain-language sentence, no jargon>" on its own line each. Each bullet is one sentence summarizing a real-life takeaway from this section. No more than 3 bullets, no fewer than 2.
+  11. narrative_section — "Patterns and Themes" (dominant element + modality, any stelliums, what the overall chart says beyond individual planets). MANDATORY: After the body prose, append 2–3 bullets in the body text using the format "• Takeaway: <single plain-language sentence, no jargon>" on its own line each. Each bullet is one sentence summarizing a real-life takeaway from this section. No more than 3 bullets, no fewer than 2.
   12. narrative_section — "Where You Are in Your Life Cycles" (current Saturn cycle/return, current Jupiter cycle, progressed Moon phase if available — use only pre-computed transit/return data)
   13. narrative_section — "The Overarching Message" (the most honest grounded answer to "why am I here and what am I supposed to do with my life" — plain, direct, specific to this chart, not generic)
   14. modality_element — "Natal Elemental & Modal Balance"
@@ -8088,6 +8088,7 @@ SR LOVE ACTIVATION STYLE:
   - Each narrative_section body: 200–400 words. Never exceed 500.
   - NATAL-ONLY: Do NOT reference Solar Return placements, SR planets, or this-year-specific transits anywhere. This reading is natal-only.
   - "The Pattern and the Gift" (Chiron) MUST be written as a real-life behavior pattern someone would recognize from their own life, then end with the version where it becomes a strength.
+  - SECTION-BULLETS RULE: Bullets ("• Takeaway: …") are REQUIRED ONLY at the end of section 10 ("Generational Placement") and section 11 ("Patterns and Themes"). Each of those two sections must end with 2–3 single-sentence, plain-language takeaway bullets, labeled simply "Takeaway:". Do NOT add bullets to ANY other natal section — sections 2–9, 12, 13, the modality_element, or the summary_box must remain pure prose / their existing structure.
 
 - For question_type "solar_return": Use this EXACT section order — do NOT rearrange, combine, or skip:
   1. placement_table — "Natal Key Placements"
