@@ -428,6 +428,70 @@ const correctModalityElementCounts = (parsedContent: any) => {
 const normalizeForCompare = (s: string): string =>
   s.toLowerCase().replace(/\s+/g, " ").replace(/[\u2018\u2019]/g, "'").trim();
 
+// Aggressive normalizer for catching near-duplicate sentences inside one
+// bullet/paragraph. The AI sometimes emits the same sentence twice with
+// only a pronoun swap or contraction mismatch (e.g. "you doesn't wait …
+// bring it to them" vs. "you do not wait … bring it to you"). The strict
+// `normalizeForCompare` misses these because the surface text differs.
+// This canonicalizer:
+//   - lowercases, normalizes quotes/whitespace
+//   - expands common contractions (don't → do not, doesn't → does not, …)
+//   - drops 2nd/3rd person object/possessive pronouns ("you", "them",
+//     "their", "him", "her", "it") so subject/object swaps collapse
+//   - drops a small set of filler articles/prepositions ("the", "a", "an")
+//   - strips trailing punctuation
+// Used ONLY for similarity comparison — the original sentence text is
+// preserved when we keep it.
+const CONTRACTION_MAP: Array<[RegExp, string]> = [
+  [/\bdon't\b/g, "do not"],
+  [/\bdoesn't\b/g, "does not"],
+  [/\bdidn't\b/g, "did not"],
+  [/\bwon't\b/g, "will not"],
+  [/\bcan't\b/g, "cannot"],
+  [/\bisn't\b/g, "is not"],
+  [/\baren't\b/g, "are not"],
+  [/\bwasn't\b/g, "was not"],
+  [/\bweren't\b/g, "were not"],
+  [/\bhasn't\b/g, "has not"],
+  [/\bhaven't\b/g, "have not"],
+  [/\bhadn't\b/g, "had not"],
+  [/\bshouldn't\b/g, "should not"],
+  [/\bwouldn't\b/g, "would not"],
+  [/\bcouldn't\b/g, "could not"],
+  [/\bit's\b/g, "it is"],
+  [/\bthat's\b/g, "that is"],
+  [/\bthere's\b/g, "there is"],
+  [/\byou're\b/g, "you are"],
+  [/\bthey're\b/g, "they are"],
+  [/\bwe're\b/g, "we are"],
+  [/\byou'll\b/g, "you will"],
+  [/\bthey'll\b/g, "they will"],
+  [/\byou've\b/g, "you have"],
+  [/\bthey've\b/g, "they have"],
+  [/\bi'm\b/g, "i am"],
+  [/\bi've\b/g, "i have"],
+  [/\bi'll\b/g, "i will"],
+];
+const PRONOUN_FILLER_RE =
+  /\b(?:you|your|yours|yourself|they|them|their|theirs|themselves|he|him|his|himself|she|her|hers|herself|it|its|itself|the|a|an)\b/g;
+// Auxiliary / linking verbs whose conjugations the AI swaps when it
+// rewrites a sentence with a pronoun fix (e.g. "you doesn't wait" →
+// "you do not wait"). Collapsing these to a single token lets the
+// fuzzy-compare pair near-identical sentences that differ only in
+// subject-verb agreement.
+const AUX_VERB_RE =
+  /\b(?:do|does|did|is|are|was|were|be|been|being|has|have|had|will|would|shall|should|can|could|may|might|must)\b/g;
+
+const normalizeForFuzzyCompare = (s: string): string => {
+  let out = s.toLowerCase().replace(/[\u2018\u2019]/g, "'");
+  for (const [re, rep] of CONTRACTION_MAP) out = out.replace(re, rep);
+  out = out.replace(PRONOUN_FILLER_RE, " ");
+  out = out.replace(AUX_VERB_RE, " ");
+  out = out.replace(/[.,!?;:"()\[\]\u2013\u2014—–\-]/g, " ");
+  out = out.replace(/\s+/g, " ").trim();
+  return out;
+};
+
 const dedupeText = (text: string): string => {
   if (typeof text !== "string" || text.length === 0) return text;
 
@@ -464,11 +528,16 @@ const dedupeText = (text: string): string => {
   }
 
   // Step 2: within each remaining paragraph, collapse ANY repeated sentence
-  // (not just immediately-consecutive ones). The AI sometimes interleaves
-  // a duplicate sentence a few sentences apart within the same paragraph.
+  // (not just immediately-consecutive ones). Track BOTH a strict normalized
+  // key (for exact dupes) AND a fuzzy key that ignores pronoun/contraction
+  // variations — the AI sometimes rewrites the same sentence with a small
+  // grammar fix so the strict key misses it (e.g. "you doesn't wait …
+  // bring it to them" vs. "you do not wait … bring it to you" inside a
+  // single bullet text field).
   const cleaned = dedupedParas.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
-    const seen = new Set<string>();
+    const seenStrict = new Set<string>();
+    const seenFuzzy = new Set<string>();
     const out: string[] = [];
     for (const raw of sentences) {
       const norm = normalizeForCompare(raw);
@@ -476,16 +545,24 @@ const dedupeText = (text: string): string => {
         out.push(raw);
         continue;
       }
-      if (seen.has(norm)) continue;
-      seen.add(norm);
+      if (seenStrict.has(norm)) continue;
+      const fuzzy = normalizeForFuzzyCompare(raw);
+      // Only treat as a near-duplicate when the fuzzy form is substantial
+      // (>= 5 words) so we don't accidentally collapse short, legitimately
+      // repeated phrases like "Be direct." or "Trust this."
+      if (fuzzy && fuzzy.split(" ").length >= 5 && seenFuzzy.has(fuzzy)) continue;
+      seenStrict.add(norm);
+      if (fuzzy) seenFuzzy.add(fuzzy);
       out.push(raw);
     }
     return out.join("").trim();
   });
 
   // Step 3: cross-paragraph sentence dedup. If the same sentence appears
-  // in paragraph A and paragraph B, drop the later occurrence.
-  const globalSeen = new Set<string>();
+  // in paragraph A and paragraph B, drop the later occurrence. Same
+  // strict + fuzzy pairing as step 2.
+  const globalSeenStrict = new Set<string>();
+  const globalSeenFuzzy = new Set<string>();
   const finalParas = cleaned.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const out: string[] = [];
@@ -495,8 +572,11 @@ const dedupeText = (text: string): string => {
         out.push(raw);
         continue;
       }
-      if (globalSeen.has(norm)) continue;
-      globalSeen.add(norm);
+      if (globalSeenStrict.has(norm)) continue;
+      const fuzzy = normalizeForFuzzyCompare(raw);
+      if (fuzzy && fuzzy.split(" ").length >= 5 && globalSeenFuzzy.has(fuzzy)) continue;
+      globalSeenStrict.add(norm);
+      if (fuzzy) globalSeenFuzzy.add(fuzzy);
       out.push(raw);
     }
     return out.join("").trim();
@@ -2047,15 +2127,29 @@ const normalizePlacementTableRetrograde = (
         .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
         .trim();
 
-      // Decide which truth map to use for THIS row. If the table title is
-      // explicit or only one chart is available, honor the table-level
-      // decision. Otherwise, score this row's sign+degree against both
-      // fact maps and pick the better match — natal Jupiter and SR Neptune
-      // can coexist in the same generic "Key Placements" table and each
-      // gets its correct retrograde flag.
+      // Decide which truth map to use for THIS row. Priority order:
+      //   1. Explicit chart prefix on the row's planet name itself
+      //      ("SR Mercury", "Solar Return Mercury", "Natal Mercury") —
+      //      strongest signal because the AI already declared which chart
+      //      this row belongs to. Trust it OVER sign/degree scoring,
+      //      because at this point in the pipeline the AI may have written
+      //      the wrong sign/degree (those get corrected later) — using a
+      //      wrong-sign row to score against truth maps would mis-route
+      //      the row and silently lose the SR retrograde flag (the exact
+      //      bug seen on career readings: SR Mercury Rx → routed to natal
+      //      → flag stays false).
+      //   2. Table-level decision (explicit title or single chart).
+      //   3. Per-row sign+degree scoring against both maps.
+      const rowPrefixSR =
+        /^\s*(?:SR|Solar\s+Return)\s+/i.test(rawPlanet) ? true
+        : /^\s*Natal\s+/i.test(rawPlanet) ? false
+        : null;
       let isSR: boolean;
       let routeSource: string;
-      if (tableLevelIsSR !== null) {
+      if (rowPrefixSR !== null && (rowPrefixSR ? srFacts.size > 0 : natalFacts.size > 0)) {
+        isSR = rowPrefixSR;
+        routeSource = `row_prefix(${rowPrefixSR ? "sr" : "natal"})`;
+      } else if (tableLevelIsSR !== null) {
         isSR = tableLevelIsSR;
         routeSource = tableLevelSource;
       } else {
@@ -10503,17 +10597,29 @@ ${natalGroundTruthLines}`
       // Final _gate object: most recent verdict at the top level + full history.
       const final = history[history.length - 1];
       // Label the gate outcome so downstream readers can tell at a glance
-      // whether V2 healed everything ("ok"), shipped a best-effort attempt
-      // after the retry cap ("exhausted"), or never tripped retries ("ok"
-      // on first pass / "failed" if no retry was attempted but verdict bad).
+      // what happened:
+      //   "ok"          → gate ran, returned 200, body.ok === true
+      //   "exhausted"   → gate ran, V2 retried but couldn't fully heal
+      //   "failed"      → gate ran (returned 200), reading still has defects
+      //                   and no retry was attempted
+      //   "unvalidated" → gate did NOT run successfully — non-200 HTTP
+      //                   (e.g. 404, 500, 502) or fetch threw. The reading
+      //                   was NEVER actually validated by Replit. This must
+      //                   be visually distinct from "failed" in the UI so
+      //                   the user knows no validation happened, not that
+      //                   validation ran and flagged things.
       const finalOk = final?.ok === true;
+      const finalGateUnreachable = !!final?.error || (typeof final?.status === "number" && final.status !== 200);
       const v2Ran = retryAttempts.length > 0;
       const gateLabel = finalOk
         ? "ok"
-        : (v2Ran ? "exhausted" : "failed");
+        : finalGateUnreachable
+          ? "unvalidated"
+          : (v2Ran ? "exhausted" : "failed");
       (parsedContent as any)._gate = {
         ...final,
         label: gateLabel,
+        unvalidated: gateLabel === "unvalidated",
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
