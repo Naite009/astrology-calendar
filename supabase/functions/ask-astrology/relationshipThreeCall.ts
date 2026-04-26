@@ -939,11 +939,47 @@ export interface DeterministicTallies {
  * tally is fixed by planet identity (never derived from sign), so the total
  * is structurally guaranteed to be 10 regardless of what the AI does.
  */
-export const computeDeterministicTallies = (natalChartBlock: string): DeterministicTallies => {
+/**
+ * Extract a single planetary-positions block ("NATAL" or "SR") from the
+ * full ask-astrology chart context string. Returns the empty string if the
+ * requested header is not present. Used so the deterministic balance
+ * computation never accidentally folds NATAL planet signs into an SR
+ * section (or vice versa) when the full context contains both blocks.
+ */
+export const extractPositionsBlock = (
+  chartContext: string,
+  source: "NATAL" | "SR",
+): string => {
+  if (!chartContext) return "";
+  // Match "NATAL Planetary Positions:" or "SR Planetary Positions:" exactly.
+  const headerRe =
+    source === "SR"
+      ? /\bSR Planetary Positions:\s*\n/
+      : /\bNATAL Planetary Positions:\s*\n/;
+  const headerMatch = chartContext.match(headerRe);
+  if (!headerMatch) return "";
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  // Stop at the next blank line or another all-caps section header.
+  const endMatch = tail.match(
+    /\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL Planetary Positions|\nSR Planetary Positions/,
+  );
+  return endMatch ? tail.slice(0, endMatch.index!) : tail;
+};
+
+export const computeDeterministicTallies = (chartBlock: string, opts?: { source?: "NATAL" | "SR" }): DeterministicTallies => {
+  // If the caller passes the full chart context (containing both NATAL and
+  // SR blocks) and tells us which source they want, slice the right block
+  // first. Otherwise use whatever string they passed (back-compat: relationship
+  // 3-call already passes a single isolated block).
+  const block = opts?.source ? extractPositionsBlock(chartBlock, opts.source) || chartBlock : chartBlock;
   const planetSign: Record<string, string> = {};
-  const re = /^[\s\-\*•]*([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
+  // SR-prefixed lines look like "- SR Sun: 12°34' Capricorn". We strip the
+  // optional "SR " prefix so the planet key is just "Sun" (matches NATAL keys
+  // and COUNTED_PLANETS).
+  const re = /^[\s\-\*•]*(?:SR\s+)?([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(natalChartBlock)) !== null) {
+  while ((m = re.exec(block)) !== null) {
     const planet = m[1].trim();
     const sign = m[2];
     if (!planetSign[planet]) planetSign[planet] = sign;
