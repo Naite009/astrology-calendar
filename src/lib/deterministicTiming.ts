@@ -1271,20 +1271,6 @@ const buildTransitInterpretation = (params: {
   const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '', readingType);
   const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
   return dedupeSentences(composed);
-
-  const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
-  const transitAction = getTransitAction(readingType, transitPlanet);
-  const themeMap = getNatalThemeMap(readingType);
-  // Bug 2 — never emit the generic "a major part of your personal pattern" line.
-  // If the planet/point is missing from the theme map, name it explicitly.
-  const natalTheme = themeMap[natalPlanet] ?? buildPlanetNamedFallback(natalPlanet, readingType);
-  const contextPhrase = getContextPhrase(readingType);
-
-  const retrogradeSentence = isRetrograde
-    ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
-    : '';
-
-  return `${aspectTone}. ${contextPhrase} ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
 };
 
 const buildTimingWindowDescription = (
@@ -1328,29 +1314,13 @@ const buildTimingWindowDescription = (
   );
   if (devOverride && devOverride.trim().length > 0) return devOverride;
 
-  // NATAL READING — bypass the generic-template path. Names the specific natal
-  // point with sign+degree and grounds the body in a concrete real-life scenario.
-  if (readingType === 'natal') {
-    const natalDegree = (window.natalDegree ?? '').trim();
-    const composed = buildNatalDescription(tp, asp, np, natalDegree, exactSummary);
-    return dedupeSentences(composed);
-  }
-
-  const aspectTone = (buildSpecificOpener(tp, asp, np, readingType) ?? '').trim();
-  const transitAction = (getTransitAction(readingType, tp) ?? '').trim();
-  const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = (themeMap[np] ?? buildPlanetNamedFallback(np, readingType) ?? '').trim();
-
-  // Hard guard: any required component empty => return '' so the window is dropped.
-  if (!aspectTone || !transitAction || !natalTheme) {
-    console.error('[buildTimingWindowDescription] EMPTY component — dropping window', {
-      tp, asp, np, readingType,
-      hasAspectTone: !!aspectTone, hasTransitAction: !!transitAction, hasNatalTheme: !!natalTheme,
-    });
-    return '';
-  }
-
-  return `${aspectTone}. ${tp} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
+  // Fix 1 — ALL reading types now use the personalized natal-point description
+  // (one sentence naming the specific natal point, one concrete scenario).
+  // Previously only `natal` benefited; career/solar_return/relationship/etc.
+  // fell back to the generic template. Unified path eliminates the gap.
+  const natalDegree = (window.natalDegree ?? '').trim();
+  const composed = buildNatalDescription(tp, asp, np, natalDegree, `Peaks: ${exactSummary}.`, readingType);
+  return dedupeSentences(composed);
 };
 
 export const getTimingTagDetails = (tag: string) => {
