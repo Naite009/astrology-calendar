@@ -4853,6 +4853,17 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           continue;
         }
 
+        // Orphan-cities guard (see top of function): drop summary items
+        // that reference cities when no city_comparison section exists.
+        if (!hasCityComparisonSection && CITY_LABEL_RE.test(label)) {
+          droppedItems++;
+          log.push({
+            type: "orphan_city_summary_item_dropped",
+            detail: { section: section.title || "", label, reason: "no_city_comparison_section" },
+          });
+          continue;
+        }
+
         const valueKey = typeof item.value === "string" ? "value"
           : typeof item.text === "string" ? "text"
           : "value";
