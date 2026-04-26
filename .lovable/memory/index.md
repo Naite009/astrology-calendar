@@ -118,3 +118,4 @@ Updated: now
 - [Behavior-First Narrative Openings](mem://features/ask-tab/placement-first-narrative-openings) — Sentence 1 = lived behavior, sentence 2 = the placement that causes it (supersedes placement-first)
 - [Anthropic Prompt Caching](mem://features/ask-tab/anthropic-prompt-caching) — 2-block ephemeral cache (SYSTEM_PROMPT + chart context) cuts repeat-question latency ~80%
 - [No Meta Sentences](mem://features/ask-tab/no-meta-sentences-rule) — Hard ban on intro/transitional/self-referential sentences; every sentence must claim something about the chart or person
+- [Concrete Scenario Voice Rule](mem://features/ask-tab/concrete-scenario-rule) — Scene-first phrasing in every body/bullet/timing across all reading types; bans wound/metabolized/activation/portal/archetypal/liminal
