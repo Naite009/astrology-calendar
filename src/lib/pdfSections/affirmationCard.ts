@@ -254,20 +254,11 @@ export function generateAffirmationCard(
   doc.line(cx - 60, ctx.y, cx + 60, ctx.y);
   ctx.y += 20;
 
-  // Opening letter — condensed
-  const letterLines = [
-    `${name},`,
-    '',
-    'This report is a map, not a mandate. The planets describe the weather',
-    'of your year -- they do not decide what you build in it.',
-    'Use what resonates. Return to these pages when you need orientation.',
-  ];
+  // Opening salutation — chart-specific closing is rendered after the cards.
   doc.setFont('times', 'normal'); doc.setFontSize(10.5);
   doc.setTextColor(...INK);
-  for (const line of letterLines) {
-    doc.text(line, cx, ctx.y, { align: 'center' });
-    ctx.y += line === '' ? 8 : 14;
-  }
+  doc.text(`${name},`, cx, ctx.y, { align: 'center' });
+  ctx.y += 14;
 
   ctx.y += 14;
 
