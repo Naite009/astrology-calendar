@@ -492,6 +492,29 @@ const normalizeForFuzzyCompare = (s: string): string => {
   return out;
 };
 
+// FIX 2 — Token-set Jaccard similarity for catching near-duplicate
+// sentences inside a single body field. The strict + fuzzy normalizers
+// above only collapse sentences that hash to the SAME canonical key.
+// They miss sentences that say the same thing in slightly different
+// wording — e.g. "your drive runs into walls (your own internalized
+// 'no')" vs. "your drive keeps hitting internal walls". Jaccard over
+// tokenized content words (after stripping pronouns / aux verbs / fillers
+// / punctuation) catches these. Threshold tuned so sentences sharing
+// >=70% of their content tokens are treated as duplicates.
+const SIMILARITY_THRESHOLD = 0.7;
+const SIMILARITY_MIN_TOKENS = 5;
+const tokensFor = (s: string): Set<string> => {
+  const tokens = normalizeForFuzzyCompare(s).split(" ").filter(Boolean);
+  return new Set(tokens);
+};
+const jaccardSimilarity = (a: Set<string>, b: Set<string>): number => {
+  if (a.size === 0 || b.size === 0) return 0;
+  let intersection = 0;
+  for (const t of a) if (b.has(t)) intersection++;
+  const union = a.size + b.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+};
+
 const dedupeText = (text: string): string => {
   if (typeof text !== "string" || text.length === 0) return text;
 
@@ -538,6 +561,7 @@ const dedupeText = (text: string): string => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const seenStrict = new Set<string>();
     const seenFuzzy = new Set<string>();
+    const seenTokenSets: Set<string>[] = [];
     const out: string[] = [];
     for (const raw of sentences) {
       const norm = normalizeForCompare(raw);
@@ -551,6 +575,23 @@ const dedupeText = (text: string): string => {
       // (>= 5 words) so we don't accidentally collapse short, legitimately
       // repeated phrases like "Be direct." or "Trust this."
       if (fuzzy && fuzzy.split(" ").length >= 5 && seenFuzzy.has(fuzzy)) continue;
+      // FIX 2 — Jaccard similarity check. Catches sentences that say the
+      // same thing in different wording (e.g. "your drive runs into walls"
+      // and "your drive keeps hitting internal walls" inside one Mars
+      // section body). Skip only when the candidate is substantial enough
+      // that a >=70% token overlap is meaningful.
+      const tokens = tokensFor(raw);
+      if (tokens.size >= SIMILARITY_MIN_TOKENS) {
+        let isDup = false;
+        for (const prior of seenTokenSets) {
+          if (jaccardSimilarity(tokens, prior) >= SIMILARITY_THRESHOLD) {
+            isDup = true;
+            break;
+          }
+        }
+        if (isDup) continue;
+        seenTokenSets.push(tokens);
+      }
       seenStrict.add(norm);
       if (fuzzy) seenFuzzy.add(fuzzy);
       out.push(raw);
@@ -560,9 +601,10 @@ const dedupeText = (text: string): string => {
 
   // Step 3: cross-paragraph sentence dedup. If the same sentence appears
   // in paragraph A and paragraph B, drop the later occurrence. Same
-  // strict + fuzzy pairing as step 2.
+  // strict + fuzzy pairing as step 2, plus Jaccard similarity.
   const globalSeenStrict = new Set<string>();
   const globalSeenFuzzy = new Set<string>();
+  const globalSeenTokenSets: Set<string>[] = [];
   const finalParas = cleaned.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const out: string[] = [];
@@ -575,6 +617,18 @@ const dedupeText = (text: string): string => {
       if (globalSeenStrict.has(norm)) continue;
       const fuzzy = normalizeForFuzzyCompare(raw);
       if (fuzzy && fuzzy.split(" ").length >= 5 && globalSeenFuzzy.has(fuzzy)) continue;
+      const tokens = tokensFor(raw);
+      if (tokens.size >= SIMILARITY_MIN_TOKENS) {
+        let isDup = false;
+        for (const prior of globalSeenTokenSets) {
+          if (jaccardSimilarity(tokens, prior) >= SIMILARITY_THRESHOLD) {
+            isDup = true;
+            break;
+          }
+        }
+        if (isDup) continue;
+        globalSeenTokenSets.push(tokens);
+      }
       globalSeenStrict.add(norm);
       if (fuzzy) globalSeenFuzzy.add(fuzzy);
       out.push(raw);
@@ -992,6 +1046,19 @@ const rewriteSentencePronouns = (sentence: string): string => {
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
+  // FIX 1 — UNCONDITIONAL "you was/wasn't" → "you were/weren't" pass.
+  // The guarded pass above can skip cases where the preposition guard
+  // misfires (e.g. "for you was little" — "for" is a preposition but
+  // "you" here is the sentence subject, not the object of "for"). In
+  // 2nd-person product voice, "you was" is NEVER grammatically correct,
+  // so we rewrite it everywhere. The legitimate "<noun> of you was X"
+  // construction (where "you" is a prepositional object and the verb
+  // agrees with the singular antecedent noun) is restored by the
+  // inverse-agreement pass below (line ~1001) which maps "were → was"
+  // when "you" is preceded by a preposition. Round-trip preserves
+  // grammar in both directions.
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, "$1$2 were");
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "$1$2 weren't");
   // INVERSE preposition agreement: when "you" IS the object of a
   // preposition (singular antecedent like "part of you"), the verb must
   // be 3rd-person-singular. Catch leakage like "this part of you are
@@ -5298,6 +5365,28 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           });
         }
       }
+      // FIX 4 — Natal Strategy Summary ordering: ensure "Your Next Step"
+      // is the FINAL item, after "Best Windows". The AI generates the
+      // content; this pass only enforces position. If the AI did not emit
+      // a "Your Next Step" item we leave the box as-is (no fabricated
+      // closing statement — that has to come from the model with the
+      // chart in context).
+      const isNatalReading = String(parsedContent?.question_type || "").toLowerCase() === "natal";
+      const sectionTitle = String(section.title || "").trim();
+      if (isNatalReading && sectionTitle === "Natal Strategy Summary") {
+        const nextStepIdx = keptItems.findIndex(
+          (it) => it && typeof it === "object" && typeof it.label === "string"
+            && it.label.trim().toLowerCase() === "your next step"
+        );
+        if (nextStepIdx !== -1 && nextStepIdx !== keptItems.length - 1) {
+          const [nextStep] = keptItems.splice(nextStepIdx, 1);
+          keptItems.push(nextStep);
+          log.push({
+            type: "natal_next_step_reordered_last",
+            detail: { section: sectionTitle, prior_index: nextStepIdx },
+          });
+        }
+      }
       section.items = keptItems;
     }
 
@@ -8060,6 +8149,8 @@ SR LOVE ACTIVATION STYLE:
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
   MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
 - For question_type "natal":
+  PRONOUN VOICE — READ THIS FIRST, ABOVE EVERYTHING ELSE: Write entirely in second person ("you," "your") throughout. Never use third person ("they," "their," "them") to refer to the subject of the reading. Verb agreement must match second person — write "you were," "you are," "you have," "you do" — NEVER "you was," "you is," "you has," "you does." Every sentence about the chart's owner must use "you" or "your," with no exceptions in section openings, body paragraphs, bullets, summary items, or the closing message. This eliminates the rewriter having to fix pronouns after the fact and prevents grammar errors introduced during rewriting.
+
   NATAL PORTRAIT PRIMARY-SOURCE RULE (READ THIS FIRST, BEFORE WRITING ANY NATAL SECTION): You have access to pre-calculated Natal Portrait data injected into this prompt under the heading "--- NATAL PORTRAIT (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---". Use it as your primary source of truth for patterns, dominant planets, themes, life direction, and synthesis. Do not contradict it. Build your prose interpretations from it rather than re-deriving from scratch. Where the portrait data gives you a synthesis or interpretation (e.g., lifePurpose.coreSynthesis, topThemes[].description, dominantPlanets.rankings[].role, lifetimeWisdom.lifeDirection, powerPortrait.driveSource, patterns[].description), expand it into plain conversational language with one concrete real-life example — do not just repeat it verbatim. The placement table context above the portrait remains valid for raw degrees, signs, houses, and aspects.
 
   Use this EXACT section order — do NOT rearrange, combine, or skip:
@@ -8077,7 +8168,9 @@ SR LOVE ACTIVATION STYLE:
   12. narrative_section — "Where You Are in Your Life Cycles" (current Saturn cycle/return, current Jupiter cycle, progressed Moon phase if available — use only pre-computed transit/return data)
   13. narrative_section — "The Overarching Message" (the most honest grounded answer to "why am I here and what am I supposed to do with my life" — plain, direct, specific to this chart, not generic)
   14. modality_element — "Natal Elemental & Modal Balance"
-  15. summary_box — "Natal Strategy Summary" with items: "Core Identity", "Life Lesson", "Soul Direction", "Overarching Message"
+  15. summary_box — "Natal Strategy Summary" with items (in this exact order): "Core Identity", "Life Lesson", "Soul Direction", "Overarching Message", "Best Windows", "Your Next Step"
+
+  NATAL STRATEGY SUMMARY — "Your Next Step" REQUIREMENT (NON-NEGOTIABLE): The final item in the Natal Strategy Summary MUST be labeled exactly "Your Next Step" and MUST appear AFTER "Best Windows" — it is the closing statement of the entire reading. Its value is 4–5 sentences total. The first 3–4 sentences tell the person what the single most important thing they can do right now is, based on everything this chart says — NOT a transit window, NOT an abstract principle, NOT a generic suggestion. It must be a concrete action or shift in orientation that directly traces back to the Big Three, dominant patterns, North Node, or the chart's most pressing tension as named earlier in the reading. Then the final sentence signals that this reading is a starting point, not a conclusion — something that makes the reader want to go deeper (for example: "This is the doorway, not the room — the rest is yours to walk." or "Read this again in six months; you'll hear what you couldn't hear today."). The voice must feel like the astrologer leaning forward and saying the most important thing before the session ends. FORBIDDEN here: dates, transit names, planet/aspect language, or repeating the exact wording of any earlier summary item.
 
   NATAL VOICE RULES (NON-NEGOTIABLE — apply to every narrative_section in a natal reading):
   - PRONOUN RULE (HARD STOP — READ THIS FIRST, BEFORE WRITING ANY SENTENCE): Write the ENTIRE natal reading in second person ("you" / "your") throughout. NEVER use third-person pronouns ("they", "their", "them", "themselves", "he", "she", "his", "her", "hers", "himself", "herself") to refer to the subject of the reading. This includes section openings, body paragraphs, bullets, summary items, and the "Overarching Message" — every sentence about the chart's owner must use "you" or "your". Do NOT write "they tend to…", "their Saturn…", "this person feels…", "the native experiences…" — write "you tend to…", "your Saturn…", "you feel…", "you experience…". Verb agreement must match second person: write "you were", "you are", "you have", "you do" — NEVER "you was", "you is", "you has", "you does". Before finalizing any sentence, scan it for third-person pronouns and rewrite in second person at the source. This rule prevents downstream pronoun-rewriter errors and is the single most important voice rule in this prompt.
