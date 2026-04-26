@@ -208,7 +208,8 @@ function buildClosingSendOff(
   return { line1: definingTheme, line2: ask, line3: sendOff };
 }
 
-
+/**
+ * Combined closing page: "Take This With You"
  * Merges the affirmation card content + closing letter into a single elegant page.
  */
 export function generateAffirmationCard(
