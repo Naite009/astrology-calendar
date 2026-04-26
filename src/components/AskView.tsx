@@ -2072,9 +2072,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
-          correctPlacementData(data, chartForRequest, currentSR),
+          correctPlacementData(data, chartForRequest, canonicalSR),
           timingData.section,
         );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
