@@ -13,6 +13,7 @@ import { calculateTransitAspects } from "@/lib/transitAspects";
 import { buildDeterministicTimingData, mergeDeterministicTimingSection } from "@/lib/deterministicTiming";
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
+import { generateNatalPortrait } from "@/lib/natalPortraitEngine";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
