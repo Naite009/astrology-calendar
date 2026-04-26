@@ -992,6 +992,19 @@ const rewriteSentencePronouns = (sentence: string): string => {
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+doesn'?t\b/g, "don't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "weren't");
   guardedReplace(/(^|[^a-zA-Z])(you|You)\s+hasn'?t\b/g, "haven't");
+  // FIX 1 — UNCONDITIONAL "you was/wasn't" → "you were/weren't" pass.
+  // The guarded pass above can skip cases where the preposition guard
+  // misfires (e.g. "for you was little" — "for" is a preposition but
+  // "you" here is the sentence subject, not the object of "for"). In
+  // 2nd-person product voice, "you was" is NEVER grammatically correct,
+  // so we rewrite it everywhere. The legitimate "<noun> of you was X"
+  // construction (where "you" is a prepositional object and the verb
+  // agrees with the singular antecedent noun) is restored by the
+  // inverse-agreement pass below (line ~1001) which maps "were → was"
+  // when "you" is preceded by a preposition. Round-trip preserves
+  // grammar in both directions.
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+was\b/g, "$1$2 were");
+  s = s.replace(/(^|[^a-zA-Z])(you|You)\s+wasn'?t\b/g, "$1$2 weren't");
   // INVERSE preposition agreement: when "you" IS the object of a
   // preposition (singular antecedent like "part of you"), the verb must
   // be 3rd-person-singular. Catch leakage like "this part of you are
