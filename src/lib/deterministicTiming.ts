@@ -1032,6 +1032,7 @@ const getDevelopmentalMilestoneInterpretation = (
         health: 'The nervous system runs hot — sleep, energy and focus may all destabilize as the body refuses the old container.',
         money: 'Financial habits set up by a younger version of you stop working — earning, spending and saving all need a more honest, more autonomous structure.',
         spiritual: 'Inherited beliefs are tested directly. What you were taught is no longer enough; first-hand experience is the only currency now.',
+        natal: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
         general: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
       };
       return wrap(opener, lens[readingType] ?? lens.general);
