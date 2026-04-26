@@ -741,13 +741,24 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       missingModalities.length > 0 ||
       missingPolarities.length > 0;
 
+    const dominantElementName = typeof section.dominant_element === "string"
+      ? section.dominant_element.split(/[\s(]/)[0]
+      : "";
+    const dominantModalityName = typeof section.dominant_modality === "string"
+      ? section.dominant_modality.split(/[\s(]/)[0]
+      : "";
+    const earthMutableMismatch =
+      dominantElementName === "Earth" &&
+      dominantModalityName === "Mutable" &&
+      (/\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?)\b/i.test(text) ||
+        !/\b(?:grounded|groundedness|patience|patient|build|building|practical|steady)\b/i.test(text) ||
+        !/\b(?:adaptability|adaptable|responsive|responsiveness|respond|pivot|adjust)\b/i.test(text));
+
     // FIX #3 (option A — INTEGRATED REWRITE):
-    // The append approach always produces afterthoughts because it's
-    // additive by design. The only way to get every non-zero category
-    // treated as equal is to throw away the AI's text whenever ANY
-    // non-zero category is missing and emit a single integrated
-    // paragraph that names every category up front in one breath.
-    if (anyMissing) {
+    // Throw away generic or incomplete AI text whenever coverage is missing
+    // OR when the wording contradicts the section's own dominant element /
+    // modality data (e.g. Earth Mutable receiving Fire/Cardinal prose).
+    if (anyMissing || earthMutableMismatch) {
       const collectAll = (arr: any): Array<{ name: string; count: number }> => {
         if (!Array.isArray(arr)) return [];
         const out: Array<{ name: string; count: number }> = [];
@@ -784,7 +795,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
         Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "live in your body and your calendar — you trust what you can see, build, and repeat, and you relax once the practical side is handled",
+        Earth: "live through groundedness, patience, and building — you trust what can be made practical, repeated, and steadily improved over time",
         Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
         Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
@@ -804,7 +815,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
           weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "adapts — you think in possibilities, change plans easily, and get restless inside rigid systems",
+          lead: "moves through adaptability and responsiveness — you adjust to what is actually happening, pivot when the conditions change, and read the room before locking into one plan",
           weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
@@ -1551,6 +1562,15 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
 
       if (domEl) fixGroup(ELEMENTS, domEl);
       if (domMod) fixGroup(MODALITIES, domMod);
+
+      if (domEl === "earth" && domMod === "mutable") {
+        const hasFireCardinalLanguage = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|cardinal)\b/i.test(next);
+        const hasEarthLanguage = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady)\b/i.test(next);
+        const hasMutableLanguage = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible)\b/i.test(next);
+        if (hasFireCardinalLanguage || !hasEarthLanguage || !hasMutableLanguage) {
+          next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
+        }
+      }
 
       return next;
     };
