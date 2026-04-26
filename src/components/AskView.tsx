@@ -1827,7 +1827,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
       const readingType = detectReadingType(lastUserQuestion);
       const portraitReadingType = resolvePortraitReadingType(lastUserQuestion);
-      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
+      // Mirror handleSubmitDirect: route natal-prompt regenerations through
+      // the 'natal' timing lens so the same transit windows are injected.
+      const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = trimmedEntries
