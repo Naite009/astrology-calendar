@@ -352,6 +352,7 @@ function buildSrRisingContrast(natalRising: string, srRising: string): string {
   return `Your natal ${natalRising} Rising — ${natalDesc} — is wearing a ${srRising} coat this year. People will read you as ${srPresenting} than your default. The ${natalRising} underneath is still there; this year just runs it through a ${srRising} filter.`;
 }
 
+const HTYM_MOON_BODY: Record<string, string> = {
 
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
   Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
