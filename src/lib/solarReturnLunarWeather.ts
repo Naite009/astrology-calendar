@@ -193,19 +193,21 @@ function generateMonthCheckpoints(monthOffset: number, calMonth: number, year: n
   return checkpoints;
 }
 
-function getMonthTone(monthOffset: number, natalMoonSign: string, analysis: SolarReturnAnalysis): string {
+function getMonthTone(monthOffset: number, monthDominantSign: string, natalMoonSign: string, analysis: SolarReturnAnalysis): string {
   const phases = ['settling in', 'building momentum', 'gaining clarity', 'finding rhythm',
     'mid-year plateau', 'deepening', 'harvesting', 'integrating',
     'reflecting', 'shifting gears', 'winding down', 'completing the cycle'];
-  
+
   const base = phases[monthOffset] || 'transitioning';
-  const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign];
-  
-  return `A month of ${base} — your ${natalMoonSign} Moon brings ${moonData?.tone || 'emotional processing'} to this period.`;
+  const dominantData = MOON_SIGN_EMOTIONAL[monthDominantSign] || MOON_SIGN_EMOTIONAL.Cancer;
+  const natalData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+
+  return `A month of ${base} — the lunation in ${monthDominantSign} colors this period with ${dominantData.tone}, while your ${natalMoonSign} Moon keeps ${natalData.tone} as the underlying baseline.`;
 }
 
-function getMonthInterpretation(monthOffset: number, natalMoonSign: string, intensity: number, monthName: string): string {
-  const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+function getMonthInterpretation(monthOffset: number, natalMoonSign: string, monthDominantSign: string, intensity: number, monthName: string): string {
+  const natalData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+  const dominantData = MOON_SIGN_EMOTIONAL[monthDominantSign] || MOON_SIGN_EMOTIONAL.Cancer;
   const phase = monthOffset <= 2 ? 'early' : monthOffset <= 5 ? 'building' : monthOffset <= 8 ? 'mid-year' : 'closing';
   const intensityDesc = intensity >= 4 ? 'emotionally charged' : intensity >= 3 ? 'moderately active' : 'relatively calm';
 
@@ -216,7 +218,7 @@ function getMonthInterpretation(monthOffset: number, natalMoonSign: string, inte
     closing: `${monthName} is in the closing stretch of the birthday year. Emotional integration and reflection on what this year has taught you.`,
   };
 
-  return `${phaseNarrative[phase]} This is a ${intensityDesc} month for your ${natalMoonSign} Moon, which processes through ${moonData.tone}. When the Moon returns to ${natalMoonSign} this month, take time to check in with your core emotional needs.`;
+  return `${phaseNarrative[phase]} This month's lunation falls in ${monthDominantSign}, bringing ${dominantData.tone} to the foreground — ${dominantData.theme} It is a ${intensityDesc} month overall. When the Moon returns to your natal ${natalMoonSign} this month, you'll feel the familiar pull back to ${natalData.tone}: take time to check in with your core emotional needs.`;
 }
 
 function buildYearPattern(natalMoonSign: string, analysis: SolarReturnAnalysis, peaks: string[]): string {
