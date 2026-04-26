@@ -120,3 +120,4 @@ Updated: now
 - [No Meta Sentences](mem://features/ask-tab/no-meta-sentences-rule) — Hard ban on intro/transitional/self-referential sentences; every sentence must claim something about the chart or person
 - [Concrete Scenario Voice Rule](mem://features/ask-tab/concrete-scenario-rule) — Scene-first phrasing in every body/bullet/timing across all reading types; bans wound/metabolized/activation/portal/archetypal/liminal
 - [Retrograde Prose Correction](mem://features/ask-tab/retrograde-prose-correction) — SR/natal retrograde correctors must inspect label/title/name fields, not skip them
+- [Canonical Fact Enforcement](mem://features/ask-tab/canonical-fact-enforcement) — factsAwareRetrogradeSweep + runPreGateLocalAudit own prose ↔ chart-fact agreement; never add another narrow regex corrector

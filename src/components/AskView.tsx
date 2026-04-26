@@ -1245,6 +1245,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         row.sign = truth.sign;
         row.degrees = truth.degreeStr;
         row.house = truth.house ?? row.house;
+        // Force the boolean retrograde field to match the verified chart
+        // record. Without this, the visual ℞ glyph and the JSON
+        // `retrograde: boolean` can disagree — that disagreement is the
+        // exact shape the external gate raises as RETROGRADE_STATE_MISMATCH.
+        row.retrograde = !!truth.isRetrograde;
         // Add retrograde marker to planet name if needed
         if (truth.isRetrograde && !row.planet.includes('℞') && !row.planet.includes('Rx') && !row.planet.toLowerCase().includes('retro')) {
           row.planet = row.planet + ' ℞';
