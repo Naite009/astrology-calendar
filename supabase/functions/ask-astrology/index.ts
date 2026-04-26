@@ -3607,8 +3607,24 @@ const factsAwareRetrogradeSweep = (
   if (natalPos.length === 0 && srPos.length === 0) return;
   const natalRetro = new Map<string, boolean>();
   const srRetro = new Map<string, boolean>();
-  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
-  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  // House truth maps — keyed by lowercased planet name. Only populated when
+  // the chart-context placement actually carries a house number; planets
+  // without a house (e.g. when birth time is missing) are excluded so we
+  // never flip a correct sign claim to a fabricated house.
+  const natalHouse = new Map<string, number>();
+  const srHouse = new Map<string, number>();
+  for (const p of natalPos) {
+    natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+    if (typeof p.house === "number" && p.house >= 1 && p.house <= 12) {
+      natalHouse.set(p.planet.toLowerCase(), p.house);
+    }
+  }
+  for (const p of srPos) {
+    srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+    if (typeof p.house === "number" && p.house >= 1 && p.house <= 12) {
+      srHouse.set(p.planet.toLowerCase(), p.house);
+    }
+  }
 
   // If we have no SR facts at all but the prose discusses SR planets,
   // record a diagnostic so we can see (in _validation_log) when the gate
