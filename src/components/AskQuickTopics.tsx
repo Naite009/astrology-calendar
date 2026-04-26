@@ -535,7 +535,11 @@ export function AskQuickTopics({
                 onChange={(e) => setPersonalContext(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  activeTopic.id === "relationship"
+                  activeTopic.id === "natal"
+                    ? 'e.g., "I want to understand why I keep ending up in the same situations"'
+                    : activeTopic.id === "solar_return"
+                    ? 'e.g., "I want to know what this birthday year is really about"'
+                    : activeTopic.id === "relationship"
                     ? 'e.g., "I met someone earthy, should I pursue it?"'
                     : activeTopic.id === "relocation"
                     ? 'e.g., "I got a job offer in Denver"'
