@@ -11040,6 +11040,7 @@ ${natalGroundTruthLines}`
           // body backfill copies it.
           try {
             enforceNonZeroCoverage(parsedContent);
+            correctModalityElementBodyClaims(parsedContent);
           } catch (covErr) {
             console.warn("[ask-astrology] enforceNonZeroCoverage re-run threw:", covErr);
           }
