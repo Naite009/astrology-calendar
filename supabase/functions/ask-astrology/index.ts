@@ -5925,6 +5925,14 @@ const runPostProcessingPipeline = (
   safeRun("dropEmptySummaryItemsAndSections", () =>
     dropEmptySummaryItemsAndSections(parsedContent, log),
   );
+
+  // 12. Pre-gate local audit — mirrors the recurring external-gate defect
+  // classes so we can see (in _validation_log) whether any defect would
+  // have shipped. Diagnostic only; the canonical fact sweep above is what
+  // actually repairs the prose.
+  safeRun("runPreGateLocalAudit", () =>
+    runPreGateLocalAudit(parsedContent, ctx, log),
+  );
 };
 
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
