@@ -3783,7 +3783,7 @@ const factsAwareRetrogradeSweep = (
       "i",
     );
 
-    let next = clause;
+    // (next is already declared above for the house pass)
 
     if (factIsRetro) {
       // Fact says retrograde — flip any false direct claim.
