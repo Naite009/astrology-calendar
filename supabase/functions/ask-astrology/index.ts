@@ -8057,7 +8057,10 @@ SR LOVE ACTIVATION STYLE:
   7. modality_element — "Natal Elemental & Modal Balance"
   8. summary_box — "Strategy Summary" with items: "Best Income Path", "Investment Style", "When to Act", "What to Avoid"
   MONEY READING SAFETY RULE (MANDATORY): Do not reference specific investment products, tax strategies, or personalized financial advice. Describe tendencies, patterns, and timing windows only. Never name specific stocks, funds, crypto assets, account types, or tax tactics — stay at the level of behavioral pattern, archetypal tendency, and astrological timing.
-- For question_type "natal": Use this EXACT section order — do NOT rearrange, combine, or skip:
+- For question_type "natal":
+  NATAL PORTRAIT PRIMARY-SOURCE RULE (READ THIS FIRST, BEFORE WRITING ANY NATAL SECTION): You have access to pre-calculated Natal Portrait data injected into this prompt under the heading "--- NATAL PORTRAIT (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---". Use it as your primary source of truth for patterns, dominant planets, themes, life direction, and synthesis. Do not contradict it. Build your prose interpretations from it rather than re-deriving from scratch. Where the portrait data gives you a synthesis or interpretation (e.g., lifePurpose.coreSynthesis, topThemes[].description, dominantPlanets.rankings[].role, lifetimeWisdom.lifeDirection, powerPortrait.driveSource, patterns[].description), expand it into plain conversational language with one concrete real-life example — do not just repeat it verbatim. The placement table context above the portrait remains valid for raw degrees, signs, houses, and aspects.
+
+  Use this EXACT section order — do NOT rearrange, combine, or skip:
   1. placement_table — "Natal Key Placements"
   2. narrative_section — "Who You Are" (Sun sign+house+aspects, Rising sign, Moon sign+house+emotional needs — the core identity triangle)
   3. narrative_section — "How You Think and Communicate" (Mercury sign+house+aspects with one concrete real-life example)
