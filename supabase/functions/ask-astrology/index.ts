@@ -9672,6 +9672,10 @@ ${natalGroundTruthLines}`
           // not from whatever the AI copied from natal. This kills the
           // Replit gate's "recomputed N SR house number(s)" fix.
           overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", emissionLog);
+          // FIX 1: After SR-Ascendant-derived houses are written into the
+          // placement table, clear the now-resolved `_sr_house_copy_warning`
+          // flag. If still genuinely copied, leave flag + push review_note.
+          reconcileSRHouseCopyWarning(parsedContent, emissionLog);
           // SR PLANET HOUSE PROSE FIXER: scrub "SR <Planet> in the <Nth>
           // house" sentences when the named house disagrees with the
           // deterministic SR house from the chart context. The override
