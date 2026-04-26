@@ -1162,6 +1162,9 @@ export function ReadingRenderer({
 }) {
   return (
     <div className="space-y-4">
+      {/* Gate banner — only renders if Replit validation gate failed */}
+      <GateBanner report={reading._gate} onRegenerate={onRegenerate} />
+
       {/* Drift banner — only renders if validator caught issues */}
       <DriftBanner report={reading._validation} onRegenerate={onRegenerate} />
 
