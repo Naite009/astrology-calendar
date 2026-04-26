@@ -561,6 +561,7 @@ const dedupeText = (text: string): string => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const seenStrict = new Set<string>();
     const seenFuzzy = new Set<string>();
+    const seenTokenSets: Set<string>[] = [];
     const out: string[] = [];
     for (const raw of sentences) {
       const norm = normalizeForCompare(raw);
@@ -574,6 +575,23 @@ const dedupeText = (text: string): string => {
       // (>= 5 words) so we don't accidentally collapse short, legitimately
       // repeated phrases like "Be direct." or "Trust this."
       if (fuzzy && fuzzy.split(" ").length >= 5 && seenFuzzy.has(fuzzy)) continue;
+      // FIX 2 — Jaccard similarity check. Catches sentences that say the
+      // same thing in different wording (e.g. "your drive runs into walls"
+      // and "your drive keeps hitting internal walls" inside one Mars
+      // section body). Skip only when the candidate is substantial enough
+      // that a >=70% token overlap is meaningful.
+      const tokens = tokensFor(raw);
+      if (tokens.size >= SIMILARITY_MIN_TOKENS) {
+        let isDup = false;
+        for (const prior of seenTokenSets) {
+          if (jaccardSimilarity(tokens, prior) >= SIMILARITY_THRESHOLD) {
+            isDup = true;
+            break;
+          }
+        }
+        if (isDup) continue;
+        seenTokenSets.push(tokens);
+      }
       seenStrict.add(norm);
       if (fuzzy) seenFuzzy.add(fuzzy);
       out.push(raw);
@@ -583,9 +601,10 @@ const dedupeText = (text: string): string => {
 
   // Step 3: cross-paragraph sentence dedup. If the same sentence appears
   // in paragraph A and paragraph B, drop the later occurrence. Same
-  // strict + fuzzy pairing as step 2.
+  // strict + fuzzy pairing as step 2, plus Jaccard similarity.
   const globalSeenStrict = new Set<string>();
   const globalSeenFuzzy = new Set<string>();
+  const globalSeenTokenSets: Set<string>[] = [];
   const finalParas = cleaned.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const out: string[] = [];
@@ -598,6 +617,18 @@ const dedupeText = (text: string): string => {
       if (globalSeenStrict.has(norm)) continue;
       const fuzzy = normalizeForFuzzyCompare(raw);
       if (fuzzy && fuzzy.split(" ").length >= 5 && globalSeenFuzzy.has(fuzzy)) continue;
+      const tokens = tokensFor(raw);
+      if (tokens.size >= SIMILARITY_MIN_TOKENS) {
+        let isDup = false;
+        for (const prior of globalSeenTokenSets) {
+          if (jaccardSimilarity(tokens, prior) >= SIMILARITY_THRESHOLD) {
+            isDup = true;
+            break;
+          }
+        }
+        if (isDup) continue;
+        globalSeenTokenSets.push(tokens);
+      }
       globalSeenStrict.add(norm);
       if (fuzzy) globalSeenFuzzy.add(fuzzy);
       out.push(raw);
