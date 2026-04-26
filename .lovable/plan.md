@@ -1,44 +1,81 @@
-I agree this should not still be recurring. The uploaded JSON shows the current failure is not the old Solar Return-only report issue; it is the career reading's “Solar Return Career Indicators” section saying SR Jupiter and SR Mercury are retrograde while the exported placement table marks both direct. The post-gate safety pass only stripped one of the Jupiter instances, leaving other prose and bullet instances behind.
+I agree: the repeated fixes are symptoms of the same architectural problem. The system has too many partial correctors, each trying to patch one wording pattern after generation. The permanent fix should be an audit plus a single canonical fact-enforcement layer that owns planet facts, table facts, prose facts, and gate readiness.
 
 Plan:
 
-1. Fix the SR retrograde prose cleaner so it catches this exact pattern
-   - Target: `supabase/functions/ask-astrology/index.ts` only.
-   - Update `fixSrRetrogradeMentionsInProse` so it removes false SR retrograde claims in all common forms:
-     - `SR Jupiter at ... in SR House 10 retrograde`
-     - `SR Jupiter ... in SR House 10 retrograde`
-     - `Jupiter retrograde in the SR 10th house` inside an SR-titled section
-     - bullet text like `(SR Jupiter retrograde at 15°06' Cancer...)`
-     - bare `Mercury retrograde` inside “Solar Return Career Indicators” sections.
-   - Keep the cleaner source-of-truth based on the SR placement table / SR context. It should strip retrograde only when that SR planet is direct.
+1. Build a fact-flow audit for Ask readings
+   - Trace every path that creates, mutates, or validates these facts:
+     - natal/SR sign, degree, house, retrograde state
+     - placement tables
+     - timing window descriptions
+     - gate result and post-gate safety pass
+   - Confirm which logic runs client-side in `AskView.tsx` and which runs server-side in `ask-astrology`.
+   - Produce an internal audit list of duplicated or drift-prone helpers so we stop adding one-off regex patches.
 
-2. Re-run the cleanup after every gate mutation, not only before/after the gate
-   - The external gate can mutate wording and apply its own fixes, then the final payload is assembled.
-   - Make sure the deterministic SR retrograde cleaner runs after the final gate verdict and before the exported result is saved.
-   - This prevents a gate mutation or late retry path from reintroducing prose/table mismatch.
+2. Create one canonical chart facts object in the backend function
+   - In `supabase/functions/ask-astrology/index.ts`, derive a single `ChartFacts` object from `chartContext` once per reading:
+     - `natal.planets[planet] = sign, degree, minutes, house, retrograde`
+     - `solarReturn.planets[planet] = sign, degree, minutes, house, retrograde`
+     - natal/SR angles and house cusps
+   - Use this object as the only source of truth for downstream cleanup.
+   - Include a small diagnostic summary in `_validation_log` when facts are incomplete, so missing SR context is visible instead of silently becoming false/direct.
 
-3. Stop relationship-only retrograde repair from touching non-relationship readings
-   - The uploaded career JSON includes `_relationship_contract` and `_retrograde_repair`, which should not be running on a career reading.
-   - Guard `acknowledgeRelationshipRetrogrades` and `enforceRelationshipContract` so they only run when `question_type === "relationship"`.
-   - This prevents unrelated retrograde logic from injecting or auditing relationship rules into career/natal/SR reports.
+3. Replace the whack-a-mole SR/natal retrograde cleaner with a fact-aware consistency pass
+   - Instead of relying only on specific patterns like `SR Jupiter retrograde` or `SR Jupiter ... is retrograde`, walk every user-visible string field (`body`, `text`, `label`, `title`, `subtitle`, `heading`, summary items, timing descriptions).
+   - Detect planet mentions with chart context:
+     - explicit SR/Solar Return/this year = SR fact
+     - explicit natal/your natal = natal fact
+     - SR-titled sections = default to SR for bare planet mentions
+     - otherwise default to natal
+   - For every detected direct/retrograde claim:
+     - strip false retrograde claims when the fact says direct
+     - flip false direct claims when the fact says retrograde
+     - normalize table rows to match the same fact object
+   - This covers the current career failure (`SR Jupiter at ... retrograde`, `Jupiter retrograde in the SR 10th house`, bullet text) without adding another narrow regex-only patch.
 
-4. Add one narrow timing description cleanup while we are in the same backend function
-   - The uploaded JSON still shows timing descriptions repeating the same phrase:
-     - “touches how you present…” then “A pattern around how you present…”
-   - Expand the existing `dedupeTimingWindowRestatement` pattern to catch `A pattern around`, `Expansion around`, `Something concrete around`, `A small but real commitment around`, and similar second-sentence openers.
-   - This is deterministic cleanup only; no UI or gate changes.
+4. Ensure required fact tables are present before the gate
+   - If a reading discusses Solar Return planets and SR facts exist, deterministically inject or repair a `Solar Return Key Placements` table before the gate.
+   - If a table already exists, overwrite its planet/sign/degree/house/retrograde fields from `ChartFacts`.
+   - Fix the client-side `correctPlacementData` gap where it appends the `℞` glyph but does not set `row.retrograde = truth.isRetrograde`; that means exports can still contain visual/table boolean mismatches.
 
-5. Verify against the uploaded failure shape
-   - Confirm the code path will strip all three uploaded gate defects:
-     - `$.sections[6].body` Jupiter
-     - `$.sections[6].body` Mercury
-     - `$.sections[6].bullets[0].text` Jupiter
-   - Confirm the post-gate safety log would contain `sr_retrograde_corrected_in_prose` with more than one correction when this failure appears.
-   - Deploy the `ask-astrology` backend function.
+5. Add an internal pre-gate mirror audit for gate-style defects
+   - Before calling the external gate, run a local audit for the recurring defect classes:
+     - `RETROGRADE_STATE_MISMATCH`
+     - natal/SR position bleed
+     - missing SR placement table when SR prose exists
+     - timing restatement pattern
+     - relationship-only contract leaking into non-relationship readings
+   - If the local audit finds deterministic fixable issues, repair once and re-audit before sending to the gate.
+   - Do not rely on the external gate as the first time we discover these issues.
 
-Scope limits:
-- No UI changes.
-- No database/schema changes.
-- No external gate/validation pipeline changes.
-- No prompt-only fix; this needs deterministic cleanup because the prompt has already failed multiple times.
-- Do not change unrelated reading generation behavior beyond guarding relationship-only logic from non-relationship reports.
+6. Consolidate cleanup ordering into one pipeline
+   - Keep one shared pipeline that runs:
+     - before gate
+     - after any gate retry/mutation
+     - immediately before persistence
+   - Remove or stop using duplicate inline calls where possible so a fix cannot run on one path but not another.
+   - Relationship-only logic remains hard-guarded to `question_type === "relationship"`.
+
+7. Add targeted regression tests / scripts for the exact failure shapes
+   - Add lightweight tests or a script fixture for the uploaded Ben career failure shape:
+     - SR Jupiter direct/prose says retrograde
+     - SR Mercury direct/prose says retrograde
+     - bullet text says `(SR Jupiter retrograde...)`
+     - SR section has no SR placement table
+     - non-relationship reading contains `_relationship_contract`
+   - Also test the opposite case from earlier: SR Mercury/Jupiter truly retrograde in source data must not be stripped.
+   - These tests will fail before the fix and pass after it, preventing the same issue from returning.
+
+Technical notes:
+- Target files:
+  - `supabase/functions/ask-astrology/index.ts`
+  - `src/components/AskView.tsx` only for the client-side `row.retrograde` boolean correction gap
+  - optional test/script file if the repo has an existing test pattern; otherwise a small local audit script can be added under a dev/test location
+- No UI redesign.
+- No database schema change.
+- No external gate change.
+- The goal is not a bigger prompt. Prompts can remain, but deterministic facts must be the final authority.
+
+Expected outcome:
+- New readings cannot ship prose/table retrograde disagreement when the chart facts are present.
+- Career, solar_return, natal, money, health, relationship, relocation, and future reading types all pass through the same fact-enforcement layer.
+- The next time a gate-style issue occurs, `_validation_log` / `_post_gate_safety` will show whether the fact source was missing or which deterministic repair ran, instead of leaving us guessing.
