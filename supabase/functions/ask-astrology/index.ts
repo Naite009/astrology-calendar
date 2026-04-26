@@ -6570,7 +6570,18 @@ const RX_NUDGE_BY_PLANET: Record<string, string> = {
   Saturn:  "(retrograde — authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
   Chiron:  "(retrograde — the wound is metabolized inward; healing happens by re-encountering it rather than performing recovery)",
 };
-const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|romance|attract|intima/i;
+// Widened from relationship-only to cover natal/career/money/SR focal sections too.
+// The acknowledgment only fires if the planet is actually named in the section,
+// so widening the title filter cannot inject content for planets the section
+// doesn't already discuss. Per BASE RULE 8, every reading type must acknowledge
+// natal retrograde planets in plain language wherever that planet is the focal
+// subject. Section title fragments below cover: relationship/love/Venus/romance
+// sections; "How You Love" / "How You Think and Communicate" / "How You Act and
+// Pursue" / "Where Growth and Luck" / "Where You Are Being Tested" (natal);
+// "Your Earning Style" / "Career Earnings" / "Hidden Strengths" / "Your Career
+// Foundation" (career & money); "Communication and Thinking This Year" /
+// "Energy, Drive, and Conflict" / "Where Pressure and Discipline" (solar_return).
+const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|romance|attract|intima|how you (?:love|think|communicate|act|pursue)|earning|career|hidden strengths|growth and luck|being tested|communication and thinking|energy.{0,10}drive|pressure and discipline|the pattern and the gift|soul purpose/i;
 
 const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
