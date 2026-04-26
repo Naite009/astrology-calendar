@@ -914,7 +914,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // (e.g. re-imported chart) still gets found via name+birthDate fallback.
     // Without this, the AI is told there is no SR data even when one exists,
     // and SR-dependent sections regress to placeholder content.
-    const currentSR = findMatchingSolarReturn(solarReturnCharts, chart, activeChartId);
+    // Prefer the canonical SR record fetched fresh from the cloud at request
+    // time over whatever happens to be in local state. localStorage may hold
+    // stale planet data (older retrograde flags) if the async cloud-restore
+    // useEffect has not yet merged when a reading is generated. Cloud is the
+    // source of truth.
+    const currentSR =
+      srOverride !== undefined
+        ? srOverride
+        : findMatchingSolarReturn(solarReturnCharts, chart, activeChartId);
     if (currentSR) {
       context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
       if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
