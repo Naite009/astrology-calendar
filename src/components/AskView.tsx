@@ -596,7 +596,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   }, [entries]);
 
-  const buildChartContext = (chart: NatalChart | null, timingContext: string = ""): string => {
+  const buildChartContext = (
+    chart: NatalChart | null,
+    timingContext: string = "",
+    srOverride: SolarReturnChart | null | undefined = undefined,
+  ): string => {
     if (!chart) return "No chart data available.";
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
