@@ -3787,15 +3787,25 @@ const correctNatalPlanetPositionsInProse = (
   let degreeRewrites = 0;
   const examples: string[] = [];
 
+  // Anchors that mean "this is talking about the SR version of the planet".
+  // We MUST NOT rewrite values when one of these qualifiers is in the same
+  // sentence — the SR position is genuinely correct there.
+  const SR_QUALIFIER_RE = /\b(?:SR|Solar\s+Return|solar\s+return|this\s+year(?:'s)?|this\s+Solar\s+Return)\b/;
+  // Anchors that mean "this is talking about the natal/baseline version" —
+  // strong signal we can rewrite a bleed even without an explicit "natal"
+  // prefix immediately before the planet name.
+  const NATAL_CONTEXT_RE = /\b(?:natal|natally|natal\s+chart|natal\s+blueprint|baseline|your\s+permanent|in\s+your\s+natal\s+chart)\b/i;
+  const sentenceSplit = /(?<=[.!?])\s+|\n+/;
+
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
     for (const [planet, truth] of natalByPlanet.entries()) {
       const correctSign = truth.sign;
       const sr = srByPlanet.get(planet.toLowerCase());
-      // Anchor: must say "natal <Planet>" (case-insensitive). Optional
-      // retrograde glyph, optional copula, then degree+sign.
+      // PASS 1 — explicit "natal <Planet>" anchor (original behavior, with
+      // "is" added as a copula so "natal Venus is 9°15' Libra" is also caught).
       const re = new RegExp(
-        `\\bnatal\\s+${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|=|—|,)?\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+        `\\bnatal\\s+${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)?\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
         "gi",
       );
       next = next.replace(re, (match, retroPart, gap, degStr, minStr, claimedSign) => {
@@ -3804,10 +3814,6 @@ const correctNatalPlanetPositionsInProse = (
         if (claimedSignLower === correctSign.toLowerCase() && claimedDeg === truth.degree) {
           return match; // already correct
         }
-        // Rewrite ONLY when the bad value matches the SR truth — that's
-        // the signature of a sign/degree bleed. If neither sign nor
-        // degree matches SR, leave it alone (could be an unrelated
-        // hallucination we don't want to silently mask).
         const signMatchesSr = sr && claimedSignLower === sr.sign.toLowerCase();
         const degMatchesSr = sr && claimedDeg === sr.degree;
         if (!signMatchesSr && !degMatchesSr) return match;
@@ -3824,6 +3830,54 @@ const correctNatalPlanetPositionsInProse = (
         return `${lead}${truth.degree}°${minOut} ${correctSign}`;
       });
     }
+
+    // PASS 2 — sentence-level natal-bleed scrub. For sentences that are
+    // CLEARLY in a natal/baseline context (and NOT in an SR context), look
+    // for "<Planet> (at|is|in|=|,) <deg>°[<min>'] <Sign>" where the cited
+    // values match the SR truth. This is the signature of an SR-position
+    // bleed into a natal-context sentence — exactly the failure pattern
+    // the gate keeps catching on natal Venus / Mercury / Jupiter.
+    if (val) {
+      const sentences = next.split(sentenceSplit);
+      let touched = false;
+      for (let i = 0; i < sentences.length; i++) {
+        const s = sentences[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;          // SR sentence — leave alone
+        if (!NATAL_CONTEXT_RE.test(s)) continue;        // not clearly natal — leave alone
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const sr2 = srByPlanet.get(planet.toLowerCase());
+          if (!sr2) continue;
+          if (sr2.sign === truth.sign && sr2.degree === truth.degree) continue;
+          const reBleed = new RegExp(
+            `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+            const claimedSignLower = String(claimedSign).toLowerCase();
+            const claimedDeg = parseInt(degStr, 10);
+            if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            const signMatchesSr = claimedSignLower === sr2.sign.toLowerCase();
+            const degMatchesSr = claimedDeg === sr2.degree;
+            if (!signMatchesSr && !degMatchesSr) return match;
+            if (claimedSignLower !== truth.sign.toLowerCase()) signRewrites++;
+            if (claimedDeg !== truth.degree) degreeRewrites++;
+            const retro = retroPart || "";
+            const minOut = minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : "";
+            if (examples.length < 5) {
+              examples.push(`${match} → ${planet} at ${truth.degree}°${String(truth.minutes).padStart(2, "0")}' ${truth.sign}`);
+            }
+            return `${planet}${retro}${gap}${truth.degree}°${minOut} ${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences[i] = s2; touched = true; }
+      }
+      if (touched) next = sentences.join(" ");
+    }
+
     if (next !== val) {
       (node as any)[key] = next;
     }
