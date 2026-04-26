@@ -1019,27 +1019,37 @@ export const analyzeSolarReturn = (
 
   // 10. Annual Profection (Step 3)
   let profectionYear: SolarReturnAnalysis['profectionYear'] = null;
-  if (natalChart.birthDate && srChart.solarReturnYear) {
+  if (natalChart.birthDate) {
     const birthYear = parseInt(natalChart.birthDate.slice(0, 4), 10);
     if (!isNaN(birthYear)) {
-      const age = srChart.solarReturnYear - birthYear;
+      // Guard srChart.solarReturnYear: missing, equal to birthYear, or
+      // out-of-range values would otherwise produce age=0 (or negative),
+      // which collapses every consumer (PDF, JSON export, profection wheel).
+      // Fall back to current calendar year if the stored year is bad.
+      const currentYear = new Date().getFullYear();
+      const rawSrYear = Number(srChart.solarReturnYear);
+      const isValidSrYear = Number.isFinite(rawSrYear)
+        && rawSrYear > 1900 && rawSrYear < 2200
+        && rawSrYear !== birthYear;
+      const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
+      const age = effectiveSrYear - birthYear;
       const houseNumber = (age % 12) + 1; // age 0 → house 1, age 12 → house 1, etc.
-      
+
       // Find the sign on the natal house cusp for this profection house
       const natalCuspKey = `house${houseNumber}`;
       const natalCusp = natalChart.houseCusps?.[natalCuspKey as keyof typeof natalChart.houseCusps];
       let timeLord = '';
       let timeLordSRHouse: number | null = null;
       let timeLordSRSign = '';
+      let timeLordSRRetro = false;
       let natalCuspSign = '';
-      
+
       if (natalCusp) {
         const cuspSign = (natalCusp as any).sign;
         if (cuspSign && SIGNS.includes(cuspSign)) {
           natalCuspSign = cuspSign;
           timeLord = traditionalRuler[cuspSign] || '';
         }
-      } else {
       }
       // Fallback: if no house cusps, use whole sign from ascendant
       if (!timeLord && natalRisingSign) {
@@ -1055,6 +1065,7 @@ export const analyzeSolarReturn = (
         const tlPos = srChart.planets[timeLord as keyof typeof srChart.planets];
         if (tlPos) {
           timeLordSRSign = tlPos.sign;
+          timeLordSRRetro = !!(tlPos as any).isRetrograde;
           const tlDeg = toAbsDeg(tlPos);
           timeLordSRHouse = tlDeg !== null ? findSRHouse(tlDeg, srChart) : null;
         }
@@ -1074,10 +1085,12 @@ export const analyzeSolarReturn = (
           ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
           : '';
 
-        const ord = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
-        const srHouseText = timeLordSRHouse ? `${ord(timeLordSRHouse)} house in ${timeLordSRSign || '—'}` : '—';
-        const synthesis = buildProfectionSynthesis(timeLord, houseNumber);
-        const interpretation = `You are in a ${ord(houseNumber)} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${srHouseText}. ${synthesis}`;
+        const ordLocal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+        const srHouseText = timeLordSRHouse ? `${ordLocal(timeLordSRHouse)} house in ${timeLordSRSign || '—'}` : '—';
+        const synthesis = buildProfectionSynthesis(
+          timeLord, houseNumber, timeLordSRHouse, timeLordSRSign, timeLordSRRetro,
+        );
+        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${srHouseText}. ${synthesis}`;
 
         profectionYear = {
           age,
