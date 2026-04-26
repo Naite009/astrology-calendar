@@ -8528,6 +8528,12 @@ OPENING RULE for How You Love: The "How You Love" section body must NOT open wit
 
 SR HONEST GAP PERMISSION (in "Where Natal and Solar Return Connect"): When checking SR-to-natal overlaps, if a connection is outside the 3° orb or does not genuinely exist, say so in one sentence and move on. Example: "SR Venus at 27° Aries lands near natal Mercury at 27° Aries — that's a real overlap worth noting. SR Jupiter at 15° Cancer doesn't make a tight aspect to any natal relationship point, so I won't manufacture one." This honesty is what makes the reading feel trustworthy. Never invent a connection to fill space.
 
+CALL C PARAGRAPH STRUCTURE RULE (MANDATORY for "Where Natal and Solar Return Connect" — applies to all charts, not just this one): The body of this section must NEVER be written as one long unbroken block of prose. Required structure:
+  (a) ONE opening paragraph of 3–4 sentences MAXIMUM that states the year's overarching relationship theme (the through-line connecting the natal baseline to what Solar Return is activating).
+  (b) THEN each major SR-to-natal activation gets ITS OWN paragraph of 3–5 sentences. No activation may be buried inside a longer block — every activation starts a NEW paragraph (separate it with a blank line / "\n\n" inside the body string).
+  (c) ONE closing paragraph of 2–4 sentences that ties the activations back together into the year's relational arc.
+Paragraphs in the "body" string are separated by "\n\n" (double newline). Do NOT collapse activations into commas or semicolons inside the same paragraph. Do NOT write "First, X. Second, Y. Third, Z." inside a single paragraph — each one is its own paragraph. The reader must be able to scan the section and see each activation as a visually distinct block.
+
 In the timing section, include only the 2-4 strongest verified windows over the next 12-18 months. COMPACT MODE ONLY: Do NOT include modality_element, Relationship Needs Profile, Relationship Contradiction Patterns, relocation content, travel content, or astrocartography content in compact mode. Prioritize valid, complete JSON over exhaustiveness.`
       : null;
 
