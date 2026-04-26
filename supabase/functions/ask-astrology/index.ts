@@ -5730,16 +5730,35 @@ const stripParentheticalFromSubtitles = (parsedContent: any, log: HygieneLog) =>
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   let cleaned = 0;
   const examples: string[] = [];
+  // Closed parenthetical (handles optional leading dash inside): "(— ... )" / "(...)"
   const PAREN_RE = /\s*\(\s*[—–-]?[^()]*\)\s*/g;
+  // Closed bracketed insertion: "[...]"
+  const BRACKET_RE = /\s*\[[^\[\]]*\]\s*/g;
+  // Unclosed parenthetical (AI sometimes ships truncated "( ... in Cancer · ..." with no `)`).
+  // Strip from the orphan "(" up to the next placement separator (" in ", "·", ",") or end of string.
+  const UNCLOSED_PAREN_RE = /\s*\([^()]*?(?=\s+in\s+|\s*·|,|$)/g;
+  // Em-dash interpretive insertion sandwiched between placement tokens, e.g.
+  //   "SR Jupiter — meaning, faith, and growth — in Cancer · SR 11th House"
+  // becomes "SR Jupiter in Cancer · SR 11th House".
+  const EM_DASH_INSERT_RE = /\s*[—–]\s+[^—–·]+?\s+[—–]\s+(?=in\s+)/gi;
 
   const visit = (node: any) => {
     if (Array.isArray(node)) { for (const x of node) visit(x); return; }
     if (!node || typeof node !== "object") return;
-    if (typeof node.subtitle === "string" && node.subtitle.includes("(")) {
+    if (typeof node.subtitle === "string" && /[\(\[—–]/.test(node.subtitle)) {
       const original = node.subtitle;
-      let next = original.replace(PAREN_RE, " ").replace(/\s{2,}/g, " ").replace(/\s+([·,])/g, "$1").trim();
+      let next = original
+        .replace(PAREN_RE, " ")
+        .replace(BRACKET_RE, " ")
+        .replace(EM_DASH_INSERT_RE, " ")
+        .replace(UNCLOSED_PAREN_RE, " ")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+([·,])/g, "$1")
+        .trim();
       // Collapse any leftover " in " / " · " spacing artifacts.
       next = next.replace(/\s+in\s+/g, " in ").replace(/\s*·\s*/g, " · ");
+      // Drop any trailing orphan separators left behind by the strip.
+      next = next.replace(/[·,\-—–]+\s*$/g, "").trim();
       if (next !== original && next.length > 0) {
         node.subtitle = next;
         cleaned++;
