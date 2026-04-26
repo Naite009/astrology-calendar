@@ -6597,6 +6597,29 @@ const runPostProcessingPipeline = (
     dropEmptySummaryItemsAndSections(parsedContent, log),
   );
 
+  // 11b. Element classification scrub — when prose names a "dominant
+  // Fire/Earth/Air/Water energy (Planet in Sign, ...)" parenthetical, drop
+  // any planet whose sign does not belong to that element. Prevents
+  // upstream "Fire energy (Venus in Gemini, ...)" leakage.
+  safeRun("scrubElementParentheticalMisclassification", () =>
+    scrubElementParentheticalMisclassification(parsedContent, log),
+  );
+
+  // 11c. Retrograde carry-through — for every natal planet flagged
+  // retrograde in the chart context, ensure subsequent natal mentions in
+  // the same prose field carry the word "retrograde" through (not just
+  // "your natal Venus in Aries"). Mirrors what the external gate flags.
+  safeRun("propagateNatalRetrogradeInProse", () =>
+    propagateNatalRetrogradeInProse(parsedContent, ctx, log),
+  );
+
+  // 11d. Stray digit scrub — kill malformed ordinals like "9th74" or
+  // "1st77" where a footnote/index digit got welded onto a house ordinal
+  // with no separator.
+  safeRun("scrubStrayDigitsAfterHouseOrdinal", () =>
+    scrubStrayDigitsAfterHouseOrdinal(parsedContent, log),
+  );
+
   // 12. Pre-gate local audit — mirrors the recurring external-gate defect
   // classes so we can see (in _validation_log) whether any defect would
   // have shipped. Diagnostic only; the canonical fact sweep above is what
@@ -6604,6 +6627,212 @@ const runPostProcessingPipeline = (
   safeRun("runPreGateLocalAudit", () =>
     runPreGateLocalAudit(parsedContent, ctx, log),
   );
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Element parenthetical scrubber
+// ─────────────────────────────────────────────────────────────────────────
+// Catches upstream-model leakage like "Fire energy (Venus in Gemini, Mars
+// in Aries, Saturn in Aries, Mercury in Aries)" where Gemini (Air) was
+// included in a Fire list. Drops mismatched "<Planet> in <Sign>" entries
+// from the parenthetical and rewrites the parenthetical with only the
+// element-correct entries. Single source of truth: SIGN_TO_ELEMENT.
+const scrubElementParentheticalMisclassification = (
+  parsedContent: any,
+  log: HygieneLog,
+) => {
+  if (!parsedContent) return;
+  const SKIP_KEYS = new Set([
+    "type","id","kind","planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  const ELEMENTS = ["Fire","Earth","Air","Water"];
+  const SIGNS = Object.keys(SIGN_TO_ELEMENT).join("|");
+  // Match: "<Element> energy (<entries>)"  — entries are "<Planet> in <Sign>" comma-separated.
+  // Allow optional "dominant"/"strong" qualifiers and any planet name (we don't restrict planet
+  // tokens because asteroids and centaurs may appear).
+  const elementRe = new RegExp(
+    `\\b(Fire|Earth|Air|Water)\\s+energy\\s*\\(([^()]{3,400})\\)`,
+    "gi",
+  );
+  // Inside the parenthetical, capture each "<Planet> in <Sign>" token.
+  const entryRe = new RegExp(`([A-Z][A-Za-z]+)\\s+in\\s+(${SIGNS})`, "g");
+
+  let parentheticalsRewritten = 0;
+  let entriesRemoved = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value }) => {
+    if (typeof value !== "string" || value.length < 8) return;
+    let mutated = value;
+    mutated = mutated.replace(elementRe, (full, elementWord, inner) => {
+      const targetElement = elementWord.charAt(0).toUpperCase() + elementWord.slice(1).toLowerCase();
+      if (!ELEMENTS.includes(targetElement)) return full;
+      // Find every "<Planet> in <Sign>" token in inner and decide keep/drop.
+      const kept: string[] = [];
+      let dropped = 0;
+      const seenSpans: Array<{ start: number; end: number; keep: boolean; text: string }> = [];
+      let m: RegExpExecArray | null;
+      const localRe = new RegExp(entryRe.source, "g");
+      while ((m = localRe.exec(inner)) !== null) {
+        const sign = m[2];
+        const elOfSign = SIGN_TO_ELEMENT[sign];
+        const keep = elOfSign === targetElement;
+        seenSpans.push({ start: m.index, end: m.index + m[0].length, keep, text: m[0] });
+        if (keep) kept.push(m[0]);
+        else dropped++;
+      }
+      if (dropped === 0 || seenSpans.length === 0) return full;
+      // If nothing remains after filtering, drop the entire parenthetical
+      // rather than emit an empty "()" — leave the headline intact.
+      if (kept.length === 0) {
+        parentheticalsRewritten++;
+        entriesRemoved += dropped;
+        if (examples.length < 5) examples.push(full.slice(0, 180));
+        return `${elementWord} energy`;
+      }
+      parentheticalsRewritten++;
+      entriesRemoved += dropped;
+      if (examples.length < 5) examples.push(full.slice(0, 180));
+      return `${elementWord} energy (${kept.join(", ")})`;
+    });
+    if (mutated !== value) (node as any)[key] = mutated;
+  });
+
+  if (parentheticalsRewritten > 0) {
+    log.push({
+      type: "element_parenthetical_misclassification_scrubbed",
+      detail: { parentheticalsRewritten, entriesRemoved, examples },
+    });
+    console.info("[ask-astrology] element parenthetical scrubbed", {
+      parentheticalsRewritten,
+      entriesRemoved,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Natal retrograde carry-through
+// ─────────────────────────────────────────────────────────────────────────
+// For each natal planet flagged retrograde in the chart context, find prose
+// mentions of "<your|natal> <Planet> in <Sign>" that lack the word
+// "retrograde"/"Rx"/"℞" within ~24 chars and inject "retrograde" between
+// the planet name and "in". Skips any sentence already containing a
+// retrograde marker or "direct" claim (the retrograde mismatch corrector
+// handles the latter).
+const propagateNatalRetrogradeInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  if (natalPos.length === 0) return;
+  const retroPlanets = natalPos.filter((p) => p.retrograde).map((p) => p.planet);
+  if (retroPlanets.length === 0) return;
+
+  const SKIP_KEYS = new Set([
+    "type","id","kind","planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const PLANET_ALT = retroPlanets.join("|");
+  // Match natal-qualified mention of <Planet> followed (within ~24 chars) by
+  // "in <Sign>". Capture group 1: prefix ("your "|"natal "|"your natal "),
+  // group 2: planet, group 3: gap before "in", group 4: rest including "in <Sign>".
+  // Lookahead asserts no retrograde marker already present in the next ~36 chars.
+  const re = new RegExp(
+    `\\b(your\\s+natal\\s+|natal\\s+|your\\s+)(${PLANET_ALT})(?!\\s+(?:retrograde|Rx|℞|\\u211E|direct))(\\s+)(in\\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces))`,
+    "gi",
+  );
+
+  let injected = 0;
+  const perPlanet: Record<string, number> = {};
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value }) => {
+    if (typeof value !== "string" || value.length < 8) return;
+    const next = value.replace(re, (_full, prefix, planet, gap, tail) => {
+      // Final guard: don't inject if a retrograde token sits within 36 chars
+      // after the planet name in the original string (covers "<Planet> ... is retrograde").
+      const tailIdx = value.indexOf(tail, 0);
+      if (tailIdx >= 0) {
+        const window = value.slice(tailIdx, tailIdx + 36);
+        if (/\b(retrograde|Rx|℞|\u211E)\b/i.test(window)) return `${prefix}${planet}${gap}${tail}`;
+      }
+      injected++;
+      perPlanet[planet] = (perPlanet[planet] || 0) + 1;
+      if (examples.length < 5) examples.push(`${prefix}${planet} ${tail}`);
+      return `${prefix}${planet} retrograde${gap}${tail}`;
+    });
+    if (next !== value) (node as any)[key] = next;
+  });
+
+  if (injected > 0 || retroPlanets.length > 0) {
+    log.push({
+      type: "natal_retrograde_carrythrough",
+      detail: {
+        retroPlanets,
+        injected,
+        perPlanet,
+        examples,
+      },
+    });
+    if (injected > 0) {
+      console.info("[ask-astrology] natal retrograde carry-through injected", {
+        injected,
+        perPlanet,
+      });
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Stray digit scrubber after house ordinals
+// ─────────────────────────────────────────────────────────────────────────
+// Removes welded footnote/index digits like "9th74", "1st77", "11th105".
+// Matches an ordinal (1st, 2nd, 3rd, 4th–31st) immediately followed by one
+// or more digits with no separator and strips the trailing digits. Leaves
+// legitimate ordinals untouched.
+const scrubStrayDigitsAfterHouseOrdinal = (
+  parsedContent: any,
+  log: HygieneLog,
+) => {
+  if (!parsedContent) return;
+  const SKIP_KEYS = new Set([
+    "type","id","kind","planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+  // 1st, 2nd, 3rd, 4th..20th, 21st..23rd, 24th..31st — covers 1-31.
+  const ordinalRe = /\b(\d{1,2}(?:st|nd|rd|th))(\d{1,4})\b/g;
+
+  let scrubbed = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value }) => {
+    if (typeof value !== "string" || value.length < 4) return;
+    let local = 0;
+    const next = value.replace(ordinalRe, (_full, ord, _digits) => {
+      local++;
+      return ord;
+    });
+    if (next !== value) {
+      scrubbed += local;
+      if (examples.length < 5) examples.push(value.slice(0, 200));
+      (node as any)[key] = next;
+    }
+  });
+
+  if (scrubbed > 0) {
+    log.push({
+      type: "stray_digits_after_house_ordinal_scrubbed",
+      detail: { scrubbed, examples },
+    });
+    console.info("[ask-astrology] stray digits after house ordinal scrubbed", { scrubbed });
+  }
 };
 
 const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) => {
