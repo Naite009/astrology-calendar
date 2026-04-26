@@ -8143,6 +8143,17 @@ TRANSIT FORMAT RULES:
 - When the chart data provides pre-computed exact hit dates, include them as a specific "exact_date" within the position field (e.g., "exact May 18, 2026"). When exact dates are unavailable, use the narrowest possible date range — never round to a full month if a 2-week window is determinable.
 - Vague transit descriptions like "Jupiter enters Cancer" are NOT sufficient — always specify the natal point being activated and the degree.
 
+TRANSIT INTERPRETATION SPECIFICITY RULE (MANDATORY — applies to ALL reading types and ALL transit interpretations, anywhere in the reading): Every transit interpretation MUST follow these three rules without exception:
+  (1) NAME THE SPECIFIC NATAL POINT BEING HIT, with sign and (when available) house. Write "Pluto squaring your natal Mars in Scorpio in your 5th house" — NOT "Pluto squaring this part of your chart", NOT "Pluto squaring your chart", NOT "the Pluto square activating you", NOT "this transit hitting your natal placements". Generic chart-pointing language is forbidden. The natal point's planet + sign (and house if available) MUST be named explicitly inside the interpretation sentence itself.
+  (2) GIVE ONE CONCRETE REAL-LIFE SCENARIO that is specific to what THAT natal point means for THIS person — a situation that could plausibly happen in a week or a month. Do NOT write a generic textbook description of what that planet or aspect does in general (e.g., "brings intensity and power dynamics to the surface"). The scenario must be grounded in what the natal point actually rules in this chart.
+  (3) NEVER end with a generic closer. The phrase "awareness is the work" is BANNED. So are: "the work is in the awareness", "the lesson is to stay present", "this is an opportunity for growth", "honor the process", "trust the process", "lean into the discomfort", "the universe is asking you to…", and any other horoscope-style closing platitude. End the interpretation on the specific real-life scenario instead — let the scene be the closer.
+
+Example of what NOT to write: "Pluto squaring this part of your chart brings intensity and power dynamics to the surface — awareness is the work."
+
+Example of what TO write: "Pluto squaring your natal Mars in Scorpio means the way you go after what you want — and the way you fight for it — is under pressure to change. You may find yourself in a situation where the direct approach you'd normally take backfires, and the real work is figuring out whether you're pushing because it's right or because backing down feels like losing."
+
+Before finalizing any transit entry, re-read its interpretation and verify: (a) the specific natal planet + sign is named in the sentence, (b) there is a concrete scenario the reader could picture happening to them, (c) it does NOT end on a generic platitude. If any of the three checks fails, rewrite the interpretation.
+
 MULTI-PASS TRANSIT PRECISION (MANDATORY FOR OUTER PLANETS):
 - For Jupiter, Saturn, Uranus, Neptune, and Pluto transits to natal points, CHECK if the transiting planet will retrograde back over the natal point during its active period.
 - If retrograde motion occurs, you MUST report EACH PASS as a SEPARATE transit entry:
