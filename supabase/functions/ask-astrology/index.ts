@@ -6610,7 +6610,7 @@ const runPostProcessingPipeline = (
   // the same prose field carry the word "retrograde" through (not just
   // "your natal Venus in Aries"). Mirrors what the external gate flags.
   safeRun("propagateNatalRetrogradeInProse", () =>
-    propagateNatalRetrogradeInProse(parsedContent, sanitizedChartContext || "", log),
+    propagateNatalRetrogradeInProse(parsedContent, ctx, log),
   );
 
   // 11d. Stray digit scrub — kill malformed ordinals like "9th74" or
