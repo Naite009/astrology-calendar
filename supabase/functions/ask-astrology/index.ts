@@ -3702,9 +3702,67 @@ const factsAwareRetrogradeSweep = (
     const planet = planetMatch[1];
     const planetKey = planet.toLowerCase();
     const chart = decideChartForClause(clause, sectionInSr);
+
+    let next = clause;
+
+    // ── HOUSE VERIFICATION ────────────────────────────────────────────
+    // Check every house claim made about this planet in this clause and
+    // rewrite any that disagree with the chart-context placement table.
+    // Patterns covered (case-insensitive, all anchored to the planet name
+    // within ~120 chars):
+    //   • "<Planet> in the 5th house"
+    //   • "<Planet> in the fifth house"
+    //   • "<Planet> in the SR 5th house"
+    //   • "<Planet> in the natal 5th house"
+    //   • "<Planet> in house 5" / "<Planet> in the 5th"
+    //   • "<Planet> ... house 5" / "<Planet> ... 5th house"
+    //   • "<Planet> sits/lands/falls in the 5th house"
+    const houseFactMap = chart === "sr" ? srHouse : natalHouse;
+    const truthHouse = houseFactMap.get(planetKey);
+    if (typeof truthHouse === "number") {
+      const ordWordPattern = Object.keys(HOUSE_ORDINAL_WORDS).join("|");
+      // Pattern A: "<Planet> ...verb/in the [SR|natal]? <ord> house"
+      const patternA = new RegExp(
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
+        "gi",
+      );
+      // Pattern B: "<Planet> ... house <number>"
+      const patternB = new RegExp(
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:sr\\s+|natal\\s+)?house\\s+)(\\d{1,2})\\b`,
+        "gi",
+      );
+      // Pattern C: "<Planet> ... in the <ord>" (terminal — no "house" after)
+      const patternC = new RegExp(
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+the\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
+        "gi",
+      );
+
+      const tryFix = (re: RegExp): boolean => {
+        let touched = false;
+        next = next.replace(re, (full, prefix, token, suffix = "") => {
+          const claimed = parseHouseToken(token);
+          if (claimed === null || claimed === truthHouse) return full;
+          touched = true;
+          return `${prefix}${houseToOrdinal(truthHouse)}${suffix}`;
+        });
+        return touched;
+      };
+      const a = tryFix(patternA);
+      const b = tryFix(patternB);
+      const c = tryFix(patternC);
+      if (a || b || c) {
+        correctedHouseClaims++;
+        if (houseExamples.length < 8) {
+          houseExamples.push(`[HOUSE ${chart} ${planet}→${truthHouse}] ${clause.slice(0, 160)}`);
+        }
+      }
+    }
+
+    // ── RETROGRADE VERIFICATION ───────────────────────────────────────
     const factMap = chart === "sr" ? srRetro : natalRetro;
-    if (!factMap.has(planetKey)) return clause;
+    if (!factMap.has(planetKey)) return next;
     const factIsRetro = factMap.get(planetKey) === true;
+
 
     // Detect ANY retrograde claim in the clause, in any of these shapes:
     //   • "<Planet> retrograde" / "<Planet> Rx" / "<Planet> ℞" (adjacent)
