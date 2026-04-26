@@ -4738,6 +4738,14 @@ const runPostProcessingPipeline = (
     fixNatalRetrogradeMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 5b. SR retrograde mentions in prose — strip "SR <Planet> retrograde"
+  // when the SR planetary positions block shows that planet as direct.
+  // This is the Ben bug: prose said "SR Mercury retrograde" but the SR
+  // placement table correctly had retrograde:false, so the gate failed.
+  safeRun("fixSrRetrogradeMentionsInProse", () =>
+    fixSrRetrogradeMentionsInProse(parsedContent, ctx, log),
+  );
+
   // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
   safeRun("correctSignRulershipClaimsInProse", () =>
     correctSignRulershipClaimsInProse(parsedContent, log),
