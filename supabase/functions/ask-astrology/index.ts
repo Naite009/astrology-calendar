@@ -4854,7 +4854,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
-          if (backfill) {
+          // Guard against the backfill itself being whitespace/empty —
+          // without this the item gets re-inserted with `""` and the gate
+          // sees `"Best Windows": ""` (the Lauren bug).
+          if (backfill && !isWhitespaceOrEmpty(backfill)) {
             item[valueKey] = backfill;
             log.push({
               type: "empty_summary_item_backfilled",
