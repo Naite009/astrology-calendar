@@ -3380,6 +3380,84 @@ const fixNatalRetrogradeMentionsInProse = (
   }
 };
 
+const NATAL_RX_ACK_BY_PLANET: Record<string, string> = {
+  Mercury: "Because your natal Mercury is retrograde, your thinking and communication work internally first, so you may need extra review time before your words feel ready to share.",
+  Venus: "Because your natal Venus is retrograde, your values and attraction need internal processing before they feel safe to receive or express outwardly.",
+  Mars: "Because your natal Mars is retrograde, your drive and assertion work internally before they express outward, so action often comes after private pressure has built.",
+  Jupiter: "Because your natal Jupiter is retrograde, growth and belief develop privately first, so your confidence strengthens from lived proof rather than outside permission.",
+  Saturn: "Because your natal Saturn is retrograde, discipline and authority are worked out internally first, so you may test rules against your own experience before trusting them.",
+  Uranus: "Because your natal Uranus is retrograde, disruption and freedom are internalized first, so change may begin as a private refusal before anyone else sees it.",
+  Neptune: "Because your natal Neptune is retrograde, sensitivity and imagination move inward first, so you may need private space to sort intuition from projection.",
+  Pluto: "Because your natal Pluto is retrograde, power and control are processed internally first, so transformation often starts with private truth before it becomes visible.",
+  Chiron: "Because your natal Chiron is retrograde, old pain is processed inward first, so repair comes through private recognition before it can be shared or taught.",
+};
+
+const acknowledgeNatalRetrogradesFromContext = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const retroPlanets = natalPos
+    .filter((p) => p.retrograde && NATAL_RX_ACK_BY_PLANET[p.planet])
+    .map((p) => p.planet);
+  if (retroPlanets.length === 0) return;
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
+  ]);
+
+  const hasNatalMention = (value: string, planet: string): boolean => {
+    const re = new RegExp(`\\b${planet}\\b`, "gi");
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(value)) !== null) {
+      const before = value.slice(Math.max(0, match.index - 40), match.index);
+      if (/\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s*$/i.test(before)) continue;
+      return true;
+    }
+    return false;
+  };
+
+  const hasAcknowledgment = (value: string, planet: string): boolean => {
+    const ackRe = new RegExp(
+      `\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b[^.!?\\n]{0,160}\\b(?:retrograde|Rx|R\\b|℞)\\b|\\b(?:retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,160}\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b`,
+      "i",
+    );
+    return ackRe.test(value);
+  };
+
+  let injected = 0;
+  const examples: string[] = [];
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value, path }) => {
+    let next = value;
+    for (const planet of retroPlanets) {
+      if (!hasNatalMention(next, planet)) continue;
+      if (hasAcknowledgment(next, planet)) continue;
+      const sentence = NATAL_RX_ACK_BY_PLANET[planet];
+      if (!sentence || next.includes(sentence)) continue;
+      next = `${next.trim()} ${sentence}`;
+      injected++;
+      if (examples.length < 8) examples.push(`${planet} → ${path}`);
+    }
+    if (next !== value) (node as any)[key] = next;
+  });
+
+  if (injected > 0) {
+    log.push({
+      type: "natal_retrograde_acknowledgment_injected",
+      detail: { injected, examples },
+    });
+    console.info("[ask-astrology] natal retrograde acknowledgment injected", { injected, examples });
+  }
+};
+
 // DETERMINISTIC SR RETROGRADE CONSISTENCY PASS — strips any prose claim
 // that an SR planet is retrograde / Rx / ℞ when the SR Planetary Positions
 // block (astronomy-engine truth) shows it as direct. This is the Ben bug:
@@ -6206,6 +6284,14 @@ const runPostProcessingPipeline = (
     fixNatalRetrogradeMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 5a. Natal retrograde acknowledgment, not just symbol/directness repair.
+  // Prompt rules alone are not enough here: if the model discusses a natal
+  // retrograde planet without explaining the retrograde, inject one plain
+  // language sentence from deterministic natal facts before gate/PDF output.
+  safeRun("acknowledgeNatalRetrogradesFromContext", () =>
+    acknowledgeNatalRetrogradesFromContext(parsedContent, ctx, log),
+  );
+
   // 5b. SR retrograde mentions in prose — strip "SR <Planet> retrograde"
   // when the SR planetary positions block shows that planet as direct.
   // This is the Ben bug: prose said "SR Mercury retrograde" but the SR
@@ -7546,14 +7632,17 @@ const reconcileSRHouseCopyWarning = (parsedContent: any, log: HygieneLog) => {
 // qualifier on the FIRST mention of the planet in the FIRST relationship
 // section that names it without an Rx acknowledgment. We never invent
 // retrograde language for planets that aren't being interpreted.
-const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Chiron"] as const;
+const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"] as const;
 const RX_NUDGE_BY_PLANET: Record<string, string> = {
   Mercury: "(retrograde — communication turns inward, second-guesses itself, and reworks old conversations before speaking)",
   Venus:   "(retrograde — love runs on review, revisits the past, and questions what it actually values before committing)",
   Mars:    "(retrograde — desire moves indirectly, hesitates, and processes anger or wanting internally before acting)",
   Jupiter: "(retrograde — meaning, faith, and growth get worked out privately before being expressed outwardly)",
   Saturn:  "(retrograde — authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
-  Chiron:  "(retrograde — the wound is metabolized inward; healing happens by re-encountering it rather than performing recovery)",
+  Uranus:  "(retrograde — disruption and freedom are internalized before they show outwardly)",
+  Neptune: "(retrograde — sensitivity and imagination move inward before they can be trusted outwardly)",
+  Pluto:   "(retrograde — power and transformation are processed internally before they become visible)",
+  Chiron:  "(retrograde — old pain is processed inward; repair starts privately before it can be shared)",
 };
 // Widened from relationship-only to cover natal/career/money/SR focal sections too.
 // The acknowledgment only fires if the planet is actually named in the section,
