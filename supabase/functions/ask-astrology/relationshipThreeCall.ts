@@ -939,11 +939,47 @@ export interface DeterministicTallies {
  * tally is fixed by planet identity (never derived from sign), so the total
  * is structurally guaranteed to be 10 regardless of what the AI does.
  */
-export const computeDeterministicTallies = (natalChartBlock: string): DeterministicTallies => {
+/**
+ * Extract a single planetary-positions block ("NATAL" or "SR") from the
+ * full ask-astrology chart context string. Returns the empty string if the
+ * requested header is not present. Used so the deterministic balance
+ * computation never accidentally folds NATAL planet signs into an SR
+ * section (or vice versa) when the full context contains both blocks.
+ */
+export const extractPositionsBlock = (
+  chartContext: string,
+  source: "NATAL" | "SR",
+): string => {
+  if (!chartContext) return "";
+  // Match "NATAL Planetary Positions:" or "SR Planetary Positions:" exactly.
+  const headerRe =
+    source === "SR"
+      ? /\bSR Planetary Positions:\s*\n/
+      : /\bNATAL Planetary Positions:\s*\n/;
+  const headerMatch = chartContext.match(headerRe);
+  if (!headerMatch) return "";
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  // Stop at the next blank line or another all-caps section header.
+  const endMatch = tail.match(
+    /\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL Planetary Positions|\nSR Planetary Positions/,
+  );
+  return endMatch ? tail.slice(0, endMatch.index!) : tail;
+};
+
+export const computeDeterministicTallies = (chartBlock: string, opts?: { source?: "NATAL" | "SR" }): DeterministicTallies => {
+  // If the caller passes the full chart context (containing both NATAL and
+  // SR blocks) and tells us which source they want, slice the right block
+  // first. Otherwise use whatever string they passed (back-compat: relationship
+  // 3-call already passes a single isolated block).
+  const block = opts?.source ? extractPositionsBlock(chartBlock, opts.source) || chartBlock : chartBlock;
   const planetSign: Record<string, string> = {};
-  const re = /^[\s\-\*•]*([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
+  // SR-prefixed lines look like "- SR Sun: 12°34' Capricorn". We strip the
+  // optional "SR " prefix so the planet key is just "Sun" (matches NATAL keys
+  // and COUNTED_PLANETS).
+  const re = /^[\s\-\*•]*(?:SR\s+)?([A-Za-z][A-Za-z\s]*?):\s*\d+°\d+'\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/gm;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(natalChartBlock)) !== null) {
+  while ((m = re.exec(block)) !== null) {
     const planet = m[1].trim();
     const sign = m[2];
     if (!planetSign[planet]) planetSign[planet] = sign;
@@ -1029,22 +1065,39 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
  */
 export const injectDeterministicModalityElement = (
   parsedContent: any,
-  natalChartBlock: string,
+  chartContext: string,
 ): { injected: boolean; tallies: DeterministicTallies } => {
   if (!parsedContent || !Array.isArray(parsedContent.sections)) {
     return { injected: false, tallies: { elements: [], modalities: [], polarity: [] } };
   }
-  const tallies = computeDeterministicTallies(natalChartBlock);
-  const newSection = buildModalityElementSection(tallies);
 
   const isNonEmptyString = (v: unknown): v is string =>
     typeof v === "string" && v.trim().length > 0;
 
+  // Detect whether the existing modality_element section is SR-flavored
+  // by its title. If so, deterministic counts MUST be computed from the
+  // SR Planetary Positions block, not the natal block — otherwise the
+  // section's prose ends up describing natal element/modality balance
+  // under an SR title and the external gate flags BALANCE_CLAIM_MISMATCH.
+  const existingIdx = parsedContent.sections.findIndex((s: any) => s?.type === "modality_element");
+  const existing = existingIdx >= 0 ? parsedContent.sections[existingIdx] : null;
+  const existingTitle = isNonEmptyString(existing?.title) ? existing.title : "";
+  const isSrSection = /\b(solar\s*return|sr)\b/i.test(existingTitle);
+
+  // Pick the right block. If the caller passed the full chartContext,
+  // we extract the matching block; if they passed a pre-isolated natal
+  // block (relationship 3-call path), the extractor falls back to the
+  // input string and behavior is unchanged.
+  const tallies = computeDeterministicTallies(chartContext, { source: isSrSection ? "SR" : "NATAL" });
+  const newSection = buildModalityElementSection(tallies);
+  if (isSrSection) {
+    newSection.title = existingTitle || "Solar Return Elemental & Modal Balance";
+  }
+
   // Replace any existing modality_element section, otherwise insert at the
   // canonical slot (just before the summary_box at the end).
-  const existingIdx = parsedContent.sections.findIndex((s: any) => s?.type === "modality_element");
   if (existingIdx >= 0) {
-    const prev = parsedContent.sections[existingIdx] || {};
+    const prev = existing || {};
     // Preserve AI-authored prose so the body backfill has source material.
     if (isNonEmptyString(prev.body)) newSection.body = prev.body;
     if (isNonEmptyString(prev.balance_interpretation)) {
@@ -1069,16 +1122,29 @@ export const injectDeterministicModalityElement = (
  */
 export const overwriteAllPolarityCounts = (
   parsedContent: any,
-  natalChartBlock: string,
+  chartContext: string,
 ): number => {
   if (!parsedContent || !Array.isArray(parsedContent.sections)) return 0;
-  const tallies = computeDeterministicTallies(natalChartBlock);
+  // Pre-compute tallies for both possible sources so each section gets
+  // numbers from the correct chart (natal vs SR). For relationship 3-call
+  // path the input is already an isolated natal block — extractPositionsBlock
+  // returns "" and computeDeterministicTallies falls back to the full input,
+  // so behavior on that path is unchanged.
+  const natalTallies = computeDeterministicTallies(chartContext, { source: "NATAL" });
+  const srTallies = computeDeterministicTallies(chartContext, { source: "SR" });
   let overwritten = 0;
   for (const section of parsedContent.sections) {
     if (section?.type !== "modality_element") continue;
-    section.polarity = tallies.polarity;
-    section.elements = tallies.elements;
-    section.modalities = tallies.modalities;
+    const title = typeof section.title === "string" ? section.title : "";
+    const isSr = /\b(solar\s*return|sr)\b/i.test(title);
+    const t = isSr ? srTallies : natalTallies;
+    // Only overwrite when the chosen source actually parsed planets, so a
+    // missing SR block can't blank an SR section's counts to all zeros.
+    const hasData = t.polarity.some((p) => p.count > 0);
+    if (!hasData) continue;
+    section.polarity = t.polarity;
+    section.elements = t.elements;
+    section.modalities = t.modalities;
     overwritten++;
   }
   return overwritten;
