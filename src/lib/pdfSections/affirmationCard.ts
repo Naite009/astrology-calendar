@@ -230,7 +230,8 @@ export function generateAffirmationCard(
   const hasJupiterAngular = a.angularPlanets?.includes('Jupiter') || false;
 
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
-  const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
+  const { body } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
+  const sendOff = buildClosingSendOff(name, a, srChart);
 
   // Full-bleed white page
   doc.setFillColor(255, 255, 255);
