@@ -5870,6 +5870,16 @@ const runPostProcessingPipeline = (
     fixSrRetrogradeMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 5c. CANONICAL fact-aware retrograde sweep — runs AFTER the legacy
+  // correctors so it gets the final say. Walks every visible string and
+  // reconciles every retrograde claim against ChartFacts (parsed from
+  // chartContext). This is the permanent fix for the recurring
+  // RETROGRADE_STATE_MISMATCH defects: any wording variant the legacy
+  // pattern matchers miss is caught here. Idempotent — safe to re-run.
+  safeRun("factsAwareRetrogradeSweep", () =>
+    factsAwareRetrogradeSweep(parsedContent, ctx, log),
+  );
+
   // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
   safeRun("correctSignRulershipClaimsInProse", () =>
     correctSignRulershipClaimsInProse(parsedContent, log),
