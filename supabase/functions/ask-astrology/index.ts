@@ -3853,18 +3853,21 @@ const factsAwareRetrogradeSweep = (
 
   visit(parsedContent, "");
 
-  if (strippedFalseRetro > 0 || flippedDirectToRetro > 0) {
+  if (strippedFalseRetro > 0 || flippedDirectToRetro > 0 || correctedHouseClaims > 0) {
     log.push({
       type: "facts_aware_retrograde_sweep",
       detail: {
         stripped_false_retro: strippedFalseRetro,
         flipped_direct_to_retro: flippedDirectToRetro,
+        corrected_house_claims: correctedHouseClaims,
         examples,
+        house_examples: houseExamples,
       },
     });
-    console.info("[ask-astrology] facts-aware retrograde sweep applied", {
+    console.info("[ask-astrology] facts-aware retrograde+house sweep applied", {
       stripped: strippedFalseRetro,
       flipped: flippedDirectToRetro,
+      house_corrected: correctedHouseClaims,
     });
   }
 };
