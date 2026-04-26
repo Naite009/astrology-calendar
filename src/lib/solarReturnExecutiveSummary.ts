@@ -195,8 +195,12 @@ export function generateExecutiveSummary(
     const p1Info = PLANET_PLAIN[asp.planet1];
     const p2Info = PLANET_PLAIN[asp.planet2];
 
-    // Skip aspects where we have no real content for either planet
-    if (!p1Info && !p2Info) continue;
+    // Skip aspects where we don't have real content for BOTH planets.
+    // We need both sides to produce a meaningful, non-degenerate sentence.
+    // This filters out Lilith, Chiron, Vertex, Part of Fortune, asteroids etc.
+    // when no plain-language meaning is available.
+    if (!p1Info || !p2Info) continue;
+    if (!PLANET_NOUNS[asp.planet1] || !PLANET_NOUNS[asp.planet2]) continue;
 
     const tightLabel = asp.orb <= 0.5 ? 'exact' : asp.orb <= 1 ? 'very tight' : asp.orb <= 2 ? 'close' : 'present';
     const tightNote = asp.orb <= 1 ? ' This is one of the strongest aspects in your chart this year — you\'ll feel it clearly.' : '';

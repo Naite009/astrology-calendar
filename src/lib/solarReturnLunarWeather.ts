@@ -76,23 +76,36 @@ export function generateLunarWeatherMap(
   const emotionalPeaks: string[] = [];
   const quietMonths: string[] = [];
 
+  // Natal Moon sign index (used to compute lunar return month + as fallback)
+  const natalMoonIdx = SIGNS.indexOf(natalMoonSign);
+
   for (let i = 0; i < 12; i++) {
     const calMonth = (bMonth + i) % 12;
     const monthName = MONTH_NAMES[calMonth];
 
-    // Lunar return: Moon returns to natal sign approximately every 27.3 days
-    // Each month gets one lunar return
+    // Per-month dominant transiting Moon sign.
+    // The Moon advances ~1 sign per 2.3 days. Across a calendar month it visits all 12,
+    // so the "dominant" sign per month is the one the lunation (new/full moon) falls in,
+    // which we approximate as the Sun's current sign at mid-month — Moon at lunation
+    // is conjunct (new) or opposite (full) the Sun. We rotate through the zodiac so each
+    // month gets a different felt-sense tone.
+    // Use Sun sign rotation starting from the SR Sun sign as a stable, varying anchor.
+    const srSunSign = srChart?.planets?.Sun?.sign || SIGNS[(bMonth + 9) % 12];
+    const srSunIdx = Math.max(0, SIGNS.indexOf(srSunSign));
+    const monthDominantIdx = (srSunIdx + i) % 12;
+    const monthDominantSign = SIGNS[monthDominantIdx];
+
+    // Lunar return: Moon returns to its NATAL sign each month — that's the emotional reset.
+    // The lunarReturn.lunarReturnSign stays the natal Moon sign (this is the definition
+    // of a lunar return). What varies per month is the dominant transiting tone.
     const lunarReturn = generateLunarReturn(natalMoonSign, monthName, i);
 
     // Moon transits through ~12 signs per month (~2.5 days each)
     const checkpoints = generateMonthCheckpoints(i, calMonth, srChart.solarReturnYear, bMonth);
 
-    // Overall tone based on which sign the lunar return emphasizes
-    const signData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
-    
     // Modify intensity based on aspects active that month
     let monthIntensity = lunarReturn.intensity;
-    
+
     // Eclipse months get boosted
     if (analysis.eclipseSensitivity.some(e => {
       // approximate: if eclipse is in this month range
@@ -104,8 +117,9 @@ export function generateLunarWeatherMap(
     // Peak day — day in month when Moon crosses natal Moon degree
     const peakDay = Math.round(i * 30.4 + 14); // approximately mid-month
 
-    const overallTone = getMonthTone(i, natalMoonSign, analysis);
-    const interpretation = getMonthInterpretation(i, natalMoonSign, monthIntensity, monthName);
+    // Overall tone now uses the per-month transiting dominant sign so each month feels distinct
+    const overallTone = getMonthTone(i, monthDominantSign, natalMoonSign, analysis);
+    const interpretation = getMonthInterpretation(i, natalMoonSign, monthDominantSign, monthIntensity, monthName);
 
     months.push({
       month: monthName,
@@ -179,19 +193,21 @@ function generateMonthCheckpoints(monthOffset: number, calMonth: number, year: n
   return checkpoints;
 }
 
-function getMonthTone(monthOffset: number, natalMoonSign: string, analysis: SolarReturnAnalysis): string {
+function getMonthTone(monthOffset: number, monthDominantSign: string, natalMoonSign: string, analysis: SolarReturnAnalysis): string {
   const phases = ['settling in', 'building momentum', 'gaining clarity', 'finding rhythm',
     'mid-year plateau', 'deepening', 'harvesting', 'integrating',
     'reflecting', 'shifting gears', 'winding down', 'completing the cycle'];
-  
+
   const base = phases[monthOffset] || 'transitioning';
-  const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign];
-  
-  return `A month of ${base} — your ${natalMoonSign} Moon brings ${moonData?.tone || 'emotional processing'} to this period.`;
+  const dominantData = MOON_SIGN_EMOTIONAL[monthDominantSign] || MOON_SIGN_EMOTIONAL.Cancer;
+  const natalData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+
+  return `A month of ${base} — the lunation in ${monthDominantSign} colors this period with ${dominantData.tone}, while your ${natalMoonSign} Moon keeps ${natalData.tone} as the underlying baseline.`;
 }
 
-function getMonthInterpretation(monthOffset: number, natalMoonSign: string, intensity: number, monthName: string): string {
-  const moonData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+function getMonthInterpretation(monthOffset: number, natalMoonSign: string, monthDominantSign: string, intensity: number, monthName: string): string {
+  const natalData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
+  const dominantData = MOON_SIGN_EMOTIONAL[monthDominantSign] || MOON_SIGN_EMOTIONAL.Cancer;
   const phase = monthOffset <= 2 ? 'early' : monthOffset <= 5 ? 'building' : monthOffset <= 8 ? 'mid-year' : 'closing';
   const intensityDesc = intensity >= 4 ? 'emotionally charged' : intensity >= 3 ? 'moderately active' : 'relatively calm';
 
@@ -202,7 +218,7 @@ function getMonthInterpretation(monthOffset: number, natalMoonSign: string, inte
     closing: `${monthName} is in the closing stretch of the birthday year. Emotional integration and reflection on what this year has taught you.`,
   };
 
-  return `${phaseNarrative[phase]} This is a ${intensityDesc} month for your ${natalMoonSign} Moon, which processes through ${moonData.tone}. When the Moon returns to ${natalMoonSign} this month, take time to check in with your core emotional needs.`;
+  return `${phaseNarrative[phase]} This month's lunation falls in ${monthDominantSign}, bringing ${dominantData.tone} to the foreground — ${dominantData.theme} It is a ${intensityDesc} month overall. When the Moon returns to your natal ${natalMoonSign} this month, you'll feel the familiar pull back to ${natalData.tone}: take time to check in with your core emotional needs.`;
 }
 
 function buildYearPattern(natalMoonSign: string, analysis: SolarReturnAnalysis, peaks: string[]): string {
