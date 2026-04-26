@@ -307,6 +307,13 @@ const TRANSIT_ACTION_MAP: Record<TimingReadingType, Record<string, string>> = {
     Neptune: 'dissolves the boundary between self and source — porousness is high, discernment is hard',
     Pluto: 'transforms what you believe at the root — old frameworks die so something truer can emerge',
   },
+  natal: {
+    Jupiter: 'expands this part of your natal makeup — more opportunity, more openness, more momentum on a baseline strength',
+    Saturn: 'asks for honest commitment to this part of your chart — what is real solidifies, what is not falls away',
+    Uranus: 'shakes loose an old pattern in this part of your chart — sudden change, surprise, or a need for more freedom',
+    Neptune: 'softens this part of your chart — clarity is harder, idealism and confusion both rise',
+    Pluto: 'transforms this part of your chart at depth — what you have outgrown is being reorganized',
+  },
   general: {
     Jupiter: 'expands this part of your life — more opportunity, more openness, more momentum',
     Saturn: 'asks for honest commitment — what is real solidifies, what is not falls away',
