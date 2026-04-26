@@ -8342,6 +8342,13 @@ SR LOVE ACTIVATION STYLE:
   - NEVER write a sign for the SR North Node (or any SR node) that differs from the "Solar Return Key Placements" table. The SR North Node's sign must be quoted exactly as it appears in the SR table — do not substitute the natal Node's sign or any other sign.
   - Before finalizing any sentence that names a planet's sign, degree, house, or retrograde state, do a 2-step check: (1) is this a natal claim or an SR claim? (2) does my sentence match the corresponding row in the correct table? If either check fails, rewrite.
 
+  CANONICAL FAILURE PATTERNS — DO NOT REPEAT (these are the exact failure shapes that have shipped before; recognize them and refuse them):
+  - WRONG: writing natal Venus's sign/degree using the SR Venus sign/degree (e.g., natal Venus described as "9°15' Libra" when 9°15' Libra is the SR Venus position; the natal table shows a different sign such as Sagittarius). The natal Venus sign/degree must come from the "Natal Key Placements" row for Venus, never from the SR table.
+  - WRONG: writing natal Mercury using the SR Mercury sign/degree (e.g., natal Mercury described as "20°32' Scorpio" when 20°32' Scorpio is SR Mercury; the natal table shows Mercury in a different sign such as Libra).
+  - WRONG: writing natal Jupiter using the SR Jupiter sign/degree (e.g., natal Jupiter described as "24°24' Cancer" when 24°24' Cancer is SR Jupiter; the natal table shows Jupiter in a different sign such as Taurus).
+  - WRONG: writing the SR North Node sign as anything other than what the SR table says (e.g., writing SR North Node in Scorpio when the SR table shows Pisces). The SR North Node sign is read from the SR table only.
+  Each of these failures is a 2-step verification break. Before writing ANY natal planet's sign/degree, locate that planet in the "Natal Key Placements" table and copy from THAT row only. Before writing ANY SR planet's sign/degree (including Nodes), locate that planet in the "Solar Return Key Placements" table and copy from THAT row only. The two tables are independent — never let a value from one cross over into the other. When writing natal planet positions anywhere in this reading, always verify against the natal placement table; never use SR planet positions as natal positions.
+
   SOLAR RETURN VOICE RULES (NON-NEGOTIABLE — apply to every section in a solar_return reading):
   - STRICT 2nd person ("you" / "your") throughout. Speak directly to the person as if in a live reading.
   - Every placement gets ONE concrete real-life example of how it shows up — something that could happen in a week or a month — not just the principle.
