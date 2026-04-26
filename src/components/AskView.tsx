@@ -1795,6 +1795,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         const srForRequest = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, srForRequest);
       }
+      const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
