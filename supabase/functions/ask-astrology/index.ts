@@ -1523,8 +1523,27 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
 
   for (const section of parsedContent.sections) {
     if (!section || section.type !== "modality_element") continue;
-    const domEl = pickDominant(section.elements, ELEMENTS);
-    const domMod = pickDominant(section.modalities, MODALITIES);
+    let domEl = pickDominant(section.elements, ELEMENTS);
+    let domMod = pickDominant(section.modalities, MODALITIES);
+    // Fallback: when the count arrays are missing or shaped unexpectedly,
+    // recover dominant element/modality from any "Dominant Element: X ·
+    // Dominant Modality: Y" header text inside the section's prose
+    // fields. This makes the corrector resilient to schema drift — the
+    // exact failure mode that let the Earth/Mutable Fire/Cardinal prose
+    // ship in reading_reading_report_37.pdf.
+    if (!domEl || !domMod) {
+      const haystack = [
+        section.body, section.balance_interpretation, section.summary, section.title,
+      ].filter((s) => typeof s === "string").join(" \n ");
+      if (!domEl) {
+        const m = haystack.match(/Dominant\s+Element\s*[:·\-]\s*(Fire|Earth|Air|Water)\b/i);
+        if (m) domEl = m[1].toLowerCase();
+      }
+      if (!domMod) {
+        const m = haystack.match(/Dominant\s+Modality\s*[:·\-]\s*(Cardinal|Fixed|Mutable)\b/i);
+        if (m) domMod = m[1].toLowerCase();
+      }
+    }
     if (!domEl && !domMod) continue;
 
     const fixField = (raw: string): string => {
