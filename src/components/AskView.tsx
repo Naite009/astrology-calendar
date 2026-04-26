@@ -673,6 +673,50 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         context += "\n";
       }
     });
+
+    // --- NATAL PLANET HOUSE PLACEMENTS (truth block, mirrors the SR truth
+    // block in buildSolarReturnAnalysisBlock). The AI is instructed never to
+    // derive natal houses from sign or copy SR houses; it must read these
+    // exactly. The post-processor (factsAwareNatalHouseSweep on the edge
+    // function) parses this block to verify and rewrite any natal house
+    // claims in prose that disagree with these values. Bodies covered:
+    // 10 classical planets + Chiron, North/South Node, Lilith, Juno, plus
+    // the four cardinal angles (which sit on their cusps by definition).
+    const NATAL_TRUTH_BODIES = [
+      'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+      'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'SouthNode',
+      'North Node', 'South Node', 'Lilith', 'Juno',
+    ];
+    const ANGLE_HOUSE_FIXED: Record<string, number> = {
+      Ascendant: 1, Descendant: 7, Midheaven: 10, IC: 4,
+    };
+    const natalTruthLines: string[] = [];
+    for (const bodyName of NATAL_TRUTH_BODIES) {
+      const data = (planets as any)[bodyName];
+      if (!data || typeof data !== 'object' || !('sign' in data)) continue;
+      const pos = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+      if (!ZODIAC.includes(pos.sign)) continue;
+      const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
+      const house = calcHouse(absDeg);
+      if (house == null) continue;
+      const retroTag = pos.isRetrograde ? ' (retrograde)' : '';
+      // Normalize node naming for the AI prompt.
+      const displayName = bodyName === 'NorthNode' ? 'North Node'
+        : bodyName === 'SouthNode' ? 'South Node'
+        : bodyName;
+      natalTruthLines.push(`- Natal ${displayName}: ${pos.sign}, House ${house}${retroTag}`);
+    }
+    for (const angleName of Object.keys(ANGLE_HOUSE_FIXED)) {
+      const override = angleOverrides[angleName];
+      if (!override?.sign || !ZODIAC.includes(override.sign)) continue;
+      natalTruthLines.push(`- Natal ${angleName}: ${override.sign}, House ${ANGLE_HOUSE_FIXED[angleName]}`);
+    }
+    if (natalTruthLines.length > 0) {
+      context += "\nNATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE):\n";
+      context += "Read every natal house claim from this block. Do NOT infer a natal planet's house from its sign. Do NOT copy a Solar Return house onto a natal sentence. If a natal placement is not listed below, do not invent one.\n";
+      natalTruthLines.forEach((l) => { context += l + "\n"; });
+    }
+
     const TRADITIONAL_RULERS: Record<string, string> = {
       Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
       Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
