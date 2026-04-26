@@ -6221,6 +6221,174 @@ const checkSRHouseNumberCopy = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// FIX 1 (relationship readings): After the deterministic SR house override
+// runs, the SR placement table rows now reflect SR-Ascendant-derived houses.
+// If the prior `_sr_house_copy_warning` flag is still set BUT the table no
+// longer matches natal exactly, clear the flag — the data has been repaired.
+// If the table STILL matches natal exactly after override (rare — would mean
+// SR truly equals natal for these planets), leave the flag and append a
+// non-blocking note to `_review_notes` so the export remains valid but the
+// case is auditable downstream.
+const reconcileSRHouseCopyWarning = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let natalHouses: Map<string, number> | null = null;
+  const srTables: any[] = [];
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section?.title || "").toLowerCase();
+    const isSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    const houseMap = new Map<string, number>();
+    for (const row of rows) {
+      const planet = String(row?.planet || row?.body || row?.name || "")
+        .replace(/\s*[℞\u211E]|\s+(Rx|R)\s*$/gi, "")
+        .trim().toLowerCase();
+      if (!planet) continue;
+      const houseRaw = row?.house;
+      let house: number | undefined;
+      if (typeof houseRaw === "number") house = houseRaw;
+      else if (typeof houseRaw === "string") {
+        const m = houseRaw.match(/\d+/);
+        if (m) house = parseInt(m[0], 10);
+      }
+      if (house !== undefined) houseMap.set(planet, house);
+    }
+    if (isSR) srTables.push({ section, houseMap });
+    else if (!natalHouses) natalHouses = houseMap;
+  }
+  if (!natalHouses) return;
+
+  for (const { section, houseMap } of srTables) {
+    if (section._sr_house_copy_warning !== true) continue;
+    let matches = 0;
+    let compared = 0;
+    for (const [planet, srHouse] of houseMap.entries()) {
+      const nh = natalHouses.get(planet);
+      if (nh === undefined) continue;
+      compared++;
+      if (nh === srHouse) matches++;
+    }
+    const stillCopied = compared >= 6 && matches === compared;
+    if (!stillCopied) {
+      delete section._sr_house_copy_warning;
+      log.push({
+        type: "sr_house_copy_warning_cleared",
+        detail: { compared, matches, message: "SR house override resolved the natal-copy condition." },
+      });
+    } else {
+      // Truly unresolved — keep flag, surface as non-blocking review note.
+      const notes: string[] = Array.isArray((parsedContent as any)._review_notes)
+        ? (parsedContent as any)._review_notes
+        : ((parsedContent as any)._review_notes = []);
+      const msg = `SR placement table "${section.title || "?"}" houses still match natal exactly (${matches}/${compared}) after deterministic override. Verify SR Ascendant + cusp data.`;
+      if (!notes.includes(msg)) notes.push(msg);
+      log.push({ type: "sr_house_copy_warning_unresolved", detail: { compared, matches } });
+    }
+  }
+};
+
+// FIX 2 (relationship readings): If a relationship-relevant planet is
+// retrograde per the placement table AND it's actually being interpreted in
+// a relationship section's prose, ensure that section explicitly acknowledges
+// the retrograde status at least once. We inject a brief, contextual
+// qualifier on the FIRST mention of the planet in the FIRST relationship
+// section that names it without an Rx acknowledgment. We never invent
+// retrograde language for planets that aren't being interpreted.
+const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Chiron"] as const;
+const RX_NUDGE_BY_PLANET: Record<string, string> = {
+  Mercury: "(retrograde — communication turns inward, second-guesses itself, and reworks old conversations before speaking)",
+  Venus:   "(retrograde — love runs on review, revisits the past, and questions what it actually values before committing)",
+  Mars:    "(retrograde — desire moves indirectly, hesitates, and processes anger or wanting internally before acting)",
+  Jupiter: "(retrograde — meaning, faith, and growth get worked out privately before being expressed outwardly)",
+  Saturn:  "(retrograde — authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
+  Chiron:  "(retrograde — the wound is metabolized inward; healing happens by re-encountering it rather than performing recovery)",
+};
+const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|romance|attract|intima/i;
+
+const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+
+  // 1. Collect retrograde planets from any placement_table.
+  const rxPlanets = new Set<string>();
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (row?.retrograde !== true) continue;
+      const bare = String(row.planet || row.body || row.name || "")
+        .replace(/[℞\u211E]|Rx/gi, "")
+        .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
+        .trim();
+      if ((RX_RELATIONSHIP_PLANETS as readonly string[]).includes(bare)) rxPlanets.add(bare);
+    }
+  }
+  if (rxPlanets.size === 0) return;
+
+  // 2. For each Rx planet, find the first relationship section whose prose
+  //    actually names the planet without acknowledging retrograde, then
+  //    inject the qualifier on the first match. If no relationship section
+  //    interprets the planet at all, do nothing (per spec).
+  const acknowledgments: string[] = [];
+  for (const planet of rxPlanets) {
+    const planetRe = new RegExp(`\\b${planet}\\b`);
+    const ackRe = new RegExp(
+      `\\b${planet}\\b[^.!?\\n]{0,80}?\\b(retrograde|Rx|R\\b|℞)\\b|\\b(retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,80}?\\b${planet}\\b`,
+      "i",
+    );
+    let injected = false;
+    for (const section of parsedContent.sections) {
+      if (injected) break;
+      const t = typeof section?.title === "string" ? section.title : "";
+      if (!RELATIONSHIP_SECTION_TITLE_RE_LOCAL.test(t)) continue;
+
+      // Walk the section, edit string leaves in place. Find first mention
+      // and tag it. If any leaf already acknowledges, mark injected=true.
+      const visit = (node: any, parent: any, key: string | number): boolean => {
+        if (Array.isArray(node)) {
+          for (let i = 0; i < node.length; i++) {
+            if (visit(node[i], node, i)) return true;
+          }
+          return false;
+        }
+        if (typeof node === "string") {
+          if (!planetRe.test(node)) return false;
+          if (ackRe.test(node)) { injected = true; return true; }
+          // Inject after the first ` <Planet> ` mention.
+          const nudge = RX_NUDGE_BY_PLANET[planet];
+          if (!nudge) return false;
+          const re = new RegExp(`\\b(${planet})\\b(?!\\s*(?:retrograde|Rx|R\\b|℞|\\())`, "i");
+          const replaced = node.replace(re, `$1 ${nudge}`);
+          if (replaced !== node) {
+            (parent as any)[key] = replaced;
+            injected = true;
+            acknowledgments.push(`${planet} → ${t}`);
+            return true;
+          }
+          return false;
+        }
+        if (!node || typeof node !== "object") return false;
+        for (const [k, v] of Object.entries(node)) {
+          if (k.startsWith("_")) continue;
+          if (visit(v, node, k)) return true;
+        }
+        return false;
+      };
+      visit(section, { s: section }, "s");
+    }
+  }
+
+  if (acknowledgments.length > 0) {
+    log.push({
+      type: "relationship_retrograde_acknowledged",
+      detail: { count: acknowledgments.length, examples: acknowledgments.slice(0, 8) },
+    });
+    console.info("[ask-astrology] relationship retrograde acknowledged in prose", {
+      count: acknowledgments.length,
+      examples: acknowledgments.slice(0, 8),
+    });
+  }
+};
+
 const US_CITY_TO_STATE: Record<string, string> = {
   "atlanta":"GA","austin":"TX","boston":"MA","chicago":"IL","dallas":"TX","denver":"CO",
   "detroit":"MI","houston":"TX","indianapolis":"IN","jacksonville":"FL","las vegas":"NV",
