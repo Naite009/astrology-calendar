@@ -1,32 +1,27 @@
 ---
 name: Canonical fact-enforcement layer for Ask readings
-description: Single source of truth for natal/SR retrograde, sign, degree, AND house. factsAwareRetrogradeSweep + runPreGateLocalAudit own prose ↔ chart-fact agreement. Sweep also rewrites wrong house claims (e.g. "SR Mercury in the 5th house" when fact says SR 6th).
+description: Single source of truth for natal/SR retrograde, sign, degree, AND house. SR house truth priority — injected SR ANALYSIS srPlanetPlacements / houseOverlays > SR Planetary Positions text block. factsAwareRetrogradeSweep + correctSrPlanetHousesInProse + overrideSRHouseNumbersFromContext all share the same source.
 type: feature
 ---
-The recurring `RETROGRADE_STATE_MISMATCH` defects from the external Replit gate were the result of pattern-by-pattern regex correctors (`fixSrRetrogradeMentionsInProse`, `fixNatalRetrogradeMentionsInProse`) that always lagged behind whatever new wording the model emitted. The permanent fix lives in `supabase/functions/ask-astrology/index.ts`:
 
-1. **`factsAwareRetrogradeSweep(parsedContent, chartContext, log)`** is THE canonical reconciler for retrograde AND house claims. It:
-   - Parses both NATAL and SR planetary positions from `chartContext` (via `parsePositionsFromContext`) into `natalRetro`/`srRetro` truth maps AND `natalHouse`/`srHouse` truth maps. House maps only include planets whose chart-context line carried a house number (so we never invent a house when birth time is missing).
-   - Walks every visible string field (skipping only structural keys: `type`/`id`/`planet`/`sign`/`house`/`degrees`/`aspect`/`symbol`/internal `_*` keys).
-   - Splits each string into clauses on sentence terminators and em/en dashes.
-   - For every clause that mentions a known planet, decides natal vs SR by: explicit `SR`/`Solar Return`/`this year('s)` qualifier → SR; explicit `natal`/`your natal` → natal; section title contains "Solar Return" or "SR " → SR; otherwise natal default.
-   - **House verification** (runs first, regardless of retrograde state): three patterns cover the common house-claim shapes:
-     - Pattern A: `"<Planet> ... in the [SR|natal]? <ord> house"` (e.g. "Mercury in the 5th house", "SR Mercury in the fifth house")
-     - Pattern B: `"<Planet> ... house <number>"` (e.g. "Mercury ... house 5")
-     - Pattern C: `"<Planet> ... in the <ord>"` terminal (e.g. "Mercury sits in the 5th") — only when not followed by `house`/`sign`
-     If the claimed house disagrees with the truth map, the ordinal/number is rewritten in place to the correct house. Counter: `corrected_house_claims`. House examples logged to `_validation_log.facts_aware_retrograde_sweep.house_examples`.
-   - **Retrograde verification** (runs after): if fact says direct, it strips false retrograde claims in any shape (`Planet retrograde`, `Planet Rx`, `Planet ℞`, `Planet ... is retrograde`, `Planet ... retrograde at <degree>`, `Planet ... retrograde in the Nth`). If fact says retrograde, it flips false `Planet direct` / `Planet is direct` claims to `Planet retrograde`.
-   - The sweep ONLY repairs incorrect claims. It does NOT inject acknowledgment when the model is silent — that gap is closed by BASE RULE 9 in the prompt (see #5).
+The recurring SR house mismatches (e.g. Ask saying "SR Mercury in the 5th house" when the birthday SR JSON has Mercury in 8th) trace back to two places that disagreed:
 
-2. **`runPreGateLocalAudit(parsedContent, chartContext, log)`** mirrors the recurring external-gate defect classes (RETROGRADE_STATE_MISMATCH, MISSING_SR_PLACEMENT_TABLE, RELATIONSHIP_CONTRACT_ON_NON_RELATIONSHIP_READING) and writes findings to `_validation_log` with type `pre_gate_local_audit`. Diagnostic only — repair is the sweep's job.
+1. The Ask edge function previously parsed SR house numbers ONLY from the `SR Planetary Positions:` text block in the chart context, which AskView built using a Whole Sign shortcut from the SR Ascendant. That shortcut disagreed with the cusp-based engine in `src/lib/solarReturnAnalysis.ts` that powers the user-facing birthday Solar Return PDF/JSON.
+2. The model would then write whatever house it inferred, and the post-processor verified it against the same wrong text block, so nothing caught the error.
 
-3. Both run inside `runPostProcessingPipeline` (steps 5c and 12) so they execute at every site that pipeline runs: pre-gate AND post-gate. The legacy `fixSrRetrogradeMentionsInProse` / `fixNatalRetrogradeMentionsInProse` are kept as belt-and-braces but the canonical sweep gets the final say because it runs last.
+Permanent fix:
 
-4. **Client side**: `correctPlacementData` in `src/components/AskView.tsx` MUST set `row.retrograde = !!truth.isRetrograde` whenever it touches a placement_table row. Without this, the visual `℞` glyph and the JSON boolean can disagree — that disagreement is exactly the shape the gate raises.
-
-5. **Prompt-side acknowledgment (BASE RULE 9)**: in the SYSTEM_PROMPT's UNIVERSAL READING TYPE BASE block, BASE RULE 9 (UNIVERSAL SR RETROGRADE ACKNOWLEDGMENT) requires every reading type — career, money, health, relationship, relocation, spiritual, timing, general, solar_return — to write one plain-English sentence acknowledging any SR planet marked retrograde in the SR placement table. The career, money, and health templates each carry a per-type reinforcement (e.g. "CAREER SR MERCURY RETROGRADE RULE") naming the canonical SR Mercury / SR Saturn / SR Jupiter / SR Mars / SR Venus cases and where the acknowledgment must land. This is the prompt-side pair to the post-processor sweep — together they guarantee the prose mentions retrograde when the table says retrograde, and never contradicts it.
+- `src/components/AskView.tsx#buildChartContext` builds SR houses with the SAME cusp logic the birthday engine uses (`findSRHouse` style — walk the 12 SR house cusps, pick the one whose range contains the planet's absolute longitude). Whole Sign is removed.
+- `src/components/AskView.tsx#buildSolarReturnAnalysisBlock` injects an explicit `srPlanetPlacements` map (planet → {sign, degree, minutes, retrograde, srHouse, natalHouse}) built from the deterministic `analyzeSolarReturn` houseOverlays. The block prose tells the model this is the single source of truth for SR planet houses and forbids re-deriving from sign / Whole Sign / natal copy.
+- `supabase/functions/ask-astrology/index.ts#parseSrAnalysisInjection` parses the `--- SOLAR RETURN ANALYSIS ---` block out of the chart context. Returns `{ srHouse, srRetro, source }` where source is `srPlanetPlacements | houseOverlays | none`.
+- All three SR-house-aware passes use this injection FIRST and only fall back to the text positions block:
+  - `factsAwareRetrogradeSweep` — verifies prose house claims (Pattern A/B/C anchored to a planet name within ~120 chars) and rewrites the ordinal in place when the claim disagrees with truth.
+  - `correctSrPlanetHousesInProse` — surgically rewrites "SR <Planet> in (the|your) <Nth> house" patterns.
+  - `overrideSRHouseNumbersFromContext` — overwrites `house` field on every SR placement_table row.
+- `_validation_log` carries `facts_aware_retrograde_sweep_house_source` with the chosen source, plus `corrected_house_claims` / `house_examples` for any rewrite. Future failures are debuggable from the export alone.
 
 Rule for future failures:
-- If a wording variant says retrograde when the table says direct (or vice versa), do NOT add another narrow regex pattern to the legacy correctors. EITHER the chart facts are missing (check `pre_gate_local_audit` for `sr_facts_present: false`) OR the planet-detection regex in `factsAwareRetrogradeSweep` needs broadening — fix it in one place.
-- If the prose names a wrong house number, do NOT add a per-section corrector — broaden one of the three house patterns (A/B/C) inside `factsAwareRetrogradeSweep`.
-- If the prose silently OMITS a required retrograde acknowledgment, the fix is BASE RULE 9 (or its per-type reinforcement) — strengthen the rule, do not add a post-processor injection step.
+- If SR houses disagree with the birthday report, FIRST check `_validation_log.facts_aware_retrograde_sweep_house_source` — if it is `none`, the AskView injection didn't land; if it is `houseOverlays` or `srPlanetPlacements` and prose is still wrong, broaden the prose pattern (A/B/C) inside `factsAwareRetrogradeSweep`.
+- Never add per-section correctors for house claims. There is one truth source and one correction layer.
+
+Retrograde policy is unchanged (see prior notes): chart-context truth maps + BASE RULE 9 (UNIVERSAL SR RETROGRADE ACKNOWLEDGMENT) on the prompt side; sweep handles strip/flip wherever the model says the wrong thing.

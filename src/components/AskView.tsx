@@ -933,21 +933,31 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // any ephemeris recalculation downstream.
       const srPlanets = currentSR.planets || {};
       const srCusps = currentSR.houseCusps || {};
-      // SR HOUSES — WHOLE SIGN (deterministic upstream fix).
-      // Replit's gate uses Whole Sign houses from the SR Ascendant; if we
-      // emit Placidus here it will recompute and warn for every reading.
-      // Whole Sign rule: house 1 = the sign on the Ascendant, then each
-      // subsequent sign = the next house. A planet's house is its sign
-      // index minus the Ascendant sign index, mod 12, plus 1.
-      const srAscCusp = srCusps['house1' as keyof typeof srCusps] as
-        { sign: string; degree: number; minutes?: number } | undefined;
-      const srAscSignIdx = srAscCusp && ZODIAC.includes(srAscCusp.sign)
-        ? ZODIAC.indexOf(srAscCusp.sign)
-        : -1;
+      // SR HOUSES — CUSP-BASED (matches the birthday Solar Return engine
+      // in solarReturnAnalysis.ts). The earlier Whole Sign shortcut here
+      // disagreed with the birthday SR JSON (e.g. Mercury was reported as
+      // 5th house here while the birthday report had it in the 8th). The
+      // birthday engine is the source of truth used by the user-facing PDF
+      // and JSON export, so the Ask prompt MUST use the same cusp math.
+      const srCuspLongs: number[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const c = (srCusps as any)[`house${i}`];
+        if (c && typeof c === 'object' && 'sign' in c && ZODIAC.includes(c.sign)) {
+          srCuspLongs.push(ZODIAC.indexOf(c.sign) * 30 + (c.degree || 0) + ((c.minutes || 0) / 60));
+        }
+      }
       const calcSRHouse = (absDeg: number): number | null => {
-        if (srAscSignIdx < 0) return null;
-        const planetSignIdx = Math.floor(((absDeg % 360) + 360) % 360 / 30);
-        return ((planetSignIdx - srAscSignIdx + 12) % 12) + 1;
+        if (srCuspLongs.length !== 12) return null;
+        const norm = ((absDeg % 360) + 360) % 360;
+        for (let i = 0; i < 12; i++) {
+          let start = srCuspLongs[i];
+          let end = srCuspLongs[(i + 1) % 12];
+          if (end < start) end += 360;
+          let d = norm;
+          if (d < start) d += 360;
+          if (d >= start && d < end) return i + 1;
+        }
+        return 1;
       };
       context += "SR Planetary Positions:\n";
       Object.entries(srPlanets).forEach(([planet, data]) => {
@@ -1723,6 +1733,43 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             ? `Solar Return ${solarReturnYear}`
             : "Solar Return";
 
+      // ── AUTHORITATIVE SR PLANET PLACEMENT MAP ─────────────────────────
+      // Build a flat planet → {sign, degree, retrograde, srHouse, natalHouse}
+      // map directly from the houseOverlays the deterministic SR engine
+      // already produced. This is the SAME house engine that powers the
+      // birthday Solar Return JSON / PDF, so the values here are guaranteed
+      // to match the user-facing report. The model (and the post-pass
+      // verification on the server) must treat this as the single source of
+      // truth for SR planet houses — never re-derive.
+      const srPlanetPlacements: Record<string, {
+        sign: string;
+        degree: number;
+        minutes: number;
+        retrograde: boolean;
+        srHouse: number | null;
+        natalHouse: number | null;
+      }> = {};
+      try {
+        const overlays = Array.isArray(a.houseOverlays) ? a.houseOverlays : [];
+        for (const o of overlays) {
+          const planet = String((o as any).planet || "").trim();
+          if (!planet) continue;
+          const srPos = (srChart.planets as any)?.[planet];
+          const isRet = !!(srPos && (srPos.isRetrograde === true || (srPos as any).retrograde === true));
+          const degMatch = String((o as any).srDegree || "").match(/(\d+)°(\d+)?/);
+          const deg = degMatch ? parseInt(degMatch[1], 10) : (srPos?.degree ?? 0);
+          const min = degMatch && degMatch[2] ? parseInt(degMatch[2], 10) : (srPos?.minutes ?? 0);
+          srPlanetPlacements[planet] = {
+            sign: (o as any).srSign || srPos?.sign || "",
+            degree: deg,
+            minutes: min,
+            retrograde: isRet,
+            srHouse: (o as any).srHouse ?? null,
+            natalHouse: (o as any).natalHouse ?? null,
+          };
+        }
+      } catch {}
+
       const payload: Record<string, unknown> = {
         solarReturnYear,
         solarReturnAge,
@@ -1736,6 +1783,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         srMoonAspects: a.srMoonAspects,
         houseOverlays: a.houseOverlays,
         srHouseThemes,
+        srPlanetPlacements,
         natalSun,
         natalMoon,
         natalRising,
@@ -1752,6 +1800,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         "build your prose from them rather than re-deriving. The natal portrait data gives " +
         "you the permanent baseline; the SR data tells you what this specific year is doing " +
         "to that baseline.\n\n" +
+        "CRITICAL — SR PLANET HOUSES: For every claim about which house an SR planet is in " +
+        "(in the central theme, any narrative section, the closing message, or anywhere " +
+        "else), the only authoritative source is `srPlanetPlacements[<Planet>].srHouse` " +
+        "below (cross-validated by `houseOverlays` and the `SR Planetary Positions` block " +
+        "in the chart context). Do NOT infer SR houses from sign, do NOT copy natal houses, " +
+        "and do NOT compute Whole Sign houses from the SR Ascendant. If `srPlanetPlacements` " +
+        "says SR Mercury is in house 8, write 8th house — never 5th.\n\n" +
         JSON.stringify(payload, null, 2) +
         "\n--- END SOLAR RETURN ANALYSIS ---\n"
       );

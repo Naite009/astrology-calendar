@@ -2532,6 +2532,12 @@ const overrideSRHouseNumbersFromContext = (
   for (const p of natalPos) {
     natalFacts.set(p.planet.toLowerCase(), { sign: p.sign, degree: p.degree });
   }
+  // Override with the authoritative SR ANALYSIS injection (birthday-engine
+  // truth) when present — this beats the Whole-Sign / cusp positions block.
+  const injection = parseSrAnalysisInjection(chartContext);
+  if (injection.srHouse.size > 0) {
+    for (const [planet, h] of injection.srHouse.entries()) houseMap.set(planet, h);
+  }
   if (houseMap.size === 0) return;
 
   // Score table rows against natal vs SR fact maps to disambiguate
@@ -2627,10 +2633,15 @@ const correctSrPlanetHousesInProse = (
 ) => {
   if (!parsedContent || !chartContext) return;
   const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
-  if (srPos.length === 0) return;
   const houseMap = new Map<string, number>();
   for (const p of srPos) {
     if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
+  }
+  // Override with the SR ANALYSIS injection (birthday-engine truth) when
+  // present — same priority used by factsAwareRetrogradeSweep.
+  const injection = parseSrAnalysisInjection(chartContext);
+  if (injection.srHouse.size > 0) {
+    for (const [planet, h] of injection.srHouse.entries()) houseMap.set(planet, h);
   }
   if (houseMap.size === 0) return;
 
@@ -3595,6 +3606,89 @@ const SR_PROSE_QUALIFIER_RE = /\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i;
 const NATAL_PROSE_QUALIFIER_RE = /\b(?:natal|your\s+natal)\b/i;
 const FACTS_PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"] as const;
 
+// Parse the injected "SOLAR RETURN ANALYSIS" JSON block to extract the
+// authoritative SR planet → house map. AskView builds this from the same
+// deterministic engine that powers the birthday Solar Return PDF/JSON, so
+// when present it MUST override anything we'd otherwise parse out of the
+// shorter "SR Planetary Positions:" text block (which historically used a
+// Whole Sign shortcut and disagreed with the user-facing report).
+//
+// Returns Maps keyed by lowercased planet name. Source string is logged
+// to _validation_log so future failures show which source won.
+const parseSrAnalysisInjection = (
+  chartContext: string,
+): {
+  srHouse: Map<string, number>;
+  srRetro: Map<string, boolean>;
+  source: "srPlanetPlacements" | "houseOverlays" | "none";
+} => {
+  const empty = { srHouse: new Map<string, number>(), srRetro: new Map<string, boolean>(), source: "none" as const };
+  if (!chartContext) return empty;
+  const startTag = "--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---";
+  const endTag = "--- END SOLAR RETURN ANALYSIS ---";
+  const startIdx = chartContext.indexOf(startTag);
+  const endIdx = chartContext.indexOf(endTag);
+  if (startIdx < 0 || endIdx <= startIdx) return empty;
+  const slice = chartContext.slice(startIdx, endIdx);
+  // The block contains a single JSON.stringify payload preceded by prose.
+  // Find the first balanced { ... } and try to parse it.
+  const firstBrace = slice.indexOf("{");
+  if (firstBrace < 0) return empty;
+  // Walk to find the matching closing brace.
+  let depth = 0;
+  let inStr = false;
+  let escape = false;
+  let lastBrace = -1;
+  for (let i = firstBrace; i < slice.length; i++) {
+    const c = slice[i];
+    if (escape) { escape = false; continue; }
+    if (c === "\\") { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth === 0) { lastBrace = i; break; }
+    }
+  }
+  if (lastBrace < 0) return empty;
+  let parsed: any = null;
+  try {
+    parsed = JSON.parse(slice.slice(firstBrace, lastBrace + 1));
+  } catch {
+    return empty;
+  }
+  if (!parsed || typeof parsed !== "object") return empty;
+
+  const srHouse = new Map<string, number>();
+  const srRetro = new Map<string, boolean>();
+  let source: "srPlanetPlacements" | "houseOverlays" | "none" = "none";
+
+  const placements = parsed.srPlanetPlacements;
+  if (placements && typeof placements === "object") {
+    for (const [planet, data] of Object.entries(placements)) {
+      if (!data || typeof data !== "object") continue;
+      const d = data as any;
+      const h = typeof d.srHouse === "number" ? d.srHouse : null;
+      if (h != null && h >= 1 && h <= 12) srHouse.set(String(planet).toLowerCase(), h);
+      if (typeof d.retrograde === "boolean") srRetro.set(String(planet).toLowerCase(), d.retrograde);
+    }
+    if (srHouse.size > 0) source = "srPlanetPlacements";
+  }
+
+  if (srHouse.size === 0 && Array.isArray(parsed.houseOverlays)) {
+    for (const o of parsed.houseOverlays) {
+      if (!o || typeof o !== "object") continue;
+      const planet = String((o as any).planet || "").toLowerCase();
+      const h = (o as any).srHouse;
+      if (planet && typeof h === "number" && h >= 1 && h <= 12) srHouse.set(planet, h);
+    }
+    if (srHouse.size > 0) source = "houseOverlays";
+  }
+
+  return { srHouse, srRetro, source };
+};
+
 const factsAwareRetrogradeSweep = (
   parsedContent: any,
   chartContext: string,
@@ -3626,10 +3720,34 @@ const factsAwareRetrogradeSweep = (
     }
   }
 
+  // ── PRIORITY OVERRIDE: SR ANALYSIS injection ──────────────────────
+  // When the AskView Solar Return Analysis block is present, its
+  // srPlanetPlacements / houseOverlays are the user-facing birthday
+  // engine truth and beat anything parsed from the text positions block.
+  const injection = parseSrAnalysisInjection(chartContext);
+  if (injection.srHouse.size > 0) {
+    for (const [planet, h] of injection.srHouse.entries()) {
+      srHouse.set(planet, h);
+    }
+  }
+  if (injection.srRetro.size > 0) {
+    for (const [planet, r] of injection.srRetro.entries()) {
+      srRetro.set(planet, r);
+    }
+  }
+  log.push({
+    type: "facts_aware_retrograde_sweep_house_source",
+    detail: {
+      sr_house_source: injection.source,
+      sr_house_count: srHouse.size,
+      natal_house_count: natalHouse.size,
+    },
+  });
+
   // If we have no SR facts at all but the prose discusses SR planets,
   // record a diagnostic so we can see (in _validation_log) when the gate
   // would have nothing to corroborate against.
-  if (srPos.length === 0) {
+  if (srPos.length === 0 && injection.srHouse.size === 0) {
     log.push({
       type: "facts_aware_retrograde_sweep_skipped",
       detail: { reason: "no_sr_positions_in_chart_context" },
