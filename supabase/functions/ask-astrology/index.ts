@@ -3573,12 +3573,28 @@ const acknowledgeNatalRetrogradesFromContext = (
     return false;
   };
 
+  // BASE RULE 10 explicitly states: "A bare ℞ symbol is not enough — write
+  // one sentence explaining what that natal retrograde means for this person
+  // specifically." So a glyph (`℞`, bare `R`, lone `Rx`) does NOT count as
+  // acknowledgment. We require the plain-language word "retrograde" within
+  // 160 chars of the planet name AND the containing sentence must be a real
+  // sentence (>= 8 words) — not just a placement-table cell or a label.
   const hasAcknowledgment = (value: string, planet: string): boolean => {
     const ackRe = new RegExp(
-      `\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b[^.!?\\n]{0,160}\\b(?:retrograde|Rx|R\\b|℞)\\b|\\b(?:retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,160}\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b`,
+      `\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b[^.!?\\n]{0,160}\\bretrograde\\b|\\bretrograde\\b[^.!?\\n]{0,160}\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b`,
       "i",
     );
-    return ackRe.test(value);
+    if (!ackRe.test(value)) return false;
+    // Confirm the matched mention sits inside a real sentence, not a cell.
+    const sentences = value.split(/(?<=[.!?])\s+|\n+/);
+    const planetRe = new RegExp(`\\b${planet}\\b`, "i");
+    const retroWordRe = /\bretrograde\b/i;
+    for (const s of sentences) {
+      if (!planetRe.test(s) || !retroWordRe.test(s)) continue;
+      const wordCount = s.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount >= 8) return true;
+    }
+    return false;
   };
 
   let injected = 0;
