@@ -520,11 +520,16 @@ const dedupeText = (text: string): string => {
   }
 
   // Step 2: within each remaining paragraph, collapse ANY repeated sentence
-  // (not just immediately-consecutive ones). The AI sometimes interleaves
-  // a duplicate sentence a few sentences apart within the same paragraph.
+  // (not just immediately-consecutive ones). Track BOTH a strict normalized
+  // key (for exact dupes) AND a fuzzy key that ignores pronoun/contraction
+  // variations — the AI sometimes rewrites the same sentence with a small
+  // grammar fix so the strict key misses it (e.g. "you doesn't wait …
+  // bring it to them" vs. "you do not wait … bring it to you" inside a
+  // single bullet text field).
   const cleaned = dedupedParas.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
-    const seen = new Set<string>();
+    const seenStrict = new Set<string>();
+    const seenFuzzy = new Set<string>();
     const out: string[] = [];
     for (const raw of sentences) {
       const norm = normalizeForCompare(raw);
@@ -532,16 +537,24 @@ const dedupeText = (text: string): string => {
         out.push(raw);
         continue;
       }
-      if (seen.has(norm)) continue;
-      seen.add(norm);
+      if (seenStrict.has(norm)) continue;
+      const fuzzy = normalizeForFuzzyCompare(raw);
+      // Only treat as a near-duplicate when the fuzzy form is substantial
+      // (>= 5 words) so we don't accidentally collapse short, legitimately
+      // repeated phrases like "Be direct." or "Trust this."
+      if (fuzzy && fuzzy.split(" ").length >= 5 && seenFuzzy.has(fuzzy)) continue;
+      seenStrict.add(norm);
+      if (fuzzy) seenFuzzy.add(fuzzy);
       out.push(raw);
     }
     return out.join("").trim();
   });
 
   // Step 3: cross-paragraph sentence dedup. If the same sentence appears
-  // in paragraph A and paragraph B, drop the later occurrence.
-  const globalSeen = new Set<string>();
+  // in paragraph A and paragraph B, drop the later occurrence. Same
+  // strict + fuzzy pairing as step 2.
+  const globalSeenStrict = new Set<string>();
+  const globalSeenFuzzy = new Set<string>();
   const finalParas = cleaned.map((para) => {
     const sentences = para.match(/[^.!?]+[.!?]+\s*/g) || [para];
     const out: string[] = [];
@@ -551,8 +564,11 @@ const dedupeText = (text: string): string => {
         out.push(raw);
         continue;
       }
-      if (globalSeen.has(norm)) continue;
-      globalSeen.add(norm);
+      if (globalSeenStrict.has(norm)) continue;
+      const fuzzy = normalizeForFuzzyCompare(raw);
+      if (fuzzy && fuzzy.split(" ").length >= 5 && globalSeenFuzzy.has(fuzzy)) continue;
+      globalSeenStrict.add(norm);
+      if (fuzzy) globalSeenFuzzy.add(fuzzy);
       out.push(raw);
     }
     return out.join("").trim();
