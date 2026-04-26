@@ -181,6 +181,7 @@ export interface StructuredReading {
     stripped_planets?: Array<{ section: string; phrase: string }>;
     drift_count?: number;
   };
+  _gate?: GateReport;
 }
 
 function PlacementTable({ section }: { section: PlacementTableSection }) {
