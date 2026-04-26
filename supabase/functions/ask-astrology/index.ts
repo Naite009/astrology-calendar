@@ -2982,6 +2982,115 @@ const fixNatalRetrogradeMentionsInProse = (
   }
 };
 
+// DETERMINISTIC SR RETROGRADE CONSISTENCY PASS — strips any prose claim
+// that an SR planet is retrograde / Rx / ℞ when the SR Planetary Positions
+// block (astronomy-engine truth) shows it as direct. This is the Ben bug:
+// the SR placement table correctly shows Mercury as direct (no ℞), but the
+// reading prose still says "SR Mercury retrograde" / "Mercury ℞" in body
+// and bullets. Without this pass, the Replit gate fails because the prose
+// and the placement table disagree. Mirrors fixNatalRetrogradeMentionsInProse
+// but uses SR-prefixed mentions only ("SR <Planet>", "Solar Return <Planet>",
+// "this year's <Planet>") so we never accidentally rewrite natal claims.
+const fixSrRetrogradeMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPos.length === 0) return;
+  const srRetro = new Map<string, boolean>();
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"];
+  const knownPlanets = PLANET_NAMES.filter((p) => srRetro.has(p.toLowerCase()));
+  if (knownPlanets.length === 0) return;
+  const PLANET_RE = `(?:${knownPlanets.join("|")})`;
+
+  // Three SR-context qualifiers we accept as evidence the prose is talking
+  // about the Solar Return chart (not the natal chart):
+  //   - "SR <Planet>"
+  //   - "Solar Return <Planet>"
+  //   - "this year's <Planet>" / "this year <Planet>"
+  // After the planet name, match the retrograde marker (Rx/R/℞/retrograde).
+  const SR_QUALIFIER = `(?:SR|Solar\\s+Return|this\\s+year(?:'s)?)\\s+`;
+  const RETRO_SUFFIX = `(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+R\\b|\\s+retrograde\\b)`;
+  const srRetroRe = new RegExp(`\\b(${SR_QUALIFIER})(${PLANET_RE})${RETRO_SUFFIX}`, "gi");
+
+  // Also catch the standalone form when the SECTION title makes it clear
+  // we're in an SR context and the planet appears with a retro marker
+  // without an SR qualifier (e.g. "Mercury retrograde" inside a section
+  // titled "Solar Return ..."). To avoid false positives we ONLY apply this
+  // to string fields whose containing section title matches /solar return|sr /i.
+  const bareRetroRe = new RegExp(`\\b(${PLANET_RE})${RETRO_SUFFIX}`, "gi");
+
+  let phantomStripped = 0;
+  const examples: string[] = [];
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const stripQualified = (full: string, qualifier: string, planet: string): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (isSrRetro) return full;
+    phantomStripped++;
+    return `${qualifier}${planet}`;
+  };
+  const stripBare = (full: string, planet: string): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (isSrRetro) return full;
+    phantomStripped++;
+    return planet;
+  };
+
+  const visit = (node: any, sectionTitle: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
+    if (!node || typeof node !== "object") return;
+    const titleLower = sectionTitle.toLowerCase();
+    const inSrSection = titleLower.includes("solar return") || /\bsr\b/.test(titleLower);
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(srRetroRe, (full, qualifier, planet) =>
+          stripQualified(full, qualifier, planet),
+        );
+        if (inSrSection) {
+          next = next.replace(bareRetroRe, (full, planet) => stripBare(full, planet));
+        }
+        if (next !== val) {
+          if (examples.length < 5) examples.push(val.slice(0, 160));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val, sectionTitle);
+      }
+    }
+  };
+
+  if (Array.isArray(parsedContent.sections)) {
+    for (const section of parsedContent.sections) {
+      const title = typeof section?.title === "string" ? section.title : "";
+      visit(section, title);
+    }
+  }
+
+  if (phantomStripped > 0) {
+    log.push({
+      type: "sr_retrograde_corrected_in_prose",
+      detail: { phantom_rx_stripped: phantomStripped, examples },
+    });
+    console.info("[ask-astrology] sr retrograde corrected in prose", {
+      phantom_rx_stripped: phantomStripped,
+      examples,
+    });
+  }
+};
+
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
 // claim and rewrites the SIGN if it does not match the deterministic SR
@@ -4629,6 +4738,14 @@ const runPostProcessingPipeline = (
     fixNatalRetrogradeMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 5b. SR retrograde mentions in prose — strip "SR <Planet> retrograde"
+  // when the SR planetary positions block shows that planet as direct.
+  // This is the Ben bug: prose said "SR Mercury retrograde" but the SR
+  // placement table correctly had retrograde:false, so the gate failed.
+  safeRun("fixSrRetrogradeMentionsInProse", () =>
+    fixSrRetrogradeMentionsInProse(parsedContent, ctx, log),
+  );
+
   // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
   safeRun("correctSignRulershipClaimsInProse", () =>
     correctSignRulershipClaimsInProse(parsedContent, log),
@@ -4681,6 +4798,16 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
     "best windows",
     "caution windows",
   ]);
+  // ORPHAN-CITIES GUARD: if the reading has no city_comparison section,
+  // any summary_box item whose label references cities (e.g. "Caution
+  // cities", "Top cities", "Best cities", "Recommended cities") is a
+  // dangling reference to a section that was never produced — drop it
+  // before the gate sees it. This is the Ben bug: city section was
+  // omitted but the summary still cited "Caution cities".
+  const hasCityComparisonSection = Array.isArray(parsedContent.sections)
+    && parsedContent.sections.some((s: any) => s?.type === "city_comparison"
+      && Array.isArray(s?.cities) && s.cities.length > 0);
+  const CITY_LABEL_RE = /\b(cities|city)\b/i;
   for (const section of parsedContent.sections) {
     if (section?.type === "summary_box" && Array.isArray(section.items)) {
       const keptItems: any[] = [];
@@ -4726,6 +4853,17 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           continue;
         }
 
+        // Orphan-cities guard (see top of function): drop summary items
+        // that reference cities when no city_comparison section exists.
+        if (!hasCityComparisonSection && CITY_LABEL_RE.test(label)) {
+          droppedItems++;
+          log.push({
+            type: "orphan_city_summary_item_dropped",
+            detail: { section: section.title || "", label, reason: "no_city_comparison_section" },
+          });
+          continue;
+        }
+
         const valueKey = typeof item.value === "string" ? "value"
           : typeof item.text === "string" ? "text"
           : "value";
@@ -4737,7 +4875,10 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
-          if (backfill) {
+          // Guard against the backfill itself being whitespace/empty —
+          // without this the item gets re-inserted with `""` and the gate
+          // sees `"Best Windows": ""` (the Lauren bug).
+          if (backfill && !isWhitespaceOrEmpty(backfill)) {
             item[valueKey] = backfill;
             log.push({
               type: "empty_summary_item_backfilled",
@@ -4760,28 +4901,38 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           && it.label.trim().toLowerCase() === "best windows"
       );
       if (!hasBestWindows) {
-        keptItems.push({
-          label: "Best Windows",
-          value: buildEmptySummaryFallback(parsedContent, "Best Windows") || SUMMARY_ITEM_BACKFILLS["best windows"],
-        });
-        log.push({
-          type: "best_windows_item_inserted",
-          detail: { section: section.title || "", reason: "missing_from_items" },
-        });
+        const bwValue = buildEmptySummaryFallback(parsedContent, "Best Windows") || SUMMARY_ITEM_BACKFILLS["best windows"] || "";
+        if (!isWhitespaceOrEmpty(bwValue)) {
+          keptItems.push({ label: "Best Windows", value: bwValue });
+          log.push({
+            type: "best_windows_item_inserted",
+            detail: { section: section.title || "", reason: "missing_from_items" },
+          });
+        } else {
+          log.push({
+            type: "best_windows_item_skipped_empty",
+            detail: { section: section.title || "", reason: "no_fallback_available" },
+          });
+        }
       }
       const hasCautionWindows = keptItems.some(
         (it) => it && typeof it === "object" && typeof it.label === "string"
           && it.label.trim().toLowerCase() === "caution windows"
       );
       if (isRelationshipReading && String(section.title || "").trim() === "Relationship Strategy Summary" && !hasCautionWindows) {
-        keptItems.push({
-          label: "Caution Windows",
-          value: buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"],
-        });
-        log.push({
-          type: "caution_windows_item_inserted",
-          detail: { section: section.title || "", reason: "missing_from_items" },
-        });
+        const cwValue = buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"] || "";
+        if (!isWhitespaceOrEmpty(cwValue)) {
+          keptItems.push({ label: "Caution Windows", value: cwValue });
+          log.push({
+            type: "caution_windows_item_inserted",
+            detail: { section: section.title || "", reason: "missing_from_items" },
+          });
+        } else {
+          log.push({
+            type: "caution_windows_item_skipped_empty",
+            detail: { section: section.title || "", reason: "no_fallback_available" },
+          });
+        }
       }
       section.items = keptItems;
     }
