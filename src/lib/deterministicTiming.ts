@@ -1177,9 +1177,10 @@ const buildNatalDescription = (
   natalPlanet: string,
   natalDegree: string,
   exactSummary: string,
+  readingType: TimingReadingType,
 ): string => {
   const verb = NATAL_ASPECT_VERB[aspect] ?? aspect;
-  const themeMap = THEME_MAPS.natal;
+  const themeMap = getNatalThemeMap(readingType);
   const theme = (themeMap[natalPlanet] ?? '').trim();
   const scenarioTemplate =
     NATAL_SCENARIO_BY_TRANSIT_ASPECT[transitPlanet]?.[aspect] ?? '';
@@ -1196,19 +1197,20 @@ const buildNatalDescription = (
     ? scenarioTemplate.replace('{theme}', themeForScenario)
     : '';
 
-  const peaks = exactSummary ? ` Peaks: ${exactSummary}.` : '';
+  const peaks = exactSummary ? `, with exact peaks on ${exactSummary}` : '';
 
-  // Compose: "{Naming} means {what it touches}. {Scenario}.{Peaks}"
+  // Compose exactly as the shared timing rule requires: sentence 1 names the
+  // specific natal point; sentence 2 gives one concrete lived scenario.
   if (theme && scenario) {
-    return `${naming} touches ${theme}. ${scenario}${peaks}`;
+    return `${naming} touches ${theme}. ${scenario.replace(/\.$/, '')}${peaks}.`;
   }
   if (theme) {
-    return `${naming} touches ${theme}.${peaks}`;
+    return `${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}.`;
   }
   if (scenario) {
-    return `${naming}. ${scenario}${peaks}`;
+    return `${naming}. ${scenario.replace(/\.$/, '')}${peaks}.`;
   }
-  return `${naming}.${peaks}`;
+  return `${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}.`;
 };
 
 // Within-description sentence dedupe. Splits on sentence boundaries and removes
@@ -1263,18 +1265,12 @@ const buildTransitInterpretation = (params: {
   );
   if (developmentalOverride) return developmentalOverride;
 
-  // NATAL READING — bypass the generic-template path. Always names the specific
-  // natal point with sign+degree and grounds the body in a concrete real-life
-  // scenario rooted in that point's natal theme. NEVER uses "this part of your
-  // natal chart / makeup" or "awareness is the work" closers.
-  if (readingType === 'natal') {
-    const retrogradeSentence = isRetrograde
-      ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
-      : '';
-    const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '');
-    const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
-    return dedupeSentences(composed);
-  }
+  const retrogradeSentence = isRetrograde
+    ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
+    : '';
+  const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '', readingType);
+  const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+  return dedupeSentences(composed);
 
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, transitPlanet);
