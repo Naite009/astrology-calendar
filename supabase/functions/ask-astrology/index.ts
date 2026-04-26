@@ -9,6 +9,7 @@ import {
   buildPriorOutputs,
   injectDeterministicModalityElement,
   overwriteAllPolarityCounts,
+  computeDeterministicTallies,
 } from "./relationshipThreeCall.ts";
 import {
   computeCrossChartActivations,
