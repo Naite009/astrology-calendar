@@ -739,12 +739,6 @@ export function downloadBirthdayJSONStandalone(
     return base;
   });
 
-  const profYear = analysis.profectionYear;
-  const mappedProfectionYear = profYear ? {
-    ...profYear,
-    house: (profYear as any).house || (profYear as any).houseNumber || null,
-  } : null;
-
   // Permanent cake image URL from cloud storage
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -764,6 +758,25 @@ export function downloadBirthdayJSONStandalone(
   const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
   const srAge = !isNaN(birthYear) ? effectiveSrYear - birthYear : null;
 
+  const profYear = analysis.profectionYear;
+  // Recompute profection house number from the corrected age — guards
+  // against a stale age=0 / wrong-year shipped from analysis.profectionYear
+  // before the source-layer guard landed. If both sources are valid they
+  // agree; if they disagree the corrected srAge wins.
+  const correctedProfectionAge = srAge ?? (profYear?.age ?? null);
+  const correctedProfectionHouse = correctedProfectionAge != null
+    ? (correctedProfectionAge % 12) + 1
+    : (profYear?.houseNumber ?? null);
+  const mappedProfectionYear = profYear ? {
+    ...profYear,
+    age: correctedProfectionAge ?? profYear.age,
+    houseNumber: correctedProfectionHouse ?? profYear.houseNumber,
+    house: correctedProfectionHouse || (profYear as any).house || (profYear as any).houseNumber || null,
+  } : null;
+
+  const natalRisingSign = natalChart.houseCusps?.house1?.sign || '';
+  const srRisingSign = analysis.yearlyTheme?.ascendantSign || '';
+
   const payload = {
     report_type: "solar_return_birthday",
     data: {
@@ -781,13 +794,17 @@ export function downloadBirthdayJSONStandalone(
       natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
       natalMoon: natalChart.planets?.Moon?.sign || '',
       natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
-      natalRising: natalChart.houseCusps?.house1?.sign || '',
-      natalRisingDesc: SIGN_DESCRIPTIONS[natalChart.houseCusps?.house1?.sign || '']?.rising || '',
+      natalRising: natalRisingSign,
+      natalRisingDesc: SIGN_DESCRIPTIONS[natalRisingSign]?.rising || '',
       srSun: natalChart.planets?.Sun?.sign || '',
       srMoon: analysis.moonSign || '',
       srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
-      srRising: analysis.yearlyTheme?.ascendantSign || '',
-      srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || '',
+      srRising: srRisingSign,
+      srRisingDesc: SIGN_DESCRIPTIONS[srRisingSign]?.rising || '',
+      // Plain-language contrast between natal and SR Rising. Empty string
+      // when SR Rising matches natal Rising — in that case the static
+      // srRisingDesc is sufficient and any contrast prose would be misleading.
+      srRisingContrast: buildSrRisingContrast(natalRisingSign, srRisingSign),
       yearlyTheme: analysis.yearlyTheme,
       sunHouse: analysis.sunHouse,
       sunNatalHouse: analysis.sunNatalHouse,
