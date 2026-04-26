@@ -5730,16 +5730,35 @@ const stripParentheticalFromSubtitles = (parsedContent: any, log: HygieneLog) =>
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
   let cleaned = 0;
   const examples: string[] = [];
+  // Closed parenthetical (handles optional leading dash inside): "(— ... )" / "(...)"
   const PAREN_RE = /\s*\(\s*[—–-]?[^()]*\)\s*/g;
+  // Closed bracketed insertion: "[...]"
+  const BRACKET_RE = /\s*\[[^\[\]]*\]\s*/g;
+  // Unclosed parenthetical (AI sometimes ships truncated "( ... in Cancer · ..." with no `)`).
+  // Strip from the orphan "(" up to the next placement separator (" in ", "·", ",") or end of string.
+  const UNCLOSED_PAREN_RE = /\s*\([^()]*?(?=\s+in\s+|\s*·|,|$)/g;
+  // Em-dash interpretive insertion sandwiched between placement tokens, e.g.
+  //   "SR Jupiter — meaning, faith, and growth — in Cancer · SR 11th House"
+  // becomes "SR Jupiter in Cancer · SR 11th House".
+  const EM_DASH_INSERT_RE = /\s*[—–]\s+[^—–·]+?\s+[—–]\s+(?=in\s+)/gi;
 
   const visit = (node: any) => {
     if (Array.isArray(node)) { for (const x of node) visit(x); return; }
     if (!node || typeof node !== "object") return;
-    if (typeof node.subtitle === "string" && node.subtitle.includes("(")) {
+    if (typeof node.subtitle === "string" && /[\(\[—–]/.test(node.subtitle)) {
       const original = node.subtitle;
-      let next = original.replace(PAREN_RE, " ").replace(/\s{2,}/g, " ").replace(/\s+([·,])/g, "$1").trim();
+      let next = original
+        .replace(PAREN_RE, " ")
+        .replace(BRACKET_RE, " ")
+        .replace(EM_DASH_INSERT_RE, " ")
+        .replace(UNCLOSED_PAREN_RE, " ")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+([·,])/g, "$1")
+        .trim();
       // Collapse any leftover " in " / " · " spacing artifacts.
       next = next.replace(/\s+in\s+/g, " in ").replace(/\s*·\s*/g, " · ");
+      // Drop any trailing orphan separators left behind by the strip.
+      next = next.replace(/[·,\-—–]+\s*$/g, "").trim();
       if (next !== original && next.length > 0) {
         node.subtitle = next;
         cleaned++;
@@ -8281,7 +8300,7 @@ Return this exact structure:
     {
       "type": "narrative_section",
       "title": "Section Title Here",
-      "subtitle": "Optional subheading",
+      "subtitle": "PLACEMENT-ONLY METADATA — planet, sign, and house only (e.g., 'SR Jupiter in Cancer · SR 11th House'). HARD FAIL: NEVER include parentheticals '(...)', brackets '[...]', em-dash interpretive insertions ('— meaning, faith, and growth get worked out... —'), aspect descriptions, retrograde commentary beyond a bare 'R'/'Rx' tag, degrees, or any prose. Subtitles are labels, not interpretations. The interpretation goes in 'body'.",
       "body": "2-4 sentence paragraph of interpretation.",
       "bullets": [
         { "label": "The Archetype", "text": "Explanation here." },
@@ -9007,7 +9026,18 @@ SR LOVE ACTIVATION STYLE:
   11. narrative_section — "Key SR-to-Natal Activations" (3–5 most significant SR-to-natal aspects with degrees and one concrete real-life situation each)
   12. timing_section — "Solar Return Timing Windows" (3–5 most significant transit windows in next 12–18 months — use ONLY pre-computed transit data; each entry needs planet, natal point, date range, peak date, concrete scenario)
   13. narrative_section — "What Is Being Left Behind" (what is ending/releasing/completing this year — frame as necessary and clarifying, not as loss)
-  14. narrative_section — "The Year's Single Most Important Message" (the most honest grounded answer to "what do I most need to know about this year" — plain, direct, specific to this chart, not generic)
+  14. narrative_section — "The Year's Single Most Important Message" (the most honest grounded answer to "what do I most need to know about this year" — plain, direct, specific to this chart, not generic).
+     CLOSING SEND-OFF RULE (HARD, NON-NEGOTIABLE — applies to this section's body): The body of "The Year's Single Most Important Message" MUST end on a DECLARATIVE send-off, never on a question, never on an open challenge, never on conditional/possibility framing. The LAST TWO SENTENCES of the body must (a) tell the person, as fact, what they are walking into this year (named in plain behavioral terms specific to THIS chart's SR placements, not generic), and (b) tell the person, as fact, what they are capable of meeting it with (a strength rooted in their actual natal chart and reinforced or activated by this SR year). Both sentences are statements, not invitations, not prompts. The voice is the astrologer looking the person in the eye and saying "here is what I know about your year" — certain, warm, grounded, specific. The person must leave this section feeling oriented and capable, not challenged or uncertain.
+     FORBIDDEN endings for this section (HARD FAIL — do not ship any of these patterns as the closing sentence):
+       - any sentence ending in a question mark
+       - "the only question is whether…" / "the question is whether…" / "the question becomes…"
+       - "it remains to be seen whether…" / "time will tell…"
+       - "you may find…" / "you might discover…" / "you could…" / "perhaps you'll…" / "if you can…"
+       - "the choice is yours" / "what you do with it is up to you" / "the rest is up to you"
+       - "whether you…" framings used as the closer
+       - "this year is asking you to…" / "this year invites you to…" / "your work is to…" / "the invitation is…"
+       - any sentence that opens a new challenge, hands the work back to the reader, or leaves outcome ambiguous
+     REQUIRED shape for the final two sentences: declarative present/future-tense statements with concrete, chart-specific content. Examples of correct shape (not for copying — the actual content must be derived from THIS chart): "You are walking into a year that rearranges how you show up at work and who counts as family. You have the steadiness for it — the same steadiness that has held you through every Saturn pass before this one." The closer is a benediction grounded in fact, not a homework assignment.
   15. modality_element — "Solar Return Elemental & Modal Balance"
   16. summary_box — "Solar Return Strategy Summary" with items: "Year's Theme", "Where to Focus", "What to Release", "Most Important Message"
 
