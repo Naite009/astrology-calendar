@@ -50,7 +50,7 @@ export type DedupResult = {
 };
 
 export function dedupWindows(rawWindows: readonly WindowEntry[]): DedupResult {
-  const map = new Map<string, { label: string; description: string; mergedCount: number; key: string }>();
+  const map = new Map<string, { label: string; description: string; mergedCount: number; key: string; seenDescs: Set<string> }>();
 
   for (const entry of rawWindows) {
     const label = typeof entry.label === 'string' ? entry.label.trim() : '';
@@ -60,18 +60,44 @@ export function dedupWindows(rawWindows: readonly WindowEntry[]): DedupResult {
     const key = dateRangeKey(entry.dateRange) ?? `label:${normalizeLabelKey(label)}`;
     const existing = map.get(key);
     if (existing) {
+      const norm = description.toLowerCase().replace(/\s+/g, ' ');
+      if (existing.seenDescs.has(norm)) {
+        existing.mergedCount += 1;
+        continue;
+      }
+      const existingNorm = existing.description.toLowerCase().replace(/\s+/g, ' ');
+      if (existingNorm.includes(norm) || norm.includes(existingNorm)) {
+        existing.seenDescs.add(norm);
+        existing.mergedCount += 1;
+        continue;
+      }
+      existing.seenDescs.add(norm);
       existing.description = `${existing.description}\n\n${description}`;
       existing.mergedCount += 1;
     } else {
-      map.set(key, { label, description, mergedCount: 1, key });
+      const norm = description.toLowerCase().replace(/\s+/g, ' ');
+      map.set(key, { label, description, mergedCount: 1, key, seenDescs: new Set([norm]) });
     }
   }
+
+  const dedupeSentencesInline = (text: string): string => {
+    const parts = text.split(/(?<=[.!?])\s+|\n\n+/).map((s) => s.trim()).filter(Boolean);
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const p of parts) {
+      const k = p.toLowerCase().replace(/\s+/g, ' ');
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(p);
+    }
+    return out.join(' ');
+  };
 
   const merged = Array.from(map.values());
   const totalMerged = merged.reduce((sum, m) => sum + (m.mergedCount - 1), 0);
 
   return {
-    windows: merged.map(({ label, description }) => ({ label, description })),
+    windows: merged.map(({ label, description }) => ({ label, description: dedupeSentencesInline(description) })),
     mergedCount: totalMerged,
     mergeStats: merged.map(({ key, label, mergedCount }) => ({ key, label, mergedCount })),
   };
