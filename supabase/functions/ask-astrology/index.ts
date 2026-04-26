@@ -10027,6 +10027,18 @@ ${natalGroundTruthLines}`
     // ────────────────────────────────────────────────────────────
     if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
       try {
+        // FIX 2: Repair retrograde acknowledgment in relationship prose
+        // BEFORE the contract verdict runs so the contract sees the repaired
+        // state. Only injects on planets actually being interpreted.
+        try {
+          const rxRepairLog: HygieneLog = [];
+          acknowledgeRelationshipRetrogrades(parsedContent, rxRepairLog);
+          if (rxRepairLog.length > 0) {
+            (parsedContent as any)._retrograde_repair = rxRepairLog;
+          }
+        } catch (rxErr) {
+          console.warn("[ask-astrology] retrograde acknowledgment repair threw:", rxErr);
+        }
         const verdict = enforceRelationshipContract(parsedContent, sanitizedChartContext || undefined);
         (parsedContent as any)._relationship_contract = {
           version: "2.0",
