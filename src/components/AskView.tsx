@@ -14,6 +14,7 @@ import { buildDeterministicTimingData, mergeDeterministicTimingSection } from "@
 import * as Astronomy from 'astronomy-engine';
 import { calculateNatalAstrocartography } from "@/lib/natalAstrocartography";
 import { generateNatalPortrait } from "@/lib/natalPortraitEngine";
+import { analyzeSolarReturn } from "@/lib/solarReturnAnalysis";
 import { calculateAstrocartography } from "@/lib/solarReturnAstrocartography";
 import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
