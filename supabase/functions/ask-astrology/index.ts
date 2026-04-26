@@ -5258,6 +5258,7 @@ const HYGIENE_SAFE_KEYS = new Set([
   "_empty_summary_flags", "_count_sum_warnings", "_parse_error",
   "_post_gate_safety", "_final_hygiene", "_accuracy_review", "_verified_activations",
   "_sr_house_copy_warning", "_source_call", "_relationship_contract",
+  "_review_notes", "_retrograde_repair",
   "type", "label", "planet", "aspect", "natal_point", "symbol",
   "tag", "house", "sign", "degrees", "generated_date", "birth_info",
   "subject", "question_type", "question_asked", "name",
