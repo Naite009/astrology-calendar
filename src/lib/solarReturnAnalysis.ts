@@ -178,13 +178,72 @@ const planetNatureKeywords: Record<string, string> = {
   Saturn: 'discipline, structure, long-term commitment, and mastery',
 };
 
-function buildProfectionSynthesis(timeLord: string, houseNumber: number): string {
+// SR-house life areas used by the enriched profection synthesis. Mirrors
+// the SR_HOUSE_LIFE_AREA in the SR engine for self-contained synthesis prose.
+const PROFECTION_SR_HOUSE_AREA: Record<number, string> = {
+  1: 'your identity and physical presence',
+  2: 'finances, values, and material security',
+  3: 'communication, learning, and immediate environment',
+  4: 'home, family, and emotional roots',
+  5: 'creativity, romance, and what brings you joy',
+  6: 'daily routines, health, and the work of being well',
+  7: 'partnerships and one-on-one relationships',
+  8: 'shared resources, intimacy, and deep transformation',
+  9: 'travel, higher learning, and your worldview',
+  10: 'career, reputation, and public role',
+  11: 'community, friendships, and future-facing goals',
+  12: 'solitude, the unconscious, and inner work',
+};
+
+const DIGNITY_FORCE_NOTE: Record<string, string> = {
+  Domicile: 'in domicile (its home sign) — operating at full strength',
+  Exaltation: 'in exaltation — operating with unusual elevation and authority',
+  Detriment: 'in detriment — operating in unfamiliar territory and asked to work harder',
+  Fall: 'in fall — operating against its grain, which can feel like dragging the year uphill',
+  Peregrine: 'in a neutral sign — neither boosted nor weakened by dignity',
+};
+
+function buildProfectionSynthesis(
+  timeLord: string,
+  houseNumber: number,
+  timeLordSRHouse: number | null = null,
+  timeLordSRSign: string = '',
+  isRetrograde: boolean = false,
+): string {
   const houseThemes = profectionHouseThemes[houseNumber] || '';
   const planetNature = planetNatureKeywords[timeLord];
-  if (!planetNature) {
-    return `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+
+  // Compose the dignity + SR-house clause if we have placement data.
+  let placementClause = '';
+  if (timeLordSRHouse && timeLordSRSign) {
+    const dignity = getDignity(timeLord, timeLordSRSign);
+    const dignityNote = DIGNITY_FORCE_NOTE[dignity] || '';
+    const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${timeLordSRHouse}th house`;
+    const retroClause = isRetrograde
+      ? ' Retrograde, the year\'s themes turn inward first — review and integration before outward action.'
+      : '';
+    placementClause = ` This year ${timeLord} sits in your SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house in ${timeLordSRSign}${dignityNote ? `, ${dignityNote}` : ''}, so the year's most defining moments concentrate in ${srArea}.${retroClause}`;
+    // Fix the ordinal — we want SR house ordinal, not the profection house ordinal
+    placementClause = placementClause.replace(
+      `SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house`,
+      `SR ${ord(timeLordSRHouse)} house`,
+    );
   }
-  return `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`;
+
+  const base = planetNature
+    ? `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`
+    : `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+
+  return `${base}${placementClause}`;
+}
+
+// Local ordinal helper used by buildProfectionSynthesis when the file's
+// inner `ord` (defined later inside analyzeSolarReturn) isn't in scope.
+function ord(n: number): string {
+  if (n === 1) return '1st';
+  if (n === 2) return '2nd';
+  if (n === 3) return '3rd';
+  return `${n}th`;
 }
 
 // ─── Aspect detection ───────────────────────────────────────────────
@@ -960,27 +1019,37 @@ export const analyzeSolarReturn = (
 
   // 10. Annual Profection (Step 3)
   let profectionYear: SolarReturnAnalysis['profectionYear'] = null;
-  if (natalChart.birthDate && srChart.solarReturnYear) {
+  if (natalChart.birthDate) {
     const birthYear = parseInt(natalChart.birthDate.slice(0, 4), 10);
     if (!isNaN(birthYear)) {
-      const age = srChart.solarReturnYear - birthYear;
+      // Guard srChart.solarReturnYear: missing, equal to birthYear, or
+      // out-of-range values would otherwise produce age=0 (or negative),
+      // which collapses every consumer (PDF, JSON export, profection wheel).
+      // Fall back to current calendar year if the stored year is bad.
+      const currentYear = new Date().getFullYear();
+      const rawSrYear = Number(srChart.solarReturnYear);
+      const isValidSrYear = Number.isFinite(rawSrYear)
+        && rawSrYear > 1900 && rawSrYear < 2200
+        && rawSrYear !== birthYear;
+      const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
+      const age = effectiveSrYear - birthYear;
       const houseNumber = (age % 12) + 1; // age 0 → house 1, age 12 → house 1, etc.
-      
+
       // Find the sign on the natal house cusp for this profection house
       const natalCuspKey = `house${houseNumber}`;
       const natalCusp = natalChart.houseCusps?.[natalCuspKey as keyof typeof natalChart.houseCusps];
       let timeLord = '';
       let timeLordSRHouse: number | null = null;
       let timeLordSRSign = '';
+      let timeLordSRRetro = false;
       let natalCuspSign = '';
-      
+
       if (natalCusp) {
         const cuspSign = (natalCusp as any).sign;
         if (cuspSign && SIGNS.includes(cuspSign)) {
           natalCuspSign = cuspSign;
           timeLord = traditionalRuler[cuspSign] || '';
         }
-      } else {
       }
       // Fallback: if no house cusps, use whole sign from ascendant
       if (!timeLord && natalRisingSign) {
@@ -996,6 +1065,7 @@ export const analyzeSolarReturn = (
         const tlPos = srChart.planets[timeLord as keyof typeof srChart.planets];
         if (tlPos) {
           timeLordSRSign = tlPos.sign;
+          timeLordSRRetro = !!(tlPos as any).isRetrograde;
           const tlDeg = toAbsDeg(tlPos);
           timeLordSRHouse = tlDeg !== null ? findSRHouse(tlDeg, srChart) : null;
         }
@@ -1015,10 +1085,12 @@ export const analyzeSolarReturn = (
           ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
           : '';
 
-        const ord = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
-        const srHouseText = timeLordSRHouse ? `${ord(timeLordSRHouse)} house in ${timeLordSRSign || '—'}` : '—';
-        const synthesis = buildProfectionSynthesis(timeLord, houseNumber);
-        const interpretation = `You are in a ${ord(houseNumber)} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${srHouseText}. ${synthesis}`;
+        const ordLocal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+        const srHouseText = timeLordSRHouse ? `${ordLocal(timeLordSRHouse)} house in ${timeLordSRSign || '—'}` : '—';
+        const synthesis = buildProfectionSynthesis(
+          timeLord, houseNumber, timeLordSRHouse, timeLordSRSign, timeLordSRRetro,
+        );
+        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${srHouseText}. ${synthesis}`;
 
         profectionYear = {
           age,

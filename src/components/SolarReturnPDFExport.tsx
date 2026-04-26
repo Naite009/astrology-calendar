@@ -303,7 +303,57 @@ const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: str
   },
 };
 
+// ── SR-Ascendant contrast against natal Ascendant ──────────────────
+// When SR Rising differs from natal Rising (the common case), the SR
+// Rising sign description alone is incomplete — astrologically the
+// interesting thing is the contrast: who you ARE underneath, presenting
+// as something different this year. This helper produces a single line
+// of plain-language contrast prose tailored to the natal→SR pair.
+//
+// Returns "" when SR Rising equals natal Rising (in that case the static
+// per-sign description is enough; SR Rising "matches your natal Ascendant"
+// is already noted elsewhere in the analysis).
+const SIGN_RISING_SHORT: Record<string, string> = {
+  Aries: 'direct, fast, ready to fight',
+  Taurus: 'steady, sensual, hard to rush',
+  Gemini: 'curious, talkative, quick to pivot',
+  Cancer: 'protective, attuned, emotionally tuned in',
+  Leo: 'warm, visible, naturally on stage',
+  Virgo: 'measured, precise, useful',
+  Libra: 'gracious, balancing, hard to read directly',
+  Scorpio: 'intense, private, watching beneath the surface',
+  Sagittarius: 'open, philosophical, scanning the horizon',
+  Capricorn: 'composed, structured, taking the long view',
+  Aquarius: 'unconventional, observing from a half-step outside',
+  Pisces: 'soft-edged, absorbing, harder to pin down',
+};
+
+const SIGN_RISING_PRESENTING_AS: Record<string, string> = {
+  Aries: 'more direct, quicker to engage, less inclined to wait',
+  Taurus: 'more grounded, slower to react, harder to pull off course',
+  Gemini: 'more verbal and curious, lighter on your feet',
+  Cancer: 'softer, more openly caring, more emotionally available',
+  Leo: 'warmer, more visible, more willing to take up space',
+  Virgo: 'more measured, precise, and useful — running through a checklist',
+  Libra: 'more gracious and diplomatic, weighing both sides before responding',
+  Scorpio: 'more intense and watchful, slower to give yourself away',
+  Sagittarius: 'more expansive and philosophical, with a wider field of vision',
+  Capricorn: 'more composed and authoritative, naturally taking responsibility',
+  Aquarius: 'more independent and slightly outside the room, harder to predict',
+  Pisces: 'softer, more porous, more attuned to mood than strategy',
+};
+
+function buildSrRisingContrast(natalRising: string, srRising: string): string {
+  if (!natalRising || !srRising) return '';
+  if (natalRising === srRising) return '';
+  const natalDesc = SIGN_RISING_SHORT[natalRising];
+  const srPresenting = SIGN_RISING_PRESENTING_AS[srRising];
+  if (!natalDesc || !srPresenting) return '';
+  return `Your natal ${natalRising} Rising — ${natalDesc} — is wearing a ${srRising} coat this year. People will read you as ${srPresenting} than your default. The ${natalRising} underneath is still there; this year just runs it through a ${srRising} filter.`;
+}
+
 const HTYM_MOON_BODY: Record<string, string> = {
+
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
   Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
   Gemini: 'Your emotional processing becomes more verbal and social. You think through feelings rather than sitting with them — conversation and writing become emotional outlets.',
@@ -689,12 +739,6 @@ export function downloadBirthdayJSONStandalone(
     return base;
   });
 
-  const profYear = analysis.profectionYear;
-  const mappedProfectionYear = profYear ? {
-    ...profYear,
-    house: (profYear as any).house || (profYear as any).houseNumber || null,
-  } : null;
-
   // Permanent cake image URL from cloud storage
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -714,6 +758,25 @@ export function downloadBirthdayJSONStandalone(
   const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
   const srAge = !isNaN(birthYear) ? effectiveSrYear - birthYear : null;
 
+  const profYear = analysis.profectionYear;
+  // Recompute profection house number from the corrected age — guards
+  // against a stale age=0 / wrong-year shipped from analysis.profectionYear
+  // before the source-layer guard landed. If both sources are valid they
+  // agree; if they disagree the corrected srAge wins.
+  const correctedProfectionAge = srAge ?? (profYear?.age ?? null);
+  const correctedProfectionHouse = correctedProfectionAge != null
+    ? (correctedProfectionAge % 12) + 1
+    : (profYear?.houseNumber ?? null);
+  const mappedProfectionYear = profYear ? {
+    ...profYear,
+    age: correctedProfectionAge ?? profYear.age,
+    houseNumber: correctedProfectionHouse ?? profYear.houseNumber,
+    house: correctedProfectionHouse || (profYear as any).house || (profYear as any).houseNumber || null,
+  } : null;
+
+  const natalRisingSign = natalChart.houseCusps?.house1?.sign || '';
+  const srRisingSign = analysis.yearlyTheme?.ascendantSign || '';
+
   const payload = {
     report_type: "solar_return_birthday",
     data: {
@@ -731,13 +794,17 @@ export function downloadBirthdayJSONStandalone(
       natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
       natalMoon: natalChart.planets?.Moon?.sign || '',
       natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
-      natalRising: natalChart.houseCusps?.house1?.sign || '',
-      natalRisingDesc: SIGN_DESCRIPTIONS[natalChart.houseCusps?.house1?.sign || '']?.rising || '',
+      natalRising: natalRisingSign,
+      natalRisingDesc: SIGN_DESCRIPTIONS[natalRisingSign]?.rising || '',
       srSun: natalChart.planets?.Sun?.sign || '',
       srMoon: analysis.moonSign || '',
       srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
-      srRising: analysis.yearlyTheme?.ascendantSign || '',
-      srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || '',
+      srRising: srRisingSign,
+      srRisingDesc: SIGN_DESCRIPTIONS[srRisingSign]?.rising || '',
+      // Plain-language contrast between natal and SR Rising. Empty string
+      // when SR Rising matches natal Rising — in that case the static
+      // srRisingDesc is sufficient and any contrast prose would be misleading.
+      srRisingContrast: buildSrRisingContrast(natalRisingSign, srRisingSign),
       yearlyTheme: analysis.yearlyTheme,
       sunHouse: analysis.sunHouse,
       sunNatalHouse: analysis.sunNatalHouse,
@@ -954,10 +1021,6 @@ export function buildFullJsonStandalone(
   });
 
   const profYear = analysis.profectionYear;
-  const mappedProfectionYear = profYear ? {
-    ...profYear,
-    house: (profYear as any).house || (profYear as any).houseNumber || null,
-  } : null;
 
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -975,6 +1038,22 @@ export function buildFullJsonStandalone(
   const effectiveSrYear2 = isValidSrYear2 ? rawSrYear2 : currentYear2;
   const srAge2 = !isNaN(birthYear2) ? effectiveSrYear2 - birthYear2 : null;
 
+  // Same age-collapse guard used in downloadBirthdayJSONStandalone — never
+  // ship a profection age=0 derived from a stale solarReturnYear.
+  const correctedProfectionAge2 = srAge2 ?? (profYear?.age ?? null);
+  const correctedProfectionHouse2 = correctedProfectionAge2 != null
+    ? (correctedProfectionAge2 % 12) + 1
+    : (profYear?.houseNumber ?? null);
+  const mappedProfectionYear = profYear ? {
+    ...profYear,
+    age: correctedProfectionAge2 ?? profYear.age,
+    houseNumber: correctedProfectionHouse2 ?? profYear.houseNumber,
+    house: correctedProfectionHouse2 || (profYear as any).house || (profYear as any).houseNumber || null,
+  } : null;
+
+  const natalRisingSign2 = natalChart.houseCusps?.house1?.sign || '';
+  const srRisingSign2 = analysis.yearlyTheme?.ascendantSign || '';
+
   return {
     name: natalChart.name || '',
     cakeImageUrl,
@@ -990,13 +1069,14 @@ export function buildFullJsonStandalone(
     natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
     natalMoon: natalChart.planets?.Moon?.sign || '',
     natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
-    natalRising: natalChart.houseCusps?.house1?.sign || '',
-    natalRisingDesc: SIGN_DESCRIPTIONS[natalChart.houseCusps?.house1?.sign || '']?.rising || '',
+    natalRising: natalRisingSign2,
+    natalRisingDesc: SIGN_DESCRIPTIONS[natalRisingSign2]?.rising || '',
     srSun: natalChart.planets?.Sun?.sign || '',
     srMoon: analysis.moonSign || '',
     srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
-    srRising: analysis.yearlyTheme?.ascendantSign || '',
-    srRisingDesc: SIGN_DESCRIPTIONS[analysis.yearlyTheme?.ascendantSign || '']?.rising || '',
+    srRising: srRisingSign2,
+    srRisingDesc: SIGN_DESCRIPTIONS[srRisingSign2]?.rising || '',
+    srRisingContrast: buildSrRisingContrast(natalRisingSign2, srRisingSign2),
     yearlyTheme: analysis.yearlyTheme,
     sunHouse: analysis.sunHouse,
     sunNatalHouse: analysis.sunNatalHouse,
@@ -2734,10 +2814,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
     }));
 
     const profYear = analysis.profectionYear;
-    const mappedProfectionYear = profYear ? {
-      ...profYear,
-      house: (profYear as any).house || (profYear as any).houseNumber || null,
-    } : null;
 
     // Compute the effective Solar Return year — fall back to the current calendar
     // year if srChart.solarReturnYear is missing, invalid, or accidentally equal
@@ -2749,6 +2825,18 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       && rawSrYear3 > 1900 && rawSrYear3 < 2200
       && (isNaN(birthYear3) || rawSrYear3 !== birthYear3);
     const effectiveSrYear3 = isValidSrYear3 ? rawSrYear3 : currentYear3;
+    const srAge3 = !isNaN(birthYear3) ? effectiveSrYear3 - birthYear3 : null;
+
+    const correctedProfectionAge3 = srAge3 ?? (profYear?.age ?? null);
+    const correctedProfectionHouse3 = correctedProfectionAge3 != null
+      ? (correctedProfectionAge3 % 12) + 1
+      : (profYear?.houseNumber ?? null);
+    const mappedProfectionYear = profYear ? {
+      ...profYear,
+      age: correctedProfectionAge3 ?? profYear.age,
+      houseNumber: correctedProfectionHouse3 ?? profYear.houseNumber,
+      house: correctedProfectionHouse3 || (profYear as any).house || (profYear as any).houseNumber || null,
+    } : null;
 
     return {
       name: natalChart.name || '',
