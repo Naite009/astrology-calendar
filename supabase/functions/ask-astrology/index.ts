@@ -4877,6 +4877,58 @@ const correctNatalPlanetPositionsInProse = (
       if (touched) next = sentences.join(" ");
     }
 
+    // PASS 3 — unqualified bleed scrub. The AI sometimes cites a planet at
+    // its SR position in a sentence that has NO "natal" anchor and NO "SR"
+    // anchor (e.g. "Uranus at 0°09' Gemini sits opposite your Sun…"). Those
+    // sentences slip through PASS 1 (no "natal" prefix) and PASS 2 (no
+    // natal context word). When the cited value matches the SR truth AND
+    // the natal truth is different, the only safe interpretation is that
+    // the AI bled the SR position — rewrite to the natal value. We still
+    // refuse to touch sentences that contain an explicit SR qualifier.
+    if (val) {
+      const sentences3 = next.split(sentenceSplit);
+      let touched3 = false;
+      for (let i = 0; i < sentences3.length; i++) {
+        const s = sentences3[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const sr3 = srByPlanet.get(planet.toLowerCase());
+          if (!sr3) continue;
+          if (sr3.sign === truth.sign && sr3.degree === truth.degree) continue;
+          const reBleed3 = new RegExp(
+            `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(reBleed3, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+            const claimedSignLower = String(claimedSign).toLowerCase();
+            const claimedDeg = parseInt(degStr, 10);
+            // Already correct → leave
+            if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            // Only rewrite when the claim matches the SR position exactly —
+            // that's the unambiguous SR-bleed signature. Random wrong values
+            // are left for the gate to flag rather than silently rewritten.
+            const signMatchesSr = claimedSignLower === sr3.sign.toLowerCase();
+            const degMatchesSr = claimedDeg === sr3.degree;
+            if (!(signMatchesSr && degMatchesSr)) return match;
+            if (claimedSignLower !== truth.sign.toLowerCase()) signRewrites++;
+            if (claimedDeg !== truth.degree) degreeRewrites++;
+            const retro = retroPart || "";
+            const minOut = minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : "";
+            if (examples.length < 5) {
+              examples.push(`[pass3] ${match} → ${planet} at ${truth.degree}°${String(truth.minutes).padStart(2, "0")}' ${truth.sign}`);
+            }
+            return `${planet}${retro}${gap}${truth.degree}°${minOut} ${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences3[i] = s2; touched3 = true; }
+      }
+      if (touched3) next = sentences3.join(" ");
+    }
+
     if (next !== val) {
       (node as any)[key] = next;
     }
