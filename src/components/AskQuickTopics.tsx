@@ -186,14 +186,31 @@ function buildPromptWithContext(
   birthDate: string,
   birthTime: string,
   birthLocation: string,
-  personalContext?: string
+  personalContext?: string,
+  excludedFields?: string,
 ): string {
   const basePrompt = topic.prompt(name, birthDate, birthTime, birthLocation);
-  if (!personalContext?.trim()) return basePrompt;
 
-  const contextBlock = `\n\nPERSONAL CONTEXT: The person specifically wants to know about: "${personalContext.trim()}"\nWeave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style, environmental preferences, career direction). Address their specific situation through the lens of their chart placements.`;
+  let prompt = basePrompt;
+  if (personalContext?.trim()) {
+    prompt += `\n\nPERSONAL CONTEXT: The person specifically wants to know about: "${personalContext.trim()}"\nWeave this into the relevant sections of your analysis. Do not create a separate section for it — integrate it naturally where it fits (e.g., timing, compatibility patterns, attraction style, environmental preferences, career direction). Address their specific situation through the lens of their chart placements.`;
+  }
 
-  return basePrompt + contextBlock;
+  // Hard-exclusion guard for career-style readings. The AI tends to default
+  // to finance/business/VC examples for any 10th-house heavy chart even when
+  // the user has explicitly said those fields don't interest them. We surface
+  // the exclusion list AND tell the AI to rank-order the remaining fields it
+  // does propose so the gate / post-processor can verify nothing on the list
+  // appears in best_fit recommendations.
+  const excluded = (excludedFields || "")
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (excluded.length > 0) {
+    prompt += `\n\nEXCLUDED FIELDS (HARD CONSTRAINT): The user has explicitly excluded the following career fields/industries from any "best fit", "primary recommendation", or "ideal field" suggestions: ${excluded.map((e) => `"${e}"`).join(", ")}. You MUST NOT recommend these fields as primary career paths. You MAY mention them only when: (a) explicitly noting they are NOT a fit for this person, or (b) acknowledging the chart shows the energy but explaining why the user's stated preference takes precedence. In every "best fit" / "ideal field" / "primary career direction" output, choose alternative fields that match the chart symbolism without falling into the excluded list. If your reading exposes a structured ranking, separate it into "best_fit", "possible_but_not_primary", and "poor_fit_or_user_rejected" — and place every excluded field strictly into "poor_fit_or_user_rejected".`;
+  }
+
+  return prompt;
 }
 
 interface AskQuickTopicsProps {
