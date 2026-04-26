@@ -2982,6 +2982,115 @@ const fixNatalRetrogradeMentionsInProse = (
   }
 };
 
+// DETERMINISTIC SR RETROGRADE CONSISTENCY PASS — strips any prose claim
+// that an SR planet is retrograde / Rx / ℞ when the SR Planetary Positions
+// block (astronomy-engine truth) shows it as direct. This is the Ben bug:
+// the SR placement table correctly shows Mercury as direct (no ℞), but the
+// reading prose still says "SR Mercury retrograde" / "Mercury ℞" in body
+// and bullets. Without this pass, the Replit gate fails because the prose
+// and the placement table disagree. Mirrors fixNatalRetrogradeMentionsInProse
+// but uses SR-prefixed mentions only ("SR <Planet>", "Solar Return <Planet>",
+// "this year's <Planet>") so we never accidentally rewrite natal claims.
+const fixSrRetrogradeMentionsInProse = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (srPos.length === 0) return;
+  const srRetro = new Map<string, boolean>();
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"];
+  const knownPlanets = PLANET_NAMES.filter((p) => srRetro.has(p.toLowerCase()));
+  if (knownPlanets.length === 0) return;
+  const PLANET_RE = `(?:${knownPlanets.join("|")})`;
+
+  // Three SR-context qualifiers we accept as evidence the prose is talking
+  // about the Solar Return chart (not the natal chart):
+  //   - "SR <Planet>"
+  //   - "Solar Return <Planet>"
+  //   - "this year's <Planet>" / "this year <Planet>"
+  // After the planet name, match the retrograde marker (Rx/R/℞/retrograde).
+  const SR_QUALIFIER = `(?:SR|Solar\\s+Return|this\\s+year(?:'s)?)\\s+`;
+  const RETRO_SUFFIX = `(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+R\\b|\\s+retrograde\\b)`;
+  const srRetroRe = new RegExp(`\\b(${SR_QUALIFIER})(${PLANET_RE})${RETRO_SUFFIX}`, "gi");
+
+  // Also catch the standalone form when the SECTION title makes it clear
+  // we're in an SR context and the planet appears with a retro marker
+  // without an SR qualifier (e.g. "Mercury retrograde" inside a section
+  // titled "Solar Return ..."). To avoid false positives we ONLY apply this
+  // to string fields whose containing section title matches /solar return|sr /i.
+  const bareRetroRe = new RegExp(`\\b(${PLANET_RE})${RETRO_SUFFIX}`, "gi");
+
+  let phantomStripped = 0;
+  const examples: string[] = [];
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+  ]);
+
+  const stripQualified = (full: string, qualifier: string, planet: string): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (isSrRetro) return full;
+    phantomStripped++;
+    return `${qualifier}${planet}`;
+  };
+  const stripBare = (full: string, planet: string): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (isSrRetro) return full;
+    phantomStripped++;
+    return planet;
+  };
+
+  const visit = (node: any, sectionTitle: string) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
+    if (!node || typeof node !== "object") return;
+    const titleLower = sectionTitle.toLowerCase();
+    const inSrSection = titleLower.includes("solar return") || /\bsr\b/.test(titleLower);
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string") {
+        let next = val;
+        next = next.replace(srRetroRe, (full, qualifier, planet) =>
+          stripQualified(full, qualifier, planet),
+        );
+        if (inSrSection) {
+          next = next.replace(bareRetroRe, (full, planet) => stripBare(full, planet));
+        }
+        if (next !== val) {
+          if (examples.length < 5) examples.push(val.slice(0, 160));
+          (node as any)[key] = next;
+        }
+      } else {
+        visit(val, sectionTitle);
+      }
+    }
+  };
+
+  if (Array.isArray(parsedContent.sections)) {
+    for (const section of parsedContent.sections) {
+      const title = typeof section?.title === "string" ? section.title : "";
+      visit(section, title);
+    }
+  }
+
+  if (phantomStripped > 0) {
+    log.push({
+      type: "sr_retrograde_corrected_in_prose",
+      detail: { phantom_rx_stripped: phantomStripped, examples },
+    });
+    console.info("[ask-astrology] sr retrograde corrected in prose", {
+      phantom_rx_stripped: phantomStripped,
+      examples,
+    });
+  }
+};
+
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
 // claim and rewrites the SIGN if it does not match the deterministic SR
