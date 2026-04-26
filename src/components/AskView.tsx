@@ -357,7 +357,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const chartNameForRequest = chartForRequest?.name || "Unknown";
 
     // Helper to apply a completed job's result to the chat.
-    const applyCompletedJob = (job: any) => {
+    const applyCompletedJob = async (job: any) => {
       if (job.status === "failed") {
         toast.error(job.error_message || "Previous reading failed.");
         return;
@@ -367,9 +367,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
+        const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
-          correctPlacementData(data, chartForRequest, currentSR),
+          correctPlacementData(data, chartForRequest, canonicalSR),
           null,
         );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
