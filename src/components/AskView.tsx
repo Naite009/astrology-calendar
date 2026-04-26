@@ -1496,7 +1496,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
-
+  const handleSubmitDirect = async (
     directQuestion?: string,
     userLocations?: { current?: string; considering1?: string; considering2?: string },
   ) => {
