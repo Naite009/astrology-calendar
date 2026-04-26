@@ -538,7 +538,7 @@ export function AskQuickTopics({
                   activeTopic.id === "natal"
                     ? 'e.g., "I want to understand why I keep ending up in the same situations"'
                     : activeTopic.id === "solar_return"
-                    ? 'e.g., "I want to know what this birthday year is really about"'
+                    ? 'e.g., "I\'m deciding whether to leave my job this year" or "We\'re trying to start a family"'
                     : activeTopic.id === "relationship"
                     ? 'e.g., "I met someone earthy, should I pursue it?"'
                     : activeTopic.id === "relocation"
