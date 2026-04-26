@@ -2024,11 +2024,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // the 'natal' timing lens so the same transit windows are injected.
       const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
-      let chartContext = buildChartContext(chartForRequest, timingData.context);
+      // Resolve the canonical SR (cloud overrides any stale localStorage copy)
+      // ONCE per request and reuse for both context build and post-job correct.
+      const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
-        const srForRequest = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
-        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, srForRequest);
+        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
       }
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
