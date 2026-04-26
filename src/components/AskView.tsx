@@ -1203,14 +1203,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     };
 
     const natalTruth = buildTruthMap(chart.planets, chart.houseCusps);
-    // Apply the same deterministic retrograde correction here so the truth
-    // map used to overwrite placement_table rows agrees with the SR
-    // Planetary Positions block emitted into chartContext above.
+    // Build the SR truth map directly from the verified SR chart record.
+    // No ephemeris override of retrograde flags — the user's verified data
+    // at upload time is the source of truth.
     const srTruth = srChart
-      ? buildTruthMap(
-          correctSrPlanetsRetrograde(srChart.planets || {}, (srChart as { solarReturnDateTime?: string }).solarReturnDateTime),
-          srChart.houseCusps,
-        )
+      ? buildTruthMap(srChart.planets || {}, srChart.houseCusps)
       : {};
 
     // Normalize planet name from AI output to our key
