@@ -5365,6 +5365,28 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           });
         }
       }
+      // FIX 4 — Natal Strategy Summary ordering: ensure "Your Next Step"
+      // is the FINAL item, after "Best Windows". The AI generates the
+      // content; this pass only enforces position. If the AI did not emit
+      // a "Your Next Step" item we leave the box as-is (no fabricated
+      // closing statement — that has to come from the model with the
+      // chart in context).
+      const isNatalReading = String(parsedContent?.question_type || "").toLowerCase() === "natal";
+      const sectionTitle = String(section.title || "").trim();
+      if (isNatalReading && sectionTitle === "Natal Strategy Summary") {
+        const nextStepIdx = keptItems.findIndex(
+          (it) => it && typeof it === "object" && typeof it.label === "string"
+            && it.label.trim().toLowerCase() === "your next step"
+        );
+        if (nextStepIdx !== -1 && nextStepIdx !== keptItems.length - 1) {
+          const [nextStep] = keptItems.splice(nextStepIdx, 1);
+          keptItems.push(nextStep);
+          log.push({
+            type: "natal_next_step_reordered_last",
+            detail: { section: sectionTitle, prior_index: nextStepIdx },
+          });
+        }
+      }
       section.items = keptItems;
     }
 
