@@ -686,6 +686,43 @@ const PLANET_FALLBACKS_BY_TYPE: Record<TimingReadingType, Record<string, Record<
       sextile: 'Uranus sextiling this part of your chart adds welcome novelty to your inner life',
     },
   },
+  natal: {
+    Saturn: {
+      conjunction: 'Saturn is sitting on this part of your natal chart — something needs to be defined, committed to, or honestly faced',
+      square: 'Saturn is squaring this part of your natal chart — a reality check is active on a baseline pattern',
+      opposition: 'Saturn is opposing this part of your natal chart — definition or redirection is no longer optional',
+      trine: 'Saturn trining this part of your natal chart supports building something real — discipline pays off',
+      sextile: 'Saturn sextiling this part of your natal chart opens a useful window for commitment',
+    },
+    Jupiter: {
+      conjunction: 'Jupiter is expanding this part of your natal chart — opportunity and openness are higher than usual',
+      trine: 'Jupiter trining this part of your natal chart creates a natural opening — forward movement is available',
+      sextile: 'Jupiter sextiling this part of your natal chart offers a helpful opening — say yes',
+      square: 'Jupiter squaring this part of your natal chart amplifies energy — the risk is overreaching',
+      opposition: 'Jupiter opposing this part of your natal chart brings expansion through other people',
+    },
+    Neptune: {
+      conjunction: 'Neptune is dissolving boundaries around this part of your natal chart — clarity is harder, openness is higher',
+      square: 'Neptune squaring this part of your natal chart softens your usual read — go slowly',
+      opposition: 'Neptune opposing this part of your natal chart blurs what feels certain — postpone permanent decisions',
+      trine: 'Neptune trining this part of your natal chart softens defenses in a genuinely opening way',
+      sextile: 'Neptune sextiling this part of your natal chart adds an intuitive quality',
+    },
+    Pluto: {
+      conjunction: 'Pluto is sitting on this part of your natal chart — slow, deep transformation is underway',
+      trine: 'Pluto trining this part of your natal chart is a quiet but powerful invitation to go deeper',
+      square: 'Pluto squaring this part of your natal chart brings intensity to the surface',
+      opposition: 'Pluto opposing this part of your natal chart surfaces what has been underneath',
+      sextile: 'Pluto sextiling this part of your natal chart gives quiet momentum to real change',
+    },
+    Uranus: {
+      conjunction: 'Uranus is sitting on this part of your natal chart — sudden shifts and the need for freedom are active',
+      trine: 'Uranus trining this part of your natal chart opens surprising possibilities',
+      square: 'Uranus squaring this part of your natal chart disrupts the old pattern',
+      opposition: 'Uranus opposing this part of your natal chart brings change through other people',
+      sextile: 'Uranus sextiling this part of your natal chart brings a helpful dose of the unexpected',
+    },
+  },
   general: {
     Saturn: {
       conjunction: 'Saturn is sitting on this part of your chart — something needs to be defined, committed to, or honestly faced',
