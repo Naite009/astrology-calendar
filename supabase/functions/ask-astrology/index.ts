@@ -2889,6 +2889,135 @@ const correctSrPlanetHousesInProse = (
   }
 };
 
+// Parse the "NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT
+// DERIVE)" truth block emitted by AskView. Returns a planet→house map.
+// This is the natal-house equivalent of parseSrAnalysisInjection — single
+// source of truth for natal house claims in prose, used by
+// factsAwareNatalHouseSweep below.
+const parseNatalHousePlacements = (chartContext: string): Map<string, number> => {
+  const out = new Map<string, number>();
+  if (!chartContext) return out;
+  const headerMatch = chartContext.match(/NATAL PLANET HOUSE PLACEMENTS \(USE THESE EXACTLY[^\n]*\n[^\n]*\n/);
+  if (!headerMatch) return out;
+  const startIdx = headerMatch.index! + headerMatch[0].length;
+  const tail = chartContext.slice(startIdx);
+  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nKey Relationship|\n--- /);
+  const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
+  const lineRe = /-\s+Natal\s+([A-Za-z][A-Za-z ]+?):\s+[A-Za-z]+,\s+House\s+(\d+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = lineRe.exec(block)) !== null) {
+    const planet = m[1].trim();
+    const house = parseInt(m[2], 10);
+    if (!planet || !Number.isFinite(house)) continue;
+    out.set(planet.toLowerCase(), house);
+    out.set(planet.toLowerCase().replace(/\s+/g, ""), house);
+  }
+  return out;
+};
+
+// DETERMINISTIC NATAL PLANET HOUSE PROSE CORRECTOR — the natal-house mirror
+// of correctSrPlanetHousesInProse. The AI bleeds SR house numbers onto
+// natal sentences (e.g. "your natal Saturn in Aries in the 8th house" when
+// natal Saturn is in House 6 and SR Saturn is in House 8). This pass scans
+// every prose field for natal-qualified house claims and rewrites the
+// ordinal when it disagrees with the natal truth block.
+const factsAwareNatalHouseSweep = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const truth = parseNatalHousePlacements(chartContext);
+  let source: "natal_truth_block" | "natal_positions_fallback" | "none" = truth.size > 0 ? "natal_truth_block" : "none";
+  if (truth.size === 0) {
+    const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+    for (const p of natalPos) {
+      if (p.house != null) {
+        truth.set(p.planet.toLowerCase(), p.house);
+        truth.set(p.planet.toLowerCase().replace(/\s+/g, ""), p.house);
+      }
+    }
+    if (truth.size > 0) source = "natal_positions_fallback";
+  }
+  if (truth.size === 0) {
+    log.push({
+      type: "facts_aware_natal_house_sweep",
+      detail: { rewrites: 0, source: "none", reason: "no_natal_truth_block_parsed" },
+    });
+    return;
+  }
+
+  const PROSE_PLANETS = [
+    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
+    "Lilith","Juno","North Node","South Node","NorthNode","SouthNode",
+  ];
+  const PLANET_RE = PROSE_PLANETS.join("|");
+  const NUM_TO_ORD: Record<number, string> = {
+    1:"1st",2:"2nd",3:"3rd",4:"4th",5:"5th",6:"6th",7:"7th",8:"8th",9:"9th",10:"10th",11:"11th",12:"12th",
+  };
+  const NUM_TO_WORD: Record<number, string> = {
+    1:"first",2:"second",3:"third",4:"fourth",5:"fifth",6:"sixth",7:"seventh",
+    8:"eighth",9:"ninth",10:"tenth",11:"eleventh",12:"twelfth",
+  };
+  const ORD_TO_NUM = ORDINAL_TO_HOUSE_NUM;
+  const ORD_RE = ORDINAL_WORDS_RE;
+
+  // Anchored to an explicit "natal" qualifier so we never rewrite SR /
+  // transit prose. Allows an optional "your" before "natal", an optional
+  // retrograde marker after the planet, and up to ~140 chars of degree /
+  // sign blob between the planet name and the "Nth house" claim.
+  const natalQualifiedRe = new RegExp(
+    `\\b(your\\s+)?natal\\s+(${PLANET_RE})\\b` +
+    `(?:\\s+(?:retrograde|℞|Rx))?` +
+    `([\\s\\S]{0,140}?\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+)` +
+    `(${ORD_RE})\\s+house\\b`,
+    "gi",
+  );
+
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  let rewrites = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(natalQualifiedRe, (full, _your, planet, _gap, claimedOrd) => {
+      const planetKey = String(planet).toLowerCase().replace(/\s+/g, "");
+      const truthHouse = truth.get(String(planet).toLowerCase()) ?? truth.get(planetKey);
+      if (truthHouse == null) return full;
+      const claimedNum = ORD_TO_NUM[String(claimedOrd).toLowerCase()];
+      if (!claimedNum || claimedNum === truthHouse) return full;
+      const isWordStyle = /^[a-z]+$/i.test(String(claimedOrd));
+      const correctOrd = isWordStyle ? NUM_TO_WORD[truthHouse] : NUM_TO_ORD[truthHouse];
+      rewrites++;
+      const rebuilt = full.replace(new RegExp(`\\b${claimedOrd}\\s+house\\b`, "i"), `${correctOrd} house`);
+      if (examples.length < 10) {
+        examples.push(`${planet} claimed=${claimedNum} truth=${truthHouse} | ${full.slice(0, 140).replace(/\s+/g, " ")} → ${rebuilt.slice(0, 140).replace(/\s+/g, " ")}`);
+      }
+      return rebuilt;
+    });
+    if (next !== val) {
+      (node as any)[key] = next;
+    }
+  });
+
+  log.push({
+    type: "facts_aware_natal_house_sweep",
+    detail: { rewrites, source, truthSize: truth.size, examples },
+  });
+  if (rewrites > 0) {
+    console.info("[ask-astrology] natal planet houses corrected in prose", {
+      rewrites,
+      examples,
+    });
+  }
+};
+
 // DETERMINISTIC 7TH-CUSP / DESCENDANT FIXER — the AI sometimes writes
 // "the 7th house cusp [in/is] {AscendantSign}" because it confuses the
 // Ascendant with the Descendant. The 7th cusp is mathematically the
