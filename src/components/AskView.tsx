@@ -27,6 +27,7 @@ import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskR
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
+import { correctSrPlanetsRetrograde } from "@/lib/srRetrogradeTruth";
 import {
   Popover,
   PopoverContent,
