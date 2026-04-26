@@ -1,53 +1,37 @@
-I agree: BASE RULE 9 is active, but it is still only an instruction, and the model is treating it as optional. The next fix should make SR Mercury retrograde an explicit required output slot inside the career JSON structure, while restoring the two career bullet definitions that started coming through empty.
+I confirmed the problem path: the Ask solar_return prompt is injecting SR data, but the SR Planetary Positions block is currently deriving houses from a Whole Sign shortcut in `AskView.tsx`, while the birthday Solar Return JSON/analysis uses the actual SR cusp-based house engine. That mismatch can feed the AI the wrong SR houses before the backend sweep ever sees the text. The existing `factsAwareRetrogradeSweep` then verifies prose against the same wrong chart-context SR house map, so it cannot catch this case.
 
-## Plan
+Plan:
 
-1. **Change the career template from “rule” to required output structure**
-   - In `supabase/functions/ask-astrology/index.ts`, update the `question_type: "career"` template so `"Hidden Strengths"` has a mandatory labeled bullet:
-     - `label: "SR Mercury Retrograde Review"`
-     - `text: "SR Mercury is retrograde this year, so communication, decisions, and contracts at work will run on review..."`
-   - This makes the acknowledgment part of the section shape the model must emit, not just a prose instruction it can ignore.
+1. Fix SR house injection at the source
+   - In `src/components/AskView.tsx`, stop calculating SR houses for the Ask prompt with the Whole Sign `calcSRHouse` shortcut.
+   - Use the same cusp-based house calculation used by the birthday Solar Return analysis/PDF path so the `SR Planetary Positions:` block carries the birthday JSON truth.
+   - For Nicki Newman’s 2026 SR, this should make the injected Ask context say Mercury 8th, Mars 8th, Saturn 8th, Neptune 7th, Pluto 5th, and the House 8 stellium.
 
-2. **Add an explicit career-section schema note**
-   - Strengthen the career section definition so `"Hidden Strengths"` must include non-empty bullets with exact labels:
-     - `Daily Work Superpower`
-     - `Professional Tribe`
-     - `SR Mercury Retrograde Review` when SR Mercury is retrograde
-   - Each required bullet must have a non-empty `text` field of 1–3 sentences. Empty strings are forbidden.
+2. Inject an explicit authoritative SR placement map into the Solar Return analysis block
+   - Extend `buildSolarReturnAnalysisBlock()` to include a compact `srPlanetPlacements` array/map with each SR planet’s sign, degree, retrograde flag, and authoritative SR house.
+   - Include `sunHouse`, `moonHouse`, `stelliums`, and house overlays as already intended, but make the planet-by-planet placement map impossible for the model to miss.
+   - Add prompt wording that for SR planet house claims, `srPlanetPlacements` and the `SR Planetary Positions` block override any model inference.
 
-3. **Restore the two broken bullet definitions**
-   - Re-add/clarify the definitions that the prompt change weakened:
-     - `Daily Work Superpower`: must explain the 6th-house daily work style in plain career language.
-     - `Professional Tribe`: must explain the 11th-house/networking/community pattern in plain career language.
-   - These will be defined as required bullet outputs, not optional concepts, so they stop being emitted with empty bodies and then dropped by cleanup.
+3. Harden `factsAwareRetrogradeSweep` so it verifies against the injected SR placement map, not only the text `SR Planetary Positions` parser
+   - Add a parser in `supabase/functions/ask-astrology/index.ts` for the `SOLAR RETURN ANALYSIS` JSON block to extract `srPlanetPlacements` and/or `houseOverlays`.
+   - Build SR house truth maps with priority:
+     1. injected `srPlanetPlacements`
+     2. injected birthday-analysis `houseOverlays`
+     3. fallback `SR Planetary Positions` block
+   - Keep natal house truth from natal chart context as-is.
 
-4. **Keep scope tight**
-   - Do not change `factsAwareRetrogradeSweep`.
-   - Do not change the canonical SR fetch.
-   - Do not change placement table serialization.
-   - Do not add a post-processor injection step.
-   - Do not touch unrelated reading types.
+4. Broaden prose house-claim detection without changing unrelated behavior
+   - Keep the current retrograde logic intact.
+   - Extend the house verification inside `factsAwareRetrogradeSweep` to catch multi-planet claims such as “SR Mercury, SR Mars, SR Saturn, and SR Neptune are all in the 5th house,” not just single “Planet in the 5th house” claims.
+   - Rewrite every named planet’s incorrect house claim to the deterministic truth, including central theme, closing message, subtitles/body/bullets, and any other prose field currently visited by the sweep.
+   - Do not modify placement tables except through the existing deterministic placement-table correction paths.
 
-## Technical details
+5. Add diagnostics so the next JSON proves the fix ran
+   - Log which SR house source was used (`srPlanetPlacements`, `houseOverlays`, or fallback context).
+   - Keep logging `corrected_house_claims` and `house_examples` in `_validation_log` so any future correction is visible in the export.
 
-Current state verified in `supabase/functions/ask-astrology/index.ts`:
-- `BASE RULE 9` exists at the universal base layer.
-- `CAREER SR MERCURY RETROGRADE RULE` exists, but it is still prose guidance.
-- The career section list currently defines `Hidden Strengths` only as a parenthetical topic list, not as a strict bullet schema.
-- The cleanup pipeline drops empty sections/items, which explains why empty bullet bodies can disappear from output instead of being visibly flagged.
-
-The targeted change is to make the model produce this shape in the career reading when SR Mercury is retrograde:
-
-```text
-narrative_section — "Hidden Strengths"
-  body: non-empty career prose
-  bullets:
-    - label: "Daily Work Superpower"
-      text: non-empty explanation of 6th-house daily work style
-    - label: "Professional Tribe"
-      text: non-empty explanation of 11th-house/networking fit
-    - label: "SR Mercury Retrograde Review"
-      text: one plain-English sentence explicitly saying SR Mercury is retrograde this year and explaining communication, decisions, and contracts at work
-```
-
-That addresses the actual failure mode: the prompt rule is being ignored, so the acknowledgment becomes a required field in the output format.
+6. Validate before saying it is fixed
+   - Run a targeted type/build check if available.
+   - Deploy the `ask-astrology` function.
+   - Do not generate a new Ask solar_return reading as part of the fix.
+   - After deployment, the next user-generated solar_return reading should be safe to send through the external gate; if it still produces any SR house mismatch, the diagnostic log will show whether the prompt source or the sweep source failed.
