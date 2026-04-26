@@ -10589,17 +10589,30 @@ ${natalGroundTruthLines}`
       // Final _gate object: most recent verdict at the top level + full history.
       const final = history[history.length - 1];
       // Label the gate outcome so downstream readers can tell at a glance
-      // whether V2 healed everything ("ok"), shipped a best-effort attempt
-      // after the retry cap ("exhausted"), or never tripped retries ("ok"
-      // on first pass / "failed" if no retry was attempted but verdict bad).
+      // what happened:
+      //   "ok"          → gate ran, returned 200, body.ok === true
+      //   "exhausted"   → gate ran, V2 retried but couldn't fully heal
+      //   "failed"      → gate ran (returned 200), reading still has defects
+      //                   and no retry was attempted
+      //   "unvalidated" → gate did NOT run successfully — non-200 HTTP
+      //                   (e.g. 404, 500, 502) or fetch threw. The reading
+      //                   was NEVER actually validated by Replit. This must
+      //                   be visually distinct from "failed" in the UI so
+      //                   the user knows no validation happened, not that
+      //                   validation ran and flagged things.
       const finalOk = final?.ok === true;
+      const finalRanOk = typeof final?.status === "number" && final.status === 200;
+      const finalGateUnreachable = !!final?.error || (typeof final?.status === "number" && final.status !== 200);
       const v2Ran = retryAttempts.length > 0;
       const gateLabel = finalOk
         ? "ok"
-        : (v2Ran ? "exhausted" : "failed");
+        : finalGateUnreachable
+          ? "unvalidated"
+          : (v2Ran ? "exhausted" : "failed");
       (parsedContent as any)._gate = {
         ...final,
         label: gateLabel,
+        unvalidated: gateLabel === "unvalidated",
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
