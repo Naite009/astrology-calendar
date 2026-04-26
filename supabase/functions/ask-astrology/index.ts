@@ -2532,6 +2532,12 @@ const overrideSRHouseNumbersFromContext = (
   for (const p of natalPos) {
     natalFacts.set(p.planet.toLowerCase(), { sign: p.sign, degree: p.degree });
   }
+  // Override with the authoritative SR ANALYSIS injection (birthday-engine
+  // truth) when present — this beats the Whole-Sign / cusp positions block.
+  const injection = parseSrAnalysisInjection(chartContext);
+  if (injection.srHouse.size > 0) {
+    for (const [planet, h] of injection.srHouse.entries()) houseMap.set(planet, h);
+  }
   if (houseMap.size === 0) return;
 
   // Score table rows against natal vs SR fact maps to disambiguate
