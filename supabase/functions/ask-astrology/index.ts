@@ -3573,12 +3573,28 @@ const acknowledgeNatalRetrogradesFromContext = (
     return false;
   };
 
+  // BASE RULE 10 explicitly states: "A bare ℞ symbol is not enough — write
+  // one sentence explaining what that natal retrograde means for this person
+  // specifically." So a glyph (`℞`, bare `R`, lone `Rx`) does NOT count as
+  // acknowledgment. We require the plain-language word "retrograde" within
+  // 160 chars of the planet name AND the containing sentence must be a real
+  // sentence (>= 8 words) — not just a placement-table cell or a label.
   const hasAcknowledgment = (value: string, planet: string): boolean => {
     const ackRe = new RegExp(
-      `\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b[^.!?\\n]{0,160}\\b(?:retrograde|Rx|R\\b|℞)\\b|\\b(?:retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,160}\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b`,
+      `\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b[^.!?\\n]{0,160}\\bretrograde\\b|\\bretrograde\\b[^.!?\\n]{0,160}\\b(?:natal\\s+|your\\s+natal\\s+|your\\s+)?${planet}\\b`,
       "i",
     );
-    return ackRe.test(value);
+    if (!ackRe.test(value)) return false;
+    // Confirm the matched mention sits inside a real sentence, not a cell.
+    const sentences = value.split(/(?<=[.!?])\s+|\n+/);
+    const planetRe = new RegExp(`\\b${planet}\\b`, "i");
+    const retroWordRe = /\bretrograde\b/i;
+    for (const s of sentences) {
+      if (!planetRe.test(s) || !retroWordRe.test(s)) continue;
+      const wordCount = s.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount >= 8) return true;
+    }
+    return false;
   };
 
   let injected = 0;
@@ -3597,13 +3613,18 @@ const acknowledgeNatalRetrogradesFromContext = (
     if (next !== value) (node as any)[key] = next;
   });
 
-  if (injected > 0) {
-    log.push({
-      type: "natal_retrograde_acknowledgment_injected",
-      detail: { injected, examples },
-    });
-    console.info("[ask-astrology] natal retrograde acknowledgment injected", { injected, examples });
-  }
+  // Always emit a checkpoint when there are retrograde planets to inspect,
+  // even when injected=0. Without this, regressions in hasAcknowledgment
+  // (the "bare ℞ counted as acknowledged" bug) are invisible in logs.
+  log.push({
+    type: "natal_retrograde_acknowledgment_checked",
+    detail: { retrograde_planets: retroPlanets, injected, examples },
+  });
+  console.info("[ask-astrology] natal retrograde acknowledgment checked", {
+    retrograde_planets: retroPlanets,
+    injected,
+    examples,
+  });
 };
 
 // DETERMINISTIC SR RETROGRADE CONSISTENCY PASS — strips any prose claim
@@ -4854,6 +4875,58 @@ const correctNatalPlanetPositionsInProse = (
         if (s2 !== s) { sentences[i] = s2; touched = true; }
       }
       if (touched) next = sentences.join(" ");
+    }
+
+    // PASS 3 — unqualified bleed scrub. The AI sometimes cites a planet at
+    // its SR position in a sentence that has NO "natal" anchor and NO "SR"
+    // anchor (e.g. "Uranus at 0°09' Gemini sits opposite your Sun…"). Those
+    // sentences slip through PASS 1 (no "natal" prefix) and PASS 2 (no
+    // natal context word). When the cited value matches the SR truth AND
+    // the natal truth is different, the only safe interpretation is that
+    // the AI bled the SR position — rewrite to the natal value. We still
+    // refuse to touch sentences that contain an explicit SR qualifier.
+    if (val) {
+      const sentences3 = next.split(sentenceSplit);
+      let touched3 = false;
+      for (let i = 0; i < sentences3.length; i++) {
+        const s = sentences3[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const sr3 = srByPlanet.get(planet.toLowerCase());
+          if (!sr3) continue;
+          if (sr3.sign === truth.sign && sr3.degree === truth.degree) continue;
+          const reBleed3 = new RegExp(
+            `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(reBleed3, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+            const claimedSignLower = String(claimedSign).toLowerCase();
+            const claimedDeg = parseInt(degStr, 10);
+            // Already correct → leave
+            if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            // Only rewrite when the claim matches the SR position exactly —
+            // that's the unambiguous SR-bleed signature. Random wrong values
+            // are left for the gate to flag rather than silently rewritten.
+            const signMatchesSr = claimedSignLower === sr3.sign.toLowerCase();
+            const degMatchesSr = claimedDeg === sr3.degree;
+            if (!(signMatchesSr && degMatchesSr)) return match;
+            if (claimedSignLower !== truth.sign.toLowerCase()) signRewrites++;
+            if (claimedDeg !== truth.degree) degreeRewrites++;
+            const retro = retroPart || "";
+            const minOut = minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : "";
+            if (examples.length < 5) {
+              examples.push(`[pass3] ${match} → ${planet} at ${truth.degree}°${String(truth.minutes).padStart(2, "0")}' ${truth.sign}`);
+            }
+            return `${planet}${retro}${gap}${truth.degree}°${minOut} ${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences3[i] = s2; touched3 = true; }
+      }
+      if (touched3) next = sentences3.join(" ");
     }
 
     if (next !== val) {
