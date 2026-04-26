@@ -596,7 +596,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   }, [entries]);
 
-  const buildChartContext = (chart: NatalChart | null, timingContext: string = ""): string => {
+  const buildChartContext = (
+    chart: NatalChart | null,
+    timingContext: string = "",
+    srOverride: SolarReturnChart | null | undefined = undefined,
+  ): string => {
     if (!chart) return "No chart data available.";
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
@@ -910,7 +914,15 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // (e.g. re-imported chart) still gets found via name+birthDate fallback.
     // Without this, the AI is told there is no SR data even when one exists,
     // and SR-dependent sections regress to placeholder content.
-    const currentSR = findMatchingSolarReturn(solarReturnCharts, chart, activeChartId);
+    // Prefer the canonical SR record fetched fresh from the cloud at request
+    // time over whatever happens to be in local state. localStorage may hold
+    // stale planet data (older retrograde flags) if the async cloud-restore
+    // useEffect has not yet merged when a reading is generated. Cloud is the
+    // source of truth.
+    const currentSR =
+      srOverride !== undefined
+        ? srOverride
+        : findMatchingSolarReturn(solarReturnCharts, chart, activeChartId);
     if (currentSR) {
       context += `\n--- SOLAR RETURN ${currentSR.solarReturnYear} ---\n`;
       if (currentSR.solarReturnDateTime) context += `Exact SR moment: ${currentSR.solarReturnDateTime}\n`;
@@ -1764,6 +1776,51 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return detectReadingType(question);
   };
 
+  /**
+   * Fetch the canonical Solar Return record directly from the cloud
+   * (`device_charts`) so reading generation never depends on possibly-stale
+   * `localStorage`-hydrated state. The async cloud-restore in
+   * `useSolarReturnChart` is racy: a reading kicked off before the merge
+   * completes would otherwise serialize stale planet flags (e.g.
+   * `isRetrograde`) into the AI context. Cloud always wins.
+   *
+   * Falls back to the local SR record if the cloud lookup fails or no row
+   * exists for this user/device.
+   */
+  const fetchCanonicalSolarReturn = async (
+    chartForRequest: NatalChart | null,
+    chartIdForRequest: string,
+  ): Promise<SolarReturnChart | null> => {
+    const localSR = findMatchingSolarReturn(
+      solarReturnCharts,
+      chartForRequest,
+      chartIdForRequest,
+    );
+    if (!localSR) return null;
+    try {
+      const cloudChartId = `sr_${localSR.id}`;
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      let query = supabase
+        .from("device_charts")
+        .select("chart_data")
+        .eq("chart_id", cloudChartId)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (userId) {
+        query = query.eq("user_id", userId);
+      }
+      const { data, error } = await query.maybeSingle();
+      if (error || !data?.chart_data) {
+        return localSR;
+      }
+      const cloudSR = data.chart_data as unknown as SolarReturnChart;
+      return { ...cloudSR, id: localSR.id };
+    } catch {
+      return localSR;
+    }
+  };
+
 
   const handleSubmitDirect = async (
     directQuestion?: string,
@@ -1799,11 +1856,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // fabricating transit positions when it has no real data.
       const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
-      let chartContext = buildChartContext(chartForRequest, timingData.context);
+      // Resolve the canonical SR (cloud overrides any stale localStorage copy)
+      // ONCE per request and reuse for both context build and post-job correct.
+      const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
-        const srForRequest = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
-        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, srForRequest);
+        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
       }
       const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
@@ -1856,9 +1915,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       let assistantEntry: ChatEntry;
 
       if (data.sections) {
-        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
-          correctPlacementData(data, chartForRequest, currentSR),
+          correctPlacementData(data, chartForRequest, canonicalSR),
           timingData.section,
         );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
@@ -1966,11 +2024,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // the 'natal' timing lens so the same transit windows are injected.
       const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
-      let chartContext = buildChartContext(chartForRequest, timingData.context);
+      // Resolve the canonical SR (cloud overrides any stale localStorage copy)
+      // ONCE per request and reuse for both context build and post-job correct.
+      const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
-        const srForRequest = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
-        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, srForRequest);
+        chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
       }
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
@@ -2012,9 +2072,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const currentSR = findMatchingSolarReturn(solarReturnCharts, chartForRequest, chartIdForRequest);
         const corrected = mergeDeterministicTimingSection(
-          correctPlacementData(data, chartForRequest, currentSR),
+          correctPlacementData(data, chartForRequest, canonicalSR),
           timingData.section,
         );
         assistantEntry = { role: "assistant", content: "", reading: corrected as StructuredReading };
