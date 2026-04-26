@@ -1465,6 +1465,115 @@ const dedupeRelocationTimingSection = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// MODALITY_ELEMENT BODY CLAIM CORRECTION
+// The external gate flags BALANCE_CLAIM_MISMATCH when the modality_element
+// `body` (NOT balance_interpretation — that field is handled above) makes
+// a dominance claim that contradicts the deterministic count arrays.
+// Example: body says "this year leans heavily into Water and Mutable" but
+// the deterministic SR tallies show Earth + Fixed dominant.
+//
+// We don't try to rewrite the whole body (that would lose the AI's
+// chart-specific framing). Instead, we surgically rewrite the dominance
+// claim phrase to name the deterministic dominant element/modality. If
+// the body has no detectable dominance claim, we leave it alone.
+//
+// Patterns matched (case-insensitive):
+//   "fire-dominant"        / "earth-dominant"  / etc.
+//   "primarily fire"       / "predominantly earth"
+//   "heavy on water"       / "heavy in air"
+//   "leads with cardinal"  / "led by mutable"
+//   "dominated by water"   / "dominated by fixed"
+//   "mostly fire"          / "mostly cardinal"
+//   "a fire-heavy year"    / "an earth-heavy chart"
+// ─────────────────────────────────────────────────────────────────────────
+const correctModalityElementBodyClaims = (parsedContent: any) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const ELEMENTS = ["fire", "earth", "air", "water"];
+  const MODALITIES = ["cardinal", "fixed", "mutable"];
+
+  const pickDominant = (arr: any, allowed: string[]): string | null => {
+    if (!Array.isArray(arr)) return null;
+    let best: { name: string; count: number } | null = null;
+    for (const item of arr) {
+      if (!item || typeof item.count !== "number") continue;
+      const root = String(item.name ?? item.tag ?? "").split(/[\s(]/)[0].toLowerCase();
+      if (!allowed.includes(root)) continue;
+      if (!best || item.count > best.count) best = { name: root, count: item.count };
+    }
+    return best?.name ?? null;
+  };
+
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  let totalRewrites = 0;
+  const rewrites: Array<{ section: string; field: string; before: string; after: string }> = [];
+
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "modality_element") continue;
+    const domEl = pickDominant(section.elements, ELEMENTS);
+    const domMod = pickDominant(section.modalities, MODALITIES);
+    if (!domEl && !domMod) continue;
+
+    const fixField = (raw: string): string => {
+      let next = raw;
+
+      const buildClaimRegex = (group: string[]) =>
+        new RegExp(
+          [
+            `\\b(${group.join("|")})-(dominant|heavy|forward|leaning|leaning year|leaning chart)\\b`,
+            `\\b(primarily|predominantly|mostly|largely|chiefly|mainly)\\s+(${group.join("|")})\\b`,
+            `\\bheavy\\s+(?:on|in)\\s+(${group.join("|")})\\b`,
+            `\\b(?:led|leads)\\s+(?:by|with)\\s+(${group.join("|")})\\b`,
+            `\\bdominated\\s+by\\s+(${group.join("|")})\\b`,
+            `\\ba[n]?\\s+(${group.join("|")})-heavy\\s+(year|chart|mix|emphasis)\\b`,
+            `\\b(${group.join("|")})\\s+(dominates|leads|takes the lead)\\b`,
+          ].join("|"),
+          "gi",
+        );
+
+      const fixGroup = (group: string[], correctRoot: string) => {
+        const re = buildClaimRegex(group);
+        next = next.replace(re, (match) => {
+          // Find which forbidden root word appeared in this match.
+          const lower = match.toLowerCase();
+          const wrongRoot = group.find((g) => new RegExp(`\\b${g}\\b`).test(lower) && g !== correctRoot);
+          if (!wrongRoot) return match; // already correct
+          // Replace just the wrong root with the correct root, preserving
+          // surrounding capitalization roughly.
+          const rootRe = new RegExp(`\\b${wrongRoot}\\b`, "gi");
+          return match.replace(rootRe, (m) =>
+            m[0] === m[0].toUpperCase() ? cap(correctRoot) : correctRoot,
+          );
+        });
+      };
+
+      if (domEl) fixGroup(ELEMENTS, domEl);
+      if (domMod) fixGroup(MODALITIES, domMod);
+
+      return next;
+    };
+
+    for (const field of ["body", "balance_interpretation"] as const) {
+      const raw = section[field];
+      if (typeof raw !== "string" || raw.length === 0) continue;
+      const next = fixField(raw);
+      if (next !== raw) {
+        rewrites.push({ section: section.title || "modality_element", field, before: raw.slice(0, 140), after: next.slice(0, 140) });
+        section[field] = next;
+        totalRewrites++;
+      }
+    }
+  }
+
+  if (totalRewrites > 0) {
+    console.info("[ask-astrology] modality_element body dominance claims corrected", {
+      rewrites: totalRewrites,
+      examples: rewrites.slice(0, 3),
+    });
+  }
+};
+
 
 // Aspect-interpretation library entries are sometimes written in a
 // relationship-leaning voice ("romanticizing people", "idealizing your
