@@ -217,6 +217,7 @@ const THEME_MAPS: Record<TimingReadingType, Record<string, string>> = {
   health: NATAL_THEME_MAP_HEALTH,
   money: NATAL_THEME_MAP_MONEY,
   spiritual: NATAL_THEME_MAP_SPIRITUAL,
+  natal: NATAL_THEME_MAP_GENERAL,
   general: NATAL_THEME_MAP_GENERAL,
 };
 
