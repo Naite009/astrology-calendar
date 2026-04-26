@@ -1047,6 +1047,7 @@ const getDevelopmentalMilestoneInterpretation = (
         health: 'The body insists on being heard — sleep, blood pressure, and stress symptoms become the cost of any life that is not actually yours.',
         money: 'Money is being asked to serve a more honest life, not maintain an old image.',
         spiritual: 'Meaning becomes a survival question. Spiritual bypass stops working; only first-hand depth holds now.',
+        natal: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
         general: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
       };
       return wrap(opener, lens[readingType] ?? lens.general);
