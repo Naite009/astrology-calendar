@@ -3448,6 +3448,321 @@ const fixSrRetrogradeMentionsInProse = (
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// FACT-AWARE RETROGRADE CONSISTENCY SWEEP
+// ─────────────────────────────────────────────────────────────────────────
+// Single canonical pass that owns prose ↔ chart-fact retrograde agreement
+// for BOTH natal and SR planets, regardless of how the AI worded the claim.
+//
+// Why this exists: prior helpers (`fixSrRetrogradeMentionsInProse`,
+// `fixNatalRetrogradeMentionsInProse`) match narrow patterns like
+// "SR <Planet> retrograde" / "<Planet> direct". Real failures keep ducking
+// these — the latest career reading shipped:
+//   • "SR Jupiter at 15°06' Cancer in SR House 10 retrograde."
+//   • "Jupiter retrograde in the SR 10th house"
+//   • "(SR Jupiter retrograde at 15°06' Cancer, SR House 10)"
+//   • "SR Mercury retrograde in the 6th"
+// All four describe the SAME false retrograde claim about SR Jupiter and
+// SR Mercury but with different surface forms. A regex-per-shape approach
+// will always lag behind. This sweep instead:
+//   1. Walks every user-visible string.
+//   2. Tokenizes sentences/clauses that mention a planet name.
+//   3. Decides natal vs SR for the clause by:
+//        - explicit "SR" / "Solar Return" / "this year(’s)" → SR
+//        - explicit "natal" / "your natal" → natal
+//        - section title contains "Solar Return" or "SR " → SR default
+//        - otherwise natal default
+//   4. Reads the canonical ChartFacts (parsed once from chartContext).
+//   5. Reconciles:
+//        - if clause says retrograde and fact says direct → strip the
+//          retrograde token (and any trailing "is retrograde")
+//        - if clause says direct and fact says retrograde → flip to retrograde
+//   6. Logs every rewrite to the hygiene log so we can see, for any future
+//      failure, exactly which clause was touched and why.
+//
+// Idempotent. Pure. Never invents content. Safe to run pre-gate AND
+// post-gate.
+const RETRO_TOKEN_RE = /(\s*[\u211E℞]|\s+Rx\b|\s+R\b|\s+retrograde\b)/i;
+const SR_PROSE_QUALIFIER_RE = /\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i;
+const NATAL_PROSE_QUALIFIER_RE = /\b(?:natal|your\s+natal)\b/i;
+const FACTS_PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"] as const;
+
+const factsAwareRetrogradeSweep = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  // Build canonical ChartFacts maps from the deterministic chart context.
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (natalPos.length === 0 && srPos.length === 0) return;
+  const natalRetro = new Map<string, boolean>();
+  const srRetro = new Map<string, boolean>();
+  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  // If we have no SR facts at all but the prose discusses SR planets,
+  // record a diagnostic so we can see (in _validation_log) when the gate
+  // would have nothing to corroborate against.
+  if (srPos.length === 0) {
+    log.push({
+      type: "facts_aware_retrograde_sweep_skipped",
+      detail: { reason: "no_sr_positions_in_chart_context" },
+    });
+  }
+
+  const knownPlanets = FACTS_PLANETS.filter(
+    (p) => natalRetro.has(p.toLowerCase()) || srRetro.has(p.toLowerCase()),
+  );
+  if (knownPlanets.length === 0) return;
+  const PLANET_RE = `(?:${knownPlanets.join("|")})`;
+
+  // Anchor windows we treat as "this clause is about <Planet>".
+  // We split on sentence terminators AND on " · " / "," boundaries so a
+  // single sentence with two clauses can route each independently.
+  const splitClauses = (s: string): string[] =>
+    s.split(/(?<=[.!?])\s+|(?:\s+\u2014\s+)|(?:\s+\u2013\s+)|(?:\s+;\s+)/g);
+
+  const planetMentionRe = new RegExp(`\\b(${PLANET_RE})\\b`, "i");
+
+  let strippedFalseRetro = 0;
+  let flippedDirectToRetro = 0;
+  const examples: string[] = [];
+
+  // Skip purely structural/identifier keys.
+  const SKIP_KEYS = new Set([
+    "type","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
+    "_retrograde_repair",
+  ]);
+
+  const decideChartForClause = (
+    clause: string,
+    sectionInSr: boolean,
+  ): "sr" | "natal" => {
+    if (SR_PROSE_QUALIFIER_RE.test(clause)) return "sr";
+    if (NATAL_PROSE_QUALIFIER_RE.test(clause)) return "natal";
+    return sectionInSr ? "sr" : "natal";
+  };
+
+  const reconcileClause = (clause: string, sectionInSr: boolean): string => {
+    const planetMatch = clause.match(planetMentionRe);
+    if (!planetMatch) return clause;
+    const planet = planetMatch[1];
+    const planetKey = planet.toLowerCase();
+    const chart = decideChartForClause(clause, sectionInSr);
+    const factMap = chart === "sr" ? srRetro : natalRetro;
+    if (!factMap.has(planetKey)) return clause;
+    const factIsRetro = factMap.get(planetKey) === true;
+
+    // Detect ANY retrograde claim in the clause, in any of these shapes:
+    //   • "<Planet> retrograde" / "<Planet> Rx" / "<Planet> ℞" (adjacent)
+    //   • "<Planet> ... is retrograde" (separated, up to ~80 chars)
+    //   • "<Planet> ... retrograde in the Nth" (separated)
+    //   • "<Planet> ... retrograde at <degree>" (separated)
+    //   • bare "retrograde" within a clause already qualified as SR/natal
+    const adjacentRetroRe = new RegExp(
+      `\\b${planet}${RETRO_TOKEN_RE.source}`,
+      "i",
+    );
+    const separatedRetroRe = new RegExp(
+      `\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:is\\s+retrograde|retrograde(?:\\s+(?:this\\s+year|in|at)\\b[^.!?\\n]*)?)\\b[,.]?`,
+      "i",
+    );
+    const directRe = new RegExp(
+      `\\b${planet}\\b\\s+(?:is\\s+)?direct\\b`,
+      "i",
+    );
+
+    let next = clause;
+
+    if (factIsRetro) {
+      // Fact says retrograde — flip any false direct claim.
+      if (directRe.test(next)) {
+        next = next.replace(directRe, `${planet} retrograde`);
+        flippedDirectToRetro++;
+        if (examples.length < 8) examples.push(`[FLIP ${chart}] ${clause.slice(0, 140)}`);
+      }
+      return next;
+    }
+
+    // Fact says direct — strip false retrograde claims.
+    let touched = false;
+    if (adjacentRetroRe.test(next)) {
+      // Replace "<Planet> retrograde" with just "<Planet>".
+      next = next.replace(
+        new RegExp(`(\\b${planet})${RETRO_TOKEN_RE.source}`, "i"),
+        "$1",
+      );
+      touched = true;
+    }
+    if (separatedRetroRe.test(next)) {
+      // Drop the trailing "... is retrograde[ this year/in/at ...]" clause.
+      next = next.replace(separatedRetroRe, (m) => {
+        // Keep the planet name + any sign/house phrasing, drop the retro tail.
+        const planetIdx = m.toLowerCase().indexOf(planet.toLowerCase());
+        const planetEnd = planetIdx + planet.length;
+        const middle = m.slice(planetEnd).replace(
+          /\b(?:is\s+retrograde|retrograde(?:\s+(?:this\s+year|in|at)\b[^,.!?\n]*)?)\b[,.]?/i,
+          "",
+        );
+        return `${m.slice(0, planetEnd)}${middle}`.replace(/\s{2,}/g, " ").replace(/\s+([,.;:])/g, "$1").trim();
+      });
+      touched = true;
+    }
+    if (touched) {
+      strippedFalseRetro++;
+      if (examples.length < 8) examples.push(`[STRIP ${chart}] ${clause.slice(0, 140)}`);
+    }
+    return next;
+  };
+
+  const visit = (node: any, sectionTitle: string): void => {
+    if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
+    if (!node || typeof node !== "object") return;
+    const localTitle = typeof node.title === "string" ? node.title : sectionTitle;
+    const titleLower = localTitle.toLowerCase();
+    const sectionInSr = titleLower.includes("solar return") || /\bsr\b/.test(titleLower);
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      if (typeof val === "string" && val.length > 0) {
+        const clauses = splitClauses(val);
+        let changed = false;
+        const reconciled = clauses.map((c) => {
+          const r = reconcileClause(c, sectionInSr);
+          if (r !== c) changed = true;
+          return r;
+        });
+        if (changed) {
+          (node as any)[key] = reconciled.join(" ").replace(/\s{2,}/g, " ").trim();
+        }
+      } else {
+        visit(val, localTitle);
+      }
+    }
+  };
+
+  visit(parsedContent, "");
+
+  if (strippedFalseRetro > 0 || flippedDirectToRetro > 0) {
+    log.push({
+      type: "facts_aware_retrograde_sweep",
+      detail: {
+        stripped_false_retro: strippedFalseRetro,
+        flipped_direct_to_retro: flippedDirectToRetro,
+        examples,
+      },
+    });
+    console.info("[ask-astrology] facts-aware retrograde sweep applied", {
+      stripped: strippedFalseRetro,
+      flipped: flippedDirectToRetro,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// PRE-GATE LOCAL AUDIT
+// ─────────────────────────────────────────────────────────────────────────
+// Mirror of the recurring external-gate defect classes so we can detect
+// (and where possible repair) them BEFORE the gate sees them.
+// Logs to `_validation_log` with type `pre_gate_local_audit` so future
+// failures show up in the JSON export instead of being invisible.
+const runPreGateLocalAudit = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const natalRetro = new Map<string, boolean>();
+  const srRetro = new Map<string, boolean>();
+  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  type AuditFinding = { code: string; section?: string; field?: string; planet?: string; snippet?: string };
+  const findings: AuditFinding[] = [];
+
+  // 1. Detect prose retrograde claims that disagree with facts.
+  const sections = Array.isArray(parsedContent?.sections) ? parsedContent.sections : [];
+  let mentionsSr = false;
+  for (const section of sections) {
+    const sectionTitle = String(section?.title || "");
+    const sectionInSr = /solar return|\bsr\b/i.test(sectionTitle);
+    const visit = (node: any, key: string) => {
+      if (typeof node !== "string" || node.length === 0) return;
+      if (/\b(?:SR|Solar\s+Return)\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron)\b/i.test(node)) {
+        mentionsSr = true;
+      }
+      for (const planet of FACTS_PLANETS) {
+        const re = new RegExp(`\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:is\\s+retrograde|retrograde)\\b`, "i");
+        if (!re.test(node)) continue;
+        const isSr = sectionInSr || /\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s+/i.test(node);
+        const factMap = isSr ? srRetro : natalRetro;
+        if (!factMap.has(planet.toLowerCase())) continue;
+        const factIsRetro = factMap.get(planet.toLowerCase()) === true;
+        if (!factIsRetro) {
+          findings.push({
+            code: "RETROGRADE_STATE_MISMATCH",
+            section: sectionTitle,
+            field: key,
+            planet,
+            snippet: node.slice(0, 160),
+          });
+        }
+      }
+    };
+    if (typeof section?.body === "string") visit(section.body, "body");
+    if (Array.isArray(section?.bullets)) {
+      for (const b of section.bullets) {
+        if (typeof b?.text === "string") visit(b.text, "bullets[*].text");
+        if (typeof b?.label === "string") visit(b.label, "bullets[*].label");
+      }
+    }
+  }
+
+  // 2. Missing SR placement table when SR prose exists.
+  const hasSrTable = sections.some((s: any) => {
+    if (s?.type !== "placement_table") return false;
+    const t = String(s?.title || "").toLowerCase();
+    return t.includes("solar return") || /\bsr\b/.test(t);
+  });
+  if (mentionsSr && !hasSrTable && srPos.length > 0) {
+    findings.push({ code: "MISSING_SR_PLACEMENT_TABLE" });
+  }
+
+  // 3. Relationship contract leaking onto non-relationship readings.
+  const isRelationshipReading =
+    String((parsedContent as any)?.question_type || "").toLowerCase() === "relationship";
+  if (!isRelationshipReading && (parsedContent as any)?._relationship_contract) {
+    findings.push({ code: "RELATIONSHIP_CONTRACT_ON_NON_RELATIONSHIP_READING" });
+  }
+
+  log.push({
+    type: "pre_gate_local_audit",
+    detail: {
+      finding_count: findings.length,
+      findings: findings.slice(0, 25),
+      sr_facts_present: srPos.length > 0,
+      natal_facts_present: natalPos.length > 0,
+    },
+  });
+  if (findings.length > 0) {
+    console.warn("[ask-astrology] pre-gate local audit found issues", {
+      count: findings.length,
+      codes: [...new Set(findings.map((f) => f.code))],
+    });
+  } else {
+    console.info("[ask-astrology] pre-gate local audit clean");
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // RELATIONSHIP ENGINE VALIDATION CONTRACT v2.0
 // ─────────────────────────────────────────────────────────────────────────
 // Codifies the user-supplied validation contract as a single auditable pass.
