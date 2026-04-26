@@ -8369,8 +8369,8 @@ SR LOVE ACTIVATION STYLE:
   6. modality_element — "Natal Elemental & Modal Balance" (frame interpretations as spiritual temperament)
   7. summary_box — "Strategy Summary" with items: "Soul Purpose", "Key Lesson", "Spiritual Practice", "Timing for Growth"
 - CITY COMPARISON OPTIONAL RULE: Only include city_comparison sections if the reading type inherently involves location as a meaningful factor (relocation, relationship+location). For health, money, and spiritual readings, skip city comparisons UNLESS the user specifically asks about location or the question mentions moving/travel.
-- For question_type "timing": lead with timing_section, then narrative_section, then modality_element, then summary_box
-- For question_type "general": use narrative_section sections only + modality_element + summary_box
+- For question_type "timing": INHERITS UNIVERSAL BASE — BASE RULES 1–8 are non-overridable for this reading type. Lead with timing_section, then narrative_section, then modality_element, then summary_box.
+- For question_type "general": INHERITS UNIVERSAL BASE — BASE RULES 1–8 are non-overridable for this reading type. Use narrative_section sections only + modality_element + summary_box.
 - summary_box labels should match the question — for relocation use Where/Why/When, for career use Role/Sector/When. When caution cities are present, ALWAYS add a "What to Avoid" item in the summary_box listing the caution cities by name (e.g., "What to Avoid": "Atlanta, GA and Denver, CO — challenging Saturn/Pluto lines").
 - body text in narrative_section should never exceed 4 sentences
 
