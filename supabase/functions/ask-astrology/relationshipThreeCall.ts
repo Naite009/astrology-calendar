@@ -1122,16 +1122,29 @@ export const injectDeterministicModalityElement = (
  */
 export const overwriteAllPolarityCounts = (
   parsedContent: any,
-  natalChartBlock: string,
+  chartContext: string,
 ): number => {
   if (!parsedContent || !Array.isArray(parsedContent.sections)) return 0;
-  const tallies = computeDeterministicTallies(natalChartBlock);
+  // Pre-compute tallies for both possible sources so each section gets
+  // numbers from the correct chart (natal vs SR). For relationship 3-call
+  // path the input is already an isolated natal block — extractPositionsBlock
+  // returns "" and computeDeterministicTallies falls back to the full input,
+  // so behavior on that path is unchanged.
+  const natalTallies = computeDeterministicTallies(chartContext, { source: "NATAL" });
+  const srTallies = computeDeterministicTallies(chartContext, { source: "SR" });
   let overwritten = 0;
   for (const section of parsedContent.sections) {
     if (section?.type !== "modality_element") continue;
-    section.polarity = tallies.polarity;
-    section.elements = tallies.elements;
-    section.modalities = tallies.modalities;
+    const title = typeof section.title === "string" ? section.title : "";
+    const isSr = /\b(solar\s*return|sr)\b/i.test(title);
+    const t = isSr ? srTallies : natalTallies;
+    // Only overwrite when the chosen source actually parsed planets, so a
+    // missing SR block can't blank an SR section's counts to all zeros.
+    const hasData = t.polarity.some((p) => p.count > 0);
+    if (!hasData) continue;
+    section.polarity = t.polarity;
+    section.elements = t.elements;
+    section.modalities = t.modalities;
     overwritten++;
   }
   return overwritten;
