@@ -8126,7 +8126,7 @@ SR LOVE ACTIVATION STYLE:
 - Write as lived experience, not themes. BAD: "Relationships are activated this year." GOOD: "This year, relationships are likely to feel more active and noticeable. You may find that people enter your life more easily, or that attraction develops more quickly than usual."
 - The body should be 2-3 flowing paragraphs describing the year's relationship feel.
 - Each of the 6 experience bullets should be 1-3 sentences of real-life description. No abstractions.
-  - For question_type "relocation": Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
+  - For question_type "relocation": INHERITS UNIVERSAL BASE — BASE RULES 1–8 are non-overridable for this reading type. Use this EXACT section order — do NOT rearrange, combine, or skip sections between regenerations:
 
   PRIORITY RULE: Prioritize clarity over exhaustiveness. Only include locations and insights that clearly describe what daily life would feel like. Start with experience, not astrology.
 
