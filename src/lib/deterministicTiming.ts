@@ -1244,6 +1244,7 @@ const buildTransitInterpretation = (params: {
     transitPlanet,
     aspect,
     natalPlanet,
+    natalDegree,
     passSummary,
     isRetrograde,
     readingType,
@@ -1261,6 +1262,19 @@ const buildTransitInterpretation = (params: {
     isRetrograde,
   );
   if (developmentalOverride) return developmentalOverride;
+
+  // NATAL READING — bypass the generic-template path. Always names the specific
+  // natal point with sign+degree and grounds the body in a concrete real-life
+  // scenario rooted in that point's natal theme. NEVER uses "this part of your
+  // natal chart / makeup" or "awareness is the work" closers.
+  if (readingType === 'natal') {
+    const retrogradeSentence = isRetrograde
+      ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
+      : '';
+    const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '');
+    const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
+    return dedupeSentences(composed);
+  }
 
   const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
   const transitAction = getTransitAction(readingType, transitPlanet);
