@@ -428,6 +428,62 @@ const correctModalityElementCounts = (parsedContent: any) => {
 const normalizeForCompare = (s: string): string =>
   s.toLowerCase().replace(/\s+/g, " ").replace(/[\u2018\u2019]/g, "'").trim();
 
+// Aggressive normalizer for catching near-duplicate sentences inside one
+// bullet/paragraph. The AI sometimes emits the same sentence twice with
+// only a pronoun swap or contraction mismatch (e.g. "you doesn't wait …
+// bring it to them" vs. "you do not wait … bring it to you"). The strict
+// `normalizeForCompare` misses these because the surface text differs.
+// This canonicalizer:
+//   - lowercases, normalizes quotes/whitespace
+//   - expands common contractions (don't → do not, doesn't → does not, …)
+//   - drops 2nd/3rd person object/possessive pronouns ("you", "them",
+//     "their", "him", "her", "it") so subject/object swaps collapse
+//   - drops a small set of filler articles/prepositions ("the", "a", "an")
+//   - strips trailing punctuation
+// Used ONLY for similarity comparison — the original sentence text is
+// preserved when we keep it.
+const CONTRACTION_MAP: Array<[RegExp, string]> = [
+  [/\bdon't\b/g, "do not"],
+  [/\bdoesn't\b/g, "does not"],
+  [/\bdidn't\b/g, "did not"],
+  [/\bwon't\b/g, "will not"],
+  [/\bcan't\b/g, "cannot"],
+  [/\bisn't\b/g, "is not"],
+  [/\baren't\b/g, "are not"],
+  [/\bwasn't\b/g, "was not"],
+  [/\bweren't\b/g, "were not"],
+  [/\bhasn't\b/g, "has not"],
+  [/\bhaven't\b/g, "have not"],
+  [/\bhadn't\b/g, "had not"],
+  [/\bshouldn't\b/g, "should not"],
+  [/\bwouldn't\b/g, "would not"],
+  [/\bcouldn't\b/g, "could not"],
+  [/\bit's\b/g, "it is"],
+  [/\bthat's\b/g, "that is"],
+  [/\bthere's\b/g, "there is"],
+  [/\byou're\b/g, "you are"],
+  [/\bthey're\b/g, "they are"],
+  [/\bwe're\b/g, "we are"],
+  [/\byou'll\b/g, "you will"],
+  [/\bthey'll\b/g, "they will"],
+  [/\byou've\b/g, "you have"],
+  [/\bthey've\b/g, "they have"],
+  [/\bi'm\b/g, "i am"],
+  [/\bi've\b/g, "i have"],
+  [/\bi'll\b/g, "i will"],
+];
+const PRONOUN_FILLER_RE =
+  /\b(?:you|your|yours|yourself|they|them|their|theirs|themselves|he|him|his|himself|she|her|hers|herself|it|its|itself|the|a|an)\b/g;
+
+const normalizeForFuzzyCompare = (s: string): string => {
+  let out = s.toLowerCase().replace(/[\u2018\u2019]/g, "'");
+  for (const [re, rep] of CONTRACTION_MAP) out = out.replace(re, rep);
+  out = out.replace(PRONOUN_FILLER_RE, " ");
+  out = out.replace(/[.,!?;:"()\[\]\u2013\u2014—–\-]/g, " ");
+  out = out.replace(/\s+/g, " ").trim();
+  return out;
+};
+
 const dedupeText = (text: string): string => {
   if (typeof text !== "string" || text.length === 0) return text;
 
