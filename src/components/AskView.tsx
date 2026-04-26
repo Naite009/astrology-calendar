@@ -1614,7 +1614,127 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
-  // Resolve which portrait variant to inject for a given user question.
+  // Build a deterministic Solar Return analysis block — same engine that
+  // powers the birthday PDF — and inject the requested fields into the
+  // chart context so the AI can build prose from authoritative data
+  // instead of re-deriving it from the raw placement table.
+  const buildSolarReturnAnalysisBlock = (
+    chart: NatalChart | null,
+    srChart: SolarReturnChart | null,
+  ): string => {
+    if (!chart || !srChart) return "";
+    try {
+      const a = analyzeSolarReturn(srChart, chart);
+
+      // Sign + degree summaries for natal/SR Sun/Moon/Rising. The "description"
+      // value piggybacks on the analysis's house themes where they exist, so
+      // the AI gets a one-line plain-language framing for each anchor.
+      const fmtPos = (
+        pos: { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined,
+      ): { sign: string; degree: number; minutes: number; isRetrograde: boolean } | null => {
+        if (!pos || !pos.sign) return null;
+        return {
+          sign: pos.sign,
+          degree: Math.floor(pos.degree ?? 0),
+          minutes: Math.round(pos.minutes ?? 0),
+          isRetrograde: !!pos.isRetrograde,
+        };
+      };
+
+      const natalSunPos = fmtPos(chart.planets?.Sun);
+      const natalMoonPos = fmtPos(chart.planets?.Moon);
+      const natalRisingPos = fmtPos(chart.houseCusps?.house1 || chart.planets?.Ascendant);
+      const srSunPos = fmtPos(srChart.planets?.Sun);
+      const srMoonPos = fmtPos(srChart.planets?.Moon);
+      const srRisingPos = fmtPos(srChart.houseCusps?.house1 || srChart.planets?.Ascendant);
+
+      const natalSun = natalSunPos
+        ? { ...natalSunPos, description: a.sunNatalHouse?.theme || "" }
+        : null;
+      const natalMoon = natalMoonPos
+        ? { ...natalMoonPos, description: a.moonNatalHouse?.theme || "" }
+        : null;
+      const natalRising = natalRisingPos
+        ? { ...natalRisingPos, description: `Natal ${natalRisingPos.sign} Rising — the lifelong front door.` }
+        : null;
+      const srSun = srSunPos
+        ? { ...srSunPos, description: a.sunHouse?.theme || "" }
+        : null;
+      const srMoon = srMoonPos
+        ? { ...srMoonPos, description: a.moonHouse?.theme || "" }
+        : null;
+      const srRising = srRisingPos
+        ? {
+            ...srRisingPos,
+            description: a.yearlyTheme?.yearTheme || `${srRisingPos.sign} Rising for this Solar Return year.`,
+          }
+        : null;
+
+      // srHouseThemes — synthesized from houseOverlays where present, since
+      // there is no top-level themes array on the analysis. If overlays are
+      // empty this is simply omitted.
+      const srHouseThemes = Array.isArray(a.houseOverlays) && a.houseOverlays.length > 0
+        ? a.houseOverlays.map((o: any) => ({
+            house: o.house ?? o.houseNumber ?? null,
+            theme: o.theme || o.description || "",
+          }))
+        : [];
+
+      const solarReturnYear = (srChart as any).solarReturnYear ?? null;
+      // Age = SR year − natal birth year (string slice safe for ISO dates).
+      let solarReturnAge: number | null = null;
+      try {
+        if (typeof solarReturnYear === "number" && chart.birthDate) {
+          const birthYear = parseInt(String(chart.birthDate).slice(0, 4), 10);
+          if (!Number.isNaN(birthYear)) solarReturnAge = solarReturnYear - birthYear;
+        }
+      } catch {}
+      const solarReturnLabel =
+        solarReturnAge !== null
+          ? `Solar Return ${solarReturnYear} (age ${solarReturnAge})`
+          : solarReturnYear
+            ? `Solar Return ${solarReturnYear}`
+            : "Solar Return";
+
+      const payload: Record<string, unknown> = {
+        solarReturnYear,
+        solarReturnAge,
+        solarReturnLabel,
+        yearlyTheme: a.yearlyTheme,
+        profectionYear: a.profectionYear,
+        lordOfTheYear: a.lordOfTheYear,
+        moonPhase: a.moonPhase,
+        stelliums: a.stelliums,
+        srToNatalAspects: a.srToNatalAspects,
+        srMoonAspects: a.srMoonAspects,
+        houseOverlays: a.houseOverlays,
+        srHouseThemes,
+        natalSun,
+        natalMoon,
+        natalRising,
+        srSun,
+        srMoon,
+        srRising,
+      };
+
+      return (
+        "\n\n--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---\n" +
+        "You have access to pre-calculated Solar Return data injected into this prompt. " +
+        "Use it as your primary source of truth. Do not contradict it. The profection year, " +
+        "Time Lord, moon phase, stelliums, and SR-to-natal aspects are already calculated — " +
+        "build your prose from them rather than re-deriving. The natal portrait data gives " +
+        "you the permanent baseline; the SR data tells you what this specific year is doing " +
+        "to that baseline.\n\n" +
+        JSON.stringify(payload, null, 2) +
+        "\n--- END SOLAR RETURN ANALYSIS ---\n"
+      );
+    } catch (err) {
+      console.warn("[AskView] Failed to build SR analysis block:", err);
+      return "";
+    }
+  };
+
+
   // Natal and Solar Return are detected via Quick Topic markers; everything
   // else uses the existing detectReadingType() domain heuristic.
   const resolvePortraitReadingType = (
