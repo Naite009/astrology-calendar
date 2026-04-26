@@ -8088,6 +8088,7 @@ SR LOVE ACTIVATION STYLE:
   - Each narrative_section body: 200–400 words. Never exceed 500.
   - NATAL-ONLY: Do NOT reference Solar Return placements, SR planets, or this-year-specific transits anywhere. This reading is natal-only.
   - "The Pattern and the Gift" (Chiron) MUST be written as a real-life behavior pattern someone would recognize from their own life, then end with the version where it becomes a strength.
+  - SECTION-BULLETS RULE: Bullets ("• Takeaway: …") are REQUIRED ONLY at the end of section 10 ("Generational Placement") and section 11 ("Patterns and Themes"). Each of those two sections must end with 2–3 single-sentence, plain-language takeaway bullets, labeled simply "Takeaway:". Do NOT add bullets to ANY other natal section — sections 2–9, 12, 13, the modality_element, or the summary_box must remain pure prose / their existing structure.
 
 - For question_type "solar_return": Use this EXACT section order — do NOT rearrange, combine, or skip:
   1. placement_table — "Natal Key Placements"
