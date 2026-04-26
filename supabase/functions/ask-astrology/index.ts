@@ -6680,6 +6680,12 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
+  // 5b. Natal-house equivalent of the SR-house sweep — rewrites natal house
+  // claims in prose against the NATAL PLANET HOUSE PLACEMENTS truth block.
+  safeRun("factsAwareNatalHouseSweep", () =>
+    factsAwareNatalHouseSweep(parsedContent, ctx, log),
+  );
+
   // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
   safeRun("correctSignRulershipClaimsInProse", () =>
     correctSignRulershipClaimsInProse(parsedContent, log),
