@@ -3185,14 +3185,51 @@ const fixSrRetrogradeMentionsInProse = (
   // to string fields whose containing section title matches /solar return|sr /i.
   const bareRetroRe = new RegExp(`\\b(${PLANET_RE})${RETRO_SUFFIX}`, "gi");
 
+  // SEPARATED-CLAUSE PATTERNS — catch retrograde claims that are NOT
+  // adjacent to the planet name. Examples the gate flags as
+  // RETROGRADE_STATE_MISMATCH but the adjacency regex misses:
+  //   • "SR Mercury in Pisces in the SR 6th house is retrograde"
+  //   • "SR Mercury Retrograde in Pisces" (already handled by srRetroRe,
+  //     but only when the AI puts " Retrograde " right after the planet)
+  //   • "SR Mercury, retrograde this year, in Pisces"
+  // We bound the gap to 80 chars so we don't accidentally chain across
+  // multiple planet mentions. When we hit a phantom, we strip the trailing
+  // "is retrograde" / "retrograde this year" clause rather than mutating
+  // the sign/house segment in between (which is correct prose).
+  const srSeparatedRetroRe = new RegExp(
+    `\\b(${SR_QUALIFIER})(${PLANET_RE})\\b([^.!?\\n]{0,80}?)\\b(?:is\\s+retrograde|retrograde(?:\\s+this\\s+year)?)\\b[,.]?`,
+    "gi",
+  );
+
+  // ADD-MISSING-Rx PASS — inverse of the strip pass. When prose explicitly
+  // says "<SR Planet> direct" / "<SR Planet> is direct" and the SR truth
+  // table shows that planet IS retrograde, flip the claim. Mirrors the
+  // direct→retrograde path in fixNatalRetrogradeMentionsInProse so the SR
+  // side gets the same coverage natal already has.
+  const srDirectRe = new RegExp(
+    `\\b(${SR_QUALIFIER})(${PLANET_RE})(\\s+(?:is\\s+)?direct)\\b`,
+    "gi",
+  );
+
   let phantomStripped = 0;
+  let directToRetro = 0;
   const examples: string[] = [];
 
+  // INTENTIONALLY NARROW SKIP SET — only metadata/structural keys are
+  // skipped. Previously this set included `label`, `title`, `name`,
+  // `subtitle`, `heading` which meant the gate could (and did) flag
+  // bullets[*].label like "SR Mercury Retrograde in Pisces" as
+  // RETROGRADE_STATE_MISMATCH while this corrector silently passed over
+  // them. Bullet labels and section subtitles are user-visible prose and
+  // MUST be inspected for SR retrograde claims.
   const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
+    "type","id","kind",
     "planet","sign","house","degrees","aspect","natal_point","symbol",
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
   ]);
 
   const stripQualified = (full: string, qualifier: string, planet: string): string => {
@@ -3207,11 +3244,42 @@ const fixSrRetrogradeMentionsInProse = (
     phantomStripped++;
     return planet;
   };
+  const stripSeparatedClause = (
+    full: string,
+    qualifier: string,
+    planet: string,
+    middle: string,
+  ): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (isSrRetro) return full;
+    phantomStripped++;
+    // Drop the trailing "is retrograde" / "retrograde this year" clause.
+    // Preserve the sign/house clause in the middle so the prose still
+    // describes where the planet is, just without the false retro claim.
+    const cleanedMiddle = middle.replace(/[,\s]+$/, "");
+    return `${qualifier}${planet}${cleanedMiddle}`;
+  };
+  const flipDirectToRetro = (
+    full: string,
+    qualifier: string,
+    planet: string,
+    directSuffix: string,
+  ): string => {
+    const isSrRetro = srRetro.get(String(planet).toLowerCase()) === true;
+    if (!isSrRetro) return full;
+    directToRetro++;
+    void directSuffix;
+    return `${qualifier}${planet} retrograde`;
+  };
 
   const visit = (node: any, sectionTitle: string) => {
     if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
     if (!node || typeof node !== "object") return;
-    const titleLower = sectionTitle.toLowerCase();
+    // Update the section title as we descend so nested sections (e.g.
+    // sub-sections inside `_three_call`) get evaluated under their own
+    // local title rather than inheriting the outermost one.
+    const localTitle = typeof node.title === "string" ? node.title : sectionTitle;
+    const titleLower = localTitle.toLowerCase();
     const inSrSection = titleLower.includes("solar return") || /\bsr\b/.test(titleLower);
     for (const [key, val] of Object.entries(node)) {
       if (SKIP_KEYS.has(key)) continue;
@@ -3219,6 +3287,12 @@ const fixSrRetrogradeMentionsInProse = (
         let next = val;
         next = next.replace(srRetroRe, (full, qualifier, planet) =>
           stripQualified(full, qualifier, planet),
+        );
+        next = next.replace(srSeparatedRetroRe, (full, qualifier, planet, middle) =>
+          stripSeparatedClause(full, qualifier, planet, middle),
+        );
+        next = next.replace(srDirectRe, (full, qualifier, planet, suffix) =>
+          flipDirectToRetro(full, qualifier, planet, suffix),
         );
         if (inSrSection) {
           next = next.replace(bareRetroRe, (full, planet) => stripBare(full, planet));
@@ -3228,25 +3302,29 @@ const fixSrRetrogradeMentionsInProse = (
           (node as any)[key] = next;
         }
       } else {
-        visit(val, sectionTitle);
+        visit(val, localTitle);
       }
     }
   };
 
-  if (Array.isArray(parsedContent.sections)) {
-    for (const section of parsedContent.sections) {
-      const title = typeof section?.title === "string" ? section.title : "";
-      visit(section, title);
-    }
-  }
+  // Walk the ENTIRE parsedContent tree, not just `parsedContent.sections`.
+  // Bullet labels, summary boxes, _three_call sub-sections, and any
+  // future top-level container all need to be inspected — restricting
+  // to `sections` left labels and summary fields uncorrected.
+  visit(parsedContent, "");
 
-  if (phantomStripped > 0) {
+  if (phantomStripped > 0 || directToRetro > 0) {
     log.push({
       type: "sr_retrograde_corrected_in_prose",
-      detail: { phantom_rx_stripped: phantomStripped, examples },
+      detail: {
+        phantom_rx_stripped: phantomStripped,
+        direct_to_retrograde: directToRetro,
+        examples,
+      },
     });
     console.info("[ask-astrology] sr retrograde corrected in prose", {
       phantom_rx_stripped: phantomStripped,
+      direct_to_retrograde: directToRetro,
       examples,
     });
   }
