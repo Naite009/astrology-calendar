@@ -8257,7 +8257,7 @@ SR LOVE ACTIVATION STYLE:
 
   CAREER CITY CONTINUITY RULE: Every city named in the "Best Cities for Career" or "Caution Zones for Career" sections, AND every city referenced in the summary_box, MUST have either appeared earlier in the narrative_section bodies of this reading OR include at least one sentence of context within the city_comparison entry itself explaining why it's listed (e.g., which line passes through it and what that means for career). FORBIDDEN: introducing a city name (e.g., "Taipei", "Melbourne") for the first time in the summary_box with no prior context anywhere in the reading. If a city only matters via its astrocartography line, name the line and effect explicitly in the city's entry.
 
-- For question_type "health": Use this EXACT section order:
+- For question_type "health": INHERITS UNIVERSAL BASE — BASE RULES 1–8 are non-overridable for this reading type. Use this EXACT section order:
   1. placement_table — "Key Placements"
   2. narrative_section — "Your Vitality Foundation" (Sun sign/house for core vitality, 1st house/Ascendant for physical constitution, Mars for energy and drive)
   3. narrative_section — "Stress Points & Vulnerabilities" (6th house for chronic patterns, 12th house for hidden drains, Saturn for structural weaknesses, any stelliums creating overload)
