@@ -112,6 +112,9 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
             {defects.slice(0, 20).map((d, i) => (
               <li key={i}>
                 <span className="font-medium text-foreground">{d.code || "issue"}</span>
+                <span className="ml-1 inline-block rounded bg-muted px-1 py-0 text-[10px] uppercase text-muted-foreground">
+                  {d._source}
+                </span>
                 {d.message ? <> — {d.message}</> : null}
                 {d.path ? <span className="text-muted-foreground/70"> · {d.path}</span> : null}
               </li>
