@@ -6284,6 +6284,14 @@ const runPostProcessingPipeline = (
     fixNatalRetrogradeMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 5a. Natal retrograde acknowledgment, not just symbol/directness repair.
+  // Prompt rules alone are not enough here: if the model discusses a natal
+  // retrograde planet without explaining the retrograde, inject one plain
+  // language sentence from deterministic natal facts before gate/PDF output.
+  safeRun("acknowledgeNatalRetrogradesFromContext", () =>
+    acknowledgeNatalRetrogradesFromContext(parsedContent, ctx, log),
+  );
+
   // 5b. SR retrograde mentions in prose — strip "SR <Planet> retrograde"
   // when the SR planetary positions block shows that planet as direct.
   // This is the Ben bug: prose said "SR Mercury retrograde" but the SR
