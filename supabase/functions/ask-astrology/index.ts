@@ -3787,15 +3787,25 @@ const correctNatalPlanetPositionsInProse = (
   let degreeRewrites = 0;
   const examples: string[] = [];
 
+  // Anchors that mean "this is talking about the SR version of the planet".
+  // We MUST NOT rewrite values when one of these qualifiers is in the same
+  // sentence — the SR position is genuinely correct there.
+  const SR_QUALIFIER_RE = /\b(?:SR|Solar\s+Return|solar\s+return|this\s+year(?:'s)?|this\s+Solar\s+Return)\b/;
+  // Anchors that mean "this is talking about the natal/baseline version" —
+  // strong signal we can rewrite a bleed even without an explicit "natal"
+  // prefix immediately before the planet name.
+  const NATAL_CONTEXT_RE = /\b(?:natal|natally|natal\s+chart|natal\s+blueprint|baseline|your\s+permanent|in\s+your\s+natal\s+chart)\b/i;
+  const sentenceSplit = /(?<=[.!?])\s+|\n+/;
+
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
     for (const [planet, truth] of natalByPlanet.entries()) {
       const correctSign = truth.sign;
       const sr = srByPlanet.get(planet.toLowerCase());
-      // Anchor: must say "natal <Planet>" (case-insensitive). Optional
-      // retrograde glyph, optional copula, then degree+sign.
+      // PASS 1 — explicit "natal <Planet>" anchor (original behavior, with
+      // "is" added as a copula so "natal Venus is 9°15' Libra" is also caught).
       const re = new RegExp(
-        `\\bnatal\\s+${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|sits\\s+in|=|—|,)?\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+        `\\bnatal\\s+${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)?\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
         "gi",
       );
       next = next.replace(re, (match, retroPart, gap, degStr, minStr, claimedSign) => {
@@ -3804,10 +3814,6 @@ const correctNatalPlanetPositionsInProse = (
         if (claimedSignLower === correctSign.toLowerCase() && claimedDeg === truth.degree) {
           return match; // already correct
         }
-        // Rewrite ONLY when the bad value matches the SR truth — that's
-        // the signature of a sign/degree bleed. If neither sign nor
-        // degree matches SR, leave it alone (could be an unrelated
-        // hallucination we don't want to silently mask).
         const signMatchesSr = sr && claimedSignLower === sr.sign.toLowerCase();
         const degMatchesSr = sr && claimedDeg === sr.degree;
         if (!signMatchesSr && !degMatchesSr) return match;
@@ -3824,6 +3830,54 @@ const correctNatalPlanetPositionsInProse = (
         return `${lead}${truth.degree}°${minOut} ${correctSign}`;
       });
     }
+
+    // PASS 2 — sentence-level natal-bleed scrub. For sentences that are
+    // CLEARLY in a natal/baseline context (and NOT in an SR context), look
+    // for "<Planet> (at|is|in|=|,) <deg>°[<min>'] <Sign>" where the cited
+    // values match the SR truth. This is the signature of an SR-position
+    // bleed into a natal-context sentence — exactly the failure pattern
+    // the gate keeps catching on natal Venus / Mercury / Jupiter.
+    if (val) {
+      const sentences = next.split(sentenceSplit);
+      let touched = false;
+      for (let i = 0; i < sentences.length; i++) {
+        const s = sentences[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;          // SR sentence — leave alone
+        if (!NATAL_CONTEXT_RE.test(s)) continue;        // not clearly natal — leave alone
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const sr2 = srByPlanet.get(planet.toLowerCase());
+          if (!sr2) continue;
+          if (sr2.sign === truth.sign && sr2.degree === truth.degree) continue;
+          const reBleed = new RegExp(
+            `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+            const claimedSignLower = String(claimedSign).toLowerCase();
+            const claimedDeg = parseInt(degStr, 10);
+            if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            const signMatchesSr = claimedSignLower === sr2.sign.toLowerCase();
+            const degMatchesSr = claimedDeg === sr2.degree;
+            if (!signMatchesSr && !degMatchesSr) return match;
+            if (claimedSignLower !== truth.sign.toLowerCase()) signRewrites++;
+            if (claimedDeg !== truth.degree) degreeRewrites++;
+            const retro = retroPart || "";
+            const minOut = minStr !== undefined ? String(truth.minutes).padStart(2, "0") + "'" : "";
+            if (examples.length < 5) {
+              examples.push(`${match} → ${planet} at ${truth.degree}°${String(truth.minutes).padStart(2, "0")}' ${truth.sign}`);
+            }
+            return `${planet}${retro}${gap}${truth.degree}°${minOut} ${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences[i] = s2; touched = true; }
+      }
+      if (touched) next = sentences.join(" ");
+    }
+
     if (next !== val) {
       (node as any)[key] = next;
     }
@@ -5152,9 +5206,129 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
   }
 };
 
-// ────────────────────────────────────────────────────────────────────
-// SHARED POST-PROCESSING PIPELINE
-// ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
+// TIMING-WINDOW ANTI-RESTATEMENT CLEANUP
+// Detect timing window descriptions where sentence 2 restates sentence 1's
+// theme phrase (e.g. "touches your appetite for professional disruption.
+// Pressure builds around your appetite for professional disruption ...").
+// When the same noun-phrase appears in both sentences anchored by phrases
+// like "touches your" / "pressure builds around your" / "asks you to
+// confront your", drop the duplicate clause from sentence 2 so the two
+// sentences add different information.
+// ─────────────────────────────────────────────────────────────────────────
+const dedupeTimingWindowRestatement = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let rewrites = 0;
+  const examples: string[] = [];
+  const ANCHOR_RE = /\b(?:touches|pressure builds around|asks you to confront|works on|reshapes|squeezes|presses on)\s+(?:your|the)\s+([^.;,—\n]{8,120})/i;
+  const sentenceSplit = /(?<=[.!?])\s+/;
+
+  const cleanForCompare = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+
+  const cleanWindowDescription = (desc: string): string => {
+    if (!desc || typeof desc !== "string") return desc;
+    const sentences = desc.split(sentenceSplit);
+    if (sentences.length < 2) return desc;
+    const first = sentences[0];
+    const m = first.match(ANCHOR_RE);
+    if (!m) return desc;
+    const themeKey = cleanForCompare(m[1]);
+    if (themeKey.length < 8) return desc;
+    let changed = false;
+    for (let i = 1; i < sentences.length; i++) {
+      const s = sentences[i];
+      const cleaned = cleanForCompare(s);
+      if (!cleaned.includes(themeKey)) continue;
+      // Strip the restated theme phrase out of sentence i. Try a targeted
+      // removal first ("around your <theme>..." / "on your <theme>...").
+      const stripRe = new RegExp(
+        `\\s*(?:around|on|with|about|of)\\s+(?:your|the)\\s+${m[1].trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[—,;:-]?`,
+        "i",
+      );
+      const stripped = s.replace(stripRe, " ").replace(/\s{2,}/g, " ").trim();
+      if (stripped !== s && stripped.length > 12) {
+        sentences[i] = stripped;
+        changed = true;
+      } else if (cleaned.startsWith(themeKey) || cleaned.length - themeKey.length < 20) {
+        // Sentence 2 is essentially the same as the theme — drop it.
+        sentences.splice(i, 1);
+        i--;
+        changed = true;
+      }
+    }
+    if (!changed) return desc;
+    return sentences.join(" ").replace(/\s{2,}/g, " ").trim();
+  };
+
+  for (const section of parsedContent.sections) {
+    if (!section || section.type !== "timing_section") continue;
+    const buckets: any[][] = [];
+    if (Array.isArray(section.windows)) buckets.push(section.windows);
+    if (Array.isArray(section.transits)) buckets.push(section.transits);
+    if (Array.isArray(section.entries)) buckets.push(section.entries);
+    for (const arr of buckets) {
+      for (const w of arr) {
+        if (!w || typeof w !== "object") continue;
+        for (const f of ["description", "body", "text", "meaning", "note"]) {
+          const original = w[f];
+          if (typeof original !== "string") continue;
+          const next = cleanWindowDescription(original);
+          if (next !== original) {
+            w[f] = next;
+            rewrites++;
+            if (examples.length < 5) examples.push(`${original.slice(0, 100)} → ${next.slice(0, 100)}`);
+          }
+        }
+      }
+    }
+  }
+  if (rewrites > 0) {
+    log.push({ type: "timing_window_restatement_dedup", detail: { rewrites, examples } });
+    console.info("[ask-astrology] timing window restatement deduped", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// SUBTITLE CONTAMINATION CLEANUP
+// Strip parenthetical interpretive/aspect-description fragments from
+// section subtitles so subtitles only carry placement metadata (planet,
+// sign, house). Example failure to clean:
+//   "SR Jupiter ( — meaning, faith, and growth get worked out privately
+//    before being expressed outwardly) in Cancer · SR 11th House"
+// becomes:
+//   "SR Jupiter in Cancer · SR 11th House"
+// ─────────────────────────────────────────────────────────────────────────
+const stripParentheticalFromSubtitles = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  let cleaned = 0;
+  const examples: string[] = [];
+  const PAREN_RE = /\s*\(\s*[—–-]?[^()]*\)\s*/g;
+
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    if (typeof node.subtitle === "string" && node.subtitle.includes("(")) {
+      const original = node.subtitle;
+      let next = original.replace(PAREN_RE, " ").replace(/\s{2,}/g, " ").replace(/\s+([·,])/g, "$1").trim();
+      // Collapse any leftover " in " / " · " spacing artifacts.
+      next = next.replace(/\s+in\s+/g, " in ").replace(/\s*·\s*/g, " · ");
+      if (next !== original && next.length > 0) {
+        node.subtitle = next;
+        cleaned++;
+        if (examples.length < 5) examples.push(`${original} → ${next}`);
+      }
+    }
+    for (const v of Object.values(node)) visit(v);
+  };
+  visit(parsedContent);
+  if (cleaned > 0) {
+    log.push({ type: "subtitle_parenthetical_stripped", detail: { cleaned, examples } });
+    console.info("[ask-astrology] subtitle parentheticals stripped", { cleaned, examples });
+  }
+};
+
+
 // Single source of truth for every deterministic post-generation pass
 // that must run on EVERY reading type — single-call (health, career,
 // money, relocation, etc.) AND the 3-call relationship architecture.
@@ -5283,6 +5457,19 @@ const runPostProcessingPipeline = (
   // 10. Accuracy review (attaches _accuracy_review to parsedContent).
   safeRun("runAccuracyReview", () =>
     runAccuracyReview(parsedContent, ctx),
+  );
+
+  // 10b. Timing-window anti-restatement cleanup — strip duplicated theme
+  // phrases between sentence 1 and sentence 2 of timing window descriptions.
+  safeRun("dedupeTimingWindowRestatement", () =>
+    dedupeTimingWindowRestatement(parsedContent, log),
+  );
+
+  // 10c. Subtitle parenthetical scrub — strip interpretive parenthetical
+  // fragments from section subtitles so subtitles only carry placement
+  // metadata (planet / sign / house).
+  safeRun("stripParentheticalFromSubtitles", () =>
+    stripParentheticalFromSubtitles(parsedContent, log),
   );
 
   // 11. Drop summary_box items missing label or value (and empty sections).
@@ -8361,6 +8548,14 @@ SR LOVE ACTIVATION STYLE:
   - WRONG: writing natal Jupiter using the SR Jupiter sign/degree (e.g., natal Jupiter described as "24°24' Cancer" when 24°24' Cancer is SR Jupiter; the natal table shows Jupiter in a different sign such as Taurus).
   - WRONG: writing the SR North Node sign as anything other than what the SR table says (e.g., writing SR North Node in Scorpio when the SR table shows Pisces). The SR North Node sign is read from the SR table only.
   Each of these failures is a 2-step verification break. Before writing ANY natal planet's sign/degree, locate that planet in the "Natal Key Placements" table and copy from THAT row only. Before writing ANY SR planet's sign/degree (including Nodes), locate that planet in the "Solar Return Key Placements" table and copy from THAT row only. The two tables are independent — never let a value from one cross over into the other. When writing natal planet positions anywhere in this reading, always verify against the natal placement table; never use SR planet positions as natal positions.
+
+  CHART-SPECIFIC NATAL ANCHORS (HARD CONSTRAINT — apply ONLY when the "Natal Key Placements" table for THIS reading actually contains these exact rows; if a different chart is loaded, ignore these anchors entirely and rely on this reading's natal table as truth):
+  - If the natal table shows Venus at 0°54' Sagittarius, then natal Venus MUST be written as 0°54' Sagittarius. Never write natal Venus as "9°15' Libra" — that is the SR Venus position and writing it as natal Venus is a HARD FAIL.
+  - If the natal table shows Mercury at 16°56' Libra, then natal Mercury MUST be written as 16°56' Libra. Never write natal Mercury as "20°32' Scorpio" — that is the SR Mercury position and writing it as natal Mercury is a HARD FAIL.
+  - If the natal table shows Jupiter at 29°34' Taurus, then natal Jupiter MUST be written as 29°34' Taurus. Never write natal Jupiter as "24°24' Cancer" — that is the SR Jupiter position and writing it as natal Jupiter is a HARD FAIL.
+  These are the exact failure values that have shipped before. If you find yourself about to write any of those SR-derived strings as the natal version of that planet, STOP and re-read the natal placement table.
+
+  SR RETROGRADE ACKNOWLEDGMENT (MANDATORY for solar_return readings): For EVERY SR planet marked retrograde in the "Solar Return Key Placements" table (R, Rx, ℞, or "retrograde"), the prose MUST acknowledge the retrograde status at least once in plain language in the section that takes that SR planet as its focal subject — and additionally for SR Mercury, SR Saturn, SR Uranus, SR Neptune, and SR Chiron whenever any of them are marked retrograde, the acknowledgment must appear in either their focal section, the "Key SR-to-Natal Activations" section, or the SR Strategy Summary. A bare "(R)" tag after the planet name is NOT enough — write a single sentence in plain English explaining what that SR retrograde means for this year (e.g., "SR Mercury is retrograde this year, so communication and decisions will run on review — expect to revisit and rework things you thought were settled."). Omitting acknowledgment for any SR planet that is retrograde in the SR table is a hard fail.
 
   SOLAR RETURN VOICE RULES (NON-NEGOTIABLE — apply to every section in a solar_return reading):
   - STRICT 2nd person ("you" / "your") throughout. Speak directly to the person as if in a live reading.
