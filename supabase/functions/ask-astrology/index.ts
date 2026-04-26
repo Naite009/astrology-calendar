@@ -5459,6 +5459,19 @@ const runPostProcessingPipeline = (
     runAccuracyReview(parsedContent, ctx),
   );
 
+  // 10b. Timing-window anti-restatement cleanup — strip duplicated theme
+  // phrases between sentence 1 and sentence 2 of timing window descriptions.
+  safeRun("dedupeTimingWindowRestatement", () =>
+    dedupeTimingWindowRestatement(parsedContent, log),
+  );
+
+  // 10c. Subtitle parenthetical scrub — strip interpretive parenthetical
+  // fragments from section subtitles so subtitles only carry placement
+  // metadata (planet / sign / house).
+  safeRun("stripParentheticalFromSubtitles", () =>
+    stripParentheticalFromSubtitles(parsedContent, log),
+  );
+
   // 11. Drop summary_box items missing label or value (and empty sections).
   // Runs LAST so any backfills produced by earlier passes (timing windows,
   // best/caution distinctness, etc.) get a chance to populate values
