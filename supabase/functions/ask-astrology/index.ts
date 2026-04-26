@@ -5355,7 +5355,7 @@ const dedupeTimingWindowRestatement = (parsedContent: any, log: HygieneLog) => {
       // Strip the restated theme phrase out of sentence i. Try a targeted
       // removal first ("around your <theme>..." / "on your <theme>...").
       const stripRe = new RegExp(
-        `\\s*(?:around|on|with|about|of)\\s+(?:your|the)\\s+${m[1].trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[—,;:-]?`,
+        `\\s*(?:around|on|with|about|of)\\s+(?:your\\s+|the\\s+)?${m[1].trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[—,;:-]?`,
         "i",
       );
       const stripped = s.replace(stripRe, " ").replace(/\s{2,}/g, " ").trim();
