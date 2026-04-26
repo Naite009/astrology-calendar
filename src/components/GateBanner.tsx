@@ -73,20 +73,20 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
   void contract;
 
   return (
-    <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
-          <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+          <ShieldAlert className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">
-              Validation did not pass
+              JSON review notes
               {defectCount > 0 ? ` — ${defectCount} issue${defectCount === 1 ? "" : "s"} flagged` : ""}
               {failingLayers.length > 0 ? ` (${failingLayers.join(" + ")})` : ""}
             </p>
             <p className="text-xs text-muted-foreground">
-              The reading below was generated, but at least one consistency
-              check failed (e.g. prose claims about retrograde or aspect data
-              that do not match the chart). Consider regenerating.
+              The reading and JSON export remain available. These notes mark
+              anything the external gate wanted reviewed so you can send them
+              back for correction without losing the generated JSON.
             </p>
           </div>
         </div>
@@ -103,20 +103,26 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
         )}
       </div>
 
-      {expanded && defectCount > 0 && (
+      {(expanded || defectCount > 0) && (
         <div className="space-y-1 pl-6 text-xs">
-          <ul className="list-disc pl-4 text-muted-foreground space-y-0.5">
-            {defects.slice(0, 20).map((d, i) => (
-              <li key={i}>
-                <span className="font-medium text-foreground">{d.code || "issue"}</span>
-                <span className="ml-1 inline-block rounded bg-muted px-1 py-0 text-[10px] uppercase text-muted-foreground">
-                  {d._source}
-                </span>
-                {d.message ? <> — {d.message}</> : null}
-                {d.path ? <span className="text-muted-foreground/70"> · {d.path}</span> : null}
-              </li>
-            ))}
-          </ul>
+          {defectCount > 0 ? (
+            <ul className="list-disc pl-4 text-muted-foreground space-y-0.5">
+              {defects.slice(0, 20).map((d, i) => (
+                <li key={i}>
+                  <span className="font-medium text-foreground">{d.code || "issue"}</span>
+                  <span className="ml-1 inline-block rounded bg-muted px-1 py-0 text-[10px] uppercase text-muted-foreground">
+                    {d._source}
+                  </span>
+                  {d.message ? <> — {d.message}</> : null}
+                  {d.path ? <span className="text-muted-foreground/70"> · {d.path}</span> : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">
+              The external gate marked this for review but did not return itemized defects.
+            </p>
+          )}
           {defects.length > 20 && (
             <p className="text-muted-foreground/70">
               … and {defects.length - 20} more
@@ -128,7 +134,7 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
       {onRegenerate && (
         <div className="pl-6">
           <Button size="sm" variant="outline" onClick={onRegenerate} className="h-7 text-xs">
-            Regenerate this reading
+            Regenerate if you want a new draft
           </Button>
         </div>
       )}
