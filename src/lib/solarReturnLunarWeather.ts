@@ -76,23 +76,36 @@ export function generateLunarWeatherMap(
   const emotionalPeaks: string[] = [];
   const quietMonths: string[] = [];
 
+  // Natal Moon sign index (used to compute lunar return month + as fallback)
+  const natalMoonIdx = SIGNS.indexOf(natalMoonSign);
+
   for (let i = 0; i < 12; i++) {
     const calMonth = (bMonth + i) % 12;
     const monthName = MONTH_NAMES[calMonth];
 
-    // Lunar return: Moon returns to natal sign approximately every 27.3 days
-    // Each month gets one lunar return
+    // Per-month dominant transiting Moon sign.
+    // The Moon advances ~1 sign per 2.3 days. Across a calendar month it visits all 12,
+    // so the "dominant" sign per month is the one the lunation (new/full moon) falls in,
+    // which we approximate as the Sun's current sign at mid-month — Moon at lunation
+    // is conjunct (new) or opposite (full) the Sun. We rotate through the zodiac so each
+    // month gets a different felt-sense tone.
+    // Use Sun sign rotation starting from the SR Sun sign as a stable, varying anchor.
+    const srSunSign = srChart?.planets?.Sun?.sign || SIGNS[(bMonth + 9) % 12];
+    const srSunIdx = Math.max(0, SIGNS.indexOf(srSunSign));
+    const monthDominantIdx = (srSunIdx + i) % 12;
+    const monthDominantSign = SIGNS[monthDominantIdx];
+
+    // Lunar return: Moon returns to its NATAL sign each month — that's the emotional reset.
+    // The lunarReturn.lunarReturnSign stays the natal Moon sign (this is the definition
+    // of a lunar return). What varies per month is the dominant transiting tone.
     const lunarReturn = generateLunarReturn(natalMoonSign, monthName, i);
 
     // Moon transits through ~12 signs per month (~2.5 days each)
     const checkpoints = generateMonthCheckpoints(i, calMonth, srChart.solarReturnYear, bMonth);
 
-    // Overall tone based on which sign the lunar return emphasizes
-    const signData = MOON_SIGN_EMOTIONAL[natalMoonSign] || MOON_SIGN_EMOTIONAL.Cancer;
-    
     // Modify intensity based on aspects active that month
     let monthIntensity = lunarReturn.intensity;
-    
+
     // Eclipse months get boosted
     if (analysis.eclipseSensitivity.some(e => {
       // approximate: if eclipse is in this month range
@@ -104,8 +117,9 @@ export function generateLunarWeatherMap(
     // Peak day — day in month when Moon crosses natal Moon degree
     const peakDay = Math.round(i * 30.4 + 14); // approximately mid-month
 
-    const overallTone = getMonthTone(i, natalMoonSign, analysis);
-    const interpretation = getMonthInterpretation(i, natalMoonSign, monthIntensity, monthName);
+    // Overall tone now uses the per-month transiting dominant sign so each month feels distinct
+    const overallTone = getMonthTone(i, monthDominantSign, natalMoonSign, analysis);
+    const interpretation = getMonthInterpretation(i, natalMoonSign, monthDominantSign, monthIntensity, monthName);
 
     months.push({
       month: monthName,
