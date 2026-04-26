@@ -5504,6 +5504,15 @@ const runPostProcessingPipeline = (
     }
   };
 
+  // 0. Ensure a "Solar Return Key Placements" table exists when SR prose
+  // is present. Without this, single-call readings (career/health/money/
+  // relocation) ship only a natal table while the prose discusses SR
+  // planets — and the Replit gate flags RETROGRADE_STATE_MISMATCH because
+  // it has no SR table to corroborate the retrograde claim.
+  safeRun("ensureSolarReturnPlacementTable", () =>
+    ensureSolarReturnPlacementTable(parsedContent, ctx, log),
+  );
+
   // 1. Retrograde flags on every placement_table row (per-row routing).
   safeRun("normalizePlacementTableRetrograde", () =>
     normalizePlacementTableRetrograde(parsedContent, log, ctx),
