@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send } from "lucide-react";
+import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, Sparkles, Sun } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CityInput } from "@/components/CityInput";
