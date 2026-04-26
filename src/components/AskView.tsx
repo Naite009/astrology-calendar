@@ -455,7 +455,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             onProgress: (status) => setJobStatus(status === "completed" || status === "failed" ? null : status),
           });
           if (cancelled) return;
-          applyCompletedJob(job);
+          await applyCompletedJob(job);
         } catch (err: any) {
           if (err?.name === "AbortError") return;
           console.error("[AskView] Resume poll error:", err);
