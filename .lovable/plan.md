@@ -1,67 +1,82 @@
-## What I found (read the code, not just the symptoms)
+## What I found in the PDF (full audit, not just the user's description)
 
-**BASE RULE 10 did NOT regress in code.** I verified directly:
-- The rule text is still in the shared base block at `supabase/functions/ask-astrology/index.ts:9107–9108`.
-- All 11 inheritance lines + the forward-compat clause still read **"BASE RULES 1–10"** (relationship, relocation, career, health, money, natal, solar_return, spiritual, timing, general, plus the "any new question_type" forward-compat clause). I grepped — there is not a single remaining `BASE RULES 1–9`.
-- The deterministic corrector `acknowledgeNatalRetrogradesFromContext` is still defined (lines 3531–3607) and still wired into `safeRun` at line 6439–6440.
+I read every section of `reading_reading_report_37.pdf` against the natal & SR placement tables on page 1. Here is the actual error inventory:
 
-So the "regression" is not the rule disappearing. It's something subtler, and it's a real bug. Two real problems, distinct from each other:
+### Confirmed natal-house bugs (the structural problem you flagged)
+1. **Page 8** — "Your natal Saturn is in Aries in the **8th house**." Truth: natal Saturn is in **House 6**. SR Saturn is in House 8 — the SR house bled onto the natal sentence.
+2. **Page 4** — "natal Lilith in Cancer in the **1st house**." Truth: natal Lilith is in **House 8**. (Page 9 gets it right in the same document.)
+3. **Page 9** — "natal Uranus retrograde at 0°30' Libra **in the 9th house**." Truth: natal Uranus is in **House 11**. (Position 0°30' Libra is now correct — that fix held. The house is what's wrong.)
 
-### Problem 1 — `acknowledgeNatalRetrogradesFromContext` has a too-lenient gate
+### Confirmed regression of last loop's fix
+4. **Page 3 elemental balance prose.** Header correctly reads "Dominant Element: Earth · Dominant Modality: Mutable." But the body is verbatim Fire/Cardinal language: *"You live forward, you think out loud, act on instinct… your pace starts things, you get bored maintaining what is already running… you assert, initiate, and often process by doing."* The Earth/Mutable corrector we shipped last loop did not fire on this reading. Either the mismatch detector's trigger phrases missed this exact wording, or the section body isn't being passed through the corrector at all.
 
-The corrector's `hasAcknowledgment` regex at line 3577–3581 treats **any of `retrograde | Rx | R | ℞`** within 160 chars of the planet name as "already acknowledged." But BASE RULE 10 explicitly says *"A bare ℞ symbol is not enough — write one sentence explaining what that natal retrograde means for this person specifically."*
+### What is actually working (do not touch)
+- BASE RULE 10 retrograde carry-through: every retrograde planet (Venus, Mars, Jupiter, Uranus, Neptune, Pluto) carries the word "retrograde" in flowing prose. ✅
+- Natal Uranus *position* (0°30' Libra) is correct everywhere. ✅
+- No stray digits on ordinals. ✅
+- Element parentheticals on page 3 (Fire = Venus/Mars/Saturn, all in fire signs). ✅
+- SR house claims — every SR-house statement I cross-checked matched the SR table. The SR placement block is doing its job. ✅
+- Timing windows table — positions match the natal table. ✅
 
-So when the AI writes `"your natal Venus ℞ in Aries colors how you receive…"` the corrector sees the `℞` symbol and skips injection. The Replit gate, which evaluates the prose as a human reader would, correctly flags it as a missing plain-language acknowledgment — and the gate's auto-fix list shows up as "natal Venus / Jupiter / Uranus retrograde omissions" *fixed*. That's what the user is seeing in the gate JSON. The local corrector never injected the proper sentence because its detector was satisfied by the symbol.
+So: the user is **exactly right** that the SR-house guardrail works and there is no natal equivalent. Three of the four real errors above are natal-house bleed; the fourth is a separate regression that needs its own fix.
 
-This is why it appeared to work last reading and not this one: it depends on whether the AI happened to write `"is retrograde"` (which is a plain-language phrase the gate accepts) vs. just `"℞"` (which the gate rejects). The local guardrail was supposed to be a backstop and it isn't backing up correctly.
+---
 
-**Fix:** tighten `hasAcknowledgment` so it only counts as "acknowledged" if there is a plain-language phrase (`retrograde`, `Rx`, or `R`) within range AND the sentence containing that match is at least ~10 words long (i.e., not just a placement-table cell or a parenthetical glyph). The bare `℞` and standalone `Rx` glyph in a label/cell should NOT satisfy the gate. If the only mention of "retrograde" within range is a single word in a glyph-style fragment, treat it as unacknowledged and inject the sentence from `NATAL_RX_ACK_BY_PLANET`.
+## The plan
 
-I'll also add an emission log entry (`natal_retrograde_acknowledgment_injected` is already there but currently silent when count=0) so the next run shows which planets were checked and which got injected vs. skipped — that way the next time the user asks "did this fire?" it's visible in the emission list.
+### File 1: `src/components/AskView.tsx` — add the natal truth block
 
-### Problem 2 — Natal Uranus position keeps being written wrong, and the post-corrector isn't catching it
+Add a `NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE):` block to `buildChartContext`, placed **immediately after** the existing `SR PLANET HOUSE PLACEMENTS` block. Format mirrors the SR block exactly.
 
-The validation facts already include the canonical natal Uranus position (`positions[]` in `ValidationFacts` carries sign + degree + abs_degree + house + retrograde for every planet — see `supabase/functions/ask-astrology/validationFacts.ts`). So the ground truth IS in the facts object — the user's premise that it's missing from canonical facts is wrong.
+Bodies included (driven by the natal placement table, not derived):
+- Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
+- Chiron, North Node, South Node
+- **Lilith, Juno** (added to the user's original spec because error #2 above is on natal Lilith — Lilith is in the natal table, so it must be in the truth block)
+- Ascendant (sign only), Midheaven (sign + House 10)
 
-The actual issue is `correctNatalPlanetPositionsInProse` at line 4731 **isn't catching the Uranus case for this chart** because its prose pattern is too narrow. The AI is writing things like *"your natal Uranus at 0°09' Gemini"* — that's the SR Uranus position bleeding into a natal sentence. The corrector should:
-- Identify the natal-qualified mention (`natal Uranus`, `your natal Uranus`, `your Uranus` in a natal context)
-- Extract the degree+sign claim adjacent to it
-- Compare against the natal facts position (`Libra 0°30'`)
-- Surgically rewrite the degree/sign
+Each line is sourced directly from the same data structure that populates the page-1 natal table — never inferred from sign.
 
-I'll inspect the existing corrector's regex and broaden it to handle:
-- `"your natal <Planet> at <deg>°<min>' <Sign>"` (already covered, presumably)
-- `"<Planet> at <deg>°<min>' <Sign>"` when the surrounding sentence is in a natal-qualified context (currently the gap)
-- `"natal <Planet> in <Sign>"` (sign-only claims with no degree)
+### File 2: `supabase/functions/ask-astrology/index.ts` — `factsAwareHouseSweep`
 
-I'll also add a log line that prints, for each planet checked, the natal facts truth value vs. what was found in prose, so future failures are diagnosable.
+New deterministic post-processor, wired into `safeRun` immediately after `factsAwareRetrogradeSweep`:
 
-## Plan (small, targeted, no scope creep)
+1. Parse both truth blocks from the chart context: build `natalHouseByPlanet` and `srHouseByPlanet` maps.
+2. Scan prose for house claims using two pattern families:
+   - **Natal-qualified**: `(your )?natal <Planet>(?: retrograde)?(?: at [^.]*?)? in the (\d+)(st|nd|rd|th) house` — and also `<Planet>(?: retrograde)? at \d+°\d+' <Sign> in the (\d+)(st|nd|rd|th) house` when the surrounding sentence contains a natal qualifier (`natal`, `your natal`, `birth chart`, `at birth`).
+   - **SR-qualified**: same but with `SR ` prefix or "this year's" qualifier.
+3. For each match, compare the claimed house number to the truth map. If wrong, surgically rewrite to the correct ordinal (`6th`, `8th`, `11th`, etc.).
+4. Emit a `facts_aware_house_sweep` log entry per rewrite (planet, claimed house, correct house, chart layer, snippet) — capped at 10 examples per run for log volume.
+5. Do **not** rewrite when the planet is unqualified (e.g. "Mercury in the 7th" with no natal/SR context) — that ambiguity stays out of scope to avoid misfires on transit prose.
 
-**File:** `supabase/functions/ask-astrology/index.ts` only.
+### File 3: `supabase/functions/ask-astrology/index.ts` — Earth/Mutable corrector regression
 
-1. **Tighten `hasAcknowledgment`** in `acknowledgeNatalRetrogradesFromContext` (around line 3576):
-   - Require a plain-language word (`retrograde` | `Rx`) — drop `℞` and bare `R\b` from the satisfaction regex.
-   - Additionally require the containing sentence to be ≥ 8 words (block satisfaction by a placement-table cell or parenthetical).
-   - Add a `natal_retrograde_acknowledgment_checked` log entry when retrograde planets are present, listing planets checked, planets injected, and planets skipped-as-already-acknowledged. This makes regressions visible in logs even when injection count is 0.
+The `correctModalityElementBodyClaims` function shipped last loop did not catch this generation's prose. Two narrow fixes:
 
-2. **Broaden `correctNatalPlanetPositionsInProse`** (around line 4731):
-   - Read existing patterns; widen so a `<Planet> at <deg>°<min>' <Sign>` claim inside a sentence that contains a natal qualifier (`natal`, `your natal`, `birth chart`, `at birth`) anywhere in the same sentence is rewritten using the canonical facts.
-   - Add a "sign-only" branch: `natal <Planet> in <Sign>` rewrites the sign when wrong, leaving degree if not present.
-   - Emit example diffs in the log for each rewrite (the function already logs counts; add up to 5 examples).
+1. **Broaden the Fire/Cardinal trigger phrases**. Add: `act on instinct`, `pace starts things`, `new is being launched`, `assert, initiate`, `process by doing`, `live forward`, `think out loud`, `something new is being launched`. Anchor matching to the elemental-balance section specifically (detect by section header `Solar Return Elemental & Modal Balance` or the `Dominant Element:` / `Dominant Modality:` line in the same block) so the rewrite is scoped and won't accidentally rewrite prose elsewhere that legitimately uses these phrases.
+2. **Hard-replace** the body paragraph (not append) when both:
+   - The header line says `Dominant Element: Earth` AND `Dominant Modality: Mutable`, AND
+   - The body contains ANY trigger phrase from the Fire/Cardinal list, OR is missing both an Earth keyword (`ground`, `patient`, `build`, `steady`, `solid`) and a Mutable keyword (`adapt`, `respond`, `flexib`, `shift`).
+3. Add a `modality_element_body_rewrite` log entry that records: detected dominant element, detected dominant modality, the trigger that fired (which phrase / which missing-keyword), and the original sentence that was replaced — so future regressions are visible in the log without needing a fresh PDF.
 
-3. **Verification (no code change):**
-   - Confirm BASE RULE 10 text and all 11 inheritance lines still read "BASE RULES 1–10" (already verified above — no edit needed).
-   - Re-run `rg "BASE RULES 1.{0,3}9\b"` to ensure zero matches.
+### File 4: `supabase/functions/ask-astrology/index.ts` — verification only, no edits
 
-4. **Deploy** the `ask-astrology` edge function.
+- Confirm BASE RULE 10 (1–10 inheritance lines) and the natal Uranus position canonical-fact wiring are intact. (Verified in the PDF: both held this run; no edit needed.)
+
+### Deployment
+
+Redeploy the `ask-astrology` edge function after edits to files 2 and 3. File 1 is a frontend change that ships on the next Vite reload.
+
+---
+
+## Why this should hold
+
+- The natal truth block is built from the same chart data as the page-1 table, so it cannot drift from what the report itself prints.
+- `factsAwareHouseSweep` reads from the truth block, not from the AI's prose — same pattern as the working SR-house guardrail and `factsAwareRetrogradeSweep`. It can't be silently overwritten by an unrelated future fix because it lives in its own named function with its own log emissions.
+- The elemental balance fix scopes itself to the elemental-balance section and only fires on Earth+Mutable charts with mismatched body language, so it won't bleed into other readings.
 
 ## What I am NOT doing
 
-- Not touching the elemental-balance corrector, the SR house corrector, the cross-chart balance corrector, the timing pipeline, or the prompt body outside BASE RULE 10. Those are stable.
-- Not adding a new "canonical natal Uranus" hardcoded constant for Nicki — the facts JSON already carries the truth for every chart, and a per-user hardcode would be the wrong abstraction. The fix is to make the existing corrector catch the existing wrong prose.
-- Not changing `NATAL_RX_ACK_BY_PLANET` sentences.
-
-## Why this should hold across deployments
-
-The two changes are orthogonal to elemental balance and to the SR pipeline, so a future fix in either of those areas can't silently undo this. Both changes are inside their own named functions and have explicit emission logs, so a regression will be visible in the next run's log line list rather than silent.
+- Not changing the SR house corrector — it works.
+- Not adding a per-user hardcoded constant for natal Uranus or any other planet — the truth block carries the data per-chart and is the right abstraction.
+- Not touching the timing pipeline, retrograde sweep, element parenthetical scrubber, stray-digit scrubber, or BASE RULE 10 — all verified working in this PDF.
+- Not rewriting unqualified house mentions (no natal/SR prefix) — out of scope to avoid false positives on transit prose.
