@@ -9880,6 +9880,7 @@ ${natalGroundTruthLines}`
     }
 
     // ────────────────────────────────────────────────────────────
+    // EXTERNAL PRE-FLIGHT GATE (Replit /check-reading) — V2
     // V1.2: Hoisted out of hygiene so it runs even when hygiene throws.
     // V2:   When the gate returns MISSING_REQUIRED_SECTION defects, we
     //       re-prompt Claude to author exactly those sections, append
