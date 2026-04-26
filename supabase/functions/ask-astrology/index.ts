@@ -7632,14 +7632,17 @@ const reconcileSRHouseCopyWarning = (parsedContent: any, log: HygieneLog) => {
 // qualifier on the FIRST mention of the planet in the FIRST relationship
 // section that names it without an Rx acknowledgment. We never invent
 // retrograde language for planets that aren't being interpreted.
-const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Chiron"] as const;
+const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"] as const;
 const RX_NUDGE_BY_PLANET: Record<string, string> = {
   Mercury: "(retrograde — communication turns inward, second-guesses itself, and reworks old conversations before speaking)",
   Venus:   "(retrograde — love runs on review, revisits the past, and questions what it actually values before committing)",
   Mars:    "(retrograde — desire moves indirectly, hesitates, and processes anger or wanting internally before acting)",
   Jupiter: "(retrograde — meaning, faith, and growth get worked out privately before being expressed outwardly)",
   Saturn:  "(retrograde — authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
-  Chiron:  "(retrograde — the wound is metabolized inward; healing happens by re-encountering it rather than performing recovery)",
+  Uranus:  "(retrograde — disruption and freedom are internalized before they show outwardly)",
+  Neptune: "(retrograde — sensitivity and imagination move inward before they can be trusted outwardly)",
+  Pluto:   "(retrograde — power and transformation are processed internally before they become visible)",
+  Chiron:  "(retrograde — old pain is processed inward; repair starts privately before it can be shared)",
 };
 // Widened from relationship-only to cover natal/career/money/SR focal sections too.
 // The acknowledgment only fires if the planet is actually named in the section,
