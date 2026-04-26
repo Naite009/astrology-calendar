@@ -1314,29 +1314,13 @@ const buildTimingWindowDescription = (
   );
   if (devOverride && devOverride.trim().length > 0) return devOverride;
 
-  // NATAL READING — bypass the generic-template path. Names the specific natal
-  // point with sign+degree and grounds the body in a concrete real-life scenario.
-  if (readingType === 'natal') {
-    const natalDegree = (window.natalDegree ?? '').trim();
-    const composed = buildNatalDescription(tp, asp, np, natalDegree, exactSummary);
-    return dedupeSentences(composed);
-  }
-
-  const aspectTone = (buildSpecificOpener(tp, asp, np, readingType) ?? '').trim();
-  const transitAction = (getTransitAction(readingType, tp) ?? '').trim();
-  const themeMap = getNatalThemeMap(readingType);
-  const natalTheme = (themeMap[np] ?? buildPlanetNamedFallback(np, readingType) ?? '').trim();
-
-  // Hard guard: any required component empty => return '' so the window is dropped.
-  if (!aspectTone || !transitAction || !natalTheme) {
-    console.error('[buildTimingWindowDescription] EMPTY component — dropping window', {
-      tp, asp, np, readingType,
-      hasAspectTone: !!aspectTone, hasTransitAction: !!transitAction, hasNatalTheme: !!natalTheme,
-    });
-    return '';
-  }
-
-  return `${aspectTone}. ${tp} ${transitAction} around ${natalTheme}. Peaks: ${exactSummary}.`;
+  // Fix 1 — ALL reading types now use the personalized natal-point description
+  // (one sentence naming the specific natal point, one concrete scenario).
+  // Previously only `natal` benefited; career/solar_return/relationship/etc.
+  // fell back to the generic template. Unified path eliminates the gap.
+  const natalDegree = (window.natalDegree ?? '').trim();
+  const composed = buildNatalDescription(tp, asp, np, natalDegree, `Peaks: ${exactSummary}.`, readingType);
+  return dedupeSentences(composed);
 };
 
 export const getTimingTagDetails = (tag: string) => {
