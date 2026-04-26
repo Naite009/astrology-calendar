@@ -95,6 +95,36 @@ function buildAspectDescription(p1: string, p2: string, aspectType: string, isOp
       : `Two important parts of your life are asking you to grow this year. The stretch is worthwhile — it's building something stronger.`;
   }
 
+  // Same-planet aspects (e.g. transiting Uranus to natal Uranus on a return/trine) would
+  // duplicate the same prose on both sides ("your change supports your change"). Render
+  // a single, planet-specific sentence instead.
+  if (p1 === p2) {
+    const noun = PLANET_NOUNS[p1] || p1.toLowerCase();
+    if (isOpp) {
+      switch (aspectType) {
+        case 'Conjunction':
+          return `This year reactivates your natal ${noun} — ${p1Info.does}. It's a return to a familiar inner territory: ${p1Info.examples}. Notice what surfaces and choose intentionally how to express it.`;
+        case 'Trine':
+          return `Your relationship with ${p1Info.does} flows easily this year. Trust your instincts around ${p1Info.examples} — what comes naturally is also what's right.`;
+        case 'Sextile':
+          return `A gentle opening to refine how ${p1Info.does}. Small adjustments to ${p1Info.examples} pay off without much friction.`;
+        default:
+          return `${p1Info.does} is highlighted again this year — a chance to deepen, not reinvent. Notice ${p1Info.examples}.`;
+      }
+    } else {
+      switch (aspectType) {
+        case 'Square':
+          return `Your relationship with ${p1Info.does} hits a constructive friction this year. Look at ${p1Info.examples} and ask what needs to evolve — the tension is here to push you out of an old version of this part of your life.`;
+        case 'Opposition':
+          return `You'll feel two sides of ${p1Info.does} pulling against each other this year. Watch for it in ${p1Info.examples}. The work is integrating both, not choosing.`;
+        case 'Quincunx':
+          return `Small recalibrations are needed in how ${p1Info.does} this year. Pay attention to subtle misfires around ${p1Info.examples} and adjust gently.`;
+        default:
+          return `An old pattern around ${p1Info.does} asks for revision this year. Notice ${p1Info.examples}.`;
+      }
+    }
+  }
+
   if (isOpp) {
     switch (aspectType) {
       case 'Conjunction':
