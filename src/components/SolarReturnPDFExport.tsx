@@ -303,7 +303,56 @@ const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: str
   },
 };
 
-const HTYM_MOON_BODY: Record<string, string> = {
+// ── SR-Ascendant contrast against natal Ascendant ──────────────────
+// When SR Rising differs from natal Rising (the common case), the SR
+// Rising sign description alone is incomplete — astrologically the
+// interesting thing is the contrast: who you ARE underneath, presenting
+// as something different this year. This helper produces a single line
+// of plain-language contrast prose tailored to the natal→SR pair.
+//
+// Returns "" when SR Rising equals natal Rising (in that case the static
+// per-sign description is enough; SR Rising "matches your natal Ascendant"
+// is already noted elsewhere in the analysis).
+const SIGN_RISING_SHORT: Record<string, string> = {
+  Aries: 'direct, fast, ready to fight',
+  Taurus: 'steady, sensual, hard to rush',
+  Gemini: 'curious, talkative, quick to pivot',
+  Cancer: 'protective, attuned, emotionally tuned in',
+  Leo: 'warm, visible, naturally on stage',
+  Virgo: 'measured, precise, useful',
+  Libra: 'gracious, balancing, hard to read directly',
+  Scorpio: 'intense, private, watching beneath the surface',
+  Sagittarius: 'open, philosophical, scanning the horizon',
+  Capricorn: 'composed, structured, taking the long view',
+  Aquarius: 'unconventional, observing from a half-step outside',
+  Pisces: 'soft-edged, absorbing, harder to pin down',
+};
+
+const SIGN_RISING_PRESENTING_AS: Record<string, string> = {
+  Aries: 'more direct, quicker to engage, less inclined to wait',
+  Taurus: 'more grounded, slower to react, harder to pull off course',
+  Gemini: 'more verbal and curious, lighter on your feet',
+  Cancer: 'softer, more openly caring, more emotionally available',
+  Leo: 'warmer, more visible, more willing to take up space',
+  Virgo: 'more measured, precise, and useful — running through a checklist',
+  Libra: 'more gracious and diplomatic, weighing both sides before responding',
+  Scorpio: 'more intense and watchful, slower to give yourself away',
+  Sagittarius: 'more expansive and philosophical, with a wider field of vision',
+  Capricorn: 'more composed and authoritative, naturally taking responsibility',
+  Aquarius: 'more independent and slightly outside the room, harder to predict',
+  Pisces: 'softer, more porous, more attuned to mood than strategy',
+};
+
+function buildSrRisingContrast(natalRising: string, srRising: string): string {
+  if (!natalRising || !srRising) return '';
+  if (natalRising === srRising) return '';
+  const natalDesc = SIGN_RISING_SHORT[natalRising];
+  const srPresenting = SIGN_RISING_PRESENTING_AS[srRising];
+  if (!natalDesc || !srPresenting) return '';
+  return `Your natal ${natalRising} Rising — ${natalDesc} — is wearing a ${srRising} coat this year. People will read you as ${srPresenting} than your default. The ${natalRising} underneath is still there; this year just runs it through a ${srRising} filter.`;
+}
+
+
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
   Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
   Gemini: 'Your emotional processing becomes more verbal and social. You think through feelings rather than sitting with them — conversation and writing become emotional outlets.',
