@@ -741,13 +741,24 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       missingModalities.length > 0 ||
       missingPolarities.length > 0;
 
+    const dominantElementName = typeof section.dominant_element === "string"
+      ? section.dominant_element.split(/[\s(]/)[0]
+      : "";
+    const dominantModalityName = typeof section.dominant_modality === "string"
+      ? section.dominant_modality.split(/[\s(]/)[0]
+      : "";
+    const earthMutableMismatch =
+      dominantElementName === "Earth" &&
+      dominantModalityName === "Mutable" &&
+      (/\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?)\b/i.test(text) ||
+        !/\b(?:grounded|groundedness|patience|patient|build|building|practical|steady)\b/i.test(text) ||
+        !/\b(?:adaptability|adaptable|responsive|responsiveness|respond|pivot|adjust)\b/i.test(text));
+
     // FIX #3 (option A — INTEGRATED REWRITE):
-    // The append approach always produces afterthoughts because it's
-    // additive by design. The only way to get every non-zero category
-    // treated as equal is to throw away the AI's text whenever ANY
-    // non-zero category is missing and emit a single integrated
-    // paragraph that names every category up front in one breath.
-    if (anyMissing) {
+    // Throw away generic or incomplete AI text whenever coverage is missing
+    // OR when the wording contradicts the section's own dominant element /
+    // modality data (e.g. Earth Mutable receiving Fire/Cardinal prose).
+    if (anyMissing || earthMutableMismatch) {
       const collectAll = (arr: any): Array<{ name: string; count: number }> => {
         if (!Array.isArray(arr)) return [];
         const out: Array<{ name: string; count: number }> = [];
