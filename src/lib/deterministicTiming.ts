@@ -35,6 +35,7 @@ export type TimingReadingType =
   | 'health'
   | 'money'
   | 'spiritual'
+  | 'natal'
   | 'general';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -216,6 +217,7 @@ const THEME_MAPS: Record<TimingReadingType, Record<string, string>> = {
   health: NATAL_THEME_MAP_HEALTH,
   money: NATAL_THEME_MAP_MONEY,
   spiritual: NATAL_THEME_MAP_SPIRITUAL,
+  natal: NATAL_THEME_MAP_GENERAL,
   general: NATAL_THEME_MAP_GENERAL,
 };
 
@@ -233,6 +235,7 @@ const buildPlanetNamedFallback = (
     health: 'as it lives in your body and physical patterns',
     money: 'as it expresses in your financial life',
     spiritual: 'as it expresses in your inner and spiritual life',
+    natal: 'as it lives at the core of who you are',
     general: 'as it expresses in your life right now',
   };
   const lens = lensByType[readingType] ?? lensByType.general;
@@ -252,6 +255,7 @@ const getContextPhrase = (readingType: TimingReadingType): string => {
     health: 'In terms of your physical energy and wellbeing,',
     money: 'In your financial life,',
     spiritual: 'In your inner and spiritual life,',
+    natal: 'At the natal level,',
     general: 'In your life overall,',
   };
   return phrases[readingType] ?? 'In your life,';
@@ -302,6 +306,13 @@ const TRANSIT_ACTION_MAP: Record<TimingReadingType, Record<string, string>> = {
     Uranus: 'disrupts your inner certainties — sudden insight or a need to break from old beliefs',
     Neptune: 'dissolves the boundary between self and source — porousness is high, discernment is hard',
     Pluto: 'transforms what you believe at the root — old frameworks die so something truer can emerge',
+  },
+  natal: {
+    Jupiter: 'expands this part of your natal makeup — more opportunity, more openness, more momentum on a baseline strength',
+    Saturn: 'asks for honest commitment to this part of your chart — what is real solidifies, what is not falls away',
+    Uranus: 'shakes loose an old pattern in this part of your chart — sudden change, surprise, or a need for more freedom',
+    Neptune: 'softens this part of your chart — clarity is harder, idealism and confusion both rise',
+    Pluto: 'transforms this part of your chart at depth — what you have outgrown is being reorganized',
   },
   general: {
     Jupiter: 'expands this part of your life — more opportunity, more openness, more momentum',
@@ -448,6 +459,7 @@ const OPENERS_BY_TYPE: Record<TimingReadingType, Record<string, string>> = {
   health: HEALTH_OPENERS,
   money: MONEY_OPENERS,
   spiritual: SPIRITUAL_OPENERS,
+  natal: {},
   general: {},
 };
 
@@ -672,6 +684,43 @@ const PLANET_FALLBACKS_BY_TYPE: Record<TimingReadingType, Record<string, Record<
       square: 'Uranus squaring this part of your chart disrupts your spiritual frame — what you thought you knew is no longer enough',
       opposition: 'Uranus opposing this part of your chart brings spiritual breakthrough through other people or unexpected encounters',
       sextile: 'Uranus sextiling this part of your chart adds welcome novelty to your inner life',
+    },
+  },
+  natal: {
+    Saturn: {
+      conjunction: 'Saturn is sitting on this part of your natal chart — something needs to be defined, committed to, or honestly faced',
+      square: 'Saturn is squaring this part of your natal chart — a reality check is active on a baseline pattern',
+      opposition: 'Saturn is opposing this part of your natal chart — definition or redirection is no longer optional',
+      trine: 'Saturn trining this part of your natal chart supports building something real — discipline pays off',
+      sextile: 'Saturn sextiling this part of your natal chart opens a useful window for commitment',
+    },
+    Jupiter: {
+      conjunction: 'Jupiter is expanding this part of your natal chart — opportunity and openness are higher than usual',
+      trine: 'Jupiter trining this part of your natal chart creates a natural opening — forward movement is available',
+      sextile: 'Jupiter sextiling this part of your natal chart offers a helpful opening — say yes',
+      square: 'Jupiter squaring this part of your natal chart amplifies energy — the risk is overreaching',
+      opposition: 'Jupiter opposing this part of your natal chart brings expansion through other people',
+    },
+    Neptune: {
+      conjunction: 'Neptune is dissolving boundaries around this part of your natal chart — clarity is harder, openness is higher',
+      square: 'Neptune squaring this part of your natal chart softens your usual read — go slowly',
+      opposition: 'Neptune opposing this part of your natal chart blurs what feels certain — postpone permanent decisions',
+      trine: 'Neptune trining this part of your natal chart softens defenses in a genuinely opening way',
+      sextile: 'Neptune sextiling this part of your natal chart adds an intuitive quality',
+    },
+    Pluto: {
+      conjunction: 'Pluto is sitting on this part of your natal chart — slow, deep transformation is underway',
+      trine: 'Pluto trining this part of your natal chart is a quiet but powerful invitation to go deeper',
+      square: 'Pluto squaring this part of your natal chart brings intensity to the surface',
+      opposition: 'Pluto opposing this part of your natal chart surfaces what has been underneath',
+      sextile: 'Pluto sextiling this part of your natal chart gives quiet momentum to real change',
+    },
+    Uranus: {
+      conjunction: 'Uranus is sitting on this part of your natal chart — sudden shifts and the need for freedom are active',
+      trine: 'Uranus trining this part of your natal chart opens surprising possibilities',
+      square: 'Uranus squaring this part of your natal chart disrupts the old pattern',
+      opposition: 'Uranus opposing this part of your natal chart brings change through other people',
+      sextile: 'Uranus sextiling this part of your natal chart brings a helpful dose of the unexpected',
     },
   },
   general: {
@@ -983,6 +1032,7 @@ const getDevelopmentalMilestoneInterpretation = (
         health: 'The nervous system runs hot — sleep, energy and focus may all destabilize as the body refuses the old container.',
         money: 'Financial habits set up by a younger version of you stop working — earning, spending and saving all need a more honest, more autonomous structure.',
         spiritual: 'Inherited beliefs are tested directly. What you were taught is no longer enough; first-hand experience is the only currency now.',
+        natal: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
         general: 'The whole self-concept is reorganizing. The ground tilts on purpose so a more honest life can take shape.',
       };
       return wrap(opener, lens[readingType] ?? lens.general);
@@ -997,6 +1047,7 @@ const getDevelopmentalMilestoneInterpretation = (
         health: 'The body insists on being heard — sleep, blood pressure, and stress symptoms become the cost of any life that is not actually yours.',
         money: 'Money is being asked to serve a more honest life, not maintain an old image.',
         spiritual: 'Meaning becomes a survival question. Spiritual bypass stops working; only first-hand depth holds now.',
+        natal: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
         general: 'The mid-life threshold. The point of the transit is not what you do — it is whether you tell yourself the truth about what you actually want.',
       };
       return wrap(opener, lens[readingType] ?? lens.general);
@@ -1019,6 +1070,7 @@ const getDevelopmentalMilestoneInterpretation = (
       health: 'The body asks for sustainable rhythms. Habits that worked in your 20s often stop working here.',
       money: 'Adult financial structure becomes non-negotiable — debt, savings, and long-term commitments come into focus.',
       spiritual: 'Practice over performance. Whatever spiritual life you actually live (not the one you talk about) is what holds.',
+      natal: 'The threshold into adult selfhood. What gets built here tends to last.',
       general: 'The threshold into adult selfhood. What gets built here tends to last.',
     };
     return wrap(opener, lens[readingType] ?? lens.general);

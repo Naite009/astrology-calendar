@@ -1661,7 +1661,13 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     try {
       const readingType = detectReadingType(question);
       const portraitReadingType = resolvePortraitReadingType(question);
-      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
+      // For natal-prompt requests, route the timing scanner through the
+      // 'natal' lens so the AI's "Where You Are in Your Life Cycles"
+      // section is fed the same pre-computed transit windows that
+      // career/relationship readings receive — preventing the AI from
+      // fabricating transit positions when it has no real data.
+      const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = requestEntries
@@ -1821,7 +1827,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
       const readingType = detectReadingType(lastUserQuestion);
       const portraitReadingType = resolvePortraitReadingType(lastUserQuestion);
-      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
+      // Mirror handleSubmitDirect: route natal-prompt regenerations through
+      // the 'natal' timing lens so the same transit windows are injected.
+      const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
+      const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, timingReadingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = trimmedEntries
