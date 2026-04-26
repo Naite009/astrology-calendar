@@ -178,13 +178,72 @@ const planetNatureKeywords: Record<string, string> = {
   Saturn: 'discipline, structure, long-term commitment, and mastery',
 };
 
-function buildProfectionSynthesis(timeLord: string, houseNumber: number): string {
+// SR-house life areas used by the enriched profection synthesis. Mirrors
+// the SR_HOUSE_LIFE_AREA in the SR engine for self-contained synthesis prose.
+const PROFECTION_SR_HOUSE_AREA: Record<number, string> = {
+  1: 'your identity and physical presence',
+  2: 'finances, values, and material security',
+  3: 'communication, learning, and immediate environment',
+  4: 'home, family, and emotional roots',
+  5: 'creativity, romance, and what brings you joy',
+  6: 'daily routines, health, and the work of being well',
+  7: 'partnerships and one-on-one relationships',
+  8: 'shared resources, intimacy, and deep transformation',
+  9: 'travel, higher learning, and your worldview',
+  10: 'career, reputation, and public role',
+  11: 'community, friendships, and future-facing goals',
+  12: 'solitude, the unconscious, and inner work',
+};
+
+const DIGNITY_FORCE_NOTE: Record<string, string> = {
+  Domicile: 'in domicile (its home sign) — operating at full strength',
+  Exaltation: 'in exaltation — operating with unusual elevation and authority',
+  Detriment: 'in detriment — operating in unfamiliar territory and asked to work harder',
+  Fall: 'in fall — operating against its grain, which can feel like dragging the year uphill',
+  Peregrine: 'in a neutral sign — neither boosted nor weakened by dignity',
+};
+
+function buildProfectionSynthesis(
+  timeLord: string,
+  houseNumber: number,
+  timeLordSRHouse: number | null = null,
+  timeLordSRSign: string = '',
+  isRetrograde: boolean = false,
+): string {
   const houseThemes = profectionHouseThemes[houseNumber] || '';
   const planetNature = planetNatureKeywords[timeLord];
-  if (!planetNature) {
-    return `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+
+  // Compose the dignity + SR-house clause if we have placement data.
+  let placementClause = '';
+  if (timeLordSRHouse && timeLordSRSign) {
+    const dignity = getDignity(timeLord, timeLordSRSign);
+    const dignityNote = DIGNITY_FORCE_NOTE[dignity] || '';
+    const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${timeLordSRHouse}th house`;
+    const retroClause = isRetrograde
+      ? ' Retrograde, the year\'s themes turn inward first — review and integration before outward action.'
+      : '';
+    placementClause = ` This year ${timeLord} sits in your SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house in ${timeLordSRSign}${dignityNote ? `, ${dignityNote}` : ''}, so the year's most defining moments concentrate in ${srArea}.${retroClause}`;
+    // Fix the ordinal — we want SR house ordinal, not the profection house ordinal
+    placementClause = placementClause.replace(
+      `SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house`,
+      `SR ${ord(timeLordSRHouse)} house`,
+    );
   }
-  return `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`;
+
+  const base = planetNature
+    ? `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`
+    : `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+
+  return `${base}${placementClause}`;
+}
+
+// Local ordinal helper used by buildProfectionSynthesis when the file's
+// inner `ord` (defined later inside analyzeSolarReturn) isn't in scope.
+function ord(n: number): string {
+  if (n === 1) return '1st';
+  if (n === 2) return '2nd';
+  if (n === 3) return '3rd';
+  return `${n}th`;
 }
 
 // ─── Aspect detection ───────────────────────────────────────────────
