@@ -8300,7 +8300,7 @@ Return this exact structure:
     {
       "type": "narrative_section",
       "title": "Section Title Here",
-      "subtitle": "Optional subheading",
+      "subtitle": "PLACEMENT-ONLY METADATA — planet, sign, and house only (e.g., 'SR Jupiter in Cancer · SR 11th House'). HARD FAIL: NEVER include parentheticals '(...)', brackets '[...]', em-dash interpretive insertions ('— meaning, faith, and growth get worked out... —'), aspect descriptions, retrograde commentary beyond a bare 'R'/'Rx' tag, degrees, or any prose. Subtitles are labels, not interpretations. The interpretation goes in 'body'.",
       "body": "2-4 sentence paragraph of interpretation.",
       "bullets": [
         { "label": "The Archetype", "text": "Explanation here." },
