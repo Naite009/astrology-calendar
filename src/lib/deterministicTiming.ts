@@ -1332,6 +1332,14 @@ const buildTimingWindowDescription = (
   );
   if (devOverride && devOverride.trim().length > 0) return devOverride;
 
+  // NATAL READING — bypass the generic-template path. Names the specific natal
+  // point with sign+degree and grounds the body in a concrete real-life scenario.
+  if (readingType === 'natal') {
+    const natalDegree = (window.natalDegree ?? '').trim();
+    const composed = buildNatalDescription(tp, asp, np, natalDegree, exactSummary);
+    return dedupeSentences(composed);
+  }
+
   const aspectTone = (buildSpecificOpener(tp, asp, np, readingType) ?? '').trim();
   const transitAction = (getTransitAction(readingType, tp) ?? '').trim();
   const themeMap = getNatalThemeMap(readingType);
