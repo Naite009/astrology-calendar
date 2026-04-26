@@ -1070,6 +1070,7 @@ const getDevelopmentalMilestoneInterpretation = (
       health: 'The body asks for sustainable rhythms. Habits that worked in your 20s often stop working here.',
       money: 'Adult financial structure becomes non-negotiable — debt, savings, and long-term commitments come into focus.',
       spiritual: 'Practice over performance. Whatever spiritual life you actually live (not the one you talk about) is what holds.',
+      natal: 'The threshold into adult selfhood. What gets built here tends to last.',
       general: 'The threshold into adult selfhood. What gets built here tends to last.',
     };
     return wrap(opener, lens[readingType] ?? lens.general);
