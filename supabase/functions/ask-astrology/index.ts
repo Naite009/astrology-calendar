@@ -1563,6 +1563,15 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
       if (domEl) fixGroup(ELEMENTS, domEl);
       if (domMod) fixGroup(MODALITIES, domMod);
 
+      if (domEl === "earth" && domMod === "mutable") {
+        const hasFireCardinalLanguage = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|cardinal)\b/i.test(next);
+        const hasEarthLanguage = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady)\b/i.test(next);
+        const hasMutableLanguage = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible)\b/i.test(next);
+        if (hasFireCardinalLanguage || !hasEarthLanguage || !hasMutableLanguage) {
+          next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
+        }
+      }
+
       return next;
     };
 
