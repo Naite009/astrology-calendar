@@ -10923,6 +10923,13 @@ ${natalGroundTruthLines}`
         // balance_interpretation that contradicts the deterministic counts.
         // The external gate flags BALANCE_CLAIM_MISMATCH otherwise.
         correctModalityElementBodyClaims(parsedContent);
+        // Cross-chart claims like "natal Fire-dominant" inside an SR balance
+        // body must also be reconciled against the deterministic NATAL counts.
+        try {
+          correctCrossChartBalanceClaims(parsedContent, sanitizedChartContext || "", emissionLog);
+        } catch (xcErr) {
+          console.warn("[ask-astrology] cross-chart balance corrector threw:", xcErr);
+        }
 
         // (Legacy single-field count corrector removed — validateReading() at the
         // end of this block now handles balance_interpretation along with every
@@ -11225,6 +11232,11 @@ ${natalGroundTruthLines}`
                 dedupeNarrativeSectionBodies(parsedContent);
                 enforceNonZeroCoverage(parsedContent);
                 correctModalityElementBodyClaims(parsedContent);
+                try {
+                  correctCrossChartBalanceClaims(parsedContent, sanitizedChartContext || "", emissionLog);
+                } catch (xcErr) {
+                  console.warn("[ask-astrology] cross-chart balance corrector threw:", xcErr);
+                }
                 validateReading(parsedContent, sanitizedChartContext || undefined);
                 console.log(
                   `[ask-astrology] regen-on-drift complete (rewrote ${result.regenerated} field(s)); ` +
@@ -11497,6 +11509,11 @@ ${natalGroundTruthLines}`
           try {
             enforceNonZeroCoverage(parsedContent);
             correctModalityElementBodyClaims(parsedContent);
+            try {
+              correctCrossChartBalanceClaims(parsedContent, sanitizedChartContext || "", emissionLog);
+            } catch (xcErr) {
+              console.warn("[ask-astrology] cross-chart balance corrector threw:", xcErr);
+            }
           } catch (covErr) {
             console.warn("[ask-astrology] enforceNonZeroCoverage re-run threw:", covErr);
           }
