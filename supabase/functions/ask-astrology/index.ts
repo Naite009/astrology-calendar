@@ -10589,6 +10589,9 @@ ${natalGroundTruthLines}`
         correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // SR HOUSE NUMBER OVERRIDE (post-gate).
         overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", postGateLog);
+        // FIX 1 (post-gate): clear stale `_sr_house_copy_warning` once the
+        // override has run, or push a non-blocking review note if unresolved.
+        reconcileSRHouseCopyWarning(parsedContent, postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
