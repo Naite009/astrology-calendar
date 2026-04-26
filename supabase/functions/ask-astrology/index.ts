@@ -3613,13 +3613,18 @@ const acknowledgeNatalRetrogradesFromContext = (
     if (next !== value) (node as any)[key] = next;
   });
 
-  if (injected > 0) {
-    log.push({
-      type: "natal_retrograde_acknowledgment_injected",
-      detail: { injected, examples },
-    });
-    console.info("[ask-astrology] natal retrograde acknowledgment injected", { injected, examples });
-  }
+  // Always emit a checkpoint when there are retrograde planets to inspect,
+  // even when injected=0. Without this, regressions in hasAcknowledgment
+  // (the "bare ℞ counted as acknowledged" bug) are invisible in logs.
+  log.push({
+    type: "natal_retrograde_acknowledgment_checked",
+    detail: { retrograde_planets: retroPlanets, injected, examples },
+  });
+  console.info("[ask-astrology] natal retrograde acknowledgment checked", {
+    retrograde_planets: retroPlanets,
+    injected,
+    examples,
+  });
 };
 
 // DETERMINISTIC SR RETROGRADE CONSISTENCY PASS — strips any prose claim
