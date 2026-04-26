@@ -58,22 +58,19 @@ interface GateBannerProps {
  */
 export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) => {
   const [expanded, setExpanded] = useState(false);
+  // Only the external Replit gate triggers the user-facing banner. The
+  // in-house relationship contract is advisory-only (kept on the payload
+  // for debugging via `contract` prop) and intentionally does NOT fail
+  // the UI — Replit is the source of truth so we don't double-flag.
   const gateFailed = report?.ok === false;
-  const contractFailed = contract?.ok === false;
-  if (!gateFailed && !contractFailed) return null;
+  if (!gateFailed) return null;
 
   const gateDefects = Array.isArray(report?.defects) ? report!.defects! : [];
-  const contractDefects = Array.isArray(contract?.defects) ? contract!.defects! : [];
-  // Combine, tagging the source so the user can see at a glance which
-  // layer flagged each defect (gate = external Replit, contract = in-house).
-  const defects = [
-    ...gateDefects.map((d) => ({ ...d, _source: "gate" as const })),
-    ...contractDefects.map((d) => ({ ...d, _source: "contract" as const })),
-  ];
+  const defects = gateDefects.map((d) => ({ ...d, _source: "gate" as const }));
   const defectCount = defects.length;
-  const failingLayers: string[] = [];
-  if (gateFailed) failingLayers.push("external gate");
-  if (contractFailed) failingLayers.push("relationship contract");
+  const failingLayers: string[] = ["external gate"];
+  // Suppress unused-var lint while keeping the prop in the public API
+  void contract;
 
   return (
     <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
