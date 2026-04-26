@@ -2814,10 +2814,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
     }));
 
     const profYear = analysis.profectionYear;
-    const mappedProfectionYear = profYear ? {
-      ...profYear,
-      house: (profYear as any).house || (profYear as any).houseNumber || null,
-    } : null;
 
     // Compute the effective Solar Return year — fall back to the current calendar
     // year if srChart.solarReturnYear is missing, invalid, or accidentally equal
@@ -2829,6 +2825,18 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       && rawSrYear3 > 1900 && rawSrYear3 < 2200
       && (isNaN(birthYear3) || rawSrYear3 !== birthYear3);
     const effectiveSrYear3 = isValidSrYear3 ? rawSrYear3 : currentYear3;
+    const srAge3 = !isNaN(birthYear3) ? effectiveSrYear3 - birthYear3 : null;
+
+    const correctedProfectionAge3 = srAge3 ?? (profYear?.age ?? null);
+    const correctedProfectionHouse3 = correctedProfectionAge3 != null
+      ? (correctedProfectionAge3 % 12) + 1
+      : (profYear?.houseNumber ?? null);
+    const mappedProfectionYear = profYear ? {
+      ...profYear,
+      age: correctedProfectionAge3 ?? profYear.age,
+      houseNumber: correctedProfectionHouse3 ?? profYear.houseNumber,
+      house: correctedProfectionHouse3 || (profYear as any).house || (profYear as any).houseNumber || null,
+    } : null;
 
     return {
       name: natalChart.name || '',
