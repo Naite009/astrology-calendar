@@ -4877,28 +4877,38 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           && it.label.trim().toLowerCase() === "best windows"
       );
       if (!hasBestWindows) {
-        keptItems.push({
-          label: "Best Windows",
-          value: buildEmptySummaryFallback(parsedContent, "Best Windows") || SUMMARY_ITEM_BACKFILLS["best windows"],
-        });
-        log.push({
-          type: "best_windows_item_inserted",
-          detail: { section: section.title || "", reason: "missing_from_items" },
-        });
+        const bwValue = buildEmptySummaryFallback(parsedContent, "Best Windows") || SUMMARY_ITEM_BACKFILLS["best windows"] || "";
+        if (!isWhitespaceOrEmpty(bwValue)) {
+          keptItems.push({ label: "Best Windows", value: bwValue });
+          log.push({
+            type: "best_windows_item_inserted",
+            detail: { section: section.title || "", reason: "missing_from_items" },
+          });
+        } else {
+          log.push({
+            type: "best_windows_item_skipped_empty",
+            detail: { section: section.title || "", reason: "no_fallback_available" },
+          });
+        }
       }
       const hasCautionWindows = keptItems.some(
         (it) => it && typeof it === "object" && typeof it.label === "string"
           && it.label.trim().toLowerCase() === "caution windows"
       );
       if (isRelationshipReading && String(section.title || "").trim() === "Relationship Strategy Summary" && !hasCautionWindows) {
-        keptItems.push({
-          label: "Caution Windows",
-          value: buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"],
-        });
-        log.push({
-          type: "caution_windows_item_inserted",
-          detail: { section: section.title || "", reason: "missing_from_items" },
-        });
+        const cwValue = buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"] || "";
+        if (!isWhitespaceOrEmpty(cwValue)) {
+          keptItems.push({ label: "Caution Windows", value: cwValue });
+          log.push({
+            type: "caution_windows_item_inserted",
+            detail: { section: section.title || "", reason: "missing_from_items" },
+          });
+        } else {
+          log.push({
+            type: "caution_windows_item_skipped_empty",
+            detail: { section: section.title || "", reason: "no_fallback_available" },
+          });
+        }
       }
       section.items = keptItems;
     }
