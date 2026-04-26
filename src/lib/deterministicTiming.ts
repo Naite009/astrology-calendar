@@ -1271,20 +1271,6 @@ const buildTransitInterpretation = (params: {
   const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '', readingType);
   const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
   return dedupeSentences(composed);
-
-  const aspectTone = buildSpecificOpener(transitPlanet, aspect, natalPlanet, readingType);
-  const transitAction = getTransitAction(readingType, transitPlanet);
-  const themeMap = getNatalThemeMap(readingType);
-  // Bug 2 — never emit the generic "a major part of your personal pattern" line.
-  // If the planet/point is missing from the theme map, name it explicitly.
-  const natalTheme = themeMap[natalPlanet] ?? buildPlanetNamedFallback(natalPlanet, readingType);
-  const contextPhrase = getContextPhrase(readingType);
-
-  const retrogradeSentence = isRetrograde
-    ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
-    : '';
-
-  return `${aspectTone}. ${contextPhrase} ${transitPlanet} ${transitAction} around ${natalTheme}. ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
 };
 
 const buildTimingWindowDescription = (
