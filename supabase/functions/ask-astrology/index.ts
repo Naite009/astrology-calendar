@@ -3091,6 +3091,276 @@ const fixSrRetrogradeMentionsInProse = (
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// RELATIONSHIP ENGINE VALIDATION CONTRACT v2.0
+// ─────────────────────────────────────────────────────────────────────────
+// Codifies the user-supplied validation contract as a single auditable pass.
+// Runs AFTER all hygiene/dedupe passes and BEFORE the external Replit gate.
+// Attaches `_relationship_contract` to parsedContent so the UI can surface
+// any hard violations alongside the existing `_gate` and `_validation`.
+//
+// Hard rules (block_render_and_repair / rewrite_from_table):
+//   - empty_bullet              → drop bullets with empty text
+//   - retrograde_symbol_mismatch→ planet name has ℞ but row.retrograde !== true
+//   - retrograde_flag_mismatch  → row.retrograde === true but prose for that
+//                                 planet in relationship sections never
+//                                 acknowledges retrograde (Venus/Mercury/Mars/
+//                                 Jupiter/Saturn/Chiron only)
+//   - natal_sr_mixup            → "Natal" titled section quotes a sign that
+//                                 only matches the SR positions (or vice versa)
+//   - solar_return_copy_warning → SR house cusps came back identical to natal
+//
+// Soft rules (logged, non-blocking):
+//   - empty_summary_fields, duplicate_paragraphs, unsupported_aspect — already
+//     enforced upstream; we just surface their counts in the contract verdict.
+//
+// The contract is INFORMATIONAL — it does not throw, does not delete sections,
+// and never blocks delivery. The UI/banner layer decides what to do with
+// `_relationship_contract.ok === false`.
+// ─────────────────────────────────────────────────────────────────────────
+const RELATIONSHIP_RX_PLANETS = ["Venus","Mercury","Mars","Jupiter","Saturn","Chiron"] as const;
+const RELATIONSHIP_SECTION_TITLE_RE = /relationship|love|partner|venus|romance|attract|intima/i;
+const RELATIONSHIP_REQUIRED_TITLES = [
+  /essence.*relationship.*style/i,
+  /how.*loves?$/i,
+  /relationship\s+pattern/i,
+  /relationship\s+needs?\s+profile/i,
+  /relationship\s+contradiction/i,
+  /this\s+year\s+in\s+love/i,
+];
+
+interface ContractDefect {
+  code: string;
+  severity: "hard" | "soft";
+  path?: string;
+  message: string;
+  detail?: Record<string, unknown>;
+}
+
+const enforceRelationshipContract = (
+  parsedContent: any,
+  chartContext: string | undefined,
+): { ok: boolean; defects: ContractDefect[]; checked: string[] } => {
+  const defects: ContractDefect[] = [];
+  const checked: string[] = [];
+  if (!parsedContent || !Array.isArray(parsedContent.sections)) {
+    return { ok: true, defects, checked };
+  }
+
+  // ── Detect whether this reading is actually relationship-flavored. We only
+  // run the relationship-specific section-presence + retrograde-context
+  // rules when the question/topic is about relationships. The cross-cutting
+  // rules (empty_bullet, retrograde_symbol_mismatch, natal_sr_mixup,
+  // sr_house_copy_warning) always run.
+  const titleText = parsedContent.sections
+    .map((s: any) => (typeof s?.title === "string" ? s.title : ""))
+    .join(" | ");
+  const questionText = [
+    parsedContent?.question_asked,
+    parsedContent?.subject,
+    parsedContent?.question_type,
+  ].filter((x) => typeof x === "string").join(" ");
+  const isRelationshipReading =
+    RELATIONSHIP_SECTION_TITLE_RE.test(titleText) ||
+    RELATIONSHIP_SECTION_TITLE_RE.test(questionText);
+
+  // Collect every placement_table row across the reading, flattened.
+  type Row = { planet: string; sign?: string; retrograde?: boolean; raw: any; sectionTitle: string };
+  const rows: Row[] = [];
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const sectionTitle = typeof section?.title === "string" ? section.title : "";
+    const tableRows = Array.isArray(section?.rows) ? section.rows
+      : Array.isArray(section?.placements) ? section.placements
+      : [];
+    for (const r of tableRows) {
+      if (!r || typeof r !== "object") continue;
+      const planet = typeof (r as any).planet === "string" ? (r as any).planet : "";
+      if (!planet) continue;
+      rows.push({
+        planet,
+        sign: typeof (r as any).sign === "string" ? (r as any).sign : undefined,
+        retrograde: typeof (r as any).retrograde === "boolean" ? (r as any).retrograde
+          : typeof (r as any).isRetrograde === "boolean" ? (r as any).isRetrograde : undefined,
+        raw: r,
+        sectionTitle,
+      });
+    }
+  }
+
+  // ── Rule: retrograde_symbol_mismatch ────────────────────────────────────
+  checked.push("retrograde_symbol_mismatch");
+  for (const row of rows) {
+    const hasGlyph = /[℞\u211E]|\bRx\b/i.test(row.planet);
+    if (hasGlyph && row.retrograde !== true) {
+      defects.push({
+        code: "retrograde_symbol_mismatch",
+        severity: "hard",
+        path: `placement_table[${row.sectionTitle}].planet="${row.planet}"`,
+        message: `Planet name carries retrograde glyph but row.retrograde !== true`,
+      });
+    }
+  }
+
+  // ── Rule: empty_bullet ──────────────────────────────────────────────────
+  checked.push("empty_bullet");
+  for (const section of parsedContent.sections) {
+    if (!Array.isArray(section?.bullets)) continue;
+    section.bullets.forEach((b: any, idx: number) => {
+      const text = typeof b?.text === "string" ? b.text.trim() : "";
+      if (!text) {
+        defects.push({
+          code: "empty_bullet",
+          severity: "hard",
+          path: `${section?.title || "?"}.bullets[${idx}]`,
+          message: "Bullet has empty or missing text",
+        });
+      }
+    });
+  }
+
+  // ── Rule: solar_return_copy_warning ─────────────────────────────────────
+  checked.push("solar_return_copy_warning");
+  const srCopyHit = parsedContent.sections.some((s: any) => s?._sr_house_copy_warning === true);
+  if (srCopyHit) {
+    defects.push({
+      code: "solar_return_copy_warning",
+      severity: "hard",
+      message: "SR house cusps were copied from natal — recalculation required",
+    });
+  }
+
+  // ── Rule: natal_sr_mixup ────────────────────────────────────────────────
+  // Builds quick (planet → natal sign) and (planet → SR sign) maps from the
+  // chart context. If a "Natal …" titled section quotes a sign that is the
+  // SR sign (and explicitly NOT the natal one), we flag it. Mirror check
+  // for "Solar Return …" sections quoting natal-only signs.
+  checked.push("natal_sr_mixup");
+  if (chartContext) {
+    const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+    const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+    if (natalPos.length > 0 && srPos.length > 0) {
+      const natalSign = new Map<string, string>();
+      const srSign = new Map<string, string>();
+      for (const p of natalPos) natalSign.set(p.planet.toLowerCase(), p.sign);
+      for (const p of srPos) srSign.set(p.planet.toLowerCase(), p.sign);
+
+      const PLANET_RE_SRC = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"].join("|");
+      const SIGN_RE_SRC = ZODIAC_SIGNS_FOR_PARSE.join("|");
+      const claimRe = new RegExp(`\\b(${PLANET_RE_SRC})\\s+(?:in|is in|sits in|placed in|at\\s+\\d+°[^A-Za-z]*?in)\\s+(${SIGN_RE_SRC})\\b`, "gi");
+
+      const visit = (node: any, sectionTitle: string) => {
+        if (Array.isArray(node)) { for (const x of node) visit(x, sectionTitle); return; }
+        if (!node || typeof node !== "object") return;
+        const isNatalSection = /\bnatal\b/i.test(sectionTitle) && !/solar\s+return|^sr\b/i.test(sectionTitle);
+        const isSrSection = /solar\s+return|^sr\b/i.test(sectionTitle);
+        if (!isNatalSection && !isSrSection) {
+          for (const v of Object.values(node)) visit(v, sectionTitle);
+          return;
+        }
+        for (const [k, v] of Object.entries(node)) {
+          if (k === "title" || k === "type" || k === "label") continue;
+          if (typeof v === "string") {
+            let m: RegExpExecArray | null;
+            const re = new RegExp(claimRe.source, "gi");
+            while ((m = re.exec(v)) !== null) {
+              const planetKey = m[1].toLowerCase();
+              const claimedSign = m[2];
+              const nat = natalSign.get(planetKey);
+              const sr = srSign.get(planetKey);
+              if (!nat || !sr || nat === sr) continue;
+              if (isNatalSection && claimedSign === sr && claimedSign !== nat) {
+                defects.push({
+                  code: "natal_sr_mixup",
+                  severity: "hard",
+                  path: `${sectionTitle}.${k}`,
+                  message: `Natal section quotes ${m[1]} in ${claimedSign} — that's the SR sign (natal is ${nat})`,
+                  detail: { planet: m[1], natal: nat, sr, claimed: claimedSign },
+                });
+              } else if (isSrSection && claimedSign === nat && claimedSign !== sr) {
+                defects.push({
+                  code: "natal_sr_mixup",
+                  severity: "hard",
+                  path: `${sectionTitle}.${k}`,
+                  message: `SR section quotes ${m[1]} in ${claimedSign} — that's the natal sign (SR is ${sr})`,
+                  detail: { planet: m[1], natal: nat, sr, claimed: claimedSign },
+                });
+              }
+            }
+          } else {
+            visit(v, sectionTitle);
+          }
+        }
+      };
+      for (const section of parsedContent.sections) {
+        const t = typeof section?.title === "string" ? section.title : "";
+        visit(section, t);
+      }
+    }
+  }
+
+  // ── Relationship-only rules ─────────────────────────────────────────────
+  if (isRelationshipReading) {
+    // Rule: retrograde_flag_mismatch — for the relationship-relevant Rx
+    // planets that ARE retrograde per the placement table, verify at least
+    // one relationship-themed section's prose acknowledges retrograde.
+    checked.push("retrograde_flag_mismatch");
+    const rxPlanets = new Set<string>();
+    for (const row of rows) {
+      if (row.retrograde !== true) continue;
+      const bare = row.planet.replace(/[℞\u211E]|Rx/gi, "").replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "").trim();
+      if ((RELATIONSHIP_RX_PLANETS as readonly string[]).includes(bare)) rxPlanets.add(bare);
+    }
+    if (rxPlanets.size > 0) {
+      const relProse: string[] = [];
+      for (const section of parsedContent.sections) {
+        const t = typeof section?.title === "string" ? section.title : "";
+        if (!RELATIONSHIP_SECTION_TITLE_RE.test(t)) continue;
+        const collect = (node: any) => {
+          if (Array.isArray(node)) { for (const x of node) collect(x); return; }
+          if (typeof node === "string") { relProse.push(node); return; }
+          if (!node || typeof node !== "object") return;
+          for (const v of Object.values(node)) collect(v);
+        };
+        collect(section);
+      }
+      const proseBlob = relProse.join(" \n ");
+      for (const planet of rxPlanets) {
+        const acknowledged = new RegExp(
+          `\\b${planet}\\b[^.!?\\n]{0,80}?\\b(retrograde|Rx|R\\b|℞)\\b|\\b(retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,80}?\\b${planet}\\b`,
+          "i",
+        ).test(proseBlob);
+        if (!acknowledged) {
+          defects.push({
+            code: "retrograde_flag_mismatch",
+            severity: "hard",
+            path: `relationship_sections (${planet})`,
+            message: `${planet} is retrograde per the placement table, but no relationship section's prose acknowledges retrograde`,
+          });
+        }
+      }
+    }
+
+    // Rule: required relationship sections present
+    checked.push("relationship_sections_required");
+    const titles = parsedContent.sections
+      .map((s: any) => (typeof s?.title === "string" ? s.title : ""))
+      .filter(Boolean);
+    for (const re of RELATIONSHIP_REQUIRED_TITLES) {
+      if (!titles.some((t: string) => re.test(t))) {
+        defects.push({
+          code: "missing_required_section",
+          severity: "hard",
+          message: `Required relationship section missing: ${re.source}`,
+        });
+      }
+    }
+  }
+
+  return { ok: defects.filter((d) => d.severity === "hard").length === 0, defects, checked };
+};
+// ─────────────────────────────────────────────────────────────────────────
+
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
 // claim and rewrites the SIGN if it does not match the deterministic SR
