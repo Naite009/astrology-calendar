@@ -1820,11 +1820,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartNameForRequest = chartForRequest?.name || "Unknown";
       const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
       const readingType = detectReadingType(lastUserQuestion);
+      const portraitReadingType = resolvePortraitReadingType(lastUserQuestion);
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
       let chartContext = buildChartContext(chartForRequest, timingData.context);
-      if (isNatalReadingPrompt(lastUserQuestion)) {
-        chartContext += buildNatalPortraitBlock(chartForRequest);
-      }
+      chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       const apiMessages = trimmedEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
