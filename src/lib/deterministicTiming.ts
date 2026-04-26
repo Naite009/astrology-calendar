@@ -459,6 +459,7 @@ const OPENERS_BY_TYPE: Record<TimingReadingType, Record<string, string>> = {
   health: HEALTH_OPENERS,
   money: MONEY_OPENERS,
   spiritual: SPIRITUAL_OPENERS,
+  natal: {},
   general: {},
 };
 
