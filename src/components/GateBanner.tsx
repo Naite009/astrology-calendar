@@ -62,8 +62,18 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
   const contractFailed = contract?.ok === false;
   if (!gateFailed && !contractFailed) return null;
 
-  const defects = Array.isArray(report.defects) ? report.defects : [];
+  const gateDefects = Array.isArray(report?.defects) ? report!.defects! : [];
+  const contractDefects = Array.isArray(contract?.defects) ? contract!.defects! : [];
+  // Combine, tagging the source so the user can see at a glance which
+  // layer flagged each defect (gate = external Replit, contract = in-house).
+  const defects = [
+    ...gateDefects.map((d) => ({ ...d, _source: "gate" as const })),
+    ...contractDefects.map((d) => ({ ...d, _source: "contract" as const })),
+  ];
   const defectCount = defects.length;
+  const failingLayers: string[] = [];
+  if (gateFailed) failingLayers.push("external gate");
+  if (contractFailed) failingLayers.push("relationship contract");
 
   return (
     <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
@@ -74,6 +84,7 @@ export const GateBanner = ({ report, contract, onRegenerate }: GateBannerProps) 
             <p className="text-sm font-medium text-foreground">
               Validation did not pass
               {defectCount > 0 ? ` — ${defectCount} issue${defectCount === 1 ? "" : "s"} flagged` : ""}
+              {failingLayers.length > 0 ? ` (${failingLayers.join(" + ")})` : ""}
             </p>
             <p className="text-xs text-muted-foreground">
               The reading below was generated, but at least one consistency
