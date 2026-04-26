@@ -239,6 +239,13 @@ export function AskQuickTopics({
 }: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
+  // Career-only: hard-exclusion list. Persisted per-chart in localStorage so
+  // the user doesn't have to retype "not finance, not business" every time.
+  const excludedFieldsKey = `ask-excluded-career-fields:${chartName}`;
+  const [excludedFields, setExcludedFields] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    try { return window.localStorage.getItem(excludedFieldsKey) || ""; } catch { return ""; }
+  });
   // Relocation-only inline city inputs. Rendered next to the personal-context
   // textarea when activeTopic.id === "relocation". All optional — empty
   // values are filtered before the userLocations object is sent.
@@ -252,6 +259,16 @@ export function AskQuickTopics({
       textareaRef.current.focus();
     }
   }, [activeTopic]);
+
+  // Re-hydrate excluded fields whenever the chart changes (one entry per chart).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      setExcludedFields(window.localStorage.getItem(excludedFieldsKey) || "");
+    } catch {
+      setExcludedFields("");
+    }
+  }, [excludedFieldsKey]);
 
   const handleTopicClick = (topic: QuickTopic) => {
     if (disabled) return;
