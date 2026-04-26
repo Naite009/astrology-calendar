@@ -1113,6 +1113,122 @@ const getDevelopmentalMilestoneInterpretation = (
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// NATAL READING — specific-point builder.
+// Bypasses the generic "this part of your natal chart / makeup" templates.
+// Always names the natal point with sign+degree and grounds the description
+// in a concrete real-life scenario rooted in that point's natal theme.
+// ─────────────────────────────────────────────────────────────────────────────
+const NATAL_ASPECT_VERB: Record<string, string> = {
+  conjunction: 'sitting on',
+  square: 'squaring',
+  opposition: 'opposing',
+  trine: 'trining',
+  sextile: 'sextiling',
+};
+
+// Per-(transitPlanet × aspect) lived-experience scenarios. The "{theme}" token
+// is replaced at runtime with the natal point's plain-language meaning so the
+// scenario is always specific to the actual point being hit.
+const NATAL_SCENARIO_BY_TRANSIT_ASPECT: Record<string, Record<string, string>> = {
+  Jupiter: {
+    conjunction: 'You may notice yourself reaching for more around {theme} — saying yes to something you would normally pass on, or finding that an opening you had given up on quietly becomes available again.',
+    trine: 'A door tends to open around {theme} without much push from you — an invitation, an introduction, or a small piece of luck that lets you act on something you have been considering.',
+    sextile: 'Small moves around {theme} land further than expected — a conversation, a request, or a yes you would normally hesitate to give produces a real opening.',
+    square: 'You may catch yourself overcommitting around {theme} — taking on more than the plan can hold, or saying yes to scale before checking whether the foundation is ready for it.',
+    opposition: 'Expansion around {theme} tends to arrive through someone else — a partner, collaborator, or counterpart whose enthusiasm pulls you bigger than you would go on your own.',
+  },
+  Saturn: {
+    conjunction: 'Something concrete around {theme} asks to be defined — a decision you have been postponing, a structure you have been avoiding, or an honest accounting of where you actually stand.',
+    trine: 'A patient, structured move around {theme} pays off — the kind of disciplined work that does not feel exciting but produces something you can stand on a year from now.',
+    sextile: 'A small but real commitment around {theme} becomes available — say yes to the modest step rather than waiting for the dramatic one.',
+    square: 'You may run into a wall around {theme} — a deadline, a limit, or a reality you have been working around finally has to be faced directly.',
+    opposition: 'A reality check around {theme} arrives through another person — a partner, authority figure, or counterpart whose stance forces a decision you have been deferring.',
+  },
+  Uranus: {
+    conjunction: 'Something around {theme} can change abruptly — a sudden opportunity, a sharp need for space, or a routine that suddenly becomes intolerable and breaks open.',
+    trine: 'An unexpected opening around {theme} tends to arrive — an offer, an idea, or a person who shifts your sense of what is possible without you having engineered it.',
+    sextile: 'You may feel a quiet pull to do something around {theme} differently — a small experiment, a change of pace, or a willingness to let an unfamiliar option in.',
+    square: 'A pattern around {theme} that has worked for years may suddenly stop working — pressure to break the old shape rises faster than the new shape arrives.',
+    opposition: 'Disruption around {theme} tends to arrive through another person — someone whose move forces you to change your own, ready or not.',
+  },
+  Neptune: {
+    conjunction: 'Your usual read on {theme} softens — something you used to see clearly may feel uncertain, and you may find yourself drawn to a version of the situation that is partly imagined.',
+    trine: 'Around {theme}, intuition runs ahead of logic — pay attention to what feels true even when you cannot explain it yet, and let the slower picture form before deciding.',
+    sextile: 'A softer, more intuitive sense of {theme} becomes available — dreams, hunches, and felt-sense impressions carry information worth listening to.',
+    square: 'Around {theme}, you may not have a clean read — what looks obvious may be projection, and the temptation to act on a vague feeling is strong. Wait for more information.',
+    opposition: 'Confusion around {theme} tends to arrive through someone else — what they tell you, want from you, or appear to be may not be what it looks like at first.',
+  },
+  Pluto: {
+    conjunction: 'Something at the root of {theme} is being slowly remade — a pattern, a power dynamic, or a definition you have lived with quietly stops being workable.',
+    trine: 'A quiet, real change around {theme} becomes possible — the kind of depth work that does not need a crisis to do it, just willingness.',
+    sextile: 'Steady momentum builds around {theme} — small moves into honesty, depth, or letting go that compound over months rather than landing in a single moment.',
+    square: 'Pressure builds around {theme} — what you have been keeping under the surface may force its way up, and the way you usually handle this part of life stops working.',
+    opposition: 'Intensity around {theme} tends to arrive through another person — power, control, or depth dynamics surface in a relationship that mirrors what you have not faced alone.',
+  },
+};
+
+// Sign-friendly degree formatter. Input shape: '5°16\' Cancer' (passes through),
+// or any string the futureTransitScanner produces. Trims whitespace.
+const formatNatalDegree = (deg: string): string => (deg ?? '').trim();
+
+const buildNatalDescription = (
+  transitPlanet: string,
+  aspect: string,
+  natalPlanet: string,
+  natalDegree: string,
+  exactSummary: string,
+): string => {
+  const verb = NATAL_ASPECT_VERB[aspect] ?? aspect;
+  const themeMap = THEME_MAPS.natal;
+  const theme = (themeMap[natalPlanet] ?? '').trim();
+  const scenarioTemplate =
+    NATAL_SCENARIO_BY_TRANSIT_ASPECT[transitPlanet]?.[aspect] ?? '';
+
+  // Lead sentence: name the specific natal point with sign+degree.
+  const degreeLabel = formatNatalDegree(natalDegree);
+  const naming = degreeLabel
+    ? `${transitPlanet} ${verb} your natal ${natalPlanet} at ${degreeLabel}`
+    : `${transitPlanet} ${verb} your natal ${natalPlanet}`;
+
+  // Scenario sentence: substitute the theme into the lived-experience template.
+  const themeForScenario = theme || `your ${natalPlanet}`;
+  const scenario = scenarioTemplate
+    ? scenarioTemplate.replace('{theme}', themeForScenario)
+    : '';
+
+  const peaks = exactSummary ? ` Peaks: ${exactSummary}.` : '';
+
+  // Compose: "{Naming} means {what it touches}. {Scenario}.{Peaks}"
+  if (theme && scenario) {
+    return `${naming} touches ${theme}. ${scenario}${peaks}`;
+  }
+  if (theme) {
+    return `${naming} touches ${theme}.${peaks}`;
+  }
+  if (scenario) {
+    return `${naming}. ${scenario}${peaks}`;
+  }
+  return `${naming}.${peaks}`;
+};
+
+// Within-description sentence dedupe. Splits on sentence boundaries and removes
+// repeats while preserving order. Used for natal descriptions where the merge
+// step in dedupWindows could otherwise concatenate identical lead sentences.
+const dedupeSentences = (text: string): string => {
+  if (!text) return text;
+  const parts = text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const p of parts) {
+    const key = p.toLowerCase().replace(/\s+/g, ' ');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out.join(' ');
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Interpretation builders (now reading-type aware)
 // ─────────────────────────────────────────────────────────────────────────────
 const buildTransitInterpretation = (params: {
