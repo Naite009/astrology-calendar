@@ -3,7 +3,7 @@ import { Search, ChevronDown, ChevronUp, LayoutGrid, Table2 } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { normalizeCity, normalizeSummaryItem, normalizeBullet, isBlank } from "@/lib/normalizeReadingSection";
 import { DriftBanner } from "./DriftBanner";
-import { GateBanner, GateReport } from "./GateBanner";
+import { GateBanner, GateReport, ContractReport } from "./GateBanner";
 
 // Types for structured reading
 export interface PlacementRow {
