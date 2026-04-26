@@ -933,21 +933,31 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // any ephemeris recalculation downstream.
       const srPlanets = currentSR.planets || {};
       const srCusps = currentSR.houseCusps || {};
-      // SR HOUSES — WHOLE SIGN (deterministic upstream fix).
-      // Replit's gate uses Whole Sign houses from the SR Ascendant; if we
-      // emit Placidus here it will recompute and warn for every reading.
-      // Whole Sign rule: house 1 = the sign on the Ascendant, then each
-      // subsequent sign = the next house. A planet's house is its sign
-      // index minus the Ascendant sign index, mod 12, plus 1.
-      const srAscCusp = srCusps['house1' as keyof typeof srCusps] as
-        { sign: string; degree: number; minutes?: number } | undefined;
-      const srAscSignIdx = srAscCusp && ZODIAC.includes(srAscCusp.sign)
-        ? ZODIAC.indexOf(srAscCusp.sign)
-        : -1;
+      // SR HOUSES — CUSP-BASED (matches the birthday Solar Return engine
+      // in solarReturnAnalysis.ts). The earlier Whole Sign shortcut here
+      // disagreed with the birthday SR JSON (e.g. Mercury was reported as
+      // 5th house here while the birthday report had it in the 8th). The
+      // birthday engine is the source of truth used by the user-facing PDF
+      // and JSON export, so the Ask prompt MUST use the same cusp math.
+      const srCuspLongs: number[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const c = (srCusps as any)[`house${i}`];
+        if (c && typeof c === 'object' && 'sign' in c && ZODIAC.includes(c.sign)) {
+          srCuspLongs.push(ZODIAC.indexOf(c.sign) * 30 + (c.degree || 0) + ((c.minutes || 0) / 60));
+        }
+      }
       const calcSRHouse = (absDeg: number): number | null => {
-        if (srAscSignIdx < 0) return null;
-        const planetSignIdx = Math.floor(((absDeg % 360) + 360) % 360 / 30);
-        return ((planetSignIdx - srAscSignIdx + 12) % 12) + 1;
+        if (srCuspLongs.length !== 12) return null;
+        const norm = ((absDeg % 360) + 360) % 360;
+        for (let i = 0; i < 12; i++) {
+          let start = srCuspLongs[i];
+          let end = srCuspLongs[(i + 1) % 12];
+          if (end < start) end += 360;
+          let d = norm;
+          if (d < start) d += 360;
+          if (d >= start && d < end) return i + 1;
+        }
+        return 1;
       };
       context += "SR Planetary Positions:\n";
       Object.entries(srPlanets).forEach(([planet, data]) => {
