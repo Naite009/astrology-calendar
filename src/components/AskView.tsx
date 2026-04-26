@@ -1523,7 +1523,10 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     try {
       const readingType = detectReadingType(question);
       const timingData = buildDeterministicTimingData(chartForRequest, 18, 15, readingType);
-      const chartContext = buildChartContext(chartForRequest, timingData.context);
+      let chartContext = buildChartContext(chartForRequest, timingData.context);
+      if (isNatalReadingPrompt(question)) {
+        chartContext += buildNatalPortraitBlock(chartForRequest);
+      }
       const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
