@@ -411,6 +411,32 @@ export function AskQuickTopics({
               </div>
             )}
 
+            {activeTopic.id === "career" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Excluded fields (optional)
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Comma-separated list of career fields/industries you don't
+                    want recommended (e.g.,{" "}
+                    <span className="font-mono text-foreground">finance, business, venture capital</span>).
+                    The reading will avoid these in "best fit" suggestions and
+                    list them under "poor fit / user-rejected" instead. Saved
+                    per chart.
+                  </p>
+                </div>
+                <Textarea
+                  value={excludedFields}
+                  onChange={(e) => setExcludedFields(e.target.value)}
+                  placeholder="e.g., finance, business, venture capital"
+                  className="min-h-[48px] text-sm resize-none"
+                  rows={2}
+                  disabled={disabled}
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
                 Anything additional you'd like included in this reading?
