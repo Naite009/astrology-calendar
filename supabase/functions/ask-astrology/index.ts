@@ -3093,10 +3093,13 @@ const fixNatalRetrogradeMentionsInProse = (
   const examples: string[] = [];
 
   const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
+    "type","id","kind",
     "planet","sign","house","degrees","aspect","natal_point","symbol",
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
   ]);
   const stripPhantom = (full: string, planet: string, _suffix: string): string => {
     const isNatalRetro = natalRetro.get(String(planet).toLowerCase()) === true;
