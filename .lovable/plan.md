@@ -1,81 +1,36 @@
-I agree: the repeated fixes are symptoms of the same architectural problem. The system has too many partial correctors, each trying to patch one wording pattern after generation. The permanent fix should be an audit plus a single canonical fact-enforcement layer that owns planet facts, table facts, prose facts, and gate readiness.
+# Fix: SR Mercury retrograde missing from career prose
 
-Plan:
+## What you confirmed is working
+- `retrograde: true` is now correctly populated in the SR placement table.
+- `factsAwareRetrogradeSweep` is parsing SR truth correctly.
+- `correctPlacementData` in `AskView.tsx` keeps the JSON boolean and `℞` glyph in sync.
 
-1. Build a fact-flow audit for Ask readings
-   - Trace every path that creates, mutates, or validates these facts:
-     - natal/SR sign, degree, house, retrograde state
-     - placement tables
-     - timing window descriptions
-     - gate result and post-gate safety pass
-   - Confirm which logic runs client-side in `AskView.tsx` and which runs server-side in `ask-astrology`.
-   - Produce an internal audit list of duplicated or drift-prone helpers so we stop adding one-off regex patches.
+## The remaining gap (and why it's not the sweep)
+The `factsAwareRetrogradeSweep` only **fixes false claims** about retrograde state — if the AI writes "SR Mercury direct" it flips it, and if it writes a phantom "SR Mercury retrograde" on a direct planet it strips it. It does **not** force the model to mention retrograde status when the model is silent about it. That's a prompt rule, not a post-processor job.
 
-2. Create one canonical chart facts object in the backend function
-   - In `supabase/functions/ask-astrology/index.ts`, derive a single `ChartFacts` object from `chartContext` once per reading:
-     - `natal.planets[planet] = sign, degree, minutes, house, retrograde`
-     - `solarReturn.planets[planet] = sign, degree, minutes, house, retrograde`
-     - natal/SR angles and house cusps
-   - Use this object as the only source of truth for downstream cleanup.
-   - Include a small diagnostic summary in `_validation_log` when facts are incomplete, so missing SR context is visible instead of silently becoming false/direct.
+In `supabase/functions/ask-astrology/index.ts` the prompt has an **SR Retrograde Acknowledgment** rule at line 9012, but it's scoped only to `question_type: "solar_return"`. The career template (lines 8876–8910), money, and health templates have no equivalent rule. Career prose can mention SR Mercury sign/house and skip its retrograde status entirely without violating any prompt rule — exactly what's happening on Ben's reading.
 
-3. Replace the whack-a-mole SR/natal retrograde cleaner with a fact-aware consistency pass
-   - Instead of relying only on specific patterns like `SR Jupiter retrograde` or `SR Jupiter ... is retrograde`, walk every user-visible string field (`body`, `text`, `label`, `title`, `subtitle`, `heading`, summary items, timing descriptions).
-   - Detect planet mentions with chart context:
-     - explicit SR/Solar Return/this year = SR fact
-     - explicit natal/your natal = natal fact
-     - SR-titled sections = default to SR for bare planet mentions
-     - otherwise default to natal
-   - For every detected direct/retrograde claim:
-     - strip false retrograde claims when the fact says direct
-     - flip false direct claims when the fact says retrograde
-     - normalize table rows to match the same fact object
-   - This covers the current career failure (`SR Jupiter at ... retrograde`, `Jupiter retrograde in the SR 10th house`, bullet text) without adding another narrow regex-only patch.
+## Single targeted change
+Promote the existing SR Retrograde Acknowledgment rule from solar_return-only to a **UNIVERSAL BASE RULE** that applies to every reading type whenever any SR placement is referenced.
 
-4. Ensure required fact tables are present before the gate
-   - If a reading discusses Solar Return planets and SR facts exist, deterministically inject or repair a `Solar Return Key Placements` table before the gate.
-   - If a table already exists, overwrite its planet/sign/degree/house/retrograde fields from `ChartFacts`.
-   - Fix the client-side `correctPlacementData` gap where it appends the `℞` glyph but does not set `row.retrograde = truth.isRetrograde`; that means exports can still contain visual/table boolean mismatches.
+**File:** `supabase/functions/ask-astrology/index.ts`
 
-5. Add an internal pre-gate mirror audit for gate-style defects
-   - Before calling the external gate, run a local audit for the recurring defect classes:
-     - `RETROGRADE_STATE_MISMATCH`
-     - natal/SR position bleed
-     - missing SR placement table when SR prose exists
-     - timing restatement pattern
-     - relationship-only contract leaking into non-relationship readings
-   - If the local audit finds deterministic fixable issues, repair once and re-audit before sending to the gate.
-   - Do not rely on the external gate as the first time we discover these issues.
+**Edit 1 — Add a universal SR retrograde acknowledgment to the base rules block** (the section starting around line 8478 that already enumerates rules every reading type inherits). Add a new rule alongside BASE RULES 1–8 with this content:
 
-6. Consolidate cleanup ordering into one pipeline
-   - Keep one shared pipeline that runs:
-     - before gate
-     - after any gate retry/mutation
-     - immediately before persistence
-   - Remove or stop using duplicate inline calls where possible so a fix cannot run on one path but not another.
-   - Relationship-only logic remains hard-guarded to `question_type === "relationship"`.
+> **UNIVERSAL SR RETROGRADE ACKNOWLEDGMENT (NON-NEGOTIABLE — applies to every reading type that references Solar Return placements: solar_return, career, money, health, relationship, relocation, spiritual, timing, general, and any future type):** For every SR planet marked retrograde in the "Solar Return Key Placements" table (R, Rx, ℞, or "retrograde"), the prose MUST acknowledge the retrograde status at least once in plain language in the section that takes that SR planet as its focal subject. For SR Mercury specifically, the acknowledgment MUST appear in whichever section discusses communication, thinking, decisions, contracts, negotiation, or networking for this reading type — e.g., in a career reading the SR Mercury retrograde acknowledgment lands in "Your Career Foundation", "Hidden Strengths", "11th House and Networking", or the Strategy Summary's "When to Act" / "What to Avoid" item. A bare "(R)" tag after the planet name is NOT enough — write a single sentence in plain English explaining what that SR retrograde means for this year framed in the reading's domain (career = "communication, decisions, and contracts will run on review this year — expect to revisit conversations and rework agreements you thought were settled"; money = "purchases, contracts, and pricing decisions will need a second pass"; health = "treatment plans and provider choices benefit from a second opinion"; relationship = "important conversations may need to be revisited and clarified"). Omitting acknowledgment for any SR planet that is retrograde in the SR table is a HARD FAIL on every reading type, not just solar_return.
 
-7. Add targeted regression tests / scripts for the exact failure shapes
-   - Add lightweight tests or a script fixture for the uploaded Ben career failure shape:
-     - SR Jupiter direct/prose says retrograde
-     - SR Mercury direct/prose says retrograde
-     - bullet text says `(SR Jupiter retrograde...)`
-     - SR section has no SR placement table
-     - non-relationship reading contains `_relationship_contract`
-   - Also test the opposite case from earlier: SR Mercury/Jupiter truly retrograde in source data must not be stripped.
-   - These tests will fail before the fix and pass after it, preventing the same issue from returning.
+**Edit 2 — Add a career-specific reinforcement** to the career template (lines 8876–8910) right after the existing CAREER PROSE QUALITY RULE, naming SR Mercury retrograde as the canonical case:
 
-Technical notes:
-- Target files:
-  - `supabase/functions/ask-astrology/index.ts`
-  - `src/components/AskView.tsx` only for the client-side `row.retrograde` boolean correction gap
-  - optional test/script file if the repo has an existing test pattern; otherwise a small local audit script can be added under a dev/test location
-- No UI redesign.
-- No database schema change.
-- No external gate change.
-- The goal is not a bigger prompt. Prompts can remain, but deterministic facts must be the final authority.
+> **CAREER SR MERCURY RETROGRADE RULE:** If the "Solar Return Key Placements" table marks SR Mercury retrograde, the career reading MUST include exactly one plain-English sentence stating SR Mercury is retrograde this year and what that means for communication, decisions, and contracts in a work context, placed in either "Your Career Foundation", "Hidden Strengths", or the Strategy Summary's "When to Act"/"What to Avoid" — never silently dropped. The same rule fires for SR Saturn (long-term commitments under review), SR Jupiter (growth/expansion under review), and SR Mars (timing of action under review) when those planets are retrograde in the SR table.
 
-Expected outcome:
-- New readings cannot ship prose/table retrograde disagreement when the chart facts are present.
-- Career, solar_return, natal, money, health, relationship, relocation, and future reading types all pass through the same fact-enforcement layer.
-- The next time a gate-style issue occurs, `_validation_log` / `_post_gate_safety` will show whether the fact source was missing or which deterministic repair ran, instead of leaving us guessing.
+**Edit 3 — Mirror the rule for money and health templates** (one line each, so the gap doesn't reappear there next time):
+- Money template: same SR Mercury / Saturn retrograde rule, framed for purchases/contracts/pricing.
+- Health template: same rule framed for treatment plans, provider choices, second opinions.
+
+## What I am NOT changing
+- No code changes to `factsAwareRetrogradeSweep`, `runPreGateLocalAudit`, or any post-processor.
+- No changes to the chart context builder, the placement table serializer, or the frontend.
+- No changes to the SR placement table data flow — that's working.
+
+## After deployment
+The next career reading on Ben's chart should include exactly one plain-English sentence about SR Mercury being retrograde this year somewhere in the communication/decisions/contracts territory (Career Foundation, Hidden Strengths, or Strategy Summary). If it does not, the gap is in prompt adherence, not the rule, and I'll inspect the actual emitted JSON to decide whether to add a post-processor injection step — but I expect the rule alone to close it because the analogous rule has held on solar_return readings for weeks.
