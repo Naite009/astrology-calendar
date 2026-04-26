@@ -1776,6 +1776,51 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return detectReadingType(question);
   };
 
+  /**
+   * Fetch the canonical Solar Return record directly from the cloud
+   * (`device_charts`) so reading generation never depends on possibly-stale
+   * `localStorage`-hydrated state. The async cloud-restore in
+   * `useSolarReturnChart` is racy: a reading kicked off before the merge
+   * completes would otherwise serialize stale planet flags (e.g.
+   * `isRetrograde`) into the AI context. Cloud always wins.
+   *
+   * Falls back to the local SR record if the cloud lookup fails or no row
+   * exists for this user/device.
+   */
+  const fetchCanonicalSolarReturn = async (
+    chartForRequest: NatalChart | null,
+    chartIdForRequest: string,
+  ): Promise<SolarReturnChart | null> => {
+    const localSR = findMatchingSolarReturn(
+      solarReturnCharts,
+      chartForRequest,
+      chartIdForRequest,
+    );
+    if (!localSR) return null;
+    try {
+      const cloudChartId = `sr_${localSR.id}`;
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      let query = supabase
+        .from("device_charts")
+        .select("chart_data")
+        .eq("chart_id", cloudChartId)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (userId) {
+        query = query.eq("user_id", userId);
+      }
+      const { data, error } = await query.maybeSingle();
+      if (error || !data?.chart_data) {
+        return localSR;
+      }
+      const cloudSR = data.chart_data as unknown as SolarReturnChart;
+      return { ...cloudSR, id: localSR.id };
+    } catch {
+      return localSR;
+    }
+  };
+
 
   const handleSubmitDirect = async (
     directQuestion?: string,
