@@ -6874,7 +6874,13 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
-  // 5b. Natal-house equivalent of the SR-house sweep — rewrites natal house
+  // 5d. SR house claims first, then natal house claims last. Natal-qualified
+  // prose has final authority so SR corrections cannot undo natal houses.
+  safeRun("correctSrPlanetHousesInProse", () =>
+    correctSrPlanetHousesInProse(parsedContent, ctx, log),
+  );
+
+  // 5e. Natal-house equivalent of the SR-house sweep — rewrites natal house
   // claims in prose against the NATAL PLANET HOUSE PLACEMENTS truth block.
   safeRun("factsAwareNatalHouseSweep", () =>
     factsAwareNatalHouseSweep(parsedContent, ctx, log),
