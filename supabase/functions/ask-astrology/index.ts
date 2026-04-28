@@ -747,12 +747,30 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const dominantModalityName = typeof section.dominant_modality === "string"
       ? section.dominant_modality.split(/[\s(]/)[0]
       : "";
+    // ─────────────────────────────────────────────────────────────────────
+    // ELEMENT / MODALITY MISMATCH DETECTION (generalized)
+    // The AI sometimes ships Fire/Cardinal-flavored prose ("live forward",
+    // "act on instinct", "push toward", "starts things", "launch") even
+    // though the section's dominant_element / dominant_modality is Earth
+    // and Mutable. Conversely, an Earth Mutable chart MUST contain
+    // grounded/practical language and adaptive/responsive language.
+    // We detect mismatch on three axes: (a) Fire/Cardinal phrases present
+    // when dominant is Earth or Water, (b) Earth dominance missing
+    // grounded/practical/build language, (c) Mutable dominance missing
+    // adaptive/responsive/adjust language. Any mismatch triggers the
+    // deterministic rewrite below.
+    const FIRE_CARDINAL_PHRASES = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|assert,\s*initiate|process\s+by\s+doing|pace\s+starts)\b/i;
+    const EARTH_LANGUAGE = /\b(?:grounded|groundedness|patience|patient|build|building|practical|steady|tangible|repeat(?:ed|able)?|attend(?:s|ing)?\s+to\s+what\s+(?:actually\s+)?works)\b/i;
+    const MUTABLE_LANGUAGE = /\b(?:adaptab(?:le|ility)|responsive(?:ness)?|respond|pivot|adjust|refine|improving|read\s+the\s+room)\b/i;
+    const elementMismatch =
+      (dominantElementName === "Earth" || dominantElementName === "Water") &&
+      FIRE_CARDINAL_PHRASES.test(text);
+    const earthMissingLanguage =
+      dominantElementName === "Earth" && !EARTH_LANGUAGE.test(text);
+    const mutableMissingLanguage =
+      dominantModalityName === "Mutable" && !MUTABLE_LANGUAGE.test(text);
     const earthMutableMismatch =
-      dominantElementName === "Earth" &&
-      dominantModalityName === "Mutable" &&
-      (/\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?)\b/i.test(text) ||
-        !/\b(?:grounded|groundedness|patience|patient|build|building|practical|steady)\b/i.test(text) ||
-        !/\b(?:adaptability|adaptable|responsive|responsiveness|respond|pivot|adjust)\b/i.test(text));
+      elementMismatch || earthMissingLanguage || mutableMissingLanguage;
 
     // FIX #3 (option A — INTEGRATED REWRITE):
     // Throw away generic or incomplete AI text whenever coverage is missing
