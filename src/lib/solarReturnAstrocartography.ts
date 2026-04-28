@@ -733,6 +733,10 @@ export function calculateAstrocartography(
     return sorted[0] || null;
   };
 
+  // Legacy fields: best benefic = best overall, worst malefic = worst overall
+  const bestBeneficCity = findBestForIntention('overall');
+  const worstMaleficCity = findWorstForIntention('overall');
+
   // ── Score the current location using the SAME blended pipeline as candidate cities,
   //    so "Best Overall" is directly comparable to "Current location rating". ──
   const currentMC = calculateMCAtLongitude(GST, currentLng);
