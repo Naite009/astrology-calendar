@@ -13026,9 +13026,6 @@ ${natalGroundTruthLines}`
         // they're not on the shared-pipeline drift-prevention list)
         // continue to run individually below.
         fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        // SR PLANET HOUSE PROSE FIXER (post-gate): strip any "SR <Planet>
-        // in the <wrong-Nth> house" that Replit re-introduced.
-        correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
