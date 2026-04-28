@@ -747,12 +747,30 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const dominantModalityName = typeof section.dominant_modality === "string"
       ? section.dominant_modality.split(/[\s(]/)[0]
       : "";
+    // ─────────────────────────────────────────────────────────────────────
+    // ELEMENT / MODALITY MISMATCH DETECTION (generalized)
+    // The AI sometimes ships Fire/Cardinal-flavored prose ("live forward",
+    // "act on instinct", "push toward", "starts things", "launch") even
+    // though the section's dominant_element / dominant_modality is Earth
+    // and Mutable. Conversely, an Earth Mutable chart MUST contain
+    // grounded/practical language and adaptive/responsive language.
+    // We detect mismatch on three axes: (a) Fire/Cardinal phrases present
+    // when dominant is Earth or Water, (b) Earth dominance missing
+    // grounded/practical/build language, (c) Mutable dominance missing
+    // adaptive/responsive/adjust language. Any mismatch triggers the
+    // deterministic rewrite below.
+    const FIRE_CARDINAL_PHRASES = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|assert,\s*initiate|process\s+by\s+doing|pace\s+starts)\b/i;
+    const EARTH_LANGUAGE = /\b(?:grounded|groundedness|patience|patient|build|building|practical|steady|tangible|repeat(?:ed|able)?|attend(?:s|ing)?\s+to\s+what\s+(?:actually\s+)?works)\b/i;
+    const MUTABLE_LANGUAGE = /\b(?:adaptab(?:le|ility)|responsive(?:ness)?|respond|pivot|adjust|refine|improving|read\s+the\s+room)\b/i;
+    const elementMismatch =
+      (dominantElementName === "Earth" || dominantElementName === "Water") &&
+      FIRE_CARDINAL_PHRASES.test(text);
+    const earthMissingLanguage =
+      dominantElementName === "Earth" && !EARTH_LANGUAGE.test(text);
+    const mutableMissingLanguage =
+      dominantModalityName === "Mutable" && !MUTABLE_LANGUAGE.test(text);
     const earthMutableMismatch =
-      dominantElementName === "Earth" &&
-      dominantModalityName === "Mutable" &&
-      (/\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?)\b/i.test(text) ||
-        !/\b(?:grounded|groundedness|patience|patient|build|building|practical|steady)\b/i.test(text) ||
-        !/\b(?:adaptability|adaptable|responsive|responsiveness|respond|pivot|adjust)\b/i.test(text));
+      elementMismatch || earthMissingLanguage || mutableMissingLanguage;
 
     // FIX #3 (option A — INTEGRATED REWRITE):
     // Throw away generic or incomplete AI text whenever coverage is missing
@@ -795,7 +813,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
         Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "live through groundedness, patience, and building — you trust what can be made practical, repeated, and steadily improved over time",
+        Earth: "live through groundedness, patience, and practicality — you build what is real and tangible, attend to what actually works, and trust slow steady results over flashy promises",
         Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
         Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
@@ -815,7 +833,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
           weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "moves through adaptability and responsiveness — you adjust to what is actually happening, pivot when the conditions change, and read the room before locking into one plan",
+          lead: "moves through adaptability and responsiveness — you adjust and refine without drama, find meaning in improving what already exists rather than launching something new, and read the room before locking into one plan",
           weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
@@ -6011,6 +6029,141 @@ const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// FIX 2 — CUSP LANGUAGE TRANSLATOR (plain English for non-astrologers).
+// The word "cusp" is jargon. Whenever the prose says
+//   "your 8th house cusp is in Gemini"
+//   "the 7th house cusp Capricorn"
+//   "8th house cusp opens in Gemini"
+// rewrite the cusp clause so the house life-area is named in plain English
+// before the sign. Example output:
+//   "your 8th house — the area of your chart governing shared finances and
+//    deep psychological territory — opens in Gemini"
+// We only rewrite when (a) the word "cusp" appears and (b) the surrounding
+// context names a house ordinal + sign so the substitution is unambiguous.
+// ─────────────────────────────────────────────────────────────────────────
+const HOUSE_LIFE_AREA: Record<number, string> = {
+  1: "the area of your chart governing identity, body, and how you show up to the world",
+  2: "the area of your chart governing money you earn yourself, possessions, and self-worth",
+  3: "the area of your chart governing communication, daily learning, siblings, and short trips",
+  4: "the area of your chart governing home, family, roots, and your private inner foundation",
+  5: "the area of your chart governing creativity, romance, children, and what brings you joy",
+  6: "the area of your chart governing daily work, health routines, and being of service",
+  7: "the area of your chart governing partnership, marriage, and one-on-one relationships",
+  8: "the area of your chart governing shared finances and deep psychological territory",
+  9: "the area of your chart governing higher learning, long journeys, belief, and meaning",
+  10: "the area of your chart governing career, public reputation, and life direction",
+  11: "the area of your chart governing community, friendships, and long-range hopes",
+  12: "the area of your chart governing solitude, the unconscious, and what is hidden",
+};
+
+const translateCuspLanguageInProse = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const ORDINAL_WORDS_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
+  };
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+
+  // Pattern A: "your? <ord> house cusp [is/sits/opens/falls] [in/on/at] <Sign>"
+  // Pattern B: bare "<ord> house cusp" with no sign nearby — drop "cusp"
+  const patternWithSign = new RegExp(
+    `\\b(your\\s+|the\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\s+cusp\\s+(?:is\\s+|sits?\\s+|opens?\\s+|falls?\\s+)?(?:in\\s+|on\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+  const patternBareCusp = new RegExp(
+    `\\b(your\\s+|the\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\s+cusp\\b(?!\\s+(?:in|on|at|is|sits?|opens?|falls?|${SIGN_NAMES_RE}))`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(patternWithSign, (full, possessive, ord, sign) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const lifeArea = HOUSE_LIFE_AREA[houseNum];
+      if (!lifeArea) return full;
+      const poss = possessive ? possessive.trim() : "your";
+      rewrites++;
+      return `${poss} ${ord} house — ${lifeArea} — opens in ${sign}`;
+    });
+    next = next.replace(patternBareCusp, (full, possessive, ord) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const lifeArea = HOUSE_LIFE_AREA[houseNum];
+      if (!lifeArea) return full;
+      const poss = possessive ? possessive.trim() : "your";
+      rewrites++;
+      return `${poss} ${ord} house — ${lifeArea} —`;
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 120)} → ${next.slice(0, 120)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "cusp_language_translated_to_plain_english", detail: { rewrites, examples } });
+    console.info("[ask-astrology] cusp language translated to plain English", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// FIX 5 — "You are the kind of windows/opportunities/period…" grammar fix.
+// "You are the kind of" should only describe a person. When followed by
+// "windows", "opportunities", "period(s)", "transit(s)", "aspect(s)",
+// "moments", or "times", rewrite the opener to "These are the kind of …".
+// ─────────────────────────────────────────────────────────────────────────
+const fixYouAreTheKindOfWindowsGrammar = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  // "You are the kind of <noun-phrase>" where the noun-phrase clearly refers
+  // to a thing (window/opportunity/period/transit/aspect/moment/time), not a
+  // person. Capture the noun-phrase + tail to rebuild the sentence cleanly.
+  const re = /\bYou\s+are\s+the\s+kind\s+of\s+(windows?|opportun(?:ity|ities)|periods?|transits?|aspects?|moments?|times?|cycles?|seasons?|chapters?|years?)\b/gi;
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(re, (full, noun) => {
+      rewrites++;
+      // Singular nouns get "This is the kind of"; plurals get "These are".
+      const isPlural = /s$/i.test(noun) && !/series$/i.test(noun);
+      const opener = isPlural ? "These are the kind of" : "This is the kind of";
+      return `${opener} ${noun}`;
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 120)} → ${next.slice(0, 120)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "you_are_the_kind_of_windows_grammar_fixed", detail: { rewrites, examples } });
+    console.info("[ask-astrology] grammar fix: 'You are the kind of windows' → 'These are the kind of windows'", { rewrites });
+  }
+};
+
+// FIX 4 is enforced by (a) the prompt rule added to the solar_return
+// summary_box spec, and (b) the existing correctSrPlanetHousesInProse pass
+// which already rewrites any "SR Jupiter in the Nth house" claim against
+// the SR truth block. No additional post-processor needed here.
+
+// ─────────────────────────────────────────────────────────────────────────
 // SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
 //   "SR 7th house in Capricorn"
 //   "SR 7th house cusp is Aries"
@@ -6667,6 +6820,18 @@ const runPostProcessingPipeline = (
   // 3b. General "Nth house cusp is X" verifier (any house 1-12).
   safeRun("fixGeneralHouseCuspMentionsInProse", () =>
     fixGeneralHouseCuspMentionsInProse(parsedContent, ctx, log),
+  );
+
+  // 3c. FIX 2 — Cusp jargon → plain English. Run AFTER cusp signs have been
+  // corrected so we don't translate the wrong sign. Replaces "Nth house cusp
+  // is/in <Sign>" with "Nth house — <life area> — opens in <Sign>".
+  safeRun("translateCuspLanguageInProse", () =>
+    translateCuspLanguageInProse(parsedContent, log),
+  );
+
+  // 3d. FIX 5 — "You are the kind of windows/opportunities/period…" grammar.
+  safeRun("fixYouAreTheKindOfWindowsGrammar", () =>
+    fixYouAreTheKindOfWindowsGrammar(parsedContent, log),
   );
 
   // 4. Ascendant/Descendant label swaps (token-purity guard).
@@ -10063,7 +10228,7 @@ SR LOVE ACTIVATION STYLE:
   1. placement_table — "Natal Key Placements"
   2. placement_table — "Solar Return Key Placements"
   3. narrative_section — "The Year's Central Theme" (SR Ascendant sign + SR Sun house — open by naming both explicitly)
-  4. narrative_section — "Emotional Tone of the Year" (SR Moon sign+house, bridged to natal Moon baseline)
+  4. narrative_section — "Emotional Tone of the Year" (SR Moon sign+house, bridged to natal Moon baseline. If you reference natal Lilith here or anywhere else in the reading, you MUST read its house from the "NATAL PLANET HOUSE PLACEMENTS" truth block — never infer Lilith's house from her sign and never copy any other planet's house onto Lilith. Same rule for natal Juno, North/South Node, and Chiron.)
   5. narrative_section — "Communication and Thinking This Year" (SR Mercury sign+house+retrograde status — name retrograde explicitly if applicable)
   6. narrative_section — "Love and Relationships This Year" (SR Venus sign+house, shift from natal Venus)
   7. narrative_section — "Energy, Drive, and Conflict This Year" (SR Mars sign+house, where friction is likely)
@@ -10087,6 +10252,11 @@ SR LOVE ACTIVATION STYLE:
      REQUIRED shape for the final two sentences: declarative present/future-tense statements with concrete, chart-specific content. Examples of correct shape (not for copying — the actual content must be derived from THIS chart): "You are walking into a year that rearranges how you show up at work and who counts as family. You have the steadiness for it — the same steadiness that has held you through every Saturn pass before this one." The closer is a benediction grounded in fact, not a homework assignment.
   15. modality_element — "Solar Return Elemental & Modal Balance"
   16. summary_box — "Solar Return Strategy Summary" with items: "Year's Theme", "Where to Focus", "What to Release", "Most Important Message"
+
+  CLOSING MESSAGE / SUMMARY BOX VERIFICATION (HARD, NON-NEGOTIABLE — applies to the summary_box "Most Important Message" item AND to the body of "The Year's Single Most Important Message" narrative_section):
+  - FIX 4 — SR PLANET HOUSE VERIFICATION: Before naming any SR planet's house in the closing message (especially SR Jupiter, SR Saturn, SR Venus, SR Mars, SR Sun, SR Moon), STOP and re-read the "SR PLANET HOUSE PLACEMENTS" truth block in the chart context. Copy the house number from that block exactly. The single most common failure shipped from this section is confusing SR Jupiter's house with SR Venus's house — they are different planets in different houses. If the SR Jupiter line in the truth block says "House 11", you write "the 11th house", never "the 9th house". Same rule for every SR planet you reference. Never paraphrase from memory.
+  - FIX 5 — TIMING WINDOW SENTENCE OPENERS: Never open a sentence with "You are the kind of windows that…" or "You are the kind of opportunities that…" or "You are the kind of period that…" — that is a grammar error (a person is not a window). When describing a transit window, period, or opportunity, always use "These are the kind of windows that…", "This is the kind of period that…", or name the specific transit ("This Jupiter-trine-natal-Sun window is the kind that…"). The phrase "You are the kind of" is reserved exclusively for describing the person themselves (e.g., "You are the kind of person who…") — never for describing timing, windows, periods, opportunities, transits, or aspects.
+
 
   SOLAR RETURN GROUND-TRUTH CONSTRAINTS (HARD STOP — READ BEFORE WRITING ANY SR SENTENCE): The two placement tables ("Natal Key Placements" and "Solar Return Key Placements") at the top of this reading are the ONLY source of truth for planet positions, signs, degrees, houses, retrograde status, and lunar nodes. Before writing any sentence that references a placement, look it up in the correct table:
   - NEVER write a natal placement (sign, degree, house, retrograde) that differs from the "Natal Key Placements" table. Specifically: natal Venus's sign and degree must match the natal table EXACTLY — do not copy the SR Venus sign or degree into a sentence about natal Venus, ever. The same rule applies to natal Mercury, Mars, Moon, Sun, and every other natal point.
