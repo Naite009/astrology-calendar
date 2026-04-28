@@ -10176,7 +10176,7 @@ SR LOVE ACTIVATION STYLE:
   1. placement_table — "Natal Key Placements"
   2. placement_table — "Solar Return Key Placements"
   3. narrative_section — "The Year's Central Theme" (SR Ascendant sign + SR Sun house — open by naming both explicitly)
-  4. narrative_section — "Emotional Tone of the Year" (SR Moon sign+house, bridged to natal Moon baseline)
+  4. narrative_section — "Emotional Tone of the Year" (SR Moon sign+house, bridged to natal Moon baseline. If you reference natal Lilith here or anywhere else in the reading, you MUST read its house from the "NATAL PLANET HOUSE PLACEMENTS" truth block — never infer Lilith's house from her sign and never copy any other planet's house onto Lilith. Same rule for natal Juno, North/South Node, and Chiron.)
   5. narrative_section — "Communication and Thinking This Year" (SR Mercury sign+house+retrograde status — name retrograde explicitly if applicable)
   6. narrative_section — "Love and Relationships This Year" (SR Venus sign+house, shift from natal Venus)
   7. narrative_section — "Energy, Drive, and Conflict This Year" (SR Mars sign+house, where friction is likely)
