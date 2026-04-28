@@ -2900,6 +2900,10 @@ const correctSrPlanetHousesInProse = (
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
     next = next.replace(planetHouseRe, (full, _qual, planet, gap, claimedOrd) => {
+      const beforeHouseClaim = String(full).slice(0, String(full).toLowerCase().lastIndexOf(String(claimedOrd).toLowerCase()));
+      if (/\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(beforeHouseClaim)) {
+        return full;
+      }
       const truthHouse = houseMap.get(String(planet).toLowerCase());
       if (truthHouse == null) return full;
       const claimedNum = ORD_TO_NUM[String(claimedOrd).toLowerCase()];
@@ -4297,6 +4301,13 @@ const factsAwareRetrogradeSweep = (
       const tryFix = (re: RegExp): boolean => {
         let touched = false;
         next = next.replace(re, (full, prefix, token, suffix = "") => {
+          const matchedText = String(full);
+          if (chart === "sr" && /\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
+            return full;
+          }
+          if (chart === "natal" && /\b(?:SR|Solar\s+Return)\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
+            return full;
+          }
           const claimed = parseHouseToken(token);
           if (claimed === null || claimed === truthHouse) return full;
           touched = true;
@@ -4448,12 +4459,33 @@ const runPreGateLocalAudit = (
   const srRetro = new Map<string, boolean>();
   for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
   for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  const injection = parseSrAnalysisInjection(chartContext);
+  for (const [planet, retro] of injection.srRetro.entries()) srRetro.set(planet, retro);
 
   type AuditFinding = { code: string; section?: string; field?: string; planet?: string; snippet?: string };
   const findings: AuditFinding[] = [];
 
   // 1. Detect prose retrograde claims that disagree with facts.
   const sections = Array.isArray(parsedContent?.sections) ? parsedContent.sections : [];
+  const normalizeAuditPlanetKey = (raw: unknown): string => String(raw || "")
+    .replace(/[℞\u211E]|\bRx\b|\bR\b/gi, "")
+    .replace(/^\s*(?:SR|Solar\s+Return|Natal)\s+/i, "")
+    .trim()
+    .toLowerCase();
+  for (const section of sections) {
+    if (section?.type !== "placement_table") continue;
+    const title = String(section?.title || "");
+    if (!/\b(?:solar\s+return|sr)\b/i.test(title)) continue;
+    const rows = Array.isArray(section?.rows) ? section.rows : Array.isArray(section?.placements) ? section.placements : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const planet = normalizeAuditPlanetKey((row as any).planet ?? (row as any).body ?? (row as any).name);
+      if (!planet) continue;
+      const retro = typeof (row as any).retrograde === "boolean" ? (row as any).retrograde
+        : typeof (row as any).isRetrograde === "boolean" ? (row as any).isRetrograde : undefined;
+      if (typeof retro === "boolean") srRetro.set(planet, retro);
+    }
+  }
   let mentionsSr = false;
   for (const section of sections) {
     const sectionTitle = String(section?.title || "");
@@ -4464,9 +4496,12 @@ const runPreGateLocalAudit = (
         mentionsSr = true;
       }
       for (const planet of FACTS_PLANETS) {
-        const re = new RegExp(`\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:is\\s+retrograde|retrograde)\\b`, "i");
+        const re = new RegExp(`\b${planet}\b[^.!?\n]{0,120}?\b(?:is\s+retrograde|retrograde)\b`, "i");
         if (!re.test(node)) continue;
-        const isSr = sectionInSr || /\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s+/i.test(node);
+        const planetClaim = node.match(re)?.[0] || node;
+        const explicitNatal = new RegExp(`\bnatal\s+${planet}\b`, "i").test(planetClaim);
+        const explicitSr = new RegExp(`\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s+${planet}\b`, "i").test(planetClaim);
+        const isSr = explicitSr ? true : explicitNatal ? false : sectionInSr;
         const factMap = isSr ? srRetro : natalRetro;
         if (!factMap.has(planet.toLowerCase())) continue;
         const factIsRetro = factMap.get(planet.toLowerCase()) === true;
@@ -6392,9 +6427,13 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
           ];
           for (const { label, truth } of angleChecks) {
             if (!truth) continue;
-            const re = new RegExp(`\\b(?:natal\\s+|your\\s+)?${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const re = new RegExp(`\b(?:natal\s+|your\s+)?${label}\b[^.!?]{0,40}?\b(${SIGN_RE})\b`, "i");
             const m = sent.match(re);
             if (m) {
+              const beforeLabel = sent.slice(0, m.index ?? 0);
+              if (/\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i.test(beforeLabel) || new RegExp(`\b(?:SR|Solar\s+Return)\s+${label}\b`, "i").test(sent)) {
+                continue;
+              }
               if (m[1].toLowerCase() !== truth.toLowerCase()) {
                 flags.push({ section: localTitle, field: key, reason: `natal_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
               }
@@ -6870,7 +6909,13 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
-  // 5b. Natal-house equivalent of the SR-house sweep — rewrites natal house
+  // 5d. SR house claims first, then natal house claims last. Natal-qualified
+  // prose has final authority so SR corrections cannot undo natal houses.
+  safeRun("correctSrPlanetHousesInProse", () =>
+    correctSrPlanetHousesInProse(parsedContent, ctx, log),
+  );
+
+  // 5e. Natal-house equivalent of the SR-house sweep — rewrites natal house
   // claims in prose against the NATAL PLANET HOUSE PLACEMENTS truth block.
   safeRun("factsAwareNatalHouseSweep", () =>
     factsAwareNatalHouseSweep(parsedContent, ctx, log),
@@ -13016,9 +13061,6 @@ ${natalGroundTruthLines}`
         // they're not on the shared-pipeline drift-prevention list)
         // continue to run individually below.
         fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", postGateLog);
-        // SR PLANET HOUSE PROSE FIXER (post-gate): strip any "SR <Planet>
-        // in the <wrong-Nth> house" that Replit re-introduced.
-        correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", postGateLog);
         // NATAL POSITION COUNTERPART (post-gate): catch any natal-position
         // bleeds Replit may have introduced or that survived the gate.
         correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", postGateLog);
