@@ -2900,6 +2900,10 @@ const correctSrPlanetHousesInProse = (
   forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
     let next = val;
     next = next.replace(planetHouseRe, (full, _qual, planet, gap, claimedOrd) => {
+      const beforeHouseClaim = String(full).slice(0, String(full).toLowerCase().lastIndexOf(String(claimedOrd).toLowerCase()));
+      if (/\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(beforeHouseClaim)) {
+        return full;
+      }
       const truthHouse = houseMap.get(String(planet).toLowerCase());
       if (truthHouse == null) return full;
       const claimedNum = ORD_TO_NUM[String(claimedOrd).toLowerCase()];
