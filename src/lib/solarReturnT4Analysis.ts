@@ -547,7 +547,19 @@ export function calculateEclipseSensitivity(
       }
     }
 
-    // Check natal angles
+    // Check natal angles. An eclipse at degree X is on the ASC/MC if it's
+    // within orb of that angle, OR opposite (within orb of angle±180), which
+    // means it activates the DSC/IC respectively.
+    const ANGLE_THEMES: Record<string, string> = {
+      Ascendant: 'identity, self-image, body, appearance, and personal initiative',
+      Descendant: 'partnerships, marriage, contracts, one-on-one relationships, and how you meet "the other"',
+      Midheaven: 'career, public reputation, authority, visibility, professional identity, and achievement',
+      'Imum Coeli': 'home, family, roots, ancestry, private life, and inner foundations',
+    };
+    const ANGLE_OPPOSITES: Record<string, string> = {
+      Ascendant: 'Descendant',
+      Midheaven: 'Imum Coeli',
+    };
     for (const angle of [
       { name: 'Ascendant', pos: natalChart.houseCusps?.house1 },
       { name: 'Midheaven', pos: natalChart.houseCusps?.house10 },
@@ -556,16 +568,24 @@ export function calculateEclipseSensitivity(
       if (aDeg === null) continue;
       let diff = Math.abs(aDeg - eclipseAbsDeg);
       if (diff > 180) diff = 360 - diff;
-      if (diff <= ORB) {
+      // diff to angle directly = activates angle.name; diff close to 180 = activates opposite angle
+      const directDiff = diff;
+      const oppositeDiff = Math.abs(180 - diff);
+      let hitName: string | null = null;
+      let hitOrb = 0;
+      if (directDiff <= ORB) { hitName = angle.name; hitOrb = directDiff; }
+      else if (oppositeDiff <= ORB) { hitName = ANGLE_OPPOSITES[angle.name]; hitOrb = oppositeDiff; }
+      if (hitName) {
+        const themes = ANGLE_THEMES[hitName] || 'a key life area';
         results.push({
           eclipseType: eclipse.type,
           eclipseSign: eclipse.sign,
           eclipseDegree: eclipse.degree,
           eclipseDate: eclipse.date,
-          sensitizedPlanet: angle.name,
+          sensitizedPlanet: hitName,
           sensitizedPlanetSource: 'Natal',
-          orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${angle.name}. This points to an especially personal turning point, often showing up through relationship dynamics, life direction, visibility, home base, or identity redefinition.`,
+          orb: Math.round(hitOrb * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${hitName}. This points to an especially personal turning point in ${themes}.`,
         });
       }
     }
