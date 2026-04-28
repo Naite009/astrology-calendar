@@ -813,7 +813,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       // third-person pronouns that the rewrite pass would have to scrub.
       const ELEMENT_DOMINANT: Record<string, string> = {
         Fire: "live forward — you think out loud, act on instinct, and need a project, person, or cause to push toward",
-        Earth: "live through groundedness, patience, and building — you trust what can be made practical, repeated, and steadily improved over time",
+        Earth: "live through groundedness, patience, and practicality — you build what is real and tangible, attend to what actually works, and trust slow steady results over flashy promises",
         Air: "live in your head — you process by talking it through, need ideas and people to bounce against, and feel trapped without intellectual breathing room",
         Water: "live in your feelings — you pick up the room before words are spoken, need privacy and depth, and only feel safe with people who can hold emotion without flinching",
       };
