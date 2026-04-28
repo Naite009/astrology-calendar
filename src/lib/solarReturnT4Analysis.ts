@@ -760,6 +760,7 @@ export function calculateDominantPlanets(
   angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[],
   srToNatalAspects: { planet1: string; planet2: string; type: string; orb: number; importance?: number }[],
   srInternalAspects: { planet1: string; planet2: string; type: string; orb: number }[],
+  timeLord?: string | null,
 ): SRDominantPlanetsReport {
   const results: { planet: string; breakdown: SRDominantPlanetBreakdown; dignity: string; tags: string[] }[] = [];
 
