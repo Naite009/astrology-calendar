@@ -6775,6 +6775,13 @@ const runPostProcessingPipeline = (
     fixGeneralHouseCuspMentionsInProse(parsedContent, ctx, log),
   );
 
+  // 3c. FIX 2 — Cusp jargon → plain English. Run AFTER cusp signs have been
+  // corrected so we don't translate the wrong sign. Replaces "Nth house cusp
+  // is/in <Sign>" with "Nth house — <life area> — opens in <Sign>".
+  safeRun("translateCuspLanguageInProse", () =>
+    translateCuspLanguageInProse(parsedContent, log),
+  );
+
   // 4. Ascendant/Descendant label swaps (token-purity guard).
   safeRun("fixAscendantDescendantLabelSwapsInProse", () =>
     fixAscendantDescendantLabelSwapsInProse(parsedContent, ctx, log),
