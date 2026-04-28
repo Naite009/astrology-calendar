@@ -66,6 +66,10 @@ export function generateLunarWeatherMap(
 ): LunarWeatherMap {
   const natalMoon = natalChart.planets?.Moon;
   const natalMoonSign = natalMoon?.sign || 'Cancer';
+  // The Solar Return Moon sign is the dominant emotional reset for THIS year.
+  // (Lunar return technically returns to the natal Moon sign monthly, but for
+  // an annual SR report the SR Moon sign is the more meaningful per-year anchor.)
+  const srMoonSign = srChart?.planets?.Moon?.sign || natalMoonSign;
 
   // Birthday month
   const bd = natalChart.birthDate || '';
