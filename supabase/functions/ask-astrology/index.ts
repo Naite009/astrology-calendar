@@ -6117,6 +6117,58 @@ const translateCuspLanguageInProse = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// FIX 5 — "You are the kind of windows/opportunities/period…" grammar fix.
+// "You are the kind of" should only describe a person. When followed by
+// "windows", "opportunities", "period(s)", "transit(s)", "aspect(s)",
+// "moments", or "times", rewrite the opener to "These are the kind of …".
+// ─────────────────────────────────────────────────────────────────────────
+const fixYouAreTheKindOfWindowsGrammar = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  // "You are the kind of <noun-phrase>" where the noun-phrase clearly refers
+  // to a thing (window/opportunity/period/transit/aspect/moment/time), not a
+  // person. Capture the noun-phrase + tail to rebuild the sentence cleanly.
+  const re = /\bYou\s+are\s+the\s+kind\s+of\s+(windows?|opportun(?:ity|ities)|periods?|transits?|aspects?|moments?|times?|cycles?|seasons?|chapters?|years?)\b/gi;
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(re, (full, noun) => {
+      rewrites++;
+      // Singular nouns get "This is the kind of"; plurals get "These are".
+      const isPlural = /s$/i.test(noun) && !/series$/i.test(noun);
+      const opener = isPlural ? "These are the kind of" : "This is the kind of";
+      return `${opener} ${noun}`;
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 120)} → ${next.slice(0, 120)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "you_are_the_kind_of_windows_grammar_fixed", detail: { rewrites, examples } });
+    console.info("[ask-astrology] grammar fix: 'You are the kind of windows' → 'These are the kind of windows'", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// FIX 4 — SR JUPITER HOUSE VERIFICATION in closing message / summary_box.
+// The AI sometimes confuses SR Jupiter's house with SR Venus's in the
+// closing synthesis. We use the SR truth block to verify any "Jupiter in
+// the Nth" claim across the entire reading; if Jupiter's house is wrong,
+// rewrite the ordinal. Reuses parseSrAnalysisInjection-style truth.
+// (The general SR planet house corrector handles most cases; this is an
+// extra pass scoped to summary_box + closing-message bodies for safety.)
+// ─────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────
 // SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
 //   "SR 7th house in Capricorn"
 //   "SR 7th house cusp is Aries"
