@@ -547,7 +547,19 @@ export function calculateEclipseSensitivity(
       }
     }
 
-    // Check natal angles
+    // Check natal angles. An eclipse at degree X is on the ASC/MC if it's
+    // within orb of that angle, OR opposite (within orb of angle±180), which
+    // means it activates the DSC/IC respectively.
+    const ANGLE_THEMES: Record<string, string> = {
+      Ascendant: 'identity, self-image, body, appearance, and personal initiative',
+      Descendant: 'partnerships, marriage, contracts, one-on-one relationships, and how you meet "the other"',
+      Midheaven: 'career, public reputation, authority, visibility, professional identity, and achievement',
+      'Imum Coeli': 'home, family, roots, ancestry, private life, and inner foundations',
+    };
+    const ANGLE_OPPOSITES: Record<string, string> = {
+      Ascendant: 'Descendant',
+      Midheaven: 'Imum Coeli',
+    };
     for (const angle of [
       { name: 'Ascendant', pos: natalChart.houseCusps?.house1 },
       { name: 'Midheaven', pos: natalChart.houseCusps?.house10 },
@@ -556,16 +568,24 @@ export function calculateEclipseSensitivity(
       if (aDeg === null) continue;
       let diff = Math.abs(aDeg - eclipseAbsDeg);
       if (diff > 180) diff = 360 - diff;
-      if (diff <= ORB) {
+      // diff to angle directly = activates angle.name; diff close to 180 = activates opposite angle
+      const directDiff = diff;
+      const oppositeDiff = Math.abs(180 - diff);
+      let hitName: string | null = null;
+      let hitOrb = 0;
+      if (directDiff <= ORB) { hitName = angle.name; hitOrb = directDiff; }
+      else if (oppositeDiff <= ORB) { hitName = ANGLE_OPPOSITES[angle.name]; hitOrb = oppositeDiff; }
+      if (hitName) {
+        const themes = ANGLE_THEMES[hitName] || 'a key life area';
         results.push({
           eclipseType: eclipse.type,
           eclipseSign: eclipse.sign,
           eclipseDegree: eclipse.degree,
           eclipseDate: eclipse.date,
-          sensitizedPlanet: angle.name,
+          sensitizedPlanet: hitName,
           sensitizedPlanetSource: 'Natal',
-          orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${angle.name}. This points to an especially personal turning point, often showing up through relationship dynamics, life direction, visibility, home base, or identity redefinition.`,
+          orb: Math.round(hitOrb * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${hitName}. This points to an especially personal turning point in ${themes}.`,
         });
       }
     }
@@ -740,6 +760,7 @@ export function calculateDominantPlanets(
   angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[],
   srToNatalAspects: { planet1: string; planet2: string; type: string; orb: number; importance?: number }[],
   srInternalAspects: { planet1: string; planet2: string; type: string; orb: number }[],
+  timeLord?: string | null,
 ): SRDominantPlanetsReport {
   const results: { planet: string; breakdown: SRDominantPlanetBreakdown; dignity: string; tags: string[] }[] = [];
 
@@ -824,11 +845,17 @@ export function calculateDominantPlanets(
     });
   }
 
-  // Calculate totals and rank
-  const scored = results.map(r => ({
-    ...r,
-    totalScore: Math.round((r.breakdown.sign + r.breakdown.house + r.breakdown.angle + r.breakdown.ruler + r.breakdown.aspects) * 10) / 10,
-  }));
+  // Calculate totals and rank.
+  // Time Lord boost: the profection ruler is the year's "Lord of the Year" and
+  // must rank highly. Without this, an undignified Sun/ruler can fall to the
+  // bottom of the list while still being "the driving force" elsewhere in the report.
+  const scored = results.map(r => {
+    const isTimeLord = !!timeLord && r.planet === timeLord;
+    if (isTimeLord && !r.tags.includes('Time Lord')) r.tags.push('Time Lord');
+    const raw = r.breakdown.sign + r.breakdown.house + r.breakdown.angle + r.breakdown.ruler + r.breakdown.aspects;
+    const boosted = isTimeLord ? raw * 2.0 : raw;
+    return { ...r, totalScore: Math.round(boosted * 10) / 10 };
+  });
   scored.sort((a, b) => b.totalScore - a.totalScore);
 
   const maxScore = scored[0]?.totalScore || 1;

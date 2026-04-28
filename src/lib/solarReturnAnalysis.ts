@@ -1852,7 +1852,7 @@ export const analyzeSolarReturn = (
   }
   const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0;
   const quarterlyFocus = calculateQuarterlyFocus(srChart, natalChart, planetSRHouses, srChart.solarReturnYear, birthMonth);
-  const dominantPlanets = calculateDominantPlanets(srChart, natalChart, planetSRHouses, angularPlanetsDetailed, srToNatalAspects as any, srInternalAspects as any);
+  const dominantPlanets = calculateDominantPlanets(srChart, natalChart, planetSRHouses, angularPlanetsDetailed, srToNatalAspects as any, srInternalAspects as any, profectionYear?.timeLord || null);
 
   // ─── Tier 5 Calculations ──────────────────────────────────────────
   const fixedStars = calculateFixedStars(srChart, natalChart, srChart.solarReturnYear);
