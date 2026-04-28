@@ -6403,9 +6403,13 @@ const runAccuracyReview = (parsedContent: any, chartContext: string) => {
           ];
           for (const { label, truth } of angleChecks) {
             if (!truth) continue;
-            const re = new RegExp(`\\b(?:natal\\s+|your\\s+)?${label}\\b[^.!?]{0,40}?\\b(${SIGN_RE})\\b`, "i");
+            const re = new RegExp(`\b(?:natal\s+|your\s+)?${label}\b[^.!?]{0,40}?\b(${SIGN_RE})\b`, "i");
             const m = sent.match(re);
             if (m) {
+              const beforeLabel = sent.slice(0, m.index ?? 0);
+              if (/\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i.test(beforeLabel) || new RegExp(`\b(?:SR|Solar\s+Return)\s+${label}\b`, "i").test(sent)) {
+                continue;
+              }
               if (m[1].toLowerCase() !== truth.toLowerCase()) {
                 flags.push({ section: localTitle, field: key, reason: `natal_angle_mismatch (${label} claimed=${m[1]} truth=${truth})`, snippet: sent.slice(0, 200) });
               }
