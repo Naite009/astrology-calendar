@@ -540,7 +540,8 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       });
     }
 
-    // 5. Angular planets
+    // 5. Angular planets — preserve the planet's ACTUAL SR house in the driver
+    // (never use 0, which renders as "H0" and looks like a bug).
     for (const ap of analysis.angularPlanets) {
       if ((activityWeights[ap] || 0) > 0) {
         const w = 0.4;
@@ -548,8 +549,18 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         const nature = getNature(ap);
         const tp = getToneWeight(ap, domain) * 0.3;
         toneTotal += tp;
-        allDrivers.push({ planet: ap, house: 0, effect: 'angular emphasis', nature, points: w, tonePoints: Math.round(tp * 10) / 10 });
-        breakdown.push({ source: `${ap} angular`, points: w, tonePoints: Math.round(tp * 10) / 10, reason: `${ap} on a chart angle — louder in your year`, nature });
+        const apSrHouse = analysis.houseOverlays?.find(o => o.planet === ap)?.srHouse || null;
+        // If we already added this planet as a house occupant, just upgrade its
+        // tags/score there instead of pushing a duplicate driver row with house 0.
+        const existing = allDrivers.find(d => d.planet === ap);
+        if (existing) {
+          existing.points = Math.round((existing.points + w) * 10) / 10;
+          existing.tonePoints = Math.round((existing.tonePoints + tp) * 10) / 10;
+          existing.effect = `${existing.effect} (also angular)`;
+        } else if (apSrHouse) {
+          allDrivers.push({ planet: ap, house: apSrHouse, effect: 'angular emphasis', nature, points: w, tonePoints: Math.round(tp * 10) / 10 });
+        }
+        breakdown.push({ source: `${ap} angular${apSrHouse ? ` (in ${ordinal(apSrHouse)} House)` : ''}`, points: w, tonePoints: Math.round(tp * 10) / 10, reason: `${ap} on a chart angle — louder in your year`, nature });
       }
     }
 
