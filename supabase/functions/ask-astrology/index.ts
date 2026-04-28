@@ -4301,6 +4301,13 @@ const factsAwareRetrogradeSweep = (
       const tryFix = (re: RegExp): boolean => {
         let touched = false;
         next = next.replace(re, (full, prefix, token, suffix = "") => {
+          const matchedText = String(full);
+          if (chart === "sr" && /\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
+            return full;
+          }
+          if (chart === "natal" && /\b(?:SR|Solar\s+Return)\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
+            return full;
+          }
           const claimed = parseHouseToken(token);
           if (claimed === null || claimed === truthHouse) return full;
           touched = true;
