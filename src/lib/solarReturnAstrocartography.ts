@@ -733,30 +733,58 @@ export function calculateAstrocartography(
     return sorted[0] || null;
   };
 
-  // Legacy fields: best benefic = best overall, worst malefic = worst overall
-  const bestBeneficCity = findBestForIntention('overall');
-  const worstMaleficCity = findWorstForIntention('overall');
-
-  // Rate current location
+  // ── Score the current location using the SAME blended pipeline as candidate cities,
+  //    so "Best Overall" is directly comparable to "Current location rating". ──
   const currentMC = calculateMCAtLongitude(GST, currentLng);
   const currentASC = calculateASCAtLocation(GST, currentLng, currentLat);
-  let currentRating = 5;
-  const currentAngular: string[] = [];
+  const currentAngles = [
+    { name: 'MC', deg: currentMC },
+    { name: 'IC', deg: (currentMC + 180) % 360 },
+    { name: 'ASC', deg: currentASC },
+    { name: 'DSC', deg: (currentASC + 180) % 360 },
+  ];
+  const currentAngular: { planet: string; angle: string; orb: number }[] = [];
+  const BENEFIC_PLANETS = new Set(['Sun', 'Venus', 'Jupiter']);
+  const MALEFIC_PLANETS = new Set(['Saturn', 'Mars', 'Pluto']);
+  let cBenT = 0, cBenC = 0, cMalT = 0, cMalC = 0, cNeuT = 0, cNeuC = 0;
   for (const planet of PLANETS_CORE) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const planetDeg = toAbsDeg(pos);
     if (planetDeg === null) continue;
-    for (const [name, deg] of [['MC', currentMC], ['ASC', currentASC]] as [string, number][]) {
-      let diff = Math.abs(planetDeg - deg);
+    for (const angle of currentAngles) {
+      let diff = Math.abs(planetDeg - angle.deg);
       if (diff > 180) diff = 360 - diff;
       if (diff <= 8) {
-        currentAngular.push(`${planet} on ${name}`);
-        const r = PLANET_ANGLE_RATING[planet]?.[name] || 5;
-        currentRating = Math.max(currentRating, r);
+        currentAngular.push({ planet, angle: angle.name, orb: Math.round(diff * 10) / 10 });
+        const baseRating = PLANET_ANGLE_RATING[planet]?.[angle.name] || 5;
+        const orbMultiplier = 1 - (diff * diff) / (8 * 8 * 1.5);
+        const score = baseRating * Math.max(orbMultiplier, 0.4);
+        if (BENEFIC_PLANETS.has(planet)) { cBenT += score; cBenC++; }
+        else if (MALEFIC_PLANETS.has(planet)) { cMalT += score; cMalC++; }
+        else { cNeuT += score; cNeuC++; }
       }
     }
   }
+  const cBenScore = cBenC > 0 ? cBenT / cBenC : NEUTRAL_RATING;
+  const cMalPenalty = cMalC > 0 ? cMalT / cMalC : NEUTRAL_RATING;
+  const cNeuScore = cNeuC > 0 ? cNeuT / cNeuC : NEUTRAL_RATING;
+  let currentFinal: number;
+  if (cMalC > 0 && cBenC > 0) currentFinal = cBenScore - (10 - cMalPenalty) * 0.4;
+  else if (cMalC > 0) currentFinal = cMalPenalty;
+  else if (cBenC > 0) currentFinal = cBenScore;
+  else currentFinal = NEUTRAL_RATING;
+  if (cNeuC > 0) {
+    const bm = cBenC + cMalC;
+    const tot = bm + cNeuC;
+    if (bm > 0) currentFinal = currentFinal * (bm / tot) + cNeuScore * (cNeuC / tot);
+    else currentFinal = cNeuScore;
+  }
+  const currentRating = clampRating(currentFinal);
+
+  // ── If current location outscores every evaluated city, IT is the best overall. ──
+  const topCity = cityResults[0] || null;
+  const currentBeatsAll = topCity ? currentRating >= topCity.rating : true;
 
   // Build topCities with US city cap: max 12 US cities total across all intentions,
   // to prevent mediocre US cities from flooding every category.
@@ -790,14 +818,21 @@ export function calculateAstrocartography(
   }
   const topCities = topCitiesArr;
 
+  // Use the legitimately-best result (current vs candidates) for the headline.
+  const bestBeneficLabel = currentBeatsAll
+    ? `your current city (rating ${currentRating}/10)`
+    : bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country} — ${bestBeneficCity.summary}` : '';
+
   const interpretation = topCities.length > 0
-    ? `Your Solar Return planetary lines reveal the best travel destinations for this year. ${bestBeneficCity ? `Top pick: ${bestBeneficCity.city}, ${bestBeneficCity.country} — ${bestBeneficCity.summary}` : ''} ${worstMaleficCity ? `Use caution traveling near ${worstMaleficCity.city}, ${worstMaleficCity.country} — ${worstMaleficCity.summary}` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral baseline.'}`
+    ? `Your Solar Return planetary lines reveal the best travel destinations for this year. ${bestBeneficLabel ? `Top pick: ${bestBeneficLabel}` : ''} ${worstMaleficCity ? `Use caution traveling near ${worstMaleficCity.city}, ${worstMaleficCity.country} — ${worstMaleficCity.summary}` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.map(a => `${a.planet} on ${a.angle}`).join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral baseline.'}`
     : 'Astrocartography data could not be calculated for this chart.';
 
   return {
     lines,
     topCities,
-    bestBeneficCity: bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country}` : null,
+    bestBeneficCity: currentBeatsAll
+      ? `Your current city (rating ${currentRating}/10 — higher than any evaluated destination)`
+      : bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country}` : null,
     worstMaleficCity: worstMaleficCity ? `${worstMaleficCity.city}, ${worstMaleficCity.country}` : null,
     currentLocationRating: currentRating,
     interpretation,
