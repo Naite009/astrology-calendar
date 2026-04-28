@@ -4496,9 +4496,12 @@ const runPreGateLocalAudit = (
         mentionsSr = true;
       }
       for (const planet of FACTS_PLANETS) {
-        const re = new RegExp(`\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:is\\s+retrograde|retrograde)\\b`, "i");
+        const re = new RegExp(`\b${planet}\b[^.!?\n]{0,120}?\b(?:is\s+retrograde|retrograde)\b`, "i");
         if (!re.test(node)) continue;
-        const isSr = sectionInSr || /\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s+/i.test(node);
+        const planetClaim = node.match(re)?.[0] || node;
+        const explicitNatal = new RegExp(`\bnatal\s+${planet}\b`, "i").test(planetClaim);
+        const explicitSr = new RegExp(`\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\s+${planet}\b`, "i").test(planetClaim);
+        const isSr = explicitSr ? true : explicitNatal ? false : sectionInSr;
         const factMap = isSr ? srRetro : natalRetro;
         if (!factMap.has(planet.toLowerCase())) continue;
         const factIsRetro = factMap.get(planet.toLowerCase()) === true;
