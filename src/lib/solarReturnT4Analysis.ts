@@ -845,11 +845,17 @@ export function calculateDominantPlanets(
     });
   }
 
-  // Calculate totals and rank
-  const scored = results.map(r => ({
-    ...r,
-    totalScore: Math.round((r.breakdown.sign + r.breakdown.house + r.breakdown.angle + r.breakdown.ruler + r.breakdown.aspects) * 10) / 10,
-  }));
+  // Calculate totals and rank.
+  // Time Lord boost: the profection ruler is the year's "Lord of the Year" and
+  // must rank highly. Without this, an undignified Sun/ruler can fall to the
+  // bottom of the list while still being "the driving force" elsewhere in the report.
+  const scored = results.map(r => {
+    const isTimeLord = !!timeLord && r.planet === timeLord;
+    if (isTimeLord && !r.tags.includes('Time Lord')) r.tags.push('Time Lord');
+    const raw = r.breakdown.sign + r.breakdown.house + r.breakdown.angle + r.breakdown.ruler + r.breakdown.aspects;
+    const boosted = isTimeLord ? raw * 2.0 : raw;
+    return { ...r, totalScore: Math.round(boosted * 10) / 10 };
+  });
   scored.sort((a, b) => b.totalScore - a.totalScore);
 
   const maxScore = scored[0]?.totalScore || 1;
