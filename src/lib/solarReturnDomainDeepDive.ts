@@ -184,19 +184,27 @@ function buildLove(analysis: SolarReturnAnalysis, natalChart: NatalChart, srChar
   const h7 = buildHouseSnapshot(analysis, srChart, 7, 'Committed Partnerships');
   
   const hits: DomainPlanetHit[] = [];
-  
+
   const venPos = srChart.planets.Venus;
-  const venHouse = analysis.houseOverlays?.find(o => o.planet === 'Venus')?.srHouse;
-  if (venPos) hits.push({ planet: 'Venus', sign: venPos.sign, house: venHouse || null, chart: 'SR', role: 'How you love and attract this year', tone: 'supportive' });
-  
+  const venHouse = analysis.houseOverlays?.find(o => o.planet === 'Venus')?.srHouse ?? null;
+  if (venPos) {
+    // Venus is the natural significator of love. Show its ACTUAL house (never null/0)
+    // and call out when it lives outside H5/H7 so it isn't mistaken for an occupant.
+    const isOccupant = venHouse === 5 || venHouse === 7;
+    const role = isOccupant
+      ? 'How you love and attract this year'
+      : `How you love and attract this year (Venus actually lives in H${venHouse ?? '?'} — included here as the natural ruler of love, not as an occupant of H5/H7)`;
+    hits.push({ planet: 'Venus', sign: venPos.sign, house: venHouse, chart: 'SR', role, tone: 'supportive' });
+  }
+
   const marsPos = srChart.planets.Mars;
-  const marsHouse = analysis.houseOverlays?.find(o => o.planet === 'Mars')?.srHouse;
-  if (marsPos) hits.push({ planet: 'Mars', sign: marsPos.sign, house: marsHouse || null, chart: 'SR', role: 'Your desire and pursuit energy', tone: PLANET_TONE['Mars'] || 'challenging' });
+  const marsHouse = analysis.houseOverlays?.find(o => o.planet === 'Mars')?.srHouse ?? null;
+  if (marsPos) hits.push({ planet: 'Mars', sign: marsPos.sign, house: marsHouse, chart: 'SR', role: 'Your desire and pursuit energy', tone: PLANET_TONE['Mars'] || 'challenging' });
 
   const junoPos = srChart.planets.Juno as any;
   if (junoPos) {
-    const junoH = analysis.houseOverlays?.find(o => o.planet === 'Juno')?.srHouse;
-    hits.push({ planet: 'Juno', sign: junoPos.sign, house: junoH || null, chart: 'SR', role: 'What you need in commitment', tone: 'supportive' });
+    const junoH = analysis.houseOverlays?.find(o => o.planet === 'Juno')?.srHouse ?? null;
+    hits.push({ planet: 'Juno', sign: junoPos.sign, house: junoH, chart: 'SR', role: 'What you need in commitment', tone: 'supportive' });
   }
 
   for (const p of h5.planets) {
