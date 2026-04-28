@@ -4459,12 +4459,33 @@ const runPreGateLocalAudit = (
   const srRetro = new Map<string, boolean>();
   for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
   for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  const injection = parseSrAnalysisInjection(chartContext);
+  for (const [planet, retro] of injection.srRetro.entries()) srRetro.set(planet, retro);
 
   type AuditFinding = { code: string; section?: string; field?: string; planet?: string; snippet?: string };
   const findings: AuditFinding[] = [];
 
   // 1. Detect prose retrograde claims that disagree with facts.
   const sections = Array.isArray(parsedContent?.sections) ? parsedContent.sections : [];
+  const normalizeAuditPlanetKey = (raw: unknown): string => String(raw || "")
+    .replace(/[℞\u211E]|\bRx\b|\bR\b/gi, "")
+    .replace(/^\s*(?:SR|Solar\s+Return|Natal)\s+/i, "")
+    .trim()
+    .toLowerCase();
+  for (const section of sections) {
+    if (section?.type !== "placement_table") continue;
+    const title = String(section?.title || "");
+    if (!/\b(?:solar\s+return|sr)\b/i.test(title)) continue;
+    const rows = Array.isArray(section?.rows) ? section.rows : Array.isArray(section?.placements) ? section.placements : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const planet = normalizeAuditPlanetKey((row as any).planet ?? (row as any).body ?? (row as any).name);
+      if (!planet) continue;
+      const retro = typeof (row as any).retrograde === "boolean" ? (row as any).retrograde
+        : typeof (row as any).isRetrograde === "boolean" ? (row as any).isRetrograde : undefined;
+      if (typeof retro === "boolean") srRetro.set(planet, retro);
+    }
+  }
   let mentionsSr = false;
   for (const section of sections) {
     const sectionTitle = String(section?.title || "");
