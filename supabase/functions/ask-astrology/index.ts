@@ -6829,6 +6829,11 @@ const runPostProcessingPipeline = (
     translateCuspLanguageInProse(parsedContent, log),
   );
 
+  // 3d. FIX 5 — "You are the kind of windows/opportunities/period…" grammar.
+  safeRun("fixYouAreTheKindOfWindowsGrammar", () =>
+    fixYouAreTheKindOfWindowsGrammar(parsedContent, log),
+  );
+
   // 4. Ascendant/Descendant label swaps (token-purity guard).
   safeRun("fixAscendantDescendantLabelSwapsInProse", () =>
     fixAscendantDescendantLabelSwapsInProse(parsedContent, ctx, log),
