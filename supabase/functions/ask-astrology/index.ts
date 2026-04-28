@@ -833,7 +833,7 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
           weak: "without much Fixed, follow-through requires structure or accountability you set up on purpose",
         },
         Mutable: {
-          lead: "moves through adaptability and responsiveness — you adjust to what is actually happening, pivot when the conditions change, and read the room before locking into one plan",
+          lead: "moves through adaptability and responsiveness — you adjust and refine without drama, find meaning in improving what already exists rather than launching something new, and read the room before locking into one plan",
           weak: "without much Mutable, pivoting feels harder than it looks; you prefer one path and one plan",
         },
       };
