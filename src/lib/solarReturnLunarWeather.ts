@@ -99,10 +99,9 @@ export function generateLunarWeatherMap(
     const monthDominantIdx = (srSunIdx + i) % 12;
     const monthDominantSign = SIGNS[monthDominantIdx];
 
-    // Lunar return: Moon returns to its NATAL sign each month — that's the emotional reset.
-    // The lunarReturn.lunarReturnSign stays the natal Moon sign (this is the definition
-    // of a lunar return). What varies per month is the dominant transiting tone.
-    const lunarReturn = generateLunarReturn(natalMoonSign, monthName, i);
+    // Lunar return marker for the SR year: anchor on the SR Moon sign so each
+    // month's reset reflects this year's emotional baseline (not the natal Moon).
+    const lunarReturn = generateLunarReturn(srMoonSign, monthName, i);
 
     // Moon transits through ~12 signs per month (~2.5 days each)
     const checkpoints = generateMonthCheckpoints(i, calMonth, srChart.solarReturnYear, bMonth);
