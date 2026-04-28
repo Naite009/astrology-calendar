@@ -6029,6 +6029,94 @@ const forceBestVsCautionDistinct = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// FIX 2 — CUSP LANGUAGE TRANSLATOR (plain English for non-astrologers).
+// The word "cusp" is jargon. Whenever the prose says
+//   "your 8th house cusp is in Gemini"
+//   "the 7th house cusp Capricorn"
+//   "8th house cusp opens in Gemini"
+// rewrite the cusp clause so the house life-area is named in plain English
+// before the sign. Example output:
+//   "your 8th house — the area of your chart governing shared finances and
+//    deep psychological territory — opens in Gemini"
+// We only rewrite when (a) the word "cusp" appears and (b) the surrounding
+// context names a house ordinal + sign so the substitution is unambiguous.
+// ─────────────────────────────────────────────────────────────────────────
+const HOUSE_LIFE_AREA: Record<number, string> = {
+  1: "the area of your chart governing identity, body, and how you show up to the world",
+  2: "the area of your chart governing money you earn yourself, possessions, and self-worth",
+  3: "the area of your chart governing communication, daily learning, siblings, and short trips",
+  4: "the area of your chart governing home, family, roots, and your private inner foundation",
+  5: "the area of your chart governing creativity, romance, children, and what brings you joy",
+  6: "the area of your chart governing daily work, health routines, and being of service",
+  7: "the area of your chart governing partnership, marriage, and one-on-one relationships",
+  8: "the area of your chart governing shared finances and deep psychological territory",
+  9: "the area of your chart governing higher learning, long journeys, belief, and meaning",
+  10: "the area of your chart governing career, public reputation, and life direction",
+  11: "the area of your chart governing community, friendships, and long-range hopes",
+  12: "the area of your chart governing solitude, the unconscious, and what is hidden",
+};
+
+const translateCuspLanguageInProse = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
+  const ORDINAL_WORDS_RE = "1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th";
+  const ORDINAL_TO_NUM: Record<string, number> = {
+    "1st":1,"2nd":2,"3rd":3,"4th":4,"5th":5,"6th":6,"7th":7,"8th":8,"9th":9,"10th":10,"11th":11,"12th":12,
+  };
+  const SIGN_NAMES_RE = "(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)";
+
+  // Pattern A: "your? <ord> house cusp [is/sits/opens/falls] [in/on/at] <Sign>"
+  // Pattern B: bare "<ord> house cusp" with no sign nearby — drop "cusp"
+  const patternWithSign = new RegExp(
+    `\\b(your\\s+|the\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\s+cusp\\s+(?:is\\s+|sits?\\s+|opens?\\s+|falls?\\s+)?(?:in\\s+|on\\s+|at\\s+)?(${SIGN_NAMES_RE})\\b`,
+    "gi",
+  );
+  const patternBareCusp = new RegExp(
+    `\\b(your\\s+|the\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\s+cusp\\b(?!\\s+(?:in|on|at|is|sits?|opens?|falls?|${SIGN_NAMES_RE}))`,
+    "gi",
+  );
+
+  let rewrites = 0;
+  const examples: string[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
+    let next = val;
+    next = next.replace(patternWithSign, (full, possessive, ord, sign) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const lifeArea = HOUSE_LIFE_AREA[houseNum];
+      if (!lifeArea) return full;
+      const poss = possessive ? possessive.trim() : "your";
+      rewrites++;
+      return `${poss} ${ord} house — ${lifeArea} — opens in ${sign}`;
+    });
+    next = next.replace(patternBareCusp, (full, possessive, ord) => {
+      const houseNum = ORDINAL_TO_NUM[String(ord).toLowerCase()];
+      if (!houseNum) return full;
+      const lifeArea = HOUSE_LIFE_AREA[houseNum];
+      if (!lifeArea) return full;
+      const poss = possessive ? possessive.trim() : "your";
+      rewrites++;
+      return `${poss} ${ord} house — ${lifeArea} —`;
+    });
+    if (next !== val) {
+      if (examples.length < 5) examples.push(`${val.slice(0, 120)} → ${next.slice(0, 120)}`);
+      (node as any)[key] = next;
+    }
+  });
+
+  if (rewrites > 0) {
+    log.push({ type: "cusp_language_translated_to_plain_english", detail: { rewrites, examples } });
+    console.info("[ask-astrology] cusp language translated to plain English", { rewrites });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
 //   "SR 7th house in Capricorn"
 //   "SR 7th house cusp is Aries"
