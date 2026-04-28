@@ -6158,15 +6158,10 @@ const fixYouAreTheKindOfWindowsGrammar = (parsedContent: any, log: HygieneLog) =
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────
-// FIX 4 — SR JUPITER HOUSE VERIFICATION in closing message / summary_box.
-// The AI sometimes confuses SR Jupiter's house with SR Venus's in the
-// closing synthesis. We use the SR truth block to verify any "Jupiter in
-// the Nth" claim across the entire reading; if Jupiter's house is wrong,
-// rewrite the ordinal. Reuses parseSrAnalysisInjection-style truth.
-// (The general SR planet house corrector handles most cases; this is an
-// extra pass scoped to summary_box + closing-message bodies for safety.)
-// ─────────────────────────────────────────────────────────────────────────
+// FIX 4 is enforced by (a) the prompt rule added to the solar_return
+// summary_box spec, and (b) the existing correctSrPlanetHousesInProse pass
+// which already rewrites any "SR Jupiter in the Nth house" claim against
+// the SR truth block. No additional post-processor needed here.
 
 // ─────────────────────────────────────────────────────────────────────────
 // SR HOUSE CUSP SIGN CORRECTOR — rewrites prose claims like
