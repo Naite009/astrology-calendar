@@ -590,7 +590,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       tone,
       label: activityLabel(finalActivity, tone),
       drivers: allDrivers,
-      driverSummaries: allDrivers.slice(0, 6).map(d => `${d.planet} in ${ordinal(d.house)} House`),
+      driverSummaries: allDrivers.filter(d => d.house > 0).slice(0, 6).map(d => `${d.planet} in ${ordinal(d.house)} House`),
       advice: adviceMap[adviceKey] || adviceMap.mixed || '',
       breakdown,
     };
