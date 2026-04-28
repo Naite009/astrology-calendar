@@ -617,11 +617,15 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
         if (srLoc && typeof srLoc === 'string' && srLoc.trim().length > 0) {
           setLocation(srLoc.trim());
         }
-        // Try progressionDate first (SR chart date), fallback to birthDate year
-        const srDateStr = birthInfo.progressionDate || birthInfo.birthDate;
+        // Only trust an explicit SR/progression date — never fall back to birthDate,
+        // which on an SR chart image is the NATAL birth date and would set year to e.g. 1969.
+        const srDateStr = birthInfo.progressionDate || birthInfo.solarReturnDate || birthInfo.chartDate;
         if (srDateStr && /^\d{4}/.test(srDateStr)) {
           const parsedYear = parseInt(srDateStr.slice(0, 4), 10);
-          if (parsedYear > 1900 && parsedYear < 2100) setYear(parsedYear);
+          const natalYear = natalChart.birthDate ? parseInt(String(natalChart.birthDate).slice(0, 4), 10) : NaN;
+          if (parsedYear > 1900 && parsedYear < 2100 && parsedYear !== natalYear) {
+            setYear(parsedYear);
+          }
         }
       }
 
