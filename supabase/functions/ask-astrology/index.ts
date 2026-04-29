@@ -6896,7 +6896,7 @@ const runPlacementTableValidator = (
       natalTruth.set(k, { house: h, sign: "", retrograde: false });
     }
   }
-  const srTruth = buildPlacementTruthMap(srPositions);
+  const srTruth = buildValidatorTruthMap(srPositions);
 
   if (natalTruth.size === 0 && srTruth.size === 0) {
     log.push({ type: "validator_drift", detail: { skipped: "no_truth_tables_parsed" } });
