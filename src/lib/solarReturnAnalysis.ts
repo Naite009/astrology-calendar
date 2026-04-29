@@ -213,26 +213,24 @@ function buildProfectionSynthesis(
   const houseThemes = profectionHouseThemes[houseNumber] || '';
   const planetNature = planetNatureKeywords[timeLord];
 
-  // Compose the dignity + SR-house clause if we have placement data.
+  // The profection house defines WHAT the year focuses on. The SR placement of
+  // the Time Lord describes HOW that focus is reached — the route, not the
+  // destination. Never let the SR-house life area override the profection
+  // house focus.
   let placementClause = '';
   if (timeLordSRHouse && timeLordSRSign) {
     const dignity = getDignity(timeLord, timeLordSRSign);
     const dignityNote = DIGNITY_FORCE_NOTE[dignity] || '';
     const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${timeLordSRHouse}th house`;
     const retroClause = isRetrograde
-      ? ' Retrograde, the year\'s themes turn inward first — review and integration before outward action.'
+      ? ' Retrograde, that path turns inward first — review and integration before outward action.'
       : '';
-    placementClause = ` This year ${timeLord} sits in your SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house in ${timeLordSRSign}${dignityNote ? `, ${dignityNote}` : ''}, so the year's most defining moments concentrate in ${srArea}.${retroClause}`;
-    // Fix the ordinal — we want SR house ordinal, not the profection house ordinal
-    placementClause = placementClause.replace(
-      `SR ${timeLordSRHouse}${ord(houseNumber === 0 ? 1 : houseNumber)} house`,
-      `SR ${ord(timeLordSRHouse)} house`,
-    );
+    placementClause = ` This means the path toward ${houseThemes} this year runs through ${srArea}${dignityNote ? ` (${timeLord} is ${dignityNote})` : ''}.${retroClause}`;
   }
 
   const base = planetNature
-    ? `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`
-    : `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+    ? `${timeLord} brings ${planetNature} to that focus.`
+    : `${timeLord}'s influence colors how you move through it.`;
 
   return `${base}${placementClause}`;
 }
