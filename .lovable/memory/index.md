@@ -17,6 +17,7 @@ Updated: now
 - Clarity Translation: describe concrete real-life scenarios, not abstract traits or jargon.
 - Placement-First Openings: every narrative body opens with specific placements (sign+house+ruler), never abstract statements.
 - NEVER sign the user out. No idle timeouts, no auto-logout. Only an explicit Sign-out click may call `signOut()`.
+- NO PROSE SWEEPS. Placement tables are the only source of truth for house/sign/degree/retrograde. Replace sweep chains with one fail-loud validator. Scope-lock any transitional sweep to sentences explicitly prefixed `natal` / `SR` / `Solar Return`. See `architecture/ask-astrology/no-prose-sweeps-placement-table-truth`.
 
 ## Memories
 - [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely
