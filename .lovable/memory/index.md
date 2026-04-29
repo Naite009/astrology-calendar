@@ -18,8 +18,16 @@ Updated: now
 - Placement-First Openings: every narrative body opens with specific placements (sign+house+ruler), never abstract statements.
 - NEVER sign the user out. No idle timeouts, no auto-logout. Only an explicit Sign-out click may call `signOut()`.
 - NO PROSE SWEEPS. Placement tables are the only source of truth for house/sign/degree/retrograde. Replace sweep chains with one fail-loud validator. Scope-lock any transitional sweep to sentences explicitly prefixed `natal` / `SR` / `Solar Return`. See `architecture/ask-astrology/no-prose-sweeps-placement-table-truth`.
+- SR DATA: cloud always wins. `fetchCanonicalSolarReturn` MUST run before any reading generation. localStorage is never the source of truth for SR planet data.
+- EVERY reading context MUST inject explicit labeled placement lines for natal AND SR (`Natal Sun: Taurus, House 6, Direct` / `SR Sun: Taurus, House 9, Direct`) before the AI prompt runs. AI may never derive a house from a sign.
+- `correctSrPlanetsRetrograde` (or any ephemeris-recompute that overwrites stored chart data) is BANNED. Verified chart data wins over ephemeris recalculation.
+- Every reading type inherits BASE RULES 1–10 of the shared prompt — no opt-outs. New reading types must be regression-tested against Ben Levin AND Lauren Newman charts before deploy.
+- Pipeline / prompt / sweep / validator / gate-wrapper changes require regression tests covering the failure list in `architecture/ask-astrology/operating-rules-4-through-10`. New failure shapes must be added to that list BEFORE the fix deploys.
+- Gate non-200 (404, timeout, network error) ⇒ banner says `UNVALIDATED — external validation did not run`. Never "needs review" or any phrasing implying review happened.
+- After any fix: ONE confirmation generation on the failing chart. Pass = confirmed. Fail = stop and read code. Never run repeated generations hoping for a clean pass.
 
 ## Memories
+- [Operating Rules 4–10](mem://architecture/ask-astrology/operating-rules-4-through-10) — Cloud-wins, labeled placement blocks, ephemeris-override ban, base-prompt inheritance, full regression-failure list, gate-404 handling, one-confirmation discipline
 - [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely
 - [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
 - [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
