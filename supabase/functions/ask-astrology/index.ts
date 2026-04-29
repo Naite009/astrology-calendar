@@ -6849,7 +6849,7 @@ type ValidatorDrift = {
   path: string;
 };
 
-const buildPlacementTruthMap = (
+const buildValidatorTruthMap = (
   positions: ParsedPosition[],
 ): Map<string, { house: number | null; sign: string; retrograde: boolean }> => {
   const out = new Map<string, { house: number | null; sign: string; retrograde: boolean }>();
