@@ -6884,7 +6884,7 @@ const runPlacementTableValidator = (
   );
   // Augment natal house data with the explicit truth block when present.
   const natalHouseTruth = parseNatalHousePlacements(chartContext);
-  const natalTruth = buildPlacementTruthMap(natalPositions);
+  const natalTruth = buildValidatorTruthMap(natalPositions);
   for (const [k, v] of natalTruth) {
     const explicit = natalHouseTruth.get(k);
     if (explicit != null) v.house = explicit;
