@@ -6810,6 +6810,271 @@ const stripParentheticalFromSubtitles = (parsedContent: any, log: HygieneLog) =>
 //    one continuous trail.
 //  - Failures in any single pass are caught individually so one bad
 //    pass cannot prevent later passes from running.
+
+// ─────────────────────────────────────────────────────────────────────────
+// POST-RENDER PLACEMENT VALIDATOR
+// ─────────────────────────────────────────────────────────────────────────
+// The architectural endpoint of the sweep era. This is the single
+// fail-loud validator that replaces the regex sweep chain. It does NOT
+// mutate prose. It compares every scope-prefixed planet claim
+// ("natal <Planet>" → natal table; "SR <Planet>" / "Solar Return <Planet>"
+// → SR table) against the placement tables (single source of truth) for
+// house, sign, and retrograde state.
+//
+// Modes:
+//   - observe (default): logs every drift to log + parsedContent._validator_drift,
+//     does not throw, does not mutate.
+//   - fail-loud: when env var VALIDATOR_FAIL_ON_DRIFT=1 is set, throws after
+//     collecting all drifts so the generator caller re-runs the model.
+//
+// Scope discipline (Rule 3): unprefixed mentions are intentionally NOT
+// validated here — they are ambiguous. Only sentences/spans that explicitly
+// scope the planet with "natal", "SR", or "Solar Return" are checked.
+//
+// See: .lovable/memory/architecture/ask-astrology/no-prose-sweeps-placement-table-truth.md
+const VALIDATOR_PROSE_PLANETS = [
+  "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
+  "Lilith","Juno","North Node","South Node","NorthNode","SouthNode",
+];
+const VALIDATOR_PLANET_RE = VALIDATOR_PROSE_PLANETS.join("|");
+const VALIDATOR_SIGN_RE = ZODIAC_SIGNS_FOR_PARSE.join("|");
+
+type ValidatorDrift = {
+  scope: "natal" | "sr";
+  planet: string;
+  field: "house" | "sign" | "retrograde";
+  claimed: string | number | boolean;
+  truth: string | number | boolean;
+  excerpt: string;
+  path: string;
+};
+
+const buildValidatorTruthMap = (
+  positions: ParsedPosition[],
+): Map<string, { house: number | null; sign: string; retrograde: boolean }> => {
+  const out = new Map<string, { house: number | null; sign: string; retrograde: boolean }>();
+  for (const p of positions) {
+    const entry = { house: p.house, sign: p.sign, retrograde: !!p.retrograde };
+    out.set(p.planet.toLowerCase(), entry);
+    out.set(p.planet.toLowerCase().replace(/\s+/g, ""), entry);
+  }
+  return out;
+};
+
+const runPlacementTableValidator = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+): void => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  if (!chartContext) {
+    log.push({ type: "validator_drift", detail: { skipped: "no_chart_context" } });
+    return;
+  }
+
+  // Build truth maps from placement tables (the source of truth).
+  const natalPositions = parsePositionsFromContext(
+    chartContext,
+    /NATAL Planetary Positions[^:]*:\n/,
+  );
+  const srPositions = parsePositionsFromContext(
+    chartContext,
+    /SR Planetary Positions:\n/,
+    "SR",
+  );
+  // Augment natal house data with the explicit truth block when present.
+  const natalHouseTruth = parseNatalHousePlacements(chartContext);
+  const natalTruth = buildValidatorTruthMap(natalPositions);
+  for (const [k, v] of natalTruth) {
+    const explicit = natalHouseTruth.get(k);
+    if (explicit != null) v.house = explicit;
+  }
+  // Also fold in any explicit-block-only entries (e.g. Lilith) that the
+  // positions block may not carry.
+  for (const [k, h] of natalHouseTruth) {
+    if (!natalTruth.has(k)) {
+      natalTruth.set(k, { house: h, sign: "", retrograde: false });
+    }
+  }
+  const srTruth = buildValidatorTruthMap(srPositions);
+
+  if (natalTruth.size === 0 && srTruth.size === 0) {
+    log.push({ type: "validator_drift", detail: { skipped: "no_truth_tables_parsed" } });
+    return;
+  }
+
+  const drifts: ValidatorDrift[] = [];
+  const SKIP_KEYS = new Set([
+    "type","title","label","name","subtitle","heading","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked","retrograde",
+  ]);
+
+  // Scope-locked match patterns. Each captures: scope keyword, planet,
+  // up to 200 chars of trailing context (sign/house/retrograde claims).
+  const NATAL_RE = new RegExp(
+    `\\b(?:your\\s+)?(natal)\\s+(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
+    "gi",
+  );
+  const SR_RE = new RegExp(
+    `\\b(SR|Solar\\s+Return)\\s+(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
+    "gi",
+  );
+
+  const HOUSE_CLAIM_RE = new RegExp(
+    `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(${ORDINAL_WORDS_RE})\\s+house\\b`,
+    "i",
+  );
+  const SIGN_CLAIM_RE = new RegExp(
+    `\\bin\\s+(${VALIDATOR_SIGN_RE})\\b`,
+    "i",
+  );
+  const RETRO_CLAIM_RE = /\b(retrograde|℞|Rx)\b/i;
+  const DIRECT_CLAIM_RE = /\b(direct|moving\s+direct|going\s+direct)\b/i;
+
+  const collectDrifts = (
+    value: string,
+    path: string,
+    scopeRe: RegExp,
+    truthMap: Map<string, { house: number | null; sign: string; retrograde: boolean }>,
+    scopeLabel: "natal" | "sr",
+  ) => {
+    let m: RegExpExecArray | null;
+    scopeRe.lastIndex = 0;
+    while ((m = scopeRe.exec(value)) !== null) {
+      const planet = m[2];
+      const trailing = m[3] || "";
+      const truth =
+        truthMap.get(planet.toLowerCase()) ??
+        truthMap.get(planet.toLowerCase().replace(/\s+/g, ""));
+      if (!truth) continue;
+
+      // Excerpt = match start..end of trailing window for the log entry.
+      const excerpt = `${m[0]}`.replace(/\s+/g, " ").slice(0, 180);
+
+      // House claim
+      const houseMatch = trailing.match(HOUSE_CLAIM_RE);
+      if (houseMatch && truth.house != null) {
+        const claimedNum = ORDINAL_TO_HOUSE_NUM[houseMatch[1].toLowerCase()];
+        if (claimedNum && claimedNum !== truth.house) {
+          drifts.push({
+            scope: scopeLabel,
+            planet,
+            field: "house",
+            claimed: claimedNum,
+            truth: truth.house,
+            excerpt,
+            path,
+          });
+        }
+      }
+
+      // Sign claim — only validate when truth has a sign (skip if explicit
+      // block contributed only the house, e.g. Lilith without positions row).
+      const signMatch = trailing.match(SIGN_CLAIM_RE);
+      if (signMatch && truth.sign) {
+        const claimedSign = signMatch[1];
+        if (claimedSign.toLowerCase() !== truth.sign.toLowerCase()) {
+          drifts.push({
+            scope: scopeLabel,
+            planet,
+            field: "sign",
+            claimed: claimedSign,
+            truth: truth.sign,
+            excerpt,
+            path,
+          });
+        }
+      }
+
+      // Retrograde claim — only flag explicit "retrograde/℞/Rx" or
+      // explicit "direct" within ~80 chars of the planet. Ignore everything
+      // else (no inference from sign or other fields — that was the source
+      // of the SR Venus/Mars false positives).
+      const proximate = trailing.slice(0, 80);
+      if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
+        drifts.push({
+          scope: scopeLabel,
+          planet,
+          field: "retrograde",
+          claimed: true,
+          truth: false,
+          excerpt,
+          path,
+        });
+      } else if (DIRECT_CLAIM_RE.test(proximate) && truth.retrograde) {
+        drifts.push({
+          scope: scopeLabel,
+          planet,
+          field: "retrograde",
+          claimed: false,
+          truth: true,
+          excerpt,
+          path,
+        });
+      }
+    }
+  };
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ value, path }) => {
+    if (natalTruth.size > 0) collectDrifts(value, path, NATAL_RE, natalTruth, "natal");
+    if (srTruth.size > 0) collectDrifts(value, path, SR_RE, srTruth, "sr");
+  });
+
+  // Group drifts for the log + diagnostic field.
+  const summary = {
+    total: drifts.length,
+    by_scope: {
+      natal: drifts.filter((d) => d.scope === "natal").length,
+      sr: drifts.filter((d) => d.scope === "sr").length,
+    },
+    by_field: {
+      house: drifts.filter((d) => d.field === "house").length,
+      sign: drifts.filter((d) => d.field === "sign").length,
+      retrograde: drifts.filter((d) => d.field === "retrograde").length,
+    },
+    truth_sizes: { natal: natalTruth.size, sr: srTruth.size },
+  };
+
+  log.push({
+    type: "validator_drift",
+    detail: {
+      mode: "observe",
+      summary,
+      // Cap drift list in the log entry so it stays scannable.
+      drifts: drifts.slice(0, 25),
+    },
+  });
+
+  // Attach to parsedContent so the gate / downstream consumers can see
+  // exactly what would have failed under fail-loud mode.
+  (parsedContent as any)._validator_drift = {
+    mode: "observe",
+    summary,
+    drifts,
+  };
+
+  if (drifts.length > 0) {
+    console.warn(
+      `[ask-astrology][validator] ${drifts.length} placement-table drift(s) detected (observe mode). natal=${summary.by_scope.natal} sr=${summary.by_scope.sr} house=${summary.by_field.house} sign=${summary.by_field.sign} retrograde=${summary.by_field.retrograde}`,
+    );
+  } else {
+    console.info("[ask-astrology][validator] no placement-table drift detected");
+  }
+
+  // Hard-fail switch — flip on in the next session at the same time the
+  // sweeps are deleted. Until then, default OFF so we can survey the
+  // baseline drift rate.
+  if (Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") === "1" && drifts.length > 0) {
+    (parsedContent as any)._validator_drift.mode = "fail";
+    throw new Error(
+      `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables. ` +
+      `First: ${drifts[0].scope} ${drifts[0].planet} ${drifts[0].field} claimed=${drifts[0].claimed} truth=${drifts[0].truth} (${drifts[0].path})`,
+    );
+  }
+};
+
 const runPostProcessingPipeline = (
   parsedContent: any,
   chartContext: string,
@@ -6996,6 +7261,19 @@ const runPostProcessingPipeline = (
   // actually repairs the prose.
   safeRun("runPreGateLocalAudit", () =>
     runPreGateLocalAudit(parsedContent, ctx, log),
+  );
+
+  // 13. POST-RENDER PLACEMENT VALIDATOR — the architectural endpoint of the
+  // sweep era. Runs ONCE, LAST. Compares every "natal <Planet>" /
+  // "SR <Planet>" / "Solar Return <Planet>" claim in prose against the
+  // placement tables (single source of truth). Does NOT mutate prose.
+  // Records every drift to _validator_drift and the hygiene log so we can
+  // see exactly what the sweeps were silently hiding. When the env var
+  // VALIDATOR_FAIL_ON_DRIFT=1 is set, throws after collection so the
+  // generator caller re-runs the model. See:
+  //   .lovable/memory/architecture/ask-astrology/no-prose-sweeps-placement-table-truth.md
+  safeRun("runPlacementTableValidator", () =>
+    runPlacementTableValidator(parsedContent, ctx, log),
   );
 };
 
