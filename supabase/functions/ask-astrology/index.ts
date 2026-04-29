@@ -6997,6 +6997,19 @@ const runPostProcessingPipeline = (
   safeRun("runPreGateLocalAudit", () =>
     runPreGateLocalAudit(parsedContent, ctx, log),
   );
+
+  // 13. POST-RENDER PLACEMENT VALIDATOR — the architectural endpoint of the
+  // sweep era. Runs ONCE, LAST. Compares every "natal <Planet>" /
+  // "SR <Planet>" / "Solar Return <Planet>" claim in prose against the
+  // placement tables (single source of truth). Does NOT mutate prose.
+  // Records every drift to _validator_drift and the hygiene log so we can
+  // see exactly what the sweeps were silently hiding. When the env var
+  // VALIDATOR_FAIL_ON_DRIFT=1 is set, throws after collection so the
+  // generator caller re-runs the model. See:
+  //   .lovable/memory/architecture/ask-astrology/no-prose-sweeps-placement-table-truth.md
+  safeRun("runPlacementTableValidator", () =>
+    runPlacementTableValidator(parsedContent, ctx, log),
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────
