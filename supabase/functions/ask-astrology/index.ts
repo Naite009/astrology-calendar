@@ -6985,17 +6985,11 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
-  // 5d. SR house claims first, then natal house claims last. Natal-qualified
-  // prose has final authority so SR corrections cannot undo natal houses.
-  safeRun("correctSrPlanetHousesInProse", () =>
-    correctSrPlanetHousesInProse(parsedContent, ctx, log),
-  );
-
-  // 5e. Natal-house equivalent of the SR-house sweep — rewrites natal house
-  // claims in prose against the NATAL PLANET HOUSE PLACEMENTS truth block.
-  safeRun("factsAwareNatalHouseSweep", () =>
-    factsAwareNatalHouseSweep(parsedContent, ctx, log),
-  );
+  // 5d/5e. REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse`
+  // and `factsAwareNatalHouseSweep` previously ran here and overwrote each
+  // other on natal vs SR house claims. The post-render
+  // `runPlacementTableValidator` (Step 13 of runPostProcessing) is now the
+  // single source of truth for house/sign/retrograde drift detection.
 
   // 6. Sign rulership claims (e.g. Pisces=Jupiter/Neptune, never Saturn).
   safeRun("correctSignRulershipClaimsInProse", () =>
@@ -12208,13 +12202,10 @@ ${natalGroundTruthLines}`
           // placement table, clear the now-resolved `_sr_house_copy_warning`
           // flag. If still genuinely copied, leave flag + push review_note.
           reconcileSRHouseCopyWarning(parsedContent, emissionLog);
-          // SR PLANET HOUSE PROSE FIXER: scrub "SR <Planet> in the <Nth>
-          // house" sentences when the named house disagrees with the
-          // deterministic SR house from the chart context. The override
-          // above only touches the placement_table; without this pass the
-          // table is right while the prose still tells the user the wrong
-          // house (e.g. "SR Pluto in the 5th house" when SR Pluto is in 6).
-          correctSrPlanetHousesInProse(parsedContent, sanitizedChartContext || "", emissionLog);
+          // REMOVED (Rule 2 — No Sweeps): the inline SR planet house prose
+          // fixer that previously ran here is replaced by
+          // `runPlacementTableValidator` which fails the generation loud on
+          // SR/natal house drift instead of silently rewriting prose.
           // HOUSE RULER PLACEMENT FIXER: rewrite any prose that puts a house
           // ruler in the WRONG sign or house — e.g. "ruler Mars sitting in
           // your 2nd house in Sagittarius" when natal Mars is actually in
