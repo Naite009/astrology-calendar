@@ -2306,7 +2306,17 @@ const parsePositionsFromContext = (
   if (!headerMatch) return [];
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL/);
+  // FIX: Do NOT terminate on a blank line. The natal positions block in
+  // chart context contains stray blank lines BETWEEN bullets (an artifact
+  // of how AskView formats it). Terminating on the first blank line was
+  // capturing only the planets above the first blank line — usually just
+  // the Sun — and silently dropping the other 18 natal placements. That
+  // bug fed both the prompt-builder's NATAL CHART/RETROGRADE STATUS block
+  // (which then mislabeled all retrograde planets as "none") AND the
+  // validator's truth map (which then "didn't know" Venus/Mars/Jupiter
+  // were retrograde and produced false-positive drifts). Terminate ONLY on
+  // a real downstream section header.
+  const endMatch = tail.match(/\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL PLANET HOUSE PLACEMENTS|\nSR Planetary Positions|\n--- /);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const lineRe = planetPrefix
     ? new RegExp(`-\\s*${planetPrefix}\\s+([A-Za-z][A-Za-z ]+?):\\s+(\\d+)°(\\d+)'\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})(?:\\s+\\(${planetPrefix}\\s*House\\s+(\\d+)\\))?(\\s+\\(R\\))?`, "g")
