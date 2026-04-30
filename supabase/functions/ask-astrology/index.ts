@@ -11695,10 +11695,28 @@ ${natalGroundTruthLines}`
               .join("\n\n───── SYSTEM BLOCK BREAK ─────\n\n")
           : String(systemBlocks ?? "");
 
+        // userId/chartId aren't in this scope — look them up from the ask_jobs row.
+        let capUserId: string | null = null;
+        let capChartId: string | null = null;
+        try {
+          const { data: jobLookup } = await svc
+            .from("ask_jobs")
+            .select("user_id, chart_id")
+            .eq("id", jobId)
+            .maybeSingle();
+          capUserId = (jobLookup as any)?.user_id ?? null;
+          capChartId = (jobLookup as any)?.chart_id ?? null;
+        } catch (lookupErr) {
+          console.warn(
+            "[ask-astrology] debug capture: job lookup failed (continuing with nulls):",
+            lookupErr instanceof Error ? lookupErr.message : String(lookupErr),
+          );
+        }
+
         const captureRow = {
           job_id: jobId,
-          user_id: userId ?? null,
-          chart_id: chartId ?? null,
+          user_id: capUserId,
+          chart_id: capChartId,
           system_prompt: systemPromptStr,
           user_messages: sanitizedMessages,
           chart_context: sanitizedChartContext,
@@ -11707,8 +11725,7 @@ ${natalGroundTruthLines}`
           finish_reason: finishReason || null,
           notes: `pre-postprocess capture; content_len=${content.length}; cache_read=${cacheReadTokens}; cache_write=${cacheCreationTokens}`,
         };
-        const capSvc = getServiceClient();
-        const { error: capErr } = await capSvc
+        const { error: capErr } = await svc
           .from("ask_generation_captures")
           .insert(captureRow);
         if (capErr) {
