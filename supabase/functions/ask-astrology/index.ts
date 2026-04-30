@@ -7264,6 +7264,13 @@ const runPostProcessingPipeline = (
     propagateNatalRetrogradeInProse(parsedContent, ctx, log),
   );
 
+  // 11c.2. Cross-section repetition guard for the deterministic retrograde
+  // explainer sentences injected/propagated above. One acknowledgement is
+  // enough; repeated copies make the external gate block the download.
+  safeRun("stripDuplicateNatalRetrogradeExplainers", () =>
+    stripDuplicateNatalRetrogradeExplainers(parsedContent, log),
+  );
+
   // 11d. Stray digit scrub — kill malformed ordinals like "9th74" or
   // "1st77" where a footnote/index digit got welded onto a house ordinal
   // with no separator.
@@ -7884,6 +7891,73 @@ const dedupeRepeatedSentences = (parsedContent: any, log: HygieneLog) => {
       sentences_removed: sentencesRemoved,
       examples,
     });
+  }
+};
+
+// The final Replit gate treats the same natal-retrograde explainer sentence
+// repeated across narrative + timing windows as CROSS_SECTION_REPETITION.
+// Keep the first substantive occurrence, then remove later copies from prose
+// fields. This preserves factual retrograde acknowledgement without letting a
+// canned sentence block otherwise valid Solar Return downloads.
+const stripDuplicateNatalRetrogradeExplainers = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const seen = new Map<string, string>();
+  let removed = 0;
+  let touched = 0;
+  const examples: string[] = [];
+  const retroExplainerRe = /^because\s+your\s+natal\s+([A-Z][a-z]+)\s+is\s+retrograde\b/i;
+
+  const cleanString = (text: string, path: string): string => {
+    if (!text || text.length < 60 || !/\bbecause\s+your\s+natal\s+[A-Z][a-z]+\s+is\s+retrograde\b/i.test(text)) return text;
+    const prepared = text.replace(/\s+(Because\s+your\s+natal\s+[A-Z][a-z]+\s+is\s+retrograde\b)/g, "\n$1");
+    const sentences = splitSentencesForMeta(prepared);
+    if (sentences.length === 0) return text;
+    const kept: string[] = [];
+    for (const sentence of sentences) {
+      const match = sentence.match(retroExplainerRe);
+      if (!match) {
+        kept.push(sentence);
+        continue;
+      }
+      const key = normalizeSentenceForDedupe(sentence);
+      const firstPath = seen.get(key);
+      if (!firstPath) {
+        seen.set(key, path);
+        kept.push(sentence);
+        continue;
+      }
+      removed++;
+      if (examples.length < 6) examples.push(`${sentence.slice(0, 120)} — duplicate of ${firstPath}`);
+    }
+    const next = kept.join(" ").replace(/\s{2,}/g, " ").trim();
+    return next || text;
+  };
+
+  const visit = (node: any, path: string) => {
+    if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}]`); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SENTENCE_DEDUPE_SAFE_KEYS.has(key)) continue;
+      const childPath = `${path}.${key}`;
+      if (typeof val === "string") {
+        const next = cleanString(val, childPath);
+        if (next !== val) {
+          (node as any)[key] = next;
+          touched++;
+        }
+      } else {
+        visit(val, childPath);
+      }
+    }
+  };
+  visit(parsedContent, "$.");
+
+  if (removed > 0) {
+    log.push({
+      type: "duplicate_natal_retrograde_explainers_removed",
+      detail: { strings_touched: touched, sentences_removed: removed, examples },
+    });
+    console.info("[ask-astrology] duplicate natal retrograde explainers removed", { strings_touched: touched, sentences_removed: removed, examples });
   }
 };
 
@@ -12524,6 +12598,7 @@ ${natalGroundTruthLines}`
           // sentence 4 times back-to-back). Runs before placeholder strip
           // so the deduped prose is what every subsequent pass sees.
           dedupeRepeatedSentences(parsedContent, emissionLog);
+          stripDuplicateNatalRetrogradeExplainers(parsedContent, emissionLog);
           // Final safety net: scrub banned phrases the AI was instructed
           // never to emit ("DNA", "blueprint") and replace with neutral
           // alternatives ("Foundation"). Runs after dedupe so we don't
