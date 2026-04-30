@@ -6011,9 +6011,10 @@ const backfillStructuralSectionsFromChartContext = (
         (section as any)._element_ties = built.element_ties;
         (section as any)._modality_ties = built.modality_ties;
         (section as any)._polarity_ties = built.polarity_ties;
-        (section as any)._chart_scope = isSR ? "SR" : "NATAL";
+        (section as any)._chart_scope = scopeUsed;
+        if (fellBackToNatal) (section as any)._scope_fallback = "sr_to_natal";
         backfilled++;
-        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${isSR ? "SR" : "NATAL"}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
+        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${scopeUsed}${fellBackToNatal ? " [SR→NATAL FALLBACK]" : ""}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
       }
     }
   }
