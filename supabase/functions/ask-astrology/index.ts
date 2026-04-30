@@ -12088,7 +12088,7 @@ ${natalGroundTruthLines}`
     // Failures here are non-fatal: a missed capture must NEVER kill a
     // user's generation.
     // ─────────────────────────────────────────────────────────────────────
-    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1") {
+    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1" && !replayCaptureId) {
       try {
         const systemPromptStr = Array.isArray(systemBlocks)
           ? systemBlocks
