@@ -6878,7 +6878,9 @@ const runPlacementTableValidator = (
 
       // Sign claim — only validate when truth has a sign (skip if explicit
       // block contributed only the house, e.g. Lilith without positions row).
-      const signMatch = trailing.match(SIGN_CLAIM_RE);
+      // Use truncatedTrailing so we don't grab a sign that belongs to a
+      // later-mentioned planet in the same sentence.
+      const signMatch = truncatedTrailing.match(SIGN_CLAIM_RE);
       if (signMatch && truth.sign) {
         const claimedSign = signMatch[1];
         if (claimedSign.toLowerCase() !== truth.sign.toLowerCase()) {
@@ -6895,10 +6897,10 @@ const runPlacementTableValidator = (
       }
 
       // Retrograde claim — only flag explicit "retrograde/℞/Rx" or
-      // explicit "direct" within ~80 chars of the planet. Ignore everything
-      // else (no inference from sign or other fields — that was the source
-      // of the SR Venus/Mars false positives).
-      const proximate = trailing.slice(0, 120);
+      // explicit "direct" within ~80 chars of the planet. Use the same
+      // competitor-truncated window so a later "SR Venus retrograde" can't
+      // be attributed to an earlier "natal Venus" mention (and vice versa).
+      const proximate = truncatedTrailing.slice(0, 120);
       const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
