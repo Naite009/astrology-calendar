@@ -11673,6 +11673,27 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     let response: Response | null = null;
     let lastError = "";
     let content = "";
+    // REPLAY MODE — load saved AI prose so the AI fetch loop is skipped.
+    // The post-process / autofix pipeline below treats this exactly like
+    // a fresh AI response; ask_jobs.result will be the re-parsed output.
+    if (replayCaptureId) {
+      try {
+        const { data: capRow, error: capErr } = await svc
+          .from("ask_generation_captures")
+          .select("raw_ai_response")
+          .eq("id", replayCaptureId)
+          .maybeSingle();
+        if (capErr || !capRow?.raw_ai_response) {
+          await failAndStop(`Replay capture ${replayCaptureId} not found or empty.`);
+          return;
+        }
+        content = String(capRow.raw_ai_response);
+        console.log(`[ask-astrology] REPLAY processJob: loaded ${content.length} chars from capture ${replayCaptureId}; AI call will be skipped.`);
+      } catch (e) {
+        await failAndStop(`Replay load failed: ${e instanceof Error ? e.message : String(e)}`);
+        return;
+      }
+    }
     let finishReason = "";
     // Cache telemetry — proves prompt caching is actually hitting in prod.
     // cache_read = tokens served from cache (90% cheaper, near-zero latency).
