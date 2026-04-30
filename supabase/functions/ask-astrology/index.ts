@@ -7017,7 +7017,12 @@ const runPlacementTableValidator = (
   const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
   if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
-    const top = drifts.slice(0, 6).map((d, i) => {
+    // Show ALL drifts in the error message (was capped at 6, leaving 7-12
+    // invisible to anyone reading ask_jobs.error_message). Cap at 20 to
+    // keep the column under a few KB; if more than 20 drifts ever fire,
+    // something is structurally broken upstream and the top 20 is enough
+    // signal to diagnose.
+    const top = drifts.slice(0, 20).map((d, i) => {
       const head = `[${i + 1}] ${d.scope} ${d.planet} ${d.field}: claimed=${d.claimed} truth=${d.truth} @ ${d.path}`;
       const ex = (d.excerpt || "").trim().slice(0, 220);
       return ex ? `${head}\n      "${ex}"` : head;
