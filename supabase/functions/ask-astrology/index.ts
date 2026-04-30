@@ -6984,14 +6984,19 @@ const runPlacementTableValidator = (
     console.info("[ask-astrology][validator] no placement-table drift detected");
   }
 
-  // Hard-fail switch — flip on in the next session at the same time the
-  // sweeps are deleted. Until then, default OFF so we can survey the
-  // baseline drift rate.
-  if (Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") === "1" && drifts.length > 0) {
+  // Hard-fail by default. Defense in depth: this validator runs alongside
+  // the Replit gate, both block independently. To temporarily disable
+  // (e.g. for diagnostic survey runs), set VALIDATOR_FAIL_ON_DRIFT=0.
+  const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
+  if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
+    const top = drifts.slice(0, 6).map((d, i) => {
+      const head = `[${i + 1}] ${d.scope} ${d.planet} ${d.field}: claimed=${d.claimed} truth=${d.truth} @ ${d.path}`;
+      const ex = (d.excerpt || "").trim().slice(0, 220);
+      return ex ? `${head}\n      "${ex}"` : head;
+    }).join("\n");
     throw new Error(
-      `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables. ` +
-      `First: ${drifts[0].scope} ${drifts[0].planet} ${drifts[0].field} claimed=${drifts[0].claimed} truth=${drifts[0].truth} (${drifts[0].path})`,
+      `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables.\n${top}`,
     );
   }
 };
@@ -12784,6 +12789,14 @@ ${natalGroundTruthLines}`
             console.info("[ask-astrology] emission hygiene clean — no corrections needed");
           }
         } catch (hygieneErr) {
+          // Placement-table validator failures must hard-fail the job — do
+          // not let the hygiene try/catch swallow them. Re-throw so the
+          // outer processJob handler can mark the job failed with the
+          // violating sentence in error_message.
+          const hMsg = hygieneErr instanceof Error ? hygieneErr.message : String(hygieneErr);
+          if (hMsg.startsWith("placement_table_drift:")) {
+            throw hygieneErr;
+          }
           console.error("[ask-astrology] emission hygiene threw:", hygieneErr);
           // Even on hygiene failure, keep the audit field present.
           if (!Array.isArray((parsedContent as any)._validation_log)) {
@@ -12791,7 +12804,7 @@ ${natalGroundTruthLines}`
           }
           (parsedContent as any)._validation_log.push({
             type: "hygiene_pass_threw",
-            detail: { error: hygieneErr instanceof Error ? hygieneErr.message : String(hygieneErr) },
+            detail: { error: hMsg },
           });
         }
 
@@ -13436,6 +13449,11 @@ ${natalGroundTruthLines}`
         }
       } catch (postGateErr) {
         const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
+        // Placement-table drift must hard-fail. Re-throw past the
+        // post-gate try/catch so processJob marks the job failed.
+        if (msg.startsWith("placement_table_drift:")) {
+          throw postGateErr;
+        }
         console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
       }
     }
