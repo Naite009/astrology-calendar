@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ask_generation_captures: {
+        Row: {
+          captured_at: string
+          chart_context: string | null
+          chart_id: string | null
+          finish_reason: string | null
+          id: string
+          job_id: string
+          model: string | null
+          notes: string | null
+          raw_ai_response: string | null
+          system_prompt: string | null
+          user_id: string | null
+          user_messages: Json | null
+        }
+        Insert: {
+          captured_at?: string
+          chart_context?: string | null
+          chart_id?: string | null
+          finish_reason?: string | null
+          id?: string
+          job_id: string
+          model?: string | null
+          notes?: string | null
+          raw_ai_response?: string | null
+          system_prompt?: string | null
+          user_id?: string | null
+          user_messages?: Json | null
+        }
+        Update: {
+          captured_at?: string
+          chart_context?: string | null
+          chart_id?: string | null
+          finish_reason?: string | null
+          id?: string
+          job_id?: string
+          model?: string | null
+          notes?: string | null
+          raw_ai_response?: string | null
+          system_prompt?: string | null
+          user_id?: string | null
+          user_messages?: Json | null
+        }
+        Relationships: []
+      }
       ask_jobs: {
         Row: {
           call_a_output: Json | null
