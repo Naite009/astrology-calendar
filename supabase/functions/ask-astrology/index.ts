@@ -12788,6 +12788,14 @@ ${natalGroundTruthLines}`
             console.info("[ask-astrology] emission hygiene clean — no corrections needed");
           }
         } catch (hygieneErr) {
+          // Placement-table validator failures must hard-fail the job — do
+          // not let the hygiene try/catch swallow them. Re-throw so the
+          // outer processJob handler can mark the job failed with the
+          // violating sentence in error_message.
+          const hMsg = hygieneErr instanceof Error ? hygieneErr.message : String(hygieneErr);
+          if (hMsg.startsWith("placement_table_drift:")) {
+            throw hygieneErr;
+          }
           console.error("[ask-astrology] emission hygiene threw:", hygieneErr);
           // Even on hygiene failure, keep the audit field present.
           if (!Array.isArray((parsedContent as any)._validation_log)) {
@@ -12795,7 +12803,7 @@ ${natalGroundTruthLines}`
           }
           (parsedContent as any)._validation_log.push({
             type: "hygiene_pass_threw",
-            detail: { error: hygieneErr instanceof Error ? hygieneErr.message : String(hygieneErr) },
+            detail: { error: hMsg },
           });
         }
 
@@ -13440,6 +13448,11 @@ ${natalGroundTruthLines}`
         }
       } catch (postGateErr) {
         const msg = postGateErr instanceof Error ? postGateErr.message : String(postGateErr);
+        // Placement-table drift must hard-fail. Re-throw past the
+        // post-gate try/catch so processJob marks the job failed.
+        if (msg.startsWith("placement_table_drift:")) {
+          throw postGateErr;
+        }
         console.warn(`[ask-astrology] post-gate safety pass threw (non-fatal): ${msg}`);
       }
     }
