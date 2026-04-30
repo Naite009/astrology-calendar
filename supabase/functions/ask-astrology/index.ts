@@ -10953,10 +10953,10 @@ async function processJob(args: {
       const fmtRow = (p: { planet: string; sign: string; degree: number; minutes?: number; house?: number | null; isRetrograde?: boolean }, prefix: string) => {
         const deg = `${p.degree}°${String(p.minutes ?? 0).padStart(2, "0")}'`;
         const houseStr = p.house != null ? `House ${p.house}` : "House —";
-        const retro = p.isRetrograde ? " Retrograde" : " Direct";
-        return `- ${prefix} ${p.planet}: ${deg} ${p.sign}, ${houseStr},${retro}`;
+        const retro = p.isRetrograde ? "Retrograde" : "Direct";
+        return `- ${prefix} ${p.planet}: ${p.sign}, ${houseStr}, ${retro}, ${deg}`;
       };
-      const natalRows = echoNatal.map((p) => fmtRow(p, "natal")).join("\n");
+      const natalRows = echoNatal.map((p) => fmtRow(p, "Natal")).join("\n");
       const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
       if (natalRows || srRows) {
         const echoBlock = [
@@ -10966,7 +10966,9 @@ async function processJob(args: {
           "Whenever you mention a planet's degree, sign, house, or retrograde",
           "status in prose, the values below are the ONLY correct values.",
           "Do not derive. Do not infer. Do not transpose between natal and SR.",
+          "A natal planet may NEVER use the SR sign for the same planet.",
           "If a sentence says 'natal Uranus', use the 'natal Uranus' row.",
+          "If a sentence says 'Natally, your Mercury', use the 'Natal Mercury' row.",
           "If a sentence says 'SR Moon', use the 'SR Moon' row. No exceptions.",
           "",
           natalRows,
