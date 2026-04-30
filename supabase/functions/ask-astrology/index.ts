@@ -12103,23 +12103,6 @@ ${natalGroundTruthLines}`
           stripTermDeep(parsedContent, "Juno");
         }
 
-        // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
-        if (Object.keys(chartHouseMap).length > 0 && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              for (const row of section.rows) {
-                if (row.planet && chartHouseMap[row.planet] !== undefined) {
-                  const correctHouse = chartHouseMap[row.planet];
-                  if (row.house !== correctHouse) {
-                    console.warn(`House cross-check fix: ${row.planet} was house ${row.house}, corrected to ${correctHouse}`);
-                    row.house = correctHouse;
-                  }
-                }
-              }
-            }
-          }
-        }
-
         // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
         // Bug A fix: previously wrote to section._validation_warning which the
         // UI never reads. Now we attach a top-level _count_sum_warnings array
