@@ -921,30 +921,46 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       const elementNames = new Set(elementsAll.map((i) => i.name));
       const ALL_ELEMENTS = ["Fire", "Earth", "Air", "Water"];
 
-      // Element interpretation — lead with dominant lived behavior,
-      // name secondary element as a balance, then call out any major gap.
+      // Element interpretation — when there is a tie at the top, name
+      // BOTH (or all) tied elements as a balance instead of asserting a
+      // single dominant. Otherwise lead with the dominant lived behavior
+      // and name a strong secondary as a counterweight.
       if (elementsAll.length > 0) {
-        const dominant = elementsAll[0];
-        const second = elementsAll[1];
-        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
-        let elementSentence = `You ${lead}`;
-        if (second && SECOND_ELEMENT_PAIR[second.name]) {
-          const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
-          if (secondLead) {
-            // Trim the secondary description so it reads as a balance, not a duplicate.
-            const trimmed = secondLead.split("—")[0].trim();
-            elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
+        if (hasElementTie) {
+          const tiedNames = elementTies.filter((n) => ELEMENT_DOMINANT[n]);
+          if (tiedNames.length >= 2) {
+            const tiedCount = elementsAll[0].count;
+            const phrases = tiedNames.map((n) => {
+              const full = ELEMENT_DOMINANT[n] ?? "";
+              return full.split("—")[0].trim() || `live through ${n}`;
+            });
+            sentences.push(`Your chart is balanced between ${tiedNames.join(" and ")}, with ${NUMBER_WORDS[tiedCount] ?? tiedCount} planets in each — neither is dominant.`);
+            const clauses = tiedNames.map((n, i) => `the ${n} side means you ${phrases[i]}`);
+            sentences.push(`${clauses.join(", and ")}.`);
+          } else {
+            sentences.push(`Your chart is balanced between ${elementTies.join(" and ")} with no single dominant element.`);
           }
+        } else {
+          const dominant = elementsAll[0];
+          const second = elementsAll[1];
+          const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
+          let elementSentence = `You ${lead}`;
+          if (second && SECOND_ELEMENT_PAIR[second.name]) {
+            const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
+            if (secondLead) {
+              const trimmed = secondLead.split("—")[0].trim();
+              elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
+            }
+          }
+          elementSentence += ".";
+          sentences.push(elementSentence);
         }
-        elementSentence += ".";
-        sentences.push(elementSentence);
 
         const missingElements = ALL_ELEMENTS.filter((e) => !elementNames.has(e));
         if (missingElements.length === 1) {
           const note = ELEMENT_WEAK[missingElements[0]];
           if (note) sentences.push(`${note}.`);
         } else if (missingElements.length === 2) {
-          // Two missing elements — name the more behaviorally costly one.
           const priority = ["Fire", "Earth", "Water", "Air"];
           const pick = priority.find((e) => missingElements.includes(e));
           if (pick && ELEMENT_WEAK[pick]) sentences.push(`${ELEMENT_WEAK[pick]}.`);
@@ -953,10 +969,21 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 
       // Modality interpretation — lead names the operating rhythm; if
       // a modality is fully absent, name what that absence looks like.
+      // Tie-aware: name both tied modalities instead of one.
       if (modalitiesAll.length > 0) {
-        const dominant = modalitiesAll[0];
-        const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
-        sentences.push(`Your pace ${lead}.`);
+        if (hasModalityTie) {
+          const tiedNames = modalityTies.filter((n) => MODALITY_PROSE[n]);
+          if (tiedNames.length >= 2) {
+            const clauses = tiedNames.map((n) => `the ${n} side ${MODALITY_PROSE[n].lead}`);
+            sentences.push(`Your pace is split between ${tiedNames.join(" and ")} — ${clauses.join(", and ")}.`);
+          } else {
+            sentences.push(`Your pace is split between ${modalityTies.join(" and ")} with no single dominant modality.`);
+          }
+        } else {
+          const dominant = modalitiesAll[0];
+          const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
+          sentences.push(`Your pace ${lead}.`);
+        }
         const presentMods = new Set(modalitiesAll.map((i) => i.name));
         const ALL_MODS = ["Cardinal", "Fixed", "Mutable"];
         const missingMod = ALL_MODS.find((m) => !presentMods.has(m));
