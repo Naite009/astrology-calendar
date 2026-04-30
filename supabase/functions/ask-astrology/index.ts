@@ -6984,14 +6984,18 @@ const runPlacementTableValidator = (
     console.info("[ask-astrology][validator] no placement-table drift detected");
   }
 
-  // Hard-fail switch — flip on in the next session at the same time the
-  // sweeps are deleted. Until then, default OFF so we can survey the
-  // baseline drift rate.
-  if (Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") === "1" && drifts.length > 0) {
+  // Hard-fail by default. Defense in depth: this validator runs alongside
+  // the Replit gate, both block independently. To temporarily disable
+  // (e.g. for diagnostic survey runs), set VALIDATOR_FAIL_ON_DRIFT=0.
+  const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
+  if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
+    const top = drifts.slice(0, 6).map((d) =>
+      `${d.scope} ${d.planet} ${d.field} claimed=${d.claimed} truth=${d.truth} @ ${d.path}`
+    ).join(" | ");
     throw new Error(
       `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables. ` +
-      `First: ${drifts[0].scope} ${drifts[0].planet} ${drifts[0].field} claimed=${drifts[0].claimed} truth=${drifts[0].truth} (${drifts[0].path})`,
+      `Top: ${top}`,
     );
   }
 };
