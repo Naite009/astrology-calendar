@@ -6990,12 +6990,13 @@ const runPlacementTableValidator = (
   const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
   if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
-    const top = drifts.slice(0, 6).map((d) =>
-      `${d.scope} ${d.planet} ${d.field} claimed=${d.claimed} truth=${d.truth} @ ${d.path}`
-    ).join(" | ");
+    const top = drifts.slice(0, 6).map((d, i) => {
+      const head = `[${i + 1}] ${d.scope} ${d.planet} ${d.field}: claimed=${d.claimed} truth=${d.truth} @ ${d.path}`;
+      const ex = (d.excerpt || "").trim().slice(0, 220);
+      return ex ? `${head}\n      "${ex}"` : head;
+    }).join("\n");
     throw new Error(
-      `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables. ` +
-      `Top: ${top}`,
+      `placement_table_drift: ${drifts.length} mismatch(es) between prose and placement tables.\n${top}`,
     );
   }
 };
