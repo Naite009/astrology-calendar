@@ -11707,7 +11707,8 @@ ${natalGroundTruthLines}`
           finish_reason: finishReason || null,
           notes: `pre-postprocess capture; content_len=${content.length}; cache_read=${cacheReadTokens}; cache_write=${cacheCreationTokens}`,
         };
-        const { error: capErr } = await supabase
+        const capSvc = getServiceClient();
+        const { error: capErr } = await capSvc
           .from("ask_generation_captures")
           .insert(captureRow);
         if (capErr) {
