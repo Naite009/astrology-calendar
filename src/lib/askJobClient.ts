@@ -47,6 +47,65 @@ interface SubmitArgs {
   deterministicTiming: any;
   chartId: string;
   userLocations?: UserLocationsInput;
+  /**
+   * REPLAY MODE — pass a saved capture ID to skip the AI call entirely
+   * and re-run the post-process / autofix pipeline against the previously
+   * generated raw prose. Free; intended for fix-validation loops.
+   */
+  replayCaptureId?: string;
+}
+
+export interface AskCaptureRow {
+  id: string;
+  chart_id: string | null;
+  captured_at: string;
+  notes: string | null;
+  prose_len: number | null;
+}
+
+/**
+ * List the most recent saved AI captures for this user. RLS scopes results
+ * to the caller automatically.
+ */
+export async function listAskCaptures(limit = 25): Promise<AskCaptureRow[]> {
+  const { data, error } = await supabase
+    .from("ask_generation_captures")
+    .select("id, chart_id, captured_at, notes, raw_ai_response")
+    .order("captured_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.warn("[askJobClient] listAskCaptures failed:", error.message);
+    return [];
+  }
+  return (data || []).map((r: any) => ({
+    id: r.id,
+    chart_id: r.chart_id,
+    captured_at: r.captured_at,
+    notes: r.notes,
+    prose_len: typeof r.raw_ai_response === "string" ? r.raw_ai_response.length : null,
+  }));
+}
+
+/**
+ * Submit a replay job. The edge function reuses the saved chart_context,
+ * messages, and raw AI prose from the capture row — no Anthropic call.
+ */
+export async function runReplayJob(args: {
+  chartId: string;
+  replayCaptureId: string;
+  signal?: AbortSignal;
+  onProgress?: (status: AskJobRow["status"]) => void;
+}): Promise<AskJobRow> {
+  const jobId = await submitAskJob({
+    messages: [],
+    chartContext: "",
+    currentDate: new Date().toISOString().slice(0, 10),
+    deterministicTiming: null,
+    chartId: args.chartId,
+    replayCaptureId: args.replayCaptureId,
+  } as any);
+  args.onProgress?.("queued");
+  return pollAskJob(jobId, { chartId: args.chartId, signal: args.signal, onProgress: args.onProgress });
 }
 
 /**
