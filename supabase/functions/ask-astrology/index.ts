@@ -13429,6 +13429,116 @@ ${natalGroundTruthLines}`
     // post-gate sites above, eliminating the third place those passes
     // used to live and the drift it created.)
 
+    // ────────────────────────────────────────────────────────────
+    // FINAL BLOCKING GATE (2026-04-30)
+    // The Replit /check-reading gate runs earlier in the pipeline,
+    // but post-gate transforms can mutate prose AFTER that verdict
+    // is captured. This is the LAST step before the reading ships.
+    // It re-checks the post-processed content against the SAME gate
+    // and HARD-FAILS the job if the gate returns ok !== true.
+    //
+    // Controlled by env vars:
+    //   ASK_GATE_BLOCKING (default: true)
+    //     → false: log-only, do not block.
+    //   ASK_GATE_BLOCKING_ON_UNREACHABLE (default: false)
+    //     → false: if the gate is unreachable (network err / 5xx),
+    //              ship anyway with _gate.label="unvalidated".
+    //              Prevents a Replit outage from blocking all jobs.
+    //     → true:  fail the job on any non-200/network failure.
+    // ────────────────────────────────────────────────────────────
+    const gateBlocking =
+      (Deno.env.get("ASK_GATE_BLOCKING") ?? "true").toLowerCase() !== "false";
+    const gateBlockingOnUnreachable =
+      (Deno.env.get("ASK_GATE_BLOCKING_ON_UNREACHABLE") ?? "false").toLowerCase() === "true";
+
+    if (gateBlocking && parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
+      const finalGateUrlRaw = Deno.env.get("REPLIT_GATE_URL");
+      const finalGateToken = Deno.env.get("REPLIT_GATE_TOKEN");
+      if (!finalGateUrlRaw || !finalGateToken) {
+        console.warn("[ask-astrology][final-gate] missing REPLIT_GATE_URL or REPLIT_GATE_TOKEN — skipping blocking check");
+      } else {
+        const base = finalGateUrlRaw.trim().replace(/\/$/, "");
+        const url = `${base}/check-reading`;
+        const t0 = Date.now();
+        let finalVerdict: any = null;
+        let unreachable = false;
+        try {
+          const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${finalGateToken}`,
+            },
+            body: JSON.stringify(parsedContent),
+            signal: AbortSignal.timeout(15_000),
+          });
+          const ms = Date.now() - t0;
+          let raw = "";
+          try { raw = await resp.text(); } catch { /* */ }
+          let body: any = null;
+          try { body = raw ? JSON.parse(raw) : null; } catch { /* non-JSON */ }
+          finalVerdict = {
+            ok: resp.status === 200 && body?.ok === true,
+            status: resp.status,
+            latency_ms: ms,
+            defects: Array.isArray(body?.defects) ? body.defects : [],
+            warnings: Array.isArray(body?.warnings) ? body.warnings : [],
+            checked_at: new Date().toISOString(),
+            ...(resp.status !== 200 ? { body_snippet: raw.slice(0, 500) } : {}),
+          };
+          if (resp.status !== 200) unreachable = true;
+          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} ms=${ms}`);
+        } catch (gateErr) {
+          unreachable = true;
+          const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
+          finalVerdict = {
+            ok: false,
+            error: msg,
+            checked_at: new Date().toISOString(),
+          };
+          console.error(`[ask-astrology][final-gate] threw:`, msg);
+        }
+
+        // Stamp the final verdict on the payload so the UI can show it
+        // even when the verdict is "unvalidated".
+        (parsedContent as any)._final_gate = finalVerdict;
+
+        if (!finalVerdict.ok) {
+          // Decide whether to block.
+          const shouldBlock = unreachable ? gateBlockingOnUnreachable : true;
+          if (shouldBlock) {
+            // Build a structured error message that surfaces the FIRST
+            // few violating defects so the operator can see exactly
+            // what failed without opening the DB.
+            const defects = Array.isArray(finalVerdict.defects) ? finalVerdict.defects : [];
+            const top = defects.slice(0, 5).map((d: any, i: number) => {
+              const code = d?.code || "UNKNOWN";
+              const sec = d?.section || d?.path || "?";
+              const snip = d?.snippet || d?.match || d?.matched_text || d?.context || d?.fix || "";
+              return `  [${i + 1}] ${code} @ ${sec}\n      ${String(snip).slice(0, 400)}`;
+            }).join("\n");
+            const reason = unreachable
+              ? `gate unreachable (status=${finalVerdict.status ?? "n/a"}${finalVerdict.error ? `, err=${finalVerdict.error}` : ""})`
+              : `${defects.length} defect(s)`;
+            const errMsg =
+              `GATE_BLOCKED: Final Replit /check-reading gate rejected the reading — ${reason}.\n` +
+              (top ? `Top defects:\n${top}` : "(no defect list returned)");
+            console.error(`[ask-astrology][final-gate] BLOCKING job ${jobId}:`, errMsg);
+            await updateJob({
+              status: "failed",
+              error_message: errMsg,
+              result: parsedContent, // attach so the operator can inspect what was generated
+              completed_at: new Date().toISOString(),
+            });
+            return; // do NOT proceed to the "completed" updateJob below
+          } else {
+            console.warn(`[ask-astrology][final-gate] gate not ok but shipping anyway (unreachable=${unreachable}, ASK_GATE_BLOCKING_ON_UNREACHABLE=${gateBlockingOnUnreachable})`);
+          }
+        }
+      }
+    } else if (!gateBlocking) {
+      console.warn("[ask-astrology][final-gate] DISABLED via ASK_GATE_BLOCKING=false");
+    }
 
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
