@@ -4095,28 +4095,7 @@ const factsAwareRetrogradeSweep = (
 
   let strippedFalseRetro = 0;
   let flippedDirectToRetro = 0;
-  let correctedHouseClaims = 0;
   const examples: string[] = [];
-  const houseExamples: string[] = [];
-
-  // Ordinal forms we accept in prose: "5th", "fifth", "five", or bare "5"
-  // when used in a "<Planet> in the X house" / "house X" frame.
-  const HOUSE_ORDINAL_WORDS: Record<string, number> = {
-    first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6,
-    seventh: 7, eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12,
-    "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6,
-    "7th": 7, "8th": 8, "9th": 9, "10th": 10, "11th": 11, "12th": 12,
-  };
-  const houseToOrdinal = (n: number): string => {
-    const map = ["", "1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th"];
-    return map[n] || `${n}th`;
-  };
-  const parseHouseToken = (token: string): number | null => {
-    const t = token.toLowerCase().trim();
-    if (HOUSE_ORDINAL_WORDS[t] !== undefined) return HOUSE_ORDINAL_WORDS[t];
-    const n = parseInt(t, 10);
-    return Number.isFinite(n) && n >= 1 && n <= 12 ? n : null;
-  };
 
   // Skip purely structural/identifier keys.
   const SKIP_KEYS = new Set([
@@ -4147,66 +4126,6 @@ const factsAwareRetrogradeSweep = (
     const chart = decideChartForClause(clause, sectionInSr);
 
     let next = clause;
-
-    // ── HOUSE VERIFICATION ────────────────────────────────────────────
-    // Check every house claim made about this planet in this clause and
-    // rewrite any that disagree with the chart-context placement table.
-    // Patterns covered (case-insensitive, all anchored to the planet name
-    // within ~120 chars):
-    //   • "<Planet> in the 5th house"
-    //   • "<Planet> in the fifth house"
-    //   • "<Planet> in the SR 5th house"
-    //   • "<Planet> in the natal 5th house"
-    //   • "<Planet> in house 5" / "<Planet> in the 5th"
-    //   • "<Planet> ... house 5" / "<Planet> ... 5th house"
-    //   • "<Planet> sits/lands/falls in the 5th house"
-    const houseFactMap = chart === "sr" ? srHouse : natalHouse;
-    const truthHouse = houseFactMap.get(planetKey);
-    if (typeof truthHouse === "number") {
-      const ordWordPattern = Object.keys(HOUSE_ORDINAL_WORDS).join("|");
-      // Pattern A: "<Planet> ...verb/in the [SR|natal]? <ord> house"
-      const patternA = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:(?:the|your)\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
-        "gi",
-      );
-      // Pattern B: "<Planet> ... house <number>"
-      const patternB = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\b(?:sr\\s+|natal\\s+)?house\\s+)(\\d{1,2})\\b`,
-        "gi",
-      );
-      // Pattern C: "<Planet> ... in the <ord>" (terminal — no "house" after)
-      const patternC = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the|your)\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
-        "gi",
-      );
-
-      const tryFix = (re: RegExp): boolean => {
-        let touched = false;
-        next = next.replace(re, (full, prefix, token, suffix = "") => {
-          const matchedText = String(full);
-          if (chart === "sr" && /\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
-            return full;
-          }
-          if (chart === "natal" && /\b(?:SR|Solar\s+Return)\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(matchedText)) {
-            return full;
-          }
-          const claimed = parseHouseToken(token);
-          if (claimed === null || claimed === truthHouse) return full;
-          touched = true;
-          return `${prefix}${houseToOrdinal(truthHouse)}${suffix}`;
-        });
-        return touched;
-      };
-      const a = tryFix(patternA);
-      const b = tryFix(patternB);
-      const c = tryFix(patternC);
-      if (a || b || c) {
-        correctedHouseClaims++;
-        if (houseExamples.length < 8) {
-          houseExamples.push(`[HOUSE ${chart} ${planet}→${truthHouse}] ${clause.slice(0, 160)}`);
-        }
-      }
-    }
 
     // ── RETROGRADE VERIFICATION ───────────────────────────────────────
     const factMap = chart === "sr" ? srRetro : natalRetro;
@@ -4303,21 +4222,18 @@ const factsAwareRetrogradeSweep = (
 
   visit(parsedContent, "");
 
-  if (strippedFalseRetro > 0 || flippedDirectToRetro > 0 || correctedHouseClaims > 0) {
+  if (strippedFalseRetro > 0 || flippedDirectToRetro > 0) {
     log.push({
       type: "facts_aware_retrograde_sweep",
       detail: {
         stripped_false_retro: strippedFalseRetro,
         flipped_direct_to_retro: flippedDirectToRetro,
-        corrected_house_claims: correctedHouseClaims,
         examples,
-        house_examples: houseExamples,
       },
     });
-    console.info("[ask-astrology] facts-aware retrograde+house sweep applied", {
+    console.info("[ask-astrology] facts-aware retrograde sweep applied", {
       stripped: strippedFalseRetro,
       flipped: flippedDirectToRetro,
-      house_corrected: correctedHouseClaims,
     });
   }
 };
