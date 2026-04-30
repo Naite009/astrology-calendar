@@ -1114,9 +1114,22 @@ const rewriteSentencePronouns = (sentence: string): string => {
     /(^|[\s,()"'])(they|They)\b(?=\s+[a-z])/g,
     (match, pre, word, offset, fullString) => {
       const lookback = typeof offset === "number" && typeof fullString === "string"
-        ? fullString.slice(Math.max(0, offset - 40), offset + (pre?.length || 0))
+        ? fullString.slice(Math.max(0, offset - 80), offset + (pre?.length || 0))
         : "";
+      // Contrastive clause guard ("rather than what they say").
       if (/\b(?:rather\s+than|instead\s+of|not|vs\.?|versus|compared\s+to)\s+what\s*$/i.test(lookback)) {
+        return match;
+      }
+      // Plural-noun antecedent guard. If a plural noun referring to other
+      // people appears earlier in the same sentence, "they" refers to them
+      // — NOT to the reader. Rewriting "they" → "you" in this case
+      // produces nonsense (e.g. "people say what you say").
+      // Find sentence start within the lookback window.
+      const sentenceStart = lookback.search(/[.!?]\s+[A-Z][^.!?]*$/);
+      const sentenceFragment = sentenceStart >= 0
+        ? lookback.slice(sentenceStart)
+        : lookback;
+      if (/\b(people|others|partners|friends|family|colleagues|coworkers|peers|strangers|kids|children|parents|siblings|teammates|team|relatives|customers|clients|users|members|fans|critics|haters|lovers|enemies|men|women|folks|humans|guests|neighbors|bosses)\b/i.test(sentenceFragment)) {
         return match;
       }
       return `${pre}${word === "They" ? "You" : "you"}`;
@@ -1334,23 +1347,47 @@ const repairOrbAndSentenceGlue = (parsedContent: any, log: HygieneLog) => {
   const fix = (s: string): string => {
     const before = s;
     let out = s;
-    // Pattern A: "orb N.Capital" — period present but capital glued (no
-    // space). Insert "°. " between number and capital.
+    // Pattern A: "(orb N.Capital" — integer orb inside parens with the
+    // closing paren missing and a capital glued (e.g. "(orb 0.Both"). The
+    // stray period is the orphan decimal point. Produce "(orb 0.0°). Both".
     out = out.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)\.([A-Z])/g,
-      (_m, head, cap) => `${head}°. ${cap}`,
+      /\((orb\s+)(\d+)\.([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `(${orbWord}${intPart}.0°). ${cap}`,
     );
-    // Pattern B: "orb NCapital" — capital glued directly to number with no
-    // period at all (e.g. "orb 2Both"). Insert "°. " between.
+    // Pattern A2: "(orb N.M Capital" — decimal orb inside parens, closing
+    // paren missing, capital glued (e.g. "(orb 2.5Both"). Produce
+    // "(orb 2.5°). Both".
     out = out.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)([A-Z])/g,
-      (_m, head, cap) => `${head}°. ${cap}`,
+      /\((orb\s+\d+\.\d+)([A-Z])/g,
+      (_m, head, cap) => `(${head}°). ${cap}`,
     );
-    // Pattern C: bare "orb N" or "orb N.M" missing the degree symbol. Use a
-    // negative lookahead so a partial-match like "orb 2" inside "orb 2.5"
-    // is never matched on its own (would corrupt the decimal).
+    // Pattern A3: bare "orb N.Capital" without opening paren (e.g.
+    // "orb 0.Both"). Produce "orb 0.0°. Both".
     out = out.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)(?!\.?\d)(?!°)/g,
+      /\b(orb\s+)(\d+)\.([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°. ${cap}`,
+    );
+    // Pattern B: "(orb NCapital" — integer orb inside parens, no period
+    // at all (e.g. "(orb 2Both"). Produce "(orb 2.0°). Both".
+    out = out.replace(
+      /\((orb\s+)(\d+)([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `(${orbWord}${intPart}.0°). ${cap}`,
+    );
+    // Pattern B2: bare "orb NCapital" without paren. Produce
+    // "orb N.0°. Capital".
+    out = out.replace(
+      /\b(orb\s+)(\d+)([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°. ${cap}`,
+    );
+    // Pattern C: bare "orb N" or "orb N.M" missing the degree symbol. Use
+    // a negative lookahead so a partial-match like "orb 2" inside "orb 2.5"
+    // is never matched. Promote integer orbs to "N.0°" for consistency.
+    out = out.replace(
+      /\b(orb\s+)(\d+)(?!\.?\d)(?!°)/g,
+      (_m, orbWord, intPart) => `${orbWord}${intPart}.0°`,
+    );
+    out = out.replace(
+      /\b(orb\s+\d+\.\d+)(?!°)/g,
       (_m, head) => `${head}°`,
     );
     if (out !== before && examples.length < 5) {
@@ -5936,8 +5973,21 @@ const backfillStructuralSectionsFromChartContext = (
       // sections to natal positions. The 10-traditional-planet filter is
       // applied inside buildElementalBalanceFromPositions — minor bodies
       // and asteroids are NEVER included in element/modality counts.
-      const sourcePositions = isSR ? srPositions : natalPositions;
-      if (sourcePositions.length >= 8) {
+      let sourcePositions = isSR ? srPositions : natalPositions;
+      let scopeUsed: "SR" | "NATAL" = isSR ? "SR" : "NATAL";
+      let fellBackToNatal = false;
+      // Hardening: if this is an SR section but we don't have enough SR
+      // positions, fall back to natal so we never silently leave AI's
+      // (often wrong) data in place. Lower threshold from 8 to 6 so we
+      // rebuild even when a couple of bodies are missing from the parsed
+      // SR table.
+      if (isSR && sourcePositions.length < 6 && natalPositions.length >= 6) {
+        console.warn(`[ask-astrology] SR positions insufficient (${sourcePositions.length}); section "${section.title}" will be rebuilt from NATAL as fallback.`);
+        sourcePositions = natalPositions;
+        scopeUsed = "NATAL";
+        fellBackToNatal = true;
+      }
+      if (sourcePositions.length >= 6) {
         const built = buildElementalBalanceFromPositions(sourcePositions);
         // Counts are deterministic facts — always overwrite the AI's
         // arrays. Preserve any AI-authored qualitative `interpretation`
@@ -5970,9 +6020,10 @@ const backfillStructuralSectionsFromChartContext = (
         (section as any)._element_ties = built.element_ties;
         (section as any)._modality_ties = built.modality_ties;
         (section as any)._polarity_ties = built.polarity_ties;
-        (section as any)._chart_scope = isSR ? "SR" : "NATAL";
+        (section as any)._chart_scope = scopeUsed;
+        if (fellBackToNatal) (section as any)._scope_fallback = "sr_to_natal";
         backfilled++;
-        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${isSR ? "SR" : "NATAL"}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
+        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${scopeUsed}${fellBackToNatal ? " [SR→NATAL FALLBACK]" : ""}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
       }
     }
   }
