@@ -2306,7 +2306,17 @@ const parsePositionsFromContext = (
   if (!headerMatch) return [];
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL/);
+  // FIX: Do NOT terminate on a blank line. The natal positions block in
+  // chart context contains stray blank lines BETWEEN bullets (an artifact
+  // of how AskView formats it). Terminating on the first blank line was
+  // capturing only the planets above the first blank line — usually just
+  // the Sun — and silently dropping the other 18 natal placements. That
+  // bug fed both the prompt-builder's NATAL CHART/RETROGRADE STATUS block
+  // (which then mislabeled all retrograde planets as "none") AND the
+  // validator's truth map (which then "didn't know" Venus/Mars/Jupiter
+  // were retrograde and produced false-positive drifts). Terminate ONLY on
+  // a real downstream section header.
+  const endMatch = tail.match(/\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL PLANET HOUSE PLACEMENTS|\nSR Planetary Positions|\n--- /);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const lineRe = planetPrefix
     ? new RegExp(`-\\s*${planetPrefix}\\s+([A-Za-z][A-Za-z ]+?):\\s+(\\d+)°(\\d+)'\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})(?:\\s+\\(${planetPrefix}\\s*House\\s+(\\d+)\\))?(\\s+\\(R\\))?`, "g")
@@ -6834,8 +6844,23 @@ const runPlacementTableValidator = (
       // Excerpt = match start..end of trailing window for the log entry.
       const excerpt = `${m[0]}`.replace(/\s+/g, " ").slice(0, 180);
 
+      // FIX: Truncate the trailing window at the first appearance of ANY
+      // competing scoped planet. Sentences like
+      //   "SR Uranus in the 9th house trining your natal Uranus in the 11th"
+      // were producing false positives: the validator matched on `natal Uranus`
+      // but the HOUSE_CLAIM_RE captured `in the 9th house` (which belongs to
+      // SR Uranus, mentioned later in the same sentence's trailing window if
+      // the natal mention came first, or in a chained earlier clause).
+      // To stop cross-attribution, we cut `trailing` at the first occurrence
+      // of any other "(natal|SR|Solar Return) <Planet>" boundary.
+      const COMPETITOR_RE = /\b(?:(?:your\s+)?natal\s+|natally\s*,?\s*(?:your\s+)?|SR\s+|Solar\s+Return\s+)[A-Z][a-zA-Z]+/g;
+      let truncatedTrailing = trailing;
+      COMPETITOR_RE.lastIndex = 0;
+      const cm = COMPETITOR_RE.exec(trailing);
+      if (cm) truncatedTrailing = trailing.slice(0, cm.index);
+
       // House claim
-      const houseMatch = trailing.match(HOUSE_CLAIM_RE);
+      const houseMatch = truncatedTrailing.match(HOUSE_CLAIM_RE);
       if (houseMatch && truth.house != null) {
         const claimedNum = ORDINAL_TO_HOUSE_NUM[houseMatch[1].toLowerCase()];
         if (claimedNum && claimedNum !== truth.house) {
@@ -6853,7 +6878,9 @@ const runPlacementTableValidator = (
 
       // Sign claim — only validate when truth has a sign (skip if explicit
       // block contributed only the house, e.g. Lilith without positions row).
-      const signMatch = trailing.match(SIGN_CLAIM_RE);
+      // Use truncatedTrailing so we don't grab a sign that belongs to a
+      // later-mentioned planet in the same sentence.
+      const signMatch = truncatedTrailing.match(SIGN_CLAIM_RE);
       if (signMatch && truth.sign) {
         const claimedSign = signMatch[1];
         if (claimedSign.toLowerCase() !== truth.sign.toLowerCase()) {
@@ -6870,10 +6897,10 @@ const runPlacementTableValidator = (
       }
 
       // Retrograde claim — only flag explicit "retrograde/℞/Rx" or
-      // explicit "direct" within ~80 chars of the planet. Ignore everything
-      // else (no inference from sign or other fields — that was the source
-      // of the SR Venus/Mars false positives).
-      const proximate = trailing.slice(0, 120);
+      // explicit "direct" within ~80 chars of the planet. Use the same
+      // competitor-truncated window so a later "SR Venus retrograde" can't
+      // be attributed to an earlier "natal Venus" mention (and vice versa).
+      const proximate = truncatedTrailing.slice(0, 120);
       const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
@@ -6990,7 +7017,12 @@ const runPlacementTableValidator = (
   const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
   if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
-    const top = drifts.slice(0, 6).map((d, i) => {
+    // Show ALL drifts in the error message (was capped at 6, leaving 7-12
+    // invisible to anyone reading ask_jobs.error_message). Cap at 20 to
+    // keep the column under a few KB; if more than 20 drifts ever fire,
+    // something is structurally broken upstream and the top 20 is enough
+    // signal to diagnose.
+    const top = drifts.slice(0, 20).map((d, i) => {
       const head = `[${i + 1}] ${d.scope} ${d.planet} ${d.field}: claimed=${d.claimed} truth=${d.truth} @ ${d.path}`;
       const ex = (d.excerpt || "").trim().slice(0, 220);
       return ex ? `${head}\n      "${ex}"` : head;
@@ -11062,7 +11094,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     // the source instead of relying on post-generation cross-checks.
     const buildNatalGroundTruthBlock = (ctx: string): string | null => {
       if (!ctx) return null;
-      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      // FIX: The previous terminator `(?=\n\s*\n|...)` stopped at the FIRST
+      // blank line, which the chart context sprinkles between natal bullets
+      // as a formatting artifact. Result: only the Sun line was captured,
+      // and the entire NATAL CHART / NATAL RETROGRADE STATUS prompt block
+      // was emitted with 1 planet and "no natal planets are retrograde" —
+      // false. Terminate on the next real downstream section header instead.
+      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]{2,}:|\nNATAL PLANET HOUSE PLACEMENTS|\nSR Planetary Positions|\n---|\nVERIFIED|\nHouse Cusps|$)/i;
       const natalMatch = ctx.match(natalHeaderRe);
       if (!natalMatch) return null;
       const natalLines = natalMatch[1]
@@ -11071,14 +11109,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
       if (natalLines.length === 0) return null;
 
-      // Also extract the SR planetary positions so we can present BOTH
-      // tables side-by-side with HARD RULE separating them. Previous attempts
-      // relied on the model finding SR data buried later in the chart context
-      // — too easy to miss. Restating SR data directly under the natal data,
-      // with explicit "do not interchange" framing, structurally prevents
-      // the SR-bleed-into-natal pattern that has recurred across every
-      // regeneration.
-      const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      // Same blank-line tolerance for the SR positions block.
+      const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]{2,}:|\nSR House Cusps|\nSR-TO-NATAL|\n---|\nVERIFIED|$)/i;
       const srMatch = ctx.match(srHeaderRe);
       const srLines = srMatch
         ? srMatch[1].split("\n").map((l) => l.trim()).filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l))
