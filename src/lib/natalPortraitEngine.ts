@@ -202,7 +202,7 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   if (domainHint === 'relationship') {
     if (planetName === 'Venus') return `You love and attract ${style}, most active in ${area}`;
     if (planetName === 'Mars') return `You pursue desire ${style}, asserting through ${area}`;
-    if (planetName === 'Juno') return `Your committed partnership needs are expressed ${style} in ${area}`;
+    if (planetName === 'Juno') return `Your committed partnership expresses ${style} in ${area}`;
     if (planetName === 'Eros') return `Your erotic magnetism operates ${style}, activated through ${area}`;
     if (planetName === 'Amor') return `Your unconditional love expresses ${style} in ${area}`;
     if (planetName === 'Lilith') return `Your raw feminine power emerges ${style} through ${area}`;
