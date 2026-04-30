@@ -4166,7 +4166,7 @@ const factsAwareRetrogradeSweep = (
       const ordWordPattern = Object.keys(HOUSE_ORDINAL_WORDS).join("|");
       // Pattern A: "<Planet> ...verb/in the [SR|natal]? <ord> house"
       const patternA = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:(?:the|your)\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
         "gi",
       );
       // Pattern B: "<Planet> ... house <number>"
@@ -4176,7 +4176,7 @@ const factsAwareRetrogradeSweep = (
       );
       // Pattern C: "<Planet> ... in the <ord>" (terminal — no "house" after)
       const patternC = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+the\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the|your)\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
         "gi",
       );
 
