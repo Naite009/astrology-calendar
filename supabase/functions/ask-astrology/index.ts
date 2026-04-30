@@ -7887,6 +7887,72 @@ const dedupeRepeatedSentences = (parsedContent: any, log: HygieneLog) => {
   }
 };
 
+// The final Replit gate treats the same natal-retrograde explainer sentence
+// repeated across narrative + timing windows as CROSS_SECTION_REPETITION.
+// Keep the first substantive occurrence, then remove later copies from prose
+// fields. This preserves factual retrograde acknowledgement without letting a
+// canned sentence block otherwise valid Solar Return downloads.
+const stripDuplicateNatalRetrogradeExplainers = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  const seen = new Map<string, string>();
+  let removed = 0;
+  let touched = 0;
+  const examples: string[] = [];
+  const retroExplainerRe = /^because\s+your\s+natal\s+([A-Z][a-z]+)\s+is\s+retrograde\b/i;
+
+  const cleanString = (text: string, path: string): string => {
+    if (!text || text.length < 60 || !/\bbecause\s+your\s+natal\s+[A-Z][a-z]+\s+is\s+retrograde\b/i.test(text)) return text;
+    const sentences = splitSentencesForMeta(text);
+    if (sentences.length === 0) return text;
+    const kept: string[] = [];
+    for (const sentence of sentences) {
+      const match = sentence.match(retroExplainerRe);
+      if (!match) {
+        kept.push(sentence);
+        continue;
+      }
+      const key = normalizeSentenceForDedupe(sentence);
+      const firstPath = seen.get(key);
+      if (!firstPath) {
+        seen.set(key, path);
+        kept.push(sentence);
+        continue;
+      }
+      removed++;
+      if (examples.length < 6) examples.push(`${sentence.slice(0, 120)} — duplicate of ${firstPath}`);
+    }
+    const next = kept.join(" ").replace(/\s{2,}/g, " ").trim();
+    return next || text;
+  };
+
+  const visit = (node: any, path: string) => {
+    if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}]`); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (SENTENCE_DEDUPE_SAFE_KEYS.has(key)) continue;
+      const childPath = `${path}.${key}`;
+      if (typeof val === "string") {
+        const next = cleanString(val, childPath);
+        if (next !== val) {
+          (node as any)[key] = next;
+          touched++;
+        }
+      } else {
+        visit(val, childPath);
+      }
+    }
+  };
+  visit(parsedContent, "$.");
+
+  if (removed > 0) {
+    log.push({
+      type: "duplicate_natal_retrograde_explainers_removed",
+      detail: { strings_touched: touched, sentences_removed: removed, examples },
+    });
+    console.info("[ask-astrology] duplicate natal retrograde explainers removed", { strings_touched: touched, sentences_removed: removed, examples });
+  }
+};
+
 // Hard banned-phrase replacement pass — final safety net for words the AI
 // is told never to emit (e.g., "DNA", "blueprint"). Replaces case-insensitively
 // while preserving capitalization where possible.
