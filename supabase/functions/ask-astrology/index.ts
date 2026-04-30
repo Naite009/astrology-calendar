@@ -10977,9 +10977,34 @@ async function processJob(args: {
           "",
         ].filter(Boolean).join("\n");
         sanitizedChartContext = `${echoBlock}\n${sanitizedChartContext}`;
+      } else {
+        // Ask 1 — Fail loud. The placement reference block is the highest
+        // trust input in the prompt. If we cannot build it from the parsed
+        // chart context, we MUST NOT proceed to the model: the model has no
+        // verbatim source of truth and every natal/SR claim becomes a guess.
+        // Surface PLACEMENT_BLOCK_FAILED to the user instead of silently
+        // shipping a reading that will drift.
+        const reason = !natalRows && !srRows
+          ? "no natal or SR rows parsed"
+          : !natalRows
+            ? "no natal rows parsed"
+            : "no SR rows parsed";
+        console.error(
+          `[ask-astrology] PLACEMENT_BLOCK_FAILED — ${reason}. natalRowsLen=${natalRows.length} srRowsLen=${srRows.length}`,
+        );
+        await failAndStop(
+          `PLACEMENT_BLOCK_FAILED: the chart's planetary positions could not be parsed (${reason}). Generation aborted to prevent a drifted reading. Please re-import the chart and try again.`,
+        );
+        return;
       }
     } catch (e) {
-      console.warn("[ask-astrology] verbatim placement reminder build failed", e);
+      // Ask 1 — Fail loud on parse/build errors too. Anything that prevents
+      // the verbatim placement block from being assembled is a hard stop.
+      console.error("[ask-astrology] PLACEMENT_BLOCK_FAILED — exception during build", e);
+      await failAndStop(
+        `PLACEMENT_BLOCK_FAILED: an error occurred while building the verbatim placement reference block (${e instanceof Error ? e.message : String(e)}). Generation aborted to prevent a drifted reading.`,
+      );
+      return;
     }
 
     const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
@@ -11650,6 +11675,53 @@ ${natalGroundTruthLines}`
 
     if (finishReason === "max_tokens" || finishReason === "length") {
       console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Ask 2 — Debug capture (env-gated). Persists the literal prompt and
+    // the raw streamed AI response BEFORE any post-processing runs. This
+    // is the only way to diagnose whether natal/SR drift originates in
+    // (a) the prompt, (b) the model, or (c) post-processing. To enable:
+    //   set ASK_DEBUG_CAPTURE=1 on the edge function. Leave OFF in normal
+    //   operation — captures contain full chart context and prompt body.
+    // Failures here are non-fatal: a missed capture must NEVER kill a
+    // user's generation.
+    // ─────────────────────────────────────────────────────────────────────
+    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1") {
+      try {
+        const systemPromptStr = Array.isArray(systemBlocks)
+          ? systemBlocks
+              .map((b: any) => (typeof b?.text === "string" ? b.text : JSON.stringify(b)))
+              .join("\n\n───── SYSTEM BLOCK BREAK ─────\n\n")
+          : String(systemBlocks ?? "");
+
+        const captureRow = {
+          job_id: jobId,
+          user_id: userId ?? null,
+          chart_id: chartId ?? null,
+          system_prompt: systemPromptStr,
+          user_messages: sanitizedMessages,
+          chart_context: sanitizedChartContext,
+          raw_ai_response: content,
+          model: "claude-sonnet-4-6",
+          finish_reason: finishReason || null,
+          notes: `pre-postprocess capture; content_len=${content.length}; cache_read=${cacheReadTokens}; cache_write=${cacheCreationTokens}`,
+        };
+        const capSvc = getServiceClient();
+        const { error: capErr } = await capSvc
+          .from("ask_generation_captures")
+          .insert(captureRow);
+        if (capErr) {
+          console.warn("[ask-astrology] debug capture insert failed (non-fatal):", capErr.message);
+        } else {
+          console.log(`[ask-astrology] debug capture written for job ${jobId}`);
+        }
+      } catch (capEx) {
+        console.warn(
+          "[ask-astrology] debug capture threw (non-fatal):",
+          capEx instanceof Error ? capEx.message : String(capEx),
+        );
+      }
     }
 
     // ===== POST-PROCESSING =====
