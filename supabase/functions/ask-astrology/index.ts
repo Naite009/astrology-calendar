@@ -11060,7 +11060,41 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
+    let { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
+    const replayCaptureId: string | null = typeof body?.replayCaptureId === "string" && body.replayCaptureId.length > 0
+      ? body.replayCaptureId
+      : null;
+
+    // ─────────────────────────────────────────────────────────────────
+    // REPLAY MODE — re-render a previously captured raw AI response
+    // through the post-process + autofix pipeline WITHOUT calling
+    // Anthropic. Lets us test fixes against the same prose for free.
+    // The client only needs to send { replayCaptureId } (plus the usual
+    // chartId for routing); we hydrate messages/chartContext from the
+    // saved capture row.
+    // ─────────────────────────────────────────────────────────────────
+    if (replayCaptureId && !existingJobId) {
+      const svcReplay = getServiceClient();
+      const { data: cap, error: capLoadErr } = await svcReplay
+        .from("ask_generation_captures")
+        .select("chart_id, user_id, raw_ai_response, chart_context, user_messages")
+        .eq("id", replayCaptureId)
+        .maybeSingle();
+      if (capLoadErr || !cap) {
+        return new Response(JSON.stringify({ error: "Replay capture not found", replayCaptureId }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Hydrate fields the rest of the submit path expects.
+      messages = Array.isArray(cap.user_messages) ? cap.user_messages : messages;
+      chartContext = typeof cap.chart_context === "string" ? cap.chart_context : chartContext;
+      chartId = chartId || cap.chart_id || "replay";
+      currentDate = currentDate || new Date().toISOString().slice(0, 10);
+      deterministicTiming = deterministicTiming ?? null;
+      console.log(`[ask-astrology] REPLAY mode: capture=${replayCaptureId} chart=${chartId} prose_len=${(cap.raw_ai_response || "").length}`);
+    }
+
 
     // === STATUS POLL: client polls GET-style POST with { jobId } only ===
     if (existingJobId && !messages) {
