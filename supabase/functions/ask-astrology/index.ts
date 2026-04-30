@@ -125,6 +125,57 @@ function repairTruncatedJson(input: string): any | null {
   }
 }
 
+// Best-effort repair for AI outputs that include rhetorical/quoted phrases
+// inside JSON string values without escaping them, e.g.
+//   "body": "the question is "am I doing enough?" — really"
+// Strategy: walk the string treating it as JSON. When inside a string and
+// we encounter a '"' that is NOT followed by one of the legal "string-end"
+// terminators (whitespace/, then , : } ] or end-of-string), assume it is
+// a content quote and escape it. This is intentionally conservative — it
+// only patches the case that has been seen in production.
+function escapeStrayQuotesInJsonStrings(input: string): string | null {
+  if (typeof input !== "string" || input.length === 0) return null;
+  const out: string[] = [];
+  let inStr = false;
+  let escape = false;
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i];
+    if (escape) {
+      out.push(c);
+      escape = false;
+      continue;
+    }
+    if (c === "\\") {
+      out.push(c);
+      escape = true;
+      continue;
+    }
+    if (c === '"') {
+      if (!inStr) {
+        inStr = true;
+        out.push(c);
+        continue;
+      }
+      // We are inside a string and saw '"'. Look ahead past whitespace
+      // for a structural terminator. If found → real string end.
+      let j = i + 1;
+      while (j < input.length && (input[j] === " " || input[j] === "\t" || input[j] === "\n" || input[j] === "\r")) j++;
+      const next = input[j];
+      const isStringEnd = next === "," || next === "}" || next === "]" || next === ":" || j >= input.length;
+      if (isStringEnd) {
+        inStr = false;
+        out.push(c);
+      } else {
+        // Stray inner quote — escape it.
+        out.push("\\\"");
+      }
+      continue;
+    }
+    out.push(c);
+  }
+  return out.join("");
+}
+
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return value;
@@ -9289,6 +9340,7 @@ const regenerateAffectedSections = async (
     "",
     "RULES:",
     "- Output JSON ONLY. No prose, no markdown fences.",
+    "- INSIDE every JSON string value, NEVER use a raw double-quote character. If you want to quote a phrase, use single quotes (e.g. 'am I doing enough?') or curly quotes (e.g. \u201Cam I doing enough?\u201D). A raw \" inside a string value WILL break the JSON parser and reject the entire reading.",
     "- Output shape: { \"sections\": [ { \"title\": string, \"body\"?: string, \"bullets\"?: [{ \"index\": number, \"text\": string }], \"items\"?: [{ \"index\": number, \"value\": string }] } ] }",
     "- Keep section titles EXACTLY as given.",
     "- Preserve the same length and tone — do not add new conclusions, predictions, or new aspect names.",
@@ -9431,6 +9483,7 @@ const requestMissingSections = async (
     "",
     "RULES:",
     "- Output JSON ONLY. No prose, no markdown fences.",
+    "- INSIDE every JSON string value, NEVER use a raw double-quote character. If you want to quote a phrase, use single quotes (e.g. 'am I doing enough?') or curly quotes (e.g. \u201Cam I doing enough?\u201D). A raw \" inside a string value WILL break the JSON parser and reject the entire reading.",
     "- Output shape: { \"sections\": [ { \"title\": string, \"type\": string, \"body\": string, \"bullets\"?: [{ \"text\": string }] } ] }",
     "- Use the EXACT section name from the missing list as the `title`.",
     "- Set `type` to a lowercased snake_case version of the title (e.g. \"needs_profile\", \"relationship_pattern\", \"essence\", \"how_this_person\").",
@@ -9569,6 +9622,7 @@ const requestMissingBullets = async (
     "",
     "RULES:",
     "- Output JSON ONLY. No prose, no markdown fences.",
+    "- INSIDE every JSON string value, NEVER use a raw double-quote character. If you want to quote a phrase, use single quotes (e.g. 'am I doing enough?') or curly quotes (e.g. \u201Cam I doing enough?\u201D). A raw \" inside a string value WILL break the JSON parser and reject the entire reading.",
     "- Output shape: { \"bullets\": [ { \"section\": string, \"label\": string, \"text\": string } ] }",
     "- `section` and `label` MUST exactly match the values from the request list above (these are the lookup keys).",
     "- `text` must be a substantive 1–3 sentence body grounded in the chart context provided in the system prompt.",
@@ -11809,9 +11863,34 @@ ${natalGroundTruthLines}`
       try {
         parsedContent = JSON.parse(cleaned);
       } catch (firstErr) {
-        // TRUNCATION REPAIR: When max_tokens hits, the JSON ends mid-string.
-        // Try progressively shorter prefixes that close cleanly.
-        if (wasTruncated) {
+        // UNESCAPED-QUOTE REPAIR: The model sometimes writes rhetorical
+        // quotes inside JSON string values (e.g. "the question is "am I
+        // doing enough?"") which breaks JSON.parse at the inner ". When
+        // the parser complains "Expected ',' or '}'", try escaping any
+        // raw " that appears inside an open string and re-parsing.
+        const firstMsg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+        const looksLikeStrayQuote =
+          /Expected\s+',\'\s+or\s+'\}'/i.test(firstMsg) ||
+          /Expected\s+',\'\s+or\s+'\]'/i.test(firstMsg) ||
+          /Unexpected\s+(?:string|token)/i.test(firstMsg);
+        if (looksLikeStrayQuote) {
+          try {
+            const repaired = escapeStrayQuotesInJsonStrings(cleaned);
+            if (repaired && repaired !== cleaned) {
+              parsedContent = JSON.parse(repaired);
+              (parsedContent as any)._stray_quote_repair = true;
+              console.warn("[ask-astrology] JSON parse recovered after escaping stray inner quotes");
+            }
+          } catch (strayErr) {
+            console.warn(
+              "[ask-astrology] stray-quote repair failed:",
+              strayErr instanceof Error ? strayErr.message : String(strayErr),
+            );
+          }
+        }
+        if (parsedContent) {
+          // recovered — fall through past the truncation branch
+        } else if (wasTruncated) {
           console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
           parsedContent = repairTruncatedJson(cleaned);
           // Bug F fix: only accept the repair if it produced a usable
