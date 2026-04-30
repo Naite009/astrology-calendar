@@ -7264,6 +7264,13 @@ const runPostProcessingPipeline = (
     propagateNatalRetrogradeInProse(parsedContent, ctx, log),
   );
 
+  // 11c.2. Cross-section repetition guard for the deterministic retrograde
+  // explainer sentences injected/propagated above. One acknowledgement is
+  // enough; repeated copies make the external gate block the download.
+  safeRun("stripDuplicateNatalRetrogradeExplainers", () =>
+    stripDuplicateNatalRetrogradeExplainers(parsedContent, log),
+  );
+
   // 11d. Stray digit scrub — kill malformed ordinals like "9th74" or
   // "1st77" where a footnote/index digit got welded onto a house ordinal
   // with no separator.
