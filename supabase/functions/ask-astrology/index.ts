@@ -5559,13 +5559,33 @@ const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
       planets: polarityCounts.Yin,
     },
   ];
-  const dominantOf = (arr: Array<{ name: string; count: number }>) =>
-    arr.slice().sort((a,b)=>b.count-a.count)[0]?.name ?? null;
+  // Tie-aware dominant resolver. When two or more entries share the top
+  // count, return them joined with " & " plus a "(tied)" suffix so
+  // downstream prose / UI does not assert a single false dominant.
+  const dominantOf = (arr: Array<{ name: string; count: number }>) => {
+    const sorted = arr.slice().sort((a, b) => b.count - a.count);
+    if (sorted.length === 0 || (sorted[0]?.count ?? 0) === 0) return null;
+    const top = sorted[0].count;
+    const tied = sorted.filter((e) => e.count === top).map((e) => e.name.split(/[\s(]/)[0]);
+    if (tied.length === 1) return tied[0];
+    return `${tied.join(" & ")} (tied)`;
+  };
+  // Also return raw tie arrays for downstream prose generation so it can
+  // emit balanced language instead of single-dominant claims.
+  const topTies = (arr: Array<{ name: string; count: number }>): string[] => {
+    const sorted = arr.slice().sort((a, b) => b.count - a.count);
+    if (sorted.length === 0 || (sorted[0]?.count ?? 0) === 0) return [];
+    const top = sorted[0].count;
+    return sorted.filter((e) => e.count === top).map((e) => e.name.split(/[\s(]/)[0]);
+  };
   return {
     elements, modalities, polarity,
     dominant_element: dominantOf(elements),
     dominant_modality: dominantOf(modalities),
     dominant_polarity: dominantOf(polarity),
+    element_ties: topTies(elements),
+    modality_ties: topTies(modalities),
+    polarity_ties: topTies(polarity),
   };
 };
 
