@@ -6719,6 +6719,29 @@ const buildValidatorTruthMap = (
   return out;
 };
 
+const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let changed = 0;
+  const visit = (node: any, path = "$."): void => {
+    if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}].`); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (key.startsWith("_")) continue;
+      if (typeof val === "string") {
+        const next = val
+          .replace(/\s*\u2014\s*/g, ", ")
+          .replace(/(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g, "$1 to $2")
+          .replace(/\s*\u2013\s*/g, ", ");
+        if (next !== val) { (node as any)[key] = next; changed++; }
+      } else {
+        visit(val, `${path}${key}.`);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (changed > 0) log.push({ type: "global_dash_strip", detail: { fields: changed } });
+};
+
 const runPlacementTableValidator = (
   parsedContent: any,
   chartContext: string,
