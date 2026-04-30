@@ -7909,7 +7909,8 @@ const stripDuplicateNatalRetrogradeExplainers = (parsedContent: any, log: Hygien
 
   const cleanString = (text: string, path: string): string => {
     if (!text || text.length < 60 || !/\bbecause\s+your\s+natal\s+[A-Z][a-z]+\s+is\s+retrograde\b/i.test(text)) return text;
-    const sentences = splitSentencesForMeta(text);
+    const prepared = text.replace(/\s+(Because\s+your\s+natal\s+[A-Z][a-z]+\s+is\s+retrograde\b)/g, "\n$1");
+    const sentences = splitSentencesForMeta(prepared);
     if (sentences.length === 0) return text;
     const kept: string[] = [];
     for (const sentence of sentences) {
