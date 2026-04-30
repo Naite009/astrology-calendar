@@ -823,11 +823,26 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const earthMutableMismatch =
       elementMismatch || earthMissingLanguage || mutableMissingLanguage;
 
+    // TIE DETECTION — if the deterministic backfill found two or more
+    // elements (or modalities) tied for top count, ANY single-dominant
+    // claim in the prose ("Earth emphasis", "Fire-dominant", "an Air
+    // chart", etc.) is wrong by definition. Force the deterministic
+    // rewrite so the section reads as a balance instead of a false
+    // dominance.
+    const elementTies: string[] = Array.isArray((section as any)._element_ties)
+      ? (section as any)._element_ties : [];
+    const modalityTies: string[] = Array.isArray((section as any)._modality_ties)
+      ? (section as any)._modality_ties : [];
+    const hasElementTie = elementTies.length >= 2;
+    const hasModalityTie = modalityTies.length >= 2;
+    const SINGLE_DOMINANT_CLAIM = /\b(?:Fire|Earth|Air|Water)[-\s](?:emphasis|dominant|dominance|heavy|leaning|chart|year)\b|\bdominant\s+(?:Fire|Earth|Air|Water)\b|\b(?:Fire|Earth|Air|Water)\s+is\s+dominant\b/i;
+    const tieContradicted = hasElementTie && SINGLE_DOMINANT_CLAIM.test(text);
+
     // FIX #3 (option A — INTEGRATED REWRITE):
     // Throw away generic or incomplete AI text whenever coverage is missing
     // OR when the wording contradicts the section's own dominant element /
     // modality data (e.g. Earth Mutable receiving Fire/Cardinal prose).
-    if (anyMissing || earthMutableMismatch) {
+    if (anyMissing || earthMutableMismatch || tieContradicted) {
       const collectAll = (arr: any): Array<{ name: string; count: number }> => {
         if (!Array.isArray(arr)) return [];
         const out: Array<{ name: string; count: number }> = [];
