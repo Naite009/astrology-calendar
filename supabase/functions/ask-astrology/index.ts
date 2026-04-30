@@ -10977,9 +10977,34 @@ async function processJob(args: {
           "",
         ].filter(Boolean).join("\n");
         sanitizedChartContext = `${echoBlock}\n${sanitizedChartContext}`;
+      } else {
+        // Ask 1 — Fail loud. The placement reference block is the highest
+        // trust input in the prompt. If we cannot build it from the parsed
+        // chart context, we MUST NOT proceed to the model: the model has no
+        // verbatim source of truth and every natal/SR claim becomes a guess.
+        // Surface PLACEMENT_BLOCK_FAILED to the user instead of silently
+        // shipping a reading that will drift.
+        const reason = !natalRows && !srRows
+          ? "no natal or SR rows parsed"
+          : !natalRows
+            ? "no natal rows parsed"
+            : "no SR rows parsed";
+        console.error(
+          `[ask-astrology] PLACEMENT_BLOCK_FAILED — ${reason}. natalRowsLen=${natalRows.length} srRowsLen=${srRows.length}`,
+        );
+        await failAndStop(
+          `PLACEMENT_BLOCK_FAILED: the chart's planetary positions could not be parsed (${reason}). Generation aborted to prevent a drifted reading. Please re-import the chart and try again.`,
+        );
+        return;
       }
     } catch (e) {
-      console.warn("[ask-astrology] verbatim placement reminder build failed", e);
+      // Ask 1 — Fail loud on parse/build errors too. Anything that prevents
+      // the verbatim placement block from being assembled is a hard stop.
+      console.error("[ask-astrology] PLACEMENT_BLOCK_FAILED — exception during build", e);
+      await failAndStop(
+        `PLACEMENT_BLOCK_FAILED: an error occurred while building the verbatim placement reference block (${e instanceof Error ? e.message : String(e)}). Generation aborted to prevent a drifted reading.`,
+      );
+      return;
     }
 
     const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
