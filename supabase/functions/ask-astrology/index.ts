@@ -6871,7 +6871,7 @@ const runPlacementTableValidator = (
   );
 
   const HOUSE_CLAIM_RE = new RegExp(
-    `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(${ORDINAL_WORDS_RE})\\s+house\\b`,
+    `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(?:(?:SR|Solar\\s+Return|natal)\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\b`,
     "i",
   );
   const SIGN_CLAIM_RE = new RegExp(
