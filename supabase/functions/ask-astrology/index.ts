@@ -10842,6 +10842,57 @@ async function processJob(args: {
       }
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // VERBATIM PLACEMENT REMINDER (Rule 1 — Source of Truth)
+    // ───────────────────────────────────────────────────────────────────
+    // Every recurring drift bug (natal Uranus 0°09' Gemini → 0°30' Libra,
+    // natal Chiron H5 → H8, SR Moon Aries → Libra, SR Jupiter Virgo →
+    // Cancer) has the same root cause: the AI confuses one chart body
+    // with another (natal vs SR, ruler vs ruled, Vertex vs Uranus). It
+    // succeeds when the truth value is one token away in the prompt.
+    // Build a deterministic, per-planet "ECHO EXACTLY" block from the
+    // already-parsed positions and prepend it to the chart context so it
+    // appears at the start of every prompt window.
+    try {
+      const echoNatal = parsePositionsFromContext(
+        sanitizedChartContext,
+        /NATAL Planetary Positions[^:]*:\n/,
+      );
+      const echoSr = parsePositionsFromContext(
+        sanitizedChartContext,
+        /SR Planetary Positions:\n/,
+        "SR",
+      );
+      const fmtRow = (p: { planet: string; sign: string; degree: number; minutes?: number; house?: number | null; isRetrograde?: boolean }, prefix: string) => {
+        const deg = `${p.degree}°${String(p.minutes ?? 0).padStart(2, "0")}'`;
+        const houseStr = p.house != null ? `House ${p.house}` : "House —";
+        const retro = p.isRetrograde ? " Retrograde" : " Direct";
+        return `- ${prefix} ${p.planet}: ${deg} ${p.sign}, ${houseStr},${retro}`;
+      };
+      const natalRows = echoNatal.map((p) => fmtRow(p, "natal")).join("\n");
+      const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
+      if (natalRows || srRows) {
+        const echoBlock = [
+          "═══════════════════════════════════════════════════════════════",
+          "VERBATIM PLACEMENT REFERENCE — ECHO THESE EXACTLY",
+          "═══════════════════════════════════════════════════════════════",
+          "Whenever you mention a planet's degree, sign, house, or retrograde",
+          "status in prose, the values below are the ONLY correct values.",
+          "Do not derive. Do not infer. Do not transpose between natal and SR.",
+          "If a sentence says 'natal Uranus', use the 'natal Uranus' row.",
+          "If a sentence says 'SR Moon', use the 'SR Moon' row. No exceptions.",
+          "",
+          natalRows,
+          srRows,
+          "═══════════════════════════════════════════════════════════════",
+          "",
+        ].filter(Boolean).join("\n");
+        sanitizedChartContext = `${echoBlock}\n${sanitizedChartContext}`;
+      }
+    } catch (e) {
+      console.warn("[ask-astrology] verbatim placement reminder build failed", e);
+    }
+
     const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
     const junoDataPresent = /Juno:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
 
