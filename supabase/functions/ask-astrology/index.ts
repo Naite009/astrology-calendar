@@ -8330,9 +8330,25 @@ const crossCheckPlanetPlacements = (parsedContent: any, chartContext: string, lo
   const houseRe = new RegExp(`\\b(${planetAlt})\\b(\\s+in\\s+(?:your\\s+)?)(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)(\\s+house)\\b`, "gi");
   const motionRe = new RegExp(`\\b(${planetAlt})\\b(\\s+(?:is\\s+)?)(retrograde|direct)\\b`, "gi");
 
+  // Skip rewrite if the planet mention is preceded by an explicit SR / Solar
+  // Return qualifier — the natal truth map must NEVER overwrite a correctly
+  // stated SR placement, even when the surrounding section title doesn't
+  // include "solar return" / "sr". Prose like
+  //   "The SR Sun in your 9th house, which together set..."
+  // was being rewritten to "6th house" (the natal Sun's house) because the
+  // section was a generic narrative section. The qualifier-prefix check is
+  // the per-mention safety net that the section-scope visit can't cover.
+  const SR_QUALIFIER_PREFIX_RE = /(?:\bSR\b|\bSolar\s+Return\b)\s*$/i;
+  const isSRQualifiedAt = (full: string, planetIndex: number, lookback = 24): boolean => {
+    const start = Math.max(0, planetIndex - lookback);
+    const before = full.slice(start, planetIndex);
+    return SR_QUALIFIER_PREFIX_RE.test(before);
+  };
+
   const fixString = (val: string): string => {
     let next = val;
-    next = next.replace(signRe, (m, planet, mid, sign) => {
+    next = next.replace(signRe, (m, planet, mid, sign, offset) => {
+      if (isSRQualifiedAt(next, offset)) return m;
       const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
       if (!fact?.sign) return m;
       if (fact.sign.toLowerCase() === String(sign).toLowerCase()) return m;
@@ -8340,7 +8356,8 @@ const crossCheckPlanetPlacements = (parsedContent: any, chartContext: string, lo
       noteFix(planet, m, replaced);
       return replaced;
     });
-    next = next.replace(houseRe, (m, planet, mid, ord, tail) => {
+    next = next.replace(houseRe, (m, planet, mid, ord, tail, offset) => {
+      if (isSRQualifiedAt(next, offset)) return m;
       const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
       if (!fact?.house) return m;
       const ordNum = ORDINAL_TO_NUMBER[String(ord).toLowerCase()];
@@ -8349,7 +8366,8 @@ const crossCheckPlanetPlacements = (parsedContent: any, chartContext: string, lo
       noteFix(planet, m, replaced);
       return replaced;
     });
-    next = next.replace(motionRe, (m, planet, mid, motion) => {
+    next = next.replace(motionRe, (m, planet, mid, motion, offset) => {
+      if (isSRQualifiedAt(next, offset)) return m;
       const fact = truth.get(String(planet).toLowerCase().replace(/\s+/g, " "));
       if (fact?.retrograde === undefined) return m;
       const claimsRetro = String(motion).toLowerCase() === "retrograde";
