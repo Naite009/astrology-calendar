@@ -6844,8 +6844,23 @@ const runPlacementTableValidator = (
       // Excerpt = match start..end of trailing window for the log entry.
       const excerpt = `${m[0]}`.replace(/\s+/g, " ").slice(0, 180);
 
+      // FIX: Truncate the trailing window at the first appearance of ANY
+      // competing scoped planet. Sentences like
+      //   "SR Uranus in the 9th house trining your natal Uranus in the 11th"
+      // were producing false positives: the validator matched on `natal Uranus`
+      // but the HOUSE_CLAIM_RE captured `in the 9th house` (which belongs to
+      // SR Uranus, mentioned later in the same sentence's trailing window if
+      // the natal mention came first, or in a chained earlier clause).
+      // To stop cross-attribution, we cut `trailing` at the first occurrence
+      // of any other "(natal|SR|Solar Return) <Planet>" boundary.
+      const COMPETITOR_RE = /\b(?:(?:your\s+)?natal\s+|natally\s*,?\s*(?:your\s+)?|SR\s+|Solar\s+Return\s+)[A-Z][a-zA-Z]+/g;
+      let truncatedTrailing = trailing;
+      COMPETITOR_RE.lastIndex = 0;
+      const cm = COMPETITOR_RE.exec(trailing);
+      if (cm) truncatedTrailing = trailing.slice(0, cm.index);
+
       // House claim
-      const houseMatch = trailing.match(HOUSE_CLAIM_RE);
+      const houseMatch = truncatedTrailing.match(HOUSE_CLAIM_RE);
       if (houseMatch && truth.house != null) {
         const claimedNum = ORDINAL_TO_HOUSE_NUM[houseMatch[1].toLowerCase()];
         if (claimedNum && claimedNum !== truth.house) {
