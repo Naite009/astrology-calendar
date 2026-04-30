@@ -11134,7 +11134,17 @@ async function processJob(args: {
         return `- ${prefix} ${p.planet}: ${p.sign}, ${houseStr}, ${retro}, ${deg}`;
       };
       const natalRows = echoNatal.map((p) => fmtRow(p, "Natal")).join("\n");
-      const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
+    const srInjection = parseSrAnalysisInjection(sanitizedChartContext);
+    const echoSrCanonical = echoSr.map((p) => {
+      const injectedHouse = srInjection.srHouse.get(p.planet.toLowerCase());
+      const injectedRetro = srInjection.srRetro.get(p.planet.toLowerCase());
+      return {
+        ...p,
+        house: injectedHouse ?? p.house,
+        isRetrograde: injectedRetro ?? p.isRetrograde,
+      };
+    });
+    const srRows = echoSrCanonical.map((p) => fmtRow(p, "SR")).join("\n");
       if (natalRows || srRows) {
         const echoBlock = [
           "═══════════════════════════════════════════════════════════════",
@@ -11191,13 +11201,6 @@ async function processJob(args: {
     const srYearMatch = sanitizedChartContext.match(/SOLAR RETURN\s+(\d{4})/);
     if (srYearMatch) {
       srYearFromContext = parseInt(srYearMatch[1], 10);
-    }
-
-    const chartHouseMap: Record<string, number> = {};
-    const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
-    let hm;
-    while ((hm = houseRegex.exec(sanitizedChartContext)) !== null) {
-      chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
     }
 
     const compactRelationshipInstruction = compactRelationshipMode
