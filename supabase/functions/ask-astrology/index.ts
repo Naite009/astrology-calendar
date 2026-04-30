@@ -11809,9 +11809,34 @@ ${natalGroundTruthLines}`
       try {
         parsedContent = JSON.parse(cleaned);
       } catch (firstErr) {
-        // TRUNCATION REPAIR: When max_tokens hits, the JSON ends mid-string.
-        // Try progressively shorter prefixes that close cleanly.
-        if (wasTruncated) {
+        // UNESCAPED-QUOTE REPAIR: The model sometimes writes rhetorical
+        // quotes inside JSON string values (e.g. "the question is "am I
+        // doing enough?"") which breaks JSON.parse at the inner ". When
+        // the parser complains "Expected ',' or '}'", try escaping any
+        // raw " that appears inside an open string and re-parsing.
+        const firstMsg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+        const looksLikeStrayQuote =
+          /Expected\s+',\'\s+or\s+'\}'/i.test(firstMsg) ||
+          /Expected\s+',\'\s+or\s+'\]'/i.test(firstMsg) ||
+          /Unexpected\s+(?:string|token)/i.test(firstMsg);
+        if (looksLikeStrayQuote) {
+          try {
+            const repaired = escapeStrayQuotesInJsonStrings(cleaned);
+            if (repaired && repaired !== cleaned) {
+              parsedContent = JSON.parse(repaired);
+              (parsedContent as any)._stray_quote_repair = true;
+              console.warn("[ask-astrology] JSON parse recovered after escaping stray inner quotes");
+            }
+          } catch (strayErr) {
+            console.warn(
+              "[ask-astrology] stray-quote repair failed:",
+              strayErr instanceof Error ? strayErr.message : String(strayErr),
+            );
+          }
+        }
+        if (parsedContent) {
+          // recovered — fall through past the truncation branch
+        } else if (wasTruncated) {
           console.warn("[ask-astrology] Attempting JSON repair on truncated output...");
           parsedContent = repairTruncatedJson(cleaned);
           // Bug F fix: only accept the repair if it produced a usable
