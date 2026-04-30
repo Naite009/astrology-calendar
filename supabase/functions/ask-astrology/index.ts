@@ -4921,10 +4921,18 @@ const correctNatalPlanetPositionsInProse = (
             `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
             "gi",
           );
-          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign, offset, fullStr) => {
             const claimedSignLower = String(claimedSign).toLowerCase();
             const claimedDeg = parseInt(degStr, 10);
             if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            // GUARD: skip mentions explicitly prefixed "SR <Planet>" or
+            // "Solar Return <Planet>" — those describe the SR position and
+            // must not be coerced to natal even when the wider sentence
+            // is in a natal/baseline context.
+            const lookback = (fullStr as string).slice(Math.max(0, (offset as number) - 25), offset as number);
+            if (/\bSR\s+$|\bSolar\s+Return\s+$/i.test(lookback)) {
               return match;
             }
             const signMatchesSr = claimedSignLower === sr2.sign.toLowerCase();
