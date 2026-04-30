@@ -12597,6 +12597,7 @@ ${natalGroundTruthLines}`
           // sentence 4 times back-to-back). Runs before placeholder strip
           // so the deduped prose is what every subsequent pass sees.
           dedupeRepeatedSentences(parsedContent, emissionLog);
+          stripDuplicateNatalRetrogradeExplainers(parsedContent, emissionLog);
           // Final safety net: scrub banned phrases the AI was instructed
           // never to emit ("DNA", "blueprint") and replace with neutral
           // alternatives ("Foundation"). Runs after dedupe so we don't
