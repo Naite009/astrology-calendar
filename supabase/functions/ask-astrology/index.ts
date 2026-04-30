@@ -7171,6 +7171,11 @@ const runPostProcessingPipeline = (
     scrubStrayDigitsAfterHouseOrdinal(parsedContent, log),
   );
 
+  // 11e. Global dash strip — must run before every validator/gate snapshot.
+  safeRun("stripDashesEverywhere", () =>
+    stripDashesEverywhere(parsedContent, log),
+  );
+
   // 12. Pre-gate local audit — mirrors the recurring external-gate defect
   // classes so we can see (in _validation_log) whether any defect would
   // have shipped. Diagnostic only; the canonical fact sweep above is what
