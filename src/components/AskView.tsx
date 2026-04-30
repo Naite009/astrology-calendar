@@ -381,7 +381,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // Helper to apply a completed job's result to the chat.
     const applyCompletedJob = async (job: any) => {
       if (job.status === "failed") {
-        toast.error(job.error_message || "Previous reading failed.");
+        reportAskJobFailure(job, "Previous reading failed.");
         return;
       }
       const data: any = normalizeAskResult(job.result || {});
