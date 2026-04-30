@@ -1347,28 +1347,37 @@ const repairOrbAndSentenceGlue = (parsedContent: any, log: HygieneLog) => {
   const fix = (s: string): string => {
     const before = s;
     let out = s;
-    // Pattern A: "(orb N.Capital" or "orb N.Capital" — integer orb followed
-    // by a period and a capital glued together (e.g. "orb 0.Both"). The
-    // period is the orphan decimal point. Normalize the orb to one
-    // decimal and produce "(orb 0.0°). Both".
+    // Pattern A: "(orb N.Capital" — integer orb inside parens with the
+    // closing paren missing and a capital glued (e.g. "(orb 0.Both"). The
+    // stray period is the orphan decimal point. Produce "(orb 0.0°). Both".
+    out = out.replace(
+      /\((orb\s+)(\d+)\.([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `(${orbWord}${intPart}.0°). ${cap}`,
+    );
+    // Pattern A2: "(orb N.M Capital" — decimal orb inside parens, closing
+    // paren missing, capital glued (e.g. "(orb 2.5Both"). Produce
+    // "(orb 2.5°). Both".
+    out = out.replace(
+      /\((orb\s+\d+\.\d+)([A-Z])/g,
+      (_m, head, cap) => `(${head}°). ${cap}`,
+    );
+    // Pattern A3: bare "orb N.Capital" without opening paren (e.g.
+    // "orb 0.Both"). Produce "orb 0.0°. Both".
     out = out.replace(
       /\b(orb\s+)(\d+)\.([A-Z])/g,
-      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°). ${cap}`.replace(/^/, ''),
+      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°. ${cap}`,
     );
-    // Re-fix the previous replacement which may have produced ").)" if the
-    // original had a closing paren after. Strip duplicate ")".
-    out = out.replace(/\)\.\)\s+/g, "). ");
-    // Pattern A2: "orb N.M Capital" — decimal orb with capital glued (no
-    // period/space). Insert ". " between.
+    // Pattern B: "(orb NCapital" — integer orb inside parens, no period
+    // at all (e.g. "(orb 2Both"). Produce "(orb 2.0°). Both".
     out = out.replace(
-      /\b(orb\s+\d+\.\d+)([A-Z])/g,
-      (_m, head, cap) => `${head}°). ${cap}`.replace(/\)\)/g, ')'),
+      /\((orb\s+)(\d+)([A-Z])/g,
+      (_m, orbWord, intPart, cap) => `(${orbWord}${intPart}.0°). ${cap}`,
     );
-    // Pattern B: "orb NCapital" — capital glued directly to integer orb
-    // with no period at all (e.g. "orb 2Both"). Insert ".0°). " between.
+    // Pattern B2: bare "orb NCapital" without paren. Produce
+    // "orb N.0°. Capital".
     out = out.replace(
       /\b(orb\s+)(\d+)([A-Z])/g,
-      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°). ${cap}`,
+      (_m, orbWord, intPart, cap) => `${orbWord}${intPart}.0°. ${cap}`,
     );
     // Pattern C: bare "orb N" or "orb N.M" missing the degree symbol. Use
     // a negative lookahead so a partial-match like "orb 2" inside "orb 2.5"
