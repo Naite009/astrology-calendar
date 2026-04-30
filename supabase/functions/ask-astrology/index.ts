@@ -6988,6 +6988,7 @@ const runPostProcessingPipeline = (
       const msg = err instanceof Error ? err.message : String(err);
       console.warn(`[ask-astrology][pipeline] ${name} threw (non-fatal): ${msg}`);
       log.push({ type: "pipeline_pass_error", detail: { pass: name, error: msg } });
+      if (name === "runPlacementTableValidator") throw err;
     }
   };
 
