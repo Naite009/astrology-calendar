@@ -4712,7 +4712,7 @@ const correctSrPlanetPositionsInProse = (
   // Skip structural fields and any row that's part of the placement_table
   // (the table-row normalizer handles those separately).
   const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
+    "type","id","kind",
     "planet","sign","house","degrees","aspect","natal_point","symbol",
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked","retrograde",
@@ -6735,7 +6735,7 @@ const runPlacementTableValidator = (
   // Scope-locked match patterns. Each captures: scope keyword, planet,
   // up to 200 chars of trailing context (sign/house/retrograde claims).
   const NATAL_RE = new RegExp(
-    `\\b(?:your\\s+)?(natal)\\s+(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
+    `\\b(?:(?:your\\s+)?(natal)\\s+|natally\\s*,?\\s*(?:your\\s+)?)(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
     "gi",
   );
   const SR_RE = new RegExp(
@@ -6813,7 +6813,8 @@ const runPlacementTableValidator = (
       // explicit "direct" within ~80 chars of the planet. Ignore everything
       // else (no inference from sign or other fields — that was the source
       // of the SR Venus/Mars false positives).
-      const proximate = trailing.slice(0, 80);
+      const proximate = trailing.slice(0, 120);
+      const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
           scope: scopeLabel,
@@ -6830,6 +6831,16 @@ const runPlacementTableValidator = (
           planet,
           field: "retrograde",
           claimed: false,
+          truth: true,
+          excerpt,
+          path,
+        });
+      } else if (truth.retrograde && hasPlacementClaim && !RETRO_CLAIM_RE.test(proximate)) {
+        drifts.push({
+          scope: scopeLabel,
+          planet,
+          field: "retrograde",
+          claimed: "omitted",
           truth: true,
           excerpt,
           path,
