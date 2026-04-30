@@ -6871,8 +6871,8 @@ const runPlacementTableValidator = (
   );
 
   const HOUSE_CLAIM_RE = new RegExp(
-    `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(?:(?:SR|Solar\\s+Return|natal)\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\b`,
-    "i",
+    `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(?:(SR|Solar\\s+Return|natal)\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\b`,
+    "gi",
   );
   const SIGN_CLAIM_RE = new RegExp(
     `\\bin\\s+(${VALIDATOR_SIGN_RE})\\b`,
@@ -6880,6 +6880,23 @@ const runPlacementTableValidator = (
   );
   const RETRO_CLAIM_RE = /\b(retrograde|℞|Rx)\b/i;
   const DIRECT_CLAIM_RE = /\b(?:is|was|were|becomes|became|turns|turned|stations|stationed|moving|going)\s+direct\b/i;
+
+  const houseQualifierMatchesScope = (qualifierRaw: string | undefined, scope: "natal" | "sr"): boolean => {
+    const qualifier = String(qualifierRaw || "").trim().toLowerCase();
+    if (!qualifier) return true;
+    if (scope === "sr") return qualifier === "sr" || qualifier === "solar return";
+    return qualifier === "natal";
+  };
+
+  const findScopedHouseClaim = (text: string, scope: "natal" | "sr"): { ordinal: string } | null => {
+    HOUSE_CLAIM_RE.lastIndex = 0;
+    let houseMatch: RegExpExecArray | null;
+    while ((houseMatch = HOUSE_CLAIM_RE.exec(text)) !== null) {
+      if (!houseQualifierMatchesScope(houseMatch[1], scope)) continue;
+      return { ordinal: houseMatch[2] };
+    }
+    return null;
+  };
 
   const collectDrifts = (
     value: string,
@@ -6910,16 +6927,19 @@ const runPlacementTableValidator = (
       // the natal mention came first, or in a chained earlier clause).
       // To stop cross-attribution, we cut `trailing` at the first occurrence
       // of any other "(natal|SR|Solar Return) <Planet>" boundary.
-      const COMPETITOR_RE = /\b(?:(?:your\s+)?natal\s+|natally\s*,?\s*(?:your\s+)?|SR\s+|Solar\s+Return\s+)[A-Z][a-zA-Z]+/g;
+      const COMPETITOR_RE = new RegExp(
+        `\\b(?:(?:your\\s+)?natal\\s+|natally\\s*,?\\s*(?:your\\s+)?|SR\\s+|Solar\\s+Return\\s+)(${VALIDATOR_PLANET_RE})\\b`,
+        "gi",
+      );
       let truncatedTrailing = trailing;
       COMPETITOR_RE.lastIndex = 0;
       const cm = COMPETITOR_RE.exec(trailing);
       if (cm) truncatedTrailing = trailing.slice(0, cm.index);
 
       // House claim
-      const houseMatch = truncatedTrailing.match(HOUSE_CLAIM_RE);
+      const houseMatch = findScopedHouseClaim(truncatedTrailing, scopeLabel);
       if (houseMatch && truth.house != null) {
-        const claimedNum = ORDINAL_TO_HOUSE_NUM[houseMatch[1].toLowerCase()];
+        const claimedNum = ORDINAL_TO_HOUSE_NUM[houseMatch.ordinal.toLowerCase()];
         if (claimedNum && claimedNum !== truth.house) {
           drifts.push({
             scope: scopeLabel,
