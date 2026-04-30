@@ -6829,9 +6829,38 @@ const runPlacementTableValidator = (
   };
 
   forEachProseField(parsedContent, SKIP_KEYS, ({ value, path }) => {
+    // SELF-REFLECTION GUARD: do not validate the validator's own diagnostic
+    // fields. When `runPostProcessingPipeline` runs twice (pre-gate then
+    // post-gate), the second pass sees `_validator_drift` and
+    // `_validation_log` already attached and would re-flag every excerpt
+    // string inside them as new drift. Skip any path that descends into a
+    // diagnostic / validation container.
+    if (
+      path.startsWith("$._validator_drift") ||
+      path.startsWith("$._validation_log") ||
+      path.startsWith("$._validation") ||
+      path.startsWith("$._accuracy_review") ||
+      path.startsWith("$._hygiene") ||
+      path.startsWith("$._diagnostics")
+    ) {
+      return;
+    }
     if (natalTruth.size > 0) collectDrifts(value, path, NATAL_RE, natalTruth, "natal");
     if (srTruth.size > 0) collectDrifts(value, path, SR_RE, srTruth, "sr");
   });
+
+  // Dedupe drifts by (scope, planet, field, claimed, truth) signature so a
+  // single AI mistake repeated across sections is reported once.
+  const seenSig = new Set<string>();
+  const dedupedDrifts: ValidatorDrift[] = [];
+  for (const d of drifts) {
+    const sig = `${d.scope}|${d.planet}|${d.field}|${d.claimed}|${d.truth}`;
+    if (seenSig.has(sig)) continue;
+    seenSig.add(sig);
+    dedupedDrifts.push(d);
+  }
+  drifts.length = 0;
+  drifts.push(...dedupedDrifts);
 
   // Group drifts for the log + diagnostic field.
   const summary = {
