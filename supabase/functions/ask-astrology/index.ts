@@ -1103,11 +1103,26 @@ const rewriteSentencePronouns = (sentence: string): string => {
   // rule only matched a closed verb whitelist; expand to ANY lowercase
   // word starting with a letter, since 2nd-person product voice means
   // "they" never validly refers to anyone but the subject in this context.
-  // Conservative: still skip when preceded by a capitalized name token.
+  // Conservative: still skip when preceded by a capitalized name token,
+  // OR when "they" appears inside a contrastive clause where rewriting to
+  // "you" produces nonsense (e.g. "you hear what people mean rather than
+  // what they say" — rewriting "they" to "you" gives "what you say",
+  // which contradicts the sentence). The contrastive pattern is detected
+  // when the preceding ~30 chars contain "rather than what", "instead of
+  // what", "not what", "vs what", "versus what", or "compared to what".
   s = s.replace(
     /(^|[\s,()"'])(they|They)\b(?=\s+[a-z])/g,
-    (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
+    (match, pre, word, offset, fullString) => {
+      const lookback = typeof offset === "number" && typeof fullString === "string"
+        ? fullString.slice(Math.max(0, offset - 40), offset + (pre?.length || 0))
+        : "";
+      if (/\b(?:rather\s+than|instead\s+of|not|vs\.?|versus|compared\s+to)\s+what\s*$/i.test(lookback)) {
+        return match;
+      }
+      return `${pre}${word === "They" ? "You" : "you"}`;
+    },
   );
+
   // Object pronoun "them" → "you" mid-sentence after verbs that nearly
   // always refer back to the subject. Same verb whitelist as before but
   // expanded.
@@ -1296,6 +1311,79 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
     console.info("[ask-astrology] pronouns rewritten", { stringsTouched, sentencesRewritten });
   }
 };
+
+// ──────────────────────────────────────────────────────────────────────────
+// ORB / SENTENCE GLUE REPAIR — Fix 3
+// The AI sometimes emits truncated orb values immediately followed by the
+// next sentence with no degree symbol or sentence break, e.g.
+//   "SR Orcus square natal Mars, orb 0.Both are retrograde and..."
+// or
+//   "...orb 2.5The two together..."
+// This sanitizer:
+//   1. Inserts "° . " between an orb numeric value and a following capital
+//      letter / "Both" / "The" / "These" / "Together".
+//   2. Restores the degree symbol on a bare "orb N" / "orb N.M" when followed
+//      by a sentence break, period, or end-of-string.
+// Conservative: only matches the literal "orb " keyword so it never touches
+// numeric values in unrelated prose.
+// ──────────────────────────────────────────────────────────────────────────
+const repairOrbAndSentenceGlue = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let stringsTouched = 0;
+  const examples: string[] = [];
+  const fix = (s: string): string => {
+    const before = s;
+    let out = s;
+    // Pattern A: "orb N.Capital" — period present but capital glued (no
+    // space). Insert "°. " between number and capital.
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)\.([A-Z])/g,
+      (_m, head, cap) => `${head}°. ${cap}`,
+    );
+    // Pattern B: "orb NCapital" — capital glued directly to number with no
+    // period at all (e.g. "orb 2Both"). Insert "°. " between.
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)([A-Z])/g,
+      (_m, head, cap) => `${head}°. ${cap}`,
+    );
+    // Pattern C: bare "orb N" or "orb N.M" missing the degree symbol. Use a
+    // negative lookahead so a partial-match like "orb 2" inside "orb 2.5"
+    // is never matched on its own (would corrupt the decimal).
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)(?!\.?\d)(?!°)/g,
+      (_m, head) => `${head}°`,
+    );
+    if (out !== before && examples.length < 5) {
+      examples.push(`${before.slice(0, 100)} → ${out.slice(0, 100)}`);
+    }
+    return out;
+  };
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === "string") {
+        if (val.length < 5 || !/\borb\s+\d/i.test(val)) continue;
+        const next = fix(val);
+        if (next !== val) {
+          (node as any)[key] = next;
+          stringsTouched++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (stringsTouched > 0) {
+    log.push({
+      type: "orb_sentence_glue_repaired",
+      detail: { strings_touched: stringsTouched, examples },
+    });
+    console.info("[ask-astrology] orb/sentence glue repaired", { stringsTouched, examples });
+  }
+};
+
 
 // ──────────────────────────────────────────────────────────────────────────
 // CROSS-SECTION ASPECT DEDUPE — Defect 2
@@ -12645,7 +12733,7 @@ ${natalGroundTruthLines}`
           // readings so canned aspect interpretations ("Their drive runs
           // into walls") become "Your drive runs into walls".
           rewriteThirdPersonPronouns(parsedContent, emissionLog);
-          // NEW (Defect 2): Detect the SAME aspect interpretation appearing
+          repairOrbAndSentenceGlue(parsedContent, emissionLog);
           // verbatim across two different narrative sections and drop the
           // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
           // so identical post-rewrite copies are also caught.
@@ -12885,7 +12973,7 @@ ${natalGroundTruthLines}`
           // which is generated by enforceNonZeroCoverage earlier in the
           // pipeline and is NOT in PRONOUN_REWRITE_SAFE_KEYS.
           rewriteThirdPersonPronouns(parsedContent, emissionLog);
-          // FIX 3 — RELATIONSHIP PATTERN SECTION ENFORCER: rename close
+          repairOrbAndSentenceGlue(parsedContent, emissionLog);
           // variants of the title and insert a deterministic minimal section
           // if missing entirely, so Replit's MISSING_REQUIRED_SECTION gate for
           // "Pattern / Connection Context" cannot fire on relationship readings.
