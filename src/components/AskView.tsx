@@ -24,6 +24,7 @@ import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
+import { AskReplayDialog } from "@/components/AskReplayDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
@@ -2437,6 +2438,44 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                   Regenerate
                 </Button>
               )}
+              <AskReplayDialog
+                chartId={activeChartId || ""}
+                disabled={isLoading}
+                onReplayed={(result, cap) => {
+                  // Hand the re-rendered reading back to the chat exactly
+                  // like a fresh assistant response. Skips AI cost.
+                  if (!result) return;
+                  const chartForRequest = selectedChart;
+                  const chartIdForRequest = activeChartId || cap.chart_id || "replay";
+                  let assistantEntry: ChatEntry;
+                  if (result.sections) {
+                    assistantEntry = { role: "assistant", content: "", reading: result as StructuredReading };
+                  } else if (result.raw) {
+                    assistantEntry = { role: "assistant", content: result.raw };
+                  } else {
+                    assistantEntry = { role: "assistant", content: JSON.stringify(result, null, 2) };
+                  }
+                  // Synthesize a "user" entry so the chat shows context for
+                  // the replay. Lightweight — we don't have the original
+                  // question text here, just a marker.
+                  const replayLabel: ChatEntry = {
+                    role: "user",
+                    content: `↻ Replay of saved capture ${cap.id.slice(0, 8)} (${cap.prose_len ?? "?"} chars)`,
+                  };
+                  const nextEntries = [...entries, replayLabel, assistantEntry];
+                  setEntries(nextEntries);
+                  saveActiveChat(chartIdForRequest, nextEntries);
+                  upsertConversationSnapshot(nextEntries, chartIdForRequest, chartForRequest?.name || "Replay");
+                  if (assistantEntry.reading && chartForRequest) {
+                    saveLastReading(chartIdForRequest, {
+                      name: chartForRequest.name,
+                      birthDate: chartForRequest.birthDate,
+                      birthTime: chartForRequest.birthTime,
+                      birthLocation: formatLocationTitleCase(chartForRequest.birthLocation || ""),
+                    }, [assistantEntry.reading]);
+                  }
+                }}
+              />
               {entries.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={startNewQuestion} className="text-muted-foreground" title="Start a new question (saves current to history)">
                   <Plus className="h-4 w-4 mr-1" />

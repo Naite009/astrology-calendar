@@ -11060,7 +11060,41 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
+    let { messages, chartContext, currentDate, deterministicTiming, chartId, jobId: existingJobId, userLocations } = body;
+    const replayCaptureId: string | null = typeof body?.replayCaptureId === "string" && body.replayCaptureId.length > 0
+      ? body.replayCaptureId
+      : null;
+
+    // ─────────────────────────────────────────────────────────────────
+    // REPLAY MODE — re-render a previously captured raw AI response
+    // through the post-process + autofix pipeline WITHOUT calling
+    // Anthropic. Lets us test fixes against the same prose for free.
+    // The client only needs to send { replayCaptureId } (plus the usual
+    // chartId for routing); we hydrate messages/chartContext from the
+    // saved capture row.
+    // ─────────────────────────────────────────────────────────────────
+    if (replayCaptureId && !existingJobId) {
+      const svcReplay = getServiceClient();
+      const { data: cap, error: capLoadErr } = await svcReplay
+        .from("ask_generation_captures")
+        .select("chart_id, user_id, raw_ai_response, chart_context, user_messages")
+        .eq("id", replayCaptureId)
+        .maybeSingle();
+      if (capLoadErr || !cap) {
+        return new Response(JSON.stringify({ error: "Replay capture not found", replayCaptureId }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Hydrate fields the rest of the submit path expects.
+      messages = Array.isArray(cap.user_messages) ? cap.user_messages : messages;
+      chartContext = typeof cap.chart_context === "string" ? cap.chart_context : chartContext;
+      chartId = chartId || cap.chart_id || "replay";
+      currentDate = currentDate || new Date().toISOString().slice(0, 10);
+      deterministicTiming = deterministicTiming ?? null;
+      console.log(`[ask-astrology] REPLAY mode: capture=${replayCaptureId} chart=${chartId} prose_len=${(cap.raw_ai_response || "").length}`);
+    }
+
 
     // === STATUS POLL: client polls GET-style POST with { jobId } only ===
     if (existingJobId && !messages) {
@@ -11156,7 +11190,7 @@ Deno.serve(async (req) => {
 
     // Kick off background processing — survives client disconnect / tab switch / HMR
     // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
-    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations }));
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations, replayCaptureId }));
 
     return new Response(JSON.stringify({ jobId, status: "queued" }), {
       status: 202,
@@ -11183,8 +11217,9 @@ async function processJob(args: {
   currentDate: any;
   deterministicTiming: any;
   userLocations?: { current?: string; considering1?: string; considering2?: string } | null;
+  replayCaptureId?: string | null;
 }) {
-  const { jobId, messages, chartContext, currentDate, deterministicTiming, userLocations } = args;
+  const { jobId, messages, chartContext, currentDate, deterministicTiming, userLocations, replayCaptureId } = args;
   const svc = getServiceClient();
   const PROCESS_WALL_CLOCK_BUDGET_MS = 330_000;
   const processStartedAt = Date.now();
@@ -11638,6 +11673,27 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     let response: Response | null = null;
     let lastError = "";
     let content = "";
+    // REPLAY MODE — load saved AI prose so the AI fetch loop is skipped.
+    // The post-process / autofix pipeline below treats this exactly like
+    // a fresh AI response; ask_jobs.result will be the re-parsed output.
+    if (replayCaptureId) {
+      try {
+        const { data: capRow, error: capErr } = await svc
+          .from("ask_generation_captures")
+          .select("raw_ai_response")
+          .eq("id", replayCaptureId)
+          .maybeSingle();
+        if (capErr || !capRow?.raw_ai_response) {
+          await failAndStop(`Replay capture ${replayCaptureId} not found or empty.`);
+          return;
+        }
+        content = String(capRow.raw_ai_response);
+        console.log(`[ask-astrology] REPLAY processJob: loaded ${content.length} chars from capture ${replayCaptureId}; AI call will be skipped.`);
+      } catch (e) {
+        await failAndStop(`Replay load failed: ${e instanceof Error ? e.message : String(e)}`);
+        return;
+      }
+    }
     let finishReason = "";
     // Cache telemetry — proves prompt caching is actually hitting in prod.
     // cache_read = tokens served from cache (90% cheaper, near-zero latency).
@@ -11664,7 +11720,7 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     // refactor is scoped to relationship readings only (per user spec).
     // Hoisted so the post-parse hygiene block can attach _verified_activations.
     let verifiedActivationsForResult: VerifiedActivation[] = [];
-    if (isRelationshipQuestion) {
+    if (isRelationshipQuestion && !replayCaptureId) {
       try {
         // Re-derive pure natal / SR text blocks from sanitizedChartContext.
         // These mirror the regexes in buildNatalGroundTruthBlock and become
@@ -12032,7 +12088,7 @@ ${natalGroundTruthLines}`
     // Failures here are non-fatal: a missed capture must NEVER kill a
     // user's generation.
     // ─────────────────────────────────────────────────────────────────────
-    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1") {
+    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1" && !replayCaptureId) {
       try {
         const systemPromptStr = Array.isArray(systemBlocks)
           ? systemBlocks
