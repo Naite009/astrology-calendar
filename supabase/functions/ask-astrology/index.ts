@@ -4751,8 +4751,18 @@ const correctSrPlanetPositionsInProse = (
           "g",
         );
 
-        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign, offset, fullStr) => {
           if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
+          // GUARD: do not rewrite when the planet mention is explicitly
+          // qualified as natal (e.g. "natal Venus at 10°30' Aries",
+          // "your natal Venus", "natally Venus"). Such mentions describe
+          // the natal position and must not be coerced to the SR position
+          // even if the wider sentence has SR context (typical pattern:
+          // "SR Saturn conjunct natal Venus at 10°30' Aries").
+          const lookback = (fullStr as string).slice(Math.max(0, (offset as number) - 25), offset as number);
+          if (/\b(?:your\s+)?natal\s+$|\bnatally\s*,?\s*(?:your\s+)?$|\bbirth\s+$/i.test(lookback)) {
+            return match;
+          }
           const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
           const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
           if (!claimedIsNatal && !degreeMatchesSr) return match;
@@ -4911,10 +4921,18 @@ const correctNatalPlanetPositionsInProse = (
             `\\b${planet}\\b(\\s+(?:℞|Rx|R)\\b)?(\\s+(?:at|in|is|sits\\s+in|=|—|,)\\s*)(\\d+)°(?:(\\d+)')?\\s+(${SIGN_NAMES_RE})\\b`,
             "gi",
           );
-          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+          s2 = s2.replace(reBleed, (match, retroPart, gap, degStr, minStr, claimedSign, offset, fullStr) => {
             const claimedSignLower = String(claimedSign).toLowerCase();
             const claimedDeg = parseInt(degStr, 10);
             if (claimedSignLower === truth.sign.toLowerCase() && claimedDeg === truth.degree) {
+              return match;
+            }
+            // GUARD: skip mentions explicitly prefixed "SR <Planet>" or
+            // "Solar Return <Planet>" — those describe the SR position and
+            // must not be coerced to natal even when the wider sentence
+            // is in a natal/baseline context.
+            const lookback = (fullStr as string).slice(Math.max(0, (offset as number) - 25), offset as number);
+            if (/\bSR\s+$|\bSolar\s+Return\s+$/i.test(lookback)) {
               return match;
             }
             const signMatchesSr = claimedSignLower === sr2.sign.toLowerCase();
