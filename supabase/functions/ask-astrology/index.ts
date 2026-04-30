@@ -12732,7 +12732,7 @@ ${natalGroundTruthLines}`
           // readings so canned aspect interpretations ("Their drive runs
           // into walls") become "Your drive runs into walls".
           rewriteThirdPersonPronouns(parsedContent, emissionLog);
-          // NEW (Defect 2): Detect the SAME aspect interpretation appearing
+          repairOrbAndSentenceGlue(parsedContent, emissionLog);
           // verbatim across two different narrative sections and drop the
           // duplicates (keep first occurrence). Runs AFTER pronoun rewrite
           // so identical post-rewrite copies are also caught.
