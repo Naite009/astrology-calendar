@@ -5802,37 +5802,47 @@ const backfillStructuralSectionsFromChartContext = (
       titleLower.includes("elemental") ||
       titleLower.includes("modal balance")
     ) {
-      const isMissingLabels = (arr: any[]): boolean =>
-        !Array.isArray(arr) || arr.length === 0 ||
-        arr.some((e) => !e || typeof e.name !== "string" || !e.name.trim());
-      const hasElements = Array.isArray(section.elements) && section.elements.length > 0;
-      const hasModalities = Array.isArray(section.modalities) && section.modalities.length > 0;
-      const elementsBroken = isMissingLabels(section.elements);
-      const modalitiesBroken = isMissingLabels(section.modalities);
-      const polarityBroken = isMissingLabels(section.polarity);
-      const needsRepair = elementsBroken || modalitiesBroken || polarityBroken || !hasElements || !hasModalities;
-      if (needsRepair && natalPositions.length >= 8) {
-        const built = buildElementalBalanceFromPositions(natalPositions);
-        // Preserve any AI-authored interpretations that we DO have, by
-        // matching on count or order. If labels were missing, reorder to
-        // match the deterministic name list.
-        const mergeByOrder = (aiArr: any[], builtArr: any[]) => {
-          if (!Array.isArray(aiArr) || aiArr.length === 0) return builtArr;
-          return builtArr.map((b, i) => {
-            const ai = aiArr[i];
+      // Route SR-titled elemental/modal sections to SR positions, natal
+      // sections to natal positions. The 10-traditional-planet filter is
+      // applied inside buildElementalBalanceFromPositions — minor bodies
+      // and asteroids are NEVER included in element/modality counts.
+      const sourcePositions = isSR ? srPositions : natalPositions;
+      if (sourcePositions.length >= 8) {
+        const built = buildElementalBalanceFromPositions(sourcePositions);
+        // Counts are deterministic facts — always overwrite the AI's
+        // arrays. Preserve any AI-authored qualitative `interpretation`
+        // strings on each entry (the count/planets/symbol come from the
+        // deterministic build).
+        const mergeByName = (aiArr: any[], builtArr: any[]) => {
+          const aiByRoot: Record<string, any> = {};
+          if (Array.isArray(aiArr)) {
+            for (const e of aiArr) {
+              if (!e || typeof e.name !== "string") continue;
+              const root = e.name.split(/[\s(]/)[0].toLowerCase();
+              aiByRoot[root] = e;
+            }
+          }
+          return builtArr.map((b) => {
+            const root = b.name.split(/[\s(]/)[0].toLowerCase();
+            const ai = aiByRoot[root];
             const interpretation = ai && typeof ai.interpretation === "string" && ai.interpretation.trim()
               ? ai.interpretation : undefined;
             return interpretation ? { ...b, interpretation } : b;
           });
         };
-        if (elementsBroken || !hasElements) section.elements = mergeByOrder(section.elements, built.elements);
-        if (modalitiesBroken || !hasModalities) section.modalities = mergeByOrder(section.modalities, built.modalities);
-        if (polarityBroken) section.polarity = mergeByOrder(section.polarity, built.polarity);
+        section.elements = mergeByName(section.elements, built.elements);
+        section.modalities = mergeByName(section.modalities, built.modalities);
+        section.polarity = mergeByName(section.polarity, built.polarity);
         section.dominant_element = built.dominant_element;
         section.dominant_modality = built.dominant_modality;
         section.dominant_polarity = built.dominant_polarity;
+        // Stash tie metadata for the deterministic prose rewriter.
+        (section as any)._element_ties = built.element_ties;
+        (section as any)._modality_ties = built.modality_ties;
+        (section as any)._polarity_ties = built.polarity_ties;
+        (section as any)._chart_scope = isSR ? "SR" : "NATAL";
         backfilled++;
-        details.push(`${section.title}: elemental/modal labels repaired (elementsBroken=${elementsBroken}, modalitiesBroken=${modalitiesBroken}, polarityBroken=${polarityBroken})`);
+        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${isSR ? "SR" : "NATAL"}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
       }
     }
   }
