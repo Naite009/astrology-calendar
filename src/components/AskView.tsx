@@ -2188,7 +2188,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       );
 
       if (job.status === "failed") {
-        toast.error(job.error_message || "Reading failed. Please try again.");
+        reportAskJobFailure(job, "Reading failed. Please try again.");
         setIsLoading(false);
         return;
       }
