@@ -6840,7 +6840,7 @@ const runPlacementTableValidator = (
     "i",
   );
   const RETRO_CLAIM_RE = /\b(retrograde|℞|Rx)\b/i;
-  const DIRECT_CLAIM_RE = /\b(direct|moving\s+direct|going\s+direct)\b/i;
+  const DIRECT_CLAIM_RE = /\b(?:is|was|were|becomes|became|turns|turned|stations|stationed|moving|going)\s+direct\b/i;
 
   const collectDrifts = (
     value: string,
@@ -6919,6 +6919,7 @@ const runPlacementTableValidator = (
       // competitor-truncated window so a later "SR Venus retrograde" can't
       // be attributed to an earlier "natal Venus" mention (and vice versa).
       const proximate = truncatedTrailing.slice(0, 120);
+      const proximateSansTimingPasses = proximate.replace(/\bPass\s+\d+[^,;)]*\bDirect\b/gi, "");
       const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
@@ -6930,22 +6931,12 @@ const runPlacementTableValidator = (
           excerpt,
           path,
         });
-      } else if (DIRECT_CLAIM_RE.test(proximate) && truth.retrograde) {
+      } else if (DIRECT_CLAIM_RE.test(proximateSansTimingPasses) && truth.retrograde) {
         drifts.push({
           scope: scopeLabel,
           planet,
           field: "retrograde",
           claimed: false,
-          truth: true,
-          excerpt,
-          path,
-        });
-      } else if (truth.retrograde && hasPlacementClaim && !RETRO_CLAIM_RE.test(proximate)) {
-        drifts.push({
-          scope: scopeLabel,
-          planet,
-          field: "retrograde",
-          claimed: "omitted",
           truth: true,
           excerpt,
           path,
