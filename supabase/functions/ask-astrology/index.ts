@@ -4925,6 +4925,43 @@ const correctNatalPlanetPositionsInProse = (
       if (touched) next = sentences.join(" ");
     }
 
+    // PASS 2b — natal sign-only bleed scrub. Latest regression pattern:
+    // "Natally, your Mercury in Aries" where Aries is the SR Mercury sign
+    // and natal Mercury is Taurus. No degree is present, so PASS 1/2 miss it.
+    // Only rewrite inside explicit natal/natally/baseline context, never SR.
+    if (val) {
+      const sentences2b = next.split(sentenceSplit);
+      let touched2b = false;
+      for (let i = 0; i < sentences2b.length; i++) {
+        const s = sentences2b[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;
+        if (!NATAL_CONTEXT_RE.test(s)) continue;
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const srSignOnly = srByPlanet.get(planet.toLowerCase());
+          if (!srSignOnly) continue;
+          if (srSignOnly.sign === truth.sign) continue;
+          const signOnlyRe = new RegExp(
+            `\\b${planet}\\b(\\s+(?:retrograde|℞|Rx|R)\\b)?(\\s+in\\s+)(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(signOnlyRe, (match, retroPart, gap, claimedSign) => {
+            const claimed = String(claimedSign);
+            if (claimed.toLowerCase() === truth.sign.toLowerCase()) return match;
+            if (claimed.toLowerCase() !== srSignOnly.sign.toLowerCase()) return match;
+            signRewrites++;
+            if (examples.length < 5) {
+              examples.push(`[sign-only] ${match} → ${planet}${retroPart || ""}${gap}${truth.sign}`);
+            }
+            return `${planet}${retroPart || ""}${gap}${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences2b[i] = s2; touched2b = true; }
+      }
+      if (touched2b) next = sentences2b.join(" ");
+    }
+
     // PASS 3 — unqualified bleed scrub. The AI sometimes cites a planet at
     // its SR position in a sentence that has NO "natal" anchor and NO "SR"
     // anchor (e.g. "Uranus at 0°09' Gemini sits opposite your Sun…"). Those
