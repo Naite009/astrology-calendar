@@ -1600,19 +1600,29 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
       if (domEl) fixGroup(ELEMENTS, domEl);
       if (domMod) fixGroup(MODALITIES, domMod);
 
-      if (domEl === "earth" && domMod === "mutable") {
-        // Broadened trigger list — catches the exact regression seen in
-        // reading_reading_report_37.pdf where the body said "you live
-        // forward, you think out loud, act on instinct… your pace starts
-        // things… something new is being launched… you assert, initiate,
-        // and often process by doing." All of those phrases describe Fire
-        // / Cardinal energy and must not appear in an Earth+Mutable body.
-        const hasFireCardinalLanguage = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|cardinal|process\s+by\s+doing|pace\s+starts|something\s+new\s+is\s+being\s+launched|assert,?\s+initiate|move(?:s)?\s+outward|you\s+assert\b|process\s+by\s+initiating)\b/i.test(next);
-        const hasEarthLanguage = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady|solid|tangible|methodical)\b/i.test(next);
-        const hasMutableLanguage = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible|flexibility|shift)\b/i.test(next);
-        if (hasFireCardinalLanguage || !hasEarthLanguage || !hasMutableLanguage) {
-          next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
-        }
+      // GENERALIZED ELEMENT/MODALITY MISMATCH GUARD
+      // Triggers when the dominant element is Earth or Water (slow, inward,
+      // building) but the prose uses Fire/Cardinal vocabulary (fast,
+      // initiating, outward). Previously only Earth+Mutable was guarded;
+      // user audit showed Earth+Fixed and Earth+Cardinal charts were also
+      // shipping Fire/Cardinal-flavored prose.
+      const FIRE_CARDINAL_RE = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|process\s+by\s+doing|pace\s+starts|something\s+new\s+is\s+being\s+launched|assert,?\s+initiate|move(?:s)?\s+outward|you\s+assert\b|process\s+by\s+initiating|drive\s+forward|charge\s+ahead|leap\s+first|initiate\s+quickly)\b/i;
+      const EARTH_RE = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady|solid|tangible|methodical|durable|consistent)\b/i;
+      const MUTABLE_RE = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible|flexibility|shift|bend)\b/i;
+
+      if (domEl === "earth" && FIRE_CARDINAL_RE.test(next)) {
+        const modPhrase = domMod === "mutable"
+          ? "With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation."
+          : domMod === "fixed"
+            ? "With Fixed dominant, that steadiness becomes durable and anchored — you hold ground over time, building in a way that compounds rather than restarts."
+            : domMod === "cardinal"
+              ? "With Cardinal dominant, that steadiness still initiates — you start things, but only when the ground is prepared, building from solid first principles rather than impulse."
+              : "";
+        next = `With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. ${modPhrase}`.trim();
+      } else if (domEl === "water" && FIRE_CARDINAL_RE.test(next)) {
+        next = "With Water dominant, this chart processes through feeling and absorption: you take in the emotional undercurrent of a situation before you act on it. Decisions move at the pace of inner clarity, not external urgency.";
+      } else if (domEl === "earth" && domMod === "mutable" && (!EARTH_RE.test(next) || !MUTABLE_RE.test(next))) {
+        next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
       }
 
       return next;
