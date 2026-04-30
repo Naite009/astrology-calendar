@@ -1103,11 +1103,26 @@ const rewriteSentencePronouns = (sentence: string): string => {
   // rule only matched a closed verb whitelist; expand to ANY lowercase
   // word starting with a letter, since 2nd-person product voice means
   // "they" never validly refers to anyone but the subject in this context.
-  // Conservative: still skip when preceded by a capitalized name token.
+  // Conservative: still skip when preceded by a capitalized name token,
+  // OR when "they" appears inside a contrastive clause where rewriting to
+  // "you" produces nonsense (e.g. "you hear what people mean rather than
+  // what they say" — rewriting "they" to "you" gives "what you say",
+  // which contradicts the sentence). The contrastive pattern is detected
+  // when the preceding ~30 chars contain "rather than what", "instead of
+  // what", "not what", "vs what", "versus what", or "compared to what".
   s = s.replace(
     /(^|[\s,()"'])(they|They)\b(?=\s+[a-z])/g,
-    (_m, pre, word) => `${pre}${word === "They" ? "You" : "you"}`,
+    (match, pre, word, offset, fullString) => {
+      const lookback = typeof offset === "number" && typeof fullString === "string"
+        ? fullString.slice(Math.max(0, offset - 40), offset + (pre?.length || 0))
+        : "";
+      if (/\b(?:rather\s+than|instead\s+of|not|vs\.?|versus|compared\s+to)\s+what\s*$/i.test(lookback)) {
+        return match;
+      }
+      return `${pre}${word === "They" ? "You" : "you"}`;
+    },
   );
+
   // Object pronoun "them" → "you" mid-sentence after verbs that nearly
   // always refer back to the subject. Same verb whitelist as before but
   // expanded.
