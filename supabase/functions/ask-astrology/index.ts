@@ -174,6 +174,7 @@ function escapeStrayQuotesInJsonStrings(input: string): string | null {
     out.push(c);
   }
   return out.join("");
+}
 
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
