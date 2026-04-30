@@ -1333,24 +1333,25 @@ const repairOrbAndSentenceGlue = (parsedContent: any, log: HygieneLog) => {
   const examples: string[] = [];
   const fix = (s: string): string => {
     const before = s;
-    // Pattern A: "orb 0.Both" / "orb 1.5The" / "orb 2Some" — number (with
-    // optional decimal) immediately followed by a capital letter with no
-    // separating space. Insert "° . " (degree, period, space).
-    let out = s.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)(?=[A-Z])/g,
-      (m) => `${m}° . `,
-    );
-    // Pattern B: "orb 0." at end of clause (followed by space + capital
-    // letter that begins a new sentence) — the period is real but the
-    // degree symbol is missing. Insert "°" before the period.
+    let out = s;
+    // Pattern A: "orb N.Capital" — period present but capital glued (no
+    // space). Insert "°. " between number and capital.
     out = out.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)\.\s+(?=[A-Z])/g,
-      (_m, head) => `${head}°. `,
+      /\b(orb\s+\d+(?:\.\d+)?)\.([A-Z])/g,
+      (_m, head, cap) => `${head}°. ${cap}`,
     );
-    // Pattern C: bare trailing "orb N" with no symbol at end of sentence.
+    // Pattern B: "orb NCapital" — capital glued directly to number with no
+    // period at all (e.g. "orb 2Both"). Insert "°. " between.
     out = out.replace(
-      /\b(orb\s+\d+(?:\.\d+)?)(?=\s*[.!?,;)\]\n]|$)/g,
-      (m, head) => (m.includes("°") ? m : `${head}°`),
+      /\b(orb\s+\d+(?:\.\d+)?)([A-Z])/g,
+      (_m, head, cap) => `${head}°. ${cap}`,
+    );
+    // Pattern C: bare "orb N" or "orb N.M" missing the degree symbol. Use a
+    // negative lookahead so a partial-match like "orb 2" inside "orb 2.5"
+    // is never matched on its own (would corrupt the decimal).
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)(?!\.?\d)(?!°)/g,
+      (_m, head) => `${head}°`,
     );
     if (out !== before && examples.length < 5) {
       examples.push(`${before.slice(0, 100)} → ${out.slice(0, 100)}`);
