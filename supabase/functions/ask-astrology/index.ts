@@ -823,11 +823,26 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
     const earthMutableMismatch =
       elementMismatch || earthMissingLanguage || mutableMissingLanguage;
 
+    // TIE DETECTION — if the deterministic backfill found two or more
+    // elements (or modalities) tied for top count, ANY single-dominant
+    // claim in the prose ("Earth emphasis", "Fire-dominant", "an Air
+    // chart", etc.) is wrong by definition. Force the deterministic
+    // rewrite so the section reads as a balance instead of a false
+    // dominance.
+    const elementTies: string[] = Array.isArray((section as any)._element_ties)
+      ? (section as any)._element_ties : [];
+    const modalityTies: string[] = Array.isArray((section as any)._modality_ties)
+      ? (section as any)._modality_ties : [];
+    const hasElementTie = elementTies.length >= 2;
+    const hasModalityTie = modalityTies.length >= 2;
+    const SINGLE_DOMINANT_CLAIM = /\b(?:Fire|Earth|Air|Water)[-\s](?:emphasis|dominant|dominance|heavy|leaning|chart|year)\b|\bdominant\s+(?:Fire|Earth|Air|Water)\b|\b(?:Fire|Earth|Air|Water)\s+is\s+dominant\b/i;
+    const tieContradicted = hasElementTie && SINGLE_DOMINANT_CLAIM.test(text);
+
     // FIX #3 (option A — INTEGRATED REWRITE):
     // Throw away generic or incomplete AI text whenever coverage is missing
     // OR when the wording contradicts the section's own dominant element /
     // modality data (e.g. Earth Mutable receiving Fire/Cardinal prose).
-    if (anyMissing || earthMutableMismatch) {
+    if (anyMissing || earthMutableMismatch || tieContradicted) {
       const collectAll = (arr: any): Array<{ name: string; count: number }> => {
         if (!Array.isArray(arr)) return [];
         const out: Array<{ name: string; count: number }> = [];
@@ -906,30 +921,46 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
       const elementNames = new Set(elementsAll.map((i) => i.name));
       const ALL_ELEMENTS = ["Fire", "Earth", "Air", "Water"];
 
-      // Element interpretation — lead with dominant lived behavior,
-      // name secondary element as a balance, then call out any major gap.
+      // Element interpretation — when there is a tie at the top, name
+      // BOTH (or all) tied elements as a balance instead of asserting a
+      // single dominant. Otherwise lead with the dominant lived behavior
+      // and name a strong secondary as a counterweight.
       if (elementsAll.length > 0) {
-        const dominant = elementsAll[0];
-        const second = elementsAll[1];
-        const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
-        let elementSentence = `You ${lead}`;
-        if (second && SECOND_ELEMENT_PAIR[second.name]) {
-          const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
-          if (secondLead) {
-            // Trim the secondary description so it reads as a balance, not a duplicate.
-            const trimmed = secondLead.split("—")[0].trim();
-            elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
+        if (hasElementTie) {
+          const tiedNames = elementTies.filter((n) => ELEMENT_DOMINANT[n]);
+          if (tiedNames.length >= 2) {
+            const tiedCount = elementsAll[0].count;
+            const phrases = tiedNames.map((n) => {
+              const full = ELEMENT_DOMINANT[n] ?? "";
+              return full.split("—")[0].trim() || `live through ${n}`;
+            });
+            sentences.push(`Your chart is balanced between ${tiedNames.join(" and ")}, with ${NUMBER_WORDS[tiedCount] ?? tiedCount} planets in each — neither is dominant.`);
+            const clauses = tiedNames.map((n, i) => `the ${n} side means you ${phrases[i]}`);
+            sentences.push(`${clauses.join(", and ")}.`);
+          } else {
+            sentences.push(`Your chart is balanced between ${elementTies.join(" and ")} with no single dominant element.`);
           }
+        } else {
+          const dominant = elementsAll[0];
+          const second = elementsAll[1];
+          const lead = ELEMENT_DOMINANT[dominant.name] ?? "shapes how you meet the world";
+          let elementSentence = `You ${lead}`;
+          if (second && SECOND_ELEMENT_PAIR[second.name]) {
+            const secondLead = ELEMENT_DOMINANT[second.name] ?? "";
+            if (secondLead) {
+              const trimmed = secondLead.split("—")[0].trim();
+              elementSentence += `, with a strong secondary pull that also has you ${trimmed}`;
+            }
+          }
+          elementSentence += ".";
+          sentences.push(elementSentence);
         }
-        elementSentence += ".";
-        sentences.push(elementSentence);
 
         const missingElements = ALL_ELEMENTS.filter((e) => !elementNames.has(e));
         if (missingElements.length === 1) {
           const note = ELEMENT_WEAK[missingElements[0]];
           if (note) sentences.push(`${note}.`);
         } else if (missingElements.length === 2) {
-          // Two missing elements — name the more behaviorally costly one.
           const priority = ["Fire", "Earth", "Water", "Air"];
           const pick = priority.find((e) => missingElements.includes(e));
           if (pick && ELEMENT_WEAK[pick]) sentences.push(`${ELEMENT_WEAK[pick]}.`);
@@ -938,10 +969,21 @@ const enforceNonZeroCoverage = (parsedContent: any) => {
 
       // Modality interpretation — lead names the operating rhythm; if
       // a modality is fully absent, name what that absence looks like.
+      // Tie-aware: name both tied modalities instead of one.
       if (modalitiesAll.length > 0) {
-        const dominant = modalitiesAll[0];
-        const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
-        sentences.push(`Your pace ${lead}.`);
+        if (hasModalityTie) {
+          const tiedNames = modalityTies.filter((n) => MODALITY_PROSE[n]);
+          if (tiedNames.length >= 2) {
+            const clauses = tiedNames.map((n) => `the ${n} side ${MODALITY_PROSE[n].lead}`);
+            sentences.push(`Your pace is split between ${tiedNames.join(" and ")} — ${clauses.join(", and ")}.`);
+          } else {
+            sentences.push(`Your pace is split between ${modalityTies.join(" and ")} with no single dominant modality.`);
+          }
+        } else {
+          const dominant = modalitiesAll[0];
+          const lead = MODALITY_PROSE[dominant.name]?.lead ?? "sets the rhythm";
+          sentences.push(`Your pace ${lead}.`);
+        }
         const presentMods = new Set(modalitiesAll.map((i) => i.name));
         const ALL_MODS = ["Cardinal", "Fixed", "Mutable"];
         const missingMod = ALL_MODS.find((m) => !presentMods.has(m));
@@ -5559,13 +5601,33 @@ const buildElementalBalanceFromPositions = (positions: ParsedPosition[]) => {
       planets: polarityCounts.Yin,
     },
   ];
-  const dominantOf = (arr: Array<{ name: string; count: number }>) =>
-    arr.slice().sort((a,b)=>b.count-a.count)[0]?.name ?? null;
+  // Tie-aware dominant resolver. When two or more entries share the top
+  // count, return them joined with " & " plus a "(tied)" suffix so
+  // downstream prose / UI does not assert a single false dominant.
+  const dominantOf = (arr: Array<{ name: string; count: number }>) => {
+    const sorted = arr.slice().sort((a, b) => b.count - a.count);
+    if (sorted.length === 0 || (sorted[0]?.count ?? 0) === 0) return null;
+    const top = sorted[0].count;
+    const tied = sorted.filter((e) => e.count === top).map((e) => e.name.split(/[\s(]/)[0]);
+    if (tied.length === 1) return tied[0];
+    return `${tied.join(" & ")} (tied)`;
+  };
+  // Also return raw tie arrays for downstream prose generation so it can
+  // emit balanced language instead of single-dominant claims.
+  const topTies = (arr: Array<{ name: string; count: number }>): string[] => {
+    const sorted = arr.slice().sort((a, b) => b.count - a.count);
+    if (sorted.length === 0 || (sorted[0]?.count ?? 0) === 0) return [];
+    const top = sorted[0].count;
+    return sorted.filter((e) => e.count === top).map((e) => e.name.split(/[\s(]/)[0]);
+  };
   return {
     elements, modalities, polarity,
     dominant_element: dominantOf(elements),
     dominant_modality: dominantOf(modalities),
     dominant_polarity: dominantOf(polarity),
+    element_ties: topTies(elements),
+    modality_ties: topTies(modalities),
+    polarity_ties: topTies(polarity),
   };
 };
 
@@ -5782,37 +5844,47 @@ const backfillStructuralSectionsFromChartContext = (
       titleLower.includes("elemental") ||
       titleLower.includes("modal balance")
     ) {
-      const isMissingLabels = (arr: any[]): boolean =>
-        !Array.isArray(arr) || arr.length === 0 ||
-        arr.some((e) => !e || typeof e.name !== "string" || !e.name.trim());
-      const hasElements = Array.isArray(section.elements) && section.elements.length > 0;
-      const hasModalities = Array.isArray(section.modalities) && section.modalities.length > 0;
-      const elementsBroken = isMissingLabels(section.elements);
-      const modalitiesBroken = isMissingLabels(section.modalities);
-      const polarityBroken = isMissingLabels(section.polarity);
-      const needsRepair = elementsBroken || modalitiesBroken || polarityBroken || !hasElements || !hasModalities;
-      if (needsRepair && natalPositions.length >= 8) {
-        const built = buildElementalBalanceFromPositions(natalPositions);
-        // Preserve any AI-authored interpretations that we DO have, by
-        // matching on count or order. If labels were missing, reorder to
-        // match the deterministic name list.
-        const mergeByOrder = (aiArr: any[], builtArr: any[]) => {
-          if (!Array.isArray(aiArr) || aiArr.length === 0) return builtArr;
-          return builtArr.map((b, i) => {
-            const ai = aiArr[i];
+      // Route SR-titled elemental/modal sections to SR positions, natal
+      // sections to natal positions. The 10-traditional-planet filter is
+      // applied inside buildElementalBalanceFromPositions — minor bodies
+      // and asteroids are NEVER included in element/modality counts.
+      const sourcePositions = isSR ? srPositions : natalPositions;
+      if (sourcePositions.length >= 8) {
+        const built = buildElementalBalanceFromPositions(sourcePositions);
+        // Counts are deterministic facts — always overwrite the AI's
+        // arrays. Preserve any AI-authored qualitative `interpretation`
+        // strings on each entry (the count/planets/symbol come from the
+        // deterministic build).
+        const mergeByName = (aiArr: any[], builtArr: any[]) => {
+          const aiByRoot: Record<string, any> = {};
+          if (Array.isArray(aiArr)) {
+            for (const e of aiArr) {
+              if (!e || typeof e.name !== "string") continue;
+              const root = e.name.split(/[\s(]/)[0].toLowerCase();
+              aiByRoot[root] = e;
+            }
+          }
+          return builtArr.map((b) => {
+            const root = b.name.split(/[\s(]/)[0].toLowerCase();
+            const ai = aiByRoot[root];
             const interpretation = ai && typeof ai.interpretation === "string" && ai.interpretation.trim()
               ? ai.interpretation : undefined;
             return interpretation ? { ...b, interpretation } : b;
           });
         };
-        if (elementsBroken || !hasElements) section.elements = mergeByOrder(section.elements, built.elements);
-        if (modalitiesBroken || !hasModalities) section.modalities = mergeByOrder(section.modalities, built.modalities);
-        if (polarityBroken) section.polarity = mergeByOrder(section.polarity, built.polarity);
+        section.elements = mergeByName(section.elements, built.elements);
+        section.modalities = mergeByName(section.modalities, built.modalities);
+        section.polarity = mergeByName(section.polarity, built.polarity);
         section.dominant_element = built.dominant_element;
         section.dominant_modality = built.dominant_modality;
         section.dominant_polarity = built.dominant_polarity;
+        // Stash tie metadata for the deterministic prose rewriter.
+        (section as any)._element_ties = built.element_ties;
+        (section as any)._modality_ties = built.modality_ties;
+        (section as any)._polarity_ties = built.polarity_ties;
+        (section as any)._chart_scope = isSR ? "SR" : "NATAL";
         backfilled++;
-        details.push(`${section.title}: elemental/modal labels repaired (elementsBroken=${elementsBroken}, modalitiesBroken=${modalitiesBroken}, polarityBroken=${polarityBroken})`);
+        details.push(`${section.title}: deterministic 10-planet rebuild (scope=${isSR ? "SR" : "NATAL"}, dominantElement=${built.dominant_element}, dominantModality=${built.dominant_modality})`);
       }
     }
   }
