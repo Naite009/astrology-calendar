@@ -1600,19 +1600,29 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
       if (domEl) fixGroup(ELEMENTS, domEl);
       if (domMod) fixGroup(MODALITIES, domMod);
 
-      if (domEl === "earth" && domMod === "mutable") {
-        // Broadened trigger list — catches the exact regression seen in
-        // reading_reading_report_37.pdf where the body said "you live
-        // forward, you think out loud, act on instinct… your pace starts
-        // things… something new is being launched… you assert, initiate,
-        // and often process by doing." All of those phrases describe Fire
-        // / Cardinal energy and must not appear in an Earth+Mutable body.
-        const hasFireCardinalLanguage = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|cardinal|process\s+by\s+doing|pace\s+starts|something\s+new\s+is\s+being\s+launched|assert,?\s+initiate|move(?:s)?\s+outward|you\s+assert\b|process\s+by\s+initiating)\b/i.test(next);
-        const hasEarthLanguage = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady|solid|tangible|methodical)\b/i.test(next);
-        const hasMutableLanguage = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible|flexibility|shift)\b/i.test(next);
-        if (hasFireCardinalLanguage || !hasEarthLanguage || !hasMutableLanguage) {
-          next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
-        }
+      // GENERALIZED ELEMENT/MODALITY MISMATCH GUARD
+      // Triggers when the dominant element is Earth or Water (slow, inward,
+      // building) but the prose uses Fire/Cardinal vocabulary (fast,
+      // initiating, outward). Previously only Earth+Mutable was guarded;
+      // user audit showed Earth+Fixed and Earth+Cardinal charts were also
+      // shipping Fire/Cardinal-flavored prose.
+      const FIRE_CARDINAL_RE = /\b(?:live\s+forward|think\s+out\s+loud|act\s+on\s+instinct|push\s+toward|starts\s+things|launch(?:ed|ing)?|process\s+by\s+doing|pace\s+starts|something\s+new\s+is\s+being\s+launched|assert,?\s+initiate|move(?:s)?\s+outward|you\s+assert\b|process\s+by\s+initiating|drive\s+forward|charge\s+ahead|leap\s+first|initiate\s+quickly)\b/i;
+      const EARTH_RE = /\b(?:groundedness|grounded|patience|patient|building|build|practical|steady|solid|tangible|methodical|durable|consistent)\b/i;
+      const MUTABLE_RE = /\b(?:adaptability|adaptable|responsiveness|responsive|respond|pivot|adjust|flexible|flexibility|shift|bend)\b/i;
+
+      if (domEl === "earth" && FIRE_CARDINAL_RE.test(next)) {
+        const modPhrase = domMod === "mutable"
+          ? "With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation."
+          : domMod === "fixed"
+            ? "With Fixed dominant, that steadiness becomes durable and anchored — you hold ground over time, building in a way that compounds rather than restarts."
+            : domMod === "cardinal"
+              ? "With Cardinal dominant, that steadiness still initiates — you start things, but only when the ground is prepared, building from solid first principles rather than impulse."
+              : "";
+        next = `With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. ${modPhrase}`.trim();
+      } else if (domEl === "water" && FIRE_CARDINAL_RE.test(next)) {
+        next = "With Water dominant, this chart processes through feeling and absorption: you take in the emotional undercurrent of a situation before you act on it. Decisions move at the pace of inner clarity, not external urgency.";
+      } else if (domEl === "earth" && domMod === "mutable" && (!EARTH_RE.test(next) || !MUTABLE_RE.test(next))) {
+        next = "With Earth dominant, this chart works through groundedness, patience, and building: you trust steady evidence, practical routines, and results that can be repeated. With Mutable dominant, that steadiness stays adaptable and responsive — you adjust to real conditions instead of forcing one plan, building in a way that can bend without losing its foundation.";
       }
 
       return next;
@@ -6829,9 +6839,38 @@ const runPlacementTableValidator = (
   };
 
   forEachProseField(parsedContent, SKIP_KEYS, ({ value, path }) => {
+    // SELF-REFLECTION GUARD: do not validate the validator's own diagnostic
+    // fields. When `runPostProcessingPipeline` runs twice (pre-gate then
+    // post-gate), the second pass sees `_validator_drift` and
+    // `_validation_log` already attached and would re-flag every excerpt
+    // string inside them as new drift. Skip any path that descends into a
+    // diagnostic / validation container.
+    if (
+      path.startsWith("$._validator_drift") ||
+      path.startsWith("$._validation_log") ||
+      path.startsWith("$._validation") ||
+      path.startsWith("$._accuracy_review") ||
+      path.startsWith("$._hygiene") ||
+      path.startsWith("$._diagnostics")
+    ) {
+      return;
+    }
     if (natalTruth.size > 0) collectDrifts(value, path, NATAL_RE, natalTruth, "natal");
     if (srTruth.size > 0) collectDrifts(value, path, SR_RE, srTruth, "sr");
   });
+
+  // Dedupe drifts by (scope, planet, field, claimed, truth) signature so a
+  // single AI mistake repeated across sections is reported once.
+  const seenSig = new Set<string>();
+  const dedupedDrifts: ValidatorDrift[] = [];
+  for (const d of drifts) {
+    const sig = `${d.scope}|${d.planet}|${d.field}|${d.claimed}|${d.truth}`;
+    if (seenSig.has(sig)) continue;
+    seenSig.add(sig);
+    dedupedDrifts.push(d);
+  }
+  drifts.length = 0;
+  drifts.push(...dedupedDrifts);
 
   // Group drifts for the log + diagnostic field.
   const summary = {
@@ -10811,6 +10850,57 @@ async function processJob(args: {
       if (astrocartographyIndex !== -1) {
         sanitizedChartContext = sanitizedChartContext.slice(0, astrocartographyIndex).trim();
       }
+    }
+
+    // ───────────────────────────────────────────────────────────────────
+    // VERBATIM PLACEMENT REMINDER (Rule 1 — Source of Truth)
+    // ───────────────────────────────────────────────────────────────────
+    // Every recurring drift bug (natal Uranus 0°09' Gemini → 0°30' Libra,
+    // natal Chiron H5 → H8, SR Moon Aries → Libra, SR Jupiter Virgo →
+    // Cancer) has the same root cause: the AI confuses one chart body
+    // with another (natal vs SR, ruler vs ruled, Vertex vs Uranus). It
+    // succeeds when the truth value is one token away in the prompt.
+    // Build a deterministic, per-planet "ECHO EXACTLY" block from the
+    // already-parsed positions and prepend it to the chart context so it
+    // appears at the start of every prompt window.
+    try {
+      const echoNatal = parsePositionsFromContext(
+        sanitizedChartContext,
+        /NATAL Planetary Positions[^:]*:\n/,
+      );
+      const echoSr = parsePositionsFromContext(
+        sanitizedChartContext,
+        /SR Planetary Positions:\n/,
+        "SR",
+      );
+      const fmtRow = (p: { planet: string; sign: string; degree: number; minutes?: number; house?: number | null; isRetrograde?: boolean }, prefix: string) => {
+        const deg = `${p.degree}°${String(p.minutes ?? 0).padStart(2, "0")}'`;
+        const houseStr = p.house != null ? `House ${p.house}` : "House —";
+        const retro = p.isRetrograde ? " Retrograde" : " Direct";
+        return `- ${prefix} ${p.planet}: ${deg} ${p.sign}, ${houseStr},${retro}`;
+      };
+      const natalRows = echoNatal.map((p) => fmtRow(p, "natal")).join("\n");
+      const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
+      if (natalRows || srRows) {
+        const echoBlock = [
+          "═══════════════════════════════════════════════════════════════",
+          "VERBATIM PLACEMENT REFERENCE — ECHO THESE EXACTLY",
+          "═══════════════════════════════════════════════════════════════",
+          "Whenever you mention a planet's degree, sign, house, or retrograde",
+          "status in prose, the values below are the ONLY correct values.",
+          "Do not derive. Do not infer. Do not transpose between natal and SR.",
+          "If a sentence says 'natal Uranus', use the 'natal Uranus' row.",
+          "If a sentence says 'SR Moon', use the 'SR Moon' row. No exceptions.",
+          "",
+          natalRows,
+          srRows,
+          "═══════════════════════════════════════════════════════════════",
+          "",
+        ].filter(Boolean).join("\n");
+        sanitizedChartContext = `${echoBlock}\n${sanitizedChartContext}`;
+      }
+    } catch (e) {
+      console.warn("[ask-astrology] verbatim placement reminder build failed", e);
     }
 
     const lilithDataPresent = /Lilith:\s*\d+°\d+'\s+(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\s*\(House\s+\d+\)/.test(sanitizedChartContext);
