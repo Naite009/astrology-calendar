@@ -11677,6 +11677,52 @@ ${natalGroundTruthLines}`
       console.warn(`ask-astrology: OUTPUT TRUNCATED (finish_reason=${finishReason}). Content length: ${content.length}`);
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Ask 2 — Debug capture (env-gated). Persists the literal prompt and
+    // the raw streamed AI response BEFORE any post-processing runs. This
+    // is the only way to diagnose whether natal/SR drift originates in
+    // (a) the prompt, (b) the model, or (c) post-processing. To enable:
+    //   set ASK_DEBUG_CAPTURE=1 on the edge function. Leave OFF in normal
+    //   operation — captures contain full chart context and prompt body.
+    // Failures here are non-fatal: a missed capture must NEVER kill a
+    // user's generation.
+    // ─────────────────────────────────────────────────────────────────────
+    if (Deno.env.get("ASK_DEBUG_CAPTURE") === "1") {
+      try {
+        const systemPromptStr = Array.isArray(systemBlocks)
+          ? systemBlocks
+              .map((b: any) => (typeof b?.text === "string" ? b.text : JSON.stringify(b)))
+              .join("\n\n───── SYSTEM BLOCK BREAK ─────\n\n")
+          : String(systemBlocks ?? "");
+
+        const captureRow = {
+          job_id: jobId,
+          user_id: userId ?? null,
+          chart_id: chartId ?? null,
+          system_prompt: systemPromptStr,
+          user_messages: sanitizedMessages,
+          chart_context: sanitizedChartContext,
+          raw_ai_response: content,
+          model: "claude-sonnet-4-6",
+          finish_reason: finishReason || null,
+          notes: `pre-postprocess capture; content_len=${content.length}; cache_read=${cacheReadTokens}; cache_write=${cacheCreationTokens}`,
+        };
+        const { error: capErr } = await supabase
+          .from("ask_generation_captures")
+          .insert(captureRow);
+        if (capErr) {
+          console.warn("[ask-astrology] debug capture insert failed (non-fatal):", capErr.message);
+        } else {
+          console.log(`[ask-astrology] debug capture written for job ${jobId}`);
+        }
+      } catch (capEx) {
+        console.warn(
+          "[ask-astrology] debug capture threw (non-fatal):",
+          capEx instanceof Error ? capEx.message : String(capEx),
+        );
+      }
+    }
+
     // ===== POST-PROCESSING =====
     let parsedContent;
     let wasTruncated = finishReason === "max_tokens" || finishReason === "length";
