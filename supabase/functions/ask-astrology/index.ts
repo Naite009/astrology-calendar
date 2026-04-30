@@ -11994,6 +11994,7 @@ ${natalGroundTruthLines}`
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
+        const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
 
         // POST-GENERATION: Strip any year numbers after "Solar Return"
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
@@ -12573,7 +12574,6 @@ ${natalGroundTruthLines}`
         // PDF, future apps) can correlate corrections.
         // ────────────────────────────────────────────────────────────
         try {
-          const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
           dedupeTimingArrays(parsedContent, emissionLog);
           // Collapse duplicate window descriptions before placeholder strip
           // so the second/third copies become short pointer lines instead
