@@ -1313,6 +1313,78 @@ const rewriteThirdPersonPronouns = (parsedContent: any, log: HygieneLog) => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────
+// ORB / SENTENCE GLUE REPAIR — Fix 3
+// The AI sometimes emits truncated orb values immediately followed by the
+// next sentence with no degree symbol or sentence break, e.g.
+//   "SR Orcus square natal Mars, orb 0.Both are retrograde and..."
+// or
+//   "...orb 2.5The two together..."
+// This sanitizer:
+//   1. Inserts "° . " between an orb numeric value and a following capital
+//      letter / "Both" / "The" / "These" / "Together".
+//   2. Restores the degree symbol on a bare "orb N" / "orb N.M" when followed
+//      by a sentence break, period, or end-of-string.
+// Conservative: only matches the literal "orb " keyword so it never touches
+// numeric values in unrelated prose.
+// ──────────────────────────────────────────────────────────────────────────
+const repairOrbAndSentenceGlue = (parsedContent: any, log: HygieneLog) => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let stringsTouched = 0;
+  const examples: string[] = [];
+  const fix = (s: string): string => {
+    const before = s;
+    // Pattern A: "orb 0.Both" / "orb 1.5The" / "orb 2Some" — number (with
+    // optional decimal) immediately followed by a capital letter with no
+    // separating space. Insert "° . " (degree, period, space).
+    let out = s.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)(?=[A-Z])/g,
+      (m) => `${m}° . `,
+    );
+    // Pattern B: "orb 0." at end of clause (followed by space + capital
+    // letter that begins a new sentence) — the period is real but the
+    // degree symbol is missing. Insert "°" before the period.
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)\.\s+(?=[A-Z])/g,
+      (_m, head) => `${head}°. `,
+    );
+    // Pattern C: bare trailing "orb N" with no symbol at end of sentence.
+    out = out.replace(
+      /\b(orb\s+\d+(?:\.\d+)?)(?=\s*[.!?,;)\]\n]|$)/g,
+      (m, head) => (m.includes("°") ? m : `${head}°`),
+    );
+    if (out !== before && examples.length < 5) {
+      examples.push(`${before.slice(0, 100)} → ${out.slice(0, 100)}`);
+    }
+    return out;
+  };
+  const visit = (node: any) => {
+    if (Array.isArray(node)) { for (const x of node) visit(x); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === "string") {
+        if (val.length < 5 || !/\borb\s+\d/i.test(val)) continue;
+        const next = fix(val);
+        if (next !== val) {
+          (node as any)[key] = next;
+          stringsTouched++;
+        }
+      } else {
+        visit(val);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (stringsTouched > 0) {
+    log.push({
+      type: "orb_sentence_glue_repaired",
+      detail: { strings_touched: stringsTouched, examples },
+    });
+    console.info("[ask-astrology] orb/sentence glue repaired", { stringsTouched, examples });
+  }
+};
+
+
+// ──────────────────────────────────────────────────────────────────────────
 // CROSS-SECTION ASPECT DEDUPE — Defect 2
 // The same canned aspect interpretation ("Mars square Saturn — your drive
 // runs into walls…") sometimes appears verbatim in two different sections
