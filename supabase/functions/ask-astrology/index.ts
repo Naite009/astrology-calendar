@@ -125,6 +125,56 @@ function repairTruncatedJson(input: string): any | null {
   }
 }
 
+// Best-effort repair for AI outputs that include rhetorical/quoted phrases
+// inside JSON string values without escaping them, e.g.
+//   "body": "the question is "am I doing enough?" — really"
+// Strategy: walk the string treating it as JSON. When inside a string and
+// we encounter a '"' that is NOT followed by one of the legal "string-end"
+// terminators (whitespace/, then , : } ] or end-of-string), assume it is
+// a content quote and escape it. This is intentionally conservative — it
+// only patches the case that has been seen in production.
+function escapeStrayQuotesInJsonStrings(input: string): string | null {
+  if (typeof input !== "string" || input.length === 0) return null;
+  const out: string[] = [];
+  let inStr = false;
+  let escape = false;
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i];
+    if (escape) {
+      out.push(c);
+      escape = false;
+      continue;
+    }
+    if (c === "\\") {
+      out.push(c);
+      escape = true;
+      continue;
+    }
+    if (c === '"') {
+      if (!inStr) {
+        inStr = true;
+        out.push(c);
+        continue;
+      }
+      // We are inside a string and saw '"'. Look ahead past whitespace
+      // for a structural terminator. If found → real string end.
+      let j = i + 1;
+      while (j < input.length && (input[j] === " " || input[j] === "\t" || input[j] === "\n" || input[j] === "\r")) j++;
+      const next = input[j];
+      const isStringEnd = next === "," || next === "}" || next === "]" || next === ":" || j >= input.length;
+      if (isStringEnd) {
+        inStr = false;
+        out.push(c);
+      } else {
+        // Stray inner quote — escape it.
+        out.push("\\\"");
+      }
+      continue;
+    }
+    out.push(c);
+  }
+  return out.join("");
+
 const getCurrentDateKey = (value?: string) => {
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return value;
