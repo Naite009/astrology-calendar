@@ -4751,8 +4751,18 @@ const correctSrPlanetPositionsInProse = (
           "g",
         );
 
-        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign) => {
+        next = next.replace(planetSignRe, (match, retroPart, gap, degStr, minStr, claimedSign, offset, fullStr) => {
           if (String(claimedSign).toLowerCase() === correctSign.toLowerCase()) return match;
+          // GUARD: do not rewrite when the planet mention is explicitly
+          // qualified as natal (e.g. "natal Venus at 10°30' Aries",
+          // "your natal Venus", "natally Venus"). Such mentions describe
+          // the natal position and must not be coerced to the SR position
+          // even if the wider sentence has SR context (typical pattern:
+          // "SR Saturn conjunct natal Venus at 10°30' Aries").
+          const lookback = (fullStr as string).slice(Math.max(0, (offset as number) - 25), offset as number);
+          if (/\b(?:your\s+)?natal\s+$|\bnatally\s*,?\s*(?:your\s+)?$|\bbirth\s+$/i.test(lookback)) {
+            return match;
+          }
           const claimedIsNatal = natalSign && claimedSign.toLowerCase() === natalSign.toLowerCase();
           const degreeMatchesSr = degStr !== undefined && parseInt(degStr, 10) === truth.degree;
           if (!claimedIsNatal && !degreeMatchesSr) return match;
