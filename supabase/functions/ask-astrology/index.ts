@@ -11072,7 +11072,13 @@ In the timing section, include only the 2-4 strongest verified windows over the 
     // the source instead of relying on post-generation cross-checks.
     const buildNatalGroundTruthBlock = (ctx: string): string | null => {
       if (!ctx) return null;
-      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      // FIX: The previous terminator `(?=\n\s*\n|...)` stopped at the FIRST
+      // blank line, which the chart context sprinkles between natal bullets
+      // as a formatting artifact. Result: only the Sun line was captured,
+      // and the entire NATAL CHART / NATAL RETROGRADE STATUS prompt block
+      // was emitted with 1 planet and "no natal planets are retrograde" —
+      // false. Terminate on the next real downstream section header instead.
+      const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]{2,}:|\nNATAL PLANET HOUSE PLACEMENTS|\nSR Planetary Positions|\n---|\nVERIFIED|\nHouse Cusps|$)/i;
       const natalMatch = ctx.match(natalHeaderRe);
       if (!natalMatch) return null;
       const natalLines = natalMatch[1]
@@ -11081,14 +11087,8 @@ In the timing section, include only the 2-4 strongest verified windows over the 
         .filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l));
       if (natalLines.length === 0) return null;
 
-      // Also extract the SR planetary positions so we can present BOTH
-      // tables side-by-side with HARD RULE separating them. Previous attempts
-      // relied on the model finding SR data buried later in the chart context
-      // — too easy to miss. Restating SR data directly under the natal data,
-      // with explicit "do not interchange" framing, structurally prevents
-      // the SR-bleed-into-natal pattern that has recurred across every
-      // regeneration.
-      const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
+      // Same blank-line tolerance for the SR positions block.
+      const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]{2,}:|\nSR House Cusps|\nSR-TO-NATAL|\n---|\nVERIFIED|$)/i;
       const srMatch = ctx.match(srHeaderRe);
       const srLines = srMatch
         ? srMatch[1].split("\n").map((l) => l.trim()).filter((l) => l && /[A-Za-z]+:\s*\d+°/.test(l))
