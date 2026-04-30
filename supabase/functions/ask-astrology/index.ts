@@ -6958,7 +6958,10 @@ const runPlacementTableValidator = (
       path.startsWith("$._validation") ||
       path.startsWith("$._accuracy_review") ||
       path.startsWith("$._hygiene") ||
-      path.startsWith("$._diagnostics")
+      path.startsWith("$._diagnostics") ||
+      path.includes(".transits[") ||
+      path.includes(".windows[") ||
+      path.includes(".timing[")
     ) {
       return;
     }
