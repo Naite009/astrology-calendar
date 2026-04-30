@@ -11720,7 +11720,7 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     // refactor is scoped to relationship readings only (per user spec).
     // Hoisted so the post-parse hygiene block can attach _verified_activations.
     let verifiedActivationsForResult: VerifiedActivation[] = [];
-    if (isRelationshipQuestion) {
+    if (isRelationshipQuestion && !replayCaptureId) {
       try {
         // Re-derive pure natal / SR text blocks from sanitizedChartContext.
         // These mirror the regexes in buildNatalGroundTruthBlock and become
