@@ -12859,7 +12859,9 @@ ${natalGroundTruthLines}`
       // Log the actual parsing error for debugging
       console.error("JSON parsing failed for AI response:", parseError instanceof Error ? parseError.message : parseError);
       console.error("Raw content (first 500 chars):", typeof content === 'string' ? content.substring(0, 500) : 'non-string content');
-      parsedContent = { raw: content, _parse_error: parseError instanceof Error ? parseError.message : 'Unknown parse error' };
+      const parseMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      if (parseMsg.startsWith("placement_table_drift:")) throw parseError;
+      throw new Error(`json_parse_error: AI returned invalid JSON (${parseMsg})`);
     }
 
     // ────────────────────────────────────────────────────────────
