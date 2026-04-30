@@ -68,6 +68,28 @@ const ACTIVE_META_KEY = "ask-active-meta";
 const LAST_READING_KEY_PREFIX = "ask-last-reading:";
 const MAX_SAVED_CONVERSATIONS = 50;
 
+/**
+ * Surface a failed ask_jobs error to the user AND log the full text to the
+ * browser console so it can be copy-pasted to Replit / support.
+ *
+ * Why a helper: the toast (sonner) truncates long messages, and the failure
+ * paths in this file are split across resume-probe, run, and regenerate.
+ * Without this, users see "Reading failed" with no detail and no console trace.
+ */
+function reportAskJobFailure(job: { id?: string; error_message?: string | null } | null | undefined, fallback: string) {
+  const fullMsg = job?.error_message?.trim() || fallback;
+  const jobId = job?.id || "(unknown)";
+  // Full payload to console so it's copyable for Replit debugging
+  // eslint-disable-next-line no-console
+  console.error(`[AskView] Job ${jobId} failed:\n${fullMsg}`);
+  // Truncated, scannable toast with action to expand in console
+  const short = fullMsg.length > 220 ? fullMsg.slice(0, 217) + "…" : fullMsg;
+  toast.error(short, {
+    description: `Job ${jobId.slice(0, 8)} — full error in browser console (F12)`,
+    duration: 12000,
+  });
+}
+
 function readStorage<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
