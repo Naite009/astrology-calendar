@@ -2934,6 +2934,7 @@ const forEachProseField = (
     }
     if (!node || typeof node !== "object") return;
     if (node?.type === "placement_table") return;
+    if (path.includes(".transits[") || path.includes(".windows[") || path.includes(".timing[")) return;
 
     for (const [key, val] of Object.entries(node)) {
       if (skipKeys.has(key)) continue;
