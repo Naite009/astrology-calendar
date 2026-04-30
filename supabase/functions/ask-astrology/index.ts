@@ -4712,7 +4712,7 @@ const correctSrPlanetPositionsInProse = (
   // Skip structural fields and any row that's part of the placement_table
   // (the table-row normalizer handles those separately).
   const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
+    "type","id","kind",
     "planet","sign","house","degrees","aspect","natal_point","symbol",
     "tag","date","date_range","dateRange","generated_date",
     "subject","question_type","question_asked","retrograde",
@@ -4923,6 +4923,43 @@ const correctNatalPlanetPositionsInProse = (
         if (s2 !== s) { sentences[i] = s2; touched = true; }
       }
       if (touched) next = sentences.join(" ");
+    }
+
+    // PASS 2b — natal sign-only bleed scrub. Latest regression pattern:
+    // "Natally, your Mercury in Aries" where Aries is the SR Mercury sign
+    // and natal Mercury is Taurus. No degree is present, so PASS 1/2 miss it.
+    // Only rewrite inside explicit natal/natally/baseline context, never SR.
+    if (val) {
+      const sentences2b = next.split(sentenceSplit);
+      let touched2b = false;
+      for (let i = 0; i < sentences2b.length; i++) {
+        const s = sentences2b[i];
+        if (!s || s.length < 12) continue;
+        if (SR_QUALIFIER_RE.test(s)) continue;
+        if (!NATAL_CONTEXT_RE.test(s)) continue;
+        let s2 = s;
+        for (const [planet, truth] of natalByPlanet.entries()) {
+          const srSignOnly = srByPlanet.get(planet.toLowerCase());
+          if (!srSignOnly) continue;
+          if (srSignOnly.sign === truth.sign) continue;
+          const signOnlyRe = new RegExp(
+            `\\b${planet}\\b(\\s+(?:retrograde|℞|Rx|R)\\b)?(\\s+in\\s+)(${SIGN_NAMES_RE})\\b`,
+            "gi",
+          );
+          s2 = s2.replace(signOnlyRe, (match, retroPart, gap, claimedSign) => {
+            const claimed = String(claimedSign);
+            if (claimed.toLowerCase() === truth.sign.toLowerCase()) return match;
+            if (claimed.toLowerCase() !== srSignOnly.sign.toLowerCase()) return match;
+            signRewrites++;
+            if (examples.length < 5) {
+              examples.push(`[sign-only] ${match} → ${planet}${retroPart || ""}${gap}${truth.sign}`);
+            }
+            return `${planet}${retroPart || ""}${gap}${truth.sign}`;
+          });
+        }
+        if (s2 !== s) { sentences2b[i] = s2; touched2b = true; }
+      }
+      if (touched2b) next = sentences2b.join(" ");
     }
 
     // PASS 3 — unqualified bleed scrub. The AI sometimes cites a planet at
@@ -6682,6 +6719,29 @@ const buildValidatorTruthMap = (
   return out;
 };
 
+const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
+  if (!parsedContent || typeof parsedContent !== "object") return;
+  let changed = 0;
+  const visit = (node: any, path = "$."): void => {
+    if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}].`); return; }
+    if (!node || typeof node !== "object") return;
+    for (const [key, val] of Object.entries(node)) {
+      if (key.startsWith("_")) continue;
+      if (typeof val === "string") {
+        const next = val
+          .replace(/\s*\u2014\s*/g, ", ")
+          .replace(/(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g, "$1 to $2")
+          .replace(/\s*\u2013\s*/g, ", ");
+        if (next !== val) { (node as any)[key] = next; changed++; }
+      } else {
+        visit(val, `${path}${key}.`);
+      }
+    }
+  };
+  visit(parsedContent);
+  if (changed > 0) log.push({ type: "global_dash_strip", detail: { fields: changed } });
+};
+
 const runPlacementTableValidator = (
   parsedContent: any,
   chartContext: string,
@@ -6735,7 +6795,7 @@ const runPlacementTableValidator = (
   // Scope-locked match patterns. Each captures: scope keyword, planet,
   // up to 200 chars of trailing context (sign/house/retrograde claims).
   const NATAL_RE = new RegExp(
-    `\\b(?:your\\s+)?(natal)\\s+(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
+    `\\b(?:(?:your\\s+)?(natal)\\s+|natally\\s*,?\\s*(?:your\\s+)?)(${VALIDATOR_PLANET_RE})\\b([\\s\\S]{0,220})`,
     "gi",
   );
   const SR_RE = new RegExp(
@@ -6813,7 +6873,8 @@ const runPlacementTableValidator = (
       // explicit "direct" within ~80 chars of the planet. Ignore everything
       // else (no inference from sign or other fields — that was the source
       // of the SR Venus/Mars false positives).
-      const proximate = trailing.slice(0, 80);
+      const proximate = trailing.slice(0, 120);
+      const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
           scope: scopeLabel,
@@ -6830,6 +6891,16 @@ const runPlacementTableValidator = (
           planet,
           field: "retrograde",
           claimed: false,
+          truth: true,
+          excerpt,
+          path,
+        });
+      } else if (truth.retrograde && hasPlacementClaim && !RETRO_CLAIM_RE.test(proximate)) {
+        drifts.push({
+          scope: scopeLabel,
+          planet,
+          field: "retrograde",
+          claimed: "omitted",
           truth: true,
           excerpt,
           path,
@@ -6940,6 +7011,7 @@ const runPostProcessingPipeline = (
       const msg = err instanceof Error ? err.message : String(err);
       console.warn(`[ask-astrology][pipeline] ${name} threw (non-fatal): ${msg}`);
       log.push({ type: "pipeline_pass_error", detail: { pass: name, error: msg } });
+      if (name === "runPlacementTableValidator") throw err;
     }
   };
 
@@ -7097,6 +7169,11 @@ const runPostProcessingPipeline = (
   // with no separator.
   safeRun("scrubStrayDigitsAfterHouseOrdinal", () =>
     scrubStrayDigitsAfterHouseOrdinal(parsedContent, log),
+  );
+
+  // 11e. Global dash strip — must run before every validator/gate snapshot.
+  safeRun("stripDashesEverywhere", () =>
+    stripDashesEverywhere(parsedContent, log),
   );
 
   // 12. Pre-gate local audit — mirrors the recurring external-gate defect
@@ -10876,10 +10953,10 @@ async function processJob(args: {
       const fmtRow = (p: { planet: string; sign: string; degree: number; minutes?: number; house?: number | null; isRetrograde?: boolean }, prefix: string) => {
         const deg = `${p.degree}°${String(p.minutes ?? 0).padStart(2, "0")}'`;
         const houseStr = p.house != null ? `House ${p.house}` : "House —";
-        const retro = p.isRetrograde ? " Retrograde" : " Direct";
-        return `- ${prefix} ${p.planet}: ${deg} ${p.sign}, ${houseStr},${retro}`;
+        const retro = p.isRetrograde ? "Retrograde" : "Direct";
+        return `- ${prefix} ${p.planet}: ${p.sign}, ${houseStr}, ${retro}, ${deg}`;
       };
-      const natalRows = echoNatal.map((p) => fmtRow(p, "natal")).join("\n");
+      const natalRows = echoNatal.map((p) => fmtRow(p, "Natal")).join("\n");
       const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
       if (natalRows || srRows) {
         const echoBlock = [
@@ -10889,7 +10966,9 @@ async function processJob(args: {
           "Whenever you mention a planet's degree, sign, house, or retrograde",
           "status in prose, the values below are the ONLY correct values.",
           "Do not derive. Do not infer. Do not transpose between natal and SR.",
+          "A natal planet may NEVER use the SR sign for the same planet.",
           "If a sentence says 'natal Uranus', use the 'natal Uranus' row.",
+          "If a sentence says 'Natally, your Mercury', use the 'Natal Mercury' row.",
           "If a sentence says 'SR Moon', use the 'SR Moon' row. No exceptions.",
           "",
           natalRows,
