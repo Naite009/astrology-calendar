@@ -2831,110 +2831,13 @@ const overrideSRHouseNumbersFromContext = (
   }
 };
 
-// DETERMINISTIC SR PLANET HOUSE PROSE CORRECTOR — the AI emits sentences
-// like "SR Pluto in the 5th house" or "SR Venus sits in your 7th house"
-// where the named house number disagrees with the deterministic SR house
-// from the chart context. The placement_table override above only fixes
-// the table; this pass scrubs the prose. Without it the table is right
-// while the prose still tells the user the wrong house.
-const correctSrPlanetHousesInProse = (
-  parsedContent: any,
-  chartContext: string,
-  log: HygieneLog,
-) => {
-  if (!parsedContent || !chartContext) return;
-  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
-  const houseMap = new Map<string, number>();
-  for (const p of srPos) {
-    if (p.house != null) houseMap.set(p.planet.toLowerCase(), p.house);
-  }
-  // Override with the SR ANALYSIS injection (birthday-engine truth) when
-  // present — same priority used by factsAwareRetrogradeSweep.
-  const injection = parseSrAnalysisInjection(chartContext);
-  if (injection.srHouse.size > 0) {
-    for (const [planet, h] of injection.srHouse.entries()) houseMap.set(planet, h);
-  }
-  if (houseMap.size === 0) return;
-
-  const PROSE_PLANETS = [
-    "Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron",
-  ];
-  const PLANET_RE = PROSE_PLANETS.join("|");
-  const NUM_TO_ORD: Record<number, string> = {
-    1:"1st",2:"2nd",3:"3rd",4:"4th",5:"5th",6:"6th",7:"7th",8:"8th",9:"9th",10:"10th",11:"11th",12:"12th",
-  };
-  const NUM_TO_WORD: Record<number, string> = {
-    1:"first",2:"second",3:"third",4:"fourth",5:"fifth",6:"sixth",7:"seventh",
-    8:"eighth",9:"ninth",10:"tenth",11:"eleventh",12:"twelfth",
-  };
-  const ORD_TO_NUM: Record<string, number> = {
-    "1st":1,"first":1,"2nd":2,"second":2,"3rd":3,"third":3,"4th":4,"fourth":4,
-    "5th":5,"fifth":5,"6th":6,"sixth":6,"7th":7,"seventh":7,"8th":8,"eighth":8,
-    "9th":9,"ninth":9,"10th":10,"tenth":10,"11th":11,"eleventh":11,"12th":12,"twelfth":12,
-  };
-  const ORD_RE = "(?:1st|first|2nd|second|3rd|third|4th|fourth|5th|fifth|6th|sixth|7th|seventh|8th|eighth|9th|ninth|10th|tenth|11th|eleventh|12th|twelfth)";
-
-  // Pattern: "SR <Planet> ... <Nth> house" within ~140 chars after SR
-  // qualifier. We require an explicit SR qualifier ("SR" or "Solar Return"
-  // or "this year['s]") in the same window so we never rewrite natal prose.
-  // Two regex variants:
-  //   (a) "SR <Planet> [optional ℞] [optional sign/degree blob up to ~80
-  //        chars] in (?:the|your) <ord> house"
-  //   (b) "SR <Planet> ... sits/lands/falls/located in (?:the|your) <ord>
-  //        house"
-  const planetHouseRe = new RegExp(
-    `\\b(SR|Solar\\s+Return|This\\s+year(?:'s)?|This\\s+year)\\s+(${PLANET_RE})\\b([\\s\\S]{0,140}?\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+)(${ORD_RE})\\s+house\\b`,
-    "gi",
-  );
-
-  const SKIP_KEYS = new Set([
-    "type","title","label","name","subtitle","heading","id","kind",
-    "planet","sign","house","degrees","aspect","natal_point","symbol",
-    "tag","date","date_range","dateRange","generated_date",
-    "subject","question_type","question_asked","retrograde",
-  ]);
-
-  let rewrites = 0;
-  const examples: string[] = [];
-
-  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value: val }) => {
-    let next = val;
-    next = next.replace(planetHouseRe, (full, _qual, planet, gap, claimedOrd) => {
-      const beforeHouseClaim = String(full).slice(0, String(full).toLowerCase().lastIndexOf(String(claimedOrd).toLowerCase()));
-      if (/\bnatal\s+(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Lilith|Juno|North\s+Node|South\s+Node|NorthNode|SouthNode)\b/i.test(beforeHouseClaim)) {
-        return full;
-      }
-      const truthHouse = houseMap.get(String(planet).toLowerCase());
-      if (truthHouse == null) return full;
-      const claimedNum = ORD_TO_NUM[String(claimedOrd).toLowerCase()];
-      if (!claimedNum || claimedNum === truthHouse) return full;
-      // Preserve the original wording style (numeric "5th" vs word "fifth")
-      // when emitting the corrected ordinal.
-      const isWordStyle = /^[a-z]+$/i.test(String(claimedOrd));
-      const correctOrd = isWordStyle ? NUM_TO_WORD[truthHouse] : NUM_TO_ORD[truthHouse];
-      rewrites++;
-      const rebuilt = full.replace(new RegExp(`\\b${claimedOrd}\\s+house\\b`, "i"), `${correctOrd} house`);
-      if (examples.length < 5) {
-        examples.push(`${full.slice(0, 120)} → ${rebuilt.slice(0, 120)}`);
-      }
-      return rebuilt;
-    });
-    if (next !== val) {
-      (node as any)[key] = next;
-    }
-  });
-
-  if (rewrites > 0) {
-    log.push({
-      type: "sr_planet_houses_corrected_in_prose",
-      detail: { rewrites, examples },
-    });
-    console.info("[ask-astrology] SR planet houses corrected in prose", {
-      rewrites,
-      examples,
-    });
-  }
-};
+// REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse` was a regex
+// prose-mutation sweep that fought with `factsAwareNatalHouseSweep` and
+// reversed correct natal house fixes. It is replaced by
+// `runPlacementTableValidator` which fails the generation loud on any SR
+// or natal house/sign/retrograde drift instead of silently rewriting prose.
+// Do not reintroduce this sweep. See
+// .lovable/memory/architecture/ask-astrology/no-prose-sweeps-placement-table-truth.md
 
 // Parse the "NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT
 // DERIVE)" truth block emitted by AskView. Returns a planet→house map.
