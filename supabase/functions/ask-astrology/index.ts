@@ -4166,7 +4166,7 @@ const factsAwareRetrogradeSweep = (
       const ordWordPattern = Object.keys(HOUSE_ORDINAL_WORDS).join("|");
       // Pattern A: "<Planet> ...verb/in the [SR|natal]? <ord> house"
       const patternA = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:(?:the|your)\\s+)?(?:sr\\s+|natal\\s+)?)(${ordWordPattern})(\\s+house)\\b`,
         "gi",
       );
       // Pattern B: "<Planet> ... house <number>"
@@ -4176,7 +4176,7 @@ const factsAwareRetrogradeSweep = (
       );
       // Pattern C: "<Planet> ... in the <ord>" (terminal — no "house" after)
       const patternC = new RegExp(
-        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+the\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
+        `(\\b${planet}\\b[^.!?\\n]{0,120}?\\bin\\s+(?:the|your)\\s+)(${ordWordPattern})(?!\\s+(?:house|sign))\\b`,
         "gi",
       );
 
@@ -11134,7 +11134,17 @@ async function processJob(args: {
         return `- ${prefix} ${p.planet}: ${p.sign}, ${houseStr}, ${retro}, ${deg}`;
       };
       const natalRows = echoNatal.map((p) => fmtRow(p, "Natal")).join("\n");
-      const srRows = echoSr.map((p) => fmtRow(p, "SR")).join("\n");
+    const srInjection = parseSrAnalysisInjection(sanitizedChartContext);
+    const echoSrCanonical = echoSr.map((p) => {
+      const injectedHouse = srInjection.srHouse.get(p.planet.toLowerCase());
+      const injectedRetro = srInjection.srRetro.get(p.planet.toLowerCase());
+      return {
+        ...p,
+        house: injectedHouse ?? p.house,
+        isRetrograde: injectedRetro ?? p.isRetrograde,
+      };
+    });
+    const srRows = echoSrCanonical.map((p) => fmtRow(p, "SR")).join("\n");
       if (natalRows || srRows) {
         const echoBlock = [
           "═══════════════════════════════════════════════════════════════",
@@ -11191,13 +11201,6 @@ async function processJob(args: {
     const srYearMatch = sanitizedChartContext.match(/SOLAR RETURN\s+(\d{4})/);
     if (srYearMatch) {
       srYearFromContext = parseInt(srYearMatch[1], 10);
-    }
-
-    const chartHouseMap: Record<string, number> = {};
-    const houseRegex = /(\w[\w\s]*?):\s*\d+°\d+'\s+\w+\s*\(House\s+(\d+)\)/g;
-    let hm;
-    while ((hm = houseRegex.exec(sanitizedChartContext)) !== null) {
-      chartHouseMap[hm[1].trim()] = parseInt(hm[2], 10);
     }
 
     const compactRelationshipInstruction = compactRelationshipMode
@@ -11991,6 +11994,7 @@ ${natalGroundTruthLines}`
 
       if (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)) {
         parsedContent.generated_date = effectiveCurrentDate;
+        const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
 
         // POST-GENERATION: Strip any year numbers after "Solar Return"
         if (parsedContent.sections && Array.isArray(parsedContent.sections)) {
@@ -12098,23 +12102,6 @@ ${natalGroundTruthLines}`
         if (!junoDataPresent) {
           stripPlacementRows("Juno");
           stripTermDeep(parsedContent, "Juno");
-        }
-
-        // POST-GENERATION HOUSE CROSS-CHECK: Fix house values that don't match chart data
-        if (Object.keys(chartHouseMap).length > 0 && parsedContent.sections && Array.isArray(parsedContent.sections)) {
-          for (const section of parsedContent.sections) {
-            if (section.type === 'placement_table' && Array.isArray(section.rows)) {
-              for (const row of section.rows) {
-                if (row.planet && chartHouseMap[row.planet] !== undefined) {
-                  const correctHouse = chartHouseMap[row.planet];
-                  if (row.house !== correctHouse) {
-                    console.warn(`House cross-check fix: ${row.planet} was house ${row.house}, corrected to ${correctHouse}`);
-                    row.house = correctHouse;
-                  }
-                }
-              }
-            }
-          }
         }
 
         // POST-GENERATION ELEMENT/MODALITY COUNT VALIDATION
@@ -12587,7 +12574,6 @@ ${natalGroundTruthLines}`
         // PDF, future apps) can correlate corrections.
         // ────────────────────────────────────────────────────────────
         try {
-          const emissionLog: Array<{ type: string; detail: Record<string, unknown> }> = [];
           dedupeTimingArrays(parsedContent, emissionLog);
           // Collapse duplicate window descriptions before placeholder strip
           // so the second/third copies become short pointer lines instead
