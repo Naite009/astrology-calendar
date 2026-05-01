@@ -1818,6 +1818,43 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
       if (domEl) fixGroup(ELEMENTS, domEl);
       if (domMod) fixGroup(MODALITIES, domMod);
 
+      // DIRECT DOMINANCE CLAIM CORRECTOR
+      // Catches explicit phrases like "Mutable dominant", "Mutable dominance",
+      // "Mutable-dominant", "Mutable is dominant", "the dominant modality is
+      // Mutable", and same for elements. The Replit gate's BALANCE_CLAIM_MISMATCH
+      // fires on these phrasings even when the count arrays are correct, because
+      // the AI just wrote the wrong dominant word in prose. We rewrite the
+      // wrong root to the deterministic dominant root.
+      const fixDirectDominanceClaims = (text: string, group: string[], correctRoot: string): string => {
+        if (!correctRoot) return text;
+        const wrongs = group.filter((g) => g !== correctRoot);
+        if (wrongs.length === 0) return text;
+        const wrongAlt = wrongs.join("|");
+        // Patterns: "<wrong>-dominant", "<wrong> dominant", "<wrong> dominance",
+        // "<wrong> is dominant", "dominant <wrong>", "dominant modality/element
+        // is <wrong>".
+        const patterns = [
+          new RegExp(`\\b(${wrongAlt})[-\\s]+dominant\\b`, "gi"),
+          new RegExp(`\\b(${wrongAlt})\\s+dominance\\b`, "gi"),
+          new RegExp(`\\b(${wrongAlt})\\s+is\\s+dominant\\b`, "gi"),
+          new RegExp(`\\bdominant\\s+(modality|element)\\s+is\\s+(${wrongAlt})\\b`, "gi"),
+          new RegExp(`\\bdominant\\s+(${wrongAlt})\\b`, "gi"),
+        ];
+        let out = text;
+        for (const re of patterns) {
+          out = out.replace(re, (match) => {
+            const wrongRe = new RegExp(`\\b(${wrongAlt})\\b`, "i");
+            return match.replace(wrongRe, (m) =>
+              m[0] === m[0].toUpperCase() ? cap(correctRoot) : correctRoot,
+            );
+          });
+        }
+        return out;
+      };
+
+      if (domMod) next = fixDirectDominanceClaims(next, MODALITIES, domMod);
+      if (domEl) next = fixDirectDominanceClaims(next, ELEMENTS, domEl);
+
       // GENERALIZED ELEMENT/MODALITY MISMATCH GUARD
       // Triggers when the dominant element is Earth or Water (slow, inward,
       // building) but the prose uses Fire/Cardinal vocabulary (fast,
