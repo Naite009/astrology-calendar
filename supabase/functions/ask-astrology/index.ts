@@ -2815,7 +2815,7 @@ const normalizePlacementTableRetrograde = (
   // must get correct retrograde flags, not only relationship readings whose
   // tables are explicitly labeled "Natal Key Placements" / "Solar Return Key
   // Placements".
-  type PosFact = { sign: string; degree: number; retrograde: boolean };
+  type PosFact = { sign: string; degree: number; minutes: number; house: number | null; retrograde: boolean };
   const natalTruth = new Map<string, boolean>();
   const srTruth = new Map<string, boolean>();
   const natalFacts = new Map<string, PosFact>();
@@ -2826,12 +2826,12 @@ const normalizePlacementTableRetrograde = (
     for (const p of natalPos) {
       const k = p.planet.toLowerCase();
       natalTruth.set(k, !!p.retrograde);
-      natalFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.retrograde });
+      natalFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.retrograde });
     }
     for (const p of srPos) {
       const k = p.planet.toLowerCase();
       srTruth.set(k, !!p.isRetrograde);
-      srFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.isRetrograde });
+      srFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.isRetrograde });
     }
   }
 
@@ -2993,7 +2993,7 @@ const normalizePlacementTableRetrograde = (
       else { retro = false; source = "default"; }
 
       const desiredPlanet = retro ? `${baseName} ℞` : baseName;
-      const before = { planet: rawPlanet, retrograde: row.retrograde };
+      const before = { planet: rawPlanet, retrograde: row.retrograde, sign: row.sign, degrees: row.degrees, house: row.house };
       let changed = false;
       if (row.retrograde !== retro) {
         row.retrograde = retro;
@@ -3003,11 +3003,43 @@ const normalizePlacementTableRetrograde = (
         row.planet = desiredPlanet;
         changed = true;
       }
+
+      // ─── DETERMINISTIC SIGN/DEGREE/HOUSE WRITE-BACK ───────────────────
+      // The AI sometimes emits literal "?" for sign / degrees / house when
+      // it can't reconcile a row (most often happens for retrograde planets
+      // where the model second-guesses itself). The truth is right there
+      // in chart context — write it back. This also rescues cross-chart
+      // bleeds: if the AI wrote SR Mercury sign on a natal Mercury row,
+      // we now restore the correct natal sign/degree/house from truth.
+      const truthFact = isSR ? srFacts.get(baseName.toLowerCase()) : natalFacts.get(baseName.toLowerCase());
+      if (truthFact) {
+        const truthSign = truthFact.sign;
+        const truthDegrees = `${truthFact.degree}°${String(truthFact.minutes).padStart(2, "0")}'`;
+        const truthHouse: number | string = truthFact.house ?? "—";
+        const rowSign = String(row.sign ?? "").trim();
+        const rowDegrees = String(row.degrees ?? "").trim();
+        const rowHouse = row.house;
+        const rowHouseStr = rowHouse === null || rowHouse === undefined ? "" : String(rowHouse).trim();
+        const isMissing = (v: string) => !v || v === "?" || v === "—" || v.toLowerCase() === "unknown";
+        if (isMissing(rowSign) || rowSign.toLowerCase() !== truthSign.toLowerCase()) {
+          row.sign = truthSign;
+          changed = true;
+        }
+        if (isMissing(rowDegrees) || !/^\d+°\d+'?$/.test(rowDegrees)) {
+          row.degrees = truthDegrees;
+          changed = true;
+        }
+        if (truthFact.house != null && (isMissing(rowHouseStr) || Number(rowHouseStr) !== truthFact.house)) {
+          row.house = truthFact.house;
+          changed = true;
+        }
+      }
+
       if (changed) {
         normalizedRows++;
         if (examples.length < 8) {
           examples.push(
-            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde}) [src=${source}]`
+            `${section.title || "?"} → ${before.planet} ${before.sign}/${before.degrees}/H${before.house} (retro=${before.retrograde}) ⇒ ${row.planet} ${row.sign}/${row.degrees}/H${row.house} (retro=${row.retrograde}) [src=${source}]`
           );
         }
       }
@@ -8849,6 +8881,22 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\bwe'?ll\s+(explore|look\s+at|cover|discuss|dive\s+into)\b/i,
   // Sentences that ONLY describe what the reading does, not what the chart says
   /^\s*(this|that)\s+(reading|report|analysis)\s+(shows?|covers?|explains?|describes?|breaks\s+down)\b/i,
+  // ─── Hallucinated "data is missing" disclaimers ────────────────────────
+  // The model sometimes (incorrectly) declares a chart datum missing and then
+  // refuses to interpret. Chart context is the source of truth — the
+  // deterministic placement tables and truth maps DO have the data. Strip
+  // any sentence that claims data was not supplied / not present / would
+  // require fabrication, OR asks the user to resubmit. The corrected
+  // placement tables remain in the JSON so the reading still anchors to
+  // real positions; we just delete the apologetic prose.
+  /\b(?:was|were|are|is)\s+(?:not|n[o']t)\s+(?:supplied|provided|included|present)\b/i,
+  /\b(?:not|no)\s+(?:supplied|provided|included|present)\s+(?:in|for)\s+(?:the\s+|this\s+)?(?:data|chart|reading|call|section)\b/i,
+  /\bonly\s+the\s+\w+(?:\s+at\s+\d+°\d*'?)?(?:\s+\w+)?\s+(?:was|were|is|are)\s+(?:supplied|provided|present|available)\b/i,
+  /\b(?:would\s+(?:mean|require|be)|requires?)\s+(?:fabricat\w+|invent\w+|guess\w+|making\s+up)\b/i,
+  /\bplease\s+(?:resubmit|provide|supply|include|re-?enter)\b.*\bchart\s+(?:data|info|details)\b/i,
+  /\b(?:without|absent|lacking)\s+(?:those|these|the|that|this)\s+(?:position|placement|data|datum|chart|info)/i,
+  /\b(?:any|an)\s+interpretation\s+of\b.*\b(?:would\s+be\s+)?(?:fabricat\w+|invent\w+|inaccurate|guesswork)\b/i,
+  /\bthe\s+chart\s+data\s+provided\s+for\s+this\s+(?:reading|call|section)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
