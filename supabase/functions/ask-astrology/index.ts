@@ -3086,6 +3086,154 @@ const normalizePlacementTableRetrograde = (
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// PLACEMENT-TABLE ↔ CHART-CONTEXT CONSISTENCY GUARD
+// ─────────────────────────────────────────────────────────────────────────
+// Runs AFTER normalizePlacementTableRetrograde (the deterministic write-back)
+// and BEFORE the response is shipped. If chart_context has full data for a
+// planet AND the placement_table row for that same planet still shows "?"
+// (or a missing value) for sign/degree/house, throw a structured error.
+//
+// Why: this catches any future regression where the normalizer's key-lookup
+// silently fails (whitespace/glyph/casing mismatch in registerKeys, an alias
+// we didn't add, a parser change in parsePositionsFromContext, etc.). Right
+// now those failures are invisible — the row ships with "?" and the AI's
+// downstream prose hallucinates around the gap. With this guard, the next
+// regression is loud and immediate at the boundary.
+const enforcePlacementTableContextConsistency = (
+  parsedContent: any,
+  ctx: { chartContext?: string },
+  log: HygieneLog,
+): void => {
+  if (!parsedContent?.sections || !Array.isArray(parsedContent.sections)) return;
+  const chartContext = ctx?.chartContext || "";
+  if (!chartContext) return;
+
+  // Rebuild the same truth maps the normalizer uses, with the same key
+  // variants — if these diverge, the guard will silently miss real drift.
+  type PosFact = { sign: string; degree: number; minutes: number; house: number | null };
+  const natalFacts = new Map<string, PosFact>();
+  const srFacts = new Map<string, PosFact>();
+  const registerKeys = (rawName: string): string[] => {
+    const lower = rawName.toLowerCase().trim();
+    const noSpace = lower.replace(/\s+/g, "");
+    const splitCamel = rawName.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+    const variants = new Set<string>([lower, noSpace, splitCamel]);
+    const ALIASES: Record<string, string[]> = {
+      northnode: ["north node", "true node", "mean node"],
+      "north node": ["northnode", "true node", "mean node"],
+      southnode: ["south node"],
+      "south node": ["southnode"],
+      partoffortune: ["part of fortune", "fortune", "lot of fortune"],
+      "part of fortune": ["partoffortune", "fortune", "lot of fortune"],
+    };
+    for (const v of [...variants]) {
+      const extra = ALIASES[v];
+      if (extra) extra.forEach((a) => variants.add(a));
+    }
+    return [...variants];
+  };
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  for (const p of natalPos) {
+    const fact = { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null };
+    for (const k of registerKeys(p.planet)) natalFacts.set(k, fact);
+  }
+  for (const p of srPos) {
+    const fact = { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null };
+    for (const k of registerKeys(p.planet)) srFacts.set(k, fact);
+  }
+
+  const isMissing = (v: any): boolean => {
+    if (v === null || v === undefined) return true;
+    const s = String(v).trim();
+    return !s || s === "?" || s === "—" || s.toLowerCase() === "unknown" || s === "n/a";
+  };
+
+  const violations: Array<{
+    table: string;
+    planet: string;
+    chart: "natal" | "sr";
+    row: { sign: any; degrees: any; house: any };
+    truth: { sign: string; degrees: string; house: number | null };
+    missing_fields: string[];
+  }> = [];
+
+  for (const section of parsedContent.sections) {
+    if (section?.type !== "placement_table") continue;
+    const titleLower = String(section.title || "").toLowerCase();
+    const titleSaysSR = titleLower.includes("solar return") || titleLower.includes("sr ");
+    const titleSaysNatal = titleLower.includes("natal");
+    const rows = Array.isArray(section.rows) ? section.rows : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const rawPlanet = String(row.planet || row.body || row.name || "");
+      if (!rawPlanet) continue;
+      const baseName = rawPlanet
+        .replace(RETRO_GLYPH_RE, "")
+        .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
+        .trim();
+      const key = baseName.toLowerCase();
+      const rowPrefixSR =
+        /^\s*(?:SR|Solar\s+Return)\s+/i.test(rawPlanet) ? true
+        : /^\s*Natal\s+/i.test(rawPlanet) ? false
+        : null;
+      const isSR =
+        rowPrefixSR !== null
+          ? rowPrefixSR
+          : titleSaysSR && !titleSaysNatal
+            ? true
+            : titleSaysNatal && !titleSaysSR
+              ? false
+              : srFacts.size > 0 && natalFacts.size === 0
+                ? true
+                : false;
+      const truth = isSR ? srFacts.get(key) : natalFacts.get(key);
+      if (!truth) continue; // No truth available — nothing to enforce.
+
+      const missing: string[] = [];
+      if (isMissing(row.sign)) missing.push("sign");
+      if (isMissing(row.degrees)) missing.push("degrees");
+      if (truth.house != null && isMissing(row.house)) missing.push("house");
+      if (missing.length === 0) continue;
+
+      violations.push({
+        table: section.title || "?",
+        planet: baseName,
+        chart: isSR ? "sr" : "natal",
+        row: { sign: row.sign, degrees: row.degrees, house: row.house },
+        truth: {
+          sign: truth.sign,
+          degrees: `${truth.degree}°${String(truth.minutes).padStart(2, "0")}'`,
+          house: truth.house,
+        },
+        missing_fields: missing,
+      });
+    }
+  }
+
+  if (violations.length > 0) {
+    log.push({
+      type: "placement_table_context_consistency_violation",
+      detail: { count: violations.length, violations },
+    });
+    console.error("[ask-astrology] PLACEMENT_TABLE_CONTEXT_DRIFT", {
+      count: violations.length,
+      violations,
+    });
+    const summary = violations
+      .slice(0, 5)
+      .map(
+        (v) =>
+          `${v.chart.toUpperCase()} ${v.planet} (${v.table}): missing [${v.missing_fields.join(",")}] but chart_context has ${v.truth.sign} ${v.truth.degrees} H${v.truth.house ?? "—"}`,
+      )
+      .join("\n");
+    throw new Error(
+      `PLACEMENT_TABLE_CONTEXT_DRIFT: ${violations.length} row(s) show "?" for fields where chart_context provides authoritative data. The deterministic write-back failed silently — fix the normalizer key-lookup before shipping.\n${summary}`,
+    );
+  }
+};
+
 // DETERMINISTIC SR HOUSE OVERRIDE — runs after AI generation. The model
 // repeatedly copies natal house numbers into the SR placement table even
 // after we tell it not to. The chart context's "SR Planetary Positions"
