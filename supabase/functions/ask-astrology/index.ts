@@ -7751,6 +7751,18 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         // canonical-label fallback); if no backfill is available, the item
         // is dropped so the gate never sees a label with empty content.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
+          // CAUTION WINDOWS exception: do NOT backfill with the "no strong
+          // caution windows" placeholder. If the model emitted the label
+          // with no real value, drop the entire bullet so the Strategy
+          // Summary just renders without it.
+          if (labelKey === "caution windows") {
+            droppedItems++;
+            log.push({
+              type: "caution_windows_item_dropped_no_real_windows",
+              detail: { section: section.title || "", reason: "empty_value_no_backfill" },
+            });
+            continue;
+          }
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
           // Guard against the backfill itself being whitespace/empty —
