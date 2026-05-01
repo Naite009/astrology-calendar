@@ -19,11 +19,13 @@ export type Database = {
           captured_at: string
           chart_context: string | null
           chart_id: string | null
+          chart_name: string | null
           finish_reason: string | null
           id: string
           job_id: string
           model: string | null
           notes: string | null
+          question: string | null
           raw_ai_response: string | null
           system_prompt: string | null
           user_id: string | null
@@ -33,11 +35,13 @@ export type Database = {
           captured_at?: string
           chart_context?: string | null
           chart_id?: string | null
+          chart_name?: string | null
           finish_reason?: string | null
           id?: string
           job_id: string
           model?: string | null
           notes?: string | null
+          question?: string | null
           raw_ai_response?: string | null
           system_prompt?: string | null
           user_id?: string | null
@@ -47,11 +51,13 @@ export type Database = {
           captured_at?: string
           chart_context?: string | null
           chart_id?: string | null
+          chart_name?: string | null
           finish_reason?: string | null
           id?: string
           job_id?: string
           model?: string | null
           notes?: string | null
+          question?: string | null
           raw_ai_response?: string | null
           system_prompt?: string | null
           user_id?: string | null
