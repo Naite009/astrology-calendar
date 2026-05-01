@@ -13445,14 +13445,11 @@ ${natalGroundTruthLines}`
               return { out, changed: out !== s };
             };
             const stripDashes = (s: string): { out: string; changed: boolean } => {
-              // em-dash → ", "  ;  en-dash in date ranges → " to "  ;
-              // any remaining en-dash → ", "
-              let out = s.replace(/\s*\u2014\s*/g, ", ");
-              out = out.replace(
-                /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
-                "$1 to $2",
-              );
-              out = out.replace(/\s*\u2013\s*/g, ", ");
+              // Delegated to the shared bracket- and clause-aware
+              // safeStripDashes helper so artifacts like "( , " and
+              // run-on sentences from "<clause> — You <clause>" are
+              // handled uniformly across the pipeline.
+              const out = safeStripDashes(s);
               return { out, changed: out !== s };
             };
             const cleanString = (s: string): string => {
