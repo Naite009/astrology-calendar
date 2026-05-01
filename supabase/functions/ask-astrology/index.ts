@@ -2993,7 +2993,7 @@ const normalizePlacementTableRetrograde = (
       else { retro = false; source = "default"; }
 
       const desiredPlanet = retro ? `${baseName} ℞` : baseName;
-      const before = { planet: rawPlanet, retrograde: row.retrograde };
+      const before = { planet: rawPlanet, retrograde: row.retrograde, sign: row.sign, degrees: row.degrees, house: row.house };
       let changed = false;
       if (row.retrograde !== retro) {
         row.retrograde = retro;
@@ -3003,11 +3003,43 @@ const normalizePlacementTableRetrograde = (
         row.planet = desiredPlanet;
         changed = true;
       }
+
+      // ─── DETERMINISTIC SIGN/DEGREE/HOUSE WRITE-BACK ───────────────────
+      // The AI sometimes emits literal "?" for sign / degrees / house when
+      // it can't reconcile a row (most often happens for retrograde planets
+      // where the model second-guesses itself). The truth is right there
+      // in chart context — write it back. This also rescues cross-chart
+      // bleeds: if the AI wrote SR Mercury sign on a natal Mercury row,
+      // we now restore the correct natal sign/degree/house from truth.
+      const truthFact = isSR ? srFacts.get(baseName.toLowerCase()) : natalFacts.get(baseName.toLowerCase());
+      if (truthFact) {
+        const truthSign = truthFact.sign;
+        const truthDegrees = `${truthFact.degree}°${String(truthFact.minutes).padStart(2, "0")}'`;
+        const truthHouse: number | string = truthFact.house ?? "—";
+        const rowSign = String(row.sign ?? "").trim();
+        const rowDegrees = String(row.degrees ?? "").trim();
+        const rowHouse = row.house;
+        const rowHouseStr = rowHouse === null || rowHouse === undefined ? "" : String(rowHouse).trim();
+        const isMissing = (v: string) => !v || v === "?" || v === "—" || v.toLowerCase() === "unknown";
+        if (isMissing(rowSign) || rowSign.toLowerCase() !== truthSign.toLowerCase()) {
+          row.sign = truthSign;
+          changed = true;
+        }
+        if (isMissing(rowDegrees) || !/^\d+°\d+'?$/.test(rowDegrees)) {
+          row.degrees = truthDegrees;
+          changed = true;
+        }
+        if (truthFact.house != null && (isMissing(rowHouseStr) || Number(rowHouseStr) !== truthFact.house)) {
+          row.house = truthFact.house;
+          changed = true;
+        }
+      }
+
       if (changed) {
         normalizedRows++;
         if (examples.length < 8) {
           examples.push(
-            `${section.title || "?"} → ${before.planet} (retrograde=${before.retrograde}) ⇒ ${row.planet} (retrograde=${row.retrograde}) [src=${source}]`
+            `${section.title || "?"} → ${before.planet} ${before.sign}/${before.degrees}/H${before.house} (retro=${before.retrograde}) ⇒ ${row.planet} ${row.sign}/${row.degrees}/H${row.house} (retro=${row.retrograde}) [src=${source}]`
           );
         }
       }
