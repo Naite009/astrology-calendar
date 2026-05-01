@@ -7356,6 +7356,14 @@ const runPostProcessingPipeline = (
     });
   });
 
+  // 2b. The inject step preserves existing body/balance prose while replacing
+  // deterministic counts. Reconcile those preserved sentences immediately so
+  // the final gate never sees stale claims like "Mutable dominant" when the
+  // count arrays say Cardinal/Fixed are tied.
+  safeRun("correctModalityElementBodyClaims", () =>
+    correctModalityElementBodyClaims(parsedContent),
+  );
+
   // 3. 7th-house / Descendant cusp prose.
   safeRun("fixDescendantCuspMentionsInProse", () =>
     fixDescendantCuspMentionsInProse(parsedContent, ctx, log),
