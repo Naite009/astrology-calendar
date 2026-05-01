@@ -7205,6 +7205,60 @@ const buildValidatorTruthMap = (
   return out;
 };
 
+// Shared bracket- and clause-aware dash stripper. Replaces em/en dashes
+// with grammatically appropriate punctuation:
+//   • If the dash sits adjacent to an opening "(" "[" "{" or a closing
+//     ")" "]" "}", we DROP it (don't inject a stray comma against the
+//     bracket — that produced "( , " or " ,)" artifacts in earlier runs).
+//   • If the segment before the em-dash ends with a complete-looking
+//     clause AND the segment after starts with a subject pronoun /
+//     determiner that begins a new independent clause (e.g. "Your X — You
+//     do Y"), we use ". " instead of ", " to avoid run-ons.
+//   • Otherwise we use ", ".
+// Date ranges with en-dash ("May 8–June 2") become " to ".
+export const safeStripDashes = (input: string): string => {
+  if (typeof input !== "string" || !input) return input;
+  let out = input;
+  // En-dash inside a date range → " to "
+  out = out.replace(
+    /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
+    "$1 to $2",
+  );
+  const RUN_ON_STARTERS = /^(?:You|Your|We|I|He|She|They|It|This|That|These|Those|There|Here|When|While|If|Because|So|And|But|Or)\b/;
+  const replaceDash = (full: string, before: string, after: string): string => {
+    // Drop entirely when adjacent to an open or close bracket.
+    if (/[([{]\s*$/.test(before)) return before + after.replace(/^\s+/, "");
+    if (/^\s*[)\]}]/.test(after)) return before.replace(/\s+$/, "") + after;
+    // Run-on guard: if `after` starts with a clause-opening word, use ". ".
+    const trimmedAfter = after.replace(/^\s+/, "");
+    if (RUN_ON_STARTERS.test(trimmedAfter)) {
+      const beforeTrim = before.replace(/\s+$/, "");
+      // Capitalize the first letter of the new sentence.
+      const cap = trimmedAfter.charAt(0).toUpperCase() + trimmedAfter.slice(1);
+      return beforeTrim + ". " + cap;
+    }
+    return before.replace(/\s+$/, "") + ", " + trimmedAfter;
+  };
+  // Em-dash pass — capture surrounding chars for context.
+  out = out.replace(/(.?)\s*\u2014\s*(.?)/g, (m, b, a) => replaceDash(m, b, a));
+  // Any remaining en-dashes → same logic.
+  out = out.replace(/(.?)\s*\u2013\s*(.?)/g, (m, b, a) => replaceDash(m, b, a));
+  // Cleanup artifacts from earlier runs and edge cases.
+  out = out
+    .replace(/\(\s*,\s*/g, "(")          // "( , " → "("
+    .replace(/\s*,\s*\)/g, ")")          // " , )" → ")"
+    .replace(/\[\s*,\s*/g, "[")
+    .replace(/\s*,\s*\]/g, "]")
+    .replace(/,\s*,+/g, ",")             // collapse double commas
+    .replace(/,\s*\./g, ".")             // ", ." → "."
+    .replace(/\s+([,.;:!?])/g, "$1")     // " ," → ","
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return out;
+};
+
 const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   let changed = 0;
@@ -7214,10 +7268,7 @@ const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
     for (const [key, val] of Object.entries(node)) {
       if (key.startsWith("_")) continue;
       if (typeof val === "string") {
-        const next = val
-          .replace(/\s*\u2014\s*/g, ", ")
-          .replace(/(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g, "$1 to $2")
-          .replace(/\s*\u2013\s*/g, ", ");
+        const next = safeStripDashes(val);
         if (next !== val) { (node as any)[key] = next; changed++; }
       } else {
         visit(val, `${path}${key}.`);
@@ -13394,14 +13445,11 @@ ${natalGroundTruthLines}`
               return { out, changed: out !== s };
             };
             const stripDashes = (s: string): { out: string; changed: boolean } => {
-              // em-dash → ", "  ;  en-dash in date ranges → " to "  ;
-              // any remaining en-dash → ", "
-              let out = s.replace(/\s*\u2014\s*/g, ", ");
-              out = out.replace(
-                /(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*\u2013\s*(\d{1,2}(?:,\s*\d{4})?)/g,
-                "$1 to $2",
-              );
-              out = out.replace(/\s*\u2013\s*/g, ", ");
+              // Delegated to the shared bracket- and clause-aware
+              // safeStripDashes helper so artifacts like "( , " and
+              // run-on sentences from "<clause> — You <clause>" are
+              // handled uniformly across the pipeline.
+              const out = safeStripDashes(s);
               return { out, changed: out !== s };
             };
             const cleanString = (s: string): string => {
