@@ -2820,18 +2820,47 @@ const normalizePlacementTableRetrograde = (
   const srTruth = new Map<string, boolean>();
   const natalFacts = new Map<string, PosFact>();
   const srFacts = new Map<string, PosFact>();
+  // Helper: register a planet under multiple key variants so AI-emitted
+  // names like "North Node" hit chart-context entries parsed as "NorthNode"
+  // (and vice versa). Without this, multi-word bodies fall through the
+  // truthFact lookup and ship as "?" sign/degree/house.
+  const registerKeys = (rawName: string): string[] => {
+    const lower = rawName.toLowerCase().trim();
+    const noSpace = lower.replace(/\s+/g, "");
+    // Insert spaces before capital letters in the original (NorthNode → north node).
+    const splitCamel = rawName.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+    const variants = new Set<string>([lower, noSpace, splitCamel]);
+    // Common alias map (extend as needed).
+    const ALIASES: Record<string, string[]> = {
+      northnode: ["north node", "true node", "mean node"],
+      "north node": ["northnode", "true node", "mean node"],
+      southnode: ["south node"],
+      "south node": ["southnode"],
+      partoffortune: ["part of fortune", "fortune", "lot of fortune"],
+      "part of fortune": ["partoffortune", "fortune", "lot of fortune"],
+    };
+    for (const v of [...variants]) {
+      const extra = ALIASES[v];
+      if (extra) extra.forEach((a) => variants.add(a));
+    }
+    return [...variants];
+  };
   if (chartContext) {
     const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
     const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
     for (const p of natalPos) {
-      const k = p.planet.toLowerCase();
-      natalTruth.set(k, !!p.retrograde);
-      natalFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.retrograde });
+      const fact = { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.retrograde };
+      for (const k of registerKeys(p.planet)) {
+        natalTruth.set(k, !!p.retrograde);
+        natalFacts.set(k, fact);
+      }
     }
     for (const p of srPos) {
-      const k = p.planet.toLowerCase();
-      srTruth.set(k, !!p.isRetrograde);
-      srFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.isRetrograde });
+      const fact = { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.isRetrograde };
+      for (const k of registerKeys(p.planet)) {
+        srTruth.set(k, !!p.isRetrograde);
+        srFacts.set(k, fact);
+      }
     }
   }
 
