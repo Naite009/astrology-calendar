@@ -12137,10 +12137,41 @@ ${natalGroundTruthLines}`
           );
         }
 
+        // Pull a human-readable chart name + question summary out of the
+        // request payload so the Replay dialog can group captures by person
+        // (e.g. "Lauren Newman") and show what each one was about
+        // ("relationship", "where should I live"). chart_id alone is a
+        // numeric timestamp and useless for picking captures.
+        let capChartName: string | null = null;
+        let capQuestion: string | null = null;
+        try {
+          const lastUserMsg = Array.isArray(sanitizedMessages)
+            ? [...sanitizedMessages].reverse().find((m: any) => m?.role === "user")
+            : null;
+          const lastUserText = typeof lastUserMsg?.content === "string"
+            ? lastUserMsg.content
+            : "";
+          if (lastUserText) {
+            // Try "for <Name>, born" (used by SR/natal portrait prompts)
+            const nameMatch = lastUserText.match(/for ([A-Z][A-Za-z'’\-]+(?:\s[A-Z][A-Za-z'’\-]+){0,3}),\s+born/);
+            if (nameMatch) capChartName = nameMatch[1];
+            capQuestion = lastUserText.slice(0, 240);
+          }
+          // Fallback: try to read a name out of the chart context header
+          if (!capChartName && typeof sanitizedChartContext === "string") {
+            const ctxName = sanitizedChartContext.match(/(?:Name|Chart)\s*[:\-]\s*([A-Z][A-Za-z'’\-]+(?:\s[A-Z][A-Za-z'’\-]+){0,3})/);
+            if (ctxName) capChartName = ctxName[1];
+          }
+        } catch (_extractErr) {
+          // never fatal
+        }
+
         const captureRow = {
           job_id: jobId,
           user_id: capUserId,
           chart_id: capChartId,
+          chart_name: capChartName,
+          question: capQuestion,
           system_prompt: systemPromptStr,
           user_messages: sanitizedMessages,
           chart_context: sanitizedChartContext,
