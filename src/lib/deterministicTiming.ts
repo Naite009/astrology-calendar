@@ -1195,26 +1195,39 @@ const buildNatalDescription = (
     ? `${transitPlanet} ${verb} your natal ${natalPlanet} at ${degreeLabel}`
     : `${transitPlanet} ${verb} your natal ${natalPlanet}`;
 
-  // Scenario sentence: substitute the theme into the lived-experience template.
+  // Scenario sentence: templates are theme-free now (sentence 1 already names
+  // the theme via "touches {theme}"). We still substitute {theme} for any
+  // legacy template that retains the token, falling back to a neutral anchor.
   const themeForScenario = theme || `your ${natalPlanet}`;
   const scenario = scenarioTemplate
     ? scenarioTemplate.replace('{theme}', themeForScenario)
     : '';
 
-  const peaks = exactSummary ? `, with exact peaks on ${exactSummary}` : '';
+  // exactSummary already begins with "Peaks:" / "Pass 1" labels — strip a
+  // leading "Peaks?:?" so the joiner reads cleanly and never produces
+  // "with exact peaks on Peaks: …".
+  const peaksClean = (exactSummary || '').trim().replace(/^Peaks?:\s*/i, '');
+  const peaks = peaksClean ? `, with exact peaks on ${peaksClean}` : '';
+
+  // End-punctuation helper: avoid "..", "?.", "!." when appending the peaks
+  // tail and the final period.
+  const endWithPeriod = (s: string): string => {
+    const trimmed = s.replace(/[\s.]+$/, '');
+    return trimmed + '.';
+  };
 
   // Compose exactly as the shared timing rule requires: sentence 1 names the
   // specific natal point; sentence 2 gives one concrete lived scenario.
   if (theme && scenario) {
-    return `${naming} touches ${theme}. ${scenario.replace(/\.$/, '')}${peaks}.`;
+    return endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
   }
   if (theme) {
-    return `${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}.`;
+    return endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`);
   }
   if (scenario) {
-    return `${naming}. ${scenario.replace(/\.$/, '')}${peaks}.`;
+    return endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
   }
-  return `${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}.`;
+  return endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`);
 };
 
 // Within-description sentence dedupe. Splits on sentence boundaries and removes
