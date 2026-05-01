@@ -2320,7 +2320,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const a = document.createElement("a");
     a.href = url;
 
-    // Filename: <person-name>_<reading-type>_<timestamp>.json
+    // Filename: <person-name>_<reading-type>_<LOCAL-timestamp>.json
+    // LOCAL time, not UTC — an 8pm ET generation on 4/30 must stay 2026-04-30, not roll to 5/1.
     const slug = (s: string) =>
       (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
     const personSlug = slug(selectedChart!.name) || "chart";
@@ -2333,11 +2334,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
     const typeSlug =
       types.length === 0 ? "reading" : types.length === 1 ? types[0] : "multi-reading";
-    const ts = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .replace("T", "_")
-      .replace(/-\d{3}Z$/, "Z"); // 2026-04-19_14-32-05Z
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const ts = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
     a.download = `${personSlug}_${typeSlug}_${ts}.json`;
     a.click();
     URL.revokeObjectURL(url);
