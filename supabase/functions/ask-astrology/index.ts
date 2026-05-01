@@ -7379,11 +7379,21 @@ const runPlacementTableValidator = (
 
       // Sign claim — only validate when truth has a sign (skip if explicit
       // block contributed only the house, e.g. Lilith without positions row).
-      // Use truncatedTrailing so we don't grab a sign that belongs to a
-      // later-mentioned planet in the same sentence.
-      const signMatch = truncatedTrailing.match(SIGN_CLAIM_RE);
-      if (signMatch && truth.sign) {
-        const claimedSign = signMatch[1];
+      // CLAUSE-LEVEL CUTOFF: stop the sign-search at the first clause break
+      // ("," + "and"/"but"/"while"/"your", semicolon, or "your <ordinal>
+      // house") so a continuation describing the *house cusp* (which has its
+      // own sign) cannot be mis-attributed to the planet. Example that this
+      // fixes:
+      //   "Your natal Venus sits at 10°30' Aries in your 5th house, retrograde,
+      //    and your 7th house, the area of your chart...Taurus..."
+      // Without the cutoff, the validator grabbed "Taurus" (the 7th-cusp
+      // sign) as the claimed Venus sign and hard-failed the job.
+      const CLAUSE_BREAK_RE = /(?:,\s*(?:and|but|while|your|where)\b|;|\.\s|\byour\s+(?:1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\s+house\b)/i;
+      const clauseBreak = truncatedTrailing.search(CLAUSE_BREAK_RE);
+      const signWindow = clauseBreak >= 0 ? truncatedTrailing.slice(0, clauseBreak) : truncatedTrailing;
+      const signMatch = signWindow.match(SIGN_CLAIM_RE);
+      const claimedSign = signMatch ? (signMatch[1] || signMatch[2] || signMatch[3]) : null;
+      if (claimedSign && truth.sign) {
         if (claimedSign.toLowerCase() !== truth.sign.toLowerCase()) {
           drifts.push({
             scope: scopeLabel,
@@ -7403,7 +7413,7 @@ const runPlacementTableValidator = (
       // be attributed to an earlier "natal Venus" mention (and vice versa).
       const proximate = truncatedTrailing.slice(0, 120);
       const proximateSansTimingPasses = proximate.replace(/\bPass\s+\d+[^,;)]*\bDirect\b/gi, "");
-      const hasPlacementClaim = !!houseMatch || !!signMatch || /\b(?:at|=)\s*\d+°/.test(proximate);
+      const hasPlacementClaim = !!findScopedHouseClaim(truncatedTrailing, scopeLabel) || !!claimedSign || /\b(?:at|=)\s*\d+°/.test(proximate);
       if (RETRO_CLAIM_RE.test(proximate) && !truth.retrograde) {
         drifts.push({
           scope: scopeLabel,
