@@ -7751,6 +7751,18 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
         // canonical-label fallback); if no backfill is available, the item
         // is dropped so the gate never sees a label with empty content.
         if (v !== 0 && v !== false && isWhitespaceOrEmpty(v)) {
+          // CAUTION WINDOWS exception: do NOT backfill with the "no strong
+          // caution windows" placeholder. If the model emitted the label
+          // with no real value, drop the entire bullet so the Strategy
+          // Summary just renders without it.
+          if (labelKey === "caution windows") {
+            droppedItems++;
+            log.push({
+              type: "caution_windows_item_dropped_no_real_windows",
+              detail: { section: section.title || "", reason: "empty_value_no_backfill" },
+            });
+            continue;
+          }
           const timingBackfill = label ? buildEmptySummaryFallback(parsedContent, label) : null;
           const backfill = timingBackfill || SUMMARY_ITEM_BACKFILLS[labelKey];
           // Guard against the backfill itself being whitespace/empty —
@@ -7793,22 +7805,25 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           });
         }
       }
-      const hasCautionWindows = keptItems.some(
-        (it) => it && typeof it === "object" && typeof it.label === "string"
-          && it.label.trim().toLowerCase() === "caution windows"
-      );
-      if (isRelationshipReading && String(section.title || "").trim() === "Relationship Strategy Summary" && !hasCautionWindows) {
-        const cwValue = buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"] || "";
-        if (!isWhitespaceOrEmpty(cwValue)) {
-          keptItems.push({ label: "Caution Windows", value: cwValue });
+      // CAUTION WINDOWS — render only when there is at least one REAL
+      // challenging-transit window. If the value is empty OR matches the
+      // "no strong caution windows" fallback string, drop the bullet
+      // entirely so the gate never sees a dead placeholder. The Strategy
+      // Summary will simply have one less card on that chart, which reads
+      // as cleaner, not missing. (Replaces previous auto-insert behavior.)
+      const CAUTION_FALLBACK_RE = /^\s*no\s+(strong|major|significant)\s+(caution|challenging)[^.]*\.?\s*$/i;
+      for (let i = keptItems.length - 1; i >= 0; i--) {
+        const it = keptItems[i];
+        if (!it || typeof it !== "object") continue;
+        const lbl = typeof it.label === "string" ? it.label.trim().toLowerCase() : "";
+        if (lbl !== "caution windows") continue;
+        const vKey = typeof it.value === "string" ? "value" : typeof it.text === "string" ? "text" : "value";
+        const vRaw = typeof it[vKey] === "string" ? it[vKey] : "";
+        if (isWhitespaceOrEmpty(vRaw) || CAUTION_FALLBACK_RE.test(vRaw)) {
+          keptItems.splice(i, 1);
           log.push({
-            type: "caution_windows_item_inserted",
-            detail: { section: section.title || "", reason: "missing_from_items" },
-          });
-        } else {
-          log.push({
-            type: "caution_windows_item_skipped_empty",
-            detail: { section: section.title || "", reason: "no_fallback_available" },
+            type: "caution_windows_item_dropped_no_real_windows",
+            detail: { section: section.title || "", value_preview: String(vRaw).slice(0, 120) },
           });
         }
       }
@@ -9955,7 +9970,7 @@ The summary_box MUST contain a "Best Windows" item as a standalone labeled field
 - If Jupiter or other benefic transit windows exist in the timing_section transits[] array, list them in "Best Windows" with exact date ranges, copied verbatim from transits[].
 - If no strong forward windows exist in the current period (no Jupiter trine/sextile/conjunction to a personal point, no other clearly supportive transit), write the "Best Windows" value EXACTLY as: "No strong forward windows are active in the current period."
 - Do NOT leave the value blank, do NOT write "N/A", do NOT write "See timing section above", do NOT omit the item entirely. The hygiene gate will drop empty summary items and log empty_summary_item_dropped — that is a generation failure, not an acceptable outcome.
-- The caution side mirrors this: "Caution Windows" is the ONLY caution-timing item — do NOT also add "What This Year Asks Of You" or any other caution-timing duplicate label.
+- The caution side is DIFFERENT: "Caution Windows" is the ONLY caution-timing item — do NOT also add "What This Year Asks Of You" or any other caution-timing duplicate label. UNLIKE Best Windows, the "Caution Windows" item is OPTIONAL: if NO challenging transits exist in the timing_section transits[] array (no Saturn/Pluto/Neptune/Uranus hard aspects to a personal point in the current period, no other clearly difficult transit), OMIT the "Caution Windows" item entirely from summary_box.items. Do NOT emit it with a placeholder value like "No strong caution windows are active in the current period." or "N/A" or an empty string. Just leave the item out — the Strategy Summary renders cleanly with one less card. Only include "Caution Windows" when you have at least one real challenging-transit window to cite, with date ranges copied verbatim from transits[].
 
 
 COMPRESSION MANDATE: If you have already explained an idea in a previous section, do not re-explain it. Reference it once with a short callback ("as noted above, the Moon-Saturn weight means...") and move on. The Strategy section restates conclusions only — not the full analysis. Saying the same thing three times is not depth, it is padding.
