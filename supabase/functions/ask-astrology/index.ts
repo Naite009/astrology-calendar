@@ -7293,8 +7293,13 @@ const runPlacementTableValidator = (
     `\\b(?:in|sits\\s+in|sitting\\s+in|lands\\s+in|landing\\s+in|falls\\s+in|falling\\s+in|located\\s+in|now\\s+in)\\s+(?:the|your)\\s+(?:(SR|Solar\\s+Return|natal)\\s+)?(${ORDINAL_WORDS_RE})\\s+house\\b`,
     "gi",
   );
+  // Sign claim — accept either:
+  //   "in <Sign>"             (e.g. "Venus in Aries")
+  //   "<deg>°<min>' <Sign>"   (e.g. "Venus sits at 10°30' Aries")
+  //   "at <deg>° <Sign>"      (e.g. "Venus at 10° Aries")
+  // The capture group is the sign itself in either branch.
   const SIGN_CLAIM_RE = new RegExp(
-    `\\bin\\s+(${VALIDATOR_SIGN_RE})\\b`,
+    `(?:\\bin\\s+(${VALIDATOR_SIGN_RE})\\b|\\d+°(?:\\s*\\d+'?)?\\s+(${VALIDATOR_SIGN_RE})\\b|\\bat\\s+\\d+°\\s+(${VALIDATOR_SIGN_RE})\\b)`,
     "i",
   );
   const RETRO_CLAIM_RE = /\b(retrograde|℞|Rx)\b/i;
