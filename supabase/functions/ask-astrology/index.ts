@@ -1785,6 +1785,40 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
     const fixField = (raw: string): string => {
       let next = raw;
 
+      const elementTies: string[] = Array.isArray((section as any)._element_ties)
+        ? (section as any)._element_ties.map((n: any) => String(n).toLowerCase())
+        : [];
+      const modalityTies: string[] = Array.isArray((section as any)._modality_ties)
+        ? (section as any)._modality_ties.map((n: any) => String(n).toLowerCase())
+        : [];
+      const hasElementTie = elementTies.length >= 2;
+      const hasModalityTie = modalityTies.length >= 2;
+
+      const neutralizeTieDominanceClaims = (text: string, group: string[], ties: string[], label: "element" | "modality"): string => {
+        if (ties.length < 2) return text;
+        const tiedAlt = ties.join("|");
+        const tiedLabel = ties.map(cap).join(" and ");
+        const patterns = [
+          new RegExp(`\\b(${tiedAlt})[-\\s]+dominant\\b`, "gi"),
+          new RegExp(`\\b(${tiedAlt})\\s+dominance\\b`, "gi"),
+          new RegExp(`\\b(${tiedAlt})\\s+is\\s+dominant\\b`, "gi"),
+          new RegExp(`\\bdominant\\s+(${label})\\s+is\\s+(${tiedAlt})\\b`, "gi"),
+          new RegExp(`\\bdominant\\s+(${tiedAlt})\\b`, "gi"),
+        ];
+        let out = text;
+        for (const re of patterns) {
+          out = out.replace(re, `${tiedLabel} balanced`);
+        }
+        for (const root of group.filter((g) => !ties.includes(g))) {
+          const wrong = new RegExp(`\\b${root}[-\\s]+dominant\\b|\\b${root}\\s+dominance\\b|\\b${root}\\s+is\\s+dominant\\b|\\bdominant\\s+${root}\\b`, "gi");
+          out = out.replace(wrong, `${tiedLabel} balanced`);
+        }
+        return out;
+      };
+
+      if (hasModalityTie) next = neutralizeTieDominanceClaims(next, MODALITIES, modalityTies, "modality");
+      if (hasElementTie) next = neutralizeTieDominanceClaims(next, ELEMENTS, elementTies, "element");
+
       const buildClaimRegex = (group: string[]) =>
         new RegExp(
           [
@@ -1815,8 +1849,8 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
         });
       };
 
-      if (domEl) fixGroup(ELEMENTS, domEl);
-      if (domMod) fixGroup(MODALITIES, domMod);
+      if (domEl && !hasElementTie) fixGroup(ELEMENTS, domEl);
+      if (domMod && !hasModalityTie) fixGroup(MODALITIES, domMod);
 
       // DIRECT DOMINANCE CLAIM CORRECTOR
       // Catches explicit phrases like "Mutable dominant", "Mutable dominance",
@@ -1852,8 +1886,8 @@ const correctModalityElementBodyClaims = (parsedContent: any) => {
         return out;
       };
 
-      if (domMod) next = fixDirectDominanceClaims(next, MODALITIES, domMod);
-      if (domEl) next = fixDirectDominanceClaims(next, ELEMENTS, domEl);
+      if (domMod && !hasModalityTie) next = fixDirectDominanceClaims(next, MODALITIES, domMod);
+      if (domEl && !hasElementTie) next = fixDirectDominanceClaims(next, ELEMENTS, domEl);
 
       // GENERALIZED ELEMENT/MODALITY MISMATCH GUARD
       // Triggers when the dominant element is Earth or Water (slow, inward,
