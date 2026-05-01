@@ -2440,6 +2440,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               )}
               <AskReplayDialog
                 chartId={activeChartId || ""}
+                chartName={selectedChart?.name}
                 disabled={isLoading}
                 onReplayed={(result, cap) => {
                   // Hand the re-rendered reading back to the chat exactly

@@ -58,6 +58,8 @@ interface SubmitArgs {
 export interface AskCaptureRow {
   id: string;
   chart_id: string | null;
+  chart_name: string | null;
+  question: string | null;
   captured_at: string;
   notes: string | null;
   prose_len: number | null;
@@ -67,10 +69,10 @@ export interface AskCaptureRow {
  * List the most recent saved AI captures for this user. RLS scopes results
  * to the caller automatically.
  */
-export async function listAskCaptures(limit = 25): Promise<AskCaptureRow[]> {
+export async function listAskCaptures(limit = 100): Promise<AskCaptureRow[]> {
   const { data, error } = await supabase
     .from("ask_generation_captures")
-    .select("id, chart_id, captured_at, notes, raw_ai_response")
+    .select("id, chart_id, chart_name, question, captured_at, notes, raw_ai_response")
     .order("captured_at", { ascending: false })
     .limit(limit);
   if (error) {
@@ -80,6 +82,8 @@ export async function listAskCaptures(limit = 25): Promise<AskCaptureRow[]> {
   return (data || []).map((r: any) => ({
     id: r.id,
     chart_id: r.chart_id,
+    chart_name: r.chart_name ?? null,
+    question: r.question ?? null,
     captured_at: r.captured_at,
     notes: r.notes,
     prose_len: typeof r.raw_ai_response === "string" ? r.raw_ai_response.length : null,
