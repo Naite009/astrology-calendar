@@ -1126,44 +1126,48 @@ const NATAL_ASPECT_VERB: Record<string, string> = {
   sextile: 'sextiling',
 };
 
-// Per-(transitPlanet × aspect) lived-experience scenarios. The "{theme}" token
-// is replaced at runtime with the natal point's plain-language meaning so the
-// scenario is always specific to the actual point being hit.
+// Per-(transitPlanet × aspect) lived-experience scenarios. Sentence 1 of the
+// final description already names the natal point and theme ("touches {theme}"),
+// so these scenario templates intentionally do NOT re-substitute {theme} —
+// doing that produced run-on sentences where the theme echoed twice. Templates
+// are also dash-free: downstream post-processing strips em/en-dashes and
+// adjacent words, which used to leave fragments like "Confusion freedom, and
+// surprise inside intimacy...". Use commas, semicolons, or periods instead.
 const NATAL_SCENARIO_BY_TRANSIT_ASPECT: Record<string, Record<string, string>> = {
   Jupiter: {
-    conjunction: 'You may notice yourself reaching for more around {theme} — saying yes to something you would normally pass on, or finding that an opening you had given up on quietly becomes available again.',
-    trine: 'A door tends to open around {theme} without much push from you — an invitation, an introduction, or a small piece of luck that lets you act on something you have been considering.',
-    sextile: 'Small moves around {theme} land further than expected — a conversation, a request, or a yes you would normally hesitate to give produces a real opening.',
-    square: 'You may catch yourself overcommitting around {theme} — taking on more than the plan can hold, or saying yes to scale before checking whether the foundation is ready for it.',
-    opposition: 'Expansion around {theme} tends to arrive through someone else — a partner, collaborator, or counterpart whose enthusiasm pulls you bigger than you would go on your own.',
+    conjunction: 'You may notice yourself reaching for more here, saying yes to something you would normally pass on, or finding that an opening you had given up on quietly becomes available again.',
+    trine: 'A door tends to open here without much push from you: an invitation, an introduction, or a small piece of luck that lets you act on something you have been considering.',
+    sextile: 'Small moves here land further than expected. A conversation, a request, or a yes you would normally hesitate to give produces a real opening.',
+    square: 'You may catch yourself overcommitting here, taking on more than the plan can hold, or saying yes to scale before checking whether the foundation is ready for it.',
+    opposition: 'Expansion here tends to arrive through someone else: a partner, collaborator, or counterpart whose enthusiasm pulls you bigger than you would go on your own.',
   },
   Saturn: {
-    conjunction: 'Something concrete around {theme} asks to be defined — a decision you have been postponing, a structure you have been avoiding, or an honest accounting of where you actually stand.',
-    trine: 'A patient, structured move around {theme} pays off — the kind of disciplined work that does not feel exciting but produces something you can stand on a year from now.',
-    sextile: 'A small but real commitment around {theme} becomes available — say yes to the modest step rather than waiting for the dramatic one.',
-    square: 'You may run into a wall around {theme} — a deadline, a limit, or a reality you have been working around finally has to be faced directly.',
-    opposition: 'A reality check around {theme} arrives through another person — a partner, authority figure, or counterpart whose stance forces a decision you have been deferring.',
+    conjunction: 'Something concrete here asks to be defined: a decision you have been postponing, a structure you have been avoiding, or an honest accounting of where you actually stand.',
+    trine: 'A patient, structured move here pays off. The kind of disciplined work that does not feel exciting but produces something you can stand on a year from now.',
+    sextile: 'A small but real commitment becomes available here. Say yes to the modest step rather than waiting for the dramatic one.',
+    square: 'You may run into a wall here: a deadline, a limit, or a reality you have been working around finally has to be faced directly.',
+    opposition: 'A reality check arrives through another person: a partner, authority figure, or counterpart whose stance forces a decision you have been deferring.',
   },
   Uranus: {
-    conjunction: 'Something around {theme} can change abruptly — a sudden opportunity, a sharp need for space, or a routine that suddenly becomes intolerable and breaks open.',
-    trine: 'An unexpected opening around {theme} tends to arrive — an offer, an idea, or a person who shifts your sense of what is possible without you having engineered it.',
-    sextile: 'You may feel a quiet pull to do something around {theme} differently — a small experiment, a change of pace, or a willingness to let an unfamiliar option in.',
-    square: 'A pattern around {theme} that has worked for years may suddenly stop working — pressure to break the old shape rises faster than the new shape arrives.',
-    opposition: 'Disruption around {theme} tends to arrive through another person — someone whose move forces you to change your own, ready or not.',
+    conjunction: 'Something here can change abruptly: a sudden opportunity, a sharp need for space, or a routine that suddenly becomes intolerable and breaks open.',
+    trine: 'An unexpected opening tends to arrive: an offer, an idea, or a person who shifts your sense of what is possible without you having engineered it.',
+    sextile: 'You may feel a quiet pull to do something differently here: a small experiment, a change of pace, or a willingness to let an unfamiliar option in.',
+    square: 'A pattern that has worked for years may suddenly stop working. Pressure to break the old shape rises faster than the new shape arrives.',
+    opposition: 'Disruption tends to arrive through another person, someone whose move forces you to change your own, ready or not.',
   },
   Neptune: {
-    conjunction: 'Your usual read on {theme} softens — something you used to see clearly may feel uncertain, and you may find yourself drawn to a version of the situation that is partly imagined.',
-    trine: 'Around {theme}, intuition runs ahead of logic — pay attention to what feels true even when you cannot explain it yet, and let the slower picture form before deciding.',
-    sextile: 'A softer, more intuitive sense of {theme} becomes available — dreams, hunches, and felt-sense impressions carry information worth listening to.',
-    square: 'Around {theme}, you may not have a clean read — what looks obvious may be projection, and the temptation to act on a vague feeling is strong. Wait for more information.',
-    opposition: 'Confusion around {theme} tends to arrive through someone else — what they tell you, want from you, or appear to be may not be what it looks like at first.',
+    conjunction: 'Your usual read here softens. Something you used to see clearly may feel uncertain, and you may find yourself drawn to a version of the situation that is partly imagined.',
+    trine: 'Here, intuition runs ahead of logic. Pay attention to what feels true even when you cannot explain it yet, and let the slower picture form before deciding.',
+    sextile: 'A softer, more intuitive sense becomes available here. Dreams, hunches, and felt-sense impressions carry information worth listening to.',
+    square: 'You may not have a clean read here. What looks obvious may be projection, and the temptation to act on a vague feeling is strong. Wait for more information.',
+    opposition: 'Confusion tends to arrive through someone else: what they tell you, want from you, or appear to be may not be what it looks like at first.',
   },
   Pluto: {
-    conjunction: 'Something at the root of {theme} is being slowly remade — a pattern, a power dynamic, or a definition you have lived with quietly stops being workable.',
-    trine: 'A quiet, real change around {theme} becomes possible — the kind of depth work that does not need a crisis to do it, just willingness.',
-    sextile: 'Steady momentum builds around {theme} — small moves into honesty, depth, or letting go that compound over months rather than landing in a single moment.',
-    square: 'Pressure builds around {theme} — what you have been keeping under the surface may force its way up, and the way you usually handle this part of life stops working.',
-    opposition: 'Intensity around {theme} tends to arrive through another person — power, control, or depth dynamics surface in a relationship that mirrors what you have not faced alone.',
+    conjunction: 'Something at the root is being slowly remade: a pattern, a power dynamic, or a definition you have lived with quietly stops being workable.',
+    trine: 'A quiet, real change becomes possible here, the kind of depth work that does not need a crisis to do it, just willingness.',
+    sextile: 'Steady momentum builds here, small moves into honesty, depth, or letting go that compound over months rather than landing in a single moment.',
+    square: 'Pressure builds here. What you have been keeping under the surface may force its way up, and the way you usually handle this part of life stops working.',
+    opposition: 'Intensity tends to arrive through another person: power, control, or depth dynamics surface in a relationship that mirrors what you have not faced alone.',
   },
 };
 
@@ -1191,26 +1195,39 @@ const buildNatalDescription = (
     ? `${transitPlanet} ${verb} your natal ${natalPlanet} at ${degreeLabel}`
     : `${transitPlanet} ${verb} your natal ${natalPlanet}`;
 
-  // Scenario sentence: substitute the theme into the lived-experience template.
+  // Scenario sentence: templates are theme-free now (sentence 1 already names
+  // the theme via "touches {theme}"). We still substitute {theme} for any
+  // legacy template that retains the token, falling back to a neutral anchor.
   const themeForScenario = theme || `your ${natalPlanet}`;
   const scenario = scenarioTemplate
     ? scenarioTemplate.replace('{theme}', themeForScenario)
     : '';
 
-  const peaks = exactSummary ? `, with exact peaks on ${exactSummary}` : '';
+  // exactSummary already begins with "Peaks:" / "Pass 1" labels — strip a
+  // leading "Peaks?:?" so the joiner reads cleanly and never produces
+  // "with exact peaks on Peaks: …".
+  const peaksClean = (exactSummary || '').trim().replace(/^Peaks?:\s*/i, '');
+  const peaks = peaksClean ? `, with exact peaks on ${peaksClean}` : '';
+
+  // End-punctuation helper: avoid "..", "?.", "!." when appending the peaks
+  // tail and the final period.
+  const endWithPeriod = (s: string): string => {
+    const trimmed = s.replace(/[\s.]+$/, '');
+    return trimmed + '.';
+  };
 
   // Compose exactly as the shared timing rule requires: sentence 1 names the
   // specific natal point; sentence 2 gives one concrete lived scenario.
   if (theme && scenario) {
-    return `${naming} touches ${theme}. ${scenario.replace(/\.$/, '')}${peaks}.`;
+    return endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
   }
   if (theme) {
-    return `${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}.`;
+    return endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`);
   }
   if (scenario) {
-    return `${naming}. ${scenario.replace(/\.$/, '')}${peaks}.`;
+    return endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
   }
-  return `${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}.`;
+  return endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`);
 };
 
 // Within-description sentence dedupe. Splits on sentence boundaries and removes

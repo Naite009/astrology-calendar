@@ -9412,16 +9412,19 @@ const reconcileSRHouseCopyWarning = (parsedContent: any, log: HygieneLog) => {
 // section that names it without an Rx acknowledgment. We never invent
 // retrograde language for planets that aren't being interpreted.
 const RX_RELATIONSHIP_PLANETS = ["Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"] as const;
+// NOTE: never use em-dashes or en-dashes inside these strings — downstream
+// post-processing strips dashes and adjacent words, leaving artifacts like
+// "(, meaning,...)". Use commas/semicolons only.
 const RX_NUDGE_BY_PLANET: Record<string, string> = {
-  Mercury: "(retrograde — communication turns inward, second-guesses itself, and reworks old conversations before speaking)",
-  Venus:   "(retrograde — love runs on review, revisits the past, and questions what it actually values before committing)",
-  Mars:    "(retrograde — desire moves indirectly, hesitates, and processes anger or wanting internally before acting)",
-  Jupiter: "(retrograde — meaning, faith, and growth get worked out privately before being expressed outwardly)",
-  Saturn:  "(retrograde — authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
-  Uranus:  "(retrograde — disruption and freedom are internalized before they show outwardly)",
-  Neptune: "(retrograde — sensitivity and imagination move inward before they can be trusted outwardly)",
-  Pluto:   "(retrograde — power and transformation are processed internally before they become visible)",
-  Chiron:  "(retrograde — old pain is processed inward; repair starts privately before it can be shared)",
+  Mercury: "(retrograde, so communication turns inward, second-guesses itself, and reworks old conversations before speaking)",
+  Venus:   "(retrograde, so love runs on review, revisits the past, and questions what it actually values before committing)",
+  Mars:    "(retrograde, so desire moves indirectly, hesitates, and processes anger or wanting internally before acting)",
+  Jupiter: "(retrograde, so meaning, faith, and growth get worked out privately before being expressed outwardly)",
+  Saturn:  "(retrograde, so authority, structure, and self-discipline are negotiated internally, often against an inherited rule)",
+  Uranus:  "(retrograde, so disruption and freedom are internalized before they show outwardly)",
+  Neptune: "(retrograde, so sensitivity and imagination move inward before they can be trusted outwardly)",
+  Pluto:   "(retrograde, so power and transformation are processed internally before they become visible)",
+  Chiron:  "(retrograde, so old pain is processed inward; repair starts privately before it can be shared)",
 };
 // Widened from relationship-only to cover natal/career/money/SR focal sections too.
 // The acknowledgment only fires if the planet is actually named in the section,

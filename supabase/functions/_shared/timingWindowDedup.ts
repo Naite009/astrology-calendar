@@ -96,9 +96,29 @@ export function dedupWindows(rawWindows: readonly WindowEntry[]): DedupResult {
   const merged = Array.from(map.values());
   const totalMerged = merged.reduce((sum, m) => sum + (m.mergedCount - 1), 0);
 
+  // SECOND PASS — content-based dedup. Merges windows whose DESCRIPTIONS are
+  // byte-identical (e.g. multi-pass outer-planet transits with different
+  // date ranges) by joining labels with " · ".
+  const finalMap = new Map<string, { labels: string[]; description: string; contentMerges: number }>();
+  for (const m of merged) {
+    const desc = dedupeSentencesInline(m.description);
+    const key = desc.toLowerCase().replace(/\s+/g, ' ');
+    const existing = finalMap.get(key);
+    if (existing) {
+      if (!existing.labels.includes(m.label)) existing.labels.push(m.label);
+      existing.contentMerges += 1;
+    } else {
+      finalMap.set(key, { labels: [m.label], description: desc, contentMerges: 0 });
+    }
+  }
+  const contentMerged = Array.from(finalMap.values()).reduce((sum, e) => sum + e.contentMerges, 0);
+
   return {
-    windows: merged.map(({ label, description }) => ({ label, description: dedupeSentencesInline(description) })),
-    mergedCount: totalMerged,
+    windows: Array.from(finalMap.values()).map(({ labels, description }) => ({
+      label: labels.join(' · '),
+      description,
+    })),
+    mergedCount: totalMerged + contentMerged,
     mergeStats: merged.map(({ key, label, mergedCount }) => ({ key, label, mergedCount })),
   };
 }
