@@ -236,10 +236,23 @@ export function AskReplayDialog({ chartId, chartName, disabled, onReplayed }: Pr
                     className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 text-sm font-medium">
+                      <div className="flex items-center gap-2 text-sm font-medium flex-wrap">
                         <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
                           {topic}
                         </span>
+                        {cap.job_status === "failed" && (
+                          <span
+                            className="rounded-full bg-destructive/15 text-destructive px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                            title={cap.job_error || "Generation was blocked by the validation gate"}
+                          >
+                            Gate blocked
+                          </span>
+                        )}
+                        {cap.job_status === "completed" && (
+                          <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                            Passed
+                          </span>
+                        )}
                         <span className="truncate">
                           {cap.chart_name || "(no name)"}
                         </span>
