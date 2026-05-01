@@ -56,12 +56,17 @@ const NO_NAME = "__none__";
 function deriveTopic(question: string | null): string {
   if (!question) return "Reading";
   const q = question.toLowerCase();
-  if (q.includes("solar return")) return "Solar Return";
-  if (q.includes("synastry") || q.includes("relationship") || q.includes("compatibility") || q.includes("partner")) return "Relationship";
-  if (q.includes("where") && (q.includes("live") || q.includes("move") || q.includes("relocat"))) return "Where to live";
+  // Order matters: check the MOST SPECIFIC user intents first. Solar Return
+  // questions reference "solar return chart" — but so do Relationship/Career
+  // prompts that consume the SR chart as context. Don't let the generic
+  // "solar return" substring swallow more specific reading types.
+  if (q.includes("synastry") || q.includes("relationship") || q.includes("compatibility") || q.includes("partner") || q.includes("love analysis")) return "Relationship";
   if (q.includes("astrocartograph")) return "Astrocartography";
-  if (q.includes("transit") || q.includes("timing") || q.includes("when")) return "Timing / Transits";
+  if (q.includes("where") && (q.includes("live") || q.includes("move") || q.includes("relocat"))) return "Where to live";
   if (q.includes("career") || q.includes("work") || q.includes("job")) return "Career";
+  if (q.includes("transit") || q.includes("timing") || q.includes("when")) return "Timing / Transits";
+  // Now safe to treat remaining "solar return" mentions as actual SR readings.
+  if (q.includes("complete professional solar return") || q.includes("solar return reading") || q.includes("solar return analysis") || (q.includes("solar return") && !q.includes("current solar return chart"))) return "Solar Return";
   if (q.includes("natal")) return "Natal";
   return "Reading";
 }
