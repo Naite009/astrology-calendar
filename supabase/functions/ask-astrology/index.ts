@@ -7793,22 +7793,25 @@ const dropEmptySummaryItemsAndSections = (parsedContent: any, log: HygieneLog) =
           });
         }
       }
-      const hasCautionWindows = keptItems.some(
-        (it) => it && typeof it === "object" && typeof it.label === "string"
-          && it.label.trim().toLowerCase() === "caution windows"
-      );
-      if (isRelationshipReading && String(section.title || "").trim() === "Relationship Strategy Summary" && !hasCautionWindows) {
-        const cwValue = buildEmptySummaryFallback(parsedContent, "Caution Windows") || SUMMARY_ITEM_BACKFILLS["caution windows"] || "";
-        if (!isWhitespaceOrEmpty(cwValue)) {
-          keptItems.push({ label: "Caution Windows", value: cwValue });
+      // CAUTION WINDOWS — render only when there is at least one REAL
+      // challenging-transit window. If the value is empty OR matches the
+      // "no strong caution windows" fallback string, drop the bullet
+      // entirely so the gate never sees a dead placeholder. The Strategy
+      // Summary will simply have one less card on that chart, which reads
+      // as cleaner, not missing. (Replaces previous auto-insert behavior.)
+      const CAUTION_FALLBACK_RE = /^\s*no\s+(strong|major|significant)\s+(caution|challenging)[^.]*\.?\s*$/i;
+      for (let i = keptItems.length - 1; i >= 0; i--) {
+        const it = keptItems[i];
+        if (!it || typeof it !== "object") continue;
+        const lbl = typeof it.label === "string" ? it.label.trim().toLowerCase() : "";
+        if (lbl !== "caution windows") continue;
+        const vKey = typeof it.value === "string" ? "value" : typeof it.text === "string" ? "text" : "value";
+        const vRaw = typeof it[vKey] === "string" ? it[vKey] : "";
+        if (isWhitespaceOrEmpty(vRaw) || CAUTION_FALLBACK_RE.test(vRaw)) {
+          keptItems.splice(i, 1);
           log.push({
-            type: "caution_windows_item_inserted",
-            detail: { section: section.title || "", reason: "missing_from_items" },
-          });
-        } else {
-          log.push({
-            type: "caution_windows_item_skipped_empty",
-            detail: { section: section.title || "", reason: "no_fallback_available" },
+            type: "caution_windows_item_dropped_no_real_windows",
+            detail: { section: section.title || "", value_preview: String(vRaw).slice(0, 120) },
           });
         }
       }
