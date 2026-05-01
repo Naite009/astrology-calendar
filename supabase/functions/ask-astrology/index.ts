@@ -8881,6 +8881,22 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\bwe'?ll\s+(explore|look\s+at|cover|discuss|dive\s+into)\b/i,
   // Sentences that ONLY describe what the reading does, not what the chart says
   /^\s*(this|that)\s+(reading|report|analysis)\s+(shows?|covers?|explains?|describes?|breaks\s+down)\b/i,
+  // ─── Hallucinated "data is missing" disclaimers ────────────────────────
+  // The model sometimes (incorrectly) declares a chart datum missing and then
+  // refuses to interpret. Chart context is the source of truth — the
+  // deterministic placement tables and truth maps DO have the data. Strip
+  // any sentence that claims data was not supplied / not present / would
+  // require fabrication, OR asks the user to resubmit. The corrected
+  // placement tables remain in the JSON so the reading still anchors to
+  // real positions; we just delete the apologetic prose.
+  /\b(?:was|were|are|is)\s+(?:not|n[o']t)\s+(?:supplied|provided|included|present)\b/i,
+  /\b(?:not|no)\s+(?:supplied|provided|included|present)\s+(?:in|for)\s+(?:the\s+|this\s+)?(?:data|chart|reading|call|section)\b/i,
+  /\bonly\s+the\s+\w+(?:\s+at\s+\d+°\d*'?)?(?:\s+\w+)?\s+(?:was|were|is|are)\s+(?:supplied|provided|present|available)\b/i,
+  /\b(?:would\s+(?:mean|require|be)|requires?)\s+(?:fabricat\w+|invent\w+|guess\w+|making\s+up)\b/i,
+  /\bplease\s+(?:resubmit|provide|supply|include|re-?enter)\b.*\bchart\s+(?:data|info|details)\b/i,
+  /\b(?:without|absent|lacking)\s+(?:those|these|the|that|this)\s+(?:position|placement|data|datum|chart|info)/i,
+  /\b(?:any|an)\s+interpretation\s+of\b.*\b(?:would\s+be\s+)?(?:fabricat\w+|invent\w+|inaccurate|guesswork)\b/i,
+  /\bthe\s+chart\s+data\s+provided\s+for\s+this\s+(?:reading|call|section)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
