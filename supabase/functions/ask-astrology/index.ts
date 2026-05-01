@@ -7556,6 +7556,14 @@ const runPostProcessingPipeline = (
     normalizePlacementTableRetrograde(parsedContent, log, ctx),
   );
 
+  // 1b. CONSISTENCY GUARD — placement_table rows MUST agree with chart_context
+  // for any planet whose data is present. If a row still shows "?" after the
+  // normalizer ran, the deterministic write-back failed silently. Throw so the
+  // bug is loud at the boundary instead of leaking into prose. NOT wrapped in
+  // safeRun — we WANT this to surface so any future key-normalization
+  // regression (whitespace/glyph/casing/alias) is caught immediately.
+  enforcePlacementTableContextConsistency(parsedContent, ctx, log);
+
   // 2. Deterministic modality/element section.
   safeRun("injectDeterministicModalityElement", () => {
     const inj = injectDeterministicModalityElement(parsedContent, ctx);
