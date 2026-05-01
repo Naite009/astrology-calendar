@@ -1037,6 +1037,11 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
     const max = arr.reduce((a, b) => (b.count > a.count ? b : a), arr[0]);
     return max?.name ?? "";
   };
+  const pickTies = (arr: Array<{ name: string; count: number }>): string[] => {
+    const max = arr.reduce((best, item) => Math.max(best, item.count || 0), 0);
+    if (max < 1) return [];
+    return arr.filter((item) => item.count === max).map((item) => item.name);
+  };
   return {
     type: "modality_element",
     title: "Natal Elemental & Modal Balance",
@@ -1048,6 +1053,8 @@ export const buildModalityElementSection = (tallies: DeterministicTallies): any 
     dominant_polarity: pickDominant(tallies.polarity as any),
     balance_interpretation: "",
     body: "",
+    _element_ties: pickTies(tallies.elements as any),
+    _modality_ties: pickTies(tallies.modalities as any),
     _deterministic: true,
   };
 };
