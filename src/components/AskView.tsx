@@ -80,14 +80,28 @@ const MAX_SAVED_CONVERSATIONS = 50;
 function reportAskJobFailure(job: { id?: string; error_message?: string | null } | null | undefined, fallback: string) {
   const fullMsg = job?.error_message?.trim() || fallback;
   const jobId = job?.id || "(unknown)";
+  const copyPayload = `Job ${jobId} failed:\n${fullMsg}`;
   // Full payload to console so it's copyable for Replit debugging
   // eslint-disable-next-line no-console
-  console.error(`[AskView] Job ${jobId} failed:\n${fullMsg}`);
-  // Truncated, scannable toast with action to expand in console
-  const short = fullMsg.length > 220 ? fullMsg.slice(0, 217) + "…" : fullMsg;
-  toast.error(short, {
-    description: `Job ${jobId.slice(0, 8)} — full error in browser console (F12)`,
-    duration: 12000,
+  console.error(`[AskView] ${copyPayload}`);
+  // Persistent toast (no auto-dismiss) so the user has time to read & copy.
+  // Shows the FULL error message and a Copy button that puts the whole
+  // job-id + error onto the clipboard for pasting into Replit / support.
+  toast.error(fullMsg, {
+    description: `Job ${jobId.slice(0, 8)} — click Copy to grab the full error`,
+    duration: Infinity,
+    closeButton: true,
+    action: {
+      label: "Copy",
+      onClick: () => {
+        try {
+          navigator.clipboard.writeText(copyPayload);
+          toast.success("Error copied to clipboard", { duration: 4000 });
+        } catch {
+          toast.error("Could not copy — open the browser console (F12) instead", { duration: 8000 });
+        }
+      },
+    },
   });
 }
 
