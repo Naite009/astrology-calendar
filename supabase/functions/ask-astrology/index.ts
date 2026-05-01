@@ -2815,7 +2815,7 @@ const normalizePlacementTableRetrograde = (
   // must get correct retrograde flags, not only relationship readings whose
   // tables are explicitly labeled "Natal Key Placements" / "Solar Return Key
   // Placements".
-  type PosFact = { sign: string; degree: number; retrograde: boolean };
+  type PosFact = { sign: string; degree: number; minutes: number; house: number | null; retrograde: boolean };
   const natalTruth = new Map<string, boolean>();
   const srTruth = new Map<string, boolean>();
   const natalFacts = new Map<string, PosFact>();
@@ -2826,12 +2826,12 @@ const normalizePlacementTableRetrograde = (
     for (const p of natalPos) {
       const k = p.planet.toLowerCase();
       natalTruth.set(k, !!p.retrograde);
-      natalFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.retrograde });
+      natalFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.retrograde });
     }
     for (const p of srPos) {
       const k = p.planet.toLowerCase();
       srTruth.set(k, !!p.isRetrograde);
-      srFacts.set(k, { sign: p.sign, degree: p.degree, retrograde: !!p.isRetrograde });
+      srFacts.set(k, { sign: p.sign, degree: p.degree, minutes: p.minutes ?? 0, house: p.house ?? null, retrograde: !!p.isRetrograde });
     }
   }
 
