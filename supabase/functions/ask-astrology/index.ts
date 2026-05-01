@@ -8447,12 +8447,20 @@ const backfillTimingSectionBodies = (parsedContent: any, log: HygieneLog) => {
       : [];
     if (windows.length === 0) continue;
     const first = windows[0] || {};
-    const dateRange = String(first.date_range || first.dateRange || first.date || first.window || "the upcoming window").trim();
+    const rawDateRange = String(first.date_range || first.dateRange || first.date || first.window || "").trim();
+    // Only emit the "strongest window" lead when we have a real date range
+    // from the first window. If the first window has no usable date string,
+    // skip the lead entirely rather than ship the generic placeholder
+    // "during the upcoming window".
+    const hasRealDate = rawDateRange.length > 0;
+    const dateRange = hasRealDate ? rawDateRange : "";
     const transitName = String(first.transit || first.aspect || first.title || first.name || "").trim();
     const meaning = String(first.meaning || first.note || first.description || first.body || "").trim();
-    const lead = transitName
-      ? `The strongest window is ${transitName} during ${dateRange}.`
-      : `The strongest window opens during ${dateRange}.`;
+    const lead = !hasRealDate
+      ? ""
+      : transitName
+        ? `The strongest near-term window is ${transitName} during ${dateRange}.`
+        : `The strongest near-term window opens ${dateRange}.`;
     const tail = meaning
       ? ` ${ensureSentence(firstSentenceFromText(meaning))}`
       : ` Treat this as the period when the patterns named above will be the easiest to act on.`;
