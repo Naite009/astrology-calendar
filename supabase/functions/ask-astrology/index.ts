@@ -14032,6 +14032,65 @@ ${natalGroundTruthLines}`
       if (!finalGateUrlRaw || !finalGateToken) {
         console.warn("[ask-astrology][final-gate] missing REPLIT_GATE_URL or REPLIT_GATE_TOKEN — skipping blocking check");
       } else {
+        // ────────────────────────────────────────────────────────────────
+        // CANONICAL FILENAME METADATA — stamp the JSON with the exact
+        // filename Replit should use for any PDF it produces.
+        // Format: "<Person> - <Reading Type> - <YYYY-MM-DD>"
+        // Date is the user's LOCAL date (America/New_York) so a generation
+        // started at 8pm ET on Apr 30 stays "2026-04-30", not UTC "May 1".
+        // ────────────────────────────────────────────────────────────────
+        try {
+          let personName: string | null = null;
+          const lastUserMsg = Array.isArray(sanitizedMessages)
+            ? [...sanitizedMessages].reverse().find((m: any) => m?.role === "user")
+            : null;
+          const lastUserText = typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "";
+          const nameMatch = lastUserText.match(/for ([A-Z][A-Za-z'’\-]+(?:\s[A-Z][A-Za-z'’\-]+){0,3}),\s+born/);
+          if (nameMatch) personName = nameMatch[1];
+          if (!personName && typeof sanitizedChartContext === "string") {
+            const ctxName = sanitizedChartContext.match(/(?:Name|Chart)\s*[:\-]\s*([A-Z][A-Za-z'’\-]+(?:\s[A-Z][A-Za-z'’\-]+){0,3})/);
+            if (ctxName) personName = ctxName[1];
+          }
+
+          // Most-specific intent wins. "Solar Return" must lose to
+          // "Relationship" because relationship prompts often reference
+          // "...current solar return chart..." as context.
+          const q = lastUserText.toLowerCase();
+          let readingType = "Reading";
+          if (/synastry|relationship|compatibility|partner|love analysis/.test(q)) readingType = "Relationship";
+          else if (/astrocartograph/.test(q)) readingType = "Astrocartography";
+          else if (/where/.test(q) && /(live|move|relocat)/.test(q)) readingType = "Where to Live";
+          else if (/career|work|job/.test(q)) readingType = "Career";
+          else if (/health|symptom|body/.test(q)) readingType = "Health";
+          else if (/transit|timing|when/.test(q)) readingType = "Timing";
+          else if (/complete professional solar return|solar return reading|solar return analysis/.test(q)) readingType = "Solar Return";
+          else if (/natal/.test(q)) readingType = "Natal";
+
+          const localDate = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/New_York",
+            year: "numeric", month: "2-digit", day: "2-digit",
+          }).format(new Date()); // "YYYY-MM-DD"
+
+          const safePerson = (personName ?? "Chart").replace(/[\\/:*?"<>|]/g, "").trim() || "Chart";
+          const filename = `${safePerson} - ${readingType} - ${localDate}`;
+
+          // Stamp under multiple keys so Replit can pick whichever it reads.
+          (parsedContent as any)._meta = {
+            ...(parsedContent as any)._meta,
+            person_name: safePerson,
+            reading_type: readingType,
+            generated_local_date: localDate,
+            generated_local_tz: "America/New_York",
+            suggested_filename: filename,
+            pdf_title: filename,
+          };
+          (parsedContent as any).suggested_filename = filename;
+          (parsedContent as any).pdf_title = filename;
+          console.info(`[ask-astrology][final-gate] stamped filename="${filename}"`);
+        } catch (metaErr) {
+          console.warn("[ask-astrology][final-gate] filename metadata stamp failed (non-fatal):", metaErr);
+        }
+
         const base = finalGateUrlRaw.trim().replace(/\/$/, "");
         const url = `${base}/check-reading`;
         const t0 = Date.now();
