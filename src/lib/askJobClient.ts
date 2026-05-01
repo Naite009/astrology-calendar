@@ -63,16 +63,21 @@ export interface AskCaptureRow {
   captured_at: string;
   notes: string | null;
   prose_len: number | null;
+  /** Status of the originating ask_jobs row, when joinable. */
+  job_status: "queued" | "processing" | "completed" | "failed" | null;
+  /** Error message from the originating ask_jobs row, when failed. */
+  job_error: string | null;
 }
 
 /**
  * List the most recent saved AI captures for this user. RLS scopes results
- * to the caller automatically.
+ * to the caller automatically. Joins ask_jobs to surface pass/fail status
+ * so the Replay UI can flag blocked generations at a glance.
  */
 export async function listAskCaptures(limit = 100): Promise<AskCaptureRow[]> {
   const { data, error } = await supabase
     .from("ask_generation_captures")
-    .select("id, chart_id, chart_name, question, captured_at, notes, raw_ai_response")
+    .select("id, chart_id, chart_name, question, captured_at, notes, raw_ai_response, job_id, ask_jobs:job_id(status, error_message)")
     .order("captured_at", { ascending: false })
     .limit(limit);
   if (error) {
@@ -87,6 +92,8 @@ export async function listAskCaptures(limit = 100): Promise<AskCaptureRow[]> {
     captured_at: r.captured_at,
     notes: r.notes,
     prose_len: typeof r.raw_ai_response === "string" ? r.raw_ai_response.length : null,
+    job_status: r.ask_jobs?.status ?? null,
+    job_error: r.ask_jobs?.error_message ?? null,
   }));
 }
 
