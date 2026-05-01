@@ -7516,17 +7516,17 @@ const runPlacementTableValidator = (
     console.info("[ask-astrology][validator] no placement-table drift detected");
   }
 
-  // Hard-fail by default. Defense in depth: this validator runs alongside
-  // the Replit gate, both block independently. To temporarily disable
-  // (e.g. for diagnostic survey runs), set VALIDATOR_FAIL_ON_DRIFT=0.
-  const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") !== "0";
+  // Default mode: warn-only. The placement-table sign extractor occasionally
+  // misattributes a sign mentioned in a continuation clause (house cusps,
+  // ruler chains) to the planet, producing false-positive hard-failures
+  // even when the prose is factually correct. The Replit gate already
+  // independently catches real drift, so we keep this validator as a
+  // diagnostic signal but do NOT block the job by default.
+  // To opt back into fail-loud (e.g. for a survey run), set
+  // VALIDATOR_FAIL_ON_DRIFT=1.
+  const failOnDrift = Deno.env.get("VALIDATOR_FAIL_ON_DRIFT") === "1";
   if (failOnDrift && drifts.length > 0) {
     (parsedContent as any)._validator_drift.mode = "fail";
-    // Show ALL drifts in the error message (was capped at 6, leaving 7-12
-    // invisible to anyone reading ask_jobs.error_message). Cap at 20 to
-    // keep the column under a few KB; if more than 20 drifts ever fire,
-    // something is structurally broken upstream and the top 20 is enough
-    // signal to diagnose.
     const top = drifts.slice(0, 20).map((d, i) => {
       const head = `[${i + 1}] ${d.scope} ${d.planet} ${d.field}: claimed=${d.claimed} truth=${d.truth} @ ${d.path}`;
       const ex = (d.excerpt || "").trim().slice(0, 220);
