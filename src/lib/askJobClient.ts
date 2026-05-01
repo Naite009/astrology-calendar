@@ -77,24 +77,54 @@ export interface AskCaptureRow {
 export async function listAskCaptures(limit = 100): Promise<AskCaptureRow[]> {
   const { data, error } = await supabase
     .from("ask_generation_captures")
-    .select("id, chart_id, chart_name, question, captured_at, notes, raw_ai_response, job_id, ask_jobs:job_id(status, error_message)")
+    .select("id, chart_id, chart_name, question, captured_at, notes, raw_ai_response, job_id")
     .order("captured_at", { ascending: false })
     .limit(limit);
   if (error) {
     console.warn("[askJobClient] listAskCaptures failed:", error.message);
     return [];
   }
-  return (data || []).map((r: any) => ({
-    id: r.id,
-    chart_id: r.chart_id,
-    chart_name: r.chart_name ?? null,
-    question: r.question ?? null,
-    captured_at: r.captured_at,
-    notes: r.notes,
-    prose_len: typeof r.raw_ai_response === "string" ? r.raw_ai_response.length : null,
-    job_status: r.ask_jobs?.status ?? null,
-    job_error: r.ask_jobs?.error_message ?? null,
-  }));
+  const rows = data || [];
+
+  // Second query: fetch job status/error for the captures we got. We can't
+  // use a PostgREST embedded join here because there's no FK between
+  // ask_generation_captures.job_id and ask_jobs.id — the embed would 400
+  // with PGRST200 and the whole list would silently come back empty.
+  const jobIds = Array.from(
+    new Set(rows.map((r: any) => r.job_id).filter((v: any) => typeof v === "string" && v.length > 0)),
+  );
+  const jobMap = new Map<string, { status: string | null; error_message: string | null }>();
+  if (jobIds.length > 0) {
+    const { data: jobs, error: jobsErr } = await supabase
+      .from("ask_jobs")
+      .select("id, status, error_message")
+      .in("id", jobIds);
+    if (jobsErr) {
+      console.warn("[askJobClient] listAskCaptures job-status lookup failed:", jobsErr.message);
+    } else {
+      for (const j of jobs || []) {
+        jobMap.set((j as any).id, {
+          status: (j as any).status ?? null,
+          error_message: (j as any).error_message ?? null,
+        });
+      }
+    }
+  }
+
+  return rows.map((r: any) => {
+    const job = r.job_id ? jobMap.get(r.job_id) : null;
+    return {
+      id: r.id,
+      chart_id: r.chart_id,
+      chart_name: r.chart_name ?? null,
+      question: r.question ?? null,
+      captured_at: r.captured_at,
+      notes: r.notes,
+      prose_len: typeof r.raw_ai_response === "string" ? r.raw_ai_response.length : null,
+      job_status: (job?.status as any) ?? null,
+      job_error: job?.error_message ?? null,
+    };
+  });
 }
 
 /**
