@@ -13763,7 +13763,27 @@ ${natalGroundTruthLines}`
           const ok = resp.status === 200 && body?.ok === true;
           const defects = Array.isArray(body?.defects) ? body.defects : [];
           const fixesApplied = Array.isArray(body?.fixes_applied) ? body.fixes_applied : [];
-          console.info(`[ask-astrology][gate] verdict (${label}) status=${resp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} ms=${ms}`);
+          // ── ARCHITECTURAL DEFENSE: consume Replit's corrected `data` ──
+          // When the gate returns a 200/ok response with a `data` object,
+          // it represents Replit's authoritative post-cleanup payload
+          // (orphan-comma fixes, em-dash normalization, etc.). Replace
+          // parsedContent in place so persistence and rendering use the
+          // gate-corrected version, not our pre-gate draft. Only apply on
+          // ok=true to avoid swallowing partial/error payloads.
+          let dataApplied = false;
+          if (ok && body?.data && typeof body.data === "object" && !Array.isArray(body.data)) {
+            try {
+              for (const k of Object.keys(parsedContent as any)) {
+                if (!(k in body.data)) delete (parsedContent as any)[k];
+              }
+              Object.assign(parsedContent as any, body.data);
+              dataApplied = true;
+              console.info(`[ask-astrology][gate] applied corrected data payload from gate (${label})`);
+            } catch (applyErr) {
+              console.warn(`[ask-astrology][gate] failed to apply data payload (${label}):`, applyErr);
+            }
+          }
+          console.info(`[ask-astrology][gate] verdict (${label}) status=${resp.status} ok=${ok} defects=${defects.length} fixes=${fixesApplied.length} data_applied=${dataApplied} ms=${ms}`);
           return {
             label,
             ok,
@@ -13771,6 +13791,7 @@ ${natalGroundTruthLines}`
             latency_ms: ms,
             defects,
             fixes_applied: fixesApplied,
+            data_applied: dataApplied,
             checked_at: new Date().toISOString(),
             url_path: pathForLog,
             ...(resp.status !== 200 ? { body_snippet: rawText.slice(0, 300) } : {}),
