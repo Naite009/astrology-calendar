@@ -14428,17 +14428,33 @@ ${natalGroundTruthLines}`
           try { raw = await resp.text(); } catch { /* */ }
           let body: any = null;
           try { body = raw ? JSON.parse(raw) : null; } catch { /* non-JSON */ }
+          const ok = resp.status === 200 && body?.ok === true;
+          // ARCHITECTURAL DEFENSE: consume corrected `data` from final gate.
+          let dataApplied = false;
+          if (ok && body?.data && typeof body.data === "object" && !Array.isArray(body.data)) {
+            try {
+              for (const k of Object.keys(parsedContent as any)) {
+                if (!(k in body.data)) delete (parsedContent as any)[k];
+              }
+              Object.assign(parsedContent as any, body.data);
+              dataApplied = true;
+              console.info(`[ask-astrology][final-gate] applied corrected data payload from gate`);
+            } catch (applyErr) {
+              console.warn(`[ask-astrology][final-gate] failed to apply data payload:`, applyErr);
+            }
+          }
           finalVerdict = {
-            ok: resp.status === 200 && body?.ok === true,
+            ok,
             status: resp.status,
             latency_ms: ms,
             defects: Array.isArray(body?.defects) ? body.defects : [],
             warnings: Array.isArray(body?.warnings) ? body.warnings : [],
+            data_applied: dataApplied,
             checked_at: new Date().toISOString(),
             ...(resp.status !== 200 ? { body_snippet: raw.slice(0, 500) } : {}),
           };
           if (resp.status !== 200) unreachable = true;
-          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} ms=${ms}`);
+          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} data_applied=${dataApplied} ms=${ms}`);
         } catch (gateErr) {
           unreachable = true;
           const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
