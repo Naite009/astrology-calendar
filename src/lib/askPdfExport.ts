@@ -622,11 +622,9 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   addFooter();
 
   // Filename mirrors the JSON export EXACTLY — same slug rules (hyphens, not
-  // underscores), same multi-reading label, same full ISO timestamp suffix.
-  // JSON pattern (AskView.handleDownloadJson):
-  //   <person-slug>_<reading-type>_<YYYY-MM-DD_HH-MM-SSZ>.json
-  // PDF must match so the two downloads sit side-by-side in the user's
-  // Downloads folder with identical names except for the extension.
+  // underscores), same multi-reading label, same LOCAL timestamp suffix
+  // (NOT UTC — an 8pm ET generation on 4/30 must stay 2026-04-30, not roll to 5/1).
+  // Pattern: <person-slug>_<reading-type>_<YYYY-MM-DD_HH-MM-SS>.pdf
   const slug = (s: string) =>
     (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const personSlug = slug(chart?.name || "") || "chart";
@@ -639,10 +637,8 @@ export function generateAskPdf(chart: NatalChart, readings: StructuredReading[])
   );
   const typeSlug =
     types.length === 0 ? "reading" : types.length === 1 ? types[0] : "multi-reading";
-  const ts = new Date()
-    .toISOString()
-    .replace(/[:.]/g, "-")
-    .replace("T", "_")
-    .replace(/-\d{3}Z$/, "Z"); // 2026-04-21_14-32-05Z
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const ts = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
   pdf.save(`${personSlug}_${typeSlug}_${ts}.pdf`);
 }
