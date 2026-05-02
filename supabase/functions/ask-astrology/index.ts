@@ -13276,10 +13276,11 @@ ${natalGroundTruthLines}`
         // ────────────────────────────────────────────────────────────
         try {
           dedupeTimingArrays(parsedContent, emissionLog);
-          // Collapse duplicate window descriptions before placeholder strip
-          // so the second/third copies become short pointer lines instead
-          // of repeating the full paragraph downstream.
-          dedupeWindowDescriptions(parsedContent, emissionLog);
+          // NOTE (Replit audit v1, item #6): dedupeWindowDescriptions used to
+          // run HERE (before stripMetaSentences). That meant two windows that
+          // were "different because of trailing meta-commentary" became
+          // identical only AFTER meta-strip — but dedup had already finished.
+          // dedupeWindowDescriptions now runs after stripMetaSentences below.
           // NEW: collapse same-sentence-repeated-N-times within a single
           // string (e.g. Pluto-square description shipping the same
           // sentence 4 times back-to-back). Runs before placeholder strip
