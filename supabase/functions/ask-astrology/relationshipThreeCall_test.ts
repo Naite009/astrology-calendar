@@ -62,3 +62,44 @@ Deno.test("relationship Call A prompt includes the full natal chart despite blan
 
   assert(!callAPrompt.includes("SR Sun"), `Call A prompt must not include SR data:\n${callAPrompt}`);
 });
+
+// ── Truth-block pass-through regression test (Replit audit, 2026-05-02) ──
+// The 3-call relationship branch slices the labeled
+// `NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE)` block
+// out of sanitizedChartContext and appends it to natalChartBlock so Call A
+// and Call C see the same authoritative house-placement source the
+// single-call path uses. This test asserts the slice regex matches the
+// exact format buildChartContext emits on the frontend.
+Deno.test("truth-block extraction regex matches frontend buildChartContext output", () => {
+  const FRONTEND_CONTEXT = `
+NATAL Planetary Positions (with calculated house placements):
+- Sun: 22°11' Taurus (House 6)
+- Moon: 14°8' Cancer (House 8)
+
+NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE):
+Read every natal house claim from this block. Do NOT infer a natal planet's house from its sign. Do NOT copy a Solar Return house onto a natal sentence. If a natal placement is not listed below, do not invent one.
+- Natal Sun: Taurus, House 6
+- Natal Moon: Cancer, House 8
+- Natal Venus: Taurus, House 7 (retrograde)
+- Natal Lilith: Aquarius, House 3
+- Natal Juno: Sagittarius, House 1
+- Natal Ascendant: Sagittarius, House 1
+
+House Cusps (with traditional rulers):
+- House 1: 9°27' Sagittarius
+`;
+  const truthBlockMatch = FRONTEND_CONTEXT.match(
+    /NATAL PLANET HOUSE PLACEMENTS \(USE THESE EXACTLY[^\n]*\n[^\n]*\n(?:- Natal [^\n]+\n)+/,
+  );
+  assert(truthBlockMatch, "Truth-block regex failed to match the frontend's emitted block");
+  const block = truthBlockMatch![0];
+  for (const line of [
+    "- Natal Sun: Taurus, House 6",
+    "- Natal Venus: Taurus, House 7 (retrograde)",
+    "- Natal Lilith: Aquarius, House 3",
+    "- Natal Juno: Sagittarius, House 1",
+    "- Natal Ascendant: Sagittarius, House 1",
+  ]) {
+    assert(block.includes(line), `Truth block missing line: ${line}\nGot:\n${block}`);
+  }
+});
