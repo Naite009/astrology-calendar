@@ -47,6 +47,26 @@ const humanizeDateRange = (value: string): string => {
   return value.replace(/\s*[–—]\s*/g, ' to ');
 };
 
+const cleanTimingText = (value: string): string => {
+  if (!value) return value;
+  let out = value.replace(/(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*–\s*(\d{1,2}(?:,\s*\d{4})?)/g, '$1 to $2');
+  const runOnStarter = /^(?:You|Your|This|That|These|Those|It|There|Here|When|While|If|Because|So|And|But|Or)\b/;
+  out = out.replace(/\s*[—–]\s*/g, (dash, offset, full) => {
+    const before = full.slice(Math.max(0, offset - 1), offset);
+    const afterText = full.slice(offset + dash.length).trimStart();
+    if (/[([{]/.test(before) || /^[)\]}]/.test(afterText)) return '';
+    return runOnStarter.test(afterText) ? '. ' : ', ';
+  });
+  return out
+    .replace(/\(\s*,\s*/g, '(')
+    .replace(/\s*,\s*\)/g, ')')
+    .replace(/,\s*,+/g, ',')
+    .replace(/,\s*\./g, '.')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Natal theme maps (per reading type)
 // ─────────────────────────────────────────────────────────────────────────────
