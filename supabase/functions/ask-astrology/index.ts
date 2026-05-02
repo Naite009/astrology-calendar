@@ -14296,6 +14296,8 @@ ${natalGroundTruthLines}`
         // override has run, or push a non-blocking review note if unresolved.
         reconcileSRHouseCopyWarning(parsedContent, postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
+        dedupeWindowDescriptions(parsedContent, postGateLog);
+        stripDashesEverywhere(parsedContent, postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
         // inspected, even when there were no rewrites this run.
