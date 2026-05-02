@@ -9153,6 +9153,22 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\b(?:missing|incomplete|unavailable|limited)\s+(?:data|placements?|houses?|planets?|aspects?)\b/i,
   /\b(?:i\s+(?:do\s+not|don'?t)\s+have|i\s+can(?:not|'?t)|i\s+am\s+unable|i'?m\s+unable|sorry|apologies|unfortunately)\b/i,
   /\b(?:without|with)\s+(?:more|additional|the\s+available|the\s+supplied|the\s+provided)\s+(?:information|data|placements?)\b/i,
+  // ─── NEW (Replit audit v1, item #1) — noun-form impossibility & "available data" disclaimers ───
+  // (a) Noun-form impossibility: "a complete portrait of how X loves cannot be responsibly constructed",
+  //     "a full reading is not possible", "a complete picture of Y cannot be drawn/given/produced".
+  /\b(?:a|an|the)\s+(?:complete|full|comprehensive|responsible|accurate|proper|reliable)\s+(?:portrait|picture|reading|profile|interpretation|analysis|view|account|description|breakdown|synthesis)\s+(?:of\s+[^.!?]+?)?\s*(?:cannot|can'?t|could\s+not|couldn'?t|is\s+not|isn'?t|will\s+not|won'?t)\s+(?:be\s+)?(?:responsibly\s+)?(?:constructed|drawn|given|produced|made|offered|provided|written|generated|delivered|presented|completed|formed|determined)\b/i,
+  // (b) "the {available|partial|limited|provided|supplied|incomplete|given} data/chart/info/placements"
+  /\bthe\s+(?:available|partial|limited|provided|supplied|incomplete|given|current|present|attached|received|submitted|shared)\s+(?:data|chart\s+data|chart|placements?|positions?|information|info|inputs?)\b/i,
+  // (c) "if the complete chart were provided" / "had a full chart been supplied" / "with the full chart"
+  /\bif\s+(?:the\s+)?(?:complete|full|entire|whole|complete\s+natal|full\s+natal)\s+(?:chart|data|placements?|reading)\s+(?:were|was|had\s+been|is|are)\s+(?:provided|supplied|given|available|included|known|present)\b/i,
+  /\bhad\s+(?:a|the)\s+(?:complete|full|entire|whole)\s+(?:chart|data|placement)\s+(?:been\s+)?(?:provided|supplied|given|available|included|submitted)\b/i,
+  // (d) "what can be confirmed/inferred/derived/established from {the available|provided|supplied|given|partial|limited} data/chart/positions/placements"
+  /\bwhat\s+(?:can|could)\s+be\s+(?:confirmed|inferred|derived|established|determined|stated|said|interpreted|known|gleaned|read|gathered|deduced|verified)\s+from\s+(?:the\s+)?(?:available|provided|supplied|given|partial|limited|current|attached|shared|present)\s+(?:data|chart|positions?|placements?|information|info)\b/i,
+  // Bonus catch: "the only natal placement confirmed" / "the only confirmed placement"
+  /\b(?:the\s+)?only\s+(?:natal\s+)?(?:placement|placements?|position|positions?|aspect|aspects?|datum|fact)\s+(?:confirmed|provided|supplied|available|present|given|known|that\s+can\s+be\s+verified)\b/i,
+  /\b(?:the\s+)?only\s+confirmed\s+(?:placement|placements?|position|positions?|aspect|aspects?|datum)\s+(?:in|from|of)\b/i,
+  // Bonus catch: "the full profile below reflects what can be confirmed"
+  /\bthe\s+(?:full|complete)\s+(?:profile|portrait|reading|analysis|picture|breakdown)\s+(?:below|above|that\s+follows|here)\s+(?:reflects|represents|covers|shows?|describes?)\s+(?:only\s+)?what\s+(?:can|could)\s+be\s+(?:confirmed|inferred|derived|established|verified|stated)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
