@@ -2630,6 +2630,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                         birthTime={selectedChart.birthTime || "unknown time"}
                         birthLocation={selectedChart.birthLocation || "unknown location"}
                         currentLocation={matchingSR?.solarReturnLocation || undefined}
+                        childChartOptions={savedCharts
+                          .filter(c => c.id !== activeChartId && !!c.birthDate)
+                          .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
                         disabled={isLoading}
                       />
                     );
