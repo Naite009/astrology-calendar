@@ -50,9 +50,10 @@ const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => (
 const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
 const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
+const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
 
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
