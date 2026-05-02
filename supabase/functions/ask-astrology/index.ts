@@ -9243,13 +9243,10 @@ const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
 //
 // Strategy: group windows by normalized description text. For groups
 // of 2+ sharing the same description:
-//   - Keep the first window unchanged.
-//   - For subsequent windows, replace the description with a short
-//     pointer line ("Same transit pattern as the [original-label]
-//     window — see that entry for the interpretation.") and tag the
-//     window with `_duplicate_of` for downstream consumers.
-// This avoids visible copy-paste while preserving the distinct date
-// range so the timeline view still shows every pass.
+  //   - Keep the first window unchanged.
+  //   - Merge later duplicate labels into the first label and remove the
+  //     duplicate rows entirely. This prevents 0/1/2 or 7/8 from rendering
+  //     as separate cards with the same description.
 const normalizeForDescDedupe = (s: string): string =>
   s.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -9272,22 +9269,26 @@ const dedupeWindowDescriptions = (parsedContent: any, log: HygieneLog) => {
       groups.get(key)!.push({ idx, window: w });
     });
 
+    const duplicateIndexes = new Set<number>();
     for (const [, members] of groups) {
       if (members.length < 2) continue;
-      // Members[0] keeps its full description. The rest get rewritten.
       const original = members[0].window;
-      const originalLabel = String(original?.label || "").trim() || "earlier window";
-      const pointer = `Same transit pattern as the "${originalLabel}" window — see that entry for the interpretation. This is an additional pass of the same transit, with peak dates in the range above.`;
+      const labels = [String(original?.label || "").trim()].filter(Boolean);
       for (let i = 1; i < members.length; i++) {
         const dup = members[i].window;
-        dup._duplicate_of = originalLabel;
-        dup.description = pointer;
+        const label = String(dup?.label || "").trim();
+        if (label && !labels.includes(label)) labels.push(label);
+        duplicateIndexes.add(members[i].idx);
         dedupedCount++;
       }
+      if (labels.length > 1) original.label = labels.join(" · ");
       if (groupExamples.length < 3) {
         const preview = String(original?.description || "").slice(0, 80);
         groupExamples.push({ description_preview: preview, window_count: members.length });
       }
+    }
+    if (duplicateIndexes.size > 0) {
+      section.windows = section.windows.filter((_w: any, idx: number) => !duplicateIndexes.has(idx));
     }
   }
 
