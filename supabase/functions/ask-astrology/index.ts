@@ -14247,6 +14247,33 @@ ${natalGroundTruthLines}`
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
+
+      // (Replit audit v1, item #8) — Persist Replit gate's fixes_applied into
+      // _validation_log so root-cause analysis has a unified trail of every
+      // auto-fix the gate applied (with quoted examples) alongside our own
+      // hygiene log entries.
+      try {
+        const allFixes: any[] = [];
+        for (const v of history) {
+          const fixes = Array.isArray(v?.fixes_applied) ? v.fixes_applied : [];
+          if (fixes.length > 0) {
+            allFixes.push({ pass: v?.label || "unknown", count: fixes.length, fixes });
+          }
+        }
+        if (allFixes.length > 0) {
+          (parsedContent as any)._validation_log = Array.isArray((parsedContent as any)._validation_log)
+            ? (parsedContent as any)._validation_log
+            : [];
+          (parsedContent as any)._validation_log.push({
+            type: "replit_gate_fixes",
+            stage: "pre_flight",
+            detail: { passes: allFixes },
+            captured_at: new Date().toISOString(),
+          });
+        }
+      } catch (logErr) {
+        console.warn("[ask-astrology][gate] failed to persist fixes_applied to _validation_log:", logErr);
+      }
       } catch (gateBlockErr) {
         // Never let the gate / V2 logic block a terminal job status.
         // Attach a minimal _gate so downstream consumers see what happened.
