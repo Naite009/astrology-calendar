@@ -14033,10 +14033,24 @@ ${natalGroundTruthLines}`
 
       const collectDefects = (verdict: any) => {
         const defects = Array.isArray(verdict?.defects) ? verdict.defects : [];
+        // Section-level healable codes:
+        // - MISSING_REQUIRED_SECTION / EMPTY_SECTION: structural, re-author the section.
+        // - RETROGRADE_OMISSION / RETROGRADE_STATE_MISMATCH: per Replit gate's
+        //   round-3 contract, retrograde drift in either direction is a regen
+        //   trigger (no silent patches). The defect carries `section`, so the
+        //   existing section-rewrite path re-authors that section with the
+        //   gate's defect message (chart/planet/section/path/snippet) injected
+        //   into the regen prompt. Treating these as unhealable would block the
+        //   reading instead of regenerating it — which is the actual bug.
+        const SECTION_HEALABLE_CODES = new Set([
+          "MISSING_REQUIRED_SECTION",
+          "EMPTY_SECTION",
+          "RETROGRADE_OMISSION",
+          "RETROGRADE_STATE_MISMATCH",
+        ]);
         const sectionDefects = defects.filter(
           (d: any) =>
-            (d?.code === "MISSING_REQUIRED_SECTION" || d?.code === "EMPTY_SECTION")
-            && typeof d?.section === "string",
+            d?.code && SECTION_HEALABLE_CODES.has(d.code) && typeof d?.section === "string",
         );
         const bulletDefects = defects.filter(
           (d: any) =>
@@ -14044,7 +14058,10 @@ ${natalGroundTruthLines}`
             && typeof d?.section === "string"
             && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
         );
-        const healableCodes = new Set(["MISSING_REQUIRED_SECTION", "EMPTY_SECTION", "EMPTY_BULLET_TEXT"]);
+        const healableCodes = new Set([
+          ...SECTION_HEALABLE_CODES,
+          "EMPTY_BULLET_TEXT",
+        ]);
         const unhealable = defects.filter((d: any) => d?.code && !healableCodes.has(d.code));
         return { sectionDefects, bulletDefects, unhealable };
       };
@@ -14142,15 +14159,27 @@ ${natalGroundTruthLines}`
           }
         }
 
-        // 1) Section-level retry (re-authors missing OR empty sections)
+        // 1) Section-level retry (re-authors missing OR empty sections,
+        //    and re-authors sections flagged for retrograde drift)
+        const fallbackFixForCode = (code: string): string => {
+          switch (code) {
+            case "EMPTY_SECTION":
+              return "Re-author this section — its body and bullets came back empty.";
+            case "RETROGRADE_OMISSION":
+              return "Re-author this section. The placement table marks one or more planets retrograde; every prose mention of those planets in this section MUST include the retrograde marker (e.g. 'retrograde', '℞') within the same clause as the planet name. Use the placement table as the source of truth for which planets are retrograde.";
+            case "RETROGRADE_STATE_MISMATCH":
+              return "Re-author this section. A retrograde claim in the prose contradicts the placement table. Rewrite so every retrograde claim matches the placement table exactly — do not invent or omit retrograde state.";
+            case "MISSING_REQUIRED_SECTION":
+            default:
+              return "Add this required section.";
+          }
+        };
         const retryResult = sectionDefects.length > 0
           ? await requestMissingSections(
               parsedContent,
               sectionDefects.map((d: any) => ({
                 section: d.section,
-                fix: d.fix || (d.code === "EMPTY_SECTION"
-                  ? `Re-author this section — its body and bullets came back empty.`
-                  : "Add this required section."),
+                fix: d.fix || fallbackFixForCode(d.code),
               })),
               sanitizedChartContext || undefined,
               systemBlocks,
@@ -14168,24 +14197,32 @@ ${natalGroundTruthLines}`
           }
         }
 
-        // For EMPTY_SECTION defects from the ORIGINAL output, drop the
-        // empty shell so the new V2 version is the only copy.
+        // For EMPTY_SECTION / RETROGRADE_OMISSION / RETROGRADE_STATE_MISMATCH
+        // defects from the ORIGINAL output, drop the original (empty or
+        // drifted) version so the V2-authored replacement is the only copy.
+        // Without this we'd ship two copies of the same section title and
+        // the gate would re-flag the un-fixed original on the next pass.
+        const REPLACE_ORIGINAL_CODES = new Set([
+          "EMPTY_SECTION",
+          "RETROGRADE_OMISSION",
+          "RETROGRADE_STATE_MISMATCH",
+        ]);
         if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
-          const emptyTitles = new Set(
+          const replaceTitles = new Set(
             sectionDefects
-              .filter((d: any) => d.code === "EMPTY_SECTION")
+              .filter((d: any) => REPLACE_ORIGINAL_CODES.has(d.code))
               .map((d: any) => String(d.section).trim().toLowerCase()),
           );
-          if (emptyTitles.size > 0) {
+          if (replaceTitles.size > 0) {
             const before = parsedContent.sections.length;
             parsedContent.sections = parsedContent.sections.filter((s: any) => {
               if (s?._v2_gate_added) return true;
               const t = String(s?.title || "").trim().toLowerCase();
-              return !emptyTitles.has(t);
+              return !replaceTitles.has(t);
             });
             const removed = before - parsedContent.sections.length;
             if (removed > 0) {
-              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original empty shell section(s)`);
+              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original section(s) being replaced by V2 rewrite`);
             }
           }
         }
