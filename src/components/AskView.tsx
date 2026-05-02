@@ -1206,13 +1206,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   const handleQuickTopic = (
     prompt: string,
-    userLocations?: { current?: string; considering1?: string; considering2?: string },
+    extras?: {
+      userLocations?: { current?: string; considering1?: string; considering2?: string };
+      childChartId?: string;
+    },
   ) => {
-    // AskQuickTopics now collects optional relocation cities inline (in the
-    // same panel as the personal-context textarea). When the user picks the
-    // Relocation topic and fills any city field, we receive a populated
-    // userLocations object here and forward it straight to the edge function.
-    void handleSubmitDirect(prompt, userLocations);
+    void handleSubmitDirect(prompt, extras?.userLocations, extras?.childChartId);
   };
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
