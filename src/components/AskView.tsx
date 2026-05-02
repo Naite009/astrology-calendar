@@ -699,11 +699,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const source = override ?? data;
       if (source && typeof source === 'object' && 'sign' in source) {
         const pos = source as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+        if (!ZODIAC.includes(pos.sign)) return;
+        // HARD DATA GATE for Lilith: requires valid sign, valid degree, and a
+        // calculable house. If any of these are missing, omit Lilith silently
+        // (matches the project-wide Asteroid Data Gate memory). Without this
+        // gate the AI was inventing Lilith placements when imports lacked
+        // complete data. Juno gets the same treatment for consistency.
+        if (planet === 'Lilith' || planet === 'Juno') {
+          if (typeof pos.degree !== 'number' || pos.degree < 0 || pos.degree >= 30) return;
+        }
         const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
         // Angles live on their own house cusp by definition.
         const house = override
           ? (planet === 'Ascendant' ? 1 : planet === 'Descendant' ? 7 : planet === 'Midheaven' ? 10 : planet === 'IC' ? 4 : calcHouse(absDeg))
           : calcHouse(absDeg);
+        if ((planet === 'Lilith' || planet === 'Juno') && house == null) return;
         context += `- ${planet}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}`;
         if (house) context += ` (House ${house})`;
         if ((pos as any).isRetrograde) context += " (R)";
