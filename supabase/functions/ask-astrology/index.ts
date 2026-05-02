@@ -4401,6 +4401,19 @@ const stampRetrogradeInEnumerations = (
     "_three_call","_verified_activations","_sr_house_copy_warning",
   ]);
 
+  // Second pattern: the dominant Call C / overlay-prose shape uses degrees,
+  // not "in Sign" — e.g. "SR Neptune at 0°01' Aries", "natal Jupiter at
+  // 29°34' Taurus". The original `<Planet> in <Sign>` regex never matched
+  // this form, so retrograde planets discussed in interpretive paragraphs
+  // (the heaviest prose in relationship readings' "Where Natal and Solar
+  // Return Connect" section) read as if direct. This regex matches the
+  // degrees-form and stamps " R" after the sign so the post-LLM corrector
+  // catches what the model omits.
+  const enumDegreesRe = new RegExp(
+    `\\b((?:SR|Solar\\s+Return|natal|your\\s+natal|your)\\s+)?(${PLANET_RE})(\\s+at\\s+\\d+°\\d+'\\s+(?:${ZSIGNS}))`,
+    "g",
+  );
+
   let stampedNatal = 0;
   let stampedSr = 0;
   const examples: string[] = [];
@@ -4420,6 +4433,26 @@ const stampRetrogradeInEnumerations = (
       if (examples.length < 8) examples.push(`${path} → ${full.slice(0, 80)}`);
       const cleanedGap = gapStr.replace(/\s+$/, "");
       return `${qualifier || ""}${planet}${cleanedGap} R${inSign}`;
+    });
+    // Degrees-form pass — stamp " R" at the end of the position phrase if the
+    // immediately following ~12 chars don't already carry a retrograde marker.
+    next = next.replace(enumDegreesRe, (full, qualifier, planet, atPhrase, offset, fullStr) => {
+      const q = (qualifier || "").trim().toLowerCase();
+      const isSr = /^(?:sr|solar\s+return)$/.test(q);
+      const truth = isSr ? srRetro : natalRetro;
+      const isRetro = truth.get(String(planet).toLowerCase()) === true;
+      if (!isRetro) return full;
+      // Look 12 chars past the match for an existing marker (handles "...Aries R",
+      // "...Aries (R)", "...Aries, retrograde", "...Aries ℞").
+      const tail = (fullStr as string).slice(offset + full.length, offset + full.length + 14);
+      if (MARKER_RE.test(tail)) return full;
+      // Also avoid double-stamping if the planet name itself already has a marker
+      // immediately before "at" (e.g. "SR Neptune R at 0°...").
+      const head = (fullStr as string).slice(Math.max(0, offset - 4), offset + (qualifier ? qualifier.length : 0) + planet.length + 1);
+      if (MARKER_RE.test(head)) return full;
+      if (isSr) stampedSr++; else stampedNatal++;
+      if (examples.length < 8) examples.push(`${path} → ${full.slice(0, 80)} [degrees]`);
+      return `${qualifier || ""}${planet}${atPhrase} R`;
     });
     if (next !== value) (node as any)[key] = next;
   });
