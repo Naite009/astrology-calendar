@@ -592,6 +592,40 @@ export function AskQuickTopics({
               </div>
             )}
 
+            {activeTopic.id === "parenting" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Choose your child
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    The reading is directional ({chartName} → child). Pick the
+                    child's chart so cross-aspects, age, and tailored advice
+                    are calculated against the right person.
+                  </p>
+                </div>
+                {childChartOptions.length === 0 ? (
+                  <p className="text-xs text-destructive">
+                    No other charts saved. Add your child's chart in the Charts
+                    tab first, then come back.
+                  </p>
+                ) : (
+                  <Select value={childChartId} onValueChange={setChildChartId} disabled={disabled}>
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Select a child's chart…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {childChartOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.id}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
                 Anything additional you'd like included in this reading?
