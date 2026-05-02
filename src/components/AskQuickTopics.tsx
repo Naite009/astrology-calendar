@@ -667,7 +667,7 @@ export function AskQuickTopics({
               <Button
                 size="sm"
                 onClick={handleSubmit}
-                disabled={activeTopic.id === "parenting" && !childChartId}
+                disabled={activeTopic.id === "parenting" && childChartOptions.length > 0 && !childChartId}
                 className="text-xs"
               >
                 <Send className="h-3 w-3 mr-1" />
