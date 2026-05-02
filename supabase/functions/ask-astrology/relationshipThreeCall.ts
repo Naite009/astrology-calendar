@@ -543,7 +543,7 @@ const buildSharedSystemBlocks = (
   return blocks;
 };
 
-const buildCallAUserMessage = (natalChartBlock: string, userQuestion: string): string => {
+export const buildCallAUserMessage = (natalChartBlock: string, userQuestion: string): string => {
   return `User's question: ${userQuestion}
 
 =========================================================
