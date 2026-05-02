@@ -13317,6 +13317,10 @@ ${natalGroundTruthLines}`
           // the core forces that shape how you connect" — sentences
           // that talk ABOUT the reading rather than delivering content.
           stripMetaSentences(parsedContent, emissionLog);
+          // (Replit audit v1, item #6) Dedup runs AFTER stripMetaSentences so
+          // two windows that differed only by trailing meta-commentary collapse
+          // correctly once meta is gone.
+          dedupeWindowDescriptions(parsedContent, emissionLog);
           // NEW (Defect 1): Rewrite stray third-person pronouns in 2nd-person
           // readings so canned aspect interpretations ("Their drive runs
           // into walls") become "Your drive runs into walls".
