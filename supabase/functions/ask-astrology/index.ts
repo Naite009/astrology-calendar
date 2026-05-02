@@ -9237,6 +9237,22 @@ const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
         return b;
       });
     }
+
+    // ─── NEW (Replit audit v1, item #5) — timing_section.windows[*].description ───
+    // The AI sometimes emits "the data does not contain X" inside a timing
+    // window description. The previous walker only inspected section.body /
+    // .content / .text, missing every window description entirely.
+    if (section.type === "timing_section" && Array.isArray((section as any).windows)) {
+      for (const w of (section as any).windows) {
+        if (!w || typeof w !== "object") continue;
+        for (const wKey of ["description", "body", "text", "details", "explanation", "interpretation"]) {
+          if (typeof w[wKey] === "string") {
+            const next = cleanString(w[wKey]);
+            if (next !== w[wKey]) w[wKey] = next;
+          }
+        }
+      }
+    }
   }
 
   if (removed > 0) {
