@@ -3369,7 +3369,7 @@ const parseNatalHousePlacements = (chartContext: string): Map<string, number> =>
   if (!headerMatch) return out;
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nKey Relationship|\n--- /);
+  const endMatch = tail.match(/\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nKey Relationship|\nNATAL Planetary Positions|\nSR Planetary Positions|\nSR House Cusps|\nVERIFIED|\n--- /);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const lineRe = /-\s+Natal\s+([A-Za-z][A-Za-z ]+?):\s+[A-Za-z]+,\s+House\s+(\d+)/g;
   let m: RegExpExecArray | null;
