@@ -756,6 +756,16 @@ export const AstroCalendar = () => {
                 <Volume2 size={14} />
                 Sounds
               </button>
+              <button
+                onClick={() => setViewMode("family")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "family"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                👪 Parent ↔ Child
+              </button>
             </div>
 
             {userData && (
@@ -1133,6 +1143,12 @@ export const AstroCalendar = () => {
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
             />
+          </Suspense>
+        )}
+
+        {viewMode === "family" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <FamilyTab userNatalChart={userNatalChart} savedCharts={savedCharts} />
           </Suspense>
         )}
       </div>
