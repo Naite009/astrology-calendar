@@ -12229,7 +12229,29 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
         const natalCuspBlock = natalCuspsForCall.length > 0
           ? `\n\nNatal House Cusps:\n${natalCuspsForCall.map(fmtCuspLine).join("\n")}`
           : "";
-        const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}`;
+
+        // ── TRUTH BLOCK PASS-THROUGH (Replit audit, 2026-05-02) ──
+        // The frontend's buildChartContext emits a labeled
+        // `NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE)`
+        // truth block containing every natal body's sign + house in the
+        // exact format the AI is instructed to read verbatim. The default
+        // single-call path forwards this verbatim because it ships
+        // sanitizedChartContext as a string. The 3-call relationship path
+        // historically rebuilt only the positions table, dropping this
+        // truth block — which let the AI infer houses from signs (the
+        // exact failure mode the truth block exists to prevent) and
+        // silently dropped Lilith/Juno entries that only appear in the
+        // truth block when the positions table omits them. We slice the
+        // verbatim block out of sanitizedChartContext and append it so
+        // Call A and Call C see the same authoritative source the
+        // single-call path uses.
+        const truthBlockMatch = sanitizedChartContext.match(
+          /NATAL PLANET HOUSE PLACEMENTS \(USE THESE EXACTLY[^\n]*\n[^\n]*\n(?:- Natal [^\n]+\n)+/,
+        );
+        const truthBlockSection = truthBlockMatch
+          ? `\n\n${truthBlockMatch[0].trimEnd()}`
+          : "";
+        const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}${truthBlockSection}`;
 
         const srChartBlock = srPositionsForCall.length > 0
           ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}`
