@@ -7803,6 +7803,16 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
+  // 5c-bis. ENUMERATION-LIST RETROGRADE STAMPER — (b)-side companion to
+  // BASE RULE 5's enumeration sub-rule. Stamps " R" into
+  // "{chart} {Planet} in {Sign}" enumerations when the placement-table
+  // truth says retrograde and no marker is present in the 18-char
+  // neighborhood. Runs AFTER the strip/flip correctors so we never stamp
+  // onto a mention that was just rewritten. Idempotent.
+  safeRun("stampRetrogradeInEnumerations", () =>
+    stampRetrogradeInEnumerations(parsedContent, ctx, log),
+  );
+
   // 5d/5e. REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse`
   // and `factsAwareNatalHouseSweep` previously ran here and overwrote each
   // other on natal vs SR house claims. The post-render
