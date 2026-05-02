@@ -14333,6 +14333,18 @@ ${natalGroundTruthLines}`
         // override has run, or push a non-blocking review note if unresolved.
         reconcileSRHouseCopyWarning(parsedContent, postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
+        // ─── (Replit audit v1, items #3 + #5 + #6) — POST-GATE FINAL ORDER ───
+        // The Replit /check-reading gate's `data` payload (now consumed in
+        // both pre-flight and final-gate calls) may carry meta/refusal
+        // sentences if the gate's own auto-fix didn't catch them. Run
+        // stripMetaSentences here so we catch them on the post-gate side too.
+        // dedupeWindowDescriptions and stripDashesEverywhere MUST be the last
+        // two passes — in that order — so:
+        //   (a) any em-dash injected by the retrograde-explainer / window-
+        //       builder above is caught by the FINAL recursive dash strip, and
+        //   (b) two windows that became identical only after meta+dash strip
+        //       still get collapsed.
+        stripMetaSentences(parsedContent, postGateLog);
         dedupeWindowDescriptions(parsedContent, postGateLog);
         stripDashesEverywhere(parsedContent, postGateLog);
 
