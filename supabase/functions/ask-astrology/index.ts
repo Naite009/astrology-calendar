@@ -13895,12 +13895,27 @@ ${natalGroundTruthLines}`
           let dataApplied = false;
           if (ok && body?.data && typeof body.data === "object" && !Array.isArray(body.data)) {
             try {
+              // ── METADATA-PRESERVING MERGE (Replit audit, 2026-05-02) ──
+              // Previously this loop deleted every parsedContent key that
+              // wasn't in body.data, then Object.assign'd. That nuked our
+              // pre-gate metadata (`_three_call`, `_validation_log`,
+              // `_validation`, `_accuracy_review`, `_verified_activations`,
+              // `_sr_house_copy_warning`, etc.) every time the gate
+              // shipped a corrected payload — because the gate only
+              // returns the user-visible content fields, not our internal
+              // diagnostic underscores. We now (a) merge body.data over
+              // parsedContent (gate wins on overlapping keys), and
+              // (b) only delete user-visible top-level keys the gate
+              // explicitly omitted (e.g. dropped a stray section). All
+              // underscore-prefixed metadata is preserved.
+              const RESERVED_PREFIX = "_";
               for (const k of Object.keys(parsedContent as any)) {
+                if (k.startsWith(RESERVED_PREFIX)) continue;
                 if (!(k in body.data)) delete (parsedContent as any)[k];
               }
               Object.assign(parsedContent as any, body.data);
               dataApplied = true;
-              console.info(`[ask-astrology][gate] applied corrected data payload from gate (${label})`);
+              console.info(`[ask-astrology][gate] applied corrected data payload from gate (${label}) — metadata preserved`);
             } catch (applyErr) {
               console.warn(`[ask-astrology][gate] failed to apply data payload (${label}):`, applyErr);
             }
