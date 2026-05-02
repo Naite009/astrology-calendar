@@ -234,9 +234,14 @@ export const computeCrossChartActivations = (args: ComputeArgs): VerifiedActivat
   for (const sr of srSources) {
     const srAbs = absDeg(sr.sign, sr.degree, sr.minutes);
     if (Number.isNaN(srAbs)) continue;
+    // Retrograde markers piped through to the rendered activation lines so
+    // Call C's per-aspect prose can never claim "direct" for a retrograde
+    // planet. Suffix " R" matches the project's enumeration stamper output.
+    const srRx = (sr as any).retrograde === true ? " R" : "";
     for (const nt of natalTargets) {
       const ntAbs = absDeg(nt.sign, nt.degree, nt.minutes);
       if (Number.isNaN(ntAbs)) continue;
+      const ntRx = (nt as any).retrograde === true ? " R" : "";
       const sep = angularSeparation(srAbs, ntAbs);
       let best: VerifiedActivation | null = null;
       for (const asp of ASPECTS) {
@@ -245,16 +250,14 @@ export const computeCrossChartActivations = (args: ComputeArgs): VerifiedActivat
         if (orb <= allowed) {
           if (!best || orb < best.orb) {
             best = {
-              srPoint: `SR ${sr.name}`,
-              natalPoint: `natal ${nt.name}`,
+              srPoint: `SR ${sr.name}${srRx}`,
+              natalPoint: `natal ${nt.name}${ntRx}`,
               aspect: asp.name,
               orb: Math.round(orb * 10) / 10,
               allowedOrb: allowed,
               applying: null,
-              srPosition: fmtDeg(sr.degree, sr.minutes) + " " + sr.sign,
-              natalPosition: nt.house != null
-                ? `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}`
-                : `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}`,
+              srPosition: `${fmtDeg(sr.degree, sr.minutes)} ${sr.sign}${srRx}`,
+              natalPosition: `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}${ntRx}`,
             };
           }
         }
@@ -320,7 +323,9 @@ You are writing INTERPRETATIONS of the ${count} verified activation(s) above. Fo
 
 5. Distinguish Ascendant from Descendant strictly. The list labels each angle by name. If the list says "natal Descendant," write "Descendant" — never "Ascendant." Same for MC vs IC.
 
-6. If the list contains zero activations, write the section as: "No significant cross-chart activation this year" plus a single sentence redirecting the reader to the strongest natal theme. Do not invent activations to fill space.
+6. RETROGRADE STATE IS ENCODED IN THE LIST — NON-NEGOTIABLE. Any planet whose label or position carries a trailing " R" (e.g., "natal Jupiter R", "SR Neptune R", "0°01' Aries R") is RETROGRADE. When you interpret an activation that involves a retrograde planet, the prose for that activation MUST acknowledge the retrograde state in plain language at least once — not as a glyph, but as a sentence explaining what the retrograde does to the meaning of THIS specific activation in the relationship/year context (e.g., "Because your natal Venus is retrograde, this Saturn conjunction lands on a Venus that already processes love internally first, so the year's commitment pressure will feel like an internal renegotiation before any external structure forms"). Treating a retrograde planet as if it were direct, or omitting the retrograde acknowledgment when interpreting an activation that involves one, is a HARD FAIL. The same rule applies to the summary_box and any narrative section that re-references these activations.
 
-7. The summary_box ("Relationship Strategy Summary") may reference the verified activations the same way — never invent new ones for the summary.`;
+7. If the list contains zero activations, write the section as: "No significant cross-chart activation this year" plus a single sentence redirecting the reader to the strongest natal theme. Do not invent activations to fill space.
+
+8. The summary_box ("Relationship Strategy Summary") may reference the verified activations the same way — never invent new ones for the summary, and never strip retrograde state when summarizing.`;
 };

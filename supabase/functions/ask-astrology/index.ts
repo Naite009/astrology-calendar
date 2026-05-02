@@ -3963,9 +3963,12 @@ const fixNatalRetrogradeMentionsInProse = (
 ) => {
   if (!parsedContent || !chartContext) return;
   const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
   if (natalPos.length === 0) return;
   const natalRetro = new Map<string, boolean>();
+  const srRetro = new Map<string, boolean>();
   for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
 
   // Only attempt corrections for planets we have ground truth on.
   const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","Ceres","Pallas","Vesta","Eris"];
@@ -3974,24 +3977,26 @@ const fixNatalRetrogradeMentionsInProse = (
   const PLANET_RE = `(?:${knownPlanets.join("|")})`;
 
   // "<Planet> direct" — only flip when context is clearly natal (not SR / not "SR <Planet>").
-  // We require that the word "SR" does NOT appear in the immediately
-  // preceding 10 chars. Lookbehind on Deno regex is supported.
   const directRe = new RegExp(`(?<!\\bSR\\s)\\b(${PLANET_RE})\\s+direct\\b`, "gi");
 
-  // PHANTOM RX STRIPPER — catch the inverse: "<Planet> Rx" / "<Planet> ℞" /
-  // "<Planet> retrograde" applied to a planet that is NOT retrograde in the
-  // natal table. This is the Paul-style overlay bug ("SR Venus conjunct
-  // natal Chiron Rx" when natal Chiron is direct). Same SR-context guard
-  // as above so SR retrograde mentions are untouched.
+  // PHANTOM RX STRIPPER — natal-qualified form.
   const phantomRxRe = new RegExp(
     `(?<!\\bSR\\s)\\bnatal\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
     "gi",
   );
-  // Also catch the no-"natal" form when the surrounding sentence already
-  // names the natal chart (e.g. inside an overlay bullet that begins with
-  // "SR Venus conjunct your Chiron ℞"). We look for "your <Planet> Rx".
+  // "your <Planet> Rx" form.
   const phantomYourRxRe = new RegExp(
     `(?<!\\bSR\\s)\\byour\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
+    "gi",
+  );
+  // UNQUALIFIED PHANTOM RX — catches Lauren's natal-Pluto bug: AI writes
+  // "Pluto retrograde in the 8th" with no chart qualifier. Strict gate: we
+  // only strip when the planet is direct in BOTH natal AND SR. That way we
+  // never remove a legitimate SR retrograde mention even if it's missing
+  // its "SR" qualifier. Targets glyphs and the word "retrograde"; leaves
+  // bare "R" alone (too noisy — "R" appears in many non-retrograde tokens).
+  const unqualifiedPhantomRxRe = new RegExp(
+    `\\b(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)\\b`,
     "gi",
   );
 
@@ -4030,6 +4035,17 @@ const fixNatalRetrogradeMentionsInProse = (
         });
         next = next.replace(phantomRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
         next = next.replace(phantomYourRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
+        // Unqualified phantom-Rx: only strip when the planet is direct in
+        // BOTH natal AND SR — otherwise we risk demoting a legitimate SR
+        // retrograde mention that just lost its "SR" qualifier.
+        next = next.replace(unqualifiedPhantomRxRe, (full, planet, _suffix) => {
+          const key = String(planet).toLowerCase();
+          const isNatalRetro = natalRetro.get(key) === true;
+          const isSrRetro = srRetro.get(key) === true;
+          if (isNatalRetro || isSrRetro) return full;
+          invalidRetroStripped++;
+          return full.replace(new RegExp(`(${planet})(?:\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)`, "i"), `$1`);
+        });
         if (next !== val) {
           if (examples.length < 5) examples.push(val.slice(0, 160));
           (node as any)[key] = next;
@@ -4401,6 +4417,19 @@ const stampRetrogradeInEnumerations = (
     "_three_call","_verified_activations","_sr_house_copy_warning",
   ]);
 
+  // Second pattern: the dominant Call C / overlay-prose shape uses degrees,
+  // not "in Sign" — e.g. "SR Neptune at 0°01' Aries", "natal Jupiter at
+  // 29°34' Taurus". The original `<Planet> in <Sign>` regex never matched
+  // this form, so retrograde planets discussed in interpretive paragraphs
+  // (the heaviest prose in relationship readings' "Where Natal and Solar
+  // Return Connect" section) read as if direct. This regex matches the
+  // degrees-form and stamps " R" after the sign so the post-LLM corrector
+  // catches what the model omits.
+  const enumDegreesRe = new RegExp(
+    `\\b((?:SR|Solar\\s+Return|natal|your\\s+natal|your)\\s+)?(${PLANET_RE})(\\s+at\\s+\\d+°\\d+'\\s+(?:${ZSIGNS}))`,
+    "g",
+  );
+
   let stampedNatal = 0;
   let stampedSr = 0;
   const examples: string[] = [];
@@ -4420,6 +4449,26 @@ const stampRetrogradeInEnumerations = (
       if (examples.length < 8) examples.push(`${path} → ${full.slice(0, 80)}`);
       const cleanedGap = gapStr.replace(/\s+$/, "");
       return `${qualifier || ""}${planet}${cleanedGap} R${inSign}`;
+    });
+    // Degrees-form pass — stamp " R" at the end of the position phrase if the
+    // immediately following ~12 chars don't already carry a retrograde marker.
+    next = next.replace(enumDegreesRe, (full, qualifier, planet, atPhrase, offset, fullStr) => {
+      const q = (qualifier || "").trim().toLowerCase();
+      const isSr = /^(?:sr|solar\s+return)$/.test(q);
+      const truth = isSr ? srRetro : natalRetro;
+      const isRetro = truth.get(String(planet).toLowerCase()) === true;
+      if (!isRetro) return full;
+      // Look 12 chars past the match for an existing marker (handles "...Aries R",
+      // "...Aries (R)", "...Aries, retrograde", "...Aries ℞").
+      const tail = (fullStr as string).slice(offset + full.length, offset + full.length + 14);
+      if (MARKER_RE.test(tail)) return full;
+      // Also avoid double-stamping if the planet name itself already has a marker
+      // immediately before "at" (e.g. "SR Neptune R at 0°...").
+      const head = (fullStr as string).slice(Math.max(0, offset - 4), offset + (qualifier ? qualifier.length : 0) + planet.length + 1);
+      if (MARKER_RE.test(head)) return full;
+      if (isSr) stampedSr++; else stampedNatal++;
+      if (examples.length < 8) examples.push(`${path} → ${full.slice(0, 80)} [degrees]`);
+      return `${qualifier || ""}${planet}${atPhrase} R`;
     });
     if (next !== value) (node as any)[key] = next;
   });
