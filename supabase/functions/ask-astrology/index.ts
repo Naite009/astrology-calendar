@@ -14660,8 +14660,24 @@ ${natalGroundTruthLines}`
               // would leak through. Re-run our window-aware hygiene against the
               // freshly-merged payload so the exported JSON matches what the
               // PDF renderer would produce.
+              // ── DEEP-SYNC AFTER FINAL GATE (Replit audit pass 5, 2026-05-02) ──
+              // Previously only 3 hygiene fns ran here. That left a defense-
+              // in-depth gap: if the final gate's `body.data` introduced
+              // (or failed to fix) a planet/sign drift, retrograde flip,
+              // SR-house bleed, or stale ruler claim, it would ship with no
+              // local re-validation. We now mirror the SAME post-pre-gate
+              // sequence (line ~14458) so the placement validator,
+              // accuracy review, retrograde propagation, and SR-house
+              // overrides all see the freshly-merged payload one more time.
               try {
                 const syncLog: HygieneLog = [];
+                runPostProcessingPipeline(parsedContent, sanitizedChartContext || "", syncLog);
+                fixHouseRulerPlacementInProse(parsedContent, sanitizedChartContext || "", syncLog);
+                correctNatalPlanetPositionsInProse(parsedContent, sanitizedChartContext || "", syncLog);
+                correctSrHouseCuspInProse(parsedContent, sanitizedChartContext || "", syncLog);
+                overrideSRHouseNumbersFromContext(parsedContent, sanitizedChartContext || "", syncLog);
+                reconcileSRHouseCopyWarning(parsedContent, syncLog);
+                correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", syncLog);
                 stripMetaSentences(parsedContent, syncLog);
                 dedupeWindowDescriptions(parsedContent, syncLog);
                 stripDashesEverywhere(parsedContent, syncLog);
@@ -14670,15 +14686,21 @@ ${natalGroundTruthLines}`
                     ? (parsedContent as any)._validation_log
                     : [];
                   (parsedContent as any)._validation_log.push({
-                    type: "post_final_gate_window_sync",
+                    type: "post_final_gate_full_resync",
                     stage: "final",
                     detail: { count: syncLog.length, fixes: syncLog },
                     captured_at: new Date().toISOString(),
                   });
-                  console.info(`[ask-astrology][final-gate] post-merge window sync applied ${syncLog.length} fix(es)`);
+                  console.info(`[ask-astrology][final-gate] post-merge full resync applied ${syncLog.length} fix(es)`);
                 }
               } catch (syncErr) {
-                console.warn("[ask-astrology][final-gate] post-merge window sync failed (non-fatal):", syncErr);
+                const msg = syncErr instanceof Error ? syncErr.message : String(syncErr);
+                // Placement-table drift must hard-fail (same contract as the
+                // pre-gate post-processing site at line ~14516).
+                if (msg.startsWith("placement_table_drift:")) {
+                  throw syncErr;
+                }
+                console.warn("[ask-astrology][final-gate] post-merge full resync failed (non-fatal):", msg);
               }
             } catch (applyErr) {
               console.warn(`[ask-astrology][final-gate] failed to apply data payload:`, applyErr);
