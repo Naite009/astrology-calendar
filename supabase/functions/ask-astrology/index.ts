@@ -7432,11 +7432,19 @@ export const safeStripDashes = (input: string): string => {
 const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   let changed = 0;
+  // Diagnostic-only buckets that never ship to the user-facing PDF/JSON
+  // surface and that we MUST NOT mutate (gate verdict snippets are
+  // compared by Replit literally and stripping dashes inside them
+  // produces false-positive diff alarms).
+  const PROTECTED_KEYS = new Set([
+    "_validation","_validation_log","_validation_warning",
+    "_accuracy_review","_post_gate_safety","_final_hygiene","_gate","_final_gate",
+  ]);
   const visit = (node: any, path = "$."): void => {
     if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}].`); return; }
     if (!node || typeof node !== "object") return;
     for (const [key, val] of Object.entries(node)) {
-      if (key.startsWith("_")) continue;
+      if (PROTECTED_KEYS.has(key)) continue;
       if (typeof val === "string") {
         const next = safeStripDashes(val);
         if (next !== val) { (node as any)[key] = next; changed++; }
