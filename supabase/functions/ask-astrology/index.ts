@@ -9148,6 +9148,11 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\b(?:without|absent|lacking)\s+(?:those|these|the|that|this)\s+(?:position|placement|data|datum|chart|info)/i,
   /\b(?:any|an)\s+interpretation\s+of\b.*\b(?:would\s+be\s+)?(?:fabricat\w+|invent\w+|inaccurate|guesswork)\b/i,
   /\bthe\s+chart\s+data\s+provided\s+for\s+this\s+(?:reading|call|section)\b/i,
+  /\b(?:the\s+)?(?:data|chart\s+data|placements?|information|inputs?)\s+(?:provided|supplied|shared|available|given)\b/i,
+  /\b(?:for|in)\s+this\s+(?:call|section|reading|request|dataset)\b/i,
+  /\b(?:missing|incomplete|unavailable|limited)\s+(?:data|placements?|houses?|planets?|aspects?)\b/i,
+  /\b(?:i\s+(?:do\s+not|don'?t)\s+have|i\s+can(?:not|'?t)|i\s+am\s+unable|i'?m\s+unable|sorry|apologies|unfortunately)\b/i,
+  /\b(?:without|with)\s+(?:more|additional|the\s+available|the\s+supplied|the\s+provided)\s+(?:information|data|placements?)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
