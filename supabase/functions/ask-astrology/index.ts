@@ -12171,32 +12171,79 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     let verifiedActivationsForResult: VerifiedActivation[] = [];
     if (isRelationshipQuestion && !replayCaptureId) {
       try {
-        // Re-derive pure natal / SR text blocks from sanitizedChartContext.
-        // These mirror the regexes in buildNatalGroundTruthBlock and become
-        // the per-call user message payload — Call A sees only natal,
-        // Call B sees only SR.
-        const natalHeaderRe = /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
-        const srHeaderRe = /SR\s+Planetary\s+Positions[^\n]*:\s*\n([\s\S]*?)(?=\n\s*\n|\n[A-Z][A-Z\s]{2,}:|$)/i;
-        const nm = sanitizedChartContext.match(natalHeaderRe);
-        const sm = sanitizedChartContext.match(srHeaderRe);
-        const natalLines = nm
-          ? nm[1].split("\n").map((l: string) => l.trim()).filter((l: string) => l && /[A-Za-z]+:\s*\d+°/.test(l))
-          : [];
-        const srLines = sm
-          ? sm[1].split("\n").map((l: string) => l.trim()).filter((l: string) => l && /[A-Za-z]+:\s*\d+°/.test(l))
-          : [];
+        // ────────────────────────────────────────────────────────────────
+        // CALL A / B CONTEXT — built from STRUCTURED parser output, not
+        // a regex round-trip through the rendered block.
+        // ────────────────────────────────────────────────────────────────
+        // History: this branch used to re-parse `sanitizedChartContext`
+        // with a local `natalHeaderRe` whose terminator stopped at any
+        // blank line (\n\s*\n). buildChartContext occasionally emits a
+        // blank line between the Sun row and the rest of the planets;
+        // when that happened, only the Sun survived into Call A and the
+        // model produced apologetic prose like "only Sun data was
+        // provided". The fix is to skip the string round-trip entirely:
+        // call the same `parsePositionsFromContext` helper used by the
+        // activations engine — it already (a) terminates on real section
+        // headers only, never on blank lines, and (b) returns sign,
+        // degree, minutes, house, and retrograde for every body. Then
+        // re-render the block in the exact bullet shape Call A expects,
+        // and append the full natal House Cusps so the AI has the
+        // Ascendant/Descendant/MC/IC and 7th-house ruler context it
+        // needs to write the relationship sections without apologizing.
+        const natalPositionsForCall = parsePositionsFromContext(
+          sanitizedChartContext,
+          /(?:NATAL\s+)?Planetary\s+Positions[^\n]*:\s*\n/i,
+        );
+        const srPositionsForCall = parsePositionsFromContext(
+          sanitizedChartContext,
+          /SR\s+Planetary\s+Positions[^\n]*:\s*\n/i,
+          "SR",
+        );
+        const natalCuspsForCall = parseHouseCuspsFromContext(sanitizedChartContext);
 
-        if (natalLines.length === 0) {
+        const fmtNatalLine = (p: ParsedPosition): string => {
+          const mins = String(p.minutes).padStart(2, "0");
+          const housePart = p.house != null ? ` (House ${p.house})` : "";
+          const rxPart = p.retrograde ? " (R)" : "";
+          return `- ${p.planet}: ${p.degree}°${mins}' ${p.sign}${housePart}${rxPart}`;
+        };
+        const fmtSrLine = (p: ParsedPosition): string => {
+          const mins = String(p.minutes).padStart(2, "0");
+          const housePart = p.house != null ? ` (SR House ${p.house})` : "";
+          const rxPart = p.retrograde ? " (R)" : "";
+          return `- ${p.planet}: ${p.degree}°${mins}' ${p.sign}${housePart}${rxPart}`;
+        };
+        const fmtCuspLine = (c: { house: number; sign: string; degree: number; minutes: number }): string => {
+          const mins = String(c.minutes).padStart(2, "0");
+          return `- House ${c.house}: ${c.degree}°${mins}' ${c.sign}`;
+        };
+
+        if (natalPositionsForCall.length === 0) {
           // Without a natal table we can't run the 3-call architecture
           // correctly — fall through to the single-call branch.
           console.warn(`[ask-astrology] 3-call: natal table not parseable from chartContext; falling back to single-call`);
           throw new Error("FALLBACK_TO_SINGLE_CALL");
         }
 
-        const natalChartBlock = natalLines.map((l: string) => `- ${l}`).join("\n");
-        const srChartBlock = srLines.length > 0
-          ? srLines.map((l: string) => `- ${l.replace(/^SR\s+/i, "")}`).join("\n")
+        const natalPlanetBlock = natalPositionsForCall.map(fmtNatalLine).join("\n");
+        const natalCuspBlock = natalCuspsForCall.length > 0
+          ? `\n\nNatal House Cusps:\n${natalCuspsForCall.map(fmtCuspLine).join("\n")}`
+          : "";
+        const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}`;
+
+        const srChartBlock = srPositionsForCall.length > 0
+          ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}`
           : "(no Solar Return chart provided for this reading)";
+
+        console.info(
+          `[ask-astrology] 3-call: built Call A natal block from structured parser`,
+          {
+            natal_planets: natalPositionsForCall.length,
+            natal_cusps: natalCuspsForCall.length,
+            sr_planets: srPositionsForCall.length,
+            natal_bodies: natalPositionsForCall.map((p) => p.planet).join(","),
+          },
+        );
 
         // Build a SHARED chart-scoped rules block that the 3 calls all reuse.
         // Critically, this OMITS the natal/SR placement tables (those move
