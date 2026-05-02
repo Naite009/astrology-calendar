@@ -14611,12 +14611,18 @@ ${natalGroundTruthLines}`
           let dataApplied = false;
           if (ok && body?.data && typeof body.data === "object" && !Array.isArray(body.data)) {
             try {
+              // METADATA-PRESERVING MERGE — see same comment at the
+              // pre-gate site above. Underscore-prefixed diagnostic keys
+              // (`_three_call`, `_validation_log`, etc.) are preserved
+              // because the gate never re-emits them.
+              const RESERVED_PREFIX = "_";
               for (const k of Object.keys(parsedContent as any)) {
+                if (k.startsWith(RESERVED_PREFIX)) continue;
                 if (!(k in body.data)) delete (parsedContent as any)[k];
               }
               Object.assign(parsedContent as any, body.data);
               dataApplied = true;
-              console.info(`[ask-astrology][final-gate] applied corrected data payload from gate`);
+              console.info(`[ask-astrology][final-gate] applied corrected data payload from gate — metadata preserved`);
               // ── DEEP-SYNC WINDOWS (backlog fix, 2026-05-02) ──
               // Replit's `body.data` returns gate-corrected section bodies but
               // does NOT consistently re-emit `sections[*].windows[*].description`
