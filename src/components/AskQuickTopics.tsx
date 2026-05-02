@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, Sparkles, Sun } from "lucide-react";
+import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, Sparkles, Sun, Users } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CityInput } from "@/components/CityInput";
@@ -265,6 +265,42 @@ Tone: Wise counsel, not a horoscope. Do not overpromise. Differentiate chemistry
     icon: <Compass className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
       `Using the full natal chart AND the current solar return chart for ${name}, born ${date} at ${time} in ${loc}, provide a comprehensive spiritual and life path analysis. Today's date is ${today()}. All timing must be future-relative to today. Cover: SOUL'S BLUEPRINT — North Node sign/house for destiny direction and what the soul is growing toward. South Node sign/house for past-life gifts, karmic patterns to release, and comfort zones that limit growth. INTUITIVE & PSYCHIC CAPACITY — Moon sign/house for emotional intuition, psychic sensitivity, and how spiritual insights arrive (dreams, feelings, visions). THE INNER TEACHER — Saturn sign/house for life's core lessons and where spiritual maturity is forged through challenges. Chiron sign/house for the wound that becomes your greatest gift and teaching. 12TH HOUSE (The Unseen) — the 12th house cusp sign, its ruler, and any planets there revealing the connection to the divine, meditation style, past-life karma, and where surrender is required. 8TH HOUSE (Death & Rebirth) — transformation cycles, occult sensitivity, shadow work, and how the soul evolves through crisis and letting go. 9TH HOUSE (Higher Wisdom) — philosophy, spiritual teachers, foreign spiritual traditions, and how higher learning expands consciousness. LILITH (Shadow Integration) — Lilith sign/house for reclaiming hidden power, shadow integration, and where societal taboos become spiritual gifts. THE AWAKENING POINTS — Uranus sign/house for sudden breakthroughs and liberation. Neptune sign/house for spiritual vision, mystical experiences, and divine connection. Pluto sign/house for deep transformation, soul-level power, and phoenix cycles. SOLAR RETURN SPIRITUAL INDICATORS — what does this year's SR 12th house, SR Neptune, SR North Node, and SR Pluto placement say about this year's spiritual growth and awakening opportunities? SPIRITUAL TIMING — transits to North Node, Neptune, Pluto, and 12th house ruler with exact degrees and date ranges over the next 12-18 months. Include any upcoming eclipses near the nodal axis. ELEMENTAL BALANCE — frame as spiritual temperament (fire=passionate devotion, earth=embodied practice, air=study/meditation, water=mystical surrender). STRATEGY SUMMARY — soul purpose, key lesson this lifetime, recommended spiritual practice, and timing for deepest growth.`,
+  },
+  {
+    id: "parenting",
+    label: "👪 Parenting",
+    icon: <Users className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using the full natal chart for ${name}, born ${date} at ${time} in ${loc}, provide a deep parent-focused reading. Today's date is ${today()}. The person asking IS the parent — this reading is about how THEY parent, what their child(ren) experience of them, and how to grow as a parent. If a second chart for the child is provided in chart context, treat the relationship as directional: PARENT chart → CHILD chart. The parent's planets are the climate; the child's luminaries and angles are the weather sensor. Direction matters absolutely.
+
+VOICE RULES (NON-NEGOTIABLE):
+- Speak directly to the parent ("you", "your child"). Never pathologize the child.
+- Behavior-first: describe what the child feels in their body and what shows up in real moments — not abstract symbolism.
+- Frame challenges as "your child's nervous system reads X as Y," never "your child is difficult."
+- Calibrate by age when known: developmental <12, identity-formation 12–18, adult-child 18+.
+- FORBIDDEN: "wound", "metabolized", "archetypal", "portal", "activation" (use "this transit" or "this aspect"), "calling" as a noun.
+- Each section: 200–400 words.
+- Apply the existing ENUMERATION-LIST retrograde rule: in any "{chart} {Planet} in {Sign}" list, include the inline " R" marker for retrograde planets.
+
+Use this EXACT section order:
+
+SECTION 1: THE ESSENCE OF YOU AS A PARENT — Open by naming the parent's Sun, Moon, Mars, Mercury, and Saturn (sign + house). Then synthesize in plain language what kind of climate this parent creates around a child. 2–4 sentences of essence, then expand. No jargon.
+
+SECTION 2: HOW YOUR CHILD EXPERIENCES YOU (TOP 5) — If a child chart is provided, list the 5 tightest cross-aspects between PARENT planets and CHILD Sun/Moon/Ascendant by orb. For each: (a) what the child feels in their body, (b) the cross-aspect with both signs/degrees and orb, (c) what the child has likely concluded about themselves, (d) ONE concrete parenting move. If no child chart, derive from parent's Mars/Mercury/Saturn/Venus/Moon what any child of this parent will tend to feel.
+
+SECTION 3: WHERE YOUR DRIVE LANDS HARDEST — Parent's Mars sign/house/aspects, in plain terms. What the child feels when you're frustrated even at something else. The repair move that resets the nervous system fastest.
+
+SECTION 4: HOW YOUR WORDS LAND — Parent's Mercury sign/house/aspects. The kind of sentence that calms versus the kind that rings for days. Practical phrasing examples.
+
+SECTION 5: THE INHERITED PATTERN — Parent's Saturn, Chiron, Pluto, and Nodes (sign/house). Name the unconscious transmission likely being passed down — what you absorbed from your own parents that lives in you, and the chance to break the chain. If a child chart is provided, name the Saturn/Chiron/Pluto/Node contacts to the child's Sun/Moon/Asc explicitly.
+
+SECTION 6: WHAT YOUR CHILD NEEDS FROM YOU THAT OTHER CHILDREN WOULDN'T — If child chart provided, tied to that child's Moon sign+house, Ascendant, and Mercury. Otherwise, describe what kind of child this parent's chart is best equipped to raise versus where the parent will need to stretch.
+
+SECTION 7: WHERE YOU TWO CLICK (or the natural gifts you bring as a parent) — Tightest supportive cross-aspects (trine/sextile within 3°) between parent and child, framed as the shared language. If no child chart, name the parent's natural parenting gifts from chart strengths.
+
+SECTION 8: THE ONE THING TO WORK ON THIS SEASON — Pick ONE concrete parenting practice the chart points to most clearly. Direct, plain, kind.
+
+STRUCTURAL OUTPUT: Begin with placement_table titled "Parent Key Placements" (and "Child Key Placements" if a child chart is provided). Then narrative_section per SECTION above. End with summary_box titled "Parenting Strategy" with items: "Your Climate", "What Your Child Feels Most", "The Pattern to Break", "This Season's Practice". The "question_type" in your JSON output MUST be exactly "parenting".`,
   },
 ];
 
