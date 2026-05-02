@@ -471,12 +471,17 @@ export function AskQuickTopics({
         userLocations = { current, considering1, considering2 };
       }
     }
+    const selectedChildId = activeTopic.id === "parenting" ? childChartId.trim() : "";
     setActiveTopic(null);
     setPersonalContext("");
     setRelocCurrent("");
     setRelocCity1("");
     setRelocCity2("");
-    onSelect(prompt, userLocations);
+    setChildChartId("");
+    onSelect(prompt, {
+      userLocations,
+      childChartId: selectedChildId || undefined,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
