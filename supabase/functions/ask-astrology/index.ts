@@ -3999,6 +3999,14 @@ const fixNatalRetrogradeMentionsInProse = (
     `\\b(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)\\b`,
     "gi",
   );
+  // SEPARATED UNQUALIFIED PHANTOM RX — catches "Pluto in the 8th house,
+  // retrograde", "Pluto … is currently retrograde", "Pluto sits at 28°
+  // and is retrograde", etc. Up to 80 chars between planet and the word
+  // "retrograde". Same strict gate: planet must be direct in BOTH charts.
+  const separatedUnqualifiedPhantomRxRe = new RegExp(
+    `\\b(${PLANET_RE})\\b([^.!?\\n]{1,80}?)\\b(?:is\\s+(?:currently\\s+|now\\s+)?retrograde|retrograde)\\b`,
+    "gi",
+  );
 
   let directToRetro = 0;
   let invalidRetroStripped = 0;
