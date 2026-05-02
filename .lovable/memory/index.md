@@ -28,6 +28,7 @@ Updated: now
 
 ## Memories
 - [Operating Rules 4–10](mem://architecture/ask-astrology/operating-rules-4-through-10) — Cloud-wins, labeled placement blocks, ephemeris-override ban, base-prompt inheritance, full regression-failure list, gate-404 handling, one-confirmation discipline
+- [Gate Retrograde Contract](mem://architecture/ask-astrology/gate-retrograde-contract) — Replit gate treats RETROGRADE_STATE_MISMATCH and RETROGRADE_OMISSION as symmetric 422 regen triggers; no silent patches on either side
 - [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely
 - [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
 - [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
