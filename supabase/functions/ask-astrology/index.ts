@@ -14543,12 +14543,13 @@ ${natalGroundTruthLines}`
             latency_ms: ms,
             defects: Array.isArray(body?.defects) ? body.defects : [],
             warnings: Array.isArray(body?.warnings) ? body.warnings : [],
+            fixes_applied: Array.isArray(body?.fixes_applied) ? body.fixes_applied : [],
             data_applied: dataApplied,
             checked_at: new Date().toISOString(),
             ...(resp.status !== 200 ? { body_snippet: raw.slice(0, 500) } : {}),
           };
           if (resp.status !== 200) unreachable = true;
-          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} data_applied=${dataApplied} ms=${ms}`);
+          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} fixes=${finalVerdict.fixes_applied.length} data_applied=${dataApplied} ms=${ms}`);
         } catch (gateErr) {
           unreachable = true;
           const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
@@ -14563,6 +14564,25 @@ ${natalGroundTruthLines}`
         // Stamp the final verdict on the payload so the UI can show it
         // even when the verdict is "unvalidated".
         (parsedContent as any)._final_gate = finalVerdict;
+
+        // (Replit audit v1, item #8) — Persist final-gate fixes_applied into
+        // _validation_log alongside the pre-flight gate's fixes.
+        try {
+          const fixes = Array.isArray(finalVerdict?.fixes_applied) ? finalVerdict.fixes_applied : [];
+          if (fixes.length > 0) {
+            (parsedContent as any)._validation_log = Array.isArray((parsedContent as any)._validation_log)
+              ? (parsedContent as any)._validation_log
+              : [];
+            (parsedContent as any)._validation_log.push({
+              type: "replit_gate_fixes",
+              stage: "final",
+              detail: { count: fixes.length, fixes },
+              captured_at: new Date().toISOString(),
+            });
+          }
+        } catch (logErr) {
+          console.warn("[ask-astrology][final-gate] failed to persist fixes_applied:", logErr);
+        }
 
         if (!finalVerdict.ok) {
           // Decide whether to block.
