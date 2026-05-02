@@ -14769,19 +14769,54 @@ ${natalGroundTruthLines}`
             if (ctxName) personName = ctxName[1];
           }
 
-          // Most-specific intent wins. "Solar Return" must lose to
-          // "Relationship" because relationship prompts often reference
-          // "...current solar return chart..." as context.
-          const q = lastUserText.toLowerCase();
+          // Reading-type resolution priority (fixes the "Nicki Career stamped
+          // as Relationship" bug — keyword match on the user's free-text
+          // question misfires when a career prompt mentions "partner" or
+          // "relationship" in passing):
+          //   1. parsedContent.question_type — set deterministically by the
+          //      single-call / 3-call orchestrator from the caller's actual
+          //      question_type field. This is the authoritative signal and
+          //      every reading already carries it before the final gate.
+          //   2. Fallback: scored keyword counts (same routine the question
+          //      router uses upstream) — picks the dominant intent rather
+          //      than the first regex hit.
+          //   3. Default: "Reading".
+          const QT_TO_LABEL: Record<string, string> = {
+            relationship: "Relationship",
+            career: "Career",
+            money: "Money",
+            health: "Health",
+            timing: "Timing",
+            relocation: "Where to Live",
+            astrocartography: "Astrocartography",
+            solar_return: "Solar Return",
+            natal: "Natal",
+            spiritual: "Spiritual",
+            general: "Reading",
+          };
           let readingType = "Reading";
-          if (/synastry|relationship|compatibility|partner|love analysis/.test(q)) readingType = "Relationship";
-          else if (/astrocartograph/.test(q)) readingType = "Astrocartography";
-          else if (/where/.test(q) && /(live|move|relocat)/.test(q)) readingType = "Where to Live";
-          else if (/career|work|job/.test(q)) readingType = "Career";
-          else if (/health|symptom|body/.test(q)) readingType = "Health";
-          else if (/transit|timing|when/.test(q)) readingType = "Timing";
-          else if (/complete professional solar return|solar return reading|solar return analysis/.test(q)) readingType = "Solar Return";
-          else if (/natal/.test(q)) readingType = "Natal";
+          const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
+          if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
+            readingType = QT_TO_LABEL[canonicalQt];
+          } else {
+            const q = lastUserText.toLowerCase();
+            const cnt = (rx: RegExp): number => {
+              const m = q.match(rx); return m ? new Set(m).size : 0;
+            };
+            const scores: Array<[number, string]> = [
+              [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
+              [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
+              [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
+              [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
+              [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
+              [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
+              [cnt(/\b(transit|timing|when)\b/g), "Timing"],
+              [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
+              [cnt(/\bnatal\b/g), "Natal"],
+            ];
+            scores.sort((a, b) => b[0] - a[0]);
+            if (scores[0][0] > 0) readingType = scores[0][1];
+          }
 
           const localDate = new Intl.DateTimeFormat("en-CA", {
             timeZone: "America/New_York",
