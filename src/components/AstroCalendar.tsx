@@ -228,6 +228,9 @@ export const AstroCalendar = () => {
     if (viewMode === "natal-portrait") {
       return "Natal Portrait";
     }
+    if (viewMode === "family") {
+      return "👪 Parent ↔ Child";
+    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
