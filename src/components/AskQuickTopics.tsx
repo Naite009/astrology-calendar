@@ -353,7 +353,10 @@ function buildPromptWithContext(
 }
 
 interface AskQuickTopicsProps {
-  onSelect: (prompt: string, userLocations?: UserLocationsInput) => void;
+  onSelect: (
+    prompt: string,
+    extras?: { userLocations?: UserLocationsInput; childChartId?: string },
+  ) => void;
   chartName: string;
   birthDate: string;
   birthTime: string;
@@ -364,6 +367,12 @@ interface AskQuickTopicsProps {
    * don't have to retype where they live. They can still edit or clear it.
    */
   currentLocation?: string;
+  /**
+   * Other available charts in the user's library, used as the child picker
+   * for the Parenting topic. The active parent chart is excluded by AskView
+   * before passing it in.
+   */
+  childChartOptions?: ChildChartOption[];
   disabled?: boolean;
 }
 
@@ -374,10 +383,12 @@ export function AskQuickTopics({
   birthTime,
   birthLocation,
   currentLocation,
+  childChartOptions = [],
   disabled,
 }: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
+  const [childChartId, setChildChartId] = useState<string>("");
   // Career-only: hard-exclusion list. Persisted per-chart in localStorage so
   // the user doesn't have to retype "not finance, not business" every time.
   const excludedFieldsKey = `ask-excluded-career-fields:${chartName}`;
