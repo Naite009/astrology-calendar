@@ -9153,6 +9153,22 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\b(?:missing|incomplete|unavailable|limited)\s+(?:data|placements?|houses?|planets?|aspects?)\b/i,
   /\b(?:i\s+(?:do\s+not|don'?t)\s+have|i\s+can(?:not|'?t)|i\s+am\s+unable|i'?m\s+unable|sorry|apologies|unfortunately)\b/i,
   /\b(?:without|with)\s+(?:more|additional|the\s+available|the\s+supplied|the\s+provided)\s+(?:information|data|placements?)\b/i,
+  // ─── NEW (Replit audit v1, item #1) — noun-form impossibility & "available data" disclaimers ───
+  // (a) Noun-form impossibility: "a complete portrait of how X loves cannot be responsibly constructed",
+  //     "a full reading is not possible", "a complete picture of Y cannot be drawn/given/produced".
+  /\b(?:a|an|the)\s+(?:complete|full|comprehensive|responsible|accurate|proper|reliable)\s+(?:portrait|picture|reading|profile|interpretation|analysis|view|account|description|breakdown|synthesis)\s+(?:of\s+[^.!?]+?)?\s*(?:cannot|can'?t|could\s+not|couldn'?t|is\s+not|isn'?t|will\s+not|won'?t)\s+(?:be\s+)?(?:responsibly\s+)?(?:constructed|drawn|given|produced|made|offered|provided|written|generated|delivered|presented|completed|formed|determined)\b/i,
+  // (b) "the {available|partial|limited|provided|supplied|incomplete|given} data/chart/info/placements"
+  /\bthe\s+(?:available|partial|limited|provided|supplied|incomplete|given|current|present|attached|received|submitted|shared)\s+(?:data|chart\s+data|chart|placements?|positions?|information|info|inputs?)\b/i,
+  // (c) "if the complete chart were provided" / "had a full chart been supplied" / "with the full chart"
+  /\bif\s+(?:the\s+)?(?:complete|full|entire|whole|complete\s+natal|full\s+natal)\s+(?:chart|data|placements?|reading)\s+(?:were|was|had\s+been|is|are)\s+(?:provided|supplied|given|available|included|known|present)\b/i,
+  /\bhad\s+(?:a|the)\s+(?:complete|full|entire|whole)\s+(?:chart|data|placement)\s+(?:been\s+)?(?:provided|supplied|given|available|included|submitted)\b/i,
+  // (d) "what can be confirmed/inferred/derived/established from {the available|provided|supplied|given|partial|limited} data/chart/positions/placements"
+  /\bwhat\s+(?:can|could)\s+be\s+(?:confirmed|inferred|derived|established|determined|stated|said|interpreted|known|gleaned|read|gathered|deduced|verified)\s+from\s+(?:the\s+)?(?:available|provided|supplied|given|partial|limited|current|attached|shared|present)\s+(?:data|chart|positions?|placements?|information|info)\b/i,
+  // Bonus catch: "the only natal placement confirmed" / "the only confirmed placement"
+  /\b(?:the\s+)?only\s+(?:natal\s+)?(?:placement|placements?|position|positions?|aspect|aspects?|datum|fact)\s+(?:confirmed|provided|supplied|available|present|given|known|that\s+can\s+be\s+verified)\b/i,
+  /\b(?:the\s+)?only\s+confirmed\s+(?:placement|placements?|position|positions?|aspect|aspects?|datum)\s+(?:in|from|of)\b/i,
+  // Bonus catch: "the full profile below reflects what can be confirmed"
+  /\bthe\s+(?:full|complete)\s+(?:profile|portrait|reading|analysis|picture|breakdown)\s+(?:below|above|that\s+follows|here)\s+(?:reflects|represents|covers|shows?|describes?)\s+(?:only\s+)?what\s+(?:can|could)\s+be\s+(?:confirmed|inferred|derived|established|verified|stated)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
@@ -9220,6 +9236,22 @@ const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
         }
         return b;
       });
+    }
+
+    // ─── NEW (Replit audit v1, item #5) — timing_section.windows[*].description ───
+    // The AI sometimes emits "the data does not contain X" inside a timing
+    // window description. The previous walker only inspected section.body /
+    // .content / .text, missing every window description entirely.
+    if (section.type === "timing_section" && Array.isArray((section as any).windows)) {
+      for (const w of (section as any).windows) {
+        if (!w || typeof w !== "object") continue;
+        for (const wKey of ["description", "body", "text", "details", "explanation", "interpretation"]) {
+          if (typeof w[wKey] === "string") {
+            const next = cleanString(w[wKey]);
+            if (next !== w[wKey]) w[wKey] = next;
+          }
+        }
+      }
     }
   }
 
@@ -13244,10 +13276,11 @@ ${natalGroundTruthLines}`
         // ────────────────────────────────────────────────────────────
         try {
           dedupeTimingArrays(parsedContent, emissionLog);
-          // Collapse duplicate window descriptions before placeholder strip
-          // so the second/third copies become short pointer lines instead
-          // of repeating the full paragraph downstream.
-          dedupeWindowDescriptions(parsedContent, emissionLog);
+          // NOTE (Replit audit v1, item #6): dedupeWindowDescriptions used to
+          // run HERE (before stripMetaSentences). That meant two windows that
+          // were "different because of trailing meta-commentary" became
+          // identical only AFTER meta-strip — but dedup had already finished.
+          // dedupeWindowDescriptions now runs after stripMetaSentences below.
           // NEW: collapse same-sentence-repeated-N-times within a single
           // string (e.g. Pluto-square description shipping the same
           // sentence 4 times back-to-back). Runs before placeholder strip
@@ -13284,6 +13317,10 @@ ${natalGroundTruthLines}`
           // the core forces that shape how you connect" — sentences
           // that talk ABOUT the reading rather than delivering content.
           stripMetaSentences(parsedContent, emissionLog);
+          // (Replit audit v1, item #6) Dedup runs AFTER stripMetaSentences so
+          // two windows that differed only by trailing meta-commentary collapse
+          // correctly once meta is gone.
+          dedupeWindowDescriptions(parsedContent, emissionLog);
           // NEW (Defect 1): Rewrite stray third-person pronouns in 2nd-person
           // readings so canned aspect interpretations ("Their drive runs
           // into walls") become "Your drive runs into walls".
@@ -14210,6 +14247,33 @@ ${natalGroundTruthLines}`
         history,
         ...(retryInfo ? { v2_retry: retryInfo } : {}),
       };
+
+      // (Replit audit v1, item #8) — Persist Replit gate's fixes_applied into
+      // _validation_log so root-cause analysis has a unified trail of every
+      // auto-fix the gate applied (with quoted examples) alongside our own
+      // hygiene log entries.
+      try {
+        const allFixes: any[] = [];
+        for (const v of history) {
+          const fixes = Array.isArray(v?.fixes_applied) ? v.fixes_applied : [];
+          if (fixes.length > 0) {
+            allFixes.push({ pass: v?.label || "unknown", count: fixes.length, fixes });
+          }
+        }
+        if (allFixes.length > 0) {
+          (parsedContent as any)._validation_log = Array.isArray((parsedContent as any)._validation_log)
+            ? (parsedContent as any)._validation_log
+            : [];
+          (parsedContent as any)._validation_log.push({
+            type: "replit_gate_fixes",
+            stage: "pre_flight",
+            detail: { passes: allFixes },
+            captured_at: new Date().toISOString(),
+          });
+        }
+      } catch (logErr) {
+        console.warn("[ask-astrology][gate] failed to persist fixes_applied to _validation_log:", logErr);
+      }
       } catch (gateBlockErr) {
         // Never let the gate / V2 logic block a terminal job status.
         // Attach a minimal _gate so downstream consumers see what happened.
@@ -14296,6 +14360,18 @@ ${natalGroundTruthLines}`
         // override has run, or push a non-blocking review note if unresolved.
         reconcileSRHouseCopyWarning(parsedContent, postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
+        // ─── (Replit audit v1, items #3 + #5 + #6) — POST-GATE FINAL ORDER ───
+        // The Replit /check-reading gate's `data` payload (now consumed in
+        // both pre-flight and final-gate calls) may carry meta/refusal
+        // sentences if the gate's own auto-fix didn't catch them. Run
+        // stripMetaSentences here so we catch them on the post-gate side too.
+        // dedupeWindowDescriptions and stripDashesEverywhere MUST be the last
+        // two passes — in that order — so:
+        //   (a) any em-dash injected by the retrograde-explainer / window-
+        //       builder above is caught by the FINAL recursive dash strip, and
+        //   (b) two windows that became identical only after meta+dash strip
+        //       still get collapsed.
+        stripMetaSentences(parsedContent, postGateLog);
         dedupeWindowDescriptions(parsedContent, postGateLog);
         stripDashesEverywhere(parsedContent, postGateLog);
 
@@ -14467,12 +14543,13 @@ ${natalGroundTruthLines}`
             latency_ms: ms,
             defects: Array.isArray(body?.defects) ? body.defects : [],
             warnings: Array.isArray(body?.warnings) ? body.warnings : [],
+            fixes_applied: Array.isArray(body?.fixes_applied) ? body.fixes_applied : [],
             data_applied: dataApplied,
             checked_at: new Date().toISOString(),
             ...(resp.status !== 200 ? { body_snippet: raw.slice(0, 500) } : {}),
           };
           if (resp.status !== 200) unreachable = true;
-          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} data_applied=${dataApplied} ms=${ms}`);
+          console.info(`[ask-astrology][final-gate] status=${resp.status} ok=${finalVerdict.ok} defects=${finalVerdict.defects.length} fixes=${finalVerdict.fixes_applied.length} data_applied=${dataApplied} ms=${ms}`);
         } catch (gateErr) {
           unreachable = true;
           const msg = gateErr instanceof Error ? gateErr.message : String(gateErr);
@@ -14487,6 +14564,25 @@ ${natalGroundTruthLines}`
         // Stamp the final verdict on the payload so the UI can show it
         // even when the verdict is "unvalidated".
         (parsedContent as any)._final_gate = finalVerdict;
+
+        // (Replit audit v1, item #8) — Persist final-gate fixes_applied into
+        // _validation_log alongside the pre-flight gate's fixes.
+        try {
+          const fixes = Array.isArray(finalVerdict?.fixes_applied) ? finalVerdict.fixes_applied : [];
+          if (fixes.length > 0) {
+            (parsedContent as any)._validation_log = Array.isArray((parsedContent as any)._validation_log)
+              ? (parsedContent as any)._validation_log
+              : [];
+            (parsedContent as any)._validation_log.push({
+              type: "replit_gate_fixes",
+              stage: "final",
+              detail: { count: fixes.length, fixes },
+              captured_at: new Date().toISOString(),
+            });
+          }
+        } catch (logErr) {
+          console.warn("[ask-astrology][final-gate] failed to persist fixes_applied:", logErr);
+        }
 
         if (!finalVerdict.ok) {
           // Decide whether to block.

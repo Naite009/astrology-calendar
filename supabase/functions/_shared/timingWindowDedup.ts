@@ -1,5 +1,5 @@
 /**
- * SHARED (Deno mirror) — Timing window label normalization + dedup.
+ * SHARED (Deno mirror) — Timing window dedup.
  *
  * BYTE-IDENTICAL MIRROR of `src/lib/timingWindowDedup.ts`. Deno edge functions
  * cannot import from `src/`, so this mirror exists to keep both runtimes on
@@ -7,6 +7,15 @@
  *
  * Used by:
  *   - supabase/functions/ask-astrology/index.ts → sanitizeDeterministicTiming
+ *
+ * RECONCILIATION (Replit audit v1, item #2):
+ * Previously this helper grouped by date-range OR normalized label, so two
+ * windows with identical descriptions but slightly different labels/ranges
+ * shipped as separate cards (windows [0,1,2], [7,8], [12,13] all duplicated
+ * in the Lauren Newman export). The canonical strategy now matches
+ * `dedupeWindowDescriptions()` in index.ts: composite key is
+ * `description + dateRange` (description normalized to lowercase, whitespace-
+ * collapsed). When descriptions match, labels are joined with " · ".
  */
 
 const MONTH_MAP: Record<string, string> = {
@@ -26,13 +35,18 @@ export function normalizeLabelKey(label: string): string {
   return s;
 }
 
-export function dateRangeKey(dr: unknown): string | null {
-  if (!dr || typeof dr !== 'object') return null;
+export function dateRangeKey(dr: unknown): string {
+  if (!dr || typeof dr !== 'object') return '';
   const obj = dr as { start?: unknown; end?: unknown };
   const start = typeof obj.start === 'string' ? obj.start.slice(0, 10) : '';
   const end = typeof obj.end === 'string' ? obj.end.slice(0, 10) : '';
-  if (!start || !end) return null;
-  return `daterange:${start}__${end}`;
+  if (!start && !end) return '';
+  return `${start}__${end}`;
+}
+
+/** Canonical normalization for description-based dedup. */
+function normalizeDescription(desc: string): string {
+  return desc.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 export type WindowEntry = {
@@ -41,7 +55,7 @@ export type WindowEntry = {
   dateRange?: unknown;
 };
 
-export type MergedWindow = { label: string; description: string };
+export type MergedWindow = { label: string; description: string; dateRange?: unknown };
 
 export type DedupResult = {
   windows: MergedWindow[];
@@ -49,76 +63,76 @@ export type DedupResult = {
   mergeStats: Array<{ key: string; label: string; mergedCount: number }>;
 };
 
+/**
+ * Canonical dedup: composite key = `${normalizedDescription}::${dateRangeKey}`.
+ *
+ * - Two windows with the same description AND the same date range collapse
+ *   into one row (label joined with " · ").
+ * - Two windows with the same description but different date ranges ALSO
+ *   collapse into one row (label joined with " · "). This matches the
+ *   intent of `dedupeWindowDescriptions()` in index.ts: identical prose
+ *   should never render as multiple cards.
+ *
+ * Order of preference for the composite key:
+ *   1. If description is non-empty → `desc:${normDesc}` (description wins).
+ *   2. If description is empty but date range exists → `daterange:${dateRangeKey}`.
+ *   3. Otherwise → `label:${normalizedLabel}` (last-resort fallback).
+ */
 export function dedupWindows(rawWindows: readonly WindowEntry[]): DedupResult {
-  const map = new Map<string, { label: string; description: string; mergedCount: number; key: string; seenDescs: Set<string> }>();
+  type Bucket = {
+    labels: string[];
+    description: string;
+    dateRange?: unknown;
+    mergedCount: number;
+    key: string;
+  };
+  const map = new Map<string, Bucket>();
 
   for (const entry of rawWindows) {
     const label = typeof entry.label === 'string' ? entry.label.trim() : '';
     const description = typeof entry.description === 'string' ? entry.description.trim() : '';
-    if (!label || !description) continue;
+    if (!label && !description) continue;
 
-    const key = dateRangeKey(entry.dateRange) ?? `label:${normalizeLabelKey(label)}`;
+    const normDesc = normalizeDescription(description);
+    let key: string;
+    if (normDesc.length >= 40) {
+      // Description-first (matches index.ts dedupeWindowDescriptions threshold).
+      key = `desc:${normDesc}`;
+    } else if (dateRangeKey(entry.dateRange)) {
+      key = `daterange:${dateRangeKey(entry.dateRange)}`;
+    } else {
+      key = `label:${normalizeLabelKey(label)}`;
+    }
+
     const existing = map.get(key);
     if (existing) {
-      const norm = description.toLowerCase().replace(/\s+/g, ' ');
-      if (existing.seenDescs.has(norm)) {
-        existing.mergedCount += 1;
-        continue;
-      }
-      const existingNorm = existing.description.toLowerCase().replace(/\s+/g, ' ');
-      if (existingNorm.includes(norm) || norm.includes(existingNorm)) {
-        existing.seenDescs.add(norm);
-        existing.mergedCount += 1;
-        continue;
-      }
-      existing.seenDescs.add(norm);
-      existing.description = `${existing.description}\n\n${description}`;
+      if (label && !existing.labels.includes(label)) existing.labels.push(label);
       existing.mergedCount += 1;
-    } else {
-      const norm = description.toLowerCase().replace(/\s+/g, ' ');
-      map.set(key, { label, description, mergedCount: 1, key, seenDescs: new Set([norm]) });
+      continue;
     }
+    map.set(key, {
+      labels: label ? [label] : [],
+      description,
+      dateRange: entry.dateRange,
+      mergedCount: 1,
+      key,
+    });
   }
 
-  const dedupeSentencesInline = (text: string): string => {
-    const parts = text.split(/(?<=[.!?])\s+|\n\n+/).map((s) => s.trim()).filter(Boolean);
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const p of parts) {
-      const k = p.toLowerCase().replace(/\s+/g, ' ');
-      if (seen.has(k)) continue;
-      seen.add(k);
-      out.push(p);
-    }
-    return out.join(' ');
-  };
-
-  const merged = Array.from(map.values());
-  const totalMerged = merged.reduce((sum, m) => sum + (m.mergedCount - 1), 0);
-
-  // SECOND PASS — content-based dedup. Merges windows whose DESCRIPTIONS are
-  // byte-identical (e.g. multi-pass outer-planet transits with different
-  // date ranges) by joining labels with " · ".
-  const finalMap = new Map<string, { labels: string[]; description: string; contentMerges: number }>();
-  for (const m of merged) {
-    const desc = dedupeSentencesInline(m.description);
-    const key = desc.toLowerCase().replace(/\s+/g, ' ');
-    const existing = finalMap.get(key);
-    if (existing) {
-      if (!existing.labels.includes(m.label)) existing.labels.push(m.label);
-      existing.contentMerges += 1;
-    } else {
-      finalMap.set(key, { labels: [m.label], description: desc, contentMerges: 0 });
-    }
-  }
-  const contentMerged = Array.from(finalMap.values()).reduce((sum, e) => sum + e.contentMerges, 0);
+  const buckets = Array.from(map.values());
+  const totalMerged = buckets.reduce((sum, b) => sum + (b.mergedCount - 1), 0);
 
   return {
-    windows: Array.from(finalMap.values()).map(({ labels, description }) => ({
-      label: labels.join(' · '),
-      description,
+    windows: buckets.map((b) => ({
+      label: b.labels.join(' · '),
+      description: b.description,
+      dateRange: b.dateRange,
     })),
-    mergedCount: totalMerged + contentMerged,
-    mergeStats: merged.map(({ key, label, mergedCount }) => ({ key, label, mergedCount })),
+    mergedCount: totalMerged,
+    mergeStats: buckets.map((b) => ({
+      key: b.key,
+      label: b.labels.join(' · '),
+      mergedCount: b.mergedCount,
+    })),
   };
 }
