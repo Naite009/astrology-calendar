@@ -12288,6 +12288,8 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
             natal_planets: natalPositionsForCall.length,
             natal_cusps: natalCuspsForCall.length,
             sr_planets: srPositionsForCall.length,
+            sr_cusps: srCuspsForCall.length,
+            sr_analysis_passed_through: srAnalysisSection.length > 0,
             natal_bodies: natalPositionsForCall.map((p) => p.planet).join(","),
           },
         );
