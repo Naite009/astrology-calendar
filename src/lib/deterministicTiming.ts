@@ -1300,14 +1300,14 @@ const buildTransitInterpretation = (params: {
     passSummary,
     isRetrograde,
   );
-  if (developmentalOverride) return developmentalOverride;
+  if (developmentalOverride) return cleanTimingText(developmentalOverride);
 
   const retrogradeSentence = isRetrograde
     ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
     : '';
   const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '', readingType);
   const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
-  return dedupeSentences(composed);
+  return cleanTimingText(dedupeSentences(composed));
 };
 
 const buildTimingWindowDescription = (
@@ -1349,7 +1349,7 @@ const buildTimingWindowDescription = (
   const devOverride = getDevelopmentalMilestoneInterpretation(
     tp, asp, np, readingType, `Peaks: ${exactSummary}.`, false,
   );
-  if (devOverride && devOverride.trim().length > 0) return devOverride;
+  if (devOverride && devOverride.trim().length > 0) return cleanTimingText(devOverride);
 
   // Fix 1 — ALL reading types now use the personalized natal-point description
   // (one sentence naming the specific natal point, one concrete scenario).
@@ -1357,7 +1357,7 @@ const buildTimingWindowDescription = (
   // fell back to the generic template. Unified path eliminates the gap.
   const natalDegree = (window.natalDegree ?? '').trim();
   const composed = buildNatalDescription(tp, asp, np, natalDegree, `Peaks: ${exactSummary}.`, readingType);
-  return dedupeSentences(composed);
+  return cleanTimingText(dedupeSentences(composed));
 };
 
 export const getTimingTagDetails = (tag: string) => {
