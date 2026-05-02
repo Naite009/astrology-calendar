@@ -3999,6 +3999,14 @@ const fixNatalRetrogradeMentionsInProse = (
     `\\b(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)\\b`,
     "gi",
   );
+  // SEPARATED UNQUALIFIED PHANTOM RX — catches "Pluto in the 8th house,
+  // retrograde", "Pluto … is currently retrograde", "Pluto sits at 28°
+  // and is retrograde", etc. Up to 80 chars between planet and the word
+  // "retrograde". Same strict gate: planet must be direct in BOTH charts.
+  const separatedUnqualifiedPhantomRxRe = new RegExp(
+    `\\b(${PLANET_RE})\\b([^.!?\\n]{1,80}?)\\b(?:is\\s+(?:currently\\s+|now\\s+)?retrograde|retrograde)\\b`,
+    "gi",
+  );
 
   let directToRetro = 0;
   let invalidRetroStripped = 0;
@@ -4045,6 +4053,21 @@ const fixNatalRetrogradeMentionsInProse = (
           if (isNatalRetro || isSrRetro) return full;
           invalidRetroStripped++;
           return full.replace(new RegExp(`(${planet})(?:\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)`, "i"), `$1`);
+        });
+        // SEPARATED form: "<Planet> ... is retrograde" / "<Planet> in the
+        // 8th house, retrograde". Strict gate: planet direct in BOTH charts
+        // and clause is NOT explicitly SR-qualified.
+        next = next.replace(separatedUnqualifiedPhantomRxRe, (full, planet, gap) => {
+          const key = String(planet).toLowerCase();
+          const isNatalRetro = natalRetro.get(key) === true;
+          const isSrRetro = srRetro.get(key) === true;
+          if (isNatalRetro || isSrRetro) return full;
+          // Don't touch clauses already qualified as SR (the SR-side
+          // correctors own those).
+          if (/\b(?:SR|Solar\s+Return|this\s+year)\b/i.test(full)) return full;
+          invalidRetroStripped++;
+          // Drop the trailing "... (is) retrograde" tail; keep planet + gap.
+          return `${planet}${gap}`.replace(/\s*[,;]\s*$/g, "").replace(/\s+(?:and|but)\s*$/i, "").trim();
         });
         if (next !== val) {
           if (examples.length < 5) examples.push(val.slice(0, 160));
@@ -7409,11 +7432,19 @@ export const safeStripDashes = (input: string): string => {
 const stripDashesEverywhere = (parsedContent: any, log: HygieneLog): void => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   let changed = 0;
+  // Diagnostic-only buckets that never ship to the user-facing PDF/JSON
+  // surface and that we MUST NOT mutate (gate verdict snippets are
+  // compared by Replit literally and stripping dashes inside them
+  // produces false-positive diff alarms).
+  const PROTECTED_KEYS = new Set([
+    "_validation","_validation_log","_validation_warning",
+    "_accuracy_review","_post_gate_safety","_final_hygiene","_gate","_final_gate",
+  ]);
   const visit = (node: any, path = "$."): void => {
     if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], `${path}[${i}].`); return; }
     if (!node || typeof node !== "object") return;
     for (const [key, val] of Object.entries(node)) {
-      if (key.startsWith("_")) continue;
+      if (PROTECTED_KEYS.has(key)) continue;
       if (typeof val === "string") {
         const next = safeStripDashes(val);
         if (next !== val) { (node as any)[key] = next; changed++; }
