@@ -1205,7 +1205,7 @@ const buildNatalDescription = (
 ): string => {
   const verb = NATAL_ASPECT_VERB[aspect] ?? aspect;
   const themeMap = getNatalThemeMap(readingType);
-  const theme = (themeMap[natalPlanet] ?? '').trim();
+  const theme = cleanTimingText((themeMap[natalPlanet] ?? '').trim());
   const scenarioTemplate =
     NATAL_SCENARIO_BY_TRANSIT_ASPECT[transitPlanet]?.[aspect] ?? '';
 
@@ -1220,7 +1220,7 @@ const buildNatalDescription = (
   // legacy template that retains the token, falling back to a neutral anchor.
   const themeForScenario = theme || `your ${natalPlanet}`;
   const scenario = scenarioTemplate
-    ? scenarioTemplate.replace('{theme}', themeForScenario)
+    ? cleanTimingText(scenarioTemplate.replace('{theme}', themeForScenario))
     : '';
 
   // exactSummary already begins with "Peaks:" / "Pass 1" labels — strip a
@@ -1239,15 +1239,15 @@ const buildNatalDescription = (
   // Compose exactly as the shared timing rule requires: sentence 1 names the
   // specific natal point; sentence 2 gives one concrete lived scenario.
   if (theme && scenario) {
-    return endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`));
   }
   if (theme) {
-    return endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`));
   }
   if (scenario) {
-    return endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`));
   }
-  return endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`);
+  return cleanTimingText(endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`));
 };
 
 // Within-description sentence dedupe. Splits on sentence boundaries and removes
