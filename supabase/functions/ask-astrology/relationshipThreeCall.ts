@@ -219,7 +219,10 @@ The body of the "How This Person Loves" narrative_section MUST NOT exceed 2,000 
   - Lead with the 2-3 most defining placements (typically Venus, Mars, Moon, 7th-house ruler, or whichever bodies are most aspected/dignified).
   - Cut secondary placements rather than shorten every paragraph into fragments.
   - Do not list every relevant placement — choose the ones that drive behavior.
-Treat 1,500 characters as the soft target and 2,000 as the absolute ceiling. Other narrative_section bodies in this call follow their normal length guidance and are not affected by this rule.`,
+Treat 1,500 characters as the soft target and 2,000 as the absolute ceiling. Other narrative_section bodies in this call follow their normal length guidance and are not affected by this rule.
+
+BULLET INTERPRETATION RULE — "How This Person Loves" (HARD FAIL if violated):
+Every bullet/transition in this section ("What you're attracted to vs. what you actually need:", "Early vs. committed:", "Shadow pattern:", etc.) MUST contain at least one full interpretation sentence in plain behavioral language AFTER the label. A bare placement reference such as "(Venus in Sagittarius, House 2)" is NOT an acceptable bullet — that is metadata, not interpretation. The placement reference may appear in parentheses at the end as a citation, but the bullet's substantive content must be a sentence the reader can recognize from their own life. Correct shape: "What you're attracted to vs. what you actually need: you keep falling for the people who feel like a road trip — open, restless, can't be pinned down — but the relationships that actually hold you together are the ones with someone who shows up at the same time every week (Venus in Sagittarius, House 2)." Empty or placement-only bullets are a HARD FAIL — write the interpretation or remove the bullet entirely.`,
 );
 
 const DIRECTIVE_B = buildDirective(

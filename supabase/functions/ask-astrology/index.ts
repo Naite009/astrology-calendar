@@ -11427,7 +11427,7 @@ SR LOVE ACTIVATION STYLE:
   7. narrative_section — "Energy, Drive, and Conflict This Year" (SR Mars sign+house, where friction is likely)
   8. narrative_section — "The SR House Emphasis" (MANDATORY — DO NOT SKIP — HARD FAIL IF MISSING). Identify every SR house that contains 2 or more SR planets (a stellium or near-stellium). For each such house: (a) name the house number AND its life-area ("4th house — home, family, emotional roots"), (b) list the SR planets sitting in that house with their signs, (c) state which planets natally already live in that same house (or note "natally empty" if none), (d) bridge the two — what is the year doing to that life area compared to its baseline? (e) give ONE concrete real-life example of how the most loaded SR house will show up — a scene that could happen in a week or a month. If NO SR house contains 2+ planets, write that explicitly in one sentence and instead name the single house with the strongest SR planet (Sun, Moon, or chart ruler) and treat that as the year's emphasis. Then close the section with a one-sentence comparison of overall SR house loading vs natal house loading (e.g., "Your natal chart concentrates in the 10th and 11th — career and community — but this SR year shifts weight into the 4th and 5th — home and creative expression"). This section MUST appear in every solar_return reading. Skipping it is a hard fail.
   9. narrative_section — "Where Growth and Luck Live This Year" (SR Jupiter sign+house, the year's biggest opportunity)
-  10. narrative_section — "Where Pressure and Discipline Come In" (SR Saturn sign+house, what to take seriously)
+  10. narrative_section — "Where Pressure and Discipline Come In" (SR Saturn sign+house, what to take seriously). SR-CHART CONTEXT LOCK (HARD FAIL): This section interprets SR Saturn — read SR Saturn's sign, degree, and house ONLY from the "Solar Return Key Placements" / "SR Planetary Positions" block. Do NOT reference natal Saturn's sign or house in this section's interpretive prose. The natal Saturn sign is almost always different from the SR Saturn sign (e.g., natal Saturn in Leo, SR Saturn in Pisces) and writing "Saturn in <natal sign>" inside this SR-focused section is a HARD FAIL even when the named sign is technically valid for the natal chart. Bridge to the natal baseline only if you explicitly qualify the chart ("SR Saturn in Pisces lands on a person whose natal Saturn is in Leo"). The same rule applies to every other SR-focused section (5/6/7/9): SR planet → SR sign and SR house, no exceptions.
   11. narrative_section — "Key SR-to-Natal Activations" (3–5 most significant SR-to-natal aspects with degrees and one concrete real-life situation each)
   12. timing_section — "Solar Return Timing Windows" (3–5 most significant transit windows in next 12–18 months — use ONLY pre-computed transit data; each entry needs planet, natal point, date range, peak date, concrete scenario)
   13. narrative_section — "What Is Being Left Behind" (what is ending/releasing/completing this year — frame as necessary and clarifying, not as loss)
@@ -14769,19 +14769,54 @@ ${natalGroundTruthLines}`
             if (ctxName) personName = ctxName[1];
           }
 
-          // Most-specific intent wins. "Solar Return" must lose to
-          // "Relationship" because relationship prompts often reference
-          // "...current solar return chart..." as context.
-          const q = lastUserText.toLowerCase();
+          // Reading-type resolution priority (fixes the "Nicki Career stamped
+          // as Relationship" bug — keyword match on the user's free-text
+          // question misfires when a career prompt mentions "partner" or
+          // "relationship" in passing):
+          //   1. parsedContent.question_type — set deterministically by the
+          //      single-call / 3-call orchestrator from the caller's actual
+          //      question_type field. This is the authoritative signal and
+          //      every reading already carries it before the final gate.
+          //   2. Fallback: scored keyword counts (same routine the question
+          //      router uses upstream) — picks the dominant intent rather
+          //      than the first regex hit.
+          //   3. Default: "Reading".
+          const QT_TO_LABEL: Record<string, string> = {
+            relationship: "Relationship",
+            career: "Career",
+            money: "Money",
+            health: "Health",
+            timing: "Timing",
+            relocation: "Where to Live",
+            astrocartography: "Astrocartography",
+            solar_return: "Solar Return",
+            natal: "Natal",
+            spiritual: "Spiritual",
+            general: "Reading",
+          };
           let readingType = "Reading";
-          if (/synastry|relationship|compatibility|partner|love analysis/.test(q)) readingType = "Relationship";
-          else if (/astrocartograph/.test(q)) readingType = "Astrocartography";
-          else if (/where/.test(q) && /(live|move|relocat)/.test(q)) readingType = "Where to Live";
-          else if (/career|work|job/.test(q)) readingType = "Career";
-          else if (/health|symptom|body/.test(q)) readingType = "Health";
-          else if (/transit|timing|when/.test(q)) readingType = "Timing";
-          else if (/complete professional solar return|solar return reading|solar return analysis/.test(q)) readingType = "Solar Return";
-          else if (/natal/.test(q)) readingType = "Natal";
+          const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
+          if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
+            readingType = QT_TO_LABEL[canonicalQt];
+          } else {
+            const q = lastUserText.toLowerCase();
+            const cnt = (rx: RegExp): number => {
+              const m = q.match(rx); return m ? new Set(m).size : 0;
+            };
+            const scores: Array<[number, string]> = [
+              [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
+              [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
+              [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
+              [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
+              [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
+              [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
+              [cnt(/\b(transit|timing|when)\b/g), "Timing"],
+              [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
+              [cnt(/\bnatal\b/g), "Natal"],
+            ];
+            scores.sort((a, b) => b[0] - a[0]);
+            if (scores[0][0] > 0) readingType = scores[0][1];
+          }
 
           const localDate = new Intl.DateTimeFormat("en-CA", {
             timeZone: "America/New_York",
