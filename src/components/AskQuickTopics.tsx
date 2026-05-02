@@ -4,11 +4,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CityInput } from "@/components/CityInput";
 import { resolveCity } from "@/lib/cityResolver";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface UserLocationsInput {
   current?: string;
   considering1?: string;
   considering2?: string;
+}
+
+export interface ChildChartOption {
+  id: string;
+  name: string;
 }
 
 const sanitizeCityField = (raw: string): string =>
