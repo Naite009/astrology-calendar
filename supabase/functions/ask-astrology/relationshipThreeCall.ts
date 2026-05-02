@@ -960,9 +960,11 @@ export const extractPositionsBlock = (
   if (!headerMatch) return "";
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  // Stop at the next blank line or another all-caps section header.
+  // Stop only at an explicit next section header. Chart context can contain
+  // stray blank lines between planet bullets; treating blank lines as a block
+  // terminator starves downstream Call A/tally logic down to Sun-only data.
   const endMatch = tail.match(
-    /\n\s*\n|\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL Planetary Positions|\nSR Planetary Positions/,
+    /\n[A-Z][A-Z ]{6,}:|\nHouse Cusps|\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL PLANET HOUSE PLACEMENTS|\nNATAL Planetary Positions|\nSR Planetary Positions|\n--- /,
   );
   return endMatch ? tail.slice(0, endMatch.index!) : tail;
 };
