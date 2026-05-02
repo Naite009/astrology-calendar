@@ -47,6 +47,26 @@ const humanizeDateRange = (value: string): string => {
   return value.replace(/\s*[–—]\s*/g, ' to ');
 };
 
+const cleanTimingText = (value: string): string => {
+  if (!value) return value;
+  let out = value.replace(/(\b[A-Z][a-z]{2,8}\.?\s+\d{1,2})\s*–\s*(\d{1,2}(?:,\s*\d{4})?)/g, '$1 to $2');
+  const runOnStarter = /^(?:You|Your|This|That|These|Those|It|There|Here|When|While|If|Because|So|And|But|Or)\b/;
+  out = out.replace(/\s*[—–]\s*/g, (dash, offset, full) => {
+    const before = full.slice(Math.max(0, offset - 1), offset);
+    const afterText = full.slice(offset + dash.length).trimStart();
+    if (/[([{]/.test(before) || /^[)\]}]/.test(afterText)) return '';
+    return runOnStarter.test(afterText) ? '. ' : ', ';
+  });
+  return out
+    .replace(/\(\s*,\s*/g, '(')
+    .replace(/\s*,\s*\)/g, ')')
+    .replace(/,\s*,+/g, ',')
+    .replace(/,\s*\./g, '.')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Natal theme maps (per reading type)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1185,7 +1205,7 @@ const buildNatalDescription = (
 ): string => {
   const verb = NATAL_ASPECT_VERB[aspect] ?? aspect;
   const themeMap = getNatalThemeMap(readingType);
-  const theme = (themeMap[natalPlanet] ?? '').trim();
+  const theme = cleanTimingText((themeMap[natalPlanet] ?? '').trim());
   const scenarioTemplate =
     NATAL_SCENARIO_BY_TRANSIT_ASPECT[transitPlanet]?.[aspect] ?? '';
 
@@ -1200,7 +1220,7 @@ const buildNatalDescription = (
   // legacy template that retains the token, falling back to a neutral anchor.
   const themeForScenario = theme || `your ${natalPlanet}`;
   const scenario = scenarioTemplate
-    ? scenarioTemplate.replace('{theme}', themeForScenario)
+    ? cleanTimingText(scenarioTemplate.replace('{theme}', themeForScenario))
     : '';
 
   // exactSummary already begins with "Peaks:" / "Pass 1" labels — strip a
@@ -1219,15 +1239,15 @@ const buildNatalDescription = (
   // Compose exactly as the shared timing rule requires: sentence 1 names the
   // specific natal point; sentence 2 gives one concrete lived scenario.
   if (theme && scenario) {
-    return endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming} touches ${theme}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`));
   }
   if (theme) {
-    return endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming} touches ${theme}. Watch that exact area of life for a concrete decision, conversation, or pressure point${peaks}`));
   }
   if (scenario) {
-    return endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`);
+    return cleanTimingText(endWithPeriod(`${naming}. ${scenario.replace(/[.!?]\s*$/, '')}${peaks}`));
   }
-  return endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`);
+  return cleanTimingText(endWithPeriod(`${naming}. Watch that exact natal point for a concrete decision, conversation, or pressure point${peaks}`));
 };
 
 // Within-description sentence dedupe. Splits on sentence boundaries and removes
@@ -1280,14 +1300,14 @@ const buildTransitInterpretation = (params: {
     passSummary,
     isRetrograde,
   );
-  if (developmentalOverride) return developmentalOverride;
+  if (developmentalOverride) return cleanTimingText(developmentalOverride);
 
   const retrogradeSentence = isRetrograde
     ? `Because ${transitPlanet} is retrograde on at least one pass, the situation tends to revisit, get reconsidered, or pull you back in instead of moving in one clean direction.`
     : '';
   const base = buildNatalDescription(transitPlanet, aspect, natalPlanet, natalDegree, '', readingType);
   const composed = `${base} ${passSummary}${retrogradeSentence ? ` ${retrogradeSentence}` : ''}`;
-  return dedupeSentences(composed);
+  return cleanTimingText(dedupeSentences(composed));
 };
 
 const buildTimingWindowDescription = (
@@ -1329,7 +1349,7 @@ const buildTimingWindowDescription = (
   const devOverride = getDevelopmentalMilestoneInterpretation(
     tp, asp, np, readingType, `Peaks: ${exactSummary}.`, false,
   );
-  if (devOverride && devOverride.trim().length > 0) return devOverride;
+  if (devOverride && devOverride.trim().length > 0) return cleanTimingText(devOverride);
 
   // Fix 1 — ALL reading types now use the personalized natal-point description
   // (one sentence naming the specific natal point, one concrete scenario).
@@ -1337,7 +1357,7 @@ const buildTimingWindowDescription = (
   // fell back to the generic template. Unified path eliminates the gap.
   const natalDegree = (window.natalDegree ?? '').trim();
   const composed = buildNatalDescription(tp, asp, np, natalDegree, `Peaks: ${exactSummary}.`, readingType);
-  return dedupeSentences(composed);
+  return cleanTimingText(dedupeSentences(composed));
 };
 
 export const getTimingTagDetails = (tag: string) => {
@@ -1465,12 +1485,12 @@ export function buildDeterministicTimingData(
       })
       .join(', ');
 
-    const position = `${window.transitPlanet} ${window.aspect} natal ${natalPoint} — exact ${passesPositionSummary}`;
+    const position = `${window.transitPlanet} ${window.aspect} natal ${natalPoint}, exact ${passesPositionSummary}`;
 
     // Pass summary sentence used by the interpretation builder
     const passSummary = isMultiPass
       ? `This is a multi-pass cycle covering ${passDetails.length} exact hits (${passesPositionSummary}); the full felt-sense window runs ${humanizedRange}.`
-      : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange} — meaning the theme builds, peaks, then settles inside that range.`;
+      : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange}. The theme builds, peaks, then settles inside that range.`;
 
     const interpretationText = buildTransitInterpretation({
       transitPlanet: window.transitPlanet,
@@ -1512,7 +1532,7 @@ export function buildDeterministicTimingData(
       pass_label: passLabel,
       date_range: humanizedRange,
       tag: classifyTimingTag(window.transitPlanet, window.aspect, window.natalPlanet, readingType),
-      interpretation: interpretationText,
+      interpretation: cleanTimingText(interpretationText),
     };
 
     includedWindows.push(window);

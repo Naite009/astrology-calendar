@@ -9148,6 +9148,11 @@ const META_SENTENCE_PATTERNS: RegExp[] = [
   /\b(?:without|absent|lacking)\s+(?:those|these|the|that|this)\s+(?:position|placement|data|datum|chart|info)/i,
   /\b(?:any|an)\s+interpretation\s+of\b.*\b(?:would\s+be\s+)?(?:fabricat\w+|invent\w+|inaccurate|guesswork)\b/i,
   /\bthe\s+chart\s+data\s+provided\s+for\s+this\s+(?:reading|call|section)\b/i,
+  /\b(?:the\s+)?(?:data|chart\s+data|placements?|information|inputs?)\s+(?:provided|supplied|shared|available|given)\b/i,
+  /\b(?:for|in)\s+this\s+(?:call|section|reading|request|dataset)\b/i,
+  /\b(?:missing|incomplete|unavailable|limited)\s+(?:data|placements?|houses?|planets?|aspects?)\b/i,
+  /\b(?:i\s+(?:do\s+not|don'?t)\s+have|i\s+can(?:not|'?t)|i\s+am\s+unable|i'?m\s+unable|sorry|apologies|unfortunately)\b/i,
+  /\b(?:without|with)\s+(?:more|additional|the\s+available|the\s+supplied|the\s+provided)\s+(?:information|data|placements?)\b/i,
 ];
 
 const splitSentencesForMeta = (text: string): string[] => {
@@ -9238,13 +9243,10 @@ const stripMetaSentences = (parsedContent: any, log: HygieneLog) => {
 //
 // Strategy: group windows by normalized description text. For groups
 // of 2+ sharing the same description:
-//   - Keep the first window unchanged.
-//   - For subsequent windows, replace the description with a short
-//     pointer line ("Same transit pattern as the [original-label]
-//     window — see that entry for the interpretation.") and tag the
-//     window with `_duplicate_of` for downstream consumers.
-// This avoids visible copy-paste while preserving the distinct date
-// range so the timeline view still shows every pass.
+  //   - Keep the first window unchanged.
+  //   - Merge later duplicate labels into the first label and remove the
+  //     duplicate rows entirely. This prevents 0/1/2 or 7/8 from rendering
+  //     as separate cards with the same description.
 const normalizeForDescDedupe = (s: string): string =>
   s.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -9267,22 +9269,26 @@ const dedupeWindowDescriptions = (parsedContent: any, log: HygieneLog) => {
       groups.get(key)!.push({ idx, window: w });
     });
 
+    const duplicateIndexes = new Set<number>();
     for (const [, members] of groups) {
       if (members.length < 2) continue;
-      // Members[0] keeps its full description. The rest get rewritten.
       const original = members[0].window;
-      const originalLabel = String(original?.label || "").trim() || "earlier window";
-      const pointer = `Same transit pattern as the "${originalLabel}" window — see that entry for the interpretation. This is an additional pass of the same transit, with peak dates in the range above.`;
+      const labels = [String(original?.label || "").trim()].filter(Boolean);
       for (let i = 1; i < members.length; i++) {
         const dup = members[i].window;
-        dup._duplicate_of = originalLabel;
-        dup.description = pointer;
+        const label = String(dup?.label || "").trim();
+        if (label && !labels.includes(label)) labels.push(label);
+        duplicateIndexes.add(members[i].idx);
         dedupedCount++;
       }
+      if (labels.length > 1) original.label = labels.join(" · ");
       if (groupExamples.length < 3) {
         const preview = String(original?.description || "").slice(0, 80);
         groupExamples.push({ description_preview: preview, window_count: members.length });
       }
+    }
+    if (duplicateIndexes.size > 0) {
+      section.windows = section.windows.filter((_w: any, idx: number) => !duplicateIndexes.has(idx));
     }
   }
 
@@ -10366,7 +10372,7 @@ COMPRESSION MANDATE: If you have already explained an idea in a previous section
 
 WITHIN-SECTION REPETITION BAN — ZERO TOLERANCE: Inside a single narrative_section.body, NEVER write the same paragraph (or a near-paraphrase) more than once. Specifically: the same aspect interpretation (e.g. "your Saturn sextile your Sun means…") must appear AT MOST ONCE in any given body. The same lived-behavior claim (e.g. "you can outlast forces that break other people") must appear AT MOST ONCE. Before you finalize a body, scan it: if two paragraphs make the same point with different words, DELETE one. If two sentences in the same paragraph restate each other, KEEP the stronger one and DELETE the other. The hygiene gate runs a deterministic dedup pass and will collapse exact repeats — but if you ship a body padded with paraphrased repeats, the gate logs it as a generation defect and triggers a regeneration. Length without distinct claims is not depth, it is failure.
 
-NO EMPTY BULLETS — HARD RULE (applies to EVERY bulleted list, EVERY summary_box item, EVERY pattern/contradiction list across all reading types): Every bullet MUST contain a complete sentence of substantive prose. NEVER generate a bullet label, heading, or list marker without a corresponding body of real content underneath it. If you cannot complete a bullet with a real, specific claim about THIS person from the chart data provided, OMIT the entire bullet rather than leaving it empty, leaving a placeholder, or padding with filler like "TBD", "more on this below", "see above", or a single fragment. A list of 3 substantive bullets is always better than a list of 5 where 2 are empty or near-empty. The hygiene gate deletes empty bullets and logs them as a generation defect.
+NO EMPTY BULLETS — HARD RULE (applies to EVERY bulleted list, EVERY summary_box item, EVERY pattern/contradiction list across all reading types): Every bullet MUST contain a complete sentence of substantive prose. NEVER generate a bullet label, heading, or list marker without a corresponding body of real content underneath it. If you cannot complete a bullet with a real, specific claim about THIS person, OMIT the entire bullet rather than leaving it empty, leaving a placeholder, or padding with filler like "TBD", "more on this below", "see above", or a single fragment. A list of 3 substantive bullets is always better than a list of 5 where 2 are empty or near-empty. The hygiene gate deletes empty bullets and logs them as a generation defect.
 
 
 NO META SENTENCES — HARD RULE: Every sentence must make a claim about the chart, the person, or a concrete recommendation. Do NOT write introductory, transitional, or self-referential sentences about the document itself. FORBIDDEN sentence patterns include (non-exhaustive): "This reading will explore...", "In this section we'll look at...", "Below, we break down...", "Let's dive into...", "First, let's consider...", "To summarize the above...", "As we'll see in the next section...", "This analysis covers...", "The following addresses...", "Now turning to...", "Before we continue...", "In conclusion,...", "To wrap up,...", "Here's what your chart says about...". If a sentence is only scaffolding and would still be true if you swapped this person's chart for someone else's, DELETE IT. Open every section directly with substance — lived behavior in sentence 1, placement in sentence 2 (per the behavior-first rule). Close every section on the last real claim, not on a meta summary.
@@ -10375,7 +10381,7 @@ NO REFUSAL, NO INPUT META-REFERENCES — ABSOLUTE HARD RULE (overrides all other
 You are FORBIDDEN from referring to your own inputs, your own limitations, or what you were given. The reader must never see the seams of how this reading was built.
 SPECIFICALLY FORBIDDEN PHRASES AND ANY PARAPHRASE OF THEM (non-exhaustive): "the data", "the chart data", "the data provided", "the data supplied", "the placements provided", "the placements supplied", "the information provided", "the input", "the inputs", "for this call", "for this section", "for this reading", "for this request", "in this dataset", "based on the data shared", "from what was given", "with the data available", "given the limited data", "available data", "missing data", "incomplete data", "data is unavailable", "data was not provided", "no data was provided", "I do not have", "I don't have", "I cannot", "I can't", "I am unable", "I'm unable", "I am not able", "without more information", "additional information would be needed", "more information is required", "this section cannot be completed", "this section is unavailable", "I was not given", "I wasn't provided", "the chart context", "the system prompt", "the prompt", "as an AI", "as a language model", "I apologize", "Apologies", "Sorry", "Unfortunately".
 Do NOT list which planets, houses, asteroids, or aspects are missing. Do NOT explain what you would have written if more were available. Do NOT hedge with "if this placement is present...". Do NOT name the source of your information at all — the reader assumes everything you say comes from their chart; saying so is noise.
-GRACEFUL DEGRADATION PROTOCOL: If a section, bullet, or claim cannot be written from what is actually present in the chart context, you MUST silently OMIT it (return an empty string for that field, or omit the bullet/section entirely per the schema). Never apologize for the omission. Never announce the omission. Never write a placeholder explaining the omission. The hygiene gate will drop empty fields cleanly — your job is to leave the field empty, not to fill it with a refusal.
+GRACEFUL DEGRADATION PROTOCOL: If a section, bullet, or claim cannot be written accurately, you MUST silently OMIT it (return an empty string for that field, or omit the bullet/section entirely per the schema). Never apologize for the omission. Never announce the omission. Never write a placeholder explaining the omission. The hygiene gate will drop empty fields cleanly — your job is to leave the field empty, not to fill it with a refusal.
 Write every claim in a confident, direct voice ABOUT the person — never ABOUT your own process, inputs, or constraints. If you catch yourself starting a sentence with "Based on", "Given", "From", "With", "Without", or "The data", DELETE that sentence and rewrite it as a direct claim about the person's life.
 
 CRITICAL OUTPUT RULE — APPLIES TO EVERY RESPONSE, EVERY SECTION, EVERY SENTENCE:
@@ -14290,6 +14296,8 @@ ${natalGroundTruthLines}`
         // override has run, or push a non-blocking review note if unresolved.
         reconcileSRHouseCopyWarning(parsedContent, postGateLog);
         correctUnverifiedSrAngleClaims(parsedContent, sanitizedChartContext || "", postGateLog);
+        dedupeWindowDescriptions(parsedContent, postGateLog);
+        stripDashesEverywhere(parsedContent, postGateLog);
 
         // Always emit coverage so we can prove bullet/text fields were
         // inspected, even when there were no rewrites this run.
