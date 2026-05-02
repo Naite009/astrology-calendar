@@ -2001,7 +2001,20 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
       }
-      const apiMessages = requestEntries
+      if (childChartId) {
+        const childChart = savedCharts.find(c => c.id === childChartId);
+        if (childChart) {
+          const childBlock = buildChartContext(childChart, "", null);
+          chartContext +=
+            `\n\n=== CHILD CHART (FOR PARENTING READING) ===\n` +
+            `Child name: ${childChart.name}\n` +
+            `Use this chart as the SECOND chart for all PARENT → CHILD cross-aspects. ` +
+            `The parent chart above is the FROM chart; this child chart is the TO chart. ` +
+            `Direction must never be inverted.\n\n` +
+            childBlock +
+            `\n=== END CHILD CHART ===\n`;
+        }
+      }
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
