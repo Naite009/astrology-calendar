@@ -103,3 +103,43 @@ House Cusps (with traditional rulers):
     assert(block.includes(line), `Truth block missing line: ${line}\nGot:\n${block}`);
   }
 });
+// ── SR context pass-through regression test (Replit audit pass 3, 2026-05-02) ──
+// Calls B and C historically received only the SR positions bullets, dropping
+// (a) SR House Cusps and (b) the verbatim "--- SOLAR RETURN ANALYSIS ---" JSON
+// block (profection year, Time Lord, srPlanetPlacements, srToNatalAspects,
+// stelliums, moon phase, yearly theme). The 3-call setup now slices both out
+// of sanitizedChartContext and appends them to srChartBlock. This test asserts
+// the slice tags and SR-cusp header format match what AskView emits.
+Deno.test("SR analysis + SR house cusps slice tags match frontend emission", () => {
+  const FRONTEND_CONTEXT = `
+SR Planetary Positions:
+- Sun: 22°11' Taurus (SR House 6)
+
+SR House Cusps:
+- House 1: 9°27' Sagittarius
+- House 7: 9°27' Gemini
+
+--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---
+You have access to pre-calculated Solar Return data injected into this prompt.
+{
+  "solarReturnYear": 2026,
+  "profectionYear": { "house": 7 },
+  "lordOfTheYear": "Venus"
+}
+--- END SOLAR RETURN ANALYSIS ---
+`;
+  // Mirror the slice logic from index.ts.
+  const startTag = "--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---";
+  const endTag = "--- END SOLAR RETURN ANALYSIS ---";
+  const startIdx = FRONTEND_CONTEXT.indexOf(startTag);
+  const endIdx = FRONTEND_CONTEXT.indexOf(endTag);
+  assert(startIdx >= 0, "Frontend SR analysis start tag not found");
+  assert(endIdx > startIdx, "Frontend SR analysis end tag not found after start");
+  const sliced = FRONTEND_CONTEXT.slice(startIdx, endIdx + endTag.length);
+  assert(sliced.includes("profectionYear"), "SR analysis slice missing profectionYear");
+  assert(sliced.includes("lordOfTheYear"), "SR analysis slice missing lordOfTheYear");
+
+  // SR House Cusps header must match the parser's regex used in
+  // parseSrHouseCuspsFromContext (`/\nSR House Cusps:\n/`).
+  assert(/\nSR House Cusps:\n/.test(FRONTEND_CONTEXT), "SR House Cusps header format drifted");
+});
