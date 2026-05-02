@@ -28,7 +28,10 @@ import { AskReplayDialog } from "@/components/AskReplayDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
-import { correctSrPlanetsRetrograde } from "@/lib/srRetrogradeTruth";
+// REMOVED (Operating Rule 6 — No ephemeris override of verified chart data):
+// `correctSrPlanetsRetrograde` recomputed retrograde flags from astronomy-engine
+// and overwrote user-verified SR data. Verified chart data is canonical;
+// ephemeris recalculation may diagnose disagreement but never overwrite.
 import {
   Popover,
   PopoverContent,
