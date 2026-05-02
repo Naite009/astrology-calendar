@@ -14159,15 +14159,27 @@ ${natalGroundTruthLines}`
           }
         }
 
-        // 1) Section-level retry (re-authors missing OR empty sections)
+        // 1) Section-level retry (re-authors missing OR empty sections,
+        //    and re-authors sections flagged for retrograde drift)
+        const fallbackFixForCode = (code: string): string => {
+          switch (code) {
+            case "EMPTY_SECTION":
+              return "Re-author this section — its body and bullets came back empty.";
+            case "RETROGRADE_OMISSION":
+              return "Re-author this section. The placement table marks one or more planets retrograde; every prose mention of those planets in this section MUST include the retrograde marker (e.g. 'retrograde', '℞') within the same clause as the planet name. Use the placement table as the source of truth for which planets are retrograde.";
+            case "RETROGRADE_STATE_MISMATCH":
+              return "Re-author this section. A retrograde claim in the prose contradicts the placement table. Rewrite so every retrograde claim matches the placement table exactly — do not invent or omit retrograde state.";
+            case "MISSING_REQUIRED_SECTION":
+            default:
+              return "Add this required section.";
+          }
+        };
         const retryResult = sectionDefects.length > 0
           ? await requestMissingSections(
               parsedContent,
               sectionDefects.map((d: any) => ({
                 section: d.section,
-                fix: d.fix || (d.code === "EMPTY_SECTION"
-                  ? `Re-author this section — its body and bullets came back empty.`
-                  : "Add this required section."),
+                fix: d.fix || fallbackFixForCode(d.code),
               })),
               sanitizedChartContext || undefined,
               systemBlocks,
