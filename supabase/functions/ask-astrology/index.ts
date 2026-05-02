@@ -3963,9 +3963,12 @@ const fixNatalRetrogradeMentionsInProse = (
 ) => {
   if (!parsedContent || !chartContext) return;
   const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
   if (natalPos.length === 0) return;
   const natalRetro = new Map<string, boolean>();
+  const srRetro = new Map<string, boolean>();
   for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
 
   // Only attempt corrections for planets we have ground truth on.
   const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Juno","Ceres","Pallas","Vesta","Eris"];
@@ -3974,24 +3977,26 @@ const fixNatalRetrogradeMentionsInProse = (
   const PLANET_RE = `(?:${knownPlanets.join("|")})`;
 
   // "<Planet> direct" — only flip when context is clearly natal (not SR / not "SR <Planet>").
-  // We require that the word "SR" does NOT appear in the immediately
-  // preceding 10 chars. Lookbehind on Deno regex is supported.
   const directRe = new RegExp(`(?<!\\bSR\\s)\\b(${PLANET_RE})\\s+direct\\b`, "gi");
 
-  // PHANTOM RX STRIPPER — catch the inverse: "<Planet> Rx" / "<Planet> ℞" /
-  // "<Planet> retrograde" applied to a planet that is NOT retrograde in the
-  // natal table. This is the Paul-style overlay bug ("SR Venus conjunct
-  // natal Chiron Rx" when natal Chiron is direct). Same SR-context guard
-  // as above so SR retrograde mentions are untouched.
+  // PHANTOM RX STRIPPER — natal-qualified form.
   const phantomRxRe = new RegExp(
     `(?<!\\bSR\\s)\\bnatal\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
     "gi",
   );
-  // Also catch the no-"natal" form when the surrounding sentence already
-  // names the natal chart (e.g. inside an overlay bullet that begins with
-  // "SR Venus conjunct your Chiron ℞"). We look for "your <Planet> Rx".
+  // "your <Planet> Rx" form.
   const phantomYourRxRe = new RegExp(
     `(?<!\\bSR\\s)\\byour\\s+(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx|\\s+R\\b|\\s+retrograde)\\b`,
+    "gi",
+  );
+  // UNQUALIFIED PHANTOM RX — catches Lauren's natal-Pluto bug: AI writes
+  // "Pluto retrograde in the 8th" with no chart qualifier. Strict gate: we
+  // only strip when the planet is direct in BOTH natal AND SR. That way we
+  // never remove a legitimate SR retrograde mention even if it's missing
+  // its "SR" qualifier. Targets glyphs and the word "retrograde"; leaves
+  // bare "R" alone (too noisy — "R" appears in many non-retrograde tokens).
+  const unqualifiedPhantomRxRe = new RegExp(
+    `\\b(${PLANET_RE})(\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)\\b`,
     "gi",
   );
 
