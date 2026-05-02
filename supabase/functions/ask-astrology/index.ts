@@ -9668,28 +9668,52 @@ const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|rom
 const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
 
-  // 1. Collect retrograde planets from any placement_table.
-  const rxPlanets = new Set<string>();
+  // 1. Collect retrograde planets PER CHART (natal vs SR). The same planet
+  //    can be Rx in one chart and direct in the other (e.g. natal Jupiter R,
+  //    SR Jupiter direct), so we MUST track chart provenance to prevent the
+  //    "cross-chart retrograde bleed" defect (CROSS_CHART_RETRO_INJECTION):
+  //    we previously injected the natal Rx parenthetical onto SR Jupiter
+  //    prose because the planet name matched without checking which chart
+  //    the prose was discussing.
+  const rxByChart: { natal: Set<string>; sr: Set<string> } = {
+    natal: new Set(),
+    sr: new Set(),
+  };
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
+    const title = String(section.title || "").toLowerCase();
+    const isSR = /\bsolar\s*return\b|\bsr\b/.test(title) || /this\s+year/.test(title);
+    const bucket = isSR ? rxByChart.sr : rxByChart.natal;
     const rows = Array.isArray(section.rows) ? section.rows : [];
     for (const row of rows) {
       if (row?.retrograde !== true) continue;
-      const bare = String(row.planet || row.body || row.name || "")
+      // The row itself may carry a chart prefix (e.g. "SR Jupiter") that
+      // overrides the table-title heuristic.
+      const rawName = String(row.planet || row.body || row.name || "");
+      const rowIsSR = /\bSR\b|\bSolar\s+Return\b/i.test(rawName);
+      const bare = rawName
         .replace(/[℞\u211E]|Rx/gi, "")
         .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
         .trim();
-      if ((RX_RELATIONSHIP_PLANETS as readonly string[]).includes(bare)) rxPlanets.add(bare);
+      if (!(RX_RELATIONSHIP_PLANETS as readonly string[]).includes(bare)) continue;
+      const target = rowIsSR ? rxByChart.sr : (isSR ? rxByChart.sr : rxByChart.natal);
+      target.add(bare);
     }
   }
-  if (rxPlanets.size === 0) return;
+  if (rxByChart.natal.size === 0 && rxByChart.sr.size === 0) return;
 
-  // 2. For each Rx planet, find the first relationship section whose prose
-  //    actually names the planet without acknowledging retrograde, then
-  //    inject the qualifier on the first match. If no relationship section
-  //    interprets the planet at all, do nothing (per spec).
+  // 2. For each Rx planet, find a section whose prose names the planet
+  //    in the matching chart context (natal vs SR). We classify each
+  //    string-leaf mention by inspecting the immediate left-side prefix:
+  //    "SR <Planet>" / "Solar Return <Planet>" / "this year's <Planet>"
+  //    → SR mention; "natal <Planet>" / "your <Planet>" / unqualified →
+  //    natal mention. We only inject the parenthetical if the planet is
+  //    Rx in THAT chart.
   const acknowledgments: string[] = [];
-  for (const planet of rxPlanets) {
+  const skippedCrossChart: string[] = [];
+
+  const allPlanets = new Set<string>([...rxByChart.natal, ...rxByChart.sr]);
+  for (const planet of allPlanets) {
     const planetRe = new RegExp(`\\b${planet}\\b`);
     const ackRe = new RegExp(
       `\\b${planet}\\b[^.!?\\n]{0,80}?\\b(retrograde|Rx|R\\b|℞)\\b|\\b(retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,80}?\\b${planet}\\b`,
@@ -9701,8 +9725,6 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
       const t = typeof section?.title === "string" ? section.title : "";
       if (!RELATIONSHIP_SECTION_TITLE_RE_LOCAL.test(t)) continue;
 
-      // Walk the section, edit string leaves in place. Find first mention
-      // and tag it. If any leaf already acknowledges, mark injected=true.
       const visit = (node: any, parent: any, key: string | number): boolean => {
         if (Array.isArray(node)) {
           for (let i = 0; i < node.length; i++) {
@@ -9713,15 +9735,31 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
         if (typeof node === "string") {
           if (!planetRe.test(node)) return false;
           if (ackRe.test(node)) { injected = true; return true; }
-          // Inject after the first ` <Planet> ` mention.
           const nudge = RX_NUDGE_BY_PLANET[planet];
           if (!nudge) return false;
-          const re = new RegExp(`\\b(${planet})\\b(?!\\s*(?:retrograde|Rx|R\\b|℞|\\())`, "i");
-          const replaced = node.replace(re, `$1 ${nudge}`);
+          // Find the FIRST mention not already followed by a parenthetical
+          // or retrograde marker, then classify its chart context.
+          const re = new RegExp(`(\\b(?:SR|Solar\\s+Return|this\\s+year(?:'s)?|natal|your)?\\s*)\\b(${planet})\\b(?!\\s*(?:retrograde|Rx|R\\b|℞|\\())`, "i");
+          const m = re.exec(node);
+          if (!m) return false;
+          const prefix = (m[1] || "").trim().toLowerCase();
+          const isSRMention = /\bsr\b|solar\s+return|this\s+year/i.test(prefix);
+          const isRxInThatChart = isSRMention
+            ? rxByChart.sr.has(planet)
+            : rxByChart.natal.has(planet);
+          if (!isRxInThatChart) {
+            // Cross-chart leak prevented: planet IS retrograde in the
+            // OTHER chart but NOT in the chart this prose is discussing.
+            skippedCrossChart.push(`${isSRMention ? "SR" : "natal"} ${planet} → ${t}`);
+            return false;
+          }
+          const replaced = node.slice(0, m.index + m[0].length) +
+            ` ${nudge}` +
+            node.slice(m.index + m[0].length);
           if (replaced !== node) {
             (parent as any)[key] = replaced;
             injected = true;
-            acknowledgments.push(`${planet} → ${t}`);
+            acknowledgments.push(`${isSRMention ? "SR" : "natal"} ${planet} → ${t}`);
             return true;
           }
           return false;
@@ -9737,14 +9775,20 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
     }
   }
 
-  if (acknowledgments.length > 0) {
+  if (acknowledgments.length > 0 || skippedCrossChart.length > 0) {
     log.push({
       type: "relationship_retrograde_acknowledged",
-      detail: { count: acknowledgments.length, examples: acknowledgments.slice(0, 8) },
+      detail: {
+        count: acknowledgments.length,
+        examples: acknowledgments.slice(0, 8),
+        cross_chart_skipped: skippedCrossChart.slice(0, 8),
+        cross_chart_skipped_count: skippedCrossChart.length,
+      },
     });
     console.info("[ask-astrology] relationship retrograde acknowledged in prose", {
       count: acknowledgments.length,
       examples: acknowledgments.slice(0, 8),
+      cross_chart_skipped: skippedCrossChart.slice(0, 8),
     });
   }
 };
