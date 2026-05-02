@@ -14033,10 +14033,24 @@ ${natalGroundTruthLines}`
 
       const collectDefects = (verdict: any) => {
         const defects = Array.isArray(verdict?.defects) ? verdict.defects : [];
+        // Section-level healable codes:
+        // - MISSING_REQUIRED_SECTION / EMPTY_SECTION: structural, re-author the section.
+        // - RETROGRADE_OMISSION / RETROGRADE_STATE_MISMATCH: per Replit gate's
+        //   round-3 contract, retrograde drift in either direction is a regen
+        //   trigger (no silent patches). The defect carries `section`, so the
+        //   existing section-rewrite path re-authors that section with the
+        //   gate's defect message (chart/planet/section/path/snippet) injected
+        //   into the regen prompt. Treating these as unhealable would block the
+        //   reading instead of regenerating it — which is the actual bug.
+        const SECTION_HEALABLE_CODES = new Set([
+          "MISSING_REQUIRED_SECTION",
+          "EMPTY_SECTION",
+          "RETROGRADE_OMISSION",
+          "RETROGRADE_STATE_MISMATCH",
+        ]);
         const sectionDefects = defects.filter(
           (d: any) =>
-            (d?.code === "MISSING_REQUIRED_SECTION" || d?.code === "EMPTY_SECTION")
-            && typeof d?.section === "string",
+            d?.code && SECTION_HEALABLE_CODES.has(d.code) && typeof d?.section === "string",
         );
         const bulletDefects = defects.filter(
           (d: any) =>
@@ -14044,7 +14058,10 @@ ${natalGroundTruthLines}`
             && typeof d?.section === "string"
             && (typeof d?.bullet_label === "string" || typeof d?.label === "string"),
         );
-        const healableCodes = new Set(["MISSING_REQUIRED_SECTION", "EMPTY_SECTION", "EMPTY_BULLET_TEXT"]);
+        const healableCodes = new Set([
+          ...SECTION_HEALABLE_CODES,
+          "EMPTY_BULLET_TEXT",
+        ]);
         const unhealable = defects.filter((d: any) => d?.code && !healableCodes.has(d.code));
         return { sectionDefects, bulletDefects, unhealable };
       };
