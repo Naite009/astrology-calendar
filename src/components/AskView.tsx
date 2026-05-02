@@ -699,11 +699,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const source = override ?? data;
       if (source && typeof source === 'object' && 'sign' in source) {
         const pos = source as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+        if (!ZODIAC.includes(pos.sign)) return;
+        // HARD DATA GATE for Lilith: requires valid sign, valid degree, and a
+        // calculable house. If any of these are missing, omit Lilith silently
+        // (matches the project-wide Asteroid Data Gate memory). Without this
+        // gate the AI was inventing Lilith placements when imports lacked
+        // complete data. Juno gets the same treatment for consistency.
+        if (planet === 'Lilith' || planet === 'Juno') {
+          if (typeof pos.degree !== 'number' || pos.degree < 0 || pos.degree >= 30) return;
+        }
         const absDeg = ZODIAC.indexOf(pos.sign) * 30 + pos.degree + (pos.minutes || 0) / 60;
         // Angles live on their own house cusp by definition.
         const house = override
           ? (planet === 'Ascendant' ? 1 : planet === 'Descendant' ? 7 : planet === 'Midheaven' ? 10 : planet === 'IC' ? 4 : calcHouse(absDeg))
           : calcHouse(absDeg);
+        if ((planet === 'Lilith' || planet === 'Juno') && house == null) return;
         context += `- ${planet}: ${pos.degree}°${pos.minutes || 0}' ${pos.sign}`;
         if (house) context += ` (House ${house})`;
         if ((pos as any).isRetrograde) context += " (R)";
@@ -862,31 +872,14 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       context += `- 7th House Ruler: ${ruler7} (rules ${dscSign}) — see Ruler Chains above for where Saturn/this ruler actually sits and what it touches\n`;
     }
 
-    // --- JUNO & LILITH (if available in chart data) ---
-    try {
-      if (chart.planets?.Juno) {
-        const juno = chart.planets.Juno as { sign: string; degree: number; minutes?: number };
-        const junoAbsDeg = ZODIAC.indexOf(juno.sign) * 30 + juno.degree + (juno.minutes || 0) / 60;
-        const junoHouse = calcHouse(junoAbsDeg);
-        context += `- Juno: ${juno.degree}°${juno.minutes || 0}' ${juno.sign}`;
-        if (junoHouse) context += ` (House ${junoHouse})`;
-        context += "\n";
-      }
-      // Lilith: HARD DATA GATE — only include if sign, degree, AND house are ALL explicitly valid
-      if (chart.planets?.Lilith) {
-        const raw = chart.planets.Lilith as { sign: string; degree: number; minutes?: number };
-        if (ZODIAC.includes(raw.sign) && typeof raw.degree === 'number' && raw.degree >= 0 && raw.degree < 30) {
-          const lilithAbsDeg = ZODIAC.indexOf(raw.sign) * 30 + raw.degree + (raw.minutes || 0) / 60;
-          const lilithHouse = calcHouse(lilithAbsDeg);
-          // Only include Lilith if house can be calculated (all three fields present)
-          if (lilithHouse !== null) {
-            context += `- Lilith: ${raw.degree}°${raw.minutes || 0}' ${raw.sign} (House ${lilithHouse})\n`;
-          }
-        }
-      }
-      // If Lilith data is missing, malformed, or house cannot be calculated, it is silently omitted.
-      // No recalculation, no inference, no fallback.
-    } catch {}
+    // NOTE: Juno and Lilith are emitted INSIDE the `NATAL Planetary
+    // Positions` block above (with the same hard data gate), so all 20+
+    // downstream parsers — `parsePositionsFromContext`,
+    // `computeCrossChartActivations`, `buildNatalGroundTruthBlock`,
+    // `correctCrossChartBalanceClaims`, etc. — can see them. The previous
+    // duplicate emission here ran AFTER `Ruler Chains` / `Key Relationship
+    // Points`, putting Juno and Lilith outside the parsed positions block
+    // and silently dropping them from every downstream consumer.
 
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
     const PLANET_BODIES: Record<string, any> = {

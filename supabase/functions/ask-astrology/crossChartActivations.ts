@@ -64,6 +64,8 @@ const PLANET_TIERS: Record<string, Tier> = {
   southnode: "point",
   "south node": "point",
   chiron: "point",
+  lilith: "point",
+  juno: "point",
 };
 
 const TIER_RANK: Record<Tier, number> = {
