@@ -14197,24 +14197,32 @@ ${natalGroundTruthLines}`
           }
         }
 
-        // For EMPTY_SECTION defects from the ORIGINAL output, drop the
-        // empty shell so the new V2 version is the only copy.
+        // For EMPTY_SECTION / RETROGRADE_OMISSION / RETROGRADE_STATE_MISMATCH
+        // defects from the ORIGINAL output, drop the original (empty or
+        // drifted) version so the V2-authored replacement is the only copy.
+        // Without this we'd ship two copies of the same section title and
+        // the gate would re-flag the un-fixed original on the next pass.
+        const REPLACE_ORIGINAL_CODES = new Set([
+          "EMPTY_SECTION",
+          "RETROGRADE_OMISSION",
+          "RETROGRADE_STATE_MISMATCH",
+        ]);
         if (Array.isArray(parsedContent.sections) && retryResult.added > 0) {
-          const emptyTitles = new Set(
+          const replaceTitles = new Set(
             sectionDefects
-              .filter((d: any) => d.code === "EMPTY_SECTION")
+              .filter((d: any) => REPLACE_ORIGINAL_CODES.has(d.code))
               .map((d: any) => String(d.section).trim().toLowerCase()),
           );
-          if (emptyTitles.size > 0) {
+          if (replaceTitles.size > 0) {
             const before = parsedContent.sections.length;
             parsedContent.sections = parsedContent.sections.filter((s: any) => {
               if (s?._v2_gate_added) return true;
               const t = String(s?.title || "").trim().toLowerCase();
-              return !emptyTitles.has(t);
+              return !replaceTitles.has(t);
             });
             const removed = before - parsedContent.sections.length;
             if (removed > 0) {
-              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original empty shell section(s)`);
+              console.info(`[ask-astrology][gate] V2 attempt ${attemptIdx + 1}: removed ${removed} original section(s) being replaced by V2 rewrite`);
             }
           }
         }
