@@ -1,82 +1,81 @@
-## What I found in the PDF (full audit, not just the user's description)
+# Parent ↔ Child Tab (Deterministic) + Parenting Reading in Ask Tab
 
-I read every section of `reading_reading_report_37.pdf` against the natal & SR placement tables on page 1. Here is the actual error inventory:
+## Part 1 — Family Tab (Deterministic, no AI)
 
-### Confirmed natal-house bugs (the structural problem you flagged)
-1. **Page 8** — "Your natal Saturn is in Aries in the **8th house**." Truth: natal Saturn is in **House 6**. SR Saturn is in House 8 — the SR house bled onto the natal sentence.
-2. **Page 4** — "natal Lilith in Cancer in the **1st house**." Truth: natal Lilith is in **House 8**. (Page 9 gets it right in the same document.)
-3. **Page 9** — "natal Uranus retrograde at 0°30' Libra **in the 9th house**." Truth: natal Uranus is in **House 11**. (Position 0°30' Libra is now correct — that fix held. The house is what's wrong.)
+New **👪 Family** tab. For any two saved charts marked as a family pair, generates a directional synastry report from hand-authored interpretations.
 
-### Confirmed regression of last loop's fix
-4. **Page 3 elemental balance prose.** Header correctly reads "Dominant Element: Earth · Dominant Modality: Mutable." But the body is verbatim Fire/Cardinal language: *"You live forward, you think out loud, act on instinct… your pace starts things, you get bored maintaining what is already running… you assert, initiate, and often process by doing."* The Earth/Mutable corrector we shipped last loop did not fire on this reading. Either the mismatch detector's trigger phrases missed this exact wording, or the section body isn't being passed through the corrector at all.
+**UX**
+- My Family panel: add child / parent / grandparent / sibling, each linked to a saved chart.
+- Pair selector: FROM chart → TO chart, relationship dropdown, Swap button.
+- Report sections: The Essence · How They Experience You · How You Land in Their Nervous System · The Inherited Pattern · What Helps.
+- Each card: aspect glyph, orb, child-experience paragraph, parent-blind-spot paragraph, what-helps bullets. Behavior-first language.
 
-### What is actually working (do not touch)
-- BASE RULE 10 retrograde carry-through: every retrograde planet (Venus, Mars, Jupiter, Uranus, Neptune, Pluto) carries the word "retrograde" in flowing prose. ✅
-- Natal Uranus *position* (0°30' Libra) is correct everywhere. ✅
-- No stray digits on ordinals. ✅
-- Element parentheticals on page 3 (Fire = Venus/Mars/Saturn, all in fire signs). ✅
-- SR house claims — every SR-house statement I cross-checked matched the SR table. The SR placement block is doing its job. ✅
-- Timing windows table — positions match the natal table. ✅
+**Curated aspect rows (FROM → TO)**
+Sun→Moon, Moon→Sun, Asc→Sun, Mars→Moon, Mercury→Moon, Saturn→Sun, Moon→Venus, Jupiter→Sun, Venus→Moon, Pluto→Sun/Moon, Neptune→Sun/Moon, Chiron→Sun/Moon, North Node→Sun/Moon. Sibling pairs swap Saturn-authority for Mercury↔Mercury.
 
-So: the user is **exactly right** that the SR-house guardrail works and there is no natal equivalent. Three of the four real errors above are natal-house bleed; the fourth is a separate regression that needs its own fix.
+**Tech**
+1. Extend `src/lib/familyRelationshipTypes.ts` with roles + `FamilyPair` type.
+2. New table `family_relationships` (user_id NOT NULL, from_chart_id, to_chart_id, relationship, created_at) with owner-only RLS.
+3. New `src/lib/parentChildSynastry.ts` — computes curated cross-aspects using `aspectOrbs.ts`.
+4. New `src/data/parentChildInterpretations.ts` — ~65 hand-authored entries (13 framings × 5 aspect kinds), each with `childExperience`, `parentBlindSpot`, `whatHelps[]`. v1 ships with this set; expand later as gaps appear.
+5. New components under `src/components/family/`: `FamilyTab`, `FamilyRoster`, `FamilyPairSelector`, `FamilySynastryReport`, `FamilyAspectCard`.
+6. Register **👪 Family** in main tab navigation.
 
----
+## Part 2 — Parenting Reading in Ask Tab
 
-## The plan
+New `parenting` reading type using existing `ask-astrology` infrastructure.
 
-### File 1: `src/components/AskView.tsx` — add the natal truth block
+**UX**
+- Add **👪 Parenting** to Ask reading-type selector.
+- Pair selector appears (Parent + Child charts from saved charts).
+- Quick-Topic auto-submit buttons: "How does my child experience my anger?", "Why don't my words land?", "What does my child need from me right now?", "Where am I unintentionally repeating my own parents' patterns?", "What part of my child am I missing?", "How do my child and I clash, and why?"
+- Free-text input also available.
 
-Add a `NATAL PLANET HOUSE PLACEMENTS (USE THESE EXACTLY — DO NOT DERIVE):` block to `buildChartContext`, placed **immediately after** the existing `SR PLANET HOUSE PLACEMENTS` block. Format mirrors the SR block exactly.
+**System prompt (additive to existing rules)**
+```
+PARENTING READING SYSTEM PROMPT
 
-Bodies included (driven by the natal placement table, not derived):
-- Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
-- Chiron, North Node, South Node
-- **Lilith, Juno** (added to the user's original spec because error #2 above is on natal Lilith — Lilith is in the natal table, so it must be in the truth block)
-- Ascendant (sign only), Midheaven (sign + House 10)
+You are reading a directional dyad: PARENT chart → CHILD chart.
+The parent is asking. The child is the receiver. Direction matters absolutely.
 
-Each line is sourced directly from the same data structure that populates the page-1 natal table — never inferred from sign.
+Mandatory structure:
+1. The Essence of This Parent–Child Dynamic
+   2–4 sentences. Zero jargon. Synthesize parent's Sun/Moon/Mars/Mercury/Saturn
+   into how this specific child experiences them.
 
-### File 2: `supabase/functions/ask-astrology/index.ts` — `factsAwareHouseSweep`
+2. Direct Answer to the Question
+   Behavior-first. Sentence 2 names the cross-chart aspect causing it.
 
-New deterministic post-processor, wired into `safeRun` immediately after `factsAwareRetrogradeSweep`:
+3. How Your Child Experiences You (top 5 tightest cross-aspects, by orb)
+   For each: a) what the child feels in their body, b) the cross-aspect with sign+orb+applying/separating,
+   c) what the child has likely concluded about themselves, d) one concrete parenting move.
 
-1. Parse both truth blocks from the chart context: build `natalHouseByPlanet` and `srHouseByPlanet` maps.
-2. Scan prose for house claims using two pattern families:
-   - **Natal-qualified**: `(your )?natal <Planet>(?: retrograde)?(?: at [^.]*?)? in the (\d+)(st|nd|rd|th) house` — and also `<Planet>(?: retrograde)? at \d+°\d+' <Sign> in the (\d+)(st|nd|rd|th) house` when the surrounding sentence contains a natal qualifier (`natal`, `your natal`, `birth chart`, `at birth`).
-   - **SR-qualified**: same but with `SR ` prefix or "this year's" qualifier.
-3. For each match, compare the claimed house number to the truth map. If wrong, surgically rewrite to the correct ordinal (`6th`, `8th`, `11th`, etc.).
-4. Emit a `facts_aware_house_sweep` log entry per rewrite (planet, claimed house, correct house, chart layer, snippet) — capped at 10 examples per run for log volume.
-5. Do **not** rewrite when the planet is unqualified (e.g. "Mercury in the 7th" with no natal/SR context) — that ambiguity stays out of scope to avoid misfires on transit prose.
+4. The Inherited Pattern
+   Parent Saturn/Chiron/Pluto/Nodes to child's Sun/Moon/Asc.
+   Name the unconscious transmission and the chance to break it.
 
-### File 3: `supabase/functions/ask-astrology/index.ts` — Earth/Mutable corrector regression
+5. What This Child Needs From You That Other Children Wouldn't
+   Tied to child's Moon sign+house, Asc, Mercury. Not generic advice.
 
-The `correctModalityElementBodyClaims` function shipped last loop did not catch this generation's prose. Two narrow fixes:
+6. Where You Two Will Always Click
+   Tightest supportive cross-aspects (trine/sextile ≤3°). Frame as shared language.
 
-1. **Broaden the Fire/Cardinal trigger phrases**. Add: `act on instinct`, `pace starts things`, `new is being launched`, `assert, initiate`, `process by doing`, `live forward`, `think out loud`, `something new is being launched`. Anchor matching to the elemental-balance section specifically (detect by section header `Solar Return Elemental & Modal Balance` or the `Dominant Element:` / `Dominant Modality:` line in the same block) so the rewrite is scoped and won't accidentally rewrite prose elsewhere that legitimately uses these phrases.
-2. **Hard-replace** the body paragraph (not append) when both:
-   - The header line says `Dominant Element: Earth` AND `Dominant Modality: Mutable`, AND
-   - The body contains ANY trigger phrase from the Fire/Cardinal list, OR is missing both an Earth keyword (`ground`, `patient`, `build`, `steady`, `solid`) and a Mutable keyword (`adapt`, `respond`, `flexib`, `shift`).
-3. Add a `modality_element_body_rewrite` log entry that records: detected dominant element, detected dominant modality, the trigger that fired (which phrase / which missing-keyword), and the original sentence that was replaced — so future regressions are visible in the log without needing a fresh PDF.
+Hard rules:
+- Never use synastry-romance language for the child.
+- Never blame the child for parent's reactions or pathologize the child.
+- Always frame challenges as "the child's nervous system reads X as Y" — never "child is difficult."
+- Calibrate language by child's age: developmental <12, identity-formation 12–18, adult-child 18+.
+- Honor BEHAVIOR-FIRST and ESSENCE OPENING rules.
+- Inject EPHEMERIS FACT CHECK with both charts' verified placements.
+- Apply existing retrograde post-processors.
+```
 
-### File 4: `supabase/functions/ask-astrology/index.ts` — verification only, no edits
+**Tech**
+1. Add `parenting` to Ask reading-type union + selector in `AskView.tsx`.
+2. Add `secondChartId` (child) to Ask job payload; build child's chart context (ruler chains, planets-by-house) same as parent's.
+3. In `supabase/functions/ask-astrology/index.ts`: add `PARENTING_SYSTEM_PROMPT` block, wire when `readingType === 'parenting'`, pass both contexts labeled `PARENT CHART` and `CHILD CHART`. Reuse all existing post-processors.
+4. Add Quick-Topic buttons matching existing AI Chart Consultation auto-submit pattern.
+5. Add memory file `mem://features/ask-tab/parenting-reading-standards.md`.
 
-- Confirm BASE RULE 10 (1–10 inheritance lines) and the natal Uranus position canonical-fact wiring are intact. (Verified in the PDF: both held this run; no edit needed.)
-
-### Deployment
-
-Redeploy the `ask-astrology` edge function after edits to files 2 and 3. File 1 is a frontend change that ships on the next Vite reload.
-
----
-
-## Why this should hold
-
-- The natal truth block is built from the same chart data as the page-1 table, so it cannot drift from what the report itself prints.
-- `factsAwareHouseSweep` reads from the truth block, not from the AI's prose — same pattern as the working SR-house guardrail and `factsAwareRetrogradeSweep`. It can't be silently overwritten by an unrelated future fix because it lives in its own named function with its own log emissions.
-- The elemental balance fix scopes itself to the elemental-balance section and only fires on Earth+Mutable charts with mismatched body language, so it won't bleed into other readings.
-
-## What I am NOT doing
-
-- Not changing the SR house corrector — it works.
-- Not adding a per-user hardcoded constant for natal Uranus or any other planet — the truth block carries the data per-chart and is the right abstraction.
-- Not touching the timing pipeline, retrograde sweep, element parenthetical scrubber, stray-digit scrubber, or BASE RULE 10 — all verified working in this PDF.
-- Not rewriting unqualified house mentions (no natal/SR prefix) — out of scope to avoid false positives on transit prose.
+## Out of Scope
+Composite/Davison family charts, 3+ person group dynamics, shared rosters across accounts.
