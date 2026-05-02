@@ -2015,6 +2015,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             `\n=== END CHILD CHART ===\n`;
         }
       }
+
+      const apiMessages = requestEntries
         .filter(entry => entry.role === "user")
         .map(entry => ({ role: "user" as const, content: entry.content }));
 
