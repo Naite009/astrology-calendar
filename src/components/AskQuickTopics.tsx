@@ -4,11 +4,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CityInput } from "@/components/CityInput";
 import { resolveCity } from "@/lib/cityResolver";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface UserLocationsInput {
   current?: string;
   considering1?: string;
   considering2?: string;
+}
+
+export interface ChildChartOption {
+  id: string;
+  name: string;
 }
 
 const sanitizeCityField = (raw: string): string =>
@@ -271,36 +283,39 @@ Tone: Wise counsel, not a horoscope. Do not overpromise. Differentiate chemistry
     label: "👪 Parenting",
     icon: <Users className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
-      `Using the full natal chart for ${name}, born ${date} at ${time} in ${loc}, provide a deep parent-focused reading. Today's date is ${today()}. The person asking IS the parent — this reading is about how THEY parent, what their child(ren) experience of them, and how to grow as a parent. If a second chart for the child is provided in chart context, treat the relationship as directional: PARENT chart → CHILD chart. The parent's planets are the climate; the child's luminaries and angles are the weather sensor. Direction matters absolutely.
+      `Using the full natal chart for ${name}, born ${date} at ${time} in ${loc}, provide a deep parent-focused reading. Today's date is ${today()}. The person asking IS the parent — this reading is about how THEY parent, what their specific child experiences of them, and how to grow as a parent for THIS child. Treat the relationship as directional: PARENT chart → CHILD chart. The parent's planets are the climate; the child's luminaries (Sun, Moon) and angles (Ascendant, MC) are the weather sensor. Direction matters absolutely — "Parent Mars → Child Moon" is a different reading than the reverse, and you must never invert it. The child chart is provided in chart context under the explicit "CHILD CHART" block — use it as the second chart for every cross-aspect calculation in this reading.
 
 VOICE RULES (NON-NEGOTIABLE):
-- Speak directly to the parent ("you", "your child"). Never pathologize the child.
+- Speak directly to the parent ("you", "your child"). Use the child's first name (provided in the CHILD CHART block) at least once per section.
+- Never pathologize the child. Frame challenges as "your child's nervous system reads X as Y," never "your child is difficult/sensitive/dramatic."
 - Behavior-first: describe what the child feels in their body and what shows up in real moments — not abstract symbolism.
-- Frame challenges as "your child's nervous system reads X as Y," never "your child is difficult."
-- Calibrate by age when known: developmental <12, identity-formation 12–18, adult-child 18+.
-- FORBIDDEN: "wound", "metabolized", "archetypal", "portal", "activation" (use "this transit" or "this aspect"), "calling" as a noun.
+- Calibrate by the child's actual age (compute from the child's birth date in the CHILD CHART block vs today): under 6 = pre-verbal/sensory, 6–11 = developmental/identity-building, 12–17 = identity-formation/autonomy, 18+ = adult-child relational.
+- FORBIDDEN: "wound", "metabolized", "archetypal", "portal", "activation" (use "this transit" or "this aspect"), "calling" as a noun, "old soul", "sensitive child" as a label.
 - Each section: 200–400 words.
 - Apply the existing ENUMERATION-LIST retrograde rule: in any "{chart} {Planet} in {Sign}" list, include the inline " R" marker for retrograde planets.
+- Every cross-aspect MUST cite both signs/degrees AND the orb (e.g., "your Mars at 14° Aries square your child's Moon at 15° Capricorn, orb 1°02'"). No vague "your Mars hits their Moon."
 
 Use this EXACT section order:
 
-SECTION 1: THE ESSENCE OF YOU AS A PARENT — Open by naming the parent's Sun, Moon, Mars, Mercury, and Saturn (sign + house). Then synthesize in plain language what kind of climate this parent creates around a child. 2–4 sentences of essence, then expand. No jargon.
+SECTION 1: THE ESSENCE OF YOU AS A PARENT — Open by naming the parent's Sun, Moon, Mars, Mercury, and Saturn (sign + house). Then synthesize in plain language what kind of climate this parent creates around any child. 2–4 sentences of essence, then expand. No jargon.
 
-SECTION 2: HOW YOUR CHILD EXPERIENCES YOU (TOP 5) — If a child chart is provided, list the 5 tightest cross-aspects between PARENT planets and CHILD Sun/Moon/Ascendant by orb. For each: (a) what the child feels in their body, (b) the cross-aspect with both signs/degrees and orb, (c) what the child has likely concluded about themselves, (d) ONE concrete parenting move. If no child chart, derive from parent's Mars/Mercury/Saturn/Venus/Moon what any child of this parent will tend to feel.
+SECTION 2: WHO YOUR CHILD ACTUALLY IS — Open by naming the child's Sun, Moon, Ascendant, Mercury, and Mars (sign + house). Synthesize in plain language what kind of nervous system, attention style, and emotional rhythm this specific child has. Include the child's current age and developmental stage. This grounds every recommendation that follows in WHO this child is, not a generic child.
 
-SECTION 3: WHERE YOUR DRIVE LANDS HARDEST — Parent's Mars sign/house/aspects, in plain terms. What the child feels when you're frustrated even at something else. The repair move that resets the nervous system fastest.
+SECTION 3: HOW YOUR CHILD EXPERIENCES YOU (TOP 5) — List the 5 tightest cross-aspects between PARENT planets and CHILD Sun/Moon/Ascendant/Mercury/Mars by orb. For each: (a) what the child feels in their body in a real moment (homework, bedtime, transition, conflict, praise), (b) the cross-aspect with both signs/degrees and orb, (c) what the child has likely concluded about themselves from this pattern, (d) ONE concrete parenting move you can use this week.
 
-SECTION 4: HOW YOUR WORDS LAND — Parent's Mercury sign/house/aspects. The kind of sentence that calms versus the kind that rings for days. Practical phrasing examples.
+SECTION 4: WHERE YOUR DRIVE LANDS HARDEST ON THIS CHILD — Parent's Mars sign/house/aspects, AND the specific contact between parent's Mars and child's Moon/Ascendant/Mercury/Mars. What this specific child feels when you're frustrated even at something else. The repair move that resets THIS child's nervous system fastest, calibrated to their Moon sign and Ascendant.
 
-SECTION 5: THE INHERITED PATTERN — Parent's Saturn, Chiron, Pluto, and Nodes (sign/house). Name the unconscious transmission likely being passed down — what you absorbed from your own parents that lives in you, and the chance to break the chain. If a child chart is provided, name the Saturn/Chiron/Pluto/Node contacts to the child's Sun/Moon/Asc explicitly.
+SECTION 5: HOW YOUR WORDS LAND ON THIS CHILD — Parent's Mercury sign/house/aspects, AND the parent-Mercury → child-Mercury / child-Moon contact. The kind of sentence that calms THIS child versus the kind that rings for days. Two practical phrasing examples drawn from the child's Mercury sign.
 
-SECTION 6: WHAT YOUR CHILD NEEDS FROM YOU THAT OTHER CHILDREN WOULDN'T — If child chart provided, tied to that child's Moon sign+house, Ascendant, and Mercury. Otherwise, describe what kind of child this parent's chart is best equipped to raise versus where the parent will need to stretch.
+SECTION 6: THE INHERITED PATTERN — Parent's Saturn, Chiron, Pluto, and Nodes (sign/house). Name the unconscious transmission likely being passed down — what you absorbed from your own parents that lives in you. Then name explicitly any parent Saturn / Chiron / Pluto / Node contacts to the child's Sun/Moon/Ascendant — this is where the chain either continues or breaks. One concrete behavior to interrupt the pattern with this child.
 
-SECTION 7: WHERE YOU TWO CLICK (or the natural gifts you bring as a parent) — Tightest supportive cross-aspects (trine/sextile within 3°) between parent and child, framed as the shared language. If no child chart, name the parent's natural parenting gifts from chart strengths.
+SECTION 7: WHAT THIS CHILD NEEDS FROM YOU THAT ANOTHER CHILD WOULDN'T — Tied to the child's Moon sign+house (emotional fuel), Ascendant (how they need to be met at the door), Mercury (how they need to be talked to), and Mars (how they need to be allowed to push). Compare and contrast: "Most parenting advice would say X, but for THIS child you need Y."
 
-SECTION 8: THE ONE THING TO WORK ON THIS SEASON — Pick ONE concrete parenting practice the chart points to most clearly. Direct, plain, kind.
+SECTION 8: WHERE YOU TWO CLICK — Tightest supportive cross-aspects (trine/sextile within 3°) between parent and child, framed as the shared language and the moments where parenting feels easy and reciprocal. Name 2–3 concrete activities or rhythms that play to these strengths.
 
-STRUCTURAL OUTPUT: Begin with placement_table titled "Parent Key Placements" (and "Child Key Placements" if a child chart is provided). Then narrative_section per SECTION above. End with summary_box titled "Parenting Strategy" with items: "Your Climate", "What Your Child Feels Most", "The Pattern to Break", "This Season's Practice". The "question_type" in your JSON output MUST be exactly "parenting".`,
+SECTION 9: THE ONE THING TO WORK ON THIS SEASON — Pick ONE concrete parenting practice the chart points to most clearly given (a) the child's current age, (b) the tightest hard cross-aspect, and (c) the inherited pattern in section 6. Direct, plain, kind, doable this week.
+
+STRUCTURAL OUTPUT: Begin with placement_table titled "Parent Key Placements" then placement_table titled "Child Key Placements" (REQUIRED — pull from CHILD CHART block). Then narrative_section per SECTION above. End with summary_box titled "Parenting Strategy" with items: "Your Climate", "Who This Child Is", "What Your Child Feels Most", "The Pattern to Break", "This Season's Practice". The "question_type" in your JSON output MUST be exactly "parenting".`,
   },
 ];
 
@@ -338,7 +353,10 @@ function buildPromptWithContext(
 }
 
 interface AskQuickTopicsProps {
-  onSelect: (prompt: string, userLocations?: UserLocationsInput) => void;
+  onSelect: (
+    prompt: string,
+    extras?: { userLocations?: UserLocationsInput; childChartId?: string },
+  ) => void;
   chartName: string;
   birthDate: string;
   birthTime: string;
@@ -349,6 +367,12 @@ interface AskQuickTopicsProps {
    * don't have to retype where they live. They can still edit or clear it.
    */
   currentLocation?: string;
+  /**
+   * Other available charts in the user's library, used as the child picker
+   * for the Parenting topic. The active parent chart is excluded by AskView
+   * before passing it in.
+   */
+  childChartOptions?: ChildChartOption[];
   disabled?: boolean;
 }
 
@@ -359,10 +383,12 @@ export function AskQuickTopics({
   birthTime,
   birthLocation,
   currentLocation,
+  childChartOptions = [],
   disabled,
 }: AskQuickTopicsProps) {
   const [activeTopic, setActiveTopic] = useState<QuickTopic | null>(null);
   const [personalContext, setPersonalContext] = useState("");
+  const [childChartId, setChildChartId] = useState<string>("");
   // Career-only: hard-exclusion list. Persisted per-chart in localStorage so
   // the user doesn't have to retype "not finance, not business" every time.
   const excludedFieldsKey = `ask-excluded-career-fields:${chartName}`;
@@ -445,12 +471,17 @@ export function AskQuickTopics({
         userLocations = { current, considering1, considering2 };
       }
     }
+    const selectedChildId = activeTopic.id === "parenting" ? childChartId.trim() : "";
     setActiveTopic(null);
     setPersonalContext("");
     setRelocCurrent("");
     setRelocCity1("");
     setRelocCity2("");
-    onSelect(prompt, userLocations);
+    setChildChartId("");
+    onSelect(prompt, {
+      userLocations,
+      childChartId: selectedChildId || undefined,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -561,6 +592,40 @@ export function AskQuickTopics({
               </div>
             )}
 
+            {activeTopic.id === "parenting" && (
+              <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Choose your child
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    The reading is directional ({chartName} → child). Pick the
+                    child's chart so cross-aspects, age, and tailored advice
+                    are calculated against the right person.
+                  </p>
+                </div>
+                {childChartOptions.length === 0 ? (
+                  <p className="text-xs text-destructive">
+                    No other charts saved. Add your child's chart in the Charts
+                    tab first, then come back.
+                  </p>
+                ) : (
+                  <Select value={childChartId} onValueChange={setChildChartId} disabled={disabled}>
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Select a child's chart…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {childChartOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.id}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
                 Anything additional you'd like included in this reading?
@@ -596,6 +661,7 @@ export function AskQuickTopics({
               <Button
                 size="sm"
                 onClick={handleSubmit}
+                disabled={activeTopic.id === "parenting" && !childChartId}
                 className="text-xs"
               >
                 <Send className="h-3 w-3 mr-1" />
