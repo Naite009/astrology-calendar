@@ -14533,6 +14533,36 @@ ${natalGroundTruthLines}`
               Object.assign(parsedContent as any, body.data);
               dataApplied = true;
               console.info(`[ask-astrology][final-gate] applied corrected data payload from gate`);
+              // ── DEEP-SYNC WINDOWS (backlog fix, 2026-05-02) ──
+              // Replit's `body.data` returns gate-corrected section bodies but
+              // does NOT consistently re-emit `sections[*].windows[*].description`
+              // with the same fixes — Replit's PDF renderer re-runs the gate at
+              // render time and patches windows then. For any consumer that
+              // bypasses the PDF path (direct JSON preview, 3rd-party renderer,
+              // raw export shared with a client), un-patched window descriptions
+              // would leak through. Re-run our window-aware hygiene against the
+              // freshly-merged payload so the exported JSON matches what the
+              // PDF renderer would produce.
+              try {
+                const syncLog: HygieneLog = [];
+                stripMetaSentences(parsedContent, syncLog);
+                dedupeWindowDescriptions(parsedContent, syncLog);
+                stripDashesEverywhere(parsedContent, syncLog);
+                if (syncLog.length > 0) {
+                  (parsedContent as any)._validation_log = Array.isArray((parsedContent as any)._validation_log)
+                    ? (parsedContent as any)._validation_log
+                    : [];
+                  (parsedContent as any)._validation_log.push({
+                    type: "post_final_gate_window_sync",
+                    stage: "final",
+                    detail: { count: syncLog.length, fixes: syncLog },
+                    captured_at: new Date().toISOString(),
+                  });
+                  console.info(`[ask-astrology][final-gate] post-merge window sync applied ${syncLog.length} fix(es)`);
+                }
+              } catch (syncErr) {
+                console.warn("[ask-astrology][final-gate] post-merge window sync failed (non-fatal):", syncErr);
+              }
             } catch (applyErr) {
               console.warn(`[ask-astrology][final-gate] failed to apply data payload:`, applyErr);
             }
