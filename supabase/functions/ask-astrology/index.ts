@@ -4035,6 +4035,17 @@ const fixNatalRetrogradeMentionsInProse = (
         });
         next = next.replace(phantomRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
         next = next.replace(phantomYourRxRe, (full, planet, suffix) => stripPhantom(full, planet, suffix));
+        // Unqualified phantom-Rx: only strip when the planet is direct in
+        // BOTH natal AND SR — otherwise we risk demoting a legitimate SR
+        // retrograde mention that just lost its "SR" qualifier.
+        next = next.replace(unqualifiedPhantomRxRe, (full, planet, _suffix) => {
+          const key = String(planet).toLowerCase();
+          const isNatalRetro = natalRetro.get(key) === true;
+          const isSrRetro = srRetro.get(key) === true;
+          if (isNatalRetro || isSrRetro) return full;
+          invalidRetroStripped++;
+          return full.replace(new RegExp(`(${planet})(?:\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)`, "i"), `$1`);
+        });
         if (next !== val) {
           if (examples.length < 5) examples.push(val.slice(0, 160));
           (node as any)[key] = next;
