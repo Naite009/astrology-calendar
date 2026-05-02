@@ -234,9 +234,14 @@ export const computeCrossChartActivations = (args: ComputeArgs): VerifiedActivat
   for (const sr of srSources) {
     const srAbs = absDeg(sr.sign, sr.degree, sr.minutes);
     if (Number.isNaN(srAbs)) continue;
+    // Retrograde markers piped through to the rendered activation lines so
+    // Call C's per-aspect prose can never claim "direct" for a retrograde
+    // planet. Suffix " R" matches the project's enumeration stamper output.
+    const srRx = (sr as any).retrograde === true ? " R" : "";
     for (const nt of natalTargets) {
       const ntAbs = absDeg(nt.sign, nt.degree, nt.minutes);
       if (Number.isNaN(ntAbs)) continue;
+      const ntRx = (nt as any).retrograde === true ? " R" : "";
       const sep = angularSeparation(srAbs, ntAbs);
       let best: VerifiedActivation | null = null;
       for (const asp of ASPECTS) {
@@ -245,16 +250,14 @@ export const computeCrossChartActivations = (args: ComputeArgs): VerifiedActivat
         if (orb <= allowed) {
           if (!best || orb < best.orb) {
             best = {
-              srPoint: `SR ${sr.name}`,
-              natalPoint: `natal ${nt.name}`,
+              srPoint: `SR ${sr.name}${srRx}`,
+              natalPoint: `natal ${nt.name}${ntRx}`,
               aspect: asp.name,
               orb: Math.round(orb * 10) / 10,
               allowedOrb: allowed,
               applying: null,
-              srPosition: fmtDeg(sr.degree, sr.minutes) + " " + sr.sign,
-              natalPosition: nt.house != null
-                ? `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}`
-                : `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}`,
+              srPosition: `${fmtDeg(sr.degree, sr.minutes)} ${sr.sign}${srRx}`,
+              natalPosition: `${fmtDeg(nt.degree, nt.minutes)} ${nt.sign}${ntRx}`,
             };
           }
         }
