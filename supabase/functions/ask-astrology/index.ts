@@ -4340,6 +4340,104 @@ const fixSrRetrogradeMentionsInProse = (
 };
 
 // ─────────────────────────────────────────────────────────────────────────
+// ENUMERATION-LIST RETROGRADE STAMPER (a-side companion to BASE RULE 5)
+// ─────────────────────────────────────────────────────────────────────────
+// Walks every prose string and stamps a retrograde marker into any
+// enumeration of the form "{chart} {Planet} in {Sign}" /
+// "{chart} {Planet} in {Sign} (House N)" when the corresponding
+// placement-table truth says the planet is retrograde and the marker is
+// missing within an 18-char neighborhood of the planet name.
+//
+// This is the "(b) deterministic post-LLM corrector" half of the
+// gate-retrograde contract: it runs UPSTREAM of the gate (before the
+// payload is shipped to /generate-reading-pdf), in the prompt's own
+// post-processing pipeline. It is NOT a hidden downstream patch — its
+// only job is to enforce BASE RULE 5's enumeration sub-rule
+// deterministically so the model's "SR planets at a glance" lists carry
+// the same retrograde markers the placement table already declares.
+//
+// Scope:
+//   - Chart-scoped: SR enumerations are stamped from the SR truth map;
+//     natal enumerations from the natal truth map. A bare/unqualified
+//     "{Planet} in {Sign}" is treated as natal by default.
+//   - 18-char neighborhood (matches the Replit gate's RETROGRADE_OMISSION
+//     detector). If R / Rx / ℞ / retrograde already appears within 18
+//     chars of the planet name, this sweep leaves the mention alone.
+//   - Idempotent: stamped output ("Planet R in Sign") carries the marker
+//     in the gap so a re-run is a no-op.
+//
+// Never invents content. Never strips. Never touches direct planets.
+const stampRetrogradeInEnumerations = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const natalPos = parsePositionsFromContext(chartContext, /NATAL Planetary Positions[^:]*:\n/);
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  if (natalPos.length === 0 && srPos.length === 0) return;
+  const natalRetro = new Map<string, boolean>();
+  const srRetro = new Map<string, boolean>();
+  for (const p of natalPos) natalRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+
+  const PLANET_NAMES = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"];
+  const PLANET_RE = `(?:${PLANET_NAMES.join("|")})`;
+  const ZSIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"].join("|");
+  // Match: optional chart qualifier + Planet + 0-18 char gap + " in " + Sign.
+  const enumRe = new RegExp(
+    `\\b((?:SR|Solar\\s+Return|natal|your\\s+natal|your)\\s+)?(${PLANET_RE})(\\s[^\\n]{0,18}?)?(\\s+in\\s+(?:${ZSIGNS}))`,
+    "g",
+  );
+  const MARKER_RE = /(?:[\u211E℞]|\bRx\b|\bR\b|\bretrograde\b)/i;
+
+  const SKIP_KEYS = new Set([
+    "type","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
+  ]);
+
+  let stampedNatal = 0;
+  let stampedSr = 0;
+  const examples: string[] = [];
+
+  forEachProseField(parsedContent, SKIP_KEYS, ({ node, key, value, path }) => {
+    let next = value;
+    next = next.replace(enumRe, (full, qualifier, planet, gap, inSign) => {
+      const q = (qualifier || "").trim().toLowerCase();
+      const isSr = /^(?:sr|solar\s+return)$/.test(q);
+      const truth = isSr ? srRetro : natalRetro;
+      const isRetro = truth.get(String(planet).toLowerCase()) === true;
+      if (!isRetro) return full;
+      const gapStr = gap || "";
+      // 18-char neighborhood already carries a marker → leave alone.
+      if (MARKER_RE.test(gapStr)) return full;
+      if (isSr) stampedSr++; else stampedNatal++;
+      if (examples.length < 8) examples.push(`${path} → ${full.slice(0, 80)}`);
+      const cleanedGap = gapStr.replace(/\s+$/, "");
+      return `${qualifier || ""}${planet}${cleanedGap} R${inSign}`;
+    });
+    if (next !== value) (node as any)[key] = next;
+  });
+
+  if (stampedNatal > 0 || stampedSr > 0) {
+    log.push({
+      type: "enumeration_retrograde_marker_stamped",
+      detail: { stamped_natal: stampedNatal, stamped_sr: stampedSr, examples },
+    });
+    console.info("[ask-astrology] enumeration retrograde marker stamped", {
+      stamped_natal: stampedNatal,
+      stamped_sr: stampedSr,
+      examples,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
 // FACT-AWARE RETROGRADE CONSISTENCY SWEEP
 // ─────────────────────────────────────────────────────────────────────────
 // Single canonical pass that owns prose ↔ chart-fact retrograde agreement
@@ -7705,6 +7803,16 @@ const runPostProcessingPipeline = (
     factsAwareRetrogradeSweep(parsedContent, ctx, log),
   );
 
+  // 5c-bis. ENUMERATION-LIST RETROGRADE STAMPER — (b)-side companion to
+  // BASE RULE 5's enumeration sub-rule. Stamps " R" into
+  // "{chart} {Planet} in {Sign}" enumerations when the placement-table
+  // truth says retrograde and no marker is present in the 18-char
+  // neighborhood. Runs AFTER the strip/flip correctors so we never stamp
+  // onto a mention that was just rewritten. Idempotent.
+  safeRun("stampRetrogradeInEnumerations", () =>
+    stampRetrogradeInEnumerations(parsedContent, ctx, log),
+  );
+
   // 5d/5e. REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse`
   // and `factsAwareNatalHouseSweep` previously ran here and overwrote each
   // other on natal vs SR house claims. The post-render
@@ -10763,6 +10871,7 @@ BASE RULE 4 — GROUND TRUTH CONSTRAINTS (applies to every reading type that use
 
 BASE RULE 5 — RETROGRADE FLAG NORMALIZATION (applies to every reading type):
   Each planet's retrograde status is fixed by the placement table for the chart it belongs to. If a planet is marked retrograde in its table (with "R", "Rx", "℞", or "retrograde"), you MUST describe it as retrograde in every sentence that names it — never as direct, never with the retrograde marker dropped. Same rule in reverse: never invent a retrograde marker on a planet the table shows as direct. Natal retrograde status comes ONLY from the natal table. SR retrograde status comes ONLY from the SR table — they are independent.
+  ENUMERATION-LIST SUB-RULE (NON-NEGOTIABLE — applies whenever you write a summary/at-a-glance list of planet placements, e.g. "SR planets at a glance", "Natal at a glance", "Key SR placements", or any bullet/inline list that enumerates multiple planets in the form "{chart} {Planet} in {Sign}" or "{chart} {Planet} in {Sign} (House N)"): for EVERY retrograde planet in that list (per its chart's placement table), you MUST include an inline retrograde marker — the literal " R" token between the planet name and the sign — exactly like "SR Saturn R in Pisces (House 4)" or "natal Mercury R in Gemini". The marker is required even though the same planet's retrograde status is already shown in the placement table above. Dropping the marker in an enumeration list is the same hard fail as dropping it in narrative prose. The marker format is the single uppercase letter R as a separate token (preferred), or "Rx", or "℞" — never silent omission. Direct planets get NO marker. This sub-rule applies to natal and SR enumerations alike, in every reading type.
 
 BASE RULE 6 — VOICE RULES (applies to every reading type):
   - Speak directly to the person as if in a live reading, not writing an essay about them.
