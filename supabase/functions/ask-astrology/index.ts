@@ -12253,8 +12253,33 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
           : "";
         const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}${truthBlockSection}`;
 
+        // ── SR CONTEXT PASS-THROUGH (Replit audit pass 3, 2026-05-02) ──
+        // Calls B and C historically received only the SR positions bullets,
+        // dropping (a) the SR House Cusps block (no SR Asc/Desc/MC/IC, no
+        // 7th-house ruler context for the year), and (b) the verbatim
+        // "--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF
+        // TRUTH) ---" JSON block that the single-call path uses (profection
+        // year, Time Lord, srPlanetPlacements, srToNatalAspects, stelliums,
+        // moon phase, yearly theme). Without these, Calls B and C were
+        // re-deriving SR houses from signs and inventing time-lord / profection
+        // values — exactly what the deterministic engine exists to prevent.
+        // We slice both verbatim from sanitizedChartContext (the same source
+        // the single-call path forwards) and append them so the relationship
+        // path matches the single-call path's grounding.
+        const srCuspsForCall = parseSrHouseCuspsFromContext(sanitizedChartContext);
+        const srCuspBlock = srCuspsForCall.length > 0
+          ? `\n\nSR House Cusps:\n${srCuspsForCall.map(fmtCuspLine).join("\n")}`
+          : "";
+        const srAnalysisStartTag = "--- SOLAR RETURN ANALYSIS (PRE-CALCULATED — PRIMARY SOURCE OF TRUTH) ---";
+        const srAnalysisEndTag = "--- END SOLAR RETURN ANALYSIS ---";
+        const srAnalysisStartIdx = sanitizedChartContext.indexOf(srAnalysisStartTag);
+        const srAnalysisEndIdx = sanitizedChartContext.indexOf(srAnalysisEndTag);
+        const srAnalysisSection = (srAnalysisStartIdx >= 0 && srAnalysisEndIdx > srAnalysisStartIdx)
+          ? `\n\n${sanitizedChartContext.slice(srAnalysisStartIdx, srAnalysisEndIdx + srAnalysisEndTag.length)}`
+          : "";
+
         const srChartBlock = srPositionsForCall.length > 0
-          ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}`
+          ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}${srCuspBlock}${srAnalysisSection}`
           : "(no Solar Return chart provided for this reading)";
 
         console.info(
