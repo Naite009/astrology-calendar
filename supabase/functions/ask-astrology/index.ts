@@ -2632,7 +2632,7 @@ const parseHouseCuspsFromContext = (chartContext: string): Array<{ house: number
   if (!headerMatch) return [];
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  const endMatch = tail.match(/\n\s*\n|\nPlanets In Each|\nRuler Chains|\nVERIFIED/);
+  const endMatch = tail.match(/\nPlanets In Each|\nRuler Chains|\nVERIFIED|\nSR House Cusps|\nSR-TO-NATAL|\nNATAL PLANET HOUSE PLACEMENTS|\nSR Planetary Positions|\n--- /);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const re = new RegExp(`-\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
   const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
@@ -2651,7 +2651,7 @@ const parseSrHouseCuspsFromContext = (chartContext: string): Array<{ house: numb
   if (!headerMatch) return [];
   const startIdx = headerMatch.index! + headerMatch[0].length;
   const tail = chartContext.slice(startIdx);
-  const endMatch = tail.match(/\n\s*\n|\n[A-Z][A-Z ]{4,}:|\nACTIVE|\nVERIFIED|\nSR-TO-NATAL/);
+  const endMatch = tail.match(/\n[A-Z][A-Z ]{4,}:|\nACTIVE|\nVERIFIED|\nSR-TO-NATAL|\nNATAL Planetary Positions|\nSR Planetary Positions|\nNATAL PLANET HOUSE PLACEMENTS|\n--- /);
   const block = endMatch ? tail.slice(0, endMatch.index!) : tail;
   const re = new RegExp(`-\\s+SR\\s+House\\s+(\\d+):\\s+(\\d+)°(?:(\\d+)')?\\s+(${ZODIAC_SIGNS_FOR_PARSE.join("|")})`, "g");
   const out: Array<{ house: number; sign: string; degree: number; minutes: number }> = [];
