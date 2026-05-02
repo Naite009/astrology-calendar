@@ -1961,6 +1961,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   const handleSubmitDirect = async (
     directQuestion?: string,
     userLocations?: { current?: string; considering1?: string; considering2?: string },
+    childChartId?: string,
   ) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
