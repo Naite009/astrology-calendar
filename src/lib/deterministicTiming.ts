@@ -1485,12 +1485,12 @@ export function buildDeterministicTimingData(
       })
       .join(', ');
 
-    const position = `${window.transitPlanet} ${window.aspect} natal ${natalPoint} — exact ${passesPositionSummary}`;
+    const position = `${window.transitPlanet} ${window.aspect} natal ${natalPoint}, exact ${passesPositionSummary}`;
 
     // Pass summary sentence used by the interpretation builder
     const passSummary = isMultiPass
       ? `This is a multi-pass cycle covering ${passDetails.length} exact hits (${passesPositionSummary}); the full felt-sense window runs ${humanizedRange}.`
-      : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange} — meaning the theme builds, peaks, then settles inside that range.`;
+      : `The story peaks on ${passDetails[0].date} and the full felt-sense window runs ${humanizedRange}. The theme builds, peaks, then settles inside that range.`;
 
     const interpretationText = buildTransitInterpretation({
       transitPlanet: window.transitPlanet,
@@ -1532,7 +1532,7 @@ export function buildDeterministicTimingData(
       pass_label: passLabel,
       date_range: humanizedRange,
       tag: classifyTimingTag(window.transitPlanet, window.aspect, window.natalPlanet, readingType),
-      interpretation: interpretationText,
+      interpretation: cleanTimingText(interpretationText),
     };
 
     includedWindows.push(window);
