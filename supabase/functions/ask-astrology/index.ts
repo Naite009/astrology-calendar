@@ -4054,6 +4054,21 @@ const fixNatalRetrogradeMentionsInProse = (
           invalidRetroStripped++;
           return full.replace(new RegExp(`(${planet})(?:\\s*[\\u211E℞]|\\s+Rx\\b|\\s+retrograde)`, "i"), `$1`);
         });
+        // SEPARATED form: "<Planet> ... is retrograde" / "<Planet> in the
+        // 8th house, retrograde". Strict gate: planet direct in BOTH charts
+        // and clause is NOT explicitly SR-qualified.
+        next = next.replace(separatedUnqualifiedPhantomRxRe, (full, planet, gap) => {
+          const key = String(planet).toLowerCase();
+          const isNatalRetro = natalRetro.get(key) === true;
+          const isSrRetro = srRetro.get(key) === true;
+          if (isNatalRetro || isSrRetro) return full;
+          // Don't touch clauses already qualified as SR (the SR-side
+          // correctors own those).
+          if (/\b(?:SR|Solar\s+Return|this\s+year)\b/i.test(full)) return full;
+          invalidRetroStripped++;
+          // Drop the trailing "... (is) retrograde" tail; keep planet + gap.
+          return `${planet}${gap}`.replace(/\s*[,;]\s*$/g, "").replace(/\s+(?:and|but)\s*$/i, "").trim();
+        });
         if (next !== val) {
           if (examples.length < 5) examples.push(val.slice(0, 160));
           (node as any)[key] = next;
