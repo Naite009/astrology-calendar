@@ -297,7 +297,7 @@ export function buildPairReadingPayload(
     toName: toChart.name,
     toRole,
     toPlanetsSummary: planetSummary(toChart),
-    toBirthDate: fromChart.birthDate, // not used; per-chart below
+    toBirthDate: toChart.birthDate,
     aspects,
   };
 }
