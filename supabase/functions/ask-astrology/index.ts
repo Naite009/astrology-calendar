@@ -5443,11 +5443,158 @@ const enforceRelationshipContract = (
         });
       }
     }
+
+    // ── Rule: sr_seventh_cusp_inherited_from_natal ──────────────────────
+    // SR 7th house cusp sign MUST equal the sign opposite the SR Ascendant,
+    // never the natal 7th cusp sign. Catches the classic "AI copied natal
+    // 7th onto SR 7th" failure.
+    checked.push("sr_seventh_cusp_inherited_from_natal");
+    try {
+      const ctx = chartContext || "";
+      const SIGNS_R = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+      const oppositeSign = (s: string) => {
+        const i = SIGNS_R.indexOf(s);
+        return i < 0 ? "" : SIGNS_R[(i + 6) % 12];
+      };
+      const srCusps = parseSrHouseCuspsFromContext(ctx);
+      const srAsc = srCusps.find((c) => c.house === 1)?.sign || "";
+      const natalCusps = parseHouseCuspsFromContext(ctx);
+      const natal7 = natalCusps.find((c) => c.house === 7)?.sign || "";
+      const expectedSr7 = srAsc ? oppositeSign(srAsc) : "";
+      if (expectedSr7 && natal7 && expectedSr7 !== natal7) {
+        // Search SR/This-Year sections for an explicit "SR 7th house" sign claim.
+        const srSectionRe = /(this\s+year|solar\s+return|sr\s+|year\s+ahead|year\s+in\s+love)/i;
+        for (const section of parsedContent.sections) {
+          const t = typeof section?.title === "string" ? section.title : "";
+          if (!srSectionRe.test(t)) continue;
+          const collect = (node: any, out: string[] = []): string[] => {
+            if (Array.isArray(node)) { for (const x of node) collect(x, out); return out; }
+            if (typeof node === "string") { out.push(node); return out; }
+            if (node && typeof node === "object") for (const v of Object.values(node)) collect(v, out);
+            return out;
+          };
+          const blob = collect(section).join(" \n ");
+          // Look for "SR 7th" / "Solar Return 7th" claims naming a sign.
+          const claimRe = new RegExp(
+            `(?:SR|Solar\\s+Return)[^.\\n]{0,40}?7th\\s+house[^.\\n]{0,40}?\\b(${SIGNS_R.join("|")})\\b`,
+            "i",
+          );
+          const m = blob.match(claimRe);
+          if (m && m[1] && m[1] !== expectedSr7 && m[1] === natal7) {
+            defects.push({
+              code: "sr_seventh_cusp_inherited_from_natal",
+              severity: "hard",
+              path: `section "${t}"`,
+              message: `SR 7th cusp described as ${m[1]} (matches natal 7th) but SR ASC=${srAsc} so SR 7th must be ${expectedSr7}`,
+            });
+          }
+        }
+      }
+    } catch (_e) { /* validator best-effort */ }
+
+    // ── Rule: seventh_ruler_occupant_merged ─────────────────────────────
+    // 7TH_RULER (the ruler of the 7th cusp sign, which usually lives in
+    // another house) must be described as a separate variable from any
+    // planet physically occupying the natal 7th house. Flag prose that
+    // calls the ruler "your 7th house [ruler]" when the ruler does NOT
+    // actually sit in House 7 per the placement table.
+    checked.push("seventh_ruler_occupant_merged");
+    try {
+      const TRAD_RULERS: Record<string, string> = {
+        Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
+        Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
+        Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Saturn", Pisces: "Jupiter",
+      };
+      const natalCusps2 = parseHouseCuspsFromContext(chartContext || "");
+      const natal7Sign = natalCusps2.find((c) => c.house === 7)?.sign || "";
+      const ruler = natal7Sign ? TRAD_RULERS[natal7Sign] : "";
+      if (ruler) {
+        // Find ruler row in any natal placement_table.
+        let rulerHouse: number | null = null;
+        for (const row of rows) {
+          const bare = row.planet.replace(/[℞\u211E]|\bRx\b/gi, "")
+            .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "").trim();
+          if (bare !== ruler) continue;
+          if (/sr|solar\s+return/i.test(row.sectionTitle)) continue;
+          const h = (row.raw as any)?.house;
+          if (typeof h === "number") rulerHouse = h;
+          else if (typeof h === "string" && /^\d+$/.test(h)) rulerHouse = parseInt(h, 10);
+          break;
+        }
+        if (rulerHouse !== null && rulerHouse !== 7) {
+          // Scan natal-relationship prose for "your 7th house [ruler]" merge.
+          const mergeRe = new RegExp(
+            `(?:your|the)\\s+7th\\s+house\\s+${ruler}\\b`,
+            "i",
+          );
+          for (const section of parsedContent.sections) {
+            const t = typeof section?.title === "string" ? section.title : "";
+            if (!RELATIONSHIP_SECTION_TITLE_RE.test(t)) continue;
+            const collect = (node: any, out: string[] = []): string[] => {
+              if (Array.isArray(node)) { for (const x of node) collect(x, out); return out; }
+              if (typeof node === "string") { out.push(node); return out; }
+              if (node && typeof node === "object") for (const v of Object.values(node)) collect(v, out);
+              return out;
+            };
+            const blob = collect(section).join(" \n ");
+            if (mergeRe.test(blob)) {
+              defects.push({
+                code: "seventh_ruler_occupant_merged",
+                severity: "hard",
+                path: `section "${t}"`,
+                message: `${ruler} is the 7th-house ruler but lives in House ${rulerHouse}; prose calls it "your 7th house ${ruler}" which merges 7TH_RULER and 7TH_OCCUPANT (PRE-CHECK 1).`,
+              });
+            }
+          }
+        }
+      }
+    } catch (_e) { /* best-effort */ }
+
+    // ── Rule: aspect_orb_language_mismatch ──────────────────────────────
+    // Flags tight-orb language ("exact", "lands directly on", "tight
+    // conjunction", "sits exactly on", "in tight ... with") attached to a
+    // stated orb of 4° or wider. Conservative: only fires when both the
+    // tight phrase AND a numeric orb are present in the same sentence.
+    checked.push("aspect_orb_language_mismatch");
+    try {
+      const tightPhrase = /(\btight\s+conjunction\b|\blands\s+directly\s+on\b|\bsits\s+exactly\s+on\b|\bexact\s+(?:conjunction|opposition|square|trine|sextile)\b|\bin\s+tight\s+\w+\s+with\b)/i;
+      const orbInline = /\b(\d+(?:\.\d+)?)\s*°?\s*orb\b/i;
+      const splitSentences = (txt: string) => txt.split(/(?<=[.!?])\s+/);
+      for (const section of parsedContent.sections) {
+        const t = typeof section?.title === "string" ? section.title : "";
+        if (!RELATIONSHIP_SECTION_TITLE_RE.test(t) && !/overlay|natal\s+and\s+solar|where\s+natal/i.test(t)) continue;
+        const collect = (node: any, out: string[] = []): string[] => {
+          if (Array.isArray(node)) { for (const x of node) collect(x, out); return out; }
+          if (typeof node === "string") { out.push(node); return out; }
+          if (node && typeof node === "object") for (const v of Object.values(node)) collect(v, out);
+          return out;
+        };
+        for (const blob of collect(section)) {
+          for (const sentence of splitSentences(blob)) {
+            const tight = tightPhrase.test(sentence);
+            if (!tight) continue;
+            const m = sentence.match(orbInline);
+            if (!m) continue;
+            const orbNum = parseFloat(m[1]);
+            if (!isFinite(orbNum)) continue;
+            if (orbNum >= 4) {
+              defects.push({
+                code: "aspect_orb_language_mismatch",
+                severity: "hard",
+                path: `section "${t}"`,
+                message: `Tight-orb language used with stated orb ${orbNum}° (≥4°); use reach/wide-orb phrasing per PRE-CHECK 4: "${sentence.trim().slice(0, 160)}"`,
+              });
+            }
+          }
+        }
+      }
+    } catch (_e) { /* best-effort */ }
   }
 
   return { ok: defects.filter((d) => d.severity === "hard").length === 0, defects, checked };
 };
 // ─────────────────────────────────────────────────────────────────────────
+
 
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
@@ -11391,6 +11538,62 @@ END UNIVERSAL READING TYPE BASE
   - Do not call same-sign planets conjunct unless within conjunction orb. Do not call same-element placements trine unless within trine orb. Do not call same-modality placements square unless within square orb.
   - FORBIDDEN PATTERNS: "same sign = conjunction", "same modality = square", "same element = trine". These are sign resonances, not aspects.
   - Do not overstate karmic or fated themes. Differentiate chemistry from compatibility. Differentiate attraction from durability.
+
+RELATIONSHIP MANDATORY PRE-WRITE CHECKS (complete all five before writing any prose; if any cannot be completed from the provided chart data, state that explicitly in the relevant section instead of inventing values):
+
+  PRE-CHECK 1 — NATAL 7TH HOUSE RULER vs OCCUPANTS (TWO SEPARATE VARIABLES, NEVER MERGE):
+    Step 1: Read the sign on the natal 7th house cusp from "House Cusps" in the chart context.
+    Step 2: Identify the traditional ruler of that sign (Aries→Mars, Taurus→Venus, Gemini→Mercury, Cancer→Moon, Leo→Sun, Virgo→Mercury, Libra→Venus, Scorpio→Mars, Sagittarius→Jupiter, Capricorn→Saturn, Aquarius→Saturn, Pisces→Jupiter).
+    Step 3: Locate that ruler in the natal placement table; record its SIGN, HOUSE, and retrograde status.
+    Step 4: Separately scan the natal placement table for any planets whose HOUSE column = 7. These are 7TH_OCCUPANTS, and they are a different list from the 7TH_RULER.
+    Step 5: Internally label:
+      7TH_RULER     = [planet, sign, House N, direct/retrograde]
+      7TH_OCCUPANTS = [list of planets in House 7, or "none"]
+    When you describe the 7th house in prose, the ruler sentence and the occupant sentence MUST be separate clauses. Template: "The 7th house cusp is in [sign], ruled by [7TH_RULER planet] in [its sign] in House [N]. [Separately:] [7TH_OCCUPANT planet, if any] also sits inside the 7th house." Never merge ruler and occupant into one phrase like "your 7th house Mars" when Mars is the ruler from another house.
+
+  PRE-CHECK 2 — SOLAR RETURN 7TH HOUSE (calculated independently; NEVER inherited from natal):
+    Step 1: Read SR Ascendant sign and degree from the SR placement table or "SR House Cusps" block in the chart context.
+    Step 2: SR_7TH_CUSP_SIGN = the sign exactly opposite the SR Ascendant sign (Aries↔Libra, Taurus↔Scorpio, Gemini↔Sagittarius, Cancer↔Capricorn, Leo↔Aquarius, Virgo↔Pisces). Same degree as the SR Ascendant.
+    Step 3: SR_7TH_RULER = the traditional ruler of SR_7TH_CUSP_SIGN, located in the SR placement table; record SR sign, SR house, SR retrograde status.
+    Step 4: SR_7TH_OCCUPANTS = list of SR planets whose SR house column = 7.
+    The "This Year in Love" / SR sections MUST use SR_7TH_CUSP_SIGN, SR_7TH_RULER, and SR_7TH_OCCUPANTS — never the natal 7th house sign or natal 7th ruler. If the SR Ascendant is not present in the chart context, omit the SR 7th house discussion entirely rather than guess.
+
+  PRE-CHECK 3 — RETROGRADE BEHAVIORAL TEMPLATE (mandatory for every retrograde planet referenced in prose):
+    For each retrograde planet (natal or SR) you will discuss, complete this template internally before writing:
+      "[Chart] [Planet] is retrograde. Its function ([love/desire/communication/drive/structure/etc]) moves inward before it moves outward. In practice, this looks like: [one concrete behavioral scenario the reader could picture on a Tuesday — a real conversation, a first date, a fight, a decision]."
+    Use that completed sentence as the basis for the prose paragraph. Do not write about a retrograde planet without the inward-first behavioral scenario.
+
+  PRE-CHECK 4 — ASPECT ORB → LANGUAGE SCALE (look up each aspect's actual orb in the provided aspect data and apply this scale precisely):
+      0 to 2 degrees: "lands directly on" / "sits exactly on" / "in tight conjunction with"
+      2 to 4 degrees: "closely activates" / "presses on" / "applies pressure to"
+      4 to 6 degrees: "reaches toward" / "adds weight to the same zone as" / "colors the same territory as"
+      6 degrees or wider: "shares the sign with" — NEVER call this a conjunction or any tight aspect in prose
+    Tight-orb language on a wide-orb aspect is a hard fail. Verify the orb number before writing the sentence. This applies in every section that names an aspect, including "Where Natal and Solar Return Connect" / "Natal & Solar Return Overlay".
+
+  PRE-CHECK 5 — DUAL DIMENSIONS (sign AND house, both required for every planet):
+    For every planet you interpret, address BOTH:
+      (a) the SIGN — describes the style, quality, and flavor of the planet's expression
+      (b) the HOUSE — describes the life domain where that expression plays out
+    Failure example: "Mars in Sagittarius — you're drawn to free-spirited people." (House missing.)
+    Correct example: "Mars in Sagittarius in the 2nd house — you're drawn to people who feel expansive and philosophically alive (Sagittarius), but your desire is filtered through self-worth first (2nd house): before you pursue, some part of you is asking whether you deserve this person."
+    A sign-only or house-only sentence about a focal planet is a defect.
+
+  ADDITIONAL HARD VOICE RULES FOR RELATIONSHIP READINGS:
+    - Second person ("you"), present tense, direct.
+    - Every abstract statement must be followed by a concrete real-life scenario (an actual conversation, a first date, a fight, a decision the reader can picture this week).
+    - BANNED words anywhere in relationship prose: wound, metabolized, archetypal, portal, liminal, shadow (in mystical sense), sacred, journey (metaphorical), healed, awakening, aligned, energy (in mystical sense). These are HARD FAILS.
+    - NO em-dashes or en-dashes anywhere. Use commas, periods, parentheses, semicolons, or " to " for date ranges.
+    - NO template placeholders. Never ship "{{placeholder}}", "[planet]", "[sign]", or any unfilled variable. If you do not know the value, state explicitly that the data was not provided rather than leaving a placeholder.
+    - "Right Now" in the strategy summary MUST reflect the actual transit data above. If any timing window starts within 7 days of the reading date, describe it as currently active, not as a quiet period.
+
+  SELF-CHECK BEFORE FINALIZING (silently verify each item):
+    [ ] Every planet mentioned in prose appears in the placement table at the sign and house claimed.
+    [ ] SR 7th house cusp sign was calculated from SR ASC, not copied from natal.
+    [ ] No retrograde planet is described without its inward-first behavioral scenario.
+    [ ] No aspect uses tighter orb language than its actual orb supports.
+    [ ] No template placeholders remain in the output.
+    [ ] "Right Now" reflects the actual transit data.
+    [ ] 7TH_RULER and 7TH_OCCUPANTS are described as separate variables, never merged.
 
 RELATIONSHIP READING RULES:
 - SELECTIVITY OVER EXHAUSTIVENESS: Do not list every placement and every aspect. Lead with the chart factors that most clearly explain this person's relationship behavior. If a placement or aspect doesn't add new insight beyond what's already covered, leave it out. A focused reading with 3 strong placements is better than a comprehensive one that dilutes the signal.
