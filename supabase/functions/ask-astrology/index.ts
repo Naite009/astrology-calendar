@@ -8052,6 +8052,14 @@ const runPostProcessingPipeline = (
     stampRetrogradeInEnumerations(parsedContent, ctx, log),
   );
 
+  // 5c-ter. BASE RULE 9 SR STAMPER — unlike the enumeration stamper, this
+  // covers every user-visible prose field (body, title, subtitle, label,
+  // bullet text) and every repeated SR planet mention, including SR-to-natal
+  // activation sections and short headers like "SR Saturn in 7th".
+  safeRun("stampMissingSrRetrogradeReferences", () =>
+    stampMissingSrRetrogradeReferences(parsedContent, ctx, log),
+  );
+
   // 5d/5e. REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse`
   // and `factsAwareNatalHouseSweep` previously ran here and overwrote each
   // other on natal vs SR house claims. The post-render
