@@ -245,6 +245,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           <CardDescription>
             Pick whose energy is the source (FROM) and whose nervous system is receiving (TO).
             Direction matters — a parent's Mars onto a child's Moon is a different reading than the reverse.
+            Readings use the actual signs, houses, and the child's age.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -287,95 +288,118 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
               </SelectContent>
             </Select>
           </div>
+
+          {report && (
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+              <div className="text-xs text-muted-foreground">
+                {report.rows.length} cross-aspect{report.rows.length === 1 ? "" : "s"} found between{" "}
+                {report.fromName} and {report.toName}.
+              </div>
+              <Button onClick={generateAiReading} disabled={aiLoading || report.rows.length === 0}>
+                {aiLoading ? (
+                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-1" /> Generate Reading</>
+                )}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {report && <FamilySynastryReport report={report} />}
+      {aiReading && report && (
+        <AiPairReadingView reading={aiReading} fromName={report.fromName} toName={report.toName} fromRole={report.fromRole} toRole={report.toRole} />
+      )}
     </div>
   );
 };
 
-const FamilySynastryReport = ({
-  report,
+const AiPairReadingView = ({
+  reading,
+  fromName,
+  toName,
+  fromRole,
+  toRole,
 }: {
-  report: ReturnType<typeof computeFamilySynastry>;
+  reading: PairReadingResponse;
+  fromName: string;
+  toName: string;
+  fromRole: FamilyRole;
+  toRole: FamilyRole;
 }) => {
-  if (report.rows.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-sm text-muted-foreground text-center">
-          No significant cross-aspects found between {report.fromName} and {report.toName} in
-          the curated set. (This usually means the chart data is incomplete — check that both
-          charts have full planetary placements.)
-        </CardContent>
-      </Card>
-    );
-  }
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle>The Essence</CardTitle>
           <CardDescription>
-            How {report.fromName} ({report.fromRole}) lands on {report.toName} ({report.toRole}).
+            How {fromName} ({fromRole}) lands on {toName} ({toRole})
+            {reading.ageYears != null ? ` — age ${reading.ageYears}` : ""}.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <ul className="space-y-1 text-sm">
-            {report.essenceLines.map((l, i) => (
+        <CardContent className="space-y-3">
+          <ul className="space-y-2 text-sm">
+            {reading.essence.map((l, i) => (
               <li key={i} className="flex gap-2">
                 <ArrowRight className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                 <span>{l}</span>
               </li>
             ))}
           </ul>
+          {reading.ageNote && (
+            <p className="text-xs text-muted-foreground italic border-t border-border pt-3">
+              {reading.ageNote}
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      {report.rows.map((row, idx) => (
+      {reading.sections.map((sec, idx) => (
         <Card key={idx}>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">
-                {report.fromName}'s {row.fromPlanet} {row.symbol} {report.toName}'s {row.toPlanet}
-              </CardTitle>
-              <Badge variant="outline" className="capitalize">
-                {row.aspect} · {row.orb.toFixed(1)}°
-              </Badge>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base">{sec.heading}</CardTitle>
+              <Badge variant="outline">{sec.badge}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {!row.interpretation ? (
-              <p className="text-muted-foreground italic">
-                Interpretation library doesn't yet cover this exact framing — coming in a later round.
-              </p>
-            ) : (
-              <>
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                    How {report.toName} experiences this
-                  </div>
-                  <p>{row.interpretation.childExperience}</p>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                    Blind spot for {report.fromName}
-                  </div>
-                  <p>{row.interpretation.parentBlindSpot}</p>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                    What helps
-                  </div>
-                  <ul className="list-disc list-inside space-y-1">
-                    {row.interpretation.whatHelps.map((w, i) => <li key={i}>{w}</li>)}
-                  </ul>
-                </div>
-              </>
-            )}
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                How {toName} experiences this
+              </div>
+              <p>{sec.howItLands}</p>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                Blind spot for {fromName}
+              </div>
+              <p>{sec.blindSpot}</p>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What helps
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {sec.whatHelps.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            </div>
           </CardContent>
         </Card>
       ))}
+
+      {reading.practice && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              One Practice for the Next 90 Days
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{reading.practice}</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
