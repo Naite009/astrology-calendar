@@ -948,17 +948,34 @@ export const AnnualTablesView = ({ year: yearProp }: AnnualTablesViewProps) => {
 
       {/* Mercury Retrograde */}
       <section ref={retrogradesRef} className="rounded-sm border border-border bg-background p-6">
-        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4 gap-4 flex-wrap">
           <h2 className="font-serif text-2xl font-light text-foreground">
             ☿ Mercury Retrograde {year}
           </h2>
-          <button
-            onClick={() => downloadAsImage(retrogradesRef.current, `mercury-retrograde-${year}`)}
-            className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <Download size={14} />
-            Download Image
-          </button>
+          <div className="flex items-center gap-3">
+            <Select
+              value={String(selectedYear)}
+              onValueChange={(v) => setSelectedYear(Number(v))}
+            >
+              <SelectTrigger className="w-[110px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              onClick={() => downloadAsImage(retrogradesRef.current, `mercury-retrograde-${year}`)}
+              className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <Download size={14} />
+              Download Image
+            </button>
+          </div>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
           Mercury appears to move backward during these periods. Review, revise, reconnect—avoid
