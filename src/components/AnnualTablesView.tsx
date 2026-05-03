@@ -395,8 +395,12 @@ const NewMoonCard = ({
   );
 };
 
-export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
+export const AnnualTablesView = ({ year: yearProp }: AnnualTablesViewProps) => {
   const { downloadAsImage } = useDownloadImage();
+  const [selectedYear, setSelectedYear] = useState<number>(yearProp);
+  const year = selectedYear;
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 2 + i);
   const fullMoonsRef = useRef<HTMLDivElement>(null);
   const newMoonsRef = useRef<HTMLDivElement>(null);
   const quarterMoonsRef = useRef<HTMLDivElement>(null);
