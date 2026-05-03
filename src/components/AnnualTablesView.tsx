@@ -680,6 +680,28 @@ export const AnnualTablesView = ({ year: yearProp }: AnnualTablesViewProps) => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-12">
+      {/* Year Selector */}
+      <div className="flex items-center justify-end gap-3">
+        <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+          Year
+        </label>
+        <Select
+          value={String(selectedYear)}
+          onValueChange={(v) => setSelectedYear(Number(v))}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {yearOptions.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Quick Reference Stats */}
       <section className="rounded-sm border border-border bg-background p-6">
         <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
