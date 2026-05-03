@@ -600,7 +600,12 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
         const todayEcliptic = Astronomy.Ecliptic(todayMercury);
         const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayMercury);
 
-        return todayEcliptic.elon < yesterdayEcliptic.elon;
+        // Normalize across the 0°/360° boundary so an Aries-cusp crossing
+        // (e.g. 359° → 1°) is not falsely flagged as retrograde motion.
+        let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        return diff < 0;
       } catch {
         return false;
       }
