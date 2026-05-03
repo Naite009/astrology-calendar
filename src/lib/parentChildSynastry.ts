@@ -180,3 +180,125 @@ export const FAMILY_ROLE_OPTIONS: { value: FamilyRole; label: string }[] = [
   { value: "grandparent", label: "Grandparent" },
   { value: "sibling", label: "Sibling" },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Pair Reading payload builder
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PairReadingSection {
+  heading: string;
+  badge: string;
+  howItLands: string;
+  blindSpot: string;
+  whatHelps: string[];
+}
+
+export interface PairReadingResponse {
+  essence: string[];
+  ageNote: string;
+  sections: PairReadingSection[];
+  practice: string;
+  ageYears: number | null;
+  aspectsUsed: number;
+  error?: string;
+}
+
+interface CrossAspectPayload {
+  fromPlanet: string;
+  fromSign?: string;
+  fromHouse?: number | null;
+  fromRetro?: boolean;
+  toPlanet: string;
+  toSign?: string;
+  toHouse?: number | null;
+  toRetro?: boolean;
+  aspect: string;
+  symbol: string;
+  orb: number;
+}
+
+function buildHouseCalc(chart: NatalChart): ((abs: number) => number | null) | null {
+  const cusps = chart.houseCusps;
+  if (!cusps) return null;
+  const longs: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = cusps[`house${i}` as keyof typeof cusps] as { sign?: string; degree?: number; minutes?: number } | undefined;
+    if (!c?.sign) return null;
+    const idx = ZODIAC_SIGNS.indexOf(c.sign);
+    if (idx < 0) return null;
+    longs.push(idx * 30 + (c.degree ?? 0) + (c.minutes ?? 0) / 60);
+  }
+  return (abs: number) => {
+    for (let i = 0; i < 12; i++) {
+      const next = (i + 1) % 12;
+      let s = longs[i];
+      let e = longs[next];
+      if (e < s) e += 360;
+      let d = abs;
+      if (d < s) d += 360;
+      if (d >= s && d < e) return i + 1;
+    }
+    return 1;
+  };
+}
+
+function planetSummary(chart: NatalChart): string {
+  const calcHouse = buildHouseCalc(chart);
+  const lines: string[] = [];
+  const order = ["Sun", "Moon", "Ascendant", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "NorthNode", "Chiron"];
+  for (const name of order) {
+    const p = (chart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>)[name];
+    if (!p?.sign) continue;
+    const abs = ZODIAC_SIGNS.indexOf(p.sign) * 30 + (p.degree ?? 0) + (p.minutes ?? 0) / 60;
+    const h = calcHouse ? calcHouse(abs) : null;
+    const houseStr = h ? ` (House ${h})` : "";
+    const r = p.isRetrograde ? " R" : "";
+    lines.push(`- ${name}: ${p.sign} ${p.degree ?? 0}°${houseStr}${r}`);
+  }
+  return lines.join("\n");
+}
+
+export function buildPairReadingPayload(
+  fromChart: NatalChart,
+  toChart: NatalChart,
+  fromRole: FamilyRole,
+  toRole: FamilyRole,
+  report: FamilySynastryReport,
+) {
+  const fromCalc = buildHouseCalc(fromChart);
+  const toCalc = buildHouseCalc(toChart);
+  const fromPlanets = fromChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
+  const toPlanets = toChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
+
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 8).map((r) => {
+    const fp = fromPlanets[r.fromPlanet];
+    const tp = toPlanets[r.toPlanet];
+    const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;
+    const toAbs = tp?.sign ? ZODIAC_SIGNS.indexOf(tp.sign) * 30 + (tp.degree ?? 0) + (tp.minutes ?? 0) / 60 : null;
+    return {
+      fromPlanet: r.fromPlanet,
+      fromSign: fp?.sign,
+      fromHouse: fromAbs != null && fromCalc ? fromCalc(fromAbs) : null,
+      fromRetro: !!fp?.isRetrograde,
+      toPlanet: r.toPlanet,
+      toSign: tp?.sign,
+      toHouse: toAbs != null && toCalc ? toCalc(toAbs) : null,
+      toRetro: !!tp?.isRetrograde,
+      aspect: r.aspect,
+      symbol: r.symbol,
+      orb: r.orb,
+    };
+  });
+
+  return {
+    fromName: fromChart.name,
+    fromRole,
+    fromPlanetsSummary: planetSummary(fromChart),
+    toName: toChart.name,
+    toRole,
+    toPlanetsSummary: planetSummary(toChart),
+    toBirthDate: toChart.birthDate,
+    aspects,
+  };
+}
+
