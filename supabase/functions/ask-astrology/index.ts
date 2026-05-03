@@ -1228,6 +1228,33 @@ const rewriteSentencePronouns = (sentence: string): string => {
       const replacement = map[lower] ?? verb;
       return `${prep} ${pron} ${replacement}`;
     });
+  // GRAMMAR VALIDATION GUARD — detect broken verb agreement that signals
+  // the they→you swap clobbered a legitimate third-party referent inside a
+  // contrastive/comparative clause. Examples:
+  //   "...as you wish you were rather than as you is"   ← original had
+  //                                                       "they were …
+  //                                                       they are" referring
+  //                                                       to partnerships
+  //   "...than you really is/was"
+  // When detected, fall back to ONLY the safe leading-clause rewrites
+  // ("Their X" / "They X" at sentence-start or after an em-dash / colon /
+  // semicolon) and leave mid-sentence "they/them/their" untouched, so the
+  // sentence stays grammatically correct and the third-party meaning is
+  // preserved.
+  const brokenAgreement = [
+    /\b(?:as|than)\s+you\s+(?:is|was)\b/i,
+    /\bwish\s+you\s+(?:are|is|were|was)\s+(?:rather\s+than|instead\s+of|than)\b/i,
+    /\bas\s+you\s+wish\s+you\b/i,
+    /\bsee(?:ing)?\s+\w+\s+as\s+you\s+(?:are|is|were|was)\b/i,
+  ];
+  if (brokenAgreement.some((re) => re.test(s))) {
+    let safe = sentence;
+    safe = safe.replace(/(^|[—–\-:;]\s+)(Their)\b/g, (_m, lead) => `${lead}Your`);
+    safe = safe.replace(/(^|[—–\-:;]\s+)(their)\b/g, (_m, lead) => `${lead}your`);
+    safe = safe.replace(/(^|[—–\-:;]\s+)(They)\b/g, (_m, lead) => `${lead}You`);
+    safe = safe.replace(/(^|[—–\-:;]\s+)(they)\b/g, (_m, lead) => `${lead}you`);
+    return safe;
+  }
   return s;
 };
 const forEachReadingPayload = (payload: any, visitor: (reading: any) => void) => {
