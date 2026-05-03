@@ -4509,6 +4509,182 @@ const stampRetrogradeInEnumerations = (
   }
 };
 
+// BASE RULE 9 SR STAMPER — every user-visible reference to an SR planet
+// that is retrograde in the Solar Return table must carry the retrograde
+// marker, not only the first body mention and not only enumeration rows.
+// This pass intentionally walks titles, subtitles, labels, bullet text, and
+// bodies across every section while still skipping placement-table cells and
+// diagnostic metadata. It is idempotent and only adds/repairs SR retrograde
+// wording for planets that deterministic facts mark retrograde.
+const stampMissingSrRetrogradeReferences = (
+  parsedContent: any,
+  chartContext: string,
+  log: HygieneLog,
+) => {
+  if (!parsedContent || !chartContext) return;
+  const srPos = parsePositionsFromContext(chartContext, /SR Planetary Positions:\n/, "SR");
+  const srRetro = new Map<string, boolean>();
+  for (const p of srPos) srRetro.set(p.planet.toLowerCase(), !!p.retrograde);
+  const injection = parseSrAnalysisInjection(chartContext);
+  for (const [planet, retro] of injection.srRetro.entries()) srRetro.set(planet, retro);
+
+  const sections = Array.isArray(parsedContent?.sections) ? parsedContent.sections : [];
+  const normalizePlanet = (raw: unknown): string => String(raw || "")
+    .replace(/[℞\u211E]|\bRx\b|\bR\b/gi, "")
+    .replace(/^\s*(?:SR|Solar\s+Return|Natal)\s+/i, "")
+    .trim()
+    .toLowerCase();
+  for (const section of sections) {
+    if (section?.type !== "placement_table") continue;
+    if (!/\b(?:solar\s+return|sr)\b/i.test(String(section?.title || ""))) continue;
+    const rows = Array.isArray(section?.rows) ? section.rows : Array.isArray(section?.placements) ? section.placements : [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const planet = normalizePlanet((row as any).planet ?? (row as any).body ?? (row as any).name);
+      if (!planet) continue;
+      const retro = typeof (row as any).retrograde === "boolean" ? (row as any).retrograde
+        : typeof (row as any).isRetrograde === "boolean" ? (row as any).isRetrograde : undefined;
+      if (typeof retro === "boolean") srRetro.set(planet, retro);
+    }
+  }
+
+  const rxPlanets = FACTS_PLANETS.filter((p) => srRetro.get(p.toLowerCase()) === true);
+  if (rxPlanets.length === 0) return;
+
+  const PLANET_ALT = FACTS_PLANETS.join("|");
+  const MARKER_RE = /(?:[\u211E℞]|\bRx\b|\bR\b|\bretrograde\b)/i;
+  const COMPETING_SCOPED_PLANET_RE = new RegExp(
+    `\\b(?:SR|Solar\\s+Return|this\\s+year(?:'s)?|natal|your\\s+natal)\\s+(?:${PLANET_ALT})\\b`,
+    "i",
+  );
+  const SKIP_KEYS = new Set([
+    "type","id","kind",
+    "planet","sign","house","degrees","aspect","natal_point","symbol",
+    "tag","date","date_range","dateRange","generated_date",
+    "subject","question_type","question_asked",
+    "_validation","_validation_log","_validation_warning","_accuracy_review",
+    "_post_gate_safety","_final_hygiene","_relationship_contract","_gate",
+    "_three_call","_verified_activations","_sr_house_copy_warning",
+    "_retrograde_repair",
+  ]);
+  const SR_SECTION_RE = /\b(?:solar\s+return|sr|this\s+year|year's|year\s+ahead|sr-to-natal|natal\s+and\s+solar\s+return|pressure\s+and\s+discipline|single\s+most\s+important\s+message)\b/i;
+  const readingType = String((parsedContent as any)?.question_type || (parsedContent as any)?.reading_type || "");
+  const wholeReadingIsSr = /\bsolar[_\s-]?return\b|\bsr\b/i.test(readingType);
+
+  let stamped = 0;
+  let directFlipped = 0;
+  const examples: string[] = [];
+
+  const hasNearbyMarker = (source: string, planetEnd: number): boolean => {
+    let tail = source.slice(planetEnd, planetEnd + 90);
+    const competitor = tail.search(COMPETING_SCOPED_PLANET_RE);
+    if (competitor > 0) tail = tail.slice(0, competitor);
+    return MARKER_RE.test(tail.slice(0, 42));
+  };
+  const blockedByNatalPrefix = (source: string, matchStart: number): boolean => {
+    const left = source.slice(Math.max(0, matchStart - 120), matchStart);
+    if (/\b(?:natal|your\s+natal)\s+$/i.test(left)) return true;
+    // Guard list phrases like "your natal Sun, Mars, Uranus". A bare
+    // planet inside the same local clause inherits the natal qualifier and
+    // must not be stamped as SR just because the section itself is SR-heavy.
+    const clauseStart = Math.max(
+      left.lastIndexOf("."),
+      left.lastIndexOf("!"),
+      left.lastIndexOf("?"),
+      left.lastIndexOf("\n"),
+      left.lastIndexOf(";"),
+    );
+    const localLeft = left.slice(clauseStart + 1);
+    const lastNatal = Math.max(localLeft.toLowerCase().lastIndexOf("natal"), localLeft.toLowerCase().lastIndexOf("your natal"));
+    if (lastNatal >= 0) {
+      const afterNatal = localLeft.slice(lastNatal);
+      if (!/\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i.test(afterNatal)) return true;
+    }
+    return false;
+  };
+  const formatStamped = (prefix: string, planet: string, possessive: string | undefined): string => {
+    if (possessive) return `${prefix}${planet}${possessive} retrograde`;
+    return `${prefix}${planet} retrograde`;
+  };
+
+  const stampValue = (value: string, fieldInSrContext: boolean, path: string): string => {
+    let next = value;
+    for (const planet of rxPlanets) {
+      const explicitDirectRe = new RegExp(`\\b((?:SR|Solar\\s+Return|this\\s+year(?:'s)?)\\s+)(${planet})(['’]s)?\\s+(?:is\\s+|was\\s+|were\\s+|moving\\s+)?direct\\b`, "gi");
+      next = next.replace(explicitDirectRe, (_full, prefix, p, poss) => {
+        directFlipped++;
+        if (examples.length < 10) examples.push(`${path} → ${prefix}${p} direct`);
+        return formatStamped(prefix, p, poss);
+      });
+
+      const explicitRe = new RegExp(`\\b((?:SR|Solar\\s+Return|this\\s+year(?:'s)?)\\s+)(${planet})(['’]s)?\\b`, "gi");
+      next = next.replace(explicitRe, (full, prefix, p, poss, offset, fullStr) => {
+        const planetEnd = Number(offset) + String(full).length;
+        if (hasNearbyMarker(String(fullStr), planetEnd)) return full;
+        stamped++;
+        if (examples.length < 10) examples.push(`${path} → ${full}`);
+        return formatStamped(prefix, p, poss);
+      });
+
+      if (!fieldInSrContext) continue;
+
+      const bareDirectRe = new RegExp(`\\b(${planet})(['’]s)?\\s+(?:is\\s+|was\\s+|were\\s+|moving\\s+)?direct\\b`, "gi");
+      next = next.replace(bareDirectRe, (full, p, poss, offset, fullStr) => {
+        if (blockedByNatalPrefix(String(fullStr), Number(offset))) return full;
+        directFlipped++;
+        if (examples.length < 10) examples.push(`${path} → ${full}`);
+        return formatStamped("", p, poss);
+      });
+
+      const bareRe = new RegExp(`\\b(${planet})(['’]s)?\\b`, "gi");
+      next = next.replace(bareRe, (full, p, poss, offset, fullStr) => {
+        const start = Number(offset);
+        const planetEnd = start + String(full).length;
+        if (blockedByNatalPrefix(String(fullStr), start)) return full;
+        if (hasNearbyMarker(String(fullStr), planetEnd)) return full;
+        stamped++;
+        if (examples.length < 10) examples.push(`${path} → ${full}`);
+        return formatStamped("", p, poss);
+      });
+    }
+    return next;
+  };
+
+  const visit = (node: any, sectionTitle: string, path: string): void => {
+    if (Array.isArray(node)) { for (let i = 0; i < node.length; i++) visit(node[i], sectionTitle, `${path}[${i}]`); return; }
+    if (!node || typeof node !== "object") return;
+    if (node?.type === "placement_table") return;
+    const localTitle = typeof node.title === "string" ? node.title : sectionTitle;
+    const sectionInSr = wholeReadingIsSr || SR_SECTION_RE.test(localTitle);
+    for (const [key, val] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      const childPath = `${path}.${key}`;
+      if (typeof val === "string" && val.length > 0) {
+        const fieldInSrContext = sectionInSr || SR_SECTION_RE.test(val);
+        const stampedValue = stampValue(val, fieldInSrContext, childPath);
+        if (stampedValue !== val) (node as any)[key] = stampedValue;
+      } else {
+        visit(val, localTitle, childPath);
+      }
+    }
+  };
+
+  visit(parsedContent, "", "$.");
+
+  if (stamped > 0 || directFlipped > 0) {
+    log.push({
+      type: "sr_retrograde_reference_stamped",
+      detail: { stamped, direct_flipped: directFlipped, rx_planets: rxPlanets, examples },
+    });
+    console.info("[ask-astrology] SR retrograde references stamped", {
+      stamped,
+      direct_flipped: directFlipped,
+      rx_planets: rxPlanets,
+      examples,
+    });
+  }
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // FACT-AWARE RETROGRADE CONSISTENCY SWEEP
 // ─────────────────────────────────────────────────────────────────────────
@@ -7588,6 +7764,12 @@ const runPlacementTableValidator = (
       COMPETITOR_RE.lastIndex = 0;
       const cm = COMPETITOR_RE.exec(trailing);
       if (cm) truncatedTrailing = trailing.slice(0, cm.index);
+      // Do not let a later sentence's retrograde word get attributed to the
+      // scoped planet at the start of this match. Example:
+      // "natal Venus at ...: This softens the Uranus retrograde disruption"
+      // was incorrectly logged as natal Venus claiming retrograde.
+      const sentenceBoundary = truncatedTrailing.search(/[.!?]\s+/);
+      if (sentenceBoundary >= 0) truncatedTrailing = truncatedTrailing.slice(0, sentenceBoundary + 1);
 
       // House claim
       const houseMatch = findScopedHouseClaim(truncatedTrailing, scopeLabel);
@@ -7891,6 +8073,14 @@ const runPostProcessingPipeline = (
   // onto a mention that was just rewritten. Idempotent.
   safeRun("stampRetrogradeInEnumerations", () =>
     stampRetrogradeInEnumerations(parsedContent, ctx, log),
+  );
+
+  // 5c-ter. BASE RULE 9 SR STAMPER — unlike the enumeration stamper, this
+  // covers every user-visible prose field (body, title, subtitle, label,
+  // bullet text) and every repeated SR planet mention, including SR-to-natal
+  // activation sections and short headers like "SR Saturn in 7th".
+  safeRun("stampMissingSrRetrogradeReferences", () =>
+    stampMissingSrRetrogradeReferences(parsedContent, ctx, log),
   );
 
   // 5d/5e. REMOVED (Rule 2 — No Sweeps): `correctSrPlanetHousesInProse`
