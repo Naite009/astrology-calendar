@@ -7764,6 +7764,12 @@ const runPlacementTableValidator = (
       COMPETITOR_RE.lastIndex = 0;
       const cm = COMPETITOR_RE.exec(trailing);
       if (cm) truncatedTrailing = trailing.slice(0, cm.index);
+      // Do not let a later sentence's retrograde word get attributed to the
+      // scoped planet at the start of this match. Example:
+      // "natal Venus at ...: This softens the Uranus retrograde disruption"
+      // was incorrectly logged as natal Venus claiming retrograde.
+      const sentenceBoundary = truncatedTrailing.search(/[.!?]\s+/);
+      if (sentenceBoundary >= 0) truncatedTrailing = truncatedTrailing.slice(0, sentenceBoundary + 1);
 
       // House claim
       const houseMatch = findScopedHouseClaim(truncatedTrailing, scopeLabel);
