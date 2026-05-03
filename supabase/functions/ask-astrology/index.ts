@@ -9663,7 +9663,12 @@ const RX_NUDGE_BY_PLANET: Record<string, string> = {
 // "Your Earning Style" / "Career Earnings" / "Hidden Strengths" / "Your Career
 // Foundation" (career & money); "Communication and Thinking This Year" /
 // "Energy, Drive, and Conflict" / "Where Pressure and Discipline" (solar_return).
-const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|romance|attract|intima|how you (?:love|think|communicate|act|pursue)|earning|career|hidden strengths|growth and luck|being tested|communication and thinking|energy.{0,10}drive|pressure and discipline|the pattern and the gift|soul purpose/i;
+// IMPORTANT: "natal and solar return connect" / "solar return" / "this year"
+// MUST be matched here so SR-planet retrograde acknowledgments fire in the
+// Call C synthesis section (BASE RULE 9). Previously omitted, which caused
+// SR Uranus / SR Saturn / etc. retrograde omissions to slip past the gate
+// in relationship + solar_return readings.
+const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|romance|attract|intima|how you (?:love|think|communicate|act|pursue)|earning|career|hidden strengths|growth and luck|being tested|communication and thinking|energy.{0,10}drive|pressure and discipline|the pattern and the gift|soul purpose|natal and solar return connect|solar return|this year/i;
 
 const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
