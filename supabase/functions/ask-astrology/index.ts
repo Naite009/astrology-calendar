@@ -4582,8 +4582,25 @@ const stampMissingSrRetrogradeReferences = (
     return MARKER_RE.test(tail.slice(0, 42));
   };
   const blockedByNatalPrefix = (source: string, matchStart: number): boolean => {
-    const left = source.slice(Math.max(0, matchStart - 24), matchStart);
-    return /\b(?:natal|your\s+natal)\s+$/i.test(left);
+    const left = source.slice(Math.max(0, matchStart - 120), matchStart);
+    if (/\b(?:natal|your\s+natal)\s+$/i.test(left)) return true;
+    // Guard list phrases like "your natal Sun, Mars, Uranus". A bare
+    // planet inside the same local clause inherits the natal qualifier and
+    // must not be stamped as SR just because the section itself is SR-heavy.
+    const clauseStart = Math.max(
+      left.lastIndexOf("."),
+      left.lastIndexOf("!"),
+      left.lastIndexOf("?"),
+      left.lastIndexOf("\n"),
+      left.lastIndexOf(";"),
+    );
+    const localLeft = left.slice(clauseStart + 1);
+    const lastNatal = Math.max(localLeft.toLowerCase().lastIndexOf("natal"), localLeft.toLowerCase().lastIndexOf("your natal"));
+    if (lastNatal >= 0) {
+      const afterNatal = localLeft.slice(lastNatal);
+      if (!/\b(?:SR|Solar\s+Return|this\s+year(?:'s)?)\b/i.test(afterNatal)) return true;
+    }
+    return false;
   };
   const formatStamped = (prefix: string, planet: string, possessive: string | undefined): string => {
     if (possessive) return `${prefix}${planet}${possessive} retrograde`;
