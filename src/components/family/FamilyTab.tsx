@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2 } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,8 @@ import {
   computeFamilySynastry,
   FAMILY_ROLE_OPTIONS,
   FamilyRole,
+  buildPairReadingPayload,
+  PairReadingResponse,
 } from "@/lib/parentChildSynastry";
 
 interface FamilyMember {
