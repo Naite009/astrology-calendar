@@ -9668,28 +9668,52 @@ const RELATIONSHIP_SECTION_TITLE_RE_LOCAL = /relationship|love|partner|venus|rom
 const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog) => {
   if (!parsedContent || !Array.isArray(parsedContent?.sections)) return;
 
-  // 1. Collect retrograde planets from any placement_table.
-  const rxPlanets = new Set<string>();
+  // 1. Collect retrograde planets PER CHART (natal vs SR). The same planet
+  //    can be Rx in one chart and direct in the other (e.g. natal Jupiter R,
+  //    SR Jupiter direct), so we MUST track chart provenance to prevent the
+  //    "cross-chart retrograde bleed" defect (CROSS_CHART_RETRO_INJECTION):
+  //    we previously injected the natal Rx parenthetical onto SR Jupiter
+  //    prose because the planet name matched without checking which chart
+  //    the prose was discussing.
+  const rxByChart: { natal: Set<string>; sr: Set<string> } = {
+    natal: new Set(),
+    sr: new Set(),
+  };
   for (const section of parsedContent.sections) {
     if (section?.type !== "placement_table") continue;
+    const title = String(section.title || "").toLowerCase();
+    const isSR = /\bsolar\s*return\b|\bsr\b/.test(title) || /this\s+year/.test(title);
+    const bucket = isSR ? rxByChart.sr : rxByChart.natal;
     const rows = Array.isArray(section.rows) ? section.rows : [];
     for (const row of rows) {
       if (row?.retrograde !== true) continue;
-      const bare = String(row.planet || row.body || row.name || "")
+      // The row itself may carry a chart prefix (e.g. "SR Jupiter") that
+      // overrides the table-title heuristic.
+      const rawName = String(row.planet || row.body || row.name || "");
+      const rowIsSR = /\bSR\b|\bSolar\s+Return\b/i.test(rawName);
+      const bare = rawName
         .replace(/[℞\u211E]|Rx/gi, "")
         .replace(/^\s*(?:SR|Natal|Solar\s+Return)\s+/i, "")
         .trim();
-      if ((RX_RELATIONSHIP_PLANETS as readonly string[]).includes(bare)) rxPlanets.add(bare);
+      if (!(RX_RELATIONSHIP_PLANETS as readonly string[]).includes(bare)) continue;
+      const target = rowIsSR ? rxByChart.sr : (isSR ? rxByChart.sr : rxByChart.natal);
+      target.add(bare);
     }
   }
-  if (rxPlanets.size === 0) return;
+  if (rxByChart.natal.size === 0 && rxByChart.sr.size === 0) return;
 
-  // 2. For each Rx planet, find the first relationship section whose prose
-  //    actually names the planet without acknowledging retrograde, then
-  //    inject the qualifier on the first match. If no relationship section
-  //    interprets the planet at all, do nothing (per spec).
+  // 2. For each Rx planet, find a section whose prose names the planet
+  //    in the matching chart context (natal vs SR). We classify each
+  //    string-leaf mention by inspecting the immediate left-side prefix:
+  //    "SR <Planet>" / "Solar Return <Planet>" / "this year's <Planet>"
+  //    → SR mention; "natal <Planet>" / "your <Planet>" / unqualified →
+  //    natal mention. We only inject the parenthetical if the planet is
+  //    Rx in THAT chart.
   const acknowledgments: string[] = [];
-  for (const planet of rxPlanets) {
+  const skippedCrossChart: string[] = [];
+
+  const allPlanets = new Set<string>([...rxByChart.natal, ...rxByChart.sr]);
+  for (const planet of allPlanets) {
     const planetRe = new RegExp(`\\b${planet}\\b`);
     const ackRe = new RegExp(
       `\\b${planet}\\b[^.!?\\n]{0,80}?\\b(retrograde|Rx|R\\b|℞)\\b|\\b(retrograde|Rx|R\\b|℞)\\b[^.!?\\n]{0,80}?\\b${planet}\\b`,
@@ -9701,8 +9725,6 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
       const t = typeof section?.title === "string" ? section.title : "";
       if (!RELATIONSHIP_SECTION_TITLE_RE_LOCAL.test(t)) continue;
 
-      // Walk the section, edit string leaves in place. Find first mention
-      // and tag it. If any leaf already acknowledges, mark injected=true.
       const visit = (node: any, parent: any, key: string | number): boolean => {
         if (Array.isArray(node)) {
           for (let i = 0; i < node.length; i++) {
@@ -9713,15 +9735,31 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
         if (typeof node === "string") {
           if (!planetRe.test(node)) return false;
           if (ackRe.test(node)) { injected = true; return true; }
-          // Inject after the first ` <Planet> ` mention.
           const nudge = RX_NUDGE_BY_PLANET[planet];
           if (!nudge) return false;
-          const re = new RegExp(`\\b(${planet})\\b(?!\\s*(?:retrograde|Rx|R\\b|℞|\\())`, "i");
-          const replaced = node.replace(re, `$1 ${nudge}`);
+          // Find the FIRST mention not already followed by a parenthetical
+          // or retrograde marker, then classify its chart context.
+          const re = new RegExp(`(\\b(?:SR|Solar\\s+Return|this\\s+year(?:'s)?|natal|your)?\\s*)\\b(${planet})\\b(?!\\s*(?:retrograde|Rx|R\\b|℞|\\())`, "i");
+          const m = re.exec(node);
+          if (!m) return false;
+          const prefix = (m[1] || "").trim().toLowerCase();
+          const isSRMention = /\bsr\b|solar\s+return|this\s+year/i.test(prefix);
+          const isRxInThatChart = isSRMention
+            ? rxByChart.sr.has(planet)
+            : rxByChart.natal.has(planet);
+          if (!isRxInThatChart) {
+            // Cross-chart leak prevented: planet IS retrograde in the
+            // OTHER chart but NOT in the chart this prose is discussing.
+            skippedCrossChart.push(`${isSRMention ? "SR" : "natal"} ${planet} → ${t}`);
+            return false;
+          }
+          const replaced = node.slice(0, m.index + m[0].length) +
+            ` ${nudge}` +
+            node.slice(m.index + m[0].length);
           if (replaced !== node) {
             (parent as any)[key] = replaced;
             injected = true;
-            acknowledgments.push(`${planet} → ${t}`);
+            acknowledgments.push(`${isSRMention ? "SR" : "natal"} ${planet} → ${t}`);
             return true;
           }
           return false;
@@ -9737,14 +9775,20 @@ const acknowledgeRelationshipRetrogrades = (parsedContent: any, log: HygieneLog)
     }
   }
 
-  if (acknowledgments.length > 0) {
+  if (acknowledgments.length > 0 || skippedCrossChart.length > 0) {
     log.push({
       type: "relationship_retrograde_acknowledged",
-      detail: { count: acknowledgments.length, examples: acknowledgments.slice(0, 8) },
+      detail: {
+        count: acknowledgments.length,
+        examples: acknowledgments.slice(0, 8),
+        cross_chart_skipped: skippedCrossChart.slice(0, 8),
+        cross_chart_skipped_count: skippedCrossChart.length,
+      },
     });
     console.info("[ask-astrology] relationship retrograde acknowledged in prose", {
       count: acknowledgments.length,
       examples: acknowledgments.slice(0, 8),
+      cross_chart_skipped: skippedCrossChart.slice(0, 8),
     });
   }
 };
@@ -10909,7 +10953,7 @@ This applies to narrative_section bullets, summary_box items (where astrological
 Rules:
 - HOUSE NUMBER ACCURACY (CRITICAL): Every house number in placement tables MUST be copied EXACTLY from the pre-computed values in the chart context (shown as "(House X)" or "(SR House X)"). NEVER calculate, infer, or guess house numbers from a planet's sign. In Placidus house systems, sign and house are INDEPENDENT — a planet in Aries can be in ANY house (1 through 12) depending on the Ascendant degree. If you see "SR Mercury: 11°26' Pisces (SR House 4)" in the context, the house column MUST say 4, not 11 or 12. This is the #1 source of errors — triple-check every house number against the context before outputting.
 - SR HOUSE NUMBERS COME FROM SR ASCENDANT — NOT NATAL: When you fill the "Solar Return Key Placements" table, every house number MUST be read from the SR Planetary Positions block (the "(SR House X)" annotations), NOT copied from the natal placement table. SR planets occupy DIFFERENT houses than natal planets because the SR Ascendant is different from the natal Ascendant. If your SR table has 9+ rows where the SR house equals the natal house for the same planet, you have made an error — you copied natal houses instead of reading SR houses. Re-read the SR Planetary Positions block and rewrite the SR house column from there.
-- NO EM-DASHES OR EN-DASHES (—, –) ANYWHERE IN PROSE: Use commas, periods, parentheses, or " to " for date ranges. Never use the em-dash character (U+2014) or the en-dash character (U+2013) in any narrative_section body, summary item, transit description, or bullet. They are post-processed away by downstream renderers and the replacement breaks your sentence rhythm. Write "Jupiter expands the relationship, more opportunity, more confidence" NOT "Jupiter expands the relationship — more opportunity, more confidence". For date ranges write "May 8 to June 2, 2026" NOT "May 8–June 2, 2026". This is non-negotiable.
+- NO EM-DASHES OR EN-DASHES (—, –) ANYWHERE IN PROSE — ZERO TOLERANCE: Use commas, periods, parentheses, semicolons, or " to " for date ranges. Never use the em-dash character (U+2014) or the en-dash character (U+2013) in any narrative_section body, summary item, transit description, bullet, label, subtitle, callout, or any other prose field. They are post-processed away by downstream renderers and the replacement breaks your sentence rhythm. Write "Jupiter expands the relationship, more opportunity, more confidence" NOT "Jupiter expands the relationship — more opportunity, more confidence". For date ranges write "May 8 to June 2, 2026" NOT "May 8–June 2, 2026". For parenthetical asides use commas or actual parentheses, not paired em-dashes. BEFORE YOU FINISH ANY STRING, scan it character-by-character for U+2014 and U+2013 and rewrite. This is non-negotiable and a HARD FAIL — every em-dash that survives into the output is counted as a violation by the validator.
 - NO REPEATED SENTENCES OR PARAGRAPHS WITHIN THE SAME FIELD: Each transit description, narrative paragraph, and summary item must contain each sentence exactly once. Before finalizing any timing_section window description, scan the description for any sentence that appears more than once and remove the duplicates. Do NOT pad short descriptions by repeating the boilerplate sentence twice. If you find yourself writing the same template phrase ("Pluto turns the heat up underneath…", "Uranus shakes the relationship loose…", "Jupiter expands the relationship…") in multiple consecutive transit windows for the same planet, vary the wording so each window reads as a distinct interpretation, not the same template applied to a different natal point.
 - Always include placement_table as the first section using ALL planets including Uranus, Neptune, Pluto, Chiron, Midheaven, South Node — never omit them. Include Lilith and Juno ONLY if their data is explicitly present in the chart context.
 - Use the correct Unicode symbols for every planet — ☉ ☽ ☿ ♀ ♂ ♃ ♄ ♅ ♆ ♇ ⚷ ☊ ☋ ⚸ ⚵ — never skip symbols
@@ -10977,6 +11021,11 @@ BASE RULE 9 — UNIVERSAL SR RETROGRADE ACKNOWLEDGMENT (NON-NEGOTIABLE — appli
 
 BASE RULE 10 — UNIVERSAL NATAL RETROGRADE ACKNOWLEDGMENT (applies to every reading type):
   For every natal planet marked retrograde in the natal placement table, the section discussing that planet must acknowledge the retrograde status at least once in plain language. A bare ℞ symbol is not enough — write one sentence explaining what that natal retrograde means for this person specifically, framed in the reading's domain. Natal retrograde planets include but are not limited to: natal Mars retrograde (drive and assertion that works internally before it expresses outward), natal Venus retrograde (values and attraction that require internal processing before they can be received externally), natal Uranus retrograde (the generation's disruption pattern internalized rather than expressed outwardly). Omitting acknowledgment for any natal planet marked retrograde in the natal placement table is a HARD FAIL on every reading type.
+
+BASE RULE 11 — CHART-CONTEXT DISCIPLINE (NON-NEGOTIABLE — applies to every reading type, every section, every sentence that names a planet):
+  (a) NEVER MIX CHARTS WITHIN A SENTENCE OR PARAGRAPH. When discussing an SR planet, use ONLY the SR sign, SR degree, and SR house from the "Solar Return Key Placements" table for that planet — NEVER the natal sign/degree/house. Symmetrically, when discussing a natal planet, use ONLY the natal sign/degree/house. EXAMPLE OF THE FORBIDDEN BLEED: a paragraph about SR Saturn writing "Saturn in Leo does not always produce sharp confrontations" when SR Saturn is in Pisces and only the NATAL Saturn is in Leo. Before you write any sentence naming a planet, identify which chart it belongs to in this paragraph and copy the sign FROM THAT CHART'S TABLE. If the same planet appears in both charts in different signs, you MUST always prefix with "natal" or "SR" so the reader knows which chart you're discussing.
+  (b) RETROGRADE STATUS IS ALSO PER-CHART. The same planet can be retrograde in the natal chart and direct in the SR chart (or vice versa). Acknowledgment language for natal retrograde MUST appear next to a NATAL mention of that planet, and acknowledgment language for SR retrograde MUST appear next to an SR mention. NEVER attach a retrograde-acknowledgment parenthetical (e.g., "(retrograde, so meaning, faith, and growth get worked out privately…)") to a planet mention whose specific chart marks that planet as direct. EXAMPLE OF THE FORBIDDEN BLEED: writing "SR Jupiter (so meaning, faith, and growth get worked out privately before being expressed outwardly) in Cancer in the 11th house" when SR Jupiter is direct and only NATAL Jupiter is retrograde — the parenthetical belongs on a natal-Jupiter mention, not the SR one.
+  (c) BULLET INTERPRETATION FLOOR — UNIVERSAL: Every bullet in every narrative_section across every reading type MUST contain at least one full interpretation sentence in plain behavioral language. A bullet whose body field is ONLY a parenthetical placement reference like "(Venus in Sagittarius, House 2)" — with no interpretation sentence — is a HARD FAIL. The placement reference may appear in parentheses as a citation; the substantive sentence must be a recognizable scene from real life. If you cannot write the interpretation sentence, REMOVE the bullet rather than ship a metadata-only stub. This applies in particular to "How This Person Loves", "How They Communicate", "Where They Earn", "What They Need", and any other bullet-driven synthesis section.
 
 ═══════════════════════════════════════════════════════════════════════════════
 END UNIVERSAL READING TYPE BASE
@@ -14826,27 +14875,57 @@ ${natalGroundTruthLines}`
             general: "Reading",
           };
           let readingType = "Reading";
-          const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
-          if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
-            readingType = QT_TO_LABEL[canonicalQt];
+
+          // PRIORITY 1 — User-prompt directive. Every Quick Topic prompt
+          // ends with: 'The "question_type" in your JSON output MUST be
+          // exactly "<type>".' That directive is the user's actual intent
+          // and supersedes whatever the AI emits in parsedContent (the AI
+          // sometimes copies the wrong type from a prior turn — this is the
+          // root cause of "Nicki Career stamped as Relationship"). We scan
+          // ALL user messages, not just the last, so a regenerate-style
+          // follow-up doesn't lose the topic. Last directive wins.
+          let promptQt: string | null = null;
+          if (Array.isArray(sanitizedMessages)) {
+            const directiveRe = /question_type"?\s*[^"]{0,40}?MUST\s+be\s+exactly\s+"([a-z_]+)"/i;
+            for (const m of sanitizedMessages) {
+              if (m?.role !== "user") continue;
+              const txt = typeof m?.content === "string" ? m.content : "";
+              const dm = directiveRe.exec(txt);
+              if (dm && dm[1]) promptQt = dm[1].toLowerCase().trim();
+            }
+          }
+          if (promptQt && QT_TO_LABEL[promptQt]) {
+            readingType = QT_TO_LABEL[promptQt];
           } else {
-            const q = lastUserText.toLowerCase();
-            const cnt = (rx: RegExp): number => {
-              const m = q.match(rx); return m ? new Set(m).size : 0;
-            };
-            const scores: Array<[number, string]> = [
-              [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
-              [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
-              [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
-              [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
-              [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
-              [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
-              [cnt(/\b(transit|timing|when)\b/g), "Timing"],
-              [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
-              [cnt(/\bnatal\b/g), "Natal"],
-            ];
-            scores.sort((a, b) => b[0] - a[0]);
-            if (scores[0][0] > 0) readingType = scores[0][1];
+            // PRIORITY 2 — AI-emitted question_type.
+            const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
+            if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
+              readingType = QT_TO_LABEL[canonicalQt];
+            } else {
+              // PRIORITY 3 — Keyword scoring fallback.
+              const q = lastUserText.toLowerCase();
+              const cnt = (rx: RegExp): number => {
+                const m = q.match(rx); return m ? new Set(m).size : 0;
+              };
+              const scores: Array<[number, string]> = [
+                [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
+                [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
+                [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
+                [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
+                [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
+                [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
+                [cnt(/\b(transit|timing|when)\b/g), "Timing"],
+                [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
+                [cnt(/\bnatal\b/g), "Natal"],
+              ];
+              scores.sort((a, b) => b[0] - a[0]);
+              if (scores[0][0] > 0) readingType = scores[0][1];
+            }
+          }
+          // Also overwrite parsedContent.question_type so downstream consumers
+          // (gate, audit) see the corrected value too.
+          if (promptQt && QT_TO_LABEL[promptQt]) {
+            (parsedContent as any).question_type = promptQt;
           }
 
           const localDate = new Intl.DateTimeFormat("en-CA", {
