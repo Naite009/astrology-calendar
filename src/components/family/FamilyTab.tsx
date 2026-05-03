@@ -130,6 +130,36 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     return computeFamilySynastry(fromChart, toChart, fromRole, toRole);
   }, [fromChart, toChart, fromRole, toRole]);
 
+  const [aiReading, setAiReading] = useState<PairReadingResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Reset AI reading when pair changes
+  useEffect(() => {
+    setAiReading(null);
+  }, [fromChartId, toChartId, fromRole, toRole]);
+
+  const generateAiReading = async () => {
+    if (!fromChart || !toChart || !report) return;
+    if (report.rows.length === 0) {
+      toast.error("No significant cross-aspects found between these two charts.");
+      return;
+    }
+    setAiLoading(true);
+    setAiReading(null);
+    try {
+      const payload = buildPairReadingPayload(fromChart, toChart, fromRole, toRole, report);
+      const { data, error } = await supabase.functions.invoke("family-pair-reading", { body: payload });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setAiReading(data as PairReadingResponse);
+    } catch (e: any) {
+      console.error("[FamilyTab] AI reading failed", e);
+      toast.error(e?.message || "Could not generate reading. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <Card>
