@@ -14870,27 +14870,57 @@ ${natalGroundTruthLines}`
             general: "Reading",
           };
           let readingType = "Reading";
-          const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
-          if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
-            readingType = QT_TO_LABEL[canonicalQt];
+
+          // PRIORITY 1 — User-prompt directive. Every Quick Topic prompt
+          // ends with: 'The "question_type" in your JSON output MUST be
+          // exactly "<type>".' That directive is the user's actual intent
+          // and supersedes whatever the AI emits in parsedContent (the AI
+          // sometimes copies the wrong type from a prior turn — this is the
+          // root cause of "Nicki Career stamped as Relationship"). We scan
+          // ALL user messages, not just the last, so a regenerate-style
+          // follow-up doesn't lose the topic. Last directive wins.
+          let promptQt: string | null = null;
+          if (Array.isArray(sanitizedMessages)) {
+            const directiveRe = /question_type"?\s*[^"]{0,40}?MUST\s+be\s+exactly\s+"([a-z_]+)"/i;
+            for (const m of sanitizedMessages) {
+              if (m?.role !== "user") continue;
+              const txt = typeof m?.content === "string" ? m.content : "";
+              const dm = directiveRe.exec(txt);
+              if (dm && dm[1]) promptQt = dm[1].toLowerCase().trim();
+            }
+          }
+          if (promptQt && QT_TO_LABEL[promptQt]) {
+            readingType = QT_TO_LABEL[promptQt];
           } else {
-            const q = lastUserText.toLowerCase();
-            const cnt = (rx: RegExp): number => {
-              const m = q.match(rx); return m ? new Set(m).size : 0;
-            };
-            const scores: Array<[number, string]> = [
-              [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
-              [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
-              [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
-              [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
-              [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
-              [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
-              [cnt(/\b(transit|timing|when)\b/g), "Timing"],
-              [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
-              [cnt(/\bnatal\b/g), "Natal"],
-            ];
-            scores.sort((a, b) => b[0] - a[0]);
-            if (scores[0][0] > 0) readingType = scores[0][1];
+            // PRIORITY 2 — AI-emitted question_type.
+            const canonicalQt = String((parsedContent as any)?.question_type || "").toLowerCase().trim();
+            if (canonicalQt && QT_TO_LABEL[canonicalQt]) {
+              readingType = QT_TO_LABEL[canonicalQt];
+            } else {
+              // PRIORITY 3 — Keyword scoring fallback.
+              const q = lastUserText.toLowerCase();
+              const cnt = (rx: RegExp): number => {
+                const m = q.match(rx); return m ? new Set(m).size : 0;
+              };
+              const scores: Array<[number, string]> = [
+                [cnt(/\b(synastry|compatibility|love analysis|romantic|romance|dating|marriage|breakup|divorce|crush|attraction|spouse|husband|wife|girlfriend|boyfriend|soulmate|lover|love life|relationship)\b/g), "Relationship"],
+                [cnt(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|occupation|coworker|boss|interview|leadership)\b/g), "Career"],
+                [cnt(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|budget|savings)\b/g), "Money"],
+                [cnt(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g), "Health"],
+                [cnt(/\b(astrocartograph)\w*\b/g), "Astrocartography"],
+                [cnt(/\bwhere\b.*\b(live|move|relocat)\w*/g), "Where to Live"],
+                [cnt(/\b(transit|timing|when)\b/g), "Timing"],
+                [cnt(/\b(complete professional solar return|solar return reading|solar return analysis)\b/g), "Solar Return"],
+                [cnt(/\bnatal\b/g), "Natal"],
+              ];
+              scores.sort((a, b) => b[0] - a[0]);
+              if (scores[0][0] > 0) readingType = scores[0][1];
+            }
+          }
+          // Also overwrite parsedContent.question_type so downstream consumers
+          // (gate, audit) see the corrected value too.
+          if (promptQt && QT_TO_LABEL[promptQt]) {
+            (parsedContent as any).question_type = promptQt;
           }
 
           const localDate = new Intl.DateTimeFormat("en-CA", {
