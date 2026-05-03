@@ -5591,8 +5591,10 @@ const enforceRelationshipContract = (
     } catch (_e) { /* best-effort */ }
   }
 
-
+  return { ok: defects.filter((d) => d.severity === "hard").length === 0, defects, checked };
+};
 // ─────────────────────────────────────────────────────────────────────────
+
 
 // DETERMINISTIC SR PLANET POSITION CORRECTION PASS — scans prose for any
 // "SR <Planet> [at] <deg>°[<min>'] <Sign>" / "Solar Return <Planet> ... <Sign>"
