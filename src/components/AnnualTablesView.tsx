@@ -16,6 +16,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AnnualTablesViewProps {
   year: number;
@@ -388,8 +395,12 @@ const NewMoonCard = ({
   );
 };
 
-export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
+export const AnnualTablesView = ({ year: yearProp }: AnnualTablesViewProps) => {
   const { downloadAsImage } = useDownloadImage();
+  const [selectedYear, setSelectedYear] = useState<number>(yearProp);
+  const year = selectedYear;
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 2 + i);
   const fullMoonsRef = useRef<HTMLDivElement>(null);
   const newMoonsRef = useRef<HTMLDivElement>(null);
   const quarterMoonsRef = useRef<HTMLDivElement>(null);
@@ -600,7 +611,12 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
         const todayEcliptic = Astronomy.Ecliptic(todayMercury);
         const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayMercury);
 
-        return todayEcliptic.elon < yesterdayEcliptic.elon;
+        // Normalize across the 0°/360° boundary so an Aries-cusp crossing
+        // (e.g. 359° → 1°) is not falsely flagged as retrograde motion.
+        let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        return diff < 0;
       } catch {
         return false;
       }
@@ -664,6 +680,28 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-12">
+      {/* Year Selector */}
+      <div className="flex items-center justify-end gap-3">
+        <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+          Year
+        </label>
+        <Select
+          value={String(selectedYear)}
+          onValueChange={(v) => setSelectedYear(Number(v))}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {yearOptions.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Quick Reference Stats */}
       <section className="rounded-sm border border-border bg-background p-6">
         <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
