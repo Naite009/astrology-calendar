@@ -11392,6 +11392,62 @@ END UNIVERSAL READING TYPE BASE
   - FORBIDDEN PATTERNS: "same sign = conjunction", "same modality = square", "same element = trine". These are sign resonances, not aspects.
   - Do not overstate karmic or fated themes. Differentiate chemistry from compatibility. Differentiate attraction from durability.
 
+RELATIONSHIP MANDATORY PRE-WRITE CHECKS (complete all five before writing any prose; if any cannot be completed from the provided chart data, state that explicitly in the relevant section instead of inventing values):
+
+  PRE-CHECK 1 — NATAL 7TH HOUSE RULER vs OCCUPANTS (TWO SEPARATE VARIABLES, NEVER MERGE):
+    Step 1: Read the sign on the natal 7th house cusp from "House Cusps" in the chart context.
+    Step 2: Identify the traditional ruler of that sign (Aries→Mars, Taurus→Venus, Gemini→Mercury, Cancer→Moon, Leo→Sun, Virgo→Mercury, Libra→Venus, Scorpio→Mars, Sagittarius→Jupiter, Capricorn→Saturn, Aquarius→Saturn, Pisces→Jupiter).
+    Step 3: Locate that ruler in the natal placement table; record its SIGN, HOUSE, and retrograde status.
+    Step 4: Separately scan the natal placement table for any planets whose HOUSE column = 7. These are 7TH_OCCUPANTS, and they are a different list from the 7TH_RULER.
+    Step 5: Internally label:
+      7TH_RULER     = [planet, sign, House N, direct/retrograde]
+      7TH_OCCUPANTS = [list of planets in House 7, or "none"]
+    When you describe the 7th house in prose, the ruler sentence and the occupant sentence MUST be separate clauses. Template: "The 7th house cusp is in [sign], ruled by [7TH_RULER planet] in [its sign] in House [N]. [Separately:] [7TH_OCCUPANT planet, if any] also sits inside the 7th house." Never merge ruler and occupant into one phrase like "your 7th house Mars" when Mars is the ruler from another house.
+
+  PRE-CHECK 2 — SOLAR RETURN 7TH HOUSE (calculated independently; NEVER inherited from natal):
+    Step 1: Read SR Ascendant sign and degree from the SR placement table or "SR House Cusps" block in the chart context.
+    Step 2: SR_7TH_CUSP_SIGN = the sign exactly opposite the SR Ascendant sign (Aries↔Libra, Taurus↔Scorpio, Gemini↔Sagittarius, Cancer↔Capricorn, Leo↔Aquarius, Virgo↔Pisces). Same degree as the SR Ascendant.
+    Step 3: SR_7TH_RULER = the traditional ruler of SR_7TH_CUSP_SIGN, located in the SR placement table; record SR sign, SR house, SR retrograde status.
+    Step 4: SR_7TH_OCCUPANTS = list of SR planets whose SR house column = 7.
+    The "This Year in Love" / SR sections MUST use SR_7TH_CUSP_SIGN, SR_7TH_RULER, and SR_7TH_OCCUPANTS — never the natal 7th house sign or natal 7th ruler. If the SR Ascendant is not present in the chart context, omit the SR 7th house discussion entirely rather than guess.
+
+  PRE-CHECK 3 — RETROGRADE BEHAVIORAL TEMPLATE (mandatory for every retrograde planet referenced in prose):
+    For each retrograde planet (natal or SR) you will discuss, complete this template internally before writing:
+      "[Chart] [Planet] is retrograde. Its function ([love/desire/communication/drive/structure/etc]) moves inward before it moves outward. In practice, this looks like: [one concrete behavioral scenario the reader could picture on a Tuesday — a real conversation, a first date, a fight, a decision]."
+    Use that completed sentence as the basis for the prose paragraph. Do not write about a retrograde planet without the inward-first behavioral scenario.
+
+  PRE-CHECK 4 — ASPECT ORB → LANGUAGE SCALE (look up each aspect's actual orb in the provided aspect data and apply this scale precisely):
+      0 to 2 degrees: "lands directly on" / "sits exactly on" / "in tight conjunction with"
+      2 to 4 degrees: "closely activates" / "presses on" / "applies pressure to"
+      4 to 6 degrees: "reaches toward" / "adds weight to the same zone as" / "colors the same territory as"
+      6 degrees or wider: "shares the sign with" — NEVER call this a conjunction or any tight aspect in prose
+    Tight-orb language on a wide-orb aspect is a hard fail. Verify the orb number before writing the sentence. This applies in every section that names an aspect, including "Where Natal and Solar Return Connect" / "Natal & Solar Return Overlay".
+
+  PRE-CHECK 5 — DUAL DIMENSIONS (sign AND house, both required for every planet):
+    For every planet you interpret, address BOTH:
+      (a) the SIGN — describes the style, quality, and flavor of the planet's expression
+      (b) the HOUSE — describes the life domain where that expression plays out
+    Failure example: "Mars in Sagittarius — you're drawn to free-spirited people." (House missing.)
+    Correct example: "Mars in Sagittarius in the 2nd house — you're drawn to people who feel expansive and philosophically alive (Sagittarius), but your desire is filtered through self-worth first (2nd house): before you pursue, some part of you is asking whether you deserve this person."
+    A sign-only or house-only sentence about a focal planet is a defect.
+
+  ADDITIONAL HARD VOICE RULES FOR RELATIONSHIP READINGS:
+    - Second person ("you"), present tense, direct.
+    - Every abstract statement must be followed by a concrete real-life scenario (an actual conversation, a first date, a fight, a decision the reader can picture this week).
+    - BANNED words anywhere in relationship prose: wound, metabolized, archetypal, portal, liminal, shadow (in mystical sense), sacred, journey (metaphorical), healed, awakening, aligned, energy (in mystical sense). These are HARD FAILS.
+    - NO em-dashes or en-dashes anywhere. Use commas, periods, parentheses, semicolons, or " to " for date ranges.
+    - NO template placeholders. Never ship "{{placeholder}}", "[planet]", "[sign]", or any unfilled variable. If you do not know the value, state explicitly that the data was not provided rather than leaving a placeholder.
+    - "Right Now" in the strategy summary MUST reflect the actual transit data above. If any timing window starts within 7 days of the reading date, describe it as currently active, not as a quiet period.
+
+  SELF-CHECK BEFORE FINALIZING (silently verify each item):
+    [ ] Every planet mentioned in prose appears in the placement table at the sign and house claimed.
+    [ ] SR 7th house cusp sign was calculated from SR ASC, not copied from natal.
+    [ ] No retrograde planet is described without its inward-first behavioral scenario.
+    [ ] No aspect uses tighter orb language than its actual orb supports.
+    [ ] No template placeholders remain in the output.
+    [ ] "Right Now" reflects the actual transit data.
+    [ ] 7TH_RULER and 7TH_OCCUPANTS are described as separate variables, never merged.
+
 RELATIONSHIP READING RULES:
 - SELECTIVITY OVER EXHAUSTIVENESS: Do not list every placement and every aspect. Lead with the chart factors that most clearly explain this person's relationship behavior. If a placement or aspect doesn't add new insight beyond what's already covered, leave it out. A focused reading with 3 strong placements is better than a comprehensive one that dilutes the signal.
 - PLACEMENT TABLES: TWO placement tables required — natal AND solar return. Include Chiron (⚷), Midheaven (MC), Descendant (DSC), IC, and Juno (⚵) in both tables whenever data is available.
