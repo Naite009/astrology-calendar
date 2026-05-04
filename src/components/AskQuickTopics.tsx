@@ -85,29 +85,7 @@ STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "Who 
     label: "📖 Narrative",
     icon: <Sparkles className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
-      `Using ONLY the full natal chart for ${name}, born ${date} at ${time} in ${loc}, write a long-form NARRATIVE PORTRAIT in five flowing prose movements. This is NOT a section grid — it is one continuous story of who this person is, told with the depth, behavior-first language, and somatic felt-sense layers of a master astrologer reading the person live. Today's date is ${today()}. Do NOT use Solar Return data. The "question_type" in your JSON output MUST be exactly "narrative".
-
-VOICE RULES (NON-NEGOTIABLE):
-- Second person ("you"). Speak directly to ${name}.
-- Apply the Hybrid Clarity Rule for every interpretation: situation → feeling → why. Never stack abstract traits in a row. Every claim must land in a recognizable real-life moment, in the body, or in observable behavior.
-- Use the ruler chains and planets-by-house blocks already provided in the chart context. Trace the chains explicitly (e.g. "Your Capricorn 7th house ruler is Saturn in Cancer 1st conjunct your Moon — which means…").
-- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal", "calling" (as noun), "activation", "let's explore", "let's unpack", "journey", "tapestry".
-- No meta-sentences ("In this reading we will…"). Open with the strongest chart signature, not a preamble.
-- Each movement: 350–600 words of flowing prose. Use paragraph breaks; do NOT use bullet lists inside movements.
-
-THE FIVE MOVEMENTS — write in this exact order, one narrative_section per movement:
-
-MOVEMENT 1: "Opening Portrait" — Open by naming the single strongest signature in the chart (chart shape, dominant planet, tightest aspect, or angular stellium) and what it actually feels like to live as this person. By the end of paragraph two, the person should already be saying "yes, that's me."
-
-MOVEMENT 2: "The Inner World" — Sun, Moon, and Ascendant woven together as one psyche. Name each by sign, house, and degree. Trace the ruler of the Ascendant to wherever it lands and what that does to how ${name} shows up. Include any tight aspects pre-computed in the chart context. End with what ${name} privately feels at 3am that other people don't see.
-
-MOVEMENT 3: "How They Meet the World" — Mercury, Venus, Mars as a relational arc: how ${name} thinks and speaks, what they want and how they pull it close, how they fight and pursue. Use the ruler chains for the 3rd, 7th, and 5th houses. Concrete examples of how this shows up in conversation, dating, conflict.
-
-MOVEMENT 4: "The Long Arc" — Jupiter, Saturn, Chiron, the outer planets, and the Nodes as the developmental story. Where they expand, where they're being slowly built, the recurring pattern that becomes the gift, and what this lifetime is calling them toward (verb phrase only). Use any pre-computed Saturn-cycle / progressed-Moon data; do not estimate dates.
-
-MOVEMENT 5: "The Closing Truth" — If ${name} sat across from a master astrologer and asked "tell me the truth about me," this is the answer. Plain, direct, specific to this chart. One paragraph. End on a sentence that lands.
-
-STRUCTURAL OUTPUT: Return one narrative_section per movement (titles exactly: "Opening Portrait", "The Inner World", "How They Meet the World", "The Long Arc", "The Closing Truth"). Precede the movements with a placement_table titled "Natal Key Placements". End with a summary_box titled "The Chart in One Breath" with a single item titled "Truth" containing 2–3 sentences.`,
+      `Generate a NARRATIVE PORTRAIT for ${name}, born ${date} at ${time} in ${loc}. Today is ${today()}. The "question_type" in your JSON output MUST be exactly "narrative".`,
   },
   {
     id: "sacred_directive",
