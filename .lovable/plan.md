@@ -1,81 +1,52 @@
-# Parent ↔ Child Tab (Deterministic) + Parenting Reading in Ask Tab
+# Phase 1 — Promote Ask, Retire the Weak Narrative Tab
 
-## Part 1 — Family Tab (Deterministic, no AI)
+Move all natal-chart prose generation onto the Ask tab's Claude pipeline. Keep Natal Portrait (deterministic), Decoder (interactive), Sacred Script (structured directive), Solar Return, and Human Design as separate tabs.
 
-New **👪 Family** tab. For any two saved charts marked as a family pair, generates a directional synastry report from hand-authored interpretations.
+## What changes for the user
 
-**UX**
-- My Family panel: add child / parent / grandparent / sibling, each linked to a saved chart.
-- Pair selector: FROM chart → TO chart, relationship dropdown, Swap button.
-- Report sections: The Essence · How They Experience You · How You Land in Their Nervous System · The Inherited Pattern · What Helps.
-- Each card: aspect glyph, orb, child-experience paragraph, parent-blind-spot paragraph, what-helps bullets. Behavior-first language.
+- **Ask tab** gets two new Quick Topics:
+  - **📖 Narrative** — long-form prose reading in 5 movements (Opening Portrait, The Inner World, How They Meet the World, The Long Arc, The Closing Truth).
+  - **🔮 Sacred Directive** — fortune-cookie synthesis of Big Three + Saturn + North Node, using the existing strict Sacred Script rules.
+- **Narrative tab** in `AstroCalendar` is removed from the top-level navigation. The Gemini-Flash `generate-narrative` engine and `GroundedNarrativeView` files stay on disk for one release (so existing bookmarks don't 404), but the entry point and tab button are gone.
+- Natal Portrait, Decoder, Sacred Script, Solar Return, Human Design tabs: **unchanged**.
 
-**Curated aspect rows (FROM → TO)**
-Sun→Moon, Moon→Sun, Asc→Sun, Mars→Moon, Mercury→Moon, Saturn→Sun, Moon→Venus, Jupiter→Sun, Venus→Moon, Pluto→Sun/Moon, Neptune→Sun/Moon, Chiron→Sun/Moon, North Node→Sun/Moon. Sibling pairs swap Saturn-authority for Mercury↔Mercury.
+## What changes technically
 
-**Tech**
-1. Extend `src/lib/familyRelationshipTypes.ts` with roles + `FamilyPair` type.
-2. New table `family_relationships` (user_id NOT NULL, from_chart_id, to_chart_id, relationship, created_at) with owner-only RLS.
-3. New `src/lib/parentChildSynastry.ts` — computes curated cross-aspects using `aspectOrbs.ts`.
-4. New `src/data/parentChildInterpretations.ts` — ~65 hand-authored entries (13 framings × 5 aspect kinds), each with `childExperience`, `parentBlindSpot`, `whatHelps[]`. v1 ships with this set; expand later as gaps appear.
-5. New components under `src/components/family/`: `FamilyTab`, `FamilyRoster`, `FamilyPairSelector`, `FamilySynastryReport`, `FamilyAspectCard`.
-6. Register **👪 Family** in main tab navigation.
+### `src/components/AskQuickTopics.tsx`
+Add two entries to `QUICK_TOPICS`:
 
-## Part 2 — Parenting Reading in Ask Tab
+1. **`narrative`** — prompt instructs 5 prose "movements" (no section grid like Natal). Inherits all existing Ask rules automatically: EPHEMERIS FACT CHECK, ruler-chain enrichment, Hybrid Clarity Rule, retrograde post-correction, Behavior-First, Essence Opening, banned-phrase list, somatic felt-sense layers. Ends with the directive `The "question_type" in your JSON output MUST be exactly "narrative".`
 
-New `parenting` reading type using existing `ask-astrology` infrastructure.
+2. **`sacred_directive`** — prompt mirrors the existing Sacred Script Final Directive synthesis logic (Big Three + Saturn + North Node fortune-cookie, ~120 words, plain language). Ends with `... MUST be exactly "sacred_directive".`
 
-**UX**
-- Add **👪 Parenting** to Ask reading-type selector.
-- Pair selector appears (Parent + Child charts from saved charts).
-- Quick-Topic auto-submit buttons: "How does my child experience my anger?", "Why don't my words land?", "What does my child need from me right now?", "Where am I unintentionally repeating my own parents' patterns?", "What part of my child am I missing?", "How do my child and I clash, and why?"
-- Free-text input also available.
-
-**System prompt (additive to existing rules)**
+### `supabase/functions/ask-astrology/index.ts`
+Register both new types in the `QT_TO_LABEL` map (line ~15291):
 ```
-PARENTING READING SYSTEM PROMPT
-
-You are reading a directional dyad: PARENT chart → CHILD chart.
-The parent is asking. The child is the receiver. Direction matters absolutely.
-
-Mandatory structure:
-1. The Essence of This Parent–Child Dynamic
-   2–4 sentences. Zero jargon. Synthesize parent's Sun/Moon/Mars/Mercury/Saturn
-   into how this specific child experiences them.
-
-2. Direct Answer to the Question
-   Behavior-first. Sentence 2 names the cross-chart aspect causing it.
-
-3. How Your Child Experiences You (top 5 tightest cross-aspects, by orb)
-   For each: a) what the child feels in their body, b) the cross-aspect with sign+orb+applying/separating,
-   c) what the child has likely concluded about themselves, d) one concrete parenting move.
-
-4. The Inherited Pattern
-   Parent Saturn/Chiron/Pluto/Nodes to child's Sun/Moon/Asc.
-   Name the unconscious transmission and the chance to break it.
-
-5. What This Child Needs From You That Other Children Wouldn't
-   Tied to child's Moon sign+house, Asc, Mercury. Not generic advice.
-
-6. Where You Two Will Always Click
-   Tightest supportive cross-aspects (trine/sextile ≤3°). Frame as shared language.
-
-Hard rules:
-- Never use synastry-romance language for the child.
-- Never blame the child for parent's reactions or pathologize the child.
-- Always frame challenges as "the child's nervous system reads X as Y" — never "child is difficult."
-- Calibrate language by child's age: developmental <12, identity-formation 12–18, adult-child 18+.
-- Honor BEHAVIOR-FIRST and ESSENCE OPENING rules.
-- Inject EPHEMERIS FACT CHECK with both charts' verified placements.
-- Apply existing retrograde post-processors.
+narrative: "Narrative",
+sacred_directive: "Sacred Directive",
 ```
+This makes PDF filenames + reading stamps correct. No other backend changes needed — the existing pipeline already handles arbitrary `question_type` values; the prompts carry their own structure.
 
-**Tech**
-1. Add `parenting` to Ask reading-type union + selector in `AskView.tsx`.
-2. Add `secondChartId` (child) to Ask job payload; build child's chart context (ruler chains, planets-by-house) same as parent's.
-3. In `supabase/functions/ask-astrology/index.ts`: add `PARENTING_SYSTEM_PROMPT` block, wire when `readingType === 'parenting'`, pass both contexts labeled `PARENT CHART` and `CHILD CHART`. Reuse all existing post-processors.
-4. Add Quick-Topic buttons matching existing AI Chart Consultation auto-submit pattern.
-5. Add memory file `mem://features/ask-tab/parenting-reading-standards.md`.
+### `src/components/AstroCalendar.tsx`
+- Remove the "Narrative" tab button from the view-mode selector (~line 589).
+- Remove the `viewMode === "narrative"` render branch (~line 1043).
+- Remove the `viewMode === "narrative"` state/scroll branch (~line 198).
+- Leave the `GroundedNarrativeView` lazy import file in place for one release; nothing references it after the tab button is gone.
 
-## Out of Scope
-Composite/Davison family charts, 3+ person group dynamics, shared rosters across accounts.
+### Memory updates
+- New: `mem://features/ask-tab/narrative-reading-standards.md` — the 5-movement structure + voice rules.
+- New: `mem://features/ask-tab/sacred-directive-reading-standards.md` — Big Three + Saturn + Node fortune-cookie rules.
+- Update `mem://index.md` Memories list with both.
+
+## Out of scope (Phase 2, only if you want it later)
+
+A new Ask reading type **"Natal × Human Design"** that pulls the linked HD chart from `useUnifiedProfiles` (Type / Authority / Profile / defined centers) and weaves it into the natal narrative in one Claude call. This would deliver the "extra layer" without forcing HD into the natal hub UI. Not built in this phase.
+
+## Files touched
+
+- `src/components/AskQuickTopics.tsx` — add 2 QUICK_TOPICS entries
+- `supabase/functions/ask-astrology/index.ts` — add 2 QT_TO_LABEL keys
+- `src/components/AstroCalendar.tsx` — remove Narrative tab button + render branch
+- `.lovable/memory/features/ask-tab/narrative-reading-standards.md` — new
+- `.lovable/memory/features/ask-tab/sacred-directive-reading-standards.md` — new
+- `.lovable/memory/index.md` — add 2 memory references
