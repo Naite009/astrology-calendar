@@ -1309,7 +1309,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       : {};
 
     // Normalize planet name from AI output to our key
-    const normalize = (name: string): string => {
+    const normalize = (name: string | undefined | null): string => {
+      if (!name || typeof name !== 'string') return '';
       return name.replace(/[☉☽☿♀♂♃♄♅♆♇⚷☊☋⚸⚵🜕⚳⚴⯰]/g, '').trim().toLowerCase()
         .replace('north node', 'northnode').replace('south node', 'southnode')
         .replace('n. node', 'northnode').replace('s. node', 'southnode')
