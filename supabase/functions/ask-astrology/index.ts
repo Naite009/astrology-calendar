@@ -8133,6 +8133,17 @@ const runPostProcessingPipeline = (
   const qt = String((parsedContent as any)?.question_type || "").toLowerCase();
   const isNarrative = qt === "narrative";
 
+  if (isNarrative && Array.isArray((parsedContent as any).sections)) {
+    const before = (parsedContent as any).sections.length;
+    (parsedContent as any).sections = (parsedContent as any).sections.filter(
+      (section: any) => section?.type !== "timing_section",
+    );
+    const removed = before - (parsedContent as any).sections.length;
+    if (removed > 0) {
+      log.push({ type: "pipeline_pass_skipped", detail: { pass: "timing_section", reason: "narrative_reading", removed } });
+    }
+  }
+
   const safeRun = (name: string, fn: () => void) => {
     try {
       fn();
@@ -13719,7 +13730,7 @@ ${natalGroundTruthLines}`
 
         // Merge deterministic timing FIRST so subsequent verification passes operate on verified data
         // (prevents empty-transit bugs when AI uses non-planet natal_point names like "4th house ruler")
-        if (safeDeterministicTiming) {
+        if (safeDeterministicTiming && !isNarrativeQuestion) {
           mergeDeterministicTimingSection(parsedContent, safeDeterministicTiming);
         }
 
