@@ -12249,19 +12249,21 @@ If this person sat across from a master astrologer and asked "tell me the truth 
 HARD STRUCTURAL CONTRACT — JSON OUTPUT
 ═══════════════════════════════════════════════════════════════════════════
 
+SINGLE-PASS REQUIREMENT: Generate ALL FIVE movements in ONE pass, in the exact order below. Do not omit any movement, do not reorder them, and do not defer any to a later pass. Before you emit the JSON, mentally verify that sections[1..5] match the five titles below in this exact sequence. If any are missing or out of order, rewrite before emitting. Missing movements will NOT be appended later — they must be present and correctly ordered in the first response.
+
 Your JSON output MUST contain EXACTLY these sections, in this order, and NOTHING ELSE:
 
 1. ONE placement_table titled exactly "Natal Key Placements" — natal data only.
-2. FIVE narrative_section entries with these exact titles in this exact order:
-   - "Opening Portrait"
-   - "The Inner World"
-   - "How They Meet the World"
-   - "The Long Arc"
-   - "The Closing Truth"
+2. FIVE narrative_section entries with these exact titles in this exact order (positions 2 through 6 in the sections array):
+   - position 2: "Opening Portrait"
+   - position 3: "The Inner World"
+   - position 4: "How They Meet the World"
+   - position 5: "The Long Arc"
+   - position 6: "The Closing Truth"
 3. ONE summary_box titled exactly "The Chart in One Breath" with EXACTLY ONE item titled exactly "Truth", containing 2–3 sentences.
 
 ABSOLUTELY FORBIDDEN in narrative output:
-- NO timing_section anywhere.
+- NO timing windows of ANY kind. The narrative is TIMELESS — it describes who this person IS, not what is HAPPENING this year, this month, or on any date. Do NOT generate any timing_section, transit windows, transit lists, date ranges, "in 2026", "this spring", "later this year", "by July", "from June to August", "applying transit", "exact on...", or any predictive date-bound language. If you find yourself writing a date or a transit window, STOP and DELETE it. Outer-planet developmental themes in Movement 4 must be described as ongoing chapters of life, never with calendar dates.
 - NO Solar Return placement_table (no "Solar Return Key Placements", no "SR Key Placements").
 - NO modality_element / "Elemental & Modal Balance" / "Natal Elemental & Modal Balance" section.
 - NO relationship-architecture sections ("Relationship Style", "How They Love", "Relationship Pattern", "Relationship Needs Profile", "This Year in Love", etc.).
@@ -12270,7 +12272,7 @@ ABSOLUTELY FORBIDDEN in narrative output:
 
 The "question_type" field in your JSON output MUST be exactly "narrative".
 
-This contract is enforced server-side: any extra section will be flagged; any missing required section will be flagged.`;
+This contract is enforced server-side: any extra section will be flagged; any missing required section will be flagged; any timing window will be stripped.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
