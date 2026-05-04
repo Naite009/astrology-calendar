@@ -577,30 +577,7 @@ export const AstroCalendar = () => {
                 <Combine size={14} />
                 Combos
               </button>
-              <button
-                onClick={() => {
-                  if (userNatalChart || savedCharts.length > 0) {
-                    setViewMode("narrative");
-                  } else {
-                    setViewMode("charts");
-                  }
-                }}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "narrative"
-                    ? "bg-primary text-primary-foreground"
-                    : userNatalChart || savedCharts.length > 0
-                      ? "text-muted-foreground hover:text-foreground"
-                      : "text-muted-foreground/60 hover:text-muted-foreground"
-                }`}
-                title={
-                  userNatalChart || savedCharts.length > 0
-                    ? "Grounded Narrative"
-                    : "Add a chart to view Narrative"
-                }
-              >
-                <FileText size={14} />
-                Narrative
-              </button>
+              {/* Narrative tab retired — moved to Ask tab as 📖 Narrative Quick Topic */}
               <button
                 onClick={() => setViewMode("human-design")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
