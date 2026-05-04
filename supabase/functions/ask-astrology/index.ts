@@ -12878,7 +12878,7 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
     }
     systemBlocks.push({
       type: "text",
-      text: SYSTEM_PROMPT,
+      text: isNarrativeQuestion ? NARRATIVE_SYSTEM_PROMPT : SYSTEM_PROMPT,
       cache_control: { type: "ephemeral" },
     });
     if (perQuestionTail) {
