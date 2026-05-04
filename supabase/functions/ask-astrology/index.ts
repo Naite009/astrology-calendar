@@ -12482,7 +12482,24 @@ async function processJob(args: {
     const careerScore = countDistinct(/\b(career|job|jobs|work|workplace|promotion|profession\w*|vocation\w*|industry|industries|occupation|coworker|boss|fired|hired|interview|leadership|10th house|midheaven|\bmc\b|professional)\b/g);
     const moneyScore = countDistinct(/\b(money|finance\w*|income|salary|debt|invest\w*|wealth|earn\w*|earning|budget|cash|savings|2nd house|8th house|joint ventures)\b/g);
     const healthScore = countDistinct(/\b(health|illness|wellness|fitness|chronic|symptom|healing|medical|disease)\b/g);
+    // NARRATIVE DETECTION — read the explicit prompt directive (same regex
+    // used in the final-gate filename stamp). When the user message contains
+    // `question_type ... MUST be exactly "narrative"`, force the dedicated
+    // narrative routing path: dedicated NARRATIVE_SYSTEM_PROMPT, no 3-call
+    // relationship branch, no SR placement table injection, no deterministic
+    // modality/element injection.
+    const narrativeDirectiveRe = /question_type"?\s*[^"]{0,40}?MUST\s+be\s+exactly\s+"([a-z_]+)"/i;
+    let directiveQt: string | null = null;
+    for (const m of messages) {
+      if (m?.role !== "user") continue;
+      const txt = typeof m?.content === "string" ? m.content : "";
+      const dm = narrativeDirectiveRe.exec(txt);
+      if (dm?.[1]) directiveQt = dm[1].toLowerCase().trim();
+    }
+    const isNarrativeQuestion = directiveQt === "narrative";
+
     const isRelationshipQuestion =
+      !isNarrativeQuestion &&
       relationshipScore > 0 &&
       relationshipScore > careerScore &&
       relationshipScore > moneyScore &&
@@ -12492,7 +12509,7 @@ async function processJob(args: {
     const wantsFocusedReading = /(compact mode|please be brief|keep it short|relationship-only compact)/.test(normalizedQuestion);
     const compactRelationshipMode = isRelationshipQuestion && wantsFocusedReading;
     console.info(
-      `[ask-astrology] question routing: relationship=${relationshipScore} career=${careerScore} money=${moneyScore} health=${healthScore} → ${isRelationshipQuestion ? "RELATIONSHIP_3CALL" : "SINGLE_CALL"}`,
+      `[ask-astrology] question routing: narrative=${isNarrativeQuestion} relationship=${relationshipScore} career=${careerScore} money=${moneyScore} health=${healthScore} → ${isNarrativeQuestion ? "NARRATIVE" : isRelationshipQuestion ? "RELATIONSHIP_3CALL" : "SINGLE_CALL"}`,
     );
 
     let sanitizedChartContext = typeof chartContext === 'string' ? chartContext : '';
