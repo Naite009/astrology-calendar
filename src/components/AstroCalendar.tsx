@@ -1040,14 +1040,7 @@ export const AstroCalendar = () => {
           </Suspense>
         )}
 
-        {viewMode === "narrative" && (
-          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
-            <GroundedNarrativeView 
-              savedCharts={savedCharts}
-              userNatalChart={userNatalChart}
-            />
-          </Suspense>
-        )}
+        {/* Narrative tab retired — prose readings now live in Ask tab as 📖 Narrative Quick Topic */}
 
         {viewMode === "transit-calendar" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
