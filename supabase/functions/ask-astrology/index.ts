@@ -8130,6 +8130,8 @@ const runPostProcessingPipeline = (
 ): void => {
   if (!parsedContent || typeof parsedContent !== "object") return;
   const ctx = chartContext || "";
+  const qt = String((parsedContent as any)?.question_type || "").toLowerCase();
+  const isNarrative = qt === "narrative";
 
   const safeRun = (name: string, fn: () => void) => {
     try {
@@ -8147,9 +8149,15 @@ const runPostProcessingPipeline = (
   // relocation) ship only a natal table while the prose discusses SR
   // planets — and the Replit gate flags RETROGRADE_STATE_MISMATCH because
   // it has no SR table to corroborate the retrograde claim.
-  safeRun("ensureSolarReturnPlacementTable", () =>
-    ensureSolarReturnPlacementTable(parsedContent, ctx, log),
-  );
+  // SKIPPED FOR NARRATIVE: narrative readings are natal-only by contract
+  // and must NOT contain a Solar Return placement table.
+  if (qt !== "narrative") {
+    safeRun("ensureSolarReturnPlacementTable", () =>
+      ensureSolarReturnPlacementTable(parsedContent, ctx, log),
+    );
+  } else {
+    log.push({ type: "pipeline_pass_skipped", detail: { pass: "ensureSolarReturnPlacementTable", reason: "narrative_reading" } });
+  }
 
   // 1. Retrograde flags on every placement_table row (per-row routing).
   safeRun("normalizePlacementTableRetrograde", () =>
@@ -8165,21 +8173,30 @@ const runPostProcessingPipeline = (
   enforcePlacementTableContextConsistency(parsedContent, ctx, log);
 
   // 2. Deterministic modality/element section.
-  safeRun("injectDeterministicModalityElement", () => {
-    const inj = injectDeterministicModalityElement(parsedContent, ctx);
-    log.push({
-      type: "deterministic_modality_element_injected",
-      detail: { injected: inj.injected, tallies: inj.tallies },
+  // SKIPPED FOR NARRATIVE: narrative readings forbid an elemental balance
+  // section by contract.
+  if (qt !== "narrative") {
+    safeRun("injectDeterministicModalityElement", () => {
+      const inj = injectDeterministicModalityElement(parsedContent, ctx);
+      log.push({
+        type: "deterministic_modality_element_injected",
+        detail: { injected: inj.injected, tallies: inj.tallies },
+      });
     });
-  });
 
-  // 2b. The inject step preserves existing body/balance prose while replacing
-  // deterministic counts. Reconcile those preserved sentences immediately so
-  // the final gate never sees stale claims like "Mutable dominant" when the
-  // count arrays say Cardinal/Fixed are tied.
-  safeRun("correctModalityElementBodyClaims", () =>
-    correctModalityElementBodyClaims(parsedContent),
-  );
+    // 2b. The inject step preserves existing body/balance prose while replacing
+    // deterministic counts. Reconcile those preserved sentences immediately so
+    // the final gate never sees stale claims like "Mutable dominant" when the
+    // count arrays say Cardinal/Fixed are tied.
+    safeRun("correctModalityElementBodyClaims", () =>
+      correctModalityElementBodyClaims(parsedContent),
+    );
+  } else {
+    log.push({ type: "pipeline_pass_skipped", detail: { pass: "injectDeterministicModalityElement", reason: "narrative_reading" } });
+    log.push({ type: "pipeline_pass_skipped", detail: { pass: "correctModalityElementBodyClaims", reason: "narrative_reading" } });
+  }
+  // Reference isNarrative so future passes can read it without recomputing.
+  void isNarrative;
 
   // 3. 7th-house / Descendant cusp prose.
   safeRun("fixDescendantCuspMentionsInProse", () =>
