@@ -458,12 +458,26 @@ export function AskQuickTopics({
     if (disabled) return;
     setActiveTopic(topic);
     setPersonalContext("");
-    // Seed Current city from the SR location when opening relocation. The
-    // resolver attached to CityInput will normalize and confirm with a check.
     setRelocCurrent(topic.id === "relocation" ? sanitizeCityField(currentLocation || "") : "");
     setRelocCity1("");
     setRelocCity2("");
+    // Narrative is a one-shot generation with no extra inputs — skip the
+    // confirmation panel and submit immediately.
+    if (topic.id === "narrative") {
+      const prompt = buildPromptWithContext(
+        topic,
+        chartName,
+        birthDate,
+        birthTime,
+        birthLocation,
+        "",
+        undefined,
+      );
+      setActiveTopic(null);
+      onSelect(prompt, {});
+    }
   };
+
 
   const handleSubmit = () => {
     if (!activeTopic) return;
