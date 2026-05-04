@@ -81,6 +81,56 @@ SECTION 12: THE OVERARCHING MESSAGE — If this person came to a professional as
 STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "Who You Are", "How You Think and Communicate", "How You Love", "How You Act and Pursue", "Where You Grow and Get Lucky", "Where You Are Being Tested", "Soul Purpose and Life Direction", "The Pattern and the Gift", "Generational Placement", "Patterns and Themes", "Where You Are in Your Life Cycles", "The Overarching Message"). Precede the narrative sections with a placement_table titled "Natal Key Placements". End with a modality_element section "Natal Elemental & Modal Balance" and a summary_box titled "Natal Strategy Summary" with items: "Core Identity", "Life Lesson", "Soul Direction", "Overarching Message".`,
   },
   {
+    id: "narrative",
+    label: "📖 Narrative",
+    icon: <Sparkles className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using ONLY the full natal chart for ${name}, born ${date} at ${time} in ${loc}, write a long-form NARRATIVE PORTRAIT in five flowing prose movements. This is NOT a section grid — it is one continuous story of who this person is, told with the depth, behavior-first language, and somatic felt-sense layers of a master astrologer reading the person live. Today's date is ${today()}. Do NOT use Solar Return data. The "question_type" in your JSON output MUST be exactly "narrative".
+
+VOICE RULES (NON-NEGOTIABLE):
+- Second person ("you"). Speak directly to ${name}.
+- Apply the Hybrid Clarity Rule for every interpretation: situation → feeling → why. Never stack abstract traits in a row. Every claim must land in a recognizable real-life moment, in the body, or in observable behavior.
+- Use the ruler chains and planets-by-house blocks already provided in the chart context. Trace the chains explicitly (e.g. "Your Capricorn 7th house ruler is Saturn in Cancer 1st conjunct your Moon — which means…").
+- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal", "calling" (as noun), "activation", "let's explore", "let's unpack", "journey", "tapestry".
+- No meta-sentences ("In this reading we will…"). Open with the strongest chart signature, not a preamble.
+- Each movement: 350–600 words of flowing prose. Use paragraph breaks; do NOT use bullet lists inside movements.
+
+THE FIVE MOVEMENTS — write in this exact order, one narrative_section per movement:
+
+MOVEMENT 1: "Opening Portrait" — Open by naming the single strongest signature in the chart (chart shape, dominant planet, tightest aspect, or angular stellium) and what it actually feels like to live as this person. By the end of paragraph two, the person should already be saying "yes, that's me."
+
+MOVEMENT 2: "The Inner World" — Sun, Moon, and Ascendant woven together as one psyche. Name each by sign, house, and degree. Trace the ruler of the Ascendant to wherever it lands and what that does to how ${name} shows up. Include any tight aspects pre-computed in the chart context. End with what ${name} privately feels at 3am that other people don't see.
+
+MOVEMENT 3: "How They Meet the World" — Mercury, Venus, Mars as a relational arc: how ${name} thinks and speaks, what they want and how they pull it close, how they fight and pursue. Use the ruler chains for the 3rd, 7th, and 5th houses. Concrete examples of how this shows up in conversation, dating, conflict.
+
+MOVEMENT 4: "The Long Arc" — Jupiter, Saturn, Chiron, the outer planets, and the Nodes as the developmental story. Where they expand, where they're being slowly built, the recurring pattern that becomes the gift, and what this lifetime is calling them toward (verb phrase only). Use any pre-computed Saturn-cycle / progressed-Moon data; do not estimate dates.
+
+MOVEMENT 5: "The Closing Truth" — If ${name} sat across from a master astrologer and asked "tell me the truth about me," this is the answer. Plain, direct, specific to this chart. One paragraph. End on a sentence that lands.
+
+STRUCTURAL OUTPUT: Return one narrative_section per movement (titles exactly: "Opening Portrait", "The Inner World", "How They Meet the World", "The Long Arc", "The Closing Truth"). Precede the movements with a placement_table titled "Natal Key Placements". End with a summary_box titled "The Chart in One Breath" with a single item titled "Truth" containing 2–3 sentences.`,
+  },
+  {
+    id: "sacred_directive",
+    label: "🔮 Sacred Directive",
+    icon: <Sparkles className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using ONLY the full natal chart for ${name}, born ${date} at ${time} in ${loc}, generate a SACRED DIRECTIVE — a fortune-cookie synthesis of the Big Three (Sun, Moon, Ascendant), Saturn, and the North Node into one short, plain-language directive that tells ${name} how to live this incarnation. Today's date is ${today()}. The "question_type" in your JSON output MUST be exactly "sacred_directive".
+
+VOICE RULES (NON-NEGOTIABLE):
+- Second person.
+- 3rd-grade reading level. Zero jargon. No sign or planet names in the directive itself (use them only in the placement_table).
+- Apply the Hybrid Clarity Rule. Every line must describe a recognizable real-life behavior or feeling.
+- FORBIDDEN: "wound", "archetypal", "portal", "metabolized", "calling" (as noun), "journey", "honor your truth", any generic spiritual filler.
+- The whole directive: 100–140 words, 4–6 short sentences. Each sentence does work.
+
+STRUCTURE — return exactly these sections in this order:
+1. placement_table titled "The Five Anchors" with rows: Sun, Moon, Rising, Saturn, North Node (each with sign, house, degree).
+2. narrative_section titled "Who You Are" — 2–3 sentences synthesizing Sun + Moon + Rising into one sentence about how this person actually moves through a day.
+3. narrative_section titled "The Long Lesson" — 2 sentences on what Saturn (by sign + house) is slowly building, framed as the kind of situation ${name} keeps meeting.
+4. narrative_section titled "Where You Are Going" — 2 sentences on the North Node direction as a concrete behavior to lean toward (not a destination).
+5. summary_box titled "Sacred Directive" with one item titled "Live This" containing the 100–140 word fortune-cookie directive itself — no astrology vocabulary, just the instruction for how to live.`,
+  },
+  {
     id: "solar_return",
     label: "☀️ Solar Return",
     icon: <Sun className="h-4 w-4" />,

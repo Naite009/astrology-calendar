@@ -15298,6 +15298,8 @@ ${natalGroundTruthLines}`
             astrocartography: "Astrocartography",
             solar_return: "Solar Return",
             natal: "Natal",
+            narrative: "Narrative",
+            sacred_directive: "Sacred Directive",
             spiritual: "Spiritual",
             general: "Reading",
           };

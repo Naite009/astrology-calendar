@@ -131,3 +131,5 @@ Updated: now
 - [Concrete Scenario Voice Rule](mem://features/ask-tab/concrete-scenario-rule) — Scene-first phrasing in every body/bullet/timing across all reading types; bans wound/metabolized/activation/portal/archetypal/liminal
 - [Retrograde Prose Correction](mem://features/ask-tab/retrograde-prose-correction) — SR/natal retrograde correctors must inspect label/title/name fields, not skip them
 - [Canonical Fact Enforcement](mem://features/ask-tab/canonical-fact-enforcement) — factsAwareRetrogradeSweep + runPreGateLocalAudit own prose ↔ chart-fact agreement; never add another narrow regex corrector
+- [Narrative Reading Standards](mem://features/ask-tab/narrative-reading-standards) — 5-movement long-form prose portrait reading type in the Ask tab
+- [Sacred Directive Reading Standards](mem://features/ask-tab/sacred-directive-reading-standards) — Big Three + Saturn + North Node fortune-cookie directive in the Ask tab
