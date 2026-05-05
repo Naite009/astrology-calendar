@@ -491,8 +491,11 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               selectedChartId={selectedChartId}
               onSelect={onChartSelect}
               includeGeneral={true}
-              label="Viewing as:"
+              label="Viewing this day as — tap to switch chart:"
             />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Includes your chart, all saved profiles, and General Calendar.
+            </p>
           </div>
         )}
 
