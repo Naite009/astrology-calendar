@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, Check, ChevronDown } from 'lucide-react';
+import { Search, Check, ChevronDown, LogIn } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { normalizeName } from '@/lib/nameMatching';
+import { getCachedUserId } from '@/lib/supabaseSessionRecovery';
 
 interface ChartSelectorProps {
   userNatalChart: NatalChart | null;
@@ -30,6 +31,7 @@ export const ChartSelector = ({
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasSignedInSession = !!getCachedUserId();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -172,6 +174,19 @@ export const ChartSelector = ({
               ))
             )}
           </div>
+
+          {!hasSignedInSession && (
+            <div className="border-t border-border bg-secondary/40 p-2">
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/auth'; }}
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <LogIn size={14} className="text-primary" />
+                <span>Sign in to load every saved name</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
