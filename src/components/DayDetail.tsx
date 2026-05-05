@@ -36,6 +36,8 @@ import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAs
 import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, formatRetrogradeDateWithTime, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TodayAtAGlance } from './dayDetail/TodayAtAGlance';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -494,6 +496,21 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           </div>
         )}
 
+        <Tabs defaultValue="glance" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="glance">Today at a Glance</TabsTrigger>
+            <TabsTrigger value="full">Full Detail</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="glance">
+            <TodayAtAGlance
+              dayData={dayData}
+              transitAspects={transitAspects}
+              activeChart={activeChart}
+            />
+          </TabsContent>
+
+          <TabsContent value="full">
         {/* DAY OVERVIEW - Color blocks + Day Type at TOP */}
         <DayOverviewSection 
           dayData={dayData}
@@ -960,6 +977,8 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
             )}
           </p>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
