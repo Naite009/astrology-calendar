@@ -246,7 +246,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                       {ASPECT_GLYPH[t.aspect] || ''} natal {t.natalPlanet}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      {t.orb}°{t.applying ? ' · applying' : ' · separating'}
+                      {t.orb}°{t.isExact ? ' · exact' : ''}
                     </span>
                   </div>
                   {t.interpretation && (
