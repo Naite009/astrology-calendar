@@ -494,6 +494,21 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           </div>
         )}
 
+        <Tabs defaultValue="glance" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="glance">Today at a Glance</TabsTrigger>
+            <TabsTrigger value="full">Full Detail</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="glance">
+            <TodayAtAGlance
+              dayData={dayData}
+              transitAspects={transitAspects}
+              activeChart={activeChart}
+            />
+          </TabsContent>
+
+          <TabsContent value="full">
         {/* DAY OVERVIEW - Color blocks + Day Type at TOP */}
         <DayOverviewSection 
           dayData={dayData}
