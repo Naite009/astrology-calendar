@@ -1,156 +1,67 @@
 ## Goal
 
-Give `question_type === "narrative"` its own dedicated system prompt and routing path inside `supabase/functions/ask-astrology/index.ts`, sharing nothing with the relationship 3-call orchestrator beyond BASE RULES 1–10 (the universal voice/behavior rules already at the top of `SYSTEM_PROMPT`) and the natal facts injection. The Quick Topic prompt that currently lives client-side moves server-side as the source of truth.
+When you open a day on the calendar, give you a fast, scannable "Today at a Glance" tab so you don't have to scroll through every slow planet definition every day. All existing detail stays exactly as-is on a second tab. Zero AI in the glance view — only deterministic ephemeris data we already calculate.
 
-## Confirmed before starting
+## UX
 
-- `enforceRelationshipContract` is already gated by `isRelationshipReading === "relationship"` (line 14486) — narrative naturally never hits it. Existing positive check is sufficient.
-- The 3-call relationship orchestrator (line 12837) is gated by `isRelationshipQuestion`, which is keyword-scored from the question text. Narrative Quick Topic text (`"NARRATIVE PORTRAIT"`) does not score on relationship keywords, so the 3-call path is already unreachable. We will additionally short-circuit explicitly for safety.
-- `ensureSolarReturnPlacementTable` (line 8150) and `injectDeterministicModalityElement` (line 8168) currently run for every reading. These need explicit narrative skips.
-- The system prompt sent to Anthropic is built at line 12774 (`text: SYSTEM_PROMPT`). This is where we branch.
+Add a tab strip at the top of the `DayDetail` modal (right under the date header):
 
-## Changes
-
-### 1. New `NARRATIVE_SYSTEM_PROMPT` constant — `supabase/functions/ask-astrology/index.ts`
-
-Define it adjacent to `SYSTEM_PROMPT` (around line 10973). Initial body composition:
-
-```text
-[BASE_RULES_BLOCK from SYSTEM_PROMPT]   ← shared voice/behavior rules
-+
-[NARRATIVE-SPECIFIC BODY]               ← lifted verbatim from
-                                          AskQuickTopics.tsx lines 88–110,
-                                          rewritten as system-voice.
-+
-[HARD STRUCTURAL CONTRACT]              ← bullet list of the user's exact
-                                          routing rules (5 narrative_section
-                                          titles in order, single placement_table
-                                          "Natal Key Placements", single
-                                          summary_box "The Chart in One Breath"
-                                          with one item "Truth", NO timing,
-                                          NO SR sections, NO relationship
-                                          sections, NO elemental balance,
-                                          question_type MUST be "narrative").
+```
+[ Today at a Glance ]   [ Full Detail ]
 ```
 
-Implementation: extract the BASE RULES block once into a `BASE_RULES_BLOCK` const, then both `SYSTEM_PROMPT` and `NARRATIVE_SYSTEM_PROMPT` reference it. (Concretely: BASE_RULES_BLOCK = lines 10973–11038 minus SR/career/timing-specific sentences; the SR-specific rule blocks stay in `SYSTEM_PROMPT` only.)
+- **Today at a Glance** — new, default tab. One screen, no AI.
+- **Full Detail** — wraps the entire current modal body (Cosmic Weather, Personal Transits, Ingresses, Color Explanation, Comprehensive Transit Analysis, etc.) untouched. Nothing is removed or rewritten.
 
-### 2. Early narrative detection + dispatcher branch
+The close button, date heading, and chart selector stay above the tabs so they apply to both views.
 
-Around line 12379 (where `normalizedQuestion` and `isRelationshipQuestion` are derived), add:
+## "Today at a Glance" — what it shows
 
-```ts
-// Read the explicit prompt directive — same regex used in the final-gate
-// filename stamp (line 15318) so detection is consistent end-to-end.
-const directiveRe = /question_type"?\s*[^"]{0,40}?MUST\s+be\s+exactly\s+"([a-z_]+)"/i;
-let directiveQt: string | null = null;
-for (const m of messages) {
-  if (m?.role !== "user") continue;
-  const dm = directiveRe.exec(typeof m.content === "string" ? m.content : "");
-  if (dm?.[1]) directiveQt = dm[1].toLowerCase().trim();
-}
-const isNarrativeQuestion = directiveQt === "narrative";
+Driven entirely by data already computed in `DayDetail` (`dayData`, `exactLunarPhase`, `voc`, `majorIngresses`, `transitAspects`, `mercuryRetro`, `getAllRetrogradePeriods`, `calculatePlanetaryHours`, `findNextMoonSignChange`). No new ephemeris work, no LLM call.
 
-// Hard short-circuit: narrative cannot enter the 3-call relationship path.
-const isRelationshipQuestion =
-  !isNarrativeQuestion && /* existing scoring expression */;
-```
+1. **Headline strip (1 line)**
+   `Moon in {sign} · {phase emoji} {phase name} · {Day Type from getDayType}`
 
-### 3. System-prompt branch at the Anthropic call site
+2. **What's actually changing today** (only show rows that exist — these are the things that DON'T happen every day):
+   - Exact lunar phase moment (if `exactLunarPhase` truthy) — "Full Moon in Gemini at 7:14 PM ET", supermoon flag if present.
+   - Planetary ingresses today (from `majorIngresses`) — "Venus enters Capricorn at 3:22 AM ET".
+   - Moon sign change today (from `findNextMoonSignChange` if it falls on this date) — "Moon enters Leo at 11:08 AM ET".
+   - Void-of-Course Moon window (from `voc`) — formatted with `formatVOCRange` + "avoid new starts".
+   - Retrograde stations today (Mercury/Mars/Venus from `getAllRetrogradePeriods` when station date == today) — "Mercury stations Direct".
+   - Mercury Rx phase status only if currently retrograde or in shadow (one-line summary, no long block).
 
-At line 12774, replace the unconditional `text: SYSTEM_PROMPT` with:
+3. **Top 3 personal transits for today** — pulled from the existing `transitAspects` array (already sorted by impact, already filtered to ≤5° orb, already prioritizing outer→personal). Slice to first 3. Each row:
+   `☉ Sun ☌ natal Moon · 1.2° · applying` + the existing one-line `aspect.interpretation`.
+   - Skip the felt-sense block and the entire expanded panel — that lives in Full Detail.
+   - If a chart is active and there are zero ≤5° transits, show a small "No tight personal transits today" line.
 
-```ts
-systemBlocks.push({
-  type: "text",
-  text: isNarrativeQuestion ? NARRATIVE_SYSTEM_PROMPT : SYSTEM_PROMPT,
-  cache_control: { type: "ephemeral" },
-});
-```
+4. **Sky right now (collapsed by default)** — a `<Collapsible>` titled "All planet positions" that lists each planet's sign and degree from `dayData.planets`. This is the only place slow planets like Pluto appear in the glance view, and it's hidden until you open it. No interpretive text, just `♇ Pluto 4°12′ Aquarius (R)`.
 
-`perQuestionTail` and `chartScopedRules` already contain only generic chart-scoped guidance (no SR-specific or relationship-specific copy), so they remain compatible with the narrative branch and are kept as-is.
+5. **Today's color band** — the existing `dayData.colors` strip / day-type pill, rendered compact. Reuses the data already in `DayOverviewSection`; we just render a slimmer version (color dots + label, no explanation paragraph — that stays in Full Detail).
 
-### 4. Gate post-processing passes that shouldn't run on narrative
+What is intentionally NOT in the glance view:
+- Cosmic Weather AI banner (lives in Full Detail).
+- ComprehensiveTransitAnalysis expanded blocks.
+- Daily-guidance prose paragraphs.
+- Repeating outer-planet definitions (Pluto/Neptune/Uranus interpretive text). Those only appear in Full Detail or when the user opens "All planet positions".
 
-In `runPostProcessingPipeline` (line 8126), thread the question_type through and skip the two passes that would inject forbidden sections:
+## Anti-hallucination guarantees
 
-```ts
-const qt = String(parsedContent?.question_type || "").toLowerCase();
+- The glance tab renders only values from `dayData` and the deterministic helpers already imported in `DayDetail.tsx` (`getMercuryRetrogrades`, `getAllRetrogradePeriods`, `getRetrogradeStatus`, `findNextMoonSignChange`, `formatVOCRange`, `calculatePlanetaryHours`, `getDayType`).
+- No `fetch`, no edge function, no `generate-narrative`, no `ask-astrology` call from this tab.
+- All copy is either a fixed label (e.g. "Void-of-Course Moon") or a value formatted from astronomy-engine output. Memory rule "AI is forbidden from doing math" is preserved.
 
-// 0. SR placement table injector — skip on narrative.
-if (qt !== "narrative") {
-  safeRun("ensureSolarReturnPlacementTable", () =>
-    ensureSolarReturnPlacementTable(parsedContent, ctx, log));
-}
+## Files to change
 
-// 2. Deterministic modality/element section — skip on narrative.
-if (qt !== "narrative") {
-  safeRun("injectDeterministicModalityElement", () => { ... });
-  safeRun("correctModalityElementBodyClaims", () => ...);
-}
-```
+- `src/components/DayDetail.tsx` — wrap existing body in a `<Tabs>` from `@/components/ui/tabs`. Add a new `TodayAtAGlance` sub-component (in the same file or a sibling file `src/components/dayDetail/TodayAtAGlance.tsx` — sibling file preferred to keep `DayDetail.tsx` from growing). Pass `dayData`, `transitAspects`, `activeChart`, `exactLunarPhase` as props.
+- No edits to `CosmicWeatherBanner`, `ComprehensiveTransitAnalysis`, transit math, or any edge function.
 
-All other passes (retrograde normalization, descendant cusp fixer, natal retrograde acknowledgment, dedupe, etc.) are universal cleanup and continue to run on narrative — they only repair what is already there, never inject forbidden sections.
+## Default tab
 
-### 5. QT_TO_LABEL — already correct
+Default to **Today at a Glance**. A user who wants the deep dive clicks "Full Detail" once; selection is not persisted (each day opens fresh on the glance).
 
-`QT_TO_LABEL["narrative"] = "Narrative"` already exists (line 15301). Final-gate filename stamp already handles narrative. No change.
+## Out of scope
 
-### 6. Slim down the client-side Quick Topic — `src/components/AskQuickTopics.tsx`
-
-Replace the 30-line narrative prompt body (lines 88–110) with a thin user message:
-
-```text
-Generate a NARRATIVE PORTRAIT for {name}, born {date} at {time} in {loc}.
-Today is {today()}. The "question_type" in your JSON output MUST be exactly "narrative".
-```
-
-All structural + voice rules now live server-side in `NARRATIVE_SYSTEM_PROMPT`.
-
-### 7. Memory update — `.lovable/memory/features/ask-tab/narrative-reading-standards.md`
-
-Append a "Routing Isolation" section recording:
-- Narrative has its own `NARRATIVE_SYSTEM_PROMPT` constant + dedicated dispatcher branch.
-- `isRelationshipQuestion` is short-circuited to `false` when `isNarrativeQuestion` is true.
-- `ensureSolarReturnPlacementTable` and `injectDeterministicModalityElement` are explicitly skipped for narrative.
-- Shares only BASE_RULES_BLOCK + natal facts injection with other reading types.
-- Quick Topic message is intentionally thin; rules live server-side.
-
-## Confirmation grep before deploy
-
-After implementing, I will run these greps and paste results back to you. All four conditions must be visibly proven in the diffs:
-
-```text
-1. enforceRelationshipContract gated to "relationship" only:
-   rg -n 'enforceRelationshipContract\(' supabase/functions/ask-astrology/index.ts
-   → must show single call site wrapped in `if (isRelationshipReading)` where
-     isRelationshipReading === question_type === "relationship".
-
-2. 3-call relationship orchestrator unreachable for narrative:
-   rg -n 'if \(isRelationshipQuestion' supabase/functions/ask-astrology/index.ts
-   → AND `isRelationshipQuestion` definition must include `!isNarrativeQuestion`.
-
-3. SR placement table audit + timing/element pre-compute skipped:
-   rg -n 'ensureSolarReturnPlacementTable\(|injectDeterministicModalityElement\('
-   → both call sites must be inside `if (qt !== "narrative")`.
-
-4. Narrative system prompt dispatch:
-   rg -n 'NARRATIVE_SYSTEM_PROMPT' supabase/functions/ask-astrology/index.ts
-   → must show the const definition AND the conditional in the systemBlocks
-     push (`isNarrativeQuestion ? NARRATIVE_SYSTEM_PROMPT : SYSTEM_PROMPT`).
-```
-
-If any condition fails, I fix and re-grep before deploy. Only deploy after all four pass. After deploy I will report grep results and wait — no test request.
-
-## Files touched
-
-- `supabase/functions/ask-astrology/index.ts` — extract `BASE_RULES_BLOCK`, add `NARRATIVE_SYSTEM_PROMPT`, add `isNarrativeQuestion` detection + short-circuit, branch system-prompt selection, skip two post-process passes for narrative.
-- `src/components/AskQuickTopics.tsx` — slim narrative Quick Topic prompt body.
-- `.lovable/memory/features/ask-tab/narrative-reading-standards.md` — append Routing Isolation section.
-
-## Not touching
-
-- `enforceRelationshipContract` body (already correctly gated).
-- `sacred_directive` routing.
-- The 3-call relationship orchestrator code path itself.
-- Any SR / timing / elemental computation modules.
+- No changes to the calendar grid itself.
+- No changes to Cosmic Weather generation.
+- No new ephemeris calculations — strictly reuses what's already on `dayData`.
