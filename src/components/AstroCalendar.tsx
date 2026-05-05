@@ -9,6 +9,7 @@ import { ChartSelector } from "./ChartSelector";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
+import { YearAheadView } from "./YearAheadView";
 import { AnnualTablesView } from "./AnnualTablesView";
 import { GuideView } from "./GuideView";
 
@@ -53,7 +54,7 @@ const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ 
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
 
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family";
+type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -116,7 +117,7 @@ export const AstroCalendar = () => {
   const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "patterns") {
+      if (viewMode === "year" || viewMode === "year-ahead" || viewMode === "annual-tables" || viewMode === "patterns") {
         newDate.setFullYear(prev.getFullYear() + direction);
       } else if (viewMode === "week") {
         newDate.setDate(prev.getDate() + direction * 7);
@@ -235,7 +236,10 @@ export const AstroCalendar = () => {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
     if (viewMode === "year") {
-      return `${currentDate.getFullYear()}`;
+      return `${currentDate.getFullYear()} Moon Year`;
+    }
+    if (viewMode === "year-ahead") {
+      return `${currentDate.getFullYear()} Year Ahead`;
     }
     if (viewMode === "week") {
       const weekStart = getWeekStart(currentDate);
@@ -315,14 +319,28 @@ export const AstroCalendar = () => {
                 Week
               </button>
               <button
+                onClick={() => setViewMode("year-ahead")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "year-ahead"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Personalized year-ahead overview for the selected name"
+              >
+                <Sun size={14} />
+                Year Ahead
+              </button>
+              <button
                 onClick={() => setViewMode("year")}
-                className={`rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "year"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+                title="All 12 months with New &amp; Full Moons"
               >
-                Year
+                <Moon size={14} />
+                Moon Year
               </button>
               <button
                 onClick={() => setViewMode("annual-tables")}
@@ -877,6 +895,16 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "year" && <YearView year={currentDate.getFullYear()} />}
+
+        {viewMode === "year-ahead" && (
+          <YearAheadView
+            year={currentDate.getFullYear()}
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChartId={selectedChartForTiming}
+            onSelectChart={selectChartForTiming}
+          />
+        )}
 
         
 
