@@ -49,8 +49,32 @@ export const YearView = ({ year }: YearViewProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-      {months}
+    <div className="space-y-6">
+      {/* Legend */}
+      <div className="rounded-sm border border-border bg-card p-4">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Moon Phase Key</div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-primary" />
+            <span><span className="font-medium">Filled circle</span> — Full Moon</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full border border-primary bg-transparent" />
+            <span><span className="font-medium">Outlined circle</span> — New Moon</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 flex items-center justify-center text-muted-foreground">·</div>
+            <span>Plain number — other days</span>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+          This view shows every New &amp; Full Moon across all 12 months of {year} — the collective lunar rhythm, not your personal transits.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+        {months}
+      </div>
     </div>
   );
 };
