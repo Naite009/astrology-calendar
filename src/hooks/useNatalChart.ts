@@ -289,13 +289,33 @@ const readWithBackup = <T,>(key: string, fallback: T): T => {
   return primary;
 };
 
+const readSavedChartsWithRecovery = (): NatalChart[] => {
+  const primary = safeParseJSON<NatalChart[]>('savedCharts', []);
+  if (Array.isArray(primary) && primary.length > 0) return primary;
+
+  const backupKeys = BACKUP_VERSIONS.map((suffix) => `savedCharts${suffix}`).concat('savedCharts__backup');
+  for (const key of backupKeys) {
+    const backup = safeParseJSON<NatalChart[]>(key, []);
+    if (Array.isArray(backup) && backup.length > 0) {
+      try {
+        localStorage.setItem('savedCharts', JSON.stringify(backup));
+      } catch (e) {
+        console.warn('[NatalChart] Failed to restore savedCharts from backup:', e);
+      }
+      return backup;
+    }
+  }
+
+  return [];
+};
+
 export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     return readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
-    const raw = readWithRollingBackups<NatalChart[]>('savedCharts', [], isValidChartArray);
+    const raw = readSavedChartsWithRecovery();
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
