@@ -975,6 +975,8 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
             )}
           </p>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
