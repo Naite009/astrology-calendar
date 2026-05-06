@@ -239,7 +239,26 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
             </p>
           ) : (
             <ul className="space-y-2">
-              {topTransits.map((t, i) => (
+              {topTransits.map((t, i) => {
+                const phase = describeTransitMotionPhase(
+                  t.transitPlanet,
+                  t.natalLongitude,
+                  t.aspect,
+                  date,
+                );
+                // Color the badge differently when it's the "looks separating but coming back" case.
+                const isReturning =
+                  phase?.motion === 'retrograde' &&
+                  phase?.liveDirection === 'separating' &&
+                  phase?.nextExactDate;
+                const badgeClass = isReturning
+                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200'
+                  : phase?.liveDirection === 'applying'
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+                  : phase?.liveDirection === 'stationary'
+                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200'
+                  : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200';
+                return (
                 <li key={i} className="rounded-sm border border-border bg-card px-3 py-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-foreground">
@@ -249,7 +268,15 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <span className="text-[10px] text-muted-foreground">
                       {t.orb}°{t.isExact ? ' · exact' : ''}
                     </span>
-                    {!t.isExact && (
+                    {!t.isExact && phase && (
+                      <span
+                        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${badgeClass}`}
+                        title={phase.explanation}
+                      >
+                        {phase.badge}
+                      </span>
+                    )}
+                    {!t.isExact && !phase && (
                       <span
                         className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
                           t.applying
@@ -273,6 +300,11 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                       ) : null;
                     })()}
                   </div>
+                  {phase && (
+                    <p className={`text-[11px] mt-1 leading-relaxed ${isReturning ? 'text-purple-900 dark:text-purple-200 font-medium' : 'text-muted-foreground'}`}>
+                      {phase.explanation}
+                    </p>
+                  )}
                   {t.feltSenseDuration && (
                     <p className="text-[11px] text-muted-foreground mt-1 italic">
                       {t.feltSenseDuration}
@@ -292,7 +324,8 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     </p>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
           {transitAspects.length > topTransits.length && (
