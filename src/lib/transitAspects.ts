@@ -579,7 +579,7 @@ const ASPECT_PRIORITY: Record<string, number> = {
 
 // Get top transit aspects for calendar display (limit to most significant)
 // Priority: Outer planets to personal points, exact orbs first
-export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 3): TransitAspect[] => {
+export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 5): TransitAspect[] => {
   // Calculate significance score for each aspect
   const withScores = aspects.map(asp => {
     let score = 0;
