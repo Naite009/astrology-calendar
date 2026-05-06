@@ -893,9 +893,9 @@ const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warn
     warning: 'don\'t try to control the outcome, just notice what refuses to stay the same',
   },
   Neptune: {
-    action: 'dissolves edges and floods the area with feeling, intuition, fantasy, or fog',
+    action: 'makes this part of your life feel hazy and hard to see clearly: you\'ll second-guess what you actually feel, romanticize people or situations, lose motivation, feel more tired than usual, or get pulled toward escape (sleep, scrolling, drinking, fantasy, daydreaming about a different life)',
     timeframe: 'about 1 to 2 years of background haze, with peaks',
-    warning: 'avoid signing big things or taking anyone (including yourself) at face value right now',
+    warning: 'don\'t sign contracts, make big commitments, or fully trust your read on a person right now: your gut is picking up real signals but also a lot of static, so wait for the fog to lift before deciding',
   },
   Uranus: {
     action: 'breaks the pattern open, suddenly, often through surprise events or sudden insight',
@@ -1021,7 +1021,7 @@ export function getFeltSenseDescription(
     // the polarity of THIS house axis. Name the actual axis, not "your spouse".
     const oppositeHouse = natalHouse ? ((natalHouse + 6 - 1) % 12) + 1 : null;
     const oppositeArea = oppositeHouse && HOUSE_LIFE_AREA[oppositeHouse] ? HOUSE_LIFE_AREA[oppositeHouse].area : 'the opposite side of your life';
-    situation = `${tp} is sitting directly across from your natal ${np}, lighting up the polarity between ${lifeArea} and ${oppositeArea}. You\'ll feel it as a tug between those two areas, not necessarily through a person.`;
+    situation = `${tp} is sitting directly across from your natal ${np}, lighting up the polarity between ${lifeArea} and ${oppositeArea}. You'll feel pulled in two directions at once: something in ${lifeArea} is asking for your attention, and something in ${oppositeArea} is pulling against it, so whatever you choose for one side costs you on the other. This often shows up through another person mirroring it back to you (a partner, collaborator, or someone who keeps pushing your buttons), but it can just as easily be an internal tug-of-war with no one else involved.`;
   } else if (asp === 'square') {
     situation = `${tp} is at a 90° angle to your natal ${np}, creating real friction in ${lifeArea}. Something there has to move.`;
   } else if (asp === 'trine') {
