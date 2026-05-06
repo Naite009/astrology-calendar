@@ -55,11 +55,31 @@ export interface TransitAspect {
 }
 
 // Daily ecliptic motion in degrees (mean values; ignores retrograde nuance for duration estimates)
-const DAILY_SPEED: Record<string, number> = {
+export const DAILY_SPEED: Record<string, number> = {
   Moon: 13.2, Sun: 0.985, Mercury: 1.4, Venus: 1.2, Mars: 0.524,
   Jupiter: 0.083, Saturn: 0.034, Uranus: 0.012, Neptune: 0.006, Pluto: 0.004,
   Chiron: 0.017, Lilith: 0.111, NorthNode: 0.053,
 };
+
+/**
+ * Short, plain-English description of a body's daily ecliptic motion,
+ * for inline display next to a transit or position.
+ */
+export function describeDailyMotion(planet: string): { speed: string; pace: string; note: string } | null {
+  const key = planet.replace(/\s+/g, '');
+  const dpd = DAILY_SPEED[key] ?? DAILY_SPEED[planet];
+  if (dpd == null) return null;
+  const speed = dpd >= 1 ? `~${dpd.toFixed(1)}°/day` : `~${dpd.toFixed(3)}°/day`;
+  let pace = '';
+  let note = '';
+  if (dpd >= 10) { pace = 'very fast'; note = 'changes signs every ~2.5 days — sets the daily mood.'; }
+  else if (dpd >= 1) { pace = 'fast'; note = 'moves through a sign in a few weeks — week-to-week themes.'; }
+  else if (dpd >= 0.3) { pace = 'moderate'; note = 'spends ~6–8 weeks per sign — month-long chapters.'; }
+  else if (dpd >= 0.08) { pace = 'slow'; note = 'sits in a sign for many months — multi-month story arcs.'; }
+  else if (dpd >= 0.02) { pace = 'very slow'; note = 'stays in a sign for 2–3 years — life-chapter pressure.'; }
+  else { pace = 'generational'; note = 'creeps less than a degree a year — defines an entire era.'; }
+  return { speed, pace, note };
+}
 
 // Friendly duration phrasing
 function describeDuration(days: number): string {
