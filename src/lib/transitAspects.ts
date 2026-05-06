@@ -629,6 +629,16 @@ export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 5
       }
     }
     
+    // Karmic / shadow bodies (Lilith, Chiron, North Node) hitting a personal point
+    // are highly felt and should not be buried — surface them in the top list.
+    const isKarmicTransit = ['Lilith', 'Chiron', 'NorthNode'].includes(asp.transitPlanet);
+    if (isKarmicTransit && isPersonalNatal) {
+      score += 130;
+      if (['conjunction', 'opposition', 'square'].includes(asp.aspect)) {
+        score += 60;
+      }
+    }
+    
     // Luminary conjunctions (New Moon on natal Sun, etc.) = peak moments
     if (asp.aspect === 'conjunction') {
       if ((asp.transitPlanet === 'Sun' || asp.transitPlanet === 'Moon') && 
