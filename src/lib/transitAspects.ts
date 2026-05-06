@@ -693,3 +693,156 @@ export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 5
 
   return prioritized.slice(0, limit);
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Retrograde-aware motion phase
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The simple `applying` boolean stored on every TransitAspect uses a mean daily
+// speed and projects forward 1 day. That's fine for fast bodies, but it gets
+// the *story* wrong for slow bodies near a retrograde station: e.g. Pluto just
+// stationed retrograde, the orb is widening *today* (so technically separating),
+// but Pluto is about to reverse and come back for another exact pass.
+//
+// `describeTransitMotionPhase` uses astronomy-engine to compute:
+//   - real signed daily motion (positive=direct, negative=retrograde)
+//   - whether the orb is shrinking or growing right now
+//   - whether a future exact pass is still coming in the scan window
+//
+// It returns a teen-friendly label + 1-paragraph explanation so the UI can
+// say "separating now, but Pluto is retrograde and will hit exact again on…".
+
+import * as Astronomy from 'astronomy-engine';
+import { getPlanetLongitudeExact, aspectOrb } from './transitMath';
+import { getOuterTransitTiming } from './outerPlanetTransitTiming';
+
+const ASTRO_BODY: Record<string, Astronomy.Body> = {
+  Sun: 'Sun' as Astronomy.Body,
+  Mercury: 'Mercury' as Astronomy.Body,
+  Venus: 'Venus' as Astronomy.Body,
+  Mars: 'Mars' as Astronomy.Body,
+  Jupiter: 'Jupiter' as Astronomy.Body,
+  Saturn: 'Saturn' as Astronomy.Body,
+  Uranus: 'Uranus' as Astronomy.Body,
+  Neptune: 'Neptune' as Astronomy.Body,
+  Pluto: 'Pluto' as Astronomy.Body,
+};
+
+const ASPECT_ANGLES: Record<string, number> = {
+  conjunction: 0, opposition: 180, trine: 120, square: 90,
+  sextile: 60, quincunx: 150, semisextile: 30,
+};
+
+export interface TransitMotionPhase {
+  /** "applying" | "separating" | "stationary" — true direction *right now* */
+  liveDirection: 'applying' | 'separating' | 'stationary';
+  /** "direct" | "retrograde" | "stationing" — the planet's actual motion */
+  motion: 'direct' | 'retrograde' | 'stationing';
+  /** Short label for a badge: e.g. "Separating · Retrograde · returns Jan 12" */
+  badge: string;
+  /** Teen-friendly 2–3 sentence explanation of what's happening */
+  explanation: string;
+  /** Date of the next exact pass, if one exists in the scan window */
+  nextExactDate: Date | null;
+  /** Total number of exact passes in the scan window (1 = single pass, 3 = full retrograde dance) */
+  totalPasses: number;
+}
+
+const formatShortDate = (d: Date): string =>
+  d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+export function describeTransitMotionPhase(
+  transitPlanet: string,
+  natalLongitude: number,
+  aspectName: string,
+  referenceDate: Date = new Date(),
+): TransitMotionPhase | null {
+  const body = ASTRO_BODY[transitPlanet];
+  const aspectAngle = ASPECT_ANGLES[aspectName];
+  if (!body || aspectAngle === undefined) return null;
+
+  // Real signed motion: longitude tomorrow vs today.
+  const lonNow = getPlanetLongitudeExact(body, referenceDate);
+  const lonNext = getPlanetLongitudeExact(body, new Date(referenceDate.getTime() + 86400000));
+  let signedDelta = lonNext - lonNow;
+  if (signedDelta > 180) signedDelta -= 360;
+  if (signedDelta < -180) signedDelta += 360;
+  const speedAbs = Math.abs(signedDelta);
+
+  // Stationing threshold: outer planets crawl <0.005°/day near a station.
+  const isStationary = speedAbs < 0.005;
+  const motion: TransitMotionPhase['motion'] =
+    isStationary ? 'stationing' : signedDelta > 0 ? 'direct' : 'retrograde';
+
+  // Live applying/separating from real orbs (today vs tomorrow).
+  const orbNow = aspectOrb(lonNow, natalLongitude, aspectAngle);
+  const orbNext = aspectOrb(lonNext, natalLongitude, aspectAngle);
+  const liveDirection: TransitMotionPhase['liveDirection'] =
+    isStationary ? 'stationary' : orbNext < orbNow ? 'applying' : 'separating';
+
+  // Check for future exact passes (uses cached outer-planet timing).
+  let nextExactDate: Date | null = null;
+  let totalPasses = 0;
+  const timing = getOuterTransitTiming(
+    transitPlanet, 'natal', natalLongitude, aspectName, aspectAngle, referenceDate,
+  );
+  if (timing) {
+    totalPasses = timing.exactPasses.length;
+    const future = timing.exactPasses.find(p => p.date.getTime() > referenceDate.getTime());
+    if (future) nextExactDate = future.date;
+  }
+
+  // Build badge + explanation.
+  const motionWord = motion === 'direct' ? 'Direct' : motion === 'retrograde' ? 'Retrograde' : 'Stationing';
+  const directionWord =
+    liveDirection === 'applying' ? 'Applying'
+    : liveDirection === 'separating' ? 'Separating'
+    : 'Holding still';
+
+  let badge = `${directionWord} · ${motionWord}`;
+  if (nextExactDate) badge += ` · returns ${formatShortDate(nextExactDate)}`;
+
+  let explanation: string;
+
+  if (motion === 'stationing') {
+    explanation =
+      `${transitPlanet} is barely moving right now — it's "stationing," like a car idling before it changes direction. ` +
+      `That makes whatever this aspect is about feel extra loud and frozen in place for several days.`;
+    if (nextExactDate) {
+      explanation += ` The next exact hit is around ${formatShortDate(nextExactDate)}.`;
+    }
+  } else if (motion === 'retrograde' && liveDirection === 'separating' && nextExactDate) {
+    // The interesting case: looks like it's fading, but it's coming back.
+    explanation =
+      `Heads-up: even though the orb is opening up today, ${transitPlanet} is retrograde — that means it's moving backward in the sky. ` +
+      `So this aspect isn't really "done." It's going to swing back and hit exact again around ${formatShortDate(nextExactDate)}. ` +
+      `Astrologers don't usually call a backward-moving planet "applying" — they just say it's going to perfect again. Either way, the theme isn't finished with you yet.`;
+  } else if (motion === 'retrograde' && liveDirection === 'applying') {
+    explanation =
+      `${transitPlanet} is retrograde and tightening toward exact — it's walking *backward* into this aspect. ` +
+      `That usually feels like an old story circling back: same lesson, second look.`;
+    if (nextExactDate) explanation += ` Exact again around ${formatShortDate(nextExactDate)}.`;
+  } else if (liveDirection === 'applying') {
+    explanation =
+      `${transitPlanet} is moving forward and the orb is closing — pressure is rising toward the exact hit.`;
+    if (nextExactDate) explanation += ` Peaks around ${formatShortDate(nextExactDate)}.`;
+  } else {
+    // direct + separating, no future pass
+    explanation =
+      `${transitPlanet} has already crossed the exact point and is moving forward away from it. ` +
+      `The peak intensity has passed; what's left is integration — noticing what shifted.`;
+    if (totalPasses > 1) {
+      explanation += ` This aspect already had its full retrograde "dance" (${totalPasses} exact passes), so the lesson has been thoroughly delivered.`;
+    }
+  }
+
+  return {
+    liveDirection,
+    motion,
+    badge,
+    explanation,
+    nextExactDate,
+    totalPasses,
+  };
+}
+
