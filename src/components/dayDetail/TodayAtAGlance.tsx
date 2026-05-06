@@ -9,6 +9,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DayData, getDayType, getPlanetSymbol } from '@/lib/astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { TransitAspect, getTransitPlanetSymbol, getTopTransitAspects, describeDailyMotion, describeTransitMotionPhase, getFeltSenseDescription } from '@/lib/transitAspects';
@@ -201,23 +202,47 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
 
       {/* Color band (compact) */}
       {dayData.dayColors && (
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1">
-            <span
-              className="inline-block h-4 w-4 rounded-full border border-border"
-              style={{ backgroundColor: dayData.dayColors.primary }}
-              aria-hidden
-            />
-            {dayData.dayColors.secondary && (
-              <span
-                className="inline-block h-4 w-4 rounded-full border border-border"
-                style={{ backgroundColor: dayData.dayColors.secondary }}
-                aria-hidden
-              />
-            )}
+        <TooltipProvider delayDuration={150}>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="inline-block h-4 w-4 rounded-full border border-border cursor-help"
+                    style={{ backgroundColor: dayData.dayColors.primary }}
+                    aria-label={dayData.dayColors.primaryPlanet ?? 'Active planet'}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {dayData.dayColors.primaryPlanet ?? 'Active planet'}
+                </TooltipContent>
+              </Tooltip>
+              {dayData.dayColors.secondary && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="inline-block h-4 w-4 rounded-full border border-border cursor-help"
+                      style={{ backgroundColor: dayData.dayColors.secondary }}
+                      aria-label={dayData.dayColors.secondaryPlanet ?? 'Active planet'}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {dayData.dayColors.secondaryPlanet ?? 'Active planet'}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {dayData.dayColors.label}
+              {dayData.dayColors.primaryPlanet && (
+                <span className="ml-1.5 text-muted-foreground/70">
+                  ({dayData.dayColors.primaryPlanet}
+                  {dayData.dayColors.secondaryPlanet ? ` + ${dayData.dayColors.secondaryPlanet}` : ''})
+                </span>
+              )}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">{dayData.dayColors.label}</span>
-        </div>
+        </TooltipProvider>
       )}
 
       {/* What's changing today */}
