@@ -216,6 +216,21 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
         <div className="text-sm text-foreground leading-relaxed">
           {aspect.interpretation}
         </div>
+        {/* Applying / separating badge */}
+        <div className="mt-2 flex items-center gap-2 text-[11px]">
+          <span
+            className={`px-2 py-0.5 rounded-sm font-medium ${
+              aspect.applying
+                ? 'bg-amber-500/15 text-amber-700 border border-amber-500/30'
+                : 'bg-blue-500/15 text-blue-700 border border-blue-500/30'
+            }`}
+          >
+            {aspect.applying ? '↗ Applying — building' : '↘ Separating — releasing'}
+          </span>
+          <span className="text-muted-foreground">
+            {aspect.feltSenseDuration}
+          </span>
+        </div>
         {/* Felt-sense: how you physically/emotionally feel this transit */}
         <div className="mt-2 px-3 py-2 rounded-sm bg-accent/50 border border-accent text-sm text-muted-foreground italic leading-relaxed">
           <span className="not-italic">💫 </span>

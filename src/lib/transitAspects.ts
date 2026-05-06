@@ -44,6 +44,35 @@ export interface TransitAspect {
   detailedInterpretation: DetailedInterpretation;
   houseOverlay: string;
   isExact: boolean;
+  // Motion: is the transit closing in (applying) or moving past (separating)?
+  applying: boolean;
+  // Estimated days until exact (negative = days since exact for separating aspects)
+  daysToExact: number;
+  // Total felt-window in days (how long this aspect lingers within orb)
+  feltDurationDays: number;
+  // Felt-sense sentence that adapts to applying vs. separating
+  feltSenseDuration: string;
+}
+
+// Daily ecliptic motion in degrees (mean values; ignores retrograde nuance for duration estimates)
+const DAILY_SPEED: Record<string, number> = {
+  Moon: 13.2, Sun: 0.985, Mercury: 1.4, Venus: 1.2, Mars: 0.524,
+  Jupiter: 0.083, Saturn: 0.034, Uranus: 0.012, Neptune: 0.006, Pluto: 0.004,
+  Chiron: 0.017, Lilith: 0.111, NorthNode: 0.053,
+};
+
+// Friendly duration phrasing
+function describeDuration(days: number): string {
+  if (days < 1) return "a few hours";
+  if (days < 2) return "about a day";
+  if (days < 4) return "a few days";
+  if (days < 8) return "about a week";
+  if (days < 16) return "a couple weeks";
+  if (days < 35) return "about a month";
+  if (days < 70) return "a couple months";
+  if (days < 200) return "several months";
+  if (days < 500) return "about a year";
+  return "a multi-year passage";
 }
 
 // Calculate longitude from sign + degree
@@ -80,7 +109,9 @@ export const calculateTransitAspects = (
 ): TransitAspect[] => {
   const aspects: TransitAspect[] = [];
 
-  // Transit planets to check
+  // Transit planets to check — includes Chiron, Lilith, North Node so deep aspects
+  // (e.g. Lilith conjunct natal Sun) actually surface in the daily readout.
+  const tp: any = transitPositions as any;
   const transitPlanets = [
     { key: 'moon', name: 'Moon', data: transitPositions.moon },
     { key: 'sun', name: 'Sun', data: transitPositions.sun },
@@ -92,7 +123,10 @@ export const calculateTransitAspects = (
     { key: 'uranus', name: 'Uranus', data: transitPositions.uranus },
     { key: 'neptune', name: 'Neptune', data: transitPositions.neptune },
     { key: 'pluto', name: 'Pluto', data: transitPositions.pluto },
-  ];
+    { key: 'chiron', name: 'Chiron', data: tp.chiron },
+    { key: 'lilith', name: 'Lilith', data: tp.lilith },
+    { key: 'northNode', name: 'NorthNode', data: tp.northNode },
+  ].filter(p => p.data && (p.data as any).signName);
 
   // Natal planets to check — use corrected Ascendant from houseCusps.house1
   const rawNatalPlanets = Object.entries(natalChart.planets)
@@ -161,7 +195,30 @@ export const calculateTransitAspects = (
             aspectType.name,
             angleDiff.toFixed(1)
           );
-          
+
+          // ─── Applying vs separating + felt-window estimate ───
+          // Project the transit forward by 1 day; natal points are static.
+          const speed = DAILY_SPEED[transit.name] ?? 0.5;
+          const futureLon = (transitLon + speed) % 360;
+          let futureDiff = Math.abs(futureLon - natal.longitude);
+          if (futureDiff > 180) futureDiff = 360 - futureDiff;
+          const futureAngleDiff = Math.abs(futureDiff - aspectType.angle);
+          const applying = futureAngleDiff < angleDiff;
+
+          // Days to exact = current orb ÷ daily speed (rough; ignores retrograde stations).
+          const daysToExact = speed > 0 ? angleDiff / speed : 999;
+          const signedDaysToExact = applying ? daysToExact : -daysToExact;
+          // Total felt-window: time to traverse the full orb on either side of exact.
+          const feltDurationDays = speed > 0 ? (effectiveOrb * 2) / speed : 999;
+
+          const verb = applying
+            ? (angleDiff < 1 ? `peaks now` : `builds toward exact in ${describeDuration(daysToExact)}`)
+            : `is releasing — fades over ${describeDuration(daysToExact)}`;
+          const totalWindow = describeDuration(feltDurationDays);
+          const feltSenseDuration = applying
+            ? `Pressure is rising — this ${verb}. You'll feel it most strongly as it tightens, then it eases. Whole window: about ${totalWindow}.`
+            : `The peak has passed — this ${verb}. The lesson is integrating now rather than intensifying. Whole window: about ${totalWindow}.`;
+
           aspects.push({
             transitPlanet: transit.name,
             transitSign: transit.data!.signName,
@@ -182,6 +239,10 @@ export const calculateTransitAspects = (
             detailedInterpretation: detailed,
             houseOverlay,
             isExact: angleDiff < 1,
+            applying,
+            daysToExact: signedDaysToExact,
+            feltDurationDays,
+            feltSenseDuration,
           });
         }
       });
