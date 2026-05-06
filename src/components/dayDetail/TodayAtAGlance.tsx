@@ -371,6 +371,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {planetRows.map((p, i) => {
               const m = describeDailyMotion(p.name);
+              const karmic = KARMIC_POINT_INFO[p.name];
               return (
                 <li key={i} className="flex items-start gap-2 px-3 py-1.5 rounded-sm bg-secondary/20 text-sm">
                   <span className="w-5 text-center text-muted-foreground mt-0.5">{p.glyph}</span>
@@ -378,6 +379,14 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground">{p.name}</span>
                       <span className="text-muted-foreground">{p.full}</span>
+                      {karmic && (
+                        <span
+                          className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200"
+                          title={karmic.tip}
+                        >
+                          ✦ {karmic.label}
+                        </span>
+                      )}
                       {m && (
                         <span
                           className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground font-mono"
@@ -387,6 +396,11 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                         </span>
                       )}
                     </div>
+                    {karmic && (
+                      <div className="text-[10px] text-purple-900/80 dark:text-purple-200/80 mt-0.5 leading-snug">
+                        {karmic.tip}
+                      </div>
+                    )}
                     {m && (
                       <div className="text-[10px] text-muted-foreground mt-0.5">{m.note}</div>
                     )}
