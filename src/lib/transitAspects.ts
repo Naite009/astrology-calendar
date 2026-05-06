@@ -876,13 +876,13 @@ type FeltSenseEntry = {
 // across a polarity, often through whatever (or whoever) sits opposite you in
 // the relevant life area. The actual life area comes from the natal house.
 const ASPECT_DYNAMIC: Record<string, { verb: string; flavor: string; intensity: 'high' | 'medium' | 'low' }> = {
-  conjunction: { verb: 'fuses with', flavor: 'loud, direct, can\'t-ignore', intensity: 'high' },
-  opposition:  { verb: 'shows up across from', flavor: 'a tug-of-war, often felt through whatever (or whoever) mirrors this part of your life back to you', intensity: 'high' },
-  square:      { verb: 'grinds against', flavor: 'friction that won\'t let you stay where you are', intensity: 'high' },
-  trine:       { verb: 'flows easily with', flavor: 'an open door, low resistance', intensity: 'medium' },
-  sextile:     { verb: 'offers a small opening to', flavor: 'a quiet invitation, only works if you reach for it', intensity: 'low' },
-  quincunx:    { verb: 'creates an awkward fit with', flavor: 'something feels off, requires constant small adjustments', intensity: 'medium' },
-  semisextile: { verb: 'subtly nudges', flavor: 'a low background hum', intensity: 'low' },
+  conjunction: { verb: 'fuses with', flavor: 'loud, direct, impossible to ignore: this energy is sitting on top of you and you\'ll feel it in your body and your day', intensity: 'high' },
+  opposition:  { verb: 'shows up across from', flavor: 'a tug-of-war between two real, valid sides of your life: often felt through another person mirroring it back to you, but just as often an internal pull where every choice for one side costs the other', intensity: 'high' },
+  square:      { verb: 'grinds against', flavor: 'real friction that won\'t let you stay where you are: something has to give, and the longer you sit still, the louder it gets', intensity: 'high' },
+  trine:       { verb: 'flows easily with', flavor: 'low-resistance and easy: things click, doors open without you forcing them, and you\'ll only get the benefit if you actually walk through (it\'s easy to sleep through trines)', intensity: 'medium' },
+  sextile:     { verb: 'offers a small opening to', flavor: 'a quiet, easy-to-miss opportunity: a useful conversation, a small introduction, a small idea, only worth something if you reach out and take it', intensity: 'low' },
+  quincunx:    { verb: 'creates an awkward fit with', flavor: 'a constant low-grade misfit: nothing dramatic, just a feeling that things keep being slightly off and need small constant adjustments (the schedule, the body, the relationship, the plan)', intensity: 'medium' },
+  semisextile: { verb: 'subtly nudges', flavor: 'a low background hum you only notice if you\'re paying attention: a small mood shift, a small pull, easy to miss', intensity: 'low' },
 };
 
 // ---------- Layer 2: TRANSIT-PLANET PRESSURE (what the visiting planet DOES) ----------
