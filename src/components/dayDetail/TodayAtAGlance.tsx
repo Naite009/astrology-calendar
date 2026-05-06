@@ -249,7 +249,24 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <span className="text-[10px] text-muted-foreground">
                       {t.orb}°{t.isExact ? ' · exact' : ''}
                     </span>
+                    {!t.isExact && (
+                      <span
+                        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                          t.applying
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
+                        }`}
+                        title={t.feltSenseDuration || ''}
+                      >
+                        {t.applying ? '↗ applying' : '↘ separating'}
+                      </span>
+                    )}
                   </div>
+                  {t.feltSenseDuration && (
+                    <p className="text-[11px] text-muted-foreground mt-1 italic">
+                      {t.feltSenseDuration}
+                    </p>
+                  )}
                   {t.interpretation && (
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {t.interpretation}
@@ -259,9 +276,9 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
               ))}
             </ul>
           )}
-          {transitAspects.length > 3 && (
+          {transitAspects.length > topTransits.length && (
             <p className="text-[10px] text-muted-foreground mt-2">
-              +{transitAspects.length - 3} more in Full Detail
+              +{transitAspects.length - topTransits.length} more in Full Detail
             </p>
           )}
         </div>
