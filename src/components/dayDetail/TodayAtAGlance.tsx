@@ -11,7 +11,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DayData, getDayType, getPlanetSymbol } from '@/lib/astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { TransitAspect, getTransitPlanetSymbol, getTopTransitAspects, describeDailyMotion, describeTransitMotionPhase } from '@/lib/transitAspects';
+import { TransitAspect, getTransitPlanetSymbol, getTopTransitAspects, describeDailyMotion, describeTransitMotionPhase, getFeltSenseDescription } from '@/lib/transitAspects';
 import { findNextMoonSignChange, formatVOCRange } from '@/lib/voidOfCourseMoon';
 import {
   getAllRetrogradePeriods,
@@ -330,15 +330,46 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                       ) : null;
                     })()}
                   </div>
-                  {phase && (
-                    <p className={`text-[11px] mt-1 leading-relaxed ${isReturning ? 'text-purple-900 dark:text-purple-200 font-medium' : 'text-muted-foreground'}`}>
-                      {phase.explanation}
+                  {/* Concrete felt-sense: what this looks like in real life this week */}
+                  {(() => {
+                    const fs = getFeltSenseDescription(t.transitPlanet, t.natalPlanet, t.aspect);
+                    if (fs) {
+                      return (
+                        <div className="mt-2 rounded-sm bg-secondary/40 border-l-2 border-primary/60 px-3 py-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                            What this feels like
+                          </div>
+                          <p className="text-[12px] text-foreground leading-relaxed">{fs.felt}</p>
+                          {fs.why && (
+                            <p className="text-[10px] text-muted-foreground mt-1 italic">{fs.why}</p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <p className="text-[11px] text-muted-foreground mt-2 italic">
+                        How this lands depends on your life right now — notice anything that comes up around {t.natalPlanet.toLowerCase()} themes (
+                        {t.natalPlanet === 'Moon' ? 'feelings, home, family, comfort'
+                          : t.natalPlanet === 'Sun' ? 'identity, confidence, vitality'
+                          : t.natalPlanet === 'Venus' ? 'love, money, what you value'
+                          : t.natalPlanet === 'Mars' ? 'drive, anger, action'
+                          : t.natalPlanet === 'Mercury' ? 'thinking, talking, plans'
+                          : `your ${t.natalPlanet.toLowerCase()} themes`}
+                        ).
+                      </p>
+                    );
+                  })()}
+                  {/* Timing/motion story — uses retrograde-aware phase when available, otherwise falls back to naive felt duration */}
+                  {phase ? (
+                    <p className={`text-[11px] mt-2 leading-relaxed ${isReturning ? 'text-purple-900 dark:text-purple-200 font-medium' : 'text-muted-foreground'}`}>
+                      <span className="font-semibold">Timing:</span> {phase.explanation}
                     </p>
-                  )}
-                  {t.feltSenseDuration && (
-                    <p className="text-[11px] text-muted-foreground mt-1 italic">
-                      {t.feltSenseDuration}
-                    </p>
+                  ) : (
+                    t.feltSenseDuration && (
+                      <p className="text-[11px] text-muted-foreground mt-2 italic">
+                        <span className="font-semibold not-italic">Timing:</span> {t.feltSenseDuration}
+                      </p>
+                    )
                   )}
                   {(() => {
                     const m = describeDailyMotion(t.transitPlanet);
