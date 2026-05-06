@@ -1,5 +1,5 @@
 /**
- * Today at a Glance — fast, scannable summary of what's actually different today.
+ * Today at a Glance, fast, scannable summary of what's actually different today.
  *
  * 100% deterministic. Reads only from dayData and astronomy-engine helpers.
  * No AI / fetch / edge-function calls. Slow planets like Pluto only appear in the
@@ -35,25 +35,25 @@ const formatTime = (d: Date) =>
   ' ' +
   (new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET');
 
-// Karmic / sensitive points — not physical planets. Each gets a small badge
+// Karmic / sensitive points, not physical planets. Each gets a small badge
 // with a teen-friendly explanation so users know why these matter and what
 // kind of thing they describe.
 const KARMIC_POINT_INFO: Record<string, { label: string; tip: string }> = {
   Lilith: {
     label: 'karmic point',
-    tip: 'Lilith isn\'t a planet — it\'s the empty spot in the Moon\'s orbit farthest from Earth. Astrologers treat it as a sensitive point about your raw, untamed self: the part of you that refuses to be small, polite, or hidden. Where it sits or transits, something hidden often gets named out loud.',
+    tip: 'Lilith isn\'t a planet, it\'s the empty spot in the Moon\'s orbit farthest from Earth. Astrologers treat it as a sensitive point about your raw, untamed self: the part of you that refuses to be small, polite, or hidden. Where it sits or transits, something hidden often gets named out loud.',
   },
   Chiron: {
     label: 'wound + healer point',
-    tip: 'Chiron is a small icy body between Saturn and Uranus, used as a sensitive point. It marks "the wound that becomes the gift" — an old hurt you eventually learn to help others through.',
+    tip: 'Chiron is a small icy body between Saturn and Uranus, used as a sensitive point. It marks "the wound that becomes the gift", an old hurt you eventually learn to help others through.',
   },
   NorthNode: {
     label: 'karmic direction',
-    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+    tip: 'The North Node isn\'t a planet, it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
   },
   'North Node': {
     label: 'karmic direction',
-    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+    tip: 'The North Node isn\'t a planet, it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
   },
 };
 
@@ -112,7 +112,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
     }
   }, [date]);
 
-  // Top 5 personal transits — re-prioritized so karmic bodies (Lilith, Chiron, Node)
+  // Top 5 personal transits, re-prioritized so karmic bodies (Lilith, Chiron, Node)
   // hitting personal points (Sun, Moon, Asc, MC) surface alongside outer-planet transits.
   const topTransits = getTopTransitAspects(transitAspects, 5);
 
@@ -323,7 +323,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                       return m ? (
                         <span
                           className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground font-mono"
-                          title={`${m.pace} — ${m.note}`}
+                          title={`${m.pace}, ${m.note}`}
                         >
                           {m.speed} · {m.pace}
                         </span>
@@ -348,7 +348,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     }
                     return (
                       <p className="text-[11px] text-muted-foreground mt-2 italic">
-                        How this lands depends on your life right now — notice anything that comes up around {t.natalPlanet.toLowerCase()} themes (
+                        How this lands depends on your life right now, notice anything that comes up around {t.natalPlanet.toLowerCase()} themes (
                         {t.natalPlanet === 'Moon' ? 'feelings, home, family, comfort'
                           : t.natalPlanet === 'Sun' ? 'identity, confidence, vitality'
                           : t.natalPlanet === 'Venus' ? 'love, money, what you value'
@@ -359,7 +359,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                       </p>
                     );
                   })()}
-                  {/* Timing/motion story — uses retrograde-aware phase when available, otherwise falls back to naive felt duration */}
+                  {/* Timing/motion story, uses retrograde-aware phase when available, otherwise falls back to naive felt duration */}
                   {phase ? (
                     <p className={`text-[11px] mt-2 leading-relaxed ${isReturning ? 'text-purple-900 dark:text-purple-200 font-medium' : 'text-muted-foreground'}`}>
                       <span className="font-semibold">Timing:</span> {phase.explanation}
@@ -375,7 +375,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     const m = describeDailyMotion(t.transitPlanet);
                     return m ? (
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {t.transitPlanet} moves {m.speed} ({m.pace}) — {m.note}
+                        {t.transitPlanet} moves {m.speed} ({m.pace}), {m.note}
                       </p>
                     ) : null;
                   })()}
@@ -397,7 +397,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
         </div>
       )}
 
-      {/* Sky right now — collapsed */}
+      {/* Sky right now, collapsed */}
       <Collapsible open={showAllPositions} onOpenChange={setShowAllPositions}>
         <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-sm bg-muted/40 hover:bg-muted/60 transition-colors">
           <span className="text-sm font-medium flex-1 text-left">All planet positions</span>
