@@ -109,7 +109,9 @@ export const calculateTransitAspects = (
 ): TransitAspect[] => {
   const aspects: TransitAspect[] = [];
 
-  // Transit planets to check
+  // Transit planets to check — includes Chiron, Lilith, North Node so deep aspects
+  // (e.g. Lilith conjunct natal Sun) actually surface in the daily readout.
+  const tp: any = transitPositions as any;
   const transitPlanets = [
     { key: 'moon', name: 'Moon', data: transitPositions.moon },
     { key: 'sun', name: 'Sun', data: transitPositions.sun },
@@ -121,7 +123,10 @@ export const calculateTransitAspects = (
     { key: 'uranus', name: 'Uranus', data: transitPositions.uranus },
     { key: 'neptune', name: 'Neptune', data: transitPositions.neptune },
     { key: 'pluto', name: 'Pluto', data: transitPositions.pluto },
-  ];
+    { key: 'chiron', name: 'Chiron', data: tp.chiron },
+    { key: 'lilith', name: 'Lilith', data: tp.lilith },
+    { key: 'northNode', name: 'NorthNode', data: tp.northNode },
+  ].filter(p => p.data && (p.data as any).signName);
 
   // Natal planets to check — use corrected Ascendant from houseCusps.house1
   const rawNatalPlanets = Object.entries(natalChart.planets)
