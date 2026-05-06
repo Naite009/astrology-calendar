@@ -111,6 +111,8 @@ export interface DayColors {
   primary: string;
   secondary: string | null;
   label: string;
+  primaryPlanet?: string | null;
+  secondaryPlanet?: string | null;
 }
 
 export interface ExactLunarPhase {
