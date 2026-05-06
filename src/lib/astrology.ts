@@ -107,6 +107,13 @@ export interface VoidOfCourse {
   end?: Date;
 }
 
+export interface ActivePlanetDot {
+  key: string;
+  name: string;
+  color: string;
+  weight: number; // higher = stronger today
+}
+
 export interface DayColors {
   primary: string;
   secondary: string | null;
