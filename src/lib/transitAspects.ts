@@ -44,6 +44,35 @@ export interface TransitAspect {
   detailedInterpretation: DetailedInterpretation;
   houseOverlay: string;
   isExact: boolean;
+  // Motion: is the transit closing in (applying) or moving past (separating)?
+  applying: boolean;
+  // Estimated days until exact (negative = days since exact for separating aspects)
+  daysToExact: number;
+  // Total felt-window in days (how long this aspect lingers within orb)
+  feltDurationDays: number;
+  // Felt-sense sentence that adapts to applying vs. separating
+  feltSenseDuration: string;
+}
+
+// Daily ecliptic motion in degrees (mean values; ignores retrograde nuance for duration estimates)
+const DAILY_SPEED: Record<string, number> = {
+  Moon: 13.2, Sun: 0.985, Mercury: 1.4, Venus: 1.2, Mars: 0.524,
+  Jupiter: 0.083, Saturn: 0.034, Uranus: 0.012, Neptune: 0.006, Pluto: 0.004,
+  Chiron: 0.017, Lilith: 0.111, NorthNode: 0.053,
+};
+
+// Friendly duration phrasing
+function describeDuration(days: number): string {
+  if (days < 1) return "a few hours";
+  if (days < 2) return "about a day";
+  if (days < 4) return "a few days";
+  if (days < 8) return "about a week";
+  if (days < 16) return "a couple weeks";
+  if (days < 35) return "about a month";
+  if (days < 70) return "a couple months";
+  if (days < 200) return "several months";
+  if (days < 500) return "about a year";
+  return "a multi-year passage";
 }
 
 // Calculate longitude from sign + degree
