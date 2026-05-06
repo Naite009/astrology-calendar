@@ -893,9 +893,9 @@ const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warn
     warning: 'don\'t try to control the outcome, just notice what refuses to stay the same',
   },
   Neptune: {
-    action: 'dissolves edges and floods the area with feeling, intuition, fantasy, or fog',
+    action: 'makes this part of your life feel hazy and hard to see clearly: you\'ll second-guess what you actually feel, romanticize people or situations, lose motivation, feel more tired than usual, or get pulled toward escape (sleep, scrolling, drinking, fantasy, daydreaming about a different life)',
     timeframe: 'about 1 to 2 years of background haze, with peaks',
-    warning: 'avoid signing big things or taking anyone (including yourself) at face value right now',
+    warning: 'don\'t sign contracts, make big commitments, or fully trust your read on a person right now: your gut is picking up real signals but also a lot of static, so wait for the fog to lift before deciding',
   },
   Uranus: {
     action: 'breaks the pattern open, suddenly, often through surprise events or sudden insight',
