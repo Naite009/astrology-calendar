@@ -122,9 +122,15 @@ const categorizeTransits = (transits: TransitAspect[], maxOrb: number = 5) => {
     
     const isOuterTransit = OUTER_PLANETS.includes(t.transitPlanet);
     const isToPersonal = PERSONAL_POINTS.includes(t.natalPlanet);
-    
-    // Check for North Node
-    if (t.transitPlanet.includes('Node') || t.natalPlanet.includes('Node')) {
+    const isKarmicTransit = ['Lilith', 'Chiron', 'NorthNode'].includes(t.transitPlanet)
+      || t.transitPlanet.includes('Lilith') || t.transitPlanet.includes('Chiron');
+
+    // Karmic/shadow body hitting a personal point (e.g. Lilith conj Sun) — surface it.
+    if (isKarmicTransit && isToPersonal) {
+      primary.push(t);
+    }
+    // Check for North Node (non-personal hits stay in collapsed Node section)
+    else if (t.transitPlanet.includes('Node') || t.natalPlanet.includes('Node')) {
       northNode.push(t);
     }
     // Check for asteroids (Ceres, Pallas, Juno, Vesta, Chiron, etc.)
