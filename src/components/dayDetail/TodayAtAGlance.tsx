@@ -9,6 +9,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DayData, getDayType, getPlanetSymbol } from '@/lib/astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { TransitAspect, getTransitPlanetSymbol, getTopTransitAspects, describeDailyMotion, describeTransitMotionPhase, getFeltSenseDescription } from '@/lib/transitAspects';
