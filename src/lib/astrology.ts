@@ -1372,7 +1372,8 @@ export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors
   const weights = new Map<string, number>();
 
   aspects.forEach((asp) => {
-    const w = Math.max(0.1, MAX_ORB - (asp.orb ?? MAX_ORB));
+    const orbNum = typeof asp.orb === 'number' ? asp.orb : parseFloat(String(asp.orb));
+    const w = Math.max(0.1, MAX_ORB - (Number.isFinite(orbNum) ? orbNum : MAX_ORB));
     weights.set(asp.planet1, (weights.get(asp.planet1) ?? 0) + w);
     weights.set(asp.planet2, (weights.get(asp.planet2) ?? 0) + w);
   });
