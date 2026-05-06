@@ -35,6 +35,28 @@ const formatTime = (d: Date) =>
   ' ' +
   (new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET');
 
+// Karmic / sensitive points — not physical planets. Each gets a small badge
+// with a teen-friendly explanation so users know why these matter and what
+// kind of thing they describe.
+const KARMIC_POINT_INFO: Record<string, { label: string; tip: string }> = {
+  Lilith: {
+    label: 'karmic point',
+    tip: 'Lilith isn\'t a planet — it\'s the empty spot in the Moon\'s orbit farthest from Earth. Astrologers treat it as a sensitive point about your raw, untamed self: the part of you that refuses to be small, polite, or hidden. Where it sits or transits, something hidden often gets named out loud.',
+  },
+  Chiron: {
+    label: 'wound + healer point',
+    tip: 'Chiron is a small icy body between Saturn and Uranus, used as a sensitive point. It marks "the wound that becomes the gift" — an old hurt you eventually learn to help others through.',
+  },
+  NorthNode: {
+    label: 'karmic direction',
+    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+  },
+  'North Node': {
+    label: 'karmic direction',
+    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+  },
+};
+
 export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) => {
   const { date, planets, moonPhase, aspects, exactLunarPhase, majorIngresses, voc } = dayData;
   const [showAllPositions, setShowAllPositions] = useState(false);
@@ -268,6 +290,14 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <span className="text-[10px] text-muted-foreground">
                       {t.orb}°{t.isExact ? ' · exact' : ''}
                     </span>
+                    {KARMIC_POINT_INFO[t.transitPlanet] && (
+                      <span
+                        className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200"
+                        title={KARMIC_POINT_INFO[t.transitPlanet].tip}
+                      >
+                        ✦ {KARMIC_POINT_INFO[t.transitPlanet].label}
+                      </span>
+                    )}
                     {!t.isExact && phase && (
                       <span
                         className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${badgeClass}`}
@@ -349,6 +379,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {planetRows.map((p, i) => {
               const m = describeDailyMotion(p.name);
+              const karmic = KARMIC_POINT_INFO[p.name];
               return (
                 <li key={i} className="flex items-start gap-2 px-3 py-1.5 rounded-sm bg-secondary/20 text-sm">
                   <span className="w-5 text-center text-muted-foreground mt-0.5">{p.glyph}</span>
@@ -356,6 +387,14 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground">{p.name}</span>
                       <span className="text-muted-foreground">{p.full}</span>
+                      {karmic && (
+                        <span
+                          className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200"
+                          title={karmic.tip}
+                        >
+                          ✦ {karmic.label}
+                        </span>
+                      )}
                       {m && (
                         <span
                           className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground font-mono"
@@ -365,6 +404,11 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                         </span>
                       )}
                     </div>
+                    {karmic && (
+                      <div className="text-[10px] text-purple-900/80 dark:text-purple-200/80 mt-0.5 leading-snug">
+                        {karmic.tip}
+                      </div>
+                    )}
                     {m && (
                       <div className="text-[10px] text-muted-foreground mt-0.5">{m.note}</div>
                     )}
