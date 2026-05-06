@@ -120,6 +120,7 @@ export interface DayColors {
   label: string;
   primaryPlanet?: string | null;
   secondaryPlanet?: string | null;
+  activePlanets?: ActivePlanetDot[]; // ranked, strongest first
 }
 
 export interface ExactLunarPhase {
