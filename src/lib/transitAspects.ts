@@ -1021,7 +1021,7 @@ export function getFeltSenseDescription(
     // the polarity of THIS house axis. Name the actual axis, not "your spouse".
     const oppositeHouse = natalHouse ? ((natalHouse + 6 - 1) % 12) + 1 : null;
     const oppositeArea = oppositeHouse && HOUSE_LIFE_AREA[oppositeHouse] ? HOUSE_LIFE_AREA[oppositeHouse].area : 'the opposite side of your life';
-    situation = `${tp} is sitting directly across from your natal ${np}, lighting up the polarity between ${lifeArea} and ${oppositeArea}. You\'ll feel it as a tug between those two areas, not necessarily through a person.`;
+    situation = `${tp} is sitting directly across from your natal ${np}, lighting up the polarity between ${lifeArea} and ${oppositeArea}. You'll feel pulled in two directions at once: something in ${lifeArea} is asking for your attention, and something in ${oppositeArea} is pulling against it, so whatever you choose for one side costs you on the other. This often shows up through another person mirroring it back to you (a partner, collaborator, or someone who keeps pushing your buttons), but it can just as easily be an internal tug-of-war with no one else involved.`;
   } else if (asp === 'square') {
     situation = `${tp} is at a 90° angle to your natal ${np}, creating real friction in ${lifeArea}. Something there has to move.`;
   } else if (asp === 'trine') {
