@@ -332,7 +332,7 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                   </div>
                   {/* Concrete felt-sense: what this looks like in real life this week */}
                   {(() => {
-                    const fs = getFeltSenseDescription(t.transitPlanet, t.natalPlanet, t.aspect);
+                    const fs = getFeltSenseDescription(t.transitPlanet, t.natalPlanet, t.aspect, t.natalHouse, t.transitHouse);
                     if (fs) {
                       return (
                         <div className="mt-2 rounded-sm bg-secondary/40 border-l-2 border-primary/60 px-3 py-2">
