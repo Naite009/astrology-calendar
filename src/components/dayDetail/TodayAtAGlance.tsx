@@ -314,13 +314,31 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-            {planetRows.map((p, i) => (
-              <li key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-secondary/20 text-sm">
-                <span className="w-5 text-center text-muted-foreground">{p.glyph}</span>
-                <span className="font-medium text-foreground w-24">{p.name}</span>
-                <span className="text-muted-foreground">{p.full}</span>
-              </li>
-            ))}
+            {planetRows.map((p, i) => {
+              const m = describeDailyMotion(p.name);
+              return (
+                <li key={i} className="flex items-start gap-2 px-3 py-1.5 rounded-sm bg-secondary/20 text-sm">
+                  <span className="w-5 text-center text-muted-foreground mt-0.5">{p.glyph}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-foreground">{p.name}</span>
+                      <span className="text-muted-foreground">{p.full}</span>
+                      {m && (
+                        <span
+                          className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground font-mono"
+                          title={m.note}
+                        >
+                          {m.speed} · {m.pace}
+                        </span>
+                      )}
+                    </div>
+                    {m && (
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{m.note}</div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
           <p className="text-[10px] text-muted-foreground mt-2 italic">
             Positions calculated with astronomy-engine. No AI.
