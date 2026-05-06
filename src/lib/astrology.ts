@@ -1363,19 +1363,25 @@ export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors
   });
 
   if (moonPhase.isBalsamic) {
-    return { primary: '#D4C5E8', secondary: null, label: 'Balsamic Rest' };
+    return { primary: '#D4C5E8', secondary: null, label: 'Balsamic Rest', primaryPlanet: 'Moon (balsamic)', secondaryPlanet: null };
   }
 
-  const colors = Array.from(activePlanets)
-    .map((p) => PLANET_COLORS[p]?.color)
-    .filter(Boolean);
+  const planetEntries = Array.from(activePlanets)
+    .map((p) => ({ key: p, info: PLANET_COLORS[p] }))
+    .filter((e) => e.info);
 
-  if (colors.length === 0) {
-    return { primary: PLANET_COLORS.moon.color, secondary: null, label: 'Moon Focus' };
-  } else if (colors.length === 1) {
-    return { primary: colors[0], secondary: null, label: 'Single Planet' };
+  if (planetEntries.length === 0) {
+    return { primary: PLANET_COLORS.moon.color, secondary: null, label: 'Moon Focus', primaryPlanet: 'Moon', secondaryPlanet: null };
+  } else if (planetEntries.length === 1) {
+    return { primary: planetEntries[0].info.color, secondary: null, label: 'Single Planet', primaryPlanet: planetEntries[0].info.name, secondaryPlanet: null };
   } else {
-    return { primary: colors[0], secondary: colors[1], label: 'Multiple Aspects' };
+    return {
+      primary: planetEntries[0].info.color,
+      secondary: planetEntries[1].info.color,
+      label: 'Multiple Aspects',
+      primaryPlanet: planetEntries[0].info.name,
+      secondaryPlanet: planetEntries[1].info.name,
+    };
   }
 };
 
