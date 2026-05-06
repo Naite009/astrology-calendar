@@ -846,3 +846,163 @@ export function describeTransitMotionPhase(
   };
 }
 
+
+// ============================================================================
+// FELT-SENSE LIBRARY — concrete real-life descriptions per (transit × natal × aspect)
+//
+// Per the Hybrid Clarity Rule: situation → feeling → why. No abstract trait words.
+// Each entry describes what the user is likely to NOTICE in their life this week,
+// not the textbook keyword. Returns null if no specific entry exists, so the UI
+// can fall back to a generic phrasing.
+// ============================================================================
+
+type FeltSenseEntry = {
+  /** What is actually happening / what you'll notice (situation + feeling). */
+  felt: string;
+  /** Optional one-line "why this is happening astrologically" — plain language. */
+  why?: string;
+};
+
+// Aspect "flavor" — how the geometry colors the experience.
+// conjunction = fused/loud, opposition = mirrored/tug-of-war, square = friction/forcing,
+// trine = open door/permission, sextile = small invitation, quincunx = awkward adjustment.
+
+const FELT_SENSE: Record<string, Record<string, FeltSenseEntry>> = {
+  // ---- PLUTO transits ----
+  'pluto-moon': {
+    conjunction: { felt: 'Old emotional patterns surface — a feeling, a memory, or a person from your past keeps coming up. You may feel things more deeply than usual, and small moments hit harder. Something about how you take care of yourself is being rewritten from the inside out.', why: 'Pluto exposes what your Moon (your inner life, your needs, your home) has been hiding.' },
+    opposition: { felt: 'Someone close — partner, family, a roommate — keeps mirroring your deepest feelings back to you, and it can feel intense or even confrontational. You notice yourself reacting bigger than the situation calls for. It\'s pointing at an old emotional wound that\'s ready to be seen.', why: 'Pluto on the other side of your Moon brings buried feelings up through other people.' },
+    square: { felt: 'You feel pulled between what you NEED emotionally and what your life or family actually allows. Mood swings, sudden cravings for solitude, or a wish to blow something up are normal. The pressure is forcing a real change in how you do "comfort" and "home."', why: 'Pluto is grinding against your Moon — the friction is the upgrade.' },
+    trine: { felt: 'Deep feelings come up but they don\'t overwhelm you — you can actually look at them. A long-held emotional habit (over-giving, hiding, numbing) loosens its grip almost on its own. Conversations about feelings go deeper than usual without drama.', why: 'Pluto and your Moon are working together — transformation feels safe right now.' },
+    sextile: { felt: 'Small moments invite real emotional honesty — a friend asks how you\'re doing and you actually tell them. You notice you can let go of one small grudge or habit that\'s been quietly draining you.', why: 'A gentle Pluto–Moon channel: subtle healing, no fireworks.' },
+  },
+  'pluto-sun': {
+    conjunction: { felt: 'You feel like a different person is trying to come through — old labels, old jobs, old roles suddenly don\'t fit. Sometimes feels like an identity crisis; sometimes like quiet, total clarity about what has to change.', why: 'Pluto right on your Sun rebuilds who you are from the ground up.' },
+    opposition: { felt: 'Someone with real influence (a boss, partner, parent) keeps pushing on your sense of self. You\'re forced to figure out where you end and where their power begins.', why: 'Pluto opposite your Sun brings transformation through other people\'s pressure.' },
+    square: { felt: 'You hit a wall: the way you\'ve been showing up isn\'t working anymore. Frustration, stuckness, or a sense of "I have to change something" that won\'t go away.', why: 'Pluto squaring your Sun forces a real-life restructure of your identity.' },
+    trine: { felt: 'You feel quietly more powerful — able to make choices that match who you really are without explaining yourself. Good time to step into something bigger.', why: 'Pluto and your Sun in flow: deep change without the crisis.' },
+    sextile: { felt: 'Small openings to step into more authority or take yourself more seriously. A door cracks open if you reach for it.' },
+  },
+  'pluto-venus': {
+    conjunction: { felt: 'A relationship, a value, or something you love gets totally rewritten. Could be obsession, jealousy, a magnetic attraction, OR a clean ending you\'ve needed for a long time.', why: 'Pluto on your Venus transforms what (and how) you love.' },
+    opposition: { felt: 'A relationship intensifies — fast bond, power struggle, or someone who makes you feel everything at once. Finances or a big purchase may also get loud.', why: 'Pluto opposite Venus pulls hidden relationship dynamics into the open.' },
+    square: { felt: 'Tension in love or money: jealousy, control issues, a values clash, or feeling someone is trying to "own" you. Forces you to redefine what you actually want.', why: 'Pluto squaring Venus is a relationship pressure-cooker.' },
+    trine: { felt: 'Attractions feel deeper and more meaningful. A relationship can transform in a good way; finances or self-worth quietly upgrade.' },
+    sextile: { felt: 'Small chance to deepen a connection or make a smarter money move. Subtle but real.' },
+  },
+  'pluto-mars': {
+    conjunction: { felt: 'Your drive is on overdrive — you can move mountains or get into a fight. Sex, anger, and ambition all amplified.' },
+    opposition: { felt: 'Power struggles with someone — at work, at home, or in traffic. Don\'t take the bait.' },
+    square: { felt: 'Frustration that won\'t quit. Channel it into hard physical work or a project, or it leaks out as conflict.' },
+    trine: { felt: 'Your energy is focused and strong — great for tackling something hard you\'ve been avoiding.' },
+    sextile: { felt: 'Quiet boost of stamina and willpower.' },
+  },
+  'pluto-mercury': {
+    conjunction: { felt: 'Your mind goes deep — research, investigation, or one thought you cannot stop turning over. Conversations get unusually honest.' },
+    opposition: { felt: 'Intense talks; secrets surface; someone says the thing you\'ve been avoiding.' },
+    square: { felt: 'Mental loops, obsessive thinking, or a conversation that turns into a power struggle.' },
+    trine: { felt: 'You can finally say (or write) the hard true thing. Great for any kind of deep work.' },
+    sextile: { felt: 'A small but sharp insight — pay attention to what keeps coming up.' },
+  },
+
+  // ---- NEPTUNE transits ----
+  'neptune-moon': {
+    conjunction: { felt: 'Your feelings get foggy and dreamy — you absorb other people\'s moods, cry at commercials, or can\'t tell if you\'re tired or sad. Sleep is weird; intuition is sky-high. Don\'t make big logistics decisions about home or family right now.', why: 'Neptune dissolves the usual edges of your Moon (your inner weather).' },
+    opposition: { felt: 'Someone close — partner, family member — confuses you. You can\'t tell what they\'re actually feeling, or you keep over-empathizing until you lose yourself in it. Boundaries blur.', why: 'Neptune opposite your Moon pulls in misunderstanding and fantasy through relationships.' },
+    square: { felt: 'You feel emotionally tired in a way you can\'t explain. Old escape habits (scrolling, drinking, daydreaming, over-giving) get tempting. Your gut says one thing, your head says another, and neither feels reliable.', why: 'Neptune square Moon = emotional fog you have to walk through, not around.' },
+    trine: { felt: 'Compassion comes easy, art and music hit deeper, dreams are vivid. Good time for anything spiritual, creative, or tender.', why: 'Neptune and your Moon in flow — your imagination is wide open.' },
+    sextile: { felt: 'A small wave of empathy or inspiration. Be gentle with yourself today.' },
+  },
+  'neptune-sun': {
+    conjunction: { felt: 'You\'re less sure of who you are — and that\'s actually the point. Old definitions of yourself dissolve; new ones haven\'t arrived yet. Tired, dreamy, or weirdly inspired.' },
+    opposition: { felt: 'Someone you look up to (or look at) reflects confusion back at you. Hard to see them — or yourself — clearly.' },
+    square: { felt: 'Confusion about your direction. Avoid signing big things or making identity-defining choices in fog.' },
+    trine: { felt: 'Creative flow, easy spirituality, a sense your life has meaning bigger than the to-do list.' },
+    sextile: { felt: 'A small whisper of inspiration — follow it.' },
+  },
+  'neptune-venus': {
+    conjunction: { felt: 'Romantic, dreamy, idealizing — you may see someone (or something you want to buy) through rose-colored glasses. Beautiful, but wait before committing.' },
+    opposition: { felt: 'A relationship feels confusing — mixed signals, idealization, or someone who isn\'t who they seemed.' },
+    square: { felt: 'Disappointment or self-deception in love or money. Clarity comes later — don\'t force it now.' },
+    trine: { felt: 'Love, art, and beauty all feel easier and deeper. Great for anything creative or romantic.' },
+    sextile: { felt: 'A sweet, soft moment in love or aesthetics.' },
+  },
+
+  // ---- URANUS transits ----
+  'uranus-moon': {
+    conjunction: { felt: 'Your emotional rhythm gets shaken up — sudden mood swings, restlessness at home, the urge to change your room, your routine, or who you live with. You may feel "I can\'t do this the same way anymore."', why: 'Uranus on your Moon breaks the usual emotional pattern open.' },
+    opposition: { felt: 'Someone close acts unpredictably, or YOU do — surprise news, a sudden change in a close relationship, an emotional jolt from out of nowhere.', why: 'Uranus opposite Moon delivers shock through people you live with or love.' },
+    square: { felt: 'Restless, irritable, can\'t sit still emotionally. Your usual coping doesn\'t work. Something in your home life or routine wants to change NOW.', why: 'Uranus squaring your Moon won\'t let you settle until you change something.' },
+    trine: { felt: 'Refreshing emotional clarity — you suddenly see what to do differently. Easy time to change a habit or shake up your space.' },
+    sextile: { felt: 'A small "aha" about what you actually need. Try one new thing.' },
+  },
+  'uranus-venus': {
+    conjunction: { felt: 'Sudden attraction, surprise crush, unexpected money news, or you suddenly want something completely different in love or aesthetics. Could be exciting or destabilizing.' },
+    opposition: { felt: 'Someone in your life surprises you — a relationship suddenly shifts, an attraction comes out of nowhere, or money news lands fast. Old security around love and value gets shaken.', why: 'Uranus opposite Venus shocks open whatever you\'ve been quietly tolerating.' },
+    square: { felt: 'Restless in a relationship or with how you spend money. The urge to do something impulsive in love or finances is strong — sleep on it before you act.' },
+    trine: { felt: 'Exciting new connection, a fun freedom in how you love or spend, or a clever idea about money.' },
+    sextile: { felt: 'A small surprise in love, friendship, or income — usually a good one.' },
+  },
+  'uranus-sun': {
+    conjunction: { felt: 'Identity reset. You wake up wanting to be more YOU, even if it disrupts everything. Sudden insights about who you actually are.' },
+    opposition: { felt: 'Someone shakes your sense of self — challenging you, surprising you, or breaking a pattern you were stuck in.' },
+    square: { felt: 'Restless and itchy in your own life. Something has to change about how you show up, even if you can\'t name it yet.' },
+    trine: { felt: 'Freedom to be more yourself, with less friction. Good time for a brave move.' },
+    sextile: { felt: 'A small invitation to try something new about how you present yourself.' },
+  },
+
+  // ---- SATURN transits ----
+  'saturn-moon': {
+    conjunction: { felt: 'You feel more alone, more serious, or like the emotional load is heavy. A reality check about home, family, or how you take care of yourself.', why: 'Saturn on your Moon asks you to grow up emotionally.' },
+    opposition: { felt: 'A close person (partner, parent, roommate) feels distant, demanding, or like a wall. You\'re being asked to set a real boundary.' },
+    square: { felt: 'Heavy, low-energy mood; what usually comforts you doesn\'t work; obligation outweighs joy. Builds emotional resilience the hard way.' },
+    trine: { felt: 'Your emotions feel stable and grown-up. Good time to commit to a routine that takes care of you long-term.' },
+    sextile: { felt: 'A small chance to set a boundary or build a healthy habit — it sticks.' },
+  },
+  'saturn-sun': {
+    conjunction: { felt: 'A serious chapter — you\'re being asked to step up, take responsibility, or face the gap between who you say you are and how you actually live.' },
+    opposition: { felt: 'Authority figures (boss, dad, teacher) push back on you. Tests whether you can hold your own.' },
+    square: { felt: 'Frustration: hard work without obvious reward yet. The structure you\'re building is invisible right now.' },
+    trine: { felt: 'Effort pays off. Good time to commit to something long-term that matches who you really are.' },
+    sextile: { felt: 'A small step toward a long-term goal — take it.' },
+  },
+  'saturn-venus': {
+    conjunction: { felt: 'Love and money get serious — commitment, a real conversation about the relationship, or facing a financial reality.' },
+    opposition: { felt: 'A relationship feels heavy, distant, or like work. Or someone wants more commitment than you\'re ready for.' },
+    square: { felt: 'Tension between what you want and what\'s realistic. Could feel lonely or restricted in love or money.' },
+    trine: { felt: 'Solid, grown-up love and money decisions go well. A relationship can deepen for real.' },
+  },
+
+  // ---- JUPITER transits ----
+  'jupiter-moon': {
+    conjunction: { felt: 'Mood lifts, generosity flows, you want to feed people and be fed. Easy joy at home.' },
+    opposition: { felt: 'A close relationship gets bigger — more time together, more emotional intensity (good or overwhelming).' },
+    square: { felt: 'Over-eating, over-spending, over-giving. Feels good in the moment but watch the limits.' },
+    trine: { felt: 'Genuine happiness and emotional luck. Good day to ask for what you need.' },
+    sextile: { felt: 'Small win for your mood or your home life.' },
+  },
+  'jupiter-sun': {
+    conjunction: { felt: 'Confidence boost. Doors open if you walk toward them.' },
+    opposition: { felt: 'Someone offers you something big — opportunity or excess. Read the fine print.' },
+    square: { felt: 'Overconfidence trap. Where are you over-extending?' },
+    trine: { felt: 'Lucky day for visibility, opportunity, or a bold ask.' },
+  },
+};
+
+/**
+ * Returns a concrete, real-life felt-sense description for a transit.
+ * Falls back to null if no specific entry exists; the UI should then show a generic line.
+ */
+export function getFeltSenseDescription(
+  transitPlanet: string,
+  natalPlanet: string,
+  aspect: string,
+): FeltSenseEntry | null {
+  const tp = transitPlanet.toLowerCase().replace(/\s+/g, '');
+  const np = natalPlanet.toLowerCase().replace(/\s+/g, '');
+  const asp = aspect.toLowerCase();
+
+  // Normalize: "northnode" / "ascendant" / "mc" not yet in library — return null and let fallback handle it.
+  const key = `${tp}-${np}`;
+  return FELT_SENSE[key]?.[asp] || null;
+}
