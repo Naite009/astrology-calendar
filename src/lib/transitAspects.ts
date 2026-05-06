@@ -876,21 +876,21 @@ type FeltSenseEntry = {
 // across a polarity, often through whatever (or whoever) sits opposite you in
 // the relevant life area. The actual life area comes from the natal house.
 const ASPECT_DYNAMIC: Record<string, { verb: string; flavor: string; intensity: 'high' | 'medium' | 'low' }> = {
-  conjunction: { verb: 'fuses with', flavor: 'loud, direct, can\'t-ignore', intensity: 'high' },
-  opposition:  { verb: 'shows up across from', flavor: 'a tug-of-war, often felt through whatever (or whoever) mirrors this part of your life back to you', intensity: 'high' },
-  square:      { verb: 'grinds against', flavor: 'friction that won\'t let you stay where you are', intensity: 'high' },
-  trine:       { verb: 'flows easily with', flavor: 'an open door, low resistance', intensity: 'medium' },
-  sextile:     { verb: 'offers a small opening to', flavor: 'a quiet invitation, only works if you reach for it', intensity: 'low' },
-  quincunx:    { verb: 'creates an awkward fit with', flavor: 'something feels off, requires constant small adjustments', intensity: 'medium' },
-  semisextile: { verb: 'subtly nudges', flavor: 'a low background hum', intensity: 'low' },
+  conjunction: { verb: 'fuses with', flavor: 'loud, direct, impossible to ignore: this energy is sitting on top of you and you\'ll feel it in your body and your day', intensity: 'high' },
+  opposition:  { verb: 'shows up across from', flavor: 'a tug-of-war between two real, valid sides of your life: often felt through another person mirroring it back to you, but just as often an internal pull where every choice for one side costs the other', intensity: 'high' },
+  square:      { verb: 'grinds against', flavor: 'real friction that won\'t let you stay where you are: something has to give, and the longer you sit still, the louder it gets', intensity: 'high' },
+  trine:       { verb: 'flows easily with', flavor: 'low-resistance and easy: things click, doors open without you forcing them, and you\'ll only get the benefit if you actually walk through (it\'s easy to sleep through trines)', intensity: 'medium' },
+  sextile:     { verb: 'offers a small opening to', flavor: 'a quiet, easy-to-miss opportunity: a useful conversation, a small introduction, a small idea, only worth something if you reach out and take it', intensity: 'low' },
+  quincunx:    { verb: 'creates an awkward fit with', flavor: 'a constant low-grade misfit: nothing dramatic, just a feeling that things keep being slightly off and need small constant adjustments (the schedule, the body, the relationship, the plan)', intensity: 'medium' },
+  semisextile: { verb: 'subtly nudges', flavor: 'a low background hum you only notice if you\'re paying attention: a small mood shift, a small pull, easy to miss', intensity: 'low' },
 };
 
 // ---------- Layer 2: TRANSIT-PLANET PRESSURE (what the visiting planet DOES) ----------
 const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warning?: string }> = {
   Pluto: {
-    action: 'rebuilds from the inside out, sometimes by destroying what was already cracked',
+    action: 'forces a deep, slow rebuild of this part of your life: something here that you\'ve outgrown but kept propping up (a job, a relationship dynamic, an identity, a habit, a power imbalance) starts breaking down on its own, and you\'ll feel obsessed with it, unable to look away, sometimes scared of what\'s being uncovered. By the end you won\'t recognize the old version of yourself in this area',
     timeframe: 'years (this is the slowest, deepest pressure in your chart)',
-    warning: 'don\'t try to control the outcome, just notice what refuses to stay the same',
+    warning: 'don\'t try to manage or speed up the outcome: the more you grip, the harder it pries your fingers loose. Your job is to notice what genuinely refuses to stay the same and stop defending it',
   },
   Neptune: {
     action: 'makes this part of your life feel hazy and hard to see clearly: you\'ll second-guess what you actually feel, romanticize people or situations, lose motivation, feel more tired than usual, or get pulled toward escape (sleep, scrolling, drinking, fantasy, daydreaming about a different life)',
@@ -898,51 +898,54 @@ const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warn
     warning: 'don\'t sign contracts, make big commitments, or fully trust your read on a person right now: your gut is picking up real signals but also a lot of static, so wait for the fog to lift before deciding',
   },
   Uranus: {
-    action: 'breaks the pattern open, suddenly, often through surprise events or sudden insight',
+    action: 'breaks the routine open in this area, usually through something you didn\'t plan for: a sudden opportunity, an unexpected exit, a person leaving or arriving out of nowhere, or your own restlessness hitting a breaking point where you can\'t do it the old way one more day. Expect plans to change last minute and to feel weirdly alive even when it\'s stressful',
     timeframe: 'roughly a year, with sharp jolts at the exact passes',
-    warning: 'sudden urges to blow it up are real but often overshoot, sleep on big moves',
+    warning: 'the urge to quit, leave, or blow it up is real information, but acting on it in 24 hours usually overshoots. Sleep on big moves, then move',
   },
   Saturn: {
-    action: 'puts pressure on what isn\'t built right and rewards what is, slowly',
+    action: 'puts slow, heavy pressure on this part of your life and asks "is this actually built right?" Anything you\'ve been faking, avoiding, or duct-taping together starts cracking, and anything you\'ve quietly built well starts paying off. Expect to feel older, more tired, more serious here, with a lot of "I have to deal with this now"',
     timeframe: 'about a year, in 2 or 3 distinct waves',
+    warning: 'this is not the moment to walk away from the work: the reward shows up after the grind, not during it',
   },
   Jupiter: {
-    action: 'expands and amplifies, adds opportunity, optimism, and the risk of overdoing it',
+    action: 'opens this part of your life up: more opportunities, more invitations, more confidence, more "yes" energy, but also more spending, more commitments, more stuff on your plate than you can actually carry. You\'ll feel optimistic and a little overconfident',
     timeframe: 'a few weeks per pass, full year of background luck-or-bloat',
+    warning: 'don\'t say yes to everything just because it\'s available, and watch the spending and the promises: the bill comes after Jupiter leaves',
   },
   Chiron: {
-    action: 'reopens an old wound so it can finally be tended to',
+    action: 'reopens an old wound in this area (often something from childhood, a parent, an early rejection, or a place you decided you weren\'t enough): the same hurt comes back up in a current situation, but this time you\'re old enough to actually tend to it instead of just survive it. Expect to feel raw, easily triggered, and surprisingly tender',
     timeframe: 'months, comes in waves',
   },
   Lilith: {
-    action: 'exposes whatever you\'ve been making yourself smaller about',
+    action: 'exposes whatever you\'ve been making yourself smaller, quieter, or more polite about in this area. You\'ll feel angrier than usual, less willing to perform, more allergic to people who talk over you or take you for granted, and pulled toward saying the thing you usually swallow',
     timeframe: 'about 9 months in this part of your chart',
   },
   Mars: {
-    action: 'turns up the heat: drive, anger, urgency, libido',
+    action: 'turns up the heat fast in this area: more drive, more urgency, shorter fuse, more libido, more "let\'s go right now." You\'ll get a lot done, and you\'ll also pick fights more easily, especially with people who are slowing you down',
     timeframe: 'a few days to a week',
+    warning: 'channel it into a workout, a hard task, or something physical before it leaks into a conversation you\'ll regret',
   },
 };
 
 // ---------- Layer 3: NATAL-PLANET ANCHOR (what part of YOU is being touched) ----------
 const NATAL_ANCHOR: Record<string, { runs: string; signals: string }> = {
-  Sun:     { runs: 'your core identity, vitality, and sense of self',           signals: 'who you say you are, your confidence, your spine' },
-  Moon:    { runs: 'your inner emotional weather, instincts, and need for safety', signals: 'feelings, sleep, appetite, what comforts you, what triggers you' },
-  Mercury: { runs: 'how you think, talk, and process information',              signals: 'conversations, plans, paperwork, what your mind chews on' },
-  Venus:   { runs: 'what you value, who and what you\'re drawn to, your sense of beauty and worth', signals: 'love, money, attraction, taste, self-worth' },
-  Mars:    { runs: 'your drive, anger, and how you go after things',            signals: 'energy, conflict, libido, urgency, what gets you moving' },
-  Jupiter: { runs: 'where you reach for more, your faith and your blind spots', signals: 'optimism, growth opportunities, overreach' },
-  Saturn:  { runs: 'where you build long-term structure and where you feel limited', signals: 'responsibility, discipline, fear, the thing you keep working on' },
-  Uranus:  { runs: 'where you need freedom and where you break patterns',       signals: 'restlessness, sudden insight, the urge to disrupt' },
-  Neptune: { runs: 'where you dream, dissolve, or escape',                      signals: 'inspiration, fog, longing, spiritual pull' },
-  Pluto:   { runs: 'where you\'ve been transforming for life',                  signals: 'power dynamics, obsession, what won\'t let you go' },
-  Ascendant: { runs: 'how you show up and the body you live in',                signals: 'first impressions, appearance, the door you walk through' },
-  MC:      { runs: 'your public role, career, and reputation',                  signals: 'work, status, how the world sees you' },
-  IC:      { runs: 'your private self, home, and emotional roots',              signals: 'home, family, ancestry, what you go back to in private' },
-  Descendant: { runs: 'what you meet in close partners and open enemies',       signals: 'one-on-one dynamics, contracts, who you keep attracting' },
-  NorthNode: { runs: 'the unfamiliar direction your soul is growing toward',    signals: 'what feels new and a little uncomfortable but right' },
-  Lilith:  { runs: 'the part of you that refuses to be small or polite',        signals: 'rage, taboo desire, the thing you usually swallow' },
-  Chiron:  { runs: 'your oldest wound, the one you eventually help others with',signals: 'where you feel "not enough" and where you teach' },
+  Sun:     { runs: 'your core identity, vitality, and sense of self',           signals: 'your energy level, your confidence, whether you feel seen or invisible, and how willing you are to take up space in a room' },
+  Moon:    { runs: 'your inner emotional weather, instincts, and need for safety', signals: 'your moods, your sleep, what you crave to eat, who you want near you, and what suddenly makes you cry or shut down' },
+  Mercury: { runs: 'how you think, talk, and process information',              signals: 'how clear or scattered your head feels, the conversations you keep replaying, texts and emails, scheduling, and what your brain won\'t stop chewing on at 2am' },
+  Venus:   { runs: 'what you value, who and what you\'re drawn to, your sense of beauty and worth', signals: 'who you\'re attracted to, what you spend money on, how you feel about your own body in the mirror, and whether you feel loved or overlooked' },
+  Mars:    { runs: 'your drive, anger, and how you go after things',            signals: 'your energy in your body, your patience level, your sex drive, how quickly you snap, and whether you\'re initiating or stalling' },
+  Jupiter: { runs: 'where you reach for more, your faith and your blind spots', signals: 'how lucky or stuck you feel, the size of the opportunities showing up, how much you\'re saying yes to, and whether you\'re overcommitting or overspending' },
+  Saturn:  { runs: 'where you build long-term structure and where you feel limited', signals: 'what feels heavy and adult right now, what responsibilities you can\'t put off, what fear keeps coming up, and what slow project is finally paying off (or finally falling apart)' },
+  Uranus:  { runs: 'where you need freedom and where you break patterns',       signals: 'how restless you feel in your own life, the sudden ideas or urges to leave, plans that get blown up last minute, and the parts of your routine you can\'t tolerate one more week' },
+  Neptune: { runs: 'where you dream, dissolve, or escape',                      signals: 'how foggy or inspired you feel, what you\'re fantasizing about, who or what you\'re idealizing, your dreams at night, and what you\'re using to check out (sleep, screens, substances, daydreams)' },
+  Pluto:   { runs: 'where you\'ve been transforming for life',                  signals: 'who or what you\'re obsessed with, the power dynamic you can\'t stop noticing, what you\'re afraid will get exposed, and the part of yourself that\'s quietly dying off' },
+  Ascendant: { runs: 'how you show up and the body you live in',                signals: 'what people say about you when they first meet you, how you look in the mirror this week, your posture, your wardrobe, and the version of you that walks into the room' },
+  MC:      { runs: 'your public role, career, and reputation',                  signals: 'what\'s happening at work, who\'s noticing you (or not), your title, your boss, and what people who don\'t know you personally think you do' },
+  IC:      { runs: 'your private self, home, and emotional roots',              signals: 'how your home feels when you walk in, what\'s coming up about your parents or childhood, what you only let yourself feel when no one\'s watching, and whether you feel rooted or unmoored' },
+  Descendant: { runs: 'what you meet in close partners and open enemies',       signals: 'the dynamic with your partner or closest collaborator, who\'s suddenly pushing your buttons, what kind of person you keep attracting, and what you keep negotiating' },
+  NorthNode: { runs: 'the unfamiliar direction your soul is growing toward',    signals: 'what feels new and a little scary but oddly right, the door you keep walking past, and the version of your life you can almost picture but haven\'t built yet' },
+  Lilith:  { runs: 'the part of you that refuses to be small or polite',        signals: 'what you\'re suddenly furious about, the boundary you\'re done apologizing for, and the desire or opinion you usually keep to yourself but can\'t anymore' },
+  Chiron:  { runs: 'your oldest wound, the one you eventually help others with',signals: 'the old hurt that just got poked again, where you feel like a fraud or "not enough," and the place where, ironically, other people keep coming to you for help' },
 };
 
 // ---------- Layer 4: HOUSE LIFE AREA ----------
