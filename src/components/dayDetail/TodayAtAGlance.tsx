@@ -35,6 +35,28 @@ const formatTime = (d: Date) =>
   ' ' +
   (new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET');
 
+// Karmic / sensitive points — not physical planets. Each gets a small badge
+// with a teen-friendly explanation so users know why these matter and what
+// kind of thing they describe.
+const KARMIC_POINT_INFO: Record<string, { label: string; tip: string }> = {
+  Lilith: {
+    label: 'karmic point',
+    tip: 'Lilith isn\'t a planet — it\'s the empty spot in the Moon\'s orbit farthest from Earth. Astrologers treat it as a sensitive point about your raw, untamed self: the part of you that refuses to be small, polite, or hidden. Where it sits or transits, something hidden often gets named out loud.',
+  },
+  Chiron: {
+    label: 'wound + healer point',
+    tip: 'Chiron is a small icy body between Saturn and Uranus, used as a sensitive point. It marks "the wound that becomes the gift" — an old hurt you eventually learn to help others through.',
+  },
+  NorthNode: {
+    label: 'karmic direction',
+    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+  },
+  'North Node': {
+    label: 'karmic direction',
+    tip: 'The North Node isn\'t a planet — it\'s a math point where the Moon\'s path crosses the Sun\'s. Astrologers read it as your soul-growth direction: the unfamiliar place you\'re being pulled toward this lifetime.',
+  },
+};
+
 export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) => {
   const { date, planets, moonPhase, aspects, exactLunarPhase, majorIngresses, voc } = dayData;
   const [showAllPositions, setShowAllPositions] = useState(false);
