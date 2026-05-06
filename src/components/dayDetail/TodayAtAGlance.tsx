@@ -200,50 +200,6 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
         <p className="text-xs text-muted-foreground mt-1">{dayType.description}</p>
       </div>
 
-      {/* Color band (compact) */}
-      {dayData.dayColors && (
-        <TooltipProvider delayDuration={150}>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    className="inline-block h-4 w-4 rounded-full border border-border cursor-help"
-                    style={{ backgroundColor: dayData.dayColors.primary }}
-                    aria-label={dayData.dayColors.primaryPlanet ?? 'Active planet'}
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  {dayData.dayColors.primaryPlanet ?? 'Active planet'}
-                </TooltipContent>
-              </Tooltip>
-              {dayData.dayColors.secondary && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span
-                      className="inline-block h-4 w-4 rounded-full border border-border cursor-help"
-                      style={{ backgroundColor: dayData.dayColors.secondary }}
-                      aria-label={dayData.dayColors.secondaryPlanet ?? 'Active planet'}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    {dayData.dayColors.secondaryPlanet ?? 'Active planet'}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {dayData.dayColors.label}
-              {dayData.dayColors.primaryPlanet && (
-                <span className="ml-1.5 text-muted-foreground/70">
-                  ({dayData.dayColors.primaryPlanet}
-                  {dayData.dayColors.secondaryPlanet ? ` + ${dayData.dayColors.secondaryPlanet}` : ''})
-                </span>
-              )}
-            </span>
-          </div>
-        </TooltipProvider>
-      )}
 
       {/* What's changing today */}
       <div>
