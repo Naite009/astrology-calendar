@@ -52,21 +52,21 @@ const HOUSE_ARENAS: Record<number, { arena: string; lifeArea: string; concerns: 
 };
 
 const PLANET_NATURE: Record<string, { essence: string; wants: string; style: string }> = {
-  Sun: { essence: 'core identity', wants: 'to shine and be recognized', style: 'direct and confident' },
-  Moon: { essence: 'emotional needs', wants: 'security and nurturing', style: 'responsive and protective' },
-  Mercury: { essence: 'mind and communication', wants: 'to understand and connect', style: 'curious and articulate' },
-  Venus: { essence: 'love and values', wants: 'harmony and pleasure', style: 'receptive and aesthetic' },
-  Mars: { essence: 'drive and action', wants: 'to assert and conquer', style: 'direct and competitive' },
-  Jupiter: { essence: 'expansion and meaning', wants: 'growth and wisdom', style: 'generous and optimistic' },
-  Saturn: { essence: 'structure and mastery', wants: 'achievement through discipline', style: 'cautious and authoritative' },
-  Uranus: { essence: 'liberation and innovation', wants: 'freedom and originality', style: 'sudden and unconventional' },
-  Neptune: { essence: 'transcendence and imagination', wants: 'spiritual connection', style: 'subtle and dissolving' },
-  Pluto: { essence: 'transformation and power', wants: 'deep change and empowerment', style: 'intense and regenerative' },
-  Chiron: { essence: 'wounds and healing', wants: 'to heal and teach', style: 'vulnerable yet wise' },
-  'North Node': { essence: 'soul growth direction', wants: 'evolutionary development', style: 'uncomfortable but necessary' },
-  'South Node': { essence: 'past patterns', wants: 'familiar territory', style: 'comfortable but limiting' },
-  Ascendant: { essence: 'how you appear', wants: 'authentic self-presentation', style: 'your interface with the world' },
-  Midheaven: { essence: 'public purpose', wants: 'recognition and legacy', style: 'how you achieve' },
+  Sun: { essence: 'your confidence and how visible you let yourself be', wants: 'to be seen, taken seriously, and credited for what you do', style: 'showing up as yourself instead of hiding or shrinking' },
+  Moon: { essence: 'what you need in order to feel safe and at home in your body', wants: 'to feel held, fed, rested, and not on guard', style: 'reacting from the gut before you have words for it' },
+  Mercury: { essence: 'how your brain runs and how you talk', wants: 'to figure things out, name them, and get a response back', style: 'thinking out loud, asking questions, sending the text' },
+  Venus: { essence: 'who and what you are drawn to, and how lovable you feel', wants: 'closeness, comfort, beauty, and to be wanted back', style: 'softening, flirting, decorating, choosing what feels good' },
+  Mars: { essence: 'your drive, your fight, and how you go after what you want', wants: 'to act, push, win, and have sex', style: 'speeding up, getting blunt, picking the fight or the workout' },
+  Jupiter: { essence: 'how much you say yes to and how big you let your life get', wants: 'more: more opportunity, more travel, more meaning, more money', style: 'going for it, overcommitting, believing it will work out' },
+  Saturn: { essence: 'what you take responsibility for and what you make yourself do even when you do not feel like it', wants: 'something real to show for your effort, and to stop feeling like a fraud', style: 'slowing down, cutting things, doing the boring work' },
+  Uranus: { essence: 'the part of you that cannot fake it anymore', wants: 'out of whatever cage you have built (job, role, relationship, identity)', style: 'sudden quitting, sudden truth-telling, sudden moves' },
+  Neptune: { essence: 'how you check out, daydream, and blur the lines', wants: 'to escape the harshness of normal life into music, sleep, screens, fantasy, or spirit', style: 'going foggy, romanticizing, losing the thread, being unable to say no' },
+  Pluto: { essence: 'what you obsess over and the part of you that has to change all the way down', wants: 'to burn off what is fake here and rebuild it for real, even if it terrifies you', style: 'fixating, hiding, controlling, or going through a full collapse and restart' },
+  Chiron: { essence: 'the old wound you keep bumping into in this area, the one that never fully heals', wants: 'to stop pretending it is not there, and to use it to help someone else', style: 'flinching, over-explaining, going numb, or quietly becoming the person who gets it' },
+  'North Node': { essence: 'the move that feels awkward and unfamiliar but is exactly where your life wants to grow', wants: 'you to do the new thing, not the practiced thing', style: 'shaky, slow, uncomfortable, like a beginner on purpose' },
+  'South Node': { essence: 'the role you can do in your sleep and keep getting pulled back into', wants: 'you to keep playing it because it works, even though it has stopped feeding you', style: 'easy, automatic, draining in a way you cannot quite name' },
+  Ascendant: { essence: 'how you walk into a room and how strangers read you in the first 10 seconds', wants: 'to actually look like the person you feel like inside', style: 'your face, your body language, the way you start a conversation' },
+  Midheaven: { essence: 'what you are publicly known for and where your name shows up', wants: 'to be respected for the right thing, not just any thing', style: 'how you handle work, authority, and being watched' },
 };
 
 export function getContextualAspectExplanation(

@@ -281,7 +281,7 @@ const getTransitInterpretation = (transitPlanet: string, natalPlanet: string, as
       conjunction: 'Your emotions align with your core identity. Authentic day.',
       opposition: 'Internal pull between feelings and ego. Balance needed.',
       trine: 'Emotional flow supports your self-expression. Easy confidence.',
-      square: 'Tension between heart and head. Honor both truths.',
+      square: 'Head says one thing, gut says another. Pick which one you actually trust before you act.',
       sextile: 'Gentle emotional support for being yourself. Opportunities arise.',
     },
     'moon-moon': {
@@ -329,7 +329,7 @@ const getTransitInterpretation = (transitPlanet: string, natalPlanet: string, as
     'moon-uranus': {
       conjunction: 'Surprising emotions. Expect the unexpected.',
       opposition: 'Emotional disruption from others. Stay centered.',
-      trine: 'Exciting feelings. Embrace spontaneity.',
+      trine: 'Mood lifts. Say yes to the unplanned thing, the last-minute invite, the new place to eat.',
       square: 'Emotional restlessness. Freedom vs security.',
       sextile: 'Refreshing emotional insights. New perspectives.',
     },
@@ -364,7 +364,7 @@ const getTransitInterpretation = (transitPlanet: string, natalPlanet: string, as
       sextile: 'Quick thinking. Ideas click into place.',
     },
     'mercury-pluto': {
-      conjunction: 'POWER COMMUNICATION. Deep truths surface. Profound insights.',
+      conjunction: 'You will say the thing nobody else has dared to say. People will remember it. Choose your words on purpose.',
       opposition: 'Intense conversations. Secrets may emerge.',
       trine: 'Penetrating insight flows easily. Research depth.',
       square: 'Mental power struggles. Whose truth wins?',
