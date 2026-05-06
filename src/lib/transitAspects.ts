@@ -195,7 +195,30 @@ export const calculateTransitAspects = (
             aspectType.name,
             angleDiff.toFixed(1)
           );
-          
+
+          // ─── Applying vs separating + felt-window estimate ───
+          // Project the transit forward by 1 day; natal points are static.
+          const speed = DAILY_SPEED[transit.name] ?? 0.5;
+          const futureLon = (transitLon + speed) % 360;
+          let futureDiff = Math.abs(futureLon - natal.longitude);
+          if (futureDiff > 180) futureDiff = 360 - futureDiff;
+          const futureAngleDiff = Math.abs(futureDiff - aspectType.angle);
+          const applying = futureAngleDiff < angleDiff;
+
+          // Days to exact = current orb ÷ daily speed (rough; ignores retrograde stations).
+          const daysToExact = speed > 0 ? angleDiff / speed : 999;
+          const signedDaysToExact = applying ? daysToExact : -daysToExact;
+          // Total felt-window: time to traverse the full orb on either side of exact.
+          const feltDurationDays = speed > 0 ? (effectiveOrb * 2) / speed : 999;
+
+          const verb = applying
+            ? (angleDiff < 1 ? `peaks now` : `builds toward exact in ${describeDuration(daysToExact)}`)
+            : `is releasing — fades over ${describeDuration(daysToExact)}`;
+          const totalWindow = describeDuration(feltDurationDays);
+          const feltSenseDuration = applying
+            ? `Pressure is rising — this ${verb}. You'll feel it most strongly as it tightens, then it eases. Whole window: about ${totalWindow}.`
+            : `The peak has passed — this ${verb}. The lesson is integrating now rather than intensifying. Whole window: about ${totalWindow}.`;
+
           aspects.push({
             transitPlanet: transit.name,
             transitSign: transit.data!.signName,
@@ -216,6 +239,10 @@ export const calculateTransitAspects = (
             detailedInterpretation: detailed,
             houseOverlay,
             isExact: angleDiff < 1,
+            applying,
+            daysToExact: signedDaysToExact,
+            feltDurationDays,
+            feltSenseDuration,
           });
         }
       });
