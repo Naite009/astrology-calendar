@@ -261,12 +261,31 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                         {t.applying ? '↗ applying' : '↘ separating'}
                       </span>
                     )}
+                    {(() => {
+                      const m = describeDailyMotion(t.transitPlanet);
+                      return m ? (
+                        <span
+                          className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground font-mono"
+                          title={`${m.pace} — ${m.note}`}
+                        >
+                          {m.speed} · {m.pace}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   {t.feltSenseDuration && (
                     <p className="text-[11px] text-muted-foreground mt-1 italic">
                       {t.feltSenseDuration}
                     </p>
                   )}
+                  {(() => {
+                    const m = describeDailyMotion(t.transitPlanet);
+                    return m ? (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {t.transitPlanet} moves {m.speed} ({m.pace}) — {m.note}
+                      </p>
+                    ) : null;
+                  })()}
                   {t.interpretation && (
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {t.interpretation}
