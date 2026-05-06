@@ -11,7 +11,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DayData, getDayType, getPlanetSymbol } from '@/lib/astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { TransitAspect, getTransitPlanetSymbol } from '@/lib/transitAspects';
+import { TransitAspect, getTransitPlanetSymbol, getTopTransitAspects } from '@/lib/transitAspects';
 import { findNextMoonSignChange, formatVOCRange } from '@/lib/voidOfCourseMoon';
 import {
   getAllRetrogradePeriods,
