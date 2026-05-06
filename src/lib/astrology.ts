@@ -107,12 +107,20 @@ export interface VoidOfCourse {
   end?: Date;
 }
 
+export interface ActivePlanetDot {
+  key: string;
+  name: string;
+  color: string;
+  weight: number; // higher = stronger today
+}
+
 export interface DayColors {
   primary: string;
   secondary: string | null;
   label: string;
   primaryPlanet?: string | null;
   secondaryPlanet?: string | null;
+  activePlanets?: ActivePlanetDot[]; // ranked, strongest first
 }
 
 export interface ExactLunarPhase {
@@ -1353,34 +1361,66 @@ export const PLANET_COLORS: Record<string, PlanetColorInfo> = {
   pluto: { color: '#5D6D7E', name: 'Pluto', meaning: 'Transformation, power, rebirth, depth' },
 };
 
-// Get day colors based on planetary activity
+// Get day colors based on planetary activity.
+// Ranks every active planet by total "tightness weight" across all aspects it
+// participates in (smaller orb = more weight). Returns the full ranked list as
+// `activePlanets` so the UI can show one dot per planet, with the top two
+// driving the primary/secondary colors.
 export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors => {
-  const activePlanets = new Set<string>();
+  // Tally weight per planet: each aspect contributes (maxOrb - orb) to BOTH planets.
+  const MAX_ORB = 10;
+  const weights = new Map<string, number>();
 
   aspects.forEach((asp) => {
-    activePlanets.add(asp.planet1);
-    activePlanets.add(asp.planet2);
+    const orbNum = typeof asp.orb === 'number' ? asp.orb : parseFloat(String(asp.orb));
+    const w = Math.max(0.1, MAX_ORB - (Number.isFinite(orbNum) ? orbNum : MAX_ORB));
+    weights.set(asp.planet1, (weights.get(asp.planet1) ?? 0) + w);
+    weights.set(asp.planet2, (weights.get(asp.planet2) ?? 0) + w);
   });
 
   if (moonPhase.isBalsamic) {
-    return { primary: '#D4C5E8', secondary: null, label: 'Balsamic Rest', primaryPlanet: 'Moon (balsamic)', secondaryPlanet: null };
+    return {
+      primary: '#D4C5E8',
+      secondary: null,
+      label: 'Balsamic Rest',
+      primaryPlanet: 'Moon (balsamic)',
+      secondaryPlanet: null,
+      activePlanets: [{ key: 'moon', name: 'Moon (balsamic)', color: '#D4C5E8', weight: 1 }],
+    };
   }
 
-  const planetEntries = Array.from(activePlanets)
-    .map((p) => ({ key: p, info: PLANET_COLORS[p] }))
-    .filter((e) => e.info);
+  const ranked: ActivePlanetDot[] = Array.from(weights.entries())
+    .map(([key, weight]) => ({ key, weight, info: PLANET_COLORS[key] }))
+    .filter((e) => e.info)
+    .sort((a, b) => b.weight - a.weight)
+    .map((e) => ({ key: e.key, name: e.info.name, color: e.info.color, weight: e.weight }));
 
-  if (planetEntries.length === 0) {
-    return { primary: PLANET_COLORS.moon.color, secondary: null, label: 'Moon Focus', primaryPlanet: 'Moon', secondaryPlanet: null };
-  } else if (planetEntries.length === 1) {
-    return { primary: planetEntries[0].info.color, secondary: null, label: 'Single Planet', primaryPlanet: planetEntries[0].info.name, secondaryPlanet: null };
+  if (ranked.length === 0) {
+    return {
+      primary: PLANET_COLORS.moon.color,
+      secondary: null,
+      label: 'Moon Focus',
+      primaryPlanet: 'Moon',
+      secondaryPlanet: null,
+      activePlanets: [{ key: 'moon', name: 'Moon', color: PLANET_COLORS.moon.color, weight: 1 }],
+    };
+  } else if (ranked.length === 1) {
+    return {
+      primary: ranked[0].color,
+      secondary: null,
+      label: 'Single Planet',
+      primaryPlanet: ranked[0].name,
+      secondaryPlanet: null,
+      activePlanets: ranked,
+    };
   } else {
     return {
-      primary: planetEntries[0].info.color,
-      secondary: planetEntries[1].info.color,
+      primary: ranked[0].color,
+      secondary: ranked[1].color,
       label: 'Multiple Aspects',
-      primaryPlanet: planetEntries[0].info.name,
-      secondaryPlanet: planetEntries[1].info.name,
+      primaryPlanet: ranked[0].name,
+      secondaryPlanet: ranked[1].name,
+      activePlanets: ranked,
     };
   }
 };

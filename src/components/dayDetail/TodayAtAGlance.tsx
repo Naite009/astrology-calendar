@@ -200,6 +200,35 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
         <p className="text-xs text-muted-foreground mt-1">{dayType.description}</p>
       </div>
 
+      {/* Active-planet dots, ranked by aspect tightness (smallest orb = strongest) */}
+      {dayData.dayColors?.activePlanets && dayData.dayColors.activePlanets.length > 0 && (
+        <TooltipProvider delayDuration={150}>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {dayData.dayColors.activePlanets.map((p, idx) => (
+                <Tooltip key={p.key}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={`inline-block rounded-full border border-border cursor-help ${
+                        idx < 2 ? 'h-4 w-4' : 'h-2.5 w-2.5'
+                      }`}
+                      style={{ backgroundColor: p.color, opacity: idx < 2 ? 1 : 0.7 }}
+                      aria-label={p.name}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {p.name} {idx === 0 ? '(strongest today)' : idx === 1 ? '(2nd strongest)' : ''}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {dayData.dayColors.label}
+            </span>
+          </div>
+        </TooltipProvider>
+      )}
+
 
       {/* What's changing today */}
       <div>
