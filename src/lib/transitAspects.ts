@@ -579,7 +579,7 @@ const ASPECT_PRIORITY: Record<string, number> = {
 
 // Get top transit aspects for calendar display (limit to most significant)
 // Priority: Outer planets to personal points, exact orbs first
-export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 3): TransitAspect[] => {
+export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 5): TransitAspect[] => {
   // Calculate significance score for each aspect
   const withScores = aspects.map(asp => {
     let score = 0;
@@ -626,6 +626,16 @@ export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 3
       // Extra bonus for hard aspects to personal points (these DEMAND attention)
       if (['conjunction', 'opposition', 'square'].includes(asp.aspect)) {
         score += 75;
+      }
+    }
+    
+    // Karmic / shadow bodies (Lilith, Chiron, North Node) hitting a personal point
+    // are highly felt and should not be buried — surface them in the top list.
+    const isKarmicTransit = ['Lilith', 'Chiron', 'NorthNode'].includes(asp.transitPlanet);
+    if (isKarmicTransit && isPersonalNatal) {
+      score += 130;
+      if (['conjunction', 'opposition', 'square'].includes(asp.aspect)) {
+        score += 60;
       }
     }
     
