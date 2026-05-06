@@ -21,7 +21,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'sun-conjunction-jupiter': 'Confidence expands. Optimism, generosity, a "big day" feeling.',
   'sun-conjunction-saturn': 'Reality check. Responsibility weighs heavily but maturity deepens.',
   'sun-conjunction-uranus': 'Sudden identity shift or breakthrough. Expect the unexpected about who you are.',
-  'sun-conjunction-neptune': 'Identity dissolves into imagination. Inspired but potentially confused about direction.',
+  'sun-conjunction-neptune': 'You will feel softer, foggier, and less sure of what you actually want today. Good for art, music, prayer, sleep. Bad for big decisions.',
   'sun-conjunction-pluto': 'Deep power surfaces. Transformation of identity, confronting shadows.',
 
   'sun-sextile-mars': 'Productive energy. Good day for getting things done with confidence.',
@@ -29,27 +29,27 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'sun-sextile-saturn': 'Disciplined progress. Good for planning, building, organizing.',
   'sun-sextile-uranus': 'Creative spark. Fresh ideas come easily — act on inspiration.',
   'sun-sextile-neptune': 'Spiritual insight flows gently. Good for meditation, art, compassion.',
-  'sun-sextile-pluto': 'Quiet empowerment. You can influence situations with subtle strength.',
+  'sun-sextile-pluto': 'You can have the hard conversation, ask the uncomfortable question, or end something cleanly today without it blowing up.',
 
   'sun-square-mars': 'Frustration and friction. Energy needs an outlet — exercise helps. Watch temper.',
   'sun-square-jupiter': 'Overconfidence or overcommitting. Good intentions, poor limits.',
   'sun-square-saturn': 'Feeling blocked or burdened. Authority issues surface. Patience required.',
   'sun-square-uranus': 'Restlessness and rebellion. Something wants to break free.',
   'sun-square-neptune': 'Confusion about identity or purpose. Escapism tempting. Stay grounded.',
-  'sun-square-pluto': 'Power struggles. Something hidden demands to be faced. Intense but transformative.',
+  'sun-square-pluto': 'A power fight with someone (boss, parent, partner) or with yourself. Something you have been hiding or controlling forces its way out. Do not double down.',
 
   'sun-trine-mars': 'Vitality and confidence flow. Excellent for physical activity and leadership.',
   'sun-trine-jupiter': 'Abundance and optimism. Things expand naturally. A feel-good day.',
   'sun-trine-saturn': 'Steady, reliable energy. Good for long-term planning and commitments.',
   'sun-trine-uranus': 'Inspiration and originality come easily. Embrace what makes you different.',
   'sun-trine-neptune': 'Creative and spiritual flow. Imagination is vivid and accessible.',
-  'sun-trine-pluto': 'Inner power is accessible. Good for deep work and transformation.',
+  'sun-trine-pluto': 'You can do the hard inner work today (therapy, journaling, the difficult conversation) without it wrecking you. Quiet, steady power.',
 
   'sun-opposition-mars': 'Conflict with others mirrors inner tension. Channel aggression constructively.',
   'sun-opposition-jupiter': 'Big promises, inflated expectations. Check if your reach exceeds your grasp.',
   'sun-opposition-saturn': 'Authority confrontation. Feeling restricted by others. Take responsibility.',
   'sun-opposition-uranus': 'Sudden disruptions to identity or plans. Others bring unexpected change.',
-  'sun-opposition-neptune': 'Others may deceive or confuse you. Boundaries dissolve — stay alert.',
+  'sun-opposition-neptune': 'Someone today is not who they seem. You will be tempted to believe a story that flatters you. Wait 48 hours before saying yes to anything.',
   'sun-opposition-pluto': 'Power dynamics with others intensify. Manipulation possible. Stand in your truth.',
 
   // ── MOON ──
@@ -69,7 +69,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'moon-sextile-saturn': 'Emotional maturity. Good for handling responsibilities with calm.',
   'moon-sextile-uranus': 'Pleasant emotional surprises. Open to new experiences and perspectives.',
   'moon-sextile-neptune': 'Intuitive flow. Good for meditation, creative work, and compassion.',
-  'moon-sextile-pluto': 'Subtle emotional empowerment. You sense what\'s beneath the surface.',
+  'moon-sextile-pluto': 'Your gut is sharp today. You will pick up what someone is not saying. Good day for therapy or an honest conversation.',
 
   'moon-square-mercury': 'Mind-heart disconnect. Overthinking feelings or intellectualizing emotions.',
   'moon-square-venus': 'Tension between needs and desires. Indulgence vs. self-care conflict.',
@@ -127,7 +127,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'mercury-trine-saturn': 'Disciplined, practical thinking. Good for serious planning and strategy.',
   'mercury-trine-uranus': 'Innovative ideas flow freely. Breakthroughs in understanding.',
   'mercury-trine-neptune': 'Inspired communication. Poetry, music, spiritual insights come easily.',
-  'mercury-trine-pluto': 'Deep understanding. Good for research, therapy, transformative conversations.',
+  'mercury-trine-pluto': 'You can research, dig, ask the question everyone is avoiding, and people will actually answer. Words land harder than usual.',
 
   'mercury-opposition-mars': 'Arguments and verbal sparring. Others challenge your ideas.',
   'mercury-opposition-jupiter': 'Disagreements about beliefs or philosophy. Avoid preaching.',
@@ -142,7 +142,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-conjunction-saturn': 'Love gets serious. Commitment, loyalty, or feeling unloved surfaces.',
   'venus-conjunction-uranus': 'Unexpected attraction or creative breakthrough. Love surprises.',
   'venus-conjunction-neptune': 'Romantic idealism peaks. Beautiful but potentially illusory. Art inspired.',
-  'venus-conjunction-pluto': 'Intense, transformative love experiences. Obsession possible. Deep beauty.',
+  'venus-conjunction-pluto': 'You will fixate on one person. Either you cannot stop wanting them, or jealousy spikes, or a dead relationship finally ends today. Money tied up with someone may also get messy.',
 
   'venus-sextile-mars': 'Balanced passion. Good for romance, socializing, and creative projects.',
   'venus-sextile-jupiter': 'Social grace and abundance. Good for celebrations, gifts, generosity.',
@@ -155,7 +155,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-square-jupiter': 'Overindulgence in pleasure. Spending too much, eating too much, promising too much.',
   'venus-square-saturn': 'Feeling unloved or unworthy. Relationship delays or coldness.',
   'venus-square-uranus': 'Relationship instability. Craving freedom vs. commitment. Sudden attractions.',
-  'venus-square-neptune': 'Romantic disillusionment. Seeing people as they are, not as you wish.',
+  'venus-square-neptune': 'The crush, the partner, or the deal is not what you have been telling yourself it is. Do not lend money, do not sign a lease together, do not believe the version of them in your head.',
   'venus-square-pluto': 'Jealousy, possessiveness, or obsessive attraction. Power dynamics in love.',
 
   'venus-trine-mars': 'Harmonious desire. Excellent for romance, creativity, and enjoyment.',
@@ -163,7 +163,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-trine-saturn': 'Enduring love. Good for long-term commitments and practical beauty.',
   'venus-trine-uranus': 'Exciting and refreshing relationship energy. Creative breakthroughs.',
   'venus-trine-neptune': 'Transcendent beauty and love. Artistic and spiritual inspiration.',
-  'venus-trine-pluto': 'Deep, transformative love. Bonds deepen. Creative power.',
+  'venus-trine-pluto': 'A relationship gets more honest and harder to fake. Magnetism is up, you can have the deep conversation that brings you closer instead of pushing them away.',
 
   'venus-opposition-mars': 'Attraction and conflict intertwine. Others provoke desire and frustration.',
   'venus-opposition-jupiter': 'Excess in relationships or spending. Others promise more than they deliver.',
