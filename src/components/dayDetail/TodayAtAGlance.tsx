@@ -290,6 +290,14 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
                     <span className="text-[10px] text-muted-foreground">
                       {t.orb}°{t.isExact ? ' · exact' : ''}
                     </span>
+                    {KARMIC_POINT_INFO[t.transitPlanet] && (
+                      <span
+                        className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200"
+                        title={KARMIC_POINT_INFO[t.transitPlanet].tip}
+                      >
+                        ✦ {KARMIC_POINT_INFO[t.transitPlanet].label}
+                      </span>
+                    )}
                     {!t.isExact && phase && (
                       <span
                         className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${badgeClass}`}
