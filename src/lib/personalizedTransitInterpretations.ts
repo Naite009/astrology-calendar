@@ -9,139 +9,139 @@ interface PersonalizedTransitResult {
 // Aspect modifiers - how the aspect type colors the transit
 const ASPECT_MODIFIERS = {
   conjunction: {
-    energy: 'intensified fusion',
-    experience: 'overwhelming immersion',
-    action: 'You cannot escape or compartmentalize this',
-    challenge: 'The energy is so close it can feel like you ARE it',
+    energy: 'fused, unavoidable',
+    experience: 'right on top of you, not at arm\'s length',
+    action: 'You cannot file this one away or pretend it is happening to someone else',
+    challenge: 'No distance from it. You will not be able to step back and analyze',
   },
   trine: {
-    energy: 'flowing support',
-    experience: 'natural ease',
-    action: 'This comes so easily you might not notice it',
-    challenge: 'You may coast without fully claiming the gift',
+    energy: 'easy, low-resistance',
+    experience: 'doors open without you forcing them',
+    action: 'Reach out, send the email, take the meeting. It only pays off if you act',
+    challenge: 'It is so easy to coast that the window closes without you using it',
   },
   square: {
-    energy: 'friction that demands action',
-    experience: 'uncomfortable pressure',
-    action: 'You must DO something or the tension builds',
-    challenge: 'This will not let you stay comfortable',
+    energy: 'pressure that will not let up',
+    experience: 'cornered, irritable, tired of the same fight',
+    action: 'Something has to actually change. Patching it will not work this time',
+    challenge: 'You will pick fights, blame people, or freeze. The discomfort is the point',
   },
   opposition: {
-    energy: 'projection and awareness',
-    experience: 'seeing yourself in others',
-    action: 'Others seem to embody what you need to integrate',
-    challenge: 'The lesson comes through relationships and mirrors',
+    energy: 'mirrored, externalized',
+    experience: 'one specific person keeps showing up acting out the part of you you have not owned',
+    action: 'The fight or attraction with them is really about you. Notice what you are projecting',
+    challenge: 'Blaming the other person, or swinging from one extreme to the other',
   },
   sextile: {
-    energy: 'opportunity awaiting effort',
-    experience: 'gentle invitation',
-    action: 'You must reach for this - it will not force itself',
-    challenge: 'Easy to miss if you are not paying attention',
+    energy: 'a quiet, easy-to-miss opening',
+    experience: 'a small intro, a small idea, a useful conversation',
+    action: 'You have to actually reach out, ask, or follow up. It will not chase you',
+    challenge: 'Looks too small to bother with, so you skip it',
   },
 };
 
 // Natal planet meanings - what part of you is being activated
 const NATAL_PLANET_MEANINGS: Record<string, { area: string; feels: string }> = {
-  Sun: { area: 'your core identity and sense of purpose', feels: 'who you ARE at the deepest level' },
-  Moon: { area: 'your emotional needs and instinctual responses', feels: 'your gut, your comfort zone, your inner child' },
-  Mercury: { area: 'how you think, communicate, and process', feels: 'your mental patterns and how you speak your truth' },
-  Venus: { area: 'what you love, value, and attract', feels: 'your sense of beauty, pleasure, and self-worth' },
-  Mars: { area: 'how you act, assert, and pursue', feels: 'your drive, anger, and sexual energy' },
-  Jupiter: { area: 'where you seek growth and meaning', feels: 'your faith, optimism, and sense of abundance' },
-  Saturn: { area: 'your structures, limits, and responsibilities', feels: 'your fears, duties, and hard-won authority' },
-  Uranus: { area: 'your need for freedom and authenticity', feels: 'your rebellious streak and unique genius' },
-  Neptune: { area: 'your dreams, intuition, and spiritual connection', feels: 'where you dissolve boundaries and seek transcendence' },
-  Pluto: { area: 'your power, shadows, and capacity for transformation', feels: 'your obsessions and where you have died before' },
-  NorthNode: { area: 'your soul direction and evolutionary path', feels: 'what you are growing TOWARD in this lifetime' },
-  SouthNode: { area: 'your past patterns and karmic gifts', feels: 'your comfort zone and what you need to release' },
-  Chiron: { area: 'your deepest wound and healing gift', feels: 'where you carry pain that becomes wisdom' },
-  Ascendant: { area: 'how you approach life and appear to others', feels: 'your automatic way of meeting the world' },
-  Midheaven: { area: 'your public role and life direction', feels: 'your calling and how you want to be seen' },
+  Sun: { area: 'your confidence and how visible you are willing to be', feels: 'whether you take up space in a room or shrink' },
+  Moon: { area: 'what you need in order to feel safe and at home in your body', feels: 'your gut, your appetite, your sleep, your need for the people you trust' },
+  Mercury: { area: 'how your brain runs and how you talk to people', feels: 'whether you can find words, focus, return texts, and follow a conversation' },
+  Venus: { area: 'who you are drawn to, what you spend on, and how lovable you feel', feels: 'your appetite for closeness, beauty, food, sex, and being chosen' },
+  Mars: { area: 'your drive, your fight, and your sex drive', feels: 'how fast your fuse is and how hard you can push' },
+  Jupiter: { area: 'how big you let your life get and how much you say yes to', feels: 'whether things feel lucky and abundant or stuck and small' },
+  Saturn: { area: 'what you make yourself do, even when you do not feel like it', feels: 'the weight of your responsibilities and whether you trust yourself to carry them' },
+  Uranus: { area: 'the part of you that cannot fake it anymore', feels: 'restlessness, the urge to quit, the urge to tell the truth out loud' },
+  Neptune: { area: 'how you check out, daydream, and blur the lines', feels: 'how foggy, sensitive, tired, or escapist you are running' },
+  Pluto: { area: 'what you obsess over and what you have to rebuild from the ground up', feels: 'fixation, intensity, the sense that something has to die so you can move on' },
+  NorthNode: { area: 'the unfamiliar move your life keeps asking you to make', feels: 'awkward, shaky, like a beginner on purpose' },
+  SouthNode: { area: 'the role you can do in your sleep that has stopped feeding you', feels: 'easy, automatic, quietly draining' },
+  Chiron: { area: 'the old wound you keep bumping into in this area', feels: 'a flinch, a numbness, a story you have told yourself a hundred times' },
+  Ascendant: { area: 'how you walk into a room and how strangers read you', feels: 'your face, your body language, your first 10 seconds with anyone' },
+  Midheaven: { area: 'what you are publicly known for and where your name shows up', feels: 'work, status, being watched, being judged' },
 };
 
 // House meanings - WHERE in life this plays out
 const HOUSE_CONTEXTS: Record<number, { domain: string; examples: string }> = {
-  1: { domain: 'self-image and personal identity', examples: 'how you present yourself, your appearance, your sense of "I am"' },
-  2: { domain: 'resources, money, and self-worth', examples: 'your finances, possessions, what you value and how you earn' },
-  3: { domain: 'communication and immediate environment', examples: 'siblings, neighbors, daily errands, how you learn and speak' },
-  4: { domain: 'home, family, and emotional foundations', examples: 'your parents, ancestry, living situation, private emotional life' },
-  5: { domain: 'creativity, romance, and self-expression', examples: 'children, hobbies, dating, what brings you joy and play' },
-  6: { domain: 'daily work, health, and service', examples: 'your job, routines, physical wellness, pets, being useful' },
-  7: { domain: 'partnerships and one-on-one relationships', examples: 'marriage, business partners, close collaborations, open enemies' },
-  8: { domain: 'shared resources, intimacy, and transformation', examples: 'other people\'s money, sex, death, psychological depths' },
-  9: { domain: 'beliefs, higher education, and expansion', examples: 'travel, philosophy, religion, publishing, foreign cultures' },
-  10: { domain: 'career, public reputation, and legacy', examples: 'your profession, status, authority figures, what you are known for' },
-  11: { domain: 'community, friends, and future visions', examples: 'groups, social causes, hopes, networking, collective belonging' },
-  12: { domain: 'the unconscious, spirituality, and hidden matters', examples: 'dreams, isolation, hospitals, secrets, self-undoing, karma' },
+  1: { domain: 'how you walk into a room and how strangers read you', examples: 'your face, your body, your style, your first impression, your physical energy' },
+  2: { domain: 'money, possessions, and how worthy of good things you feel', examples: 'your bank account, what you own, what you charge, what you let yourself have' },
+  3: { domain: 'daily talking, texting, and your immediate circle', examples: 'siblings, neighbors, group chats, errands, short trips, what you read' },
+  4: { domain: 'home, family, and your private inner life', examples: 'your parents, where you live, your roots, what you only show people you trust' },
+  5: { domain: 'play, dating, kids, and what you make for fun', examples: 'flirting, hobbies, your kids, creative projects, gambling, what makes you laugh' },
+  6: { domain: 'your daily job, body, and routines', examples: 'your job, your boss, your coworkers, your gym, your sleep, your symptoms, your pets' },
+  7: { domain: 'one-on-one relationships you are formally in', examples: 'your spouse, your business partner, your therapist, your lawyer, your closest rival' },
+  8: { domain: 'sex, money you share with others, and what you cannot control', examples: 'intimacy, debt, taxes, inheritance, your partner\'s money, deep change' },
+  9: { domain: 'travel, what you believe, and the bigger picture', examples: 'long trips, school, religion, foreign cultures, court cases, publishing' },
+  10: { domain: 'your career, your reputation, and what you are known for', examples: 'your job title, your boss, your public name, your achievements, what people google about you' },
+  11: { domain: 'friends, groups, and what you are working toward', examples: 'your friends, your community, your goals, your network, social media, your future' },
+  12: { domain: 'what you do alone, what you hide, and what is bigger than you', examples: 'private grief, secrets, hospitals, recovery, sleep, dreams, time you spend offline' },
 };
 
 // Sign modifiers - HOW the natal planet expresses
 const SIGN_EXPRESSION: Record<string, string> = {
-  Aries: 'with impulsive directness and a need for independence',
-  Taurus: 'with steady determination and a need for security',
-  Gemini: 'with curious adaptability and a need for mental stimulation',
-  Cancer: 'with protective sensitivity and a need for emotional safety',
-  Leo: 'with dramatic flair and a need for recognition',
-  Virgo: 'with analytical precision and a need for usefulness',
-  Libra: 'with diplomatic grace and a need for harmony',
-  Scorpio: 'with intense depth and a need for truth',
-  Sagittarius: 'with expansive enthusiasm and a need for freedom',
-  Capricorn: 'with disciplined ambition and a need for achievement',
-  Aquarius: 'with detached originality and a need for authenticity',
-  Pisces: 'with compassionate fluidity and a need for transcendence',
+  Aries: 'fast, blunt, and not waiting for permission',
+  Taurus: 'slowly, with its feet planted, and not interested in being rushed',
+  Gemini: 'with a lot of words, a lot of questions, and one foot already moving on',
+  Cancer: 'cautiously, from behind a shell, and only after checking who is safe',
+  Leo: 'out loud, on stage, needing to be seen and credited',
+  Virgo: 'with a list, a fix, and a quiet running critique',
+  Libra: 'by checking with the other person first and softening the edges',
+  Scorpio: 'all-in or not at all, watching everything, trusting almost no one',
+  Sagittarius: 'big, loud, hopeful, and ready to move on the second it gets boring',
+  Capricorn: 'with a plan, a long timeline, and very little patience for excuses (yours or theirs)',
+  Aquarius: 'from a step back, on its own terms, refusing to do it the way everyone else does',
+  Pisces: 'softly, dreamily, with a porous sense of where you end and the other person begins',
 };
 
 // Transit planet intentions - what the outer planet is trying to DO
 const TRANSIT_PLANET_ACTIONS: Record<string, { verb: string; effect: string; timeline: string }> = {
-  Pluto: { 
-    verb: 'transforms and empowers through destruction', 
-    effect: 'what was hidden must surface; what is false must die',
-    timeline: 'This is a multi-year process that goes deep'
+  Pluto: {
+    verb: 'forces a slow, deep rebuild in this part of your life',
+    effect: 'something here that is fake, propped up, or kept on life support starts breaking down. You will fixate on it, sometimes feel scared of it, and by the end you will not recognize the old version of yourself in this area',
+    timeline: 'This is a 1-3 year process that goes much deeper than you think it will'
   },
-  Neptune: { 
-    verb: 'dissolves and inspires through confusion', 
-    effect: 'boundaries blur; dreams and illusions intensify',
-    timeline: 'This is a gradual sensitizing over years'
+  Neptune: {
+    verb: 'softens, blurs, and slowly dissolves the edges in this part of your life',
+    effect: 'you will be more tired, more sensitive, more pulled toward escape (sleep, scrolling, drinking, fantasizing). Creative and spiritual work flows; deadlines and hard decisions feel impossible. You will romanticize people and situations',
+    timeline: 'This is a 1-2 year sensitizing, slow and easy to miss until you look back'
   },
-  Uranus: { 
-    verb: 'awakens and liberates through disruption', 
-    effect: 'sudden changes break old patterns; freedom calls',
-    timeline: 'Expect the unexpected over the next few years'
+  Uranus: {
+    verb: 'shakes loose whatever you have been faking in this area',
+    effect: 'you suddenly want out, want to tell the truth, want to quit, want to move. Plans you thought were locked in get blown up. Boredom becomes intolerable',
+    timeline: 'Sudden shocks across about a year, but the change sticks'
   },
-  Saturn: { 
-    verb: 'structures and limits through pressure', 
-    effect: 'reality checks demand maturity; effort pays off',
-    timeline: 'This is a 2-3 year test of what is real'
+  Saturn: {
+    verb: 'puts pressure on this part of your life until only what is real survives',
+    effect: 'extra responsibility, delays, the sense of being tested. If you have been winging it here, you will get caught. If you have been doing the real work, this is where you finally get credit for it',
+    timeline: '2-3 year reality check'
   },
-  Jupiter: { 
-    verb: 'expands and blesses through opportunity', 
-    effect: 'doors open; growth is available if you reach',
-    timeline: 'This fortunate window lasts about a year'
+  Jupiter: {
+    verb: 'opens this part of your life up and makes it bigger',
+    effect: 'opportunities show up, doors open, you say yes to more, you spend more, you travel, you grow. Watch for overcommitting and over-promising',
+    timeline: 'About a year of expansion, with the best window in the middle'
   },
-  Mars: { 
-    verb: 'activates and asserts through energy', 
-    effect: 'action is required; conflicts may surface',
-    timeline: 'This is an intense burst lasting days to weeks'
+  Mars: {
+    verb: 'turns up the heat fast in this area',
+    effect: 'more drive, more urgency, shorter fuse, more sex drive, more "go right now." You will get a lot done and you will pick fights more easily',
+    timeline: 'A few intense days to a couple weeks'
   },
-  Sun: { 
-    verb: 'illuminates and vitalizes through focus', 
-    effect: 'attention comes to this area; clarity emerges',
-    timeline: 'This is a brief annual spotlight lasting days'
+  Sun: {
+    verb: 'shines a spotlight on this area for a few days',
+    effect: 'attention comes here, you feel more visible, things in this part of your life come into focus',
+    timeline: 'Brief annual spotlight, a few days'
   },
-  Venus: { 
-    verb: 'attracts and harmonizes through pleasure', 
-    effect: 'beauty, love, and ease flow more naturally',
-    timeline: 'This is a brief window of grace lasting days'
+  Venus: {
+    verb: 'softens and sweetens this part of your life for a few days',
+    effect: 'love, beauty, money, and small pleasures show up more easily. Good for asking, flirting, and indulging',
+    timeline: 'A brief window, a few days'
   },
-  Mercury: { 
-    verb: 'connects and processes through thought', 
-    effect: 'conversations and ideas are activated',
-    timeline: 'This is a quick mental activation lasting days'
+  Mercury: {
+    verb: 'lights up the talking, texting, and thinking in this area',
+    effect: 'more conversations, more ideas, more inbox, more decisions. Helpful for figuring things out, risky for signing things',
+    timeline: 'A quick mental burst, a few days'
   },
-  Moon: { 
-    verb: 'sensitizes and nurtures through feeling', 
-    effect: 'emotions rise to the surface',
-    timeline: 'This passes in hours as the Moon moves on'
+  Moon: {
+    verb: 'briefly turns up the feelings and the body sense in this area',
+    effect: 'mood shifts, gut reactions, cravings, the sense of "I just need to be home/held/fed"',
+    timeline: 'Hours, then it moves on'
   },
 };
 
