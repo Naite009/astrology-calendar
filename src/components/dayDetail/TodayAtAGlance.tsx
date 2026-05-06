@@ -90,8 +90,9 @@ export const TodayAtAGlance = ({ dayData, transitAspects, activeChart }: Props) 
     }
   }, [date]);
 
-  // Top 3 personal transits — already filtered ≤5° and sorted in DayDetail
-  const topTransits = transitAspects.slice(0, 3);
+  // Top 5 personal transits — re-prioritized so karmic bodies (Lilith, Chiron, Node)
+  // hitting personal points (Sun, Moon, Asc, MC) surface alongside outer-planet transits.
+  const topTransits = getTopTransitAspects(transitAspects, 5);
 
   // Planet list for the collapsed "Sky right now"
   const planetRows = useMemo(() => {
