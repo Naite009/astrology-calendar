@@ -888,9 +888,9 @@ const ASPECT_DYNAMIC: Record<string, { verb: string; flavor: string; intensity: 
 // ---------- Layer 2: TRANSIT-PLANET PRESSURE (what the visiting planet DOES) ----------
 const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warning?: string }> = {
   Pluto: {
-    action: 'rebuilds from the inside out, sometimes by destroying what was already cracked',
+    action: 'forces a deep, slow rebuild of this part of your life: something here that you\'ve outgrown but kept propping up (a job, a relationship dynamic, an identity, a habit, a power imbalance) starts breaking down on its own, and you\'ll feel obsessed with it, unable to look away, sometimes scared of what\'s being uncovered. By the end you won\'t recognize the old version of yourself in this area',
     timeframe: 'years (this is the slowest, deepest pressure in your chart)',
-    warning: 'don\'t try to control the outcome, just notice what refuses to stay the same',
+    warning: 'don\'t try to manage or speed up the outcome: the more you grip, the harder it pries your fingers loose. Your job is to notice what genuinely refuses to stay the same and stop defending it',
   },
   Neptune: {
     action: 'makes this part of your life feel hazy and hard to see clearly: you\'ll second-guess what you actually feel, romanticize people or situations, lose motivation, feel more tired than usual, or get pulled toward escape (sleep, scrolling, drinking, fantasy, daydreaming about a different life)',
@@ -898,29 +898,32 @@ const TRANSIT_PRESSURE: Record<string, { action: string; timeframe: string; warn
     warning: 'don\'t sign contracts, make big commitments, or fully trust your read on a person right now: your gut is picking up real signals but also a lot of static, so wait for the fog to lift before deciding',
   },
   Uranus: {
-    action: 'breaks the pattern open, suddenly, often through surprise events or sudden insight',
+    action: 'breaks the routine open in this area, usually through something you didn\'t plan for: a sudden opportunity, an unexpected exit, a person leaving or arriving out of nowhere, or your own restlessness hitting a breaking point where you can\'t do it the old way one more day. Expect plans to change last minute and to feel weirdly alive even when it\'s stressful',
     timeframe: 'roughly a year, with sharp jolts at the exact passes',
-    warning: 'sudden urges to blow it up are real but often overshoot, sleep on big moves',
+    warning: 'the urge to quit, leave, or blow it up is real information, but acting on it in 24 hours usually overshoots. Sleep on big moves, then move',
   },
   Saturn: {
-    action: 'puts pressure on what isn\'t built right and rewards what is, slowly',
+    action: 'puts slow, heavy pressure on this part of your life and asks "is this actually built right?" Anything you\'ve been faking, avoiding, or duct-taping together starts cracking, and anything you\'ve quietly built well starts paying off. Expect to feel older, more tired, more serious here, with a lot of "I have to deal with this now"',
     timeframe: 'about a year, in 2 or 3 distinct waves',
+    warning: 'this is not the moment to walk away from the work: the reward shows up after the grind, not during it',
   },
   Jupiter: {
-    action: 'expands and amplifies, adds opportunity, optimism, and the risk of overdoing it',
+    action: 'opens this part of your life up: more opportunities, more invitations, more confidence, more "yes" energy, but also more spending, more commitments, more stuff on your plate than you can actually carry. You\'ll feel optimistic and a little overconfident',
     timeframe: 'a few weeks per pass, full year of background luck-or-bloat',
+    warning: 'don\'t say yes to everything just because it\'s available, and watch the spending and the promises: the bill comes after Jupiter leaves',
   },
   Chiron: {
-    action: 'reopens an old wound so it can finally be tended to',
+    action: 'reopens an old wound in this area (often something from childhood, a parent, an early rejection, or a place you decided you weren\'t enough): the same hurt comes back up in a current situation, but this time you\'re old enough to actually tend to it instead of just survive it. Expect to feel raw, easily triggered, and surprisingly tender',
     timeframe: 'months, comes in waves',
   },
   Lilith: {
-    action: 'exposes whatever you\'ve been making yourself smaller about',
+    action: 'exposes whatever you\'ve been making yourself smaller, quieter, or more polite about in this area. You\'ll feel angrier than usual, less willing to perform, more allergic to people who talk over you or take you for granted, and pulled toward saying the thing you usually swallow',
     timeframe: 'about 9 months in this part of your chart',
   },
   Mars: {
-    action: 'turns up the heat: drive, anger, urgency, libido',
+    action: 'turns up the heat fast in this area: more drive, more urgency, shorter fuse, more libido, more "let\'s go right now." You\'ll get a lot done, and you\'ll also pick fights more easily, especially with people who are slowing you down',
     timeframe: 'a few days to a week',
+    warning: 'channel it into a workout, a hard task, or something physical before it leaks into a conversation you\'ll regret',
   },
 };
 
