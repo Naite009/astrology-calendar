@@ -620,6 +620,20 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** Describe a station's timing relative to the email's anchor day. */
+function stationWhen(exact: Date | null, anchor: Date): { kind: 'past' | 'today' | 'future'; label: string } {
+  if (!exact) return { kind: 'today', label: 'today' };
+  const dayMs = 86400000;
+  const anchorDay = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate()).getTime();
+  const exactDay = new Date(exact.getFullYear(), exact.getMonth(), exact.getDate()).getTime();
+  const diff = Math.round((exactDay - anchorDay) / dayMs);
+  if (diff === 0) return { kind: 'today', label: 'today' };
+  if (diff === -1) return { kind: 'past', label: 'yesterday' };
+  if (diff === 1) return { kind: 'future', label: 'tomorrow' };
+  if (diff < 0) return { kind: 'past', label: `${Math.abs(diff)} days ago` };
+  return { kind: 'future', label: `in ${diff} days` };
+}
+
 const ZODIAC_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 function nextZodiac(sign: string): string {
   const i = ZODIAC_ORDER.indexOf(sign);
