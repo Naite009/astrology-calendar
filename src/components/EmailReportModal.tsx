@@ -8,12 +8,15 @@ import {
   type EmailRecipient,
 } from '@/lib/emailReport';
 
+import type { NatalChart } from '@/hooks/useNatalChart';
+
 interface Props {
   date: Date;
   onClose: () => void;
+  natalChart?: NatalChart | null;
 }
 
-export const EmailReportModal = ({ date, onClose }: Props) => {
+export const EmailReportModal = ({ date, onClose, natalChart }: Props) => {
   const [recipients, setRecipients] = useState<EmailRecipient[]>(() => loadRecipients());
   const [selectedEmail, setSelectedEmail] = useState<string>('');
   const [newName, setNewName] = useState('');
