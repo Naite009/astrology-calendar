@@ -60,10 +60,14 @@ export async function generateCosmicWeatherEmail(
     generatedAt: new Date().toISOString(),
   };
 
+  // Deterministic sky block — pure ephemeris, no AI.
+  const skyBlock = formatSkyBlockForEmail(date);
+
   if (!natalChart) {
     return {
       subject,
-      body: "No chart available. Add or import your natal chart first.",
+      body: `${skyBlock}\n\nNo chart available. Add or import your natal chart first.`,
+      skyBlock,
       meta,
     };
   }
@@ -82,14 +86,17 @@ export async function generateCosmicWeatherEmail(
       dateLabel: label,
       currentDate: dateKey,
       chartContext,
+      skyBlock,
     },
   });
 
   if (error) throw new Error(error.message || "Email generation failed.");
   if (data?.error) throw new Error(data.error);
 
-  const body = (data?.body as string)?.trim() || "Reading was empty.";
-  return { subject, body, meta };
+  const aiBody = (data?.body as string)?.trim() || "Reading was empty.";
+  // Prepend the deterministic sky block to the AI letter.
+  const body = `${skyBlock}\n\n${aiBody}`;
+  return { subject, body, skyBlock, meta };
 }
 
 
