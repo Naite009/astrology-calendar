@@ -1862,6 +1862,14 @@ Keep the tone professional, insightful, and practically applicable.`,
           </div>
         </div>
       )}
+      {isEmailOpen && (
+        <EmailReportModal
+          date={today}
+          natalChart={selectedChart || userNatalChart || null}
+          chartId={selectedChartId || 'user'}
+          onClose={() => setIsEmailOpen(false)}
+        />
+      )}
     </>
   );
 };
