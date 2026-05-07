@@ -121,15 +121,28 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     .slice(0, 3);
 
   // ── Personal transits perfecting TODAY ──
+  // Strict filters so we don't spam asteroid noise:
+  //  - Transit body must be a fast personal body (Moon/Sun/Mercury/Venus/Mars)
+  //  - Natal endpoint must be a personal point (planets, angles, nodes, Chiron)
+  //  - Tight orb at moment of email: Moon ≤ 6°, Sun/Mercury/Venus/Mars ≤ 3°
+  //    (Moon allowance is wider because Moon moves ~13°/day, so a 6° orb
+  //     still means the aspect perfects within ~11 hours — same day.)
+  //  - Must be applying AND perfect within 24h
+  const NATAL_OK = new Set([
+    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+    'Uranus','Neptune','Pluto','Ascendant','Midheaven','NorthNode','SouthNode','Chiron',
+  ]);
+  const orbCap = (transit: string) => transit === 'Moon' ? 6 : 3;
   let perfectingToday: TransitAspect[] = [];
   if (natalChart) {
     const all = calculateTransitAspects(anchor, planets, natalChart);
     perfectingToday = all.filter(a => {
       if (!FAST_BODIES.has(a.transitPlanet)) return false;
-      // applying within <24h means it perfects sometime today
+      if (!NATAL_OK.has(a.natalPlanet)) return false;
+      if (parseFloat(a.orb) > orbCap(a.transitPlanet)) return false;
       if (!a.applying) return false;
       return a.daysToExact >= 0 && a.daysToExact < 1;
-    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 4);
+    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 5);
   }
 
   // ─── BUILD BODY ───────────────────────────────────────────────────
