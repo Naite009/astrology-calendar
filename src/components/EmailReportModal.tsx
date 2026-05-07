@@ -81,6 +81,23 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const handleDownloadJson = () => {
+    const payload = lastResultRef.current
+      ? { ...lastResultRef.current }
+      : { subject, body };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = (lastResultRef.current?.meta?.date) || date.toISOString().slice(0, 10);
+    const nameSlug = (selected?.name || 'cosmic-weather').toLowerCase().replace(/\s+/g, '-');
+    a.download = `${nameSlug}-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const mailtoHref = () => {
     const to = selected?.email ? encodeURIComponent(selected.email) : '';
     const s = encodeURIComponent(subject);
