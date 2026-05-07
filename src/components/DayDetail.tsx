@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
+import { EmailReportModal } from './EmailReportModal';
 import { ChartSelector } from './ChartSelector';
 import { 
   DayData, 
@@ -384,6 +385,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
   
   // State for transit list modal
   const [isTransitListOpen, setIsTransitListOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const transitRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   // Divine Feminine features
@@ -493,9 +495,18 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           <X size={24} />
         </button>
 
-        <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-2">
-          {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-        </h2>
+        <div className="flex items-start justify-between gap-3 mb-2 pr-12">
+          <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl">
+            {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </h2>
+          <button
+            onClick={() => setIsEmailOpen(true)}
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
+            title="Generate an email-ready Cosmic Weather report for this day"
+          >
+            <Mail size={14} /> Email
+          </button>
+        </div>
 
         {/* Chart Selector - switch charts without closing */}
         {onChartSelect && (userNatalChart || savedCharts.length > 0) && (
@@ -578,6 +589,10 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               onTransitClick={handleTransitClick}
             />
           </div>
+        )}
+
+        {isEmailOpen && (
+          <EmailReportModal date={date} onClose={() => setIsEmailOpen(false)} />
         )}
 
         {/* Exact Lunar Phase Time - Highlighted */}
