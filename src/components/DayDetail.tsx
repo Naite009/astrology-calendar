@@ -495,11 +495,22 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           <X size={24} />
         </button>
 
-        <div className="mb-2 pr-12">
+        <div className="flex items-start justify-between gap-3 mb-2 pr-12">
           <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl">
             {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </h2>
+          <button
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsEmailOpen(true); }}
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
+            title="Generate an email-ready Cosmic Weather report for this day"
+          >
+            <Mail size={14} /> Email
+          </button>
         </div>
+
+        {isEmailOpen && (
+          <EmailReportModal date={date} natalChart={activeChart} chartId={selectedChartId} onClose={() => setIsEmailOpen(false)} />
+        )}
 
         {/* Chart Selector - switch charts without closing */}
         {onChartSelect && (userNatalChart || savedCharts.length > 0) && (
