@@ -385,6 +385,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
   
   // State for transit list modal
   const [isTransitListOpen, setIsTransitListOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const transitRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   // Divine Feminine features
