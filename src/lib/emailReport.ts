@@ -179,79 +179,64 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   const before = collectWindowEvents(anchor, windowDays).filter(e => e.date < anchor);
   const after = collectWindowEvents(anchor, windowDays).filter(e => e.date >= anchor);
 
-  const lines: string[] = [];
+  // ─── Build the 2-paragraph summary ──────────────────────────────────
+  const moonPos = (planets.moon as any).fullDegree || `${(planets.moon as any).degree}° ${(planets.moon as any).signName}`;
+  const sunPos = (planets.sun as any).fullDegree || `${(planets.sun as any).degree}° ${(planets.sun as any).signName}`;
+  const retroNow = RETRO_BODIES.filter(([n]) => retroFlags[n]).map(([n]) => n);
 
+  // Top 3 tightest aspects today
+  const topAspects = [...aspects]
+    .filter(a => parseFloat(a.orb) <= 4)
+    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+    .slice(0, 3)
+    .map(a => {
+      const p1 = a.planet1.charAt(0).toUpperCase() + a.planet1.slice(1);
+      const p2 = a.planet2.charAt(0).toUpperCase() + a.planet2.slice(1);
+      return `${p1} ${a.symbol} ${p2} (${a.type}, ${a.orb}°)`;
+    });
+
+  // Window highlights — combine before + after, keep most notable
+  const allWindow = [...before, ...after].slice(0, 6);
+
+  const lines: string[] = [];
   lines.push(`COSMIC WEATHER — ${fmtDate(anchor)}`);
   lines.push('═'.repeat(60));
   lines.push('');
-  if (recipientName) lines.push(`Hi ${recipientName},`);
-  lines.push(
-    `All positions below are computed for LOCAL MIDNIGHT of this date —`,
-    `${fmtDateTime(anchor)} (${tzName}, ${tzAbbr}).`,
-    `The Moon moves ~13° per day, so its position drifts as the day progresses;`,
-    `the other planets barely move within a single day.`
+  if (recipientName) { lines.push(`Hi ${recipientName},`); lines.push(''); }
+  lines.push(`(Snapshot taken at local midnight — ${fmtDateTime(anchor)}, ${tzName}.)`);
+  lines.push('');
+
+  // PARAGRAPH 1 — what the sky looks like today
+  const para1Parts: string[] = [];
+  para1Parts.push(
+    `The Sun sits at ${sunPos} and the Moon is in ${(planets.moon as any).signName} (${moonPos}, ${moonPhase.phaseName}, ${(moonPhase.illumination * 100).toFixed(0)}% lit).`
   );
-  lines.push('');
-
-  // ─── Top-of-email highlights ────────────────────────────────────────
-  lines.push('━━━ HIGHLIGHTS (3 days before → 3 days after) ━━━');
-  lines.push('');
-  if (before.length) {
-    lines.push('RECENT (last 3 days):');
-    before.forEach(e => lines.push(`  • ${fmtDateShort(e.date)} — ${e.label}`));
-    lines.push('');
-  } else {
-    lines.push('RECENT (last 3 days): (no stations, ingresses, or exact lunar phases)');
-    lines.push('');
-  }
-  if (after.length) {
-    lines.push('UPCOMING (next 3 days):');
-    after.forEach(e => lines.push(`  • ${fmtDateShort(e.date)} — ${e.label}`));
-    lines.push('');
-  } else {
-    lines.push('UPCOMING (next 3 days): (no stations, ingresses, or exact lunar phases)');
-    lines.push('');
-  }
-
-  // ─── Moon today ─────────────────────────────────────────────────────
-  lines.push('━━━ THE MOON TODAY ━━━');
-  lines.push('');
-  lines.push(`  Phase: ${moonPhase.phaseIcon} ${moonPhase.phaseName} — ${(moonPhase.illumination * 100).toFixed(0)}% illuminated`);
-  lines.push(`  Position at local midnight: ${(planets.moon as any).fullDegree}`);
   if (exactLunar) {
-    lines.push(`  ★ EXACT ${exactLunar.type} today at ${fmtDateTime(exactLunar.time)} — ${exactLunar.position}`);
+    para1Parts.push(`Today brings the EXACT ${exactLunar.type} at ${fmtDateTime(exactLunar.time)} (${exactLunar.position}).`);
+  }
+  if (topAspects.length) {
+    para1Parts.push(`The tightest aspects right now: ${topAspects.join('; ')}.`);
+  } else {
+    para1Parts.push(`No major aspects are tight today — the sky is quiet.`);
+  }
+  if (retroNow.length) {
+    para1Parts.push(`Currently retrograde: ${retroNow.join(', ')}.`);
+  }
+  lines.push('TODAY');
+  lines.push(para1Parts.join(' '));
+  lines.push('');
+
+  // PARAGRAPH 2 — the 3-day window either side
+  lines.push('THE WINDOW (3 days before → 3 days after)');
+  if (allWindow.length === 0) {
+    lines.push('No stations, ingresses, or exact lunar phases in this window — a steady stretch.');
+  } else {
+    const items = allWindow.map(e => `${fmtDateShort(e.date)}: ${e.label.replace(/^[^\s]+\s/, '')}`);
+    lines.push(items.join(' • '));
   }
   lines.push('');
-
-  // ─── Planetary positions ────────────────────────────────────────────
-  lines.push('━━━ PLANETARY POSITIONS ━━━');
-  lines.push('');
-  for (const [name] of PLANET_BODIES) {
-    const key = name.toLowerCase() as keyof PlanetaryPositions;
-    lines.push(planetRow(name, planets[key] as any, !!retroFlags[name]));
-  }
-  if (planets.northNode) lines.push(`  ☊ N.Node   ${(planets.northNode as any).fullDegree || ''}`);
-  if (planets.chiron) lines.push(`  ⚷ Chiron   ${(planets.chiron as any).fullDegree || ''}`);
-  if (planets.lilith) lines.push(`  ⚸ Lilith   ${(planets.lilith as any).fullDegree || ''}`);
-  lines.push('');
-
-  // ─── Retrograde status ──────────────────────────────────────────────
-  lines.push('━━━ RETROGRADE STATUS ━━━');
-  lines.push('');
-  const retroNow = RETRO_BODIES.filter(([n]) => retroFlags[n]).map(([n]) => n);
-  const directNow = RETRO_BODIES.filter(([n]) => !retroFlags[n]).map(([n]) => n);
-  lines.push(`  Retrograde: ${retroNow.length ? retroNow.join(', ') : '(none)'}`);
-  lines.push(`  Direct:     ${directNow.join(', ')}`);
-  lines.push('');
-
-  // ─── Today's aspects ────────────────────────────────────────────────
-  lines.push('━━━ TODAY\'S ASPECTS (within 4° orb) ━━━');
-  lines.push('');
-  lines.push(aspectsBlock(aspects, 4));
-  lines.push('');
-
   lines.push('─'.repeat(60));
-  lines.push('Generated by your Astrology Calendar.');
+  lines.push('Want the full chart, every position, every aspect? Reply and I\'ll send the long version.');
 
   const subject = `Cosmic Weather — ${fmtDate(anchor)}`;
   return { subject, body: lines.join('\n') };
