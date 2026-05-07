@@ -214,7 +214,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   // ─── BUILD BODY ───────────────────────────────────────────────────
   const lines: string[] = [];
 
-  lines.push(`COSMIC WEATHER — ${fmtDate(anchor)}`);
+  lines.push(`COSMIC WEATHER: ${fmtDate(anchor)}`);
   lines.push('═'.repeat(60));
   if (recipientName) {
     lines.push('');
@@ -282,7 +282,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
   // ── 3. YOUR DAY (2 paragraphs) ──
   if (natalChart) {
-    lines.push(`YOUR DAY${recipientName ? ` — ${recipientName}` : ''}`);
+    lines.push(`YOUR DAY${recipientName ? `: ${recipientName}` : ''}`);
     lines.push('─'.repeat(60));
 
     if (perfectingToday.length === 0) {
@@ -317,7 +317,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     lines.push('');
   }
 
-  const subject = `Cosmic Weather — ${fmtDate(anchor)}`;
+  const subject = `Cosmic Weather: ${fmtDate(anchor)}`;
   return { subject, body: lines.join('\n') };
 }
 
