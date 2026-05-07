@@ -394,30 +394,37 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
         <div className="flex items-center gap-1.5">
           <span className="text-base">♀</span>
           <span>{planets.venus.fullDegree}</span>
+          {retros.venus && <span className="text-amber-600 text-base" title="Venus retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♂</span>
           <span>{planets.mars.fullDegree}</span>
+          {retros.mars && <span className="text-amber-600 text-base" title="Mars retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♃</span>
           <span>{planets.jupiter.fullDegree}</span>
+          {retros.jupiter && <span className="text-amber-600 text-base" title="Jupiter retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♄</span>
           <span>{planets.saturn.fullDegree}</span>
+          {retros.saturn && <span className="text-amber-600 text-base" title="Saturn retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♅</span>
           <span>{planets.uranus.fullDegree}</span>
+          {retros.uranus && <span className="text-amber-600 text-base" title="Uranus retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♆</span>
           <span>{planets.neptune.fullDegree}</span>
+          {retros.neptune && <span className="text-amber-600 text-base" title="Neptune retrograde">℞</span>}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">♇</span>
           <span>{planets.pluto.fullDegree}</span>
+          {retros.pluto && <span className="text-amber-600 text-base" title="Pluto retrograde">℞</span>}
         </div>
       </div>
 
