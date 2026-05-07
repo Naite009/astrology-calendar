@@ -509,7 +509,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
         </div>
 
         {isEmailOpen && (
-          <EmailReportModal date={date} onClose={() => setIsEmailOpen(false)} />
+          <EmailReportModal date={date} natalChart={activeChart} onClose={() => setIsEmailOpen(false)} />
         )}
 
         {/* Chart Selector - switch charts without closing */}
