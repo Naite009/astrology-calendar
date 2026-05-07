@@ -1,20 +1,19 @@
 /**
- * Builds a comprehensive deterministic plain-text Cosmic Weather report
- * for a given date. All planetary positions are calculated at LOCAL MIDNIGHT
- * of that date in the user's timezone — that anchor is stated explicitly
- * at the top of every report so the recipient knows what moment is shown.
+ * Short-and-sweet Cosmic Weather email.
  *
- * Includes:
- * - Header with the exact computation moment + timezone
- * - Today's lunar phase (with exact time if a major phase falls today)
- * - Full planetary positions table
- * - Retrograde status for every planet (Mercury → Pluto)
- * - Today's planet-to-planet aspects (within standard orbs)
- * - 3-day window before + 3-day window after: stations, ingresses,
- *   exact lunar phases, and notable exact aspects
+ * Structure (kept tight on purpose):
+ *  1. Header with the exact moment used (local midnight of the chosen day)
+ *  2. A clean "where the planets are" snapshot (one line per body, with glyphs,
+ *     sign + degree, retrograde flag) — the email version of the calendar's
+ *     front-page positions.
+ *  3. 2 paragraphs of GENERAL weather (Sun/Moon, top tight aspects, retrogrades,
+ *     plus one mention of any exact lunar phase or ingress that day).
+ *  4. 2 paragraphs of PERSONAL weather IF a natal chart is provided — only the
+ *     transits that actually perfect WITHIN THIS DAY (fast bodies: Moon, Sun,
+ *     Mercury, Venus, Mars). Each one tells you the approximate exact hour and
+ *     a one-line "how it feels" note.
  */
 
-import * as Astronomy from 'astronomy-engine';
 import {
   getPlanetaryPositions,
   getMoonPhase,
@@ -22,224 +21,262 @@ import {
   isPlanetRetrograde,
   calculateDailyAspects,
   type PlanetaryPositions,
-  type Aspect,
 } from './astrology';
-import { computeIngresses, getStationDates } from './retrogradePatterns';
+import * as Astronomy from 'astronomy-engine';
+import { calculateTransitAspects, type TransitAspect } from './transitAspects';
+import type { NatalChart } from '@/hooks/useNatalChart';
 
-const PLANET_BODIES: Array<[string, Astronomy.Body]> = [
-  ['Sun', Astronomy.Body.Sun],
-  ['Moon', Astronomy.Body.Moon],
-  ['Mercury', Astronomy.Body.Mercury],
-  ['Venus', Astronomy.Body.Venus],
-  ['Mars', Astronomy.Body.Mars],
-  ['Jupiter', Astronomy.Body.Jupiter],
-  ['Saturn', Astronomy.Body.Saturn],
-  ['Uranus', Astronomy.Body.Uranus],
-  ['Neptune', Astronomy.Body.Neptune],
-  ['Pluto', Astronomy.Body.Pluto],
-];
-
-const RETRO_BODIES: Array<[string, Astronomy.Body]> = PLANET_BODIES.filter(
-  ([n]) => n !== 'Sun' && n !== 'Moon'
-);
+// ─── Constants ────────────────────────────────────────────────────────
 
 const PLANET_GLYPH: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
   Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  NorthNode: '☊', Chiron: '⚷', Lilith: '⚸',
+  Ascendant: 'AC', Midheaven: 'MC',
 };
 
-const fmtDateTime = (d: Date) =>
-  d.toLocaleString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-  });
+const ASPECT_GLYPH: Record<string, string> = {
+  conjunction: '☌', opposition: '☍', trine: '△', square: '□',
+  sextile: '⚹', quincunx: '⚻', semisextile: '⚺',
+};
 
-const fmtDateShort = (d: Date) =>
-  d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const FAST_BODIES = new Set(['Moon', 'Sun', 'Mercury', 'Venus', 'Mars']);
+
+const PLANET_BODIES: Array<[string, Astronomy.Body]> = [
+  ['Sun', Astronomy.Body.Sun], ['Moon', Astronomy.Body.Moon],
+  ['Mercury', Astronomy.Body.Mercury], ['Venus', Astronomy.Body.Venus],
+  ['Mars', Astronomy.Body.Mars], ['Jupiter', Astronomy.Body.Jupiter],
+  ['Saturn', Astronomy.Body.Saturn], ['Uranus', Astronomy.Body.Uranus],
+  ['Neptune', Astronomy.Body.Neptune], ['Pluto', Astronomy.Body.Pluto],
+];
+
+// ─── Formatters ───────────────────────────────────────────────────────
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
-function planetRow(name: string, p: PlanetaryPositions[keyof PlanetaryPositions], retro: boolean) {
+const fmtTime = (d: Date) =>
+  d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+
+const fmtDegMin = (deg: number, min: number = 0) =>
+  `${deg}°${String(Math.round(min)).padStart(2, '0')}'`;
+
+function planetLine(name: string, p: any, retro: boolean): string {
   if (!p) return '';
+  const pos = fmtDegMin(p.degree, p.minutes || 0);
   const glyph = PLANET_GLYPH[name] || '';
-  const pos = (p as any).fullDegree || `${(p as any).degree}° ${(p as any).signName}`;
-  return `  ${glyph} ${name.padEnd(8)} ${pos}${retro ? '  ℞ retrograde' : ''}`;
+  const tag = retro ? '  ℞' : '';
+  return `  ${glyph}  ${name.padEnd(8)} ${pos.padStart(7)}  ${p.signName}${tag}`;
 }
 
-function aspectsBlock(aspects: Aspect[], maxOrb = 4): string {
-  const filtered = aspects
-    .filter(a => parseFloat(a.orb) <= maxOrb)
-    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
-  if (!filtered.length) return '  (no major aspects within 4° today)';
-  return filtered
-    .map(a => {
-      const p1 = a.planet1.charAt(0).toUpperCase() + a.planet1.slice(1);
-      const p2 = a.planet2.charAt(0).toUpperCase() + a.planet2.slice(1);
-      const tag = a.applying ? 'applying ↗' : 'separating ↘';
-      return `  ${PLANET_GLYPH[p1] || ''} ${p1} ${a.symbol} ${PLANET_GLYPH[p2] || ''} ${p2}  (${a.type}, orb ${a.orb}°, ${tag})`;
-    })
-    .join('\n');
+// "How does it feel" one-liners by aspect (kept short, felt-sense voice)
+function feltLine(transitPlanet: string, natalPlanet: string, aspect: string): string {
+  const t = transitPlanet, n = natalPlanet;
+  const map: Record<string, string> = {
+    conjunction: `today's ${t} sits right on top of your natal ${n} — that part of you gets switched on.`,
+    opposition: `today's ${t} pulls against your natal ${n} — expect a tug-of-war you can feel.`,
+    square: `today's ${t} grinds on your natal ${n} — a friction you'll want to act on, not stew in.`,
+    trine: `today's ${t} flows with your natal ${n} — things in that area move easily if you start them.`,
+    sextile: `today's ${t} offers a hand to your natal ${n} — small openings if you reach for them.`,
+    quincunx: `today's ${t} is awkward with your natal ${n} — a small adjustment, not a crisis.`,
+    semisextile: `today's ${t} hums quietly next to your natal ${n} — a low background note.`,
+  };
+  return map[aspect] || `${t} ${aspect} natal ${n}.`;
 }
 
-interface WindowEvent {
-  date: Date;
-  label: string;
-}
-
-function collectWindowEvents(centerDate: Date, daysEachSide: number): WindowEvent[] {
-  const events: WindowEvent[] = [];
-  const start = new Date(centerDate); start.setDate(start.getDate() - daysEachSide);
-  const end = new Date(centerDate); end.setDate(end.getDate() + daysEachSide);
-
-  // Stations (retrograde / direct) for each planet
-  for (const [name, body] of RETRO_BODIES) {
-    try {
-      const stations = getStationDates(body, centerDate);
-      for (const s of stations) {
-        if (s.retrograde.date >= start && s.retrograde.date <= end) {
-          events.push({
-            date: s.retrograde.date,
-            label: `${PLANET_GLYPH[name]} ${name} stations RETROGRADE at ${s.retrograde.degree} — ${fmtDateTime(s.retrograde.date)}`,
-          });
-        }
-        if (s.direct.date >= start && s.direct.date <= end) {
-          events.push({
-            date: s.direct.date,
-            label: `${PLANET_GLYPH[name]} ${name} stations DIRECT at ${s.direct.degree} — ${fmtDateTime(s.direct.date)}`,
-          });
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  // Ingresses (sign changes) for each planet across the window
-  for (const [name, body] of PLANET_BODIES) {
-    try {
-      const ings = computeIngresses(body, name, start, end);
-      for (const ing of ings) {
-        events.push({
-          date: ing.date,
-          label: `${PLANET_GLYPH[name]} ${name} enters ${ing.toSign} (leaves ${ing.fromSign}) — ${fmtDateTime(ing.date)}`,
-        });
-      }
-    } catch { /* ignore */ }
-  }
-
-  // Exact lunar phases in the window
-  for (let i = -daysEachSide; i <= daysEachSide; i++) {
-    const d = new Date(centerDate); d.setDate(d.getDate() + i);
-    const ex = getExactLunarPhase(d);
-    if (ex) {
-      events.push({
-        date: ex.time,
-        label: `${ex.emoji} ${ex.type} at ${ex.position} — ${fmtDateTime(ex.time)}${ex.name ? ` (${ex.name})` : ''}`,
-      });
-    }
-  }
-
-  events.sort((a, b) => a.date.getTime() - b.date.getTime());
-  // Dedupe identical labels
-  const seen = new Set<string>();
-  return events.filter(e => {
-    const k = e.label;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-}
+// ─── Public API ───────────────────────────────────────────────────────
 
 export interface BuildReportOptions {
   date: Date;
-  /** Optional recipient name (personalizes greeting). */
   recipientName?: string;
-  /** Number of days to look back / forward for the surrounding events window. */
-  windowDays?: number;
+  /** Optional natal chart — if provided, the personal section is included. */
+  natalChart?: NatalChart | null;
 }
 
 export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: string; body: string } {
-  const { date, recipientName, windowDays = 3 } = opts;
+  const { date, recipientName, natalChart } = opts;
 
-  // Anchor moment used for the snapshot: local midnight of the chosen day.
+  // Anchor: local midnight of the chosen day, plus the same-day end (for "perfects today" filter)
   const anchor = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+  const endOfDay = new Date(anchor.getTime() + 24 * 60 * 60 * 1000);
   const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const tzAbbr = anchor.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
 
   const planets = getPlanetaryPositions(anchor);
   const moonPhase = getMoonPhase(anchor);
   const exactLunar = getExactLunarPhase(anchor);
   const aspects = calculateDailyAspects(planets);
 
-  // Retrograde status for every classical planet
-  const retroFlags: Record<string, boolean> = {};
-  for (const [name, body] of RETRO_BODIES) {
-    retroFlags[name] = isPlanetRetrograde(body, anchor);
+  // Retrograde flags
+  const retro: Record<string, boolean> = {};
+  for (const [name, body] of PLANET_BODIES) {
+    if (name === 'Sun' || name === 'Moon') continue;
+    retro[name] = isPlanetRetrograde(body, anchor);
   }
+  const retroNow = Object.entries(retro).filter(([, v]) => v).map(([k]) => k);
 
-  const before = collectWindowEvents(anchor, windowDays).filter(e => e.date < anchor);
-  const after = collectWindowEvents(anchor, windowDays).filter(e => e.date >= anchor);
-
-  // ─── Build the 2-paragraph summary ──────────────────────────────────
-  const moonPos = (planets.moon as any).fullDegree || `${(planets.moon as any).degree}° ${(planets.moon as any).signName}`;
-  const sunPos = (planets.sun as any).fullDegree || `${(planets.sun as any).degree}° ${(planets.sun as any).signName}`;
-  const retroNow = RETRO_BODIES.filter(([n]) => retroFlags[n]).map(([n]) => n);
-
-  // Top 3 tightest aspects today
+  // Top 3 tightest sky-to-sky aspects
   const topAspects = [...aspects]
     .filter(a => parseFloat(a.orb) <= 4)
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .slice(0, 3)
-    .map(a => {
-      const p1 = a.planet1.charAt(0).toUpperCase() + a.planet1.slice(1);
-      const p2 = a.planet2.charAt(0).toUpperCase() + a.planet2.slice(1);
-      return `${p1} ${a.symbol} ${p2} (${a.type}, ${a.orb}°)`;
-    });
+    .slice(0, 3);
 
-  // Window highlights — combine before + after, keep most notable
-  const allWindow = [...before, ...after].slice(0, 6);
+  // ── Personal transits perfecting TODAY ──
+  let perfectingToday: TransitAspect[] = [];
+  if (natalChart) {
+    const all = calculateTransitAspects(anchor, planets, natalChart);
+    perfectingToday = all.filter(a => {
+      if (!FAST_BODIES.has(a.transitPlanet)) return false;
+      // applying within <24h means it perfects sometime today
+      if (!a.applying) return false;
+      return a.daysToExact >= 0 && a.daysToExact < 1;
+    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 4);
+  }
 
+  // ─── BUILD BODY ───────────────────────────────────────────────────
   const lines: string[] = [];
+
   lines.push(`COSMIC WEATHER — ${fmtDate(anchor)}`);
   lines.push('═'.repeat(60));
+  if (recipientName) {
+    lines.push('');
+    lines.push(`Hi ${recipientName},`);
+  }
   lines.push('');
-  if (recipientName) { lines.push(`Hi ${recipientName},`); lines.push(''); }
-  lines.push(`(Snapshot taken at local midnight — ${fmtDateTime(anchor)}, ${tzName}.)`);
+  lines.push(`(All positions calculated for local midnight: ${fmtTime(anchor)} on ${fmtDate(anchor)}, timezone ${tzName}.)`);
   lines.push('');
 
-  // PARAGRAPH 1 — what the sky looks like today
-  const para1Parts: string[] = [];
-  para1Parts.push(
-    `The Sun sits at ${sunPos} and the Moon is in ${(planets.moon as any).signName} (${moonPos}, ${moonPhase.phaseName}, ${(moonPhase.illumination * 100).toFixed(0)}% lit).`
+  // ── 1. WHERE THE PLANETS ARE (snapshot) ──
+  lines.push('WHERE THE PLANETS ARE');
+  lines.push('─'.repeat(60));
+  for (const [name] of PLANET_BODIES) {
+    const key = name.toLowerCase() as keyof PlanetaryPositions;
+    lines.push(planetLine(name, (planets as any)[key], retro[name] || false));
+  }
+  // Points
+  if ((planets as any).northNode) lines.push(planetLine('NorthNode', (planets as any).northNode, false));
+  if ((planets as any).chiron) lines.push(planetLine('Chiron', (planets as any).chiron, false));
+  lines.push('');
+  lines.push(`  Moon phase: ${moonPhase.phaseName} (${(moonPhase.illumination * 100).toFixed(0)}% lit)`);
+  if (exactLunar) {
+    lines.push(`  ✦ EXACT ${exactLunar.type} today at ${fmtTime(exactLunar.time)} (${exactLunar.position})`);
+  }
+  lines.push('');
+
+  // ── 2. GENERAL WEATHER (2 paragraphs) ──
+  lines.push('GENERAL WEATHER');
+  lines.push('─'.repeat(60));
+
+  // Paragraph 1: the mood
+  const sunPos = `${(planets.sun as any).degree}° ${(planets.sun as any).signName}`;
+  const moonPos = `${(planets.moon as any).degree}° ${(planets.moon as any).signName}`;
+  const para1: string[] = [];
+  para1.push(
+    `The Sun is at ${sunPos} and the Moon is at ${moonPos} (${moonPhase.phaseName}). ` +
+    `That gives the day its base flavor: ${signFlavor((planets.moon as any).signName)}.`
   );
   if (exactLunar) {
-    para1Parts.push(`Today brings the EXACT ${exactLunar.type} at ${fmtDateTime(exactLunar.time)} (${exactLunar.position}).`);
+    para1.push(`The ${exactLunar.type} perfects at ${fmtTime(exactLunar.time)}, so the energy peaks around then.`);
   }
-  if (topAspects.length) {
-    para1Parts.push(`The tightest aspects right now: ${topAspects.join('; ')}.`);
-  } else {
-    para1Parts.push(`No major aspects are tight today — the sky is quiet.`);
-  }
-  if (retroNow.length) {
-    para1Parts.push(`Currently retrograde: ${retroNow.join(', ')}.`);
-  }
-  lines.push('TODAY');
-  lines.push(para1Parts.join(' '));
+  lines.push(para1.join(' '));
   lines.push('');
 
-  // PARAGRAPH 2 — the 3-day window either side
-  lines.push('THE WINDOW (3 days before → 3 days after)');
-  if (allWindow.length === 0) {
-    lines.push('No stations, ingresses, or exact lunar phases in this window — a steady stretch.');
+  // Paragraph 2: notable aspects + retrogrades
+  const para2: string[] = [];
+  if (topAspects.length) {
+    const list = topAspects.map(a => {
+      const p1 = a.planet1.charAt(0).toUpperCase() + a.planet1.slice(1);
+      const p2 = a.planet2.charAt(0).toUpperCase() + a.planet2.slice(1);
+      return `${p1} ${a.symbol} ${p2} (${a.orb}°)`;
+    }).join(', ');
+    para2.push(`The tightest sky-to-sky aspects are: ${list}.`);
+    para2.push(`${aspectFlavor(topAspects[0].type)}`);
   } else {
-    const items = allWindow.map(e => `${fmtDateShort(e.date)}: ${e.label.replace(/^[^\s]+\s/, '')}`);
-    lines.push(items.join(' • '));
+    para2.push(`No tight aspects in the sky today, things are quiet at the macro level.`);
   }
+  if (retroNow.length) {
+    para2.push(`Currently retrograde: ${retroNow.join(', ')} (slow down, revisit, review in those areas).`);
+  } else {
+    para2.push(`All planets are direct, the river is flowing forward.`);
+  }
+  lines.push(para2.join(' '));
   lines.push('');
+
+  // ── 3. YOUR DAY (2 paragraphs) ──
+  if (natalChart) {
+    lines.push(`YOUR DAY${recipientName ? ` — ${recipientName}` : ''}`);
+    lines.push('─'.repeat(60));
+
+    if (perfectingToday.length === 0) {
+      lines.push(
+        `No fast transits perfect on your chart today. The general weather above is what you'll mostly feel. ` +
+        `Background slow transits (if any) are still in play but they're slow burn, not "today" stories.`
+      );
+      lines.push('');
+      lines.push(
+        `Use the day for whatever the general mood supports. Without a sharp transit hitting one of your natal points, you're driving, not being driven.`
+      );
+    } else {
+      // Paragraph 1: list each perfecting transit with approximate exact time
+      const items = perfectingToday.map(a => {
+        const exactTime = new Date(anchor.getTime() + a.daysToExact * 24 * 60 * 60 * 1000);
+        const tg = PLANET_GLYPH[a.transitPlanet] || '';
+        const ng = PLANET_GLYPH[a.natalPlanet] || '';
+        const ag = ASPECT_GLYPH[a.aspect] || '';
+        return `• ${fmtTime(exactTime)} — ${tg} ${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${feltLine(a.transitPlanet, a.natalPlanet, a.aspect)}`;
+      });
+      lines.push(`These transits PERFECT on your chart today (approximate clock times):`);
+      lines.push('');
+      lines.push(items.join('\n'));
+      lines.push('');
+      // Paragraph 2: synthesis sentence
+      const headliner = perfectingToday[0];
+      lines.push(
+        `The biggest moment is around ${fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000))} ` +
+        `when ${headliner.transitPlanet} contacts your natal ${headliner.natalPlanet}. ` +
+        `Plan the day's most important conversation, decision, or first step around that window if you can. ` +
+        `The other contacts are smaller waves layered on top.`
+      );
+    }
+    lines.push('');
+  }
+
   lines.push('─'.repeat(60));
-  lines.push('Want the full chart, every position, every aspect? Reply and I\'ll send the long version.');
+  lines.push(`Want the long version with every transit, full interpretations, and 3-day window? Reply and I'll send it.`);
 
   const subject = `Cosmic Weather — ${fmtDate(anchor)}`;
   return { subject, body: lines.join('\n') };
+}
+
+// ─── Tiny flavor helpers (kept short, felt-sense) ─────────────────────
+
+function signFlavor(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: 'restless, want-to-start, short-fuse energy',
+    Taurus: 'slow, sensory, comfort-seeking energy',
+    Gemini: 'curious, scattered, conversation-hungry energy',
+    Cancer: 'tender, home-pulled, mood-driven energy',
+    Leo: 'warm, expressive, want-to-be-seen energy',
+    Virgo: 'tidy, problem-solving, fix-it energy',
+    Libra: 'relational, fair-minded, smooth-it-over energy',
+    Scorpio: 'intense, private, get-to-the-bottom-of-it energy',
+    Sagittarius: 'big-picture, restless, get-out-of-here energy',
+    Capricorn: 'serious, productive, climb-the-ladder energy',
+    Aquarius: 'detached, future-facing, do-it-differently energy',
+    Pisces: 'dreamy, porous, easily-moved energy',
+  };
+  return map[sign] || 'a steady, ordinary mood';
+}
+
+function aspectFlavor(type: string): string {
+  const map: Record<string, string> = {
+    conjunction: 'That conjunction is the loudest signal in the day, expect it to color most things.',
+    opposition: 'That opposition asks you to balance two things instead of pick one.',
+    square: 'That square is friction that wants action, do something with it.',
+    trine: 'That trine is an open door, walk through it.',
+    sextile: 'That sextile is a small offer, you have to lean toward it.',
+    quincunx: 'That quincunx is awkward, plan for one small adjustment.',
+  };
+  return map[type] || '';
 }
 
 // ─── Recipients (saved to localStorage) ───────────────────────────────
