@@ -414,7 +414,37 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
         const p = (planets as any)[name.toLowerCase()];
         const dir = retro[name] ? 'direct' : 'retrograde';
         const pos = p ? `${p.degree}° ${p.signName}` : '';
-        headlines.push(`✦ ${PLANET_GLYPH[name]} ${name} is STATIONING ${dir} at ${pos} — these days are big, look at where ${pos} falls in your chart.`);
+        const glyph = PLANET_GLYPH[name] || '';
+
+        // Exact station moment + meaning
+        const exact = findExactStationTime(body, anchor);
+        const exactStr = exact ? ` Exact ${fmtStationDateTime(exact)}.` : '';
+        const meaningPair = STATION_MEANING[name];
+        const meaning = meaningPair ? (dir === 'retrograde' ? meaningPair.retrograde : meaningPair.direct) : '';
+
+        const block: string[] = [];
+        block.push(`✦ ${glyph} ${name} stations ${dir} at ${pos}.${exactStr}`);
+        if (meaning) block.push(`   What it means: ${meaning}`);
+
+        // Personalize if natal chart available
+        if (natalChart && p) {
+          const stationLon = signDegreesToLongitude(p.signName, p.degree, p.minutes || 0);
+          const house = natalChart.houseCusps ? getHouseForLongitude(stationLon, natalChart) : null;
+          if (house) {
+            block.push(`   For you: ${pos} is in your ${house}${ordSuffix(house)} house (${HOUSE_THEME[house]}).`);
+          }
+          const hits = findStationHits(stationLon, natalChart);
+          if (hits.length) {
+            const hitStr = hits.slice(0, 3).map(h => {
+              const where = h.natalHouse ? `${h.natalSign} (${h.natalHouse}${ordSuffix(h.natalHouse)} house)` : h.natalSign;
+              return `${h.aspect} your ${h.natal} in ${where}, orb ${h.orb}°`;
+            }).join('; ');
+            block.push(`   Hits in your chart: ${hitStr}.`);
+          } else if (natalChart.houseCusps) {
+            block.push(`   Hits in your chart: nothing tight, the house placement is the main story.`);
+          }
+        }
+        headlines.push(block.join('\n'));
       }
     } catch {}
   }
@@ -424,20 +454,21 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   if (voc.isVOC && voc.start && voc.end) {
     const startStr = voc.start.getTime() < anchor.getTime() ? 'all day' : `from ${fmtTime(voc.start)}`;
     const endStr = voc.end.getTime() > endOfDay.getTime() ? `into tomorrow` : `until ${fmtTime(voc.end)}`;
-    const into = voc.moonEntersSign ? ` (Moon enters ${voc.moonEntersSign} after)` : '';
-    headlines.push(`✦ ☽ Moon is VOID OF COURSE ${startStr} ${endStr}${into} — make a list, handle small things, don't start anything new.`);
+    const lastAsp = voc.lastAspect
+      ? `, after its last aspect (☽ ${voc.lastAspect.symbol} ${PLANET_GLYPH[voc.lastAspect.planet] || voc.lastAspect.planet} at ${fmtTime(voc.lastAspect.time)})`
+      : ` (no major aspect made in this sign)`;
+    headlines.push(`✦ ☽ Moon is void of course ${startStr} ${endStr}${lastAsp}. Make a list, handle small things, don't start anything new.`);
   }
 
   // Exact lunar phase today
   if (exactLunar) {
-    headlines.push(`✦ ${exactLunar.type} EXACT at ${fmtTime(exactLunar.time)} (${exactLunar.position}).`);
+    headlines.push(`✦ ${exactLunar.type} exact at ${fmtTime(exactLunar.time)} (${exactLunar.position}).`);
   }
 
   if (headlines.length) {
     lines.push("TODAY'S HEADLINES");
     lines.push('─'.repeat(60));
-    headlines.forEach(h => lines.push(h));
-    lines.push('');
+    headlines.forEach(h => { lines.push(h); lines.push(''); });
   }
 
   // ── 2. GENERAL WEATHER (2 paragraphs) ──
