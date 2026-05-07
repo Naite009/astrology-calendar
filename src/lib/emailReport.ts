@@ -349,65 +349,24 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
     .slice(0, 3);
 
-  // ── Personal transits perfecting TODAY ──
-  // Strict filters so we don't spam asteroid noise:
-  //  - Transit body must be a fast personal body (Moon/Sun/Mercury/Venus/Mars)
-  //  - Natal endpoint must be a personal point (planets, angles, nodes, Chiron)
-  //  - Tight orb at moment of email: Moon ≤ 6°, Sun/Mercury/Venus/Mars ≤ 3°
-  //    (Moon allowance is wider because Moon moves ~13°/day, so a 6° orb
-  //     still means the aspect perfects within ~11 hours — same day.)
-  //  - Must be applying AND perfect within 24h
-  const NATAL_OK = new Set([
-    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
-    'Uranus','Neptune','Pluto','Ascendant','Midheaven','NorthNode','SouthNode','Chiron',
-  ]);
-  const orbCap = (transit: string) => transit === 'Moon' ? 6 : 3;
-  let perfectingToday: TransitAspect[] = [];
-  if (natalChart) {
-    const all = calculateTransitAspects(anchor, planets, natalChart);
-    perfectingToday = all.filter(a => {
-      if (!FAST_BODIES.has(a.transitPlanet)) return false;
-      if (!NATAL_OK.has(a.natalPlanet)) return false;
-      if (parseFloat(a.orb) > orbCap(a.transitPlanet)) return false;
-      if (!a.applying) return false;
-      return a.daysToExact >= 0 && a.daysToExact < 1;
-    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 5);
+  // (personal transits computed below in DATA PREP)
+
+  // ─── DATA PREP ────────────────────────────────────────────────────
+
+  // Stations today (any planet whose daily motion is < 0.05°/day)
+  interface StationData {
+    name: string;
+    direction: 'retrograde' | 'direct';
+    pos: string;            // "3° Aries"
+    sign: string;
+    degree: number;
+    longitude: number;
+    exact: Date | null;
+    meaning: string;
+    natalHouse: number | null;
+    hits: StationHit[];
   }
-
-  // ─── BUILD BODY ───────────────────────────────────────────────────
-  const lines: string[] = [];
-
-  lines.push(`COSMIC WEATHER: ${fmtDate(anchor)}`);
-  lines.push('═'.repeat(60));
-  if (recipientName) {
-    lines.push('');
-    lines.push(`Hi ${recipientName},`);
-  }
-  lines.push('');
-  lines.push(`(All positions calculated for local midnight: ${fmtTime(anchor)} on ${fmtDate(anchor)}, timezone ${tzName}.)`);
-  lines.push('');
-
-  // ── 1. WHERE THE PLANETS ARE (snapshot) ──
-  lines.push('WHERE THE PLANETS ARE');
-  lines.push('─'.repeat(60));
-  for (const [name] of PLANET_BODIES) {
-    const key = name.toLowerCase() as keyof PlanetaryPositions;
-    lines.push(planetLine(name, (planets as any)[key], retro[name] || false));
-  }
-  // Points
-  if ((planets as any).northNode) lines.push(planetLine('NorthNode', (planets as any).northNode, false));
-  if ((planets as any).chiron) lines.push(planetLine('Chiron', (planets as any).chiron, false));
-  lines.push('');
-  lines.push(`  Moon phase: ${moonPhase.phaseName} (${(moonPhase.illumination * 100).toFixed(0)}% lit)`);
-  if (exactLunar) {
-    lines.push(`  ✦ EXACT ${exactLunar.type} today at ${fmtTime(exactLunar.time)} (${exactLunar.position})`);
-  }
-  lines.push('');
-
-  // ── 1b. TODAY'S HEADLINES (sky news worth knowing first) ──
-  const headlines: string[] = [];
-
-  // Stations: any planet within ~0.05°/day of zero motion is stationing
+  const stations: StationData[] = [];
   for (const [name, body] of PLANET_BODIES) {
     if (name === 'Sun' || name === 'Moon') continue;
     try {
@@ -418,146 +377,327 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
       if (delta < -180) delta += 360;
       if (Math.abs(delta) < 0.05) {
         const p = (planets as any)[name.toLowerCase()];
-        const dir = retro[name] ? 'direct' : 'retrograde';
-        const pos = p ? `${p.degree}° ${p.signName}` : '';
-        const glyph = PLANET_GLYPH[name] || '';
-
-        // Exact station moment + meaning
-        const exact = findExactStationTime(body, anchor);
-        const exactStr = exact ? ` Exact ${fmtStationDateTime(exact)}.` : '';
+        if (!p) continue;
+        const direction: 'retrograde' | 'direct' = retro[name] ? 'direct' : 'retrograde';
+        const lon = signDegreesToLongitude(p.signName, p.degree, p.minutes || 0);
         const meaningPair = STATION_MEANING[name];
-        const meaning = meaningPair ? (dir === 'retrograde' ? meaningPair.retrograde : meaningPair.direct) : '';
-
-        const block: string[] = [];
-        block.push(`✦ ${glyph} ${name} stations ${dir} at ${pos}.${exactStr}`);
-        if (meaning) block.push(`   What it means: ${meaning}`);
-
-        // Personalize if natal chart available
-        if (natalChart && p) {
-          const stationLon = signDegreesToLongitude(p.signName, p.degree, p.minutes || 0);
-          const house = natalChart.houseCusps ? getHouseForLongitude(stationLon, natalChart) : null;
-          if (house) {
-            block.push(`   For you: ${pos} is in your ${house}${ordSuffix(house)} house (${HOUSE_THEME[house]}).`);
-          }
-          const hits = findStationHits(stationLon, natalChart);
-          if (hits.length) {
-            const hitStr = hits.slice(0, 3).map(h => {
-              const where = h.natalHouse ? `${h.natalSign} (${h.natalHouse}${ordSuffix(h.natalHouse)} house)` : h.natalSign;
-              return `${h.aspect} your ${h.natal} in ${where}, orb ${h.orb}°`;
-            }).join('; ');
-            block.push(`   Hits in your chart: ${hitStr}.`);
-          } else if (natalChart.houseCusps) {
-            block.push(`   Hits in your chart: nothing tight, the house placement is the main story.`);
-          }
-        }
-        headlines.push(block.join('\n'));
+        const meaning = meaningPair ? meaningPair[direction] : '';
+        const natalHouse = natalChart?.houseCusps ? getHouseForLongitude(lon, natalChart) : null;
+        const hits = natalChart ? findStationHits(lon, natalChart) : [];
+        stations.push({
+          name, direction,
+          pos: `${p.degree}° ${p.signName}`,
+          sign: p.signName, degree: p.degree, longitude: lon,
+          exact: findExactStationTime(body, anchor),
+          meaning, natalHouse, hits,
+        });
       }
     } catch {}
   }
 
-  // Void of course Moon today
+  // VOC Moon today
   const voc = getVOCMoonDetails(anchor);
-  if (voc.isVOC && voc.start && voc.end) {
-    const startStr = voc.start.getTime() < anchor.getTime() ? 'all day' : `from ${fmtTime(voc.start)}`;
-    const endStr = voc.end.getTime() > endOfDay.getTime() ? `into tomorrow` : `until ${fmtTime(voc.end)}`;
-    const lastAsp = voc.lastAspect
-      ? `, after its last aspect (☽ ${voc.lastAspect.symbol} ${PLANET_GLYPH[voc.lastAspect.planet] || voc.lastAspect.planet} at ${fmtTime(voc.lastAspect.time)})`
-      : ` (no major aspect made in this sign)`;
-    headlines.push(`✦ ☽ Moon is void of course ${startStr} ${endStr}${lastAsp}. Make a list, handle small things, don't start anything new.`);
+
+  // Personal transits perfecting today, STRICT under 2° orb
+  const NATAL_OK = new Set([
+    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+    'Uranus','Neptune','Pluto','Ascendant','Midheaven','NorthNode','SouthNode','Chiron',
+  ]);
+  let personalTransits: TransitAspect[] = [];
+  if (natalChart) {
+    const all = calculateTransitAspects(anchor, planets, natalChart);
+    personalTransits = all
+      .filter(a => NATAL_OK.has(a.natalPlanet) && parseFloat(a.orb) < 2)
+      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+      .slice(0, 5);
   }
 
-  // Exact lunar phase today
-  if (exactLunar) {
-    headlines.push(`✦ ${exactLunar.type} exact at ${fmtTime(exactLunar.time)} (${exactLunar.position}).`);
-  }
+  // ─── BUILD BODY ───────────────────────────────────────────────────
+  const lines: string[] = [];
 
-  if (headlines.length) {
-    lines.push("TODAY'S HEADLINES");
-    lines.push('─'.repeat(60));
-    headlines.forEach(h => { lines.push(h); lines.push(''); });
-  }
-
-  // ── 2. GENERAL WEATHER (2 paragraphs) ──
-  lines.push('GENERAL WEATHER');
-  lines.push('─'.repeat(60));
-
-  // Paragraph 1: the mood — season + Moon sign combo (Tara's signature)
   const sunSign = (planets.sun as any).signName;
   const moonSign = (planets.moon as any).signName;
   const sunPos = `${(planets.sun as any).degree}° ${sunSign}`;
   const moonPos = `${(planets.moon as any).degree}° ${moonSign}`;
-  const para1: string[] = [];
-  para1.push(
-    `It's ${sunSign} season and we have a ${moonSign} Moon. Sun ${sunPos}, Moon ${moonPos} (${moonPhase.phaseName}). ` +
-    `The feel-good medicine of the day is doing ${moonSign} things: ${signFlavor(moonSign)}. ` +
-    `Look at where ${moonSign} falls in your natal chart — that area of life will feel good to act on today.`
-  );
-  if (exactLunar) {
-    para1.push(`The ${exactLunar.type} perfects at ${fmtTime(exactLunar.time)}, so the energy peaks around then.`);
-  }
-  lines.push(para1.join(' '));
-  lines.push('');
 
-  // Paragraph 2: notable aspects + retrogrades
-  const para2: string[] = [];
-  if (topAspects.length) {
-    const list = topAspects.map(a => {
-      const p1 = a.planet1.charAt(0).toUpperCase() + a.planet1.slice(1);
-      const p2 = a.planet2.charAt(0).toUpperCase() + a.planet2.slice(1);
-      return `${p1} ${a.symbol} ${p2} (${a.orb}°)`;
-    }).join(', ');
-    para2.push(`The tightest sky-to-sky aspects are: ${list}.`);
-    para2.push(`${aspectFlavor(topAspects[0].type)}`);
-  } else {
-    para2.push(`No tight aspects in the sky today, things are quiet at the macro level.`);
-  }
-  if (retroNow.length) {
-    para2.push(`Currently retrograde: ${retroNow.join(', ')} (slow down, revisit, review in those areas).`);
-  } else {
-    para2.push(`All planets are direct, the river is flowing forward.`);
-  }
-  lines.push(para2.join(' '));
-  lines.push('');
-
-  // ── 3. YOUR DAY (2 paragraphs) ──
-  if (natalChart) {
-    lines.push(`YOUR DAY${recipientName ? `: ${recipientName}` : ''}`);
-    lines.push('─'.repeat(60));
-
-    if (perfectingToday.length === 0) {
-      lines.push(
-        `No fast transits perfect on your chart today. The general weather above is what you'll mostly feel. ` +
-        `Background slow transits (if any) are still in play but they're slow burn, not "today" stories.`
-      );
-      lines.push('');
-      lines.push(
-        `Use the day for whatever the general mood supports. Without a sharp transit hitting one of your natal points, you're driving, not being driven.`
-      );
-    } else {
-      const items = perfectingToday.map(a => {
-        const exactTime = new Date(anchor.getTime() + a.daysToExact * 24 * 60 * 60 * 1000);
-        const tg = PLANET_GLYPH[a.transitPlanet] || '';
-        const ng = PLANET_GLYPH[a.natalPlanet] || '';
-        const ag = ASPECT_GLYPH[a.aspect] || '';
-        return `• ${fmtTime(exactTime)}  ${tg} t-${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${pairCopy(a.transitPlanet, a.natalPlanet, a.aspect)}`;
-      });
-      lines.push(`Your transits today:`);
-      lines.push('');
-      lines.push(items.join('\n'));
-      lines.push('');
-      const headliner = perfectingToday[0];
-      const exactTimeStr = fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000));
-      lines.push(
-        `Headline: around ${exactTimeStr}, transiting ${headliner.transitPlanet} ${headliner.aspect}s your natal ${headliner.natalPlanet}. ` +
-        `${pairCopy(headliner.transitPlanet, headliner.natalPlanet, headliner.aspect)} ` +
-        `Aim the day's most loaded conversation, decision, or first move at that window.`
-      );
-    }
+  if (recipientName) {
+    lines.push(`Hi ${recipientName},`);
     lines.push('');
   }
 
-  const subject = `Cosmic Weather: ${fmtDate(anchor)}`;
+  // ── SECTION 1: THE SKY TODAY ──────────────────────────────────────
+  lines.push('THE SKY TODAY');
+  lines.push('─'.repeat(50));
+
+  const sky: string[] = [];
+
+  // Moon line
+  let moonLine = `Moon is in ${moonSign} (${moonPhase.phaseName}, ${moonPos}). ${signCollective(moonSign)}.`;
+  if (voc.isVOC && voc.start && voc.end) {
+    const startH = voc.start.getHours();
+    if (startH >= 6 && startH < 24) {
+      const lastA = voc.lastAspect ? ` after Moon ${voc.lastAspect.aspectName} ${voc.lastAspect.planet}` : '';
+      moonLine += ` Void of course from ${fmtTime(voc.start)} to ${fmtTime(voc.end)}${lastA}, drifting time.`;
+    }
+  }
+  sky.push(moonLine);
+
+  // Stations
+  for (const s of stations) {
+    const exactStr = s.exact ? ` Exact ${fmtStationDateTime(s.exact)}.` : '';
+    sky.push(`${s.name} stations ${s.direction} at ${s.pos}.${exactStr} ${s.meaning}`);
+  }
+
+  // Tightest sky-to-sky aspects under 2°
+  const tight = [...aspects]
+    .filter(a => parseFloat(a.orb) < 2)
+    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+    .slice(0, 3);
+  if (tight.length) {
+    const tightStrs = tight.map(a => {
+      const p1 = cap(a.planet1);
+      const p2 = cap(a.planet2);
+      const s1 = (planets as any)[a.planet1.toLowerCase()]?.signName || '';
+      const s2 = (planets as any)[a.planet2.toLowerCase()]?.signName || '';
+      return `${p1} in ${s1} ${a.type} ${p2} in ${s2} (${a.orb}°): ${pairLived(p1, p2, a.type)}`;
+    });
+    sky.push(tightStrs.join(' '));
+  }
+
+  // Sun / season backdrop
+  sky.push(`Sun at ${sunPos} sets a ${sunSeasonBackdrop(sunSign)} backdrop.`);
+
+  sky.forEach(p => { lines.push(p); lines.push(''); });
+
+  // ── SECTION 2: YOUR CHART ─────────────────────────────────────────
+  if (natalChart) {
+    lines.push(`YOUR CHART${recipientName ? ` — ${recipientName}` : ''}`);
+    lines.push('─'.repeat(50));
+
+    const yourEntries: string[] = [];
+
+    // Stations land first (always included regardless of orb)
+    for (const s of stations) {
+      const houseLabel = s.natalHouse ? `your ${s.natalHouse}${ordSuffix(s.natalHouse)} house (${HOUSE_THEME[s.natalHouse]})` : 'your chart';
+      const ruler = TRADITIONAL_RULER[s.sign];
+      const rulerNatalHouse = ruler && natalChart.planets[ruler as keyof typeof natalChart.planets]
+        ? getNatalHouseOf(ruler, natalChart) : null;
+      const rulerSign = ruler ? (natalChart.planets[ruler as keyof typeof natalChart.planets] as any)?.sign : null;
+      const rulerLine = ruler && rulerNatalHouse
+        ? ` The ruler of that house is ${ruler} in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this lands as ${rulerExpression(ruler, rulerNatalHouse)}.`
+        : '';
+      const hitLine = s.hits.length
+        ? ` It also touches your natal ${s.hits[0].natal} in ${s.hits[0].natalSign}${s.hits[0].natalHouse ? ` (${s.hits[0].natalHouse}${ordSuffix(s.hits[0].natalHouse)} house)` : ''} by ${s.hits[0].aspect}, orb ${s.hits[0].orb}°: ${pairLived(s.name, s.hits[0].natal, s.hits[0].aspect)}.`
+        : '';
+      const advice = stationAdvice(s.name, s.direction);
+      yourEntries.push(
+        `${s.name} stationing ${s.direction} at ${s.pos} sits in ${houseLabel}.${rulerLine}${hitLine} ${advice}`
+      );
+    }
+
+    // Personal transits sorted tightest first (already filtered <2°)
+    for (const a of personalTransits) {
+      const tHouse = (a as any).transitHouse as number | null;
+      const nHouse = (a as any).natalHouse as number | null;
+      const tHouseLabel = tHouse ? `your ${tHouse}${ordSuffix(tHouse)} house (${HOUSE_THEME[tHouse]})` : '';
+      const nHouseLabel = nHouse ? `${nHouse}${ordSuffix(nHouse)} house (${HOUSE_THEME[nHouse]})` : '';
+      const ruler = TRADITIONAL_RULER[a.transitSign];
+      const rulerNatalHouse = ruler ? getNatalHouseOf(ruler, natalChart) : null;
+      const rulerSign = ruler ? (natalChart.planets[ruler as keyof typeof natalChart.planets] as any)?.sign : null;
+      const rulerLine = ruler && rulerNatalHouse
+        ? ` The ruler of ${a.transitSign} is ${ruler}, sitting natally in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this expresses as ${rulerExpression(ruler, rulerNatalHouse)}.`
+        : '';
+      const advice = transitAdvice(a.transitPlanet, a.aspect);
+      yourEntries.push(
+        `${a.transitPlanet} at ${a.transitDegree}° ${a.transitSign} in ${tHouseLabel} ${a.aspect}s your natal ${a.natalPlanet} in ${a.natalSign}${nHouseLabel ? ' in your ' + nHouseLabel : ''} (orb ${a.orb}°): ${pairLived(a.transitPlanet, a.natalPlanet, a.aspect)}.${rulerLine} ${advice}`
+      );
+    }
+
+    if (yourEntries.length === 0) {
+      lines.push(`No tight transits on your chart today (under 2° orb). The collective weather above is the main story.`);
+      lines.push('');
+    } else {
+      yourEntries.forEach(e => { lines.push(e); lines.push(''); });
+    }
+  }
+
+  // ── SECTION 3: TODAY'S DECODER ────────────────────────────────────
+  lines.push("TODAY'S DECODER");
+  lines.push('─'.repeat(50));
+
+  const decoder: string[] = [];
+
+  // Stations → personalized decoder line
+  for (const s of stations) {
+    if (s.hits.length && natalChart) {
+      const h = s.hits[0];
+      decoder.push(`Foggy, off, or oddly tired for no clear reason → ${s.name} stationing ${s.direction}, sitting on your ${h.natal}.`);
+    } else {
+      decoder.push(`A collective shift around ${stationTheme(s.name)} → ${s.name} stationing ${s.direction} at ${s.pos}.`);
+    }
+  }
+
+  // Tight sky aspect lines
+  for (const a of tight.slice(0, 2)) {
+    decoder.push(`${aspectNoticeable(cap(a.planet1), cap(a.planet2), a.type)} → ${cap(a.planet1)} ${a.type} ${cap(a.planet2)}.`);
+  }
+
+  // Personal transit lines
+  for (const a of personalTransits.slice(0, 3)) {
+    decoder.push(`${personalNoticeable(a.transitPlanet, a.natalPlanet, a.aspect)} → transiting ${a.transitPlanet} ${a.aspect} your ${a.natalPlanet}.`);
+  }
+
+  // VOC line
+  if (voc.isVOC && voc.start && voc.end) {
+    const startH = voc.start.getHours();
+    if (startH >= 6 && startH < 24) {
+      decoder.push(`Plans made after ${fmtTime(voc.start)} fall sideways or fizzle → Moon void of course until ${fmtTime(voc.end)}, don't start anything new.`);
+    }
+  }
+
+  // Mars-in-Aries shortcut if present
+  if ((planets.mars as any)?.signName === 'Aries') {
+    decoder.push(`Aggressive drivers, short fuses, people acting before thinking → Mars in Aries.`);
+  }
+
+  decoder.slice(0, 8).forEach(d => lines.push(d));
+
+  // Subject
+  const subject = `${anchor.toLocaleDateString('en-US', { weekday: 'long' })}, ${anchor.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} · ${moonSign} Moon · ${dayPunch(stations, voc, tight, moonSign)}`;
+
   return { subject, body: lines.join('\n') };
+}
+
+// ─── Helpers for the new 3-section format ─────────────────────────────
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const TRADITIONAL_RULER: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+};
+
+function getNatalHouseOf(planet: string, chart: NatalChart): number | null {
+  const p = chart.planets[planet as keyof typeof chart.planets] as any;
+  if (!p?.sign || !chart.houseCusps) return null;
+  const lon = signDegreesToLongitude(p.sign, p.degree, p.minutes || 0);
+  return getHouseForLongitude(lon, chart);
+}
+
+function rulerExpression(ruler: string, house: number): string {
+  const fuel: Record<string, string> = {
+    Sun: 'visibility and identity',
+    Moon: 'mood and instinct',
+    Mercury: 'words, schedule, and thinking',
+    Venus: 'money, taste, and relationships',
+    Mars: 'drive, action, and friction',
+    Jupiter: 'expansion and beliefs',
+    Saturn: 'structure, duty, and limits',
+  };
+  return `${fuel[ruler] || 'energy'} routed through ${HOUSE_THEME[house] || 'that area'}`;
+}
+
+function signCollective(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: 'Collectively people are restless, blunt, and quick to react',
+    Taurus: 'Collectively the mood is slow, body-based, comfort-seeking',
+    Gemini: 'Collectively people are talkative, scattered, info-hungry',
+    Cancer: 'Collectively the mood is tender, family-pulled, moody',
+    Leo: 'Collectively people want warmth, attention, and a little drama',
+    Virgo: 'Collectively the mood is tidy, useful, fix-it focused',
+    Libra: 'Collectively people are relational, fair-minded, smoothing things over',
+    Scorpio: 'Collectively the mood is intense, private, get-to-the-bottom-of-it',
+    Sagittarius: 'Collectively people want out, want big, want freedom',
+    Capricorn: 'Collectively the mood is serious, grown-up, get-things-done',
+    Aquarius: 'Collectively people are detached, future-facing, doing it differently',
+    Pisces: 'Collectively the mood is dreamy, porous, easily moved',
+  };
+  return map[sign] || 'A steady ordinary mood';
+}
+
+function sunSeasonBackdrop(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: 'starting-fresh, push-forward', Taurus: 'slow-down, build-and-enjoy',
+    Gemini: 'curious, social, fast-moving', Cancer: 'home, family, comfort-first',
+    Leo: 'shine, celebrate, warm-hearted', Virgo: 'tidy-up, refine, return-to-routines',
+    Libra: 'relationship, balance, beauty', Scorpio: 'intensity, depth, transformation',
+    Sagittarius: 'big-picture, travel, meaning', Capricorn: 'work, structure, ambition',
+    Aquarius: 'community, vision, reinvention', Pisces: 'rest, dream, dissolve',
+  };
+  return map[sign] || 'steady';
+}
+
+function pairLived(p1: string, p2: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  const combo = `${p1}-${p2}`.toLowerCase();
+  // A few high-signal combos
+  const map: Record<string, Record<AspectTone, string>> = {
+    'mars-venus': { tense: 'attraction tangled with conflict, hot-and-cold dynamics', easy: 'flirty, magnetic, easy chemistry', meeting: 'desire and money concentrate' },
+    'sun-saturn': { tense: 'feels heavy, judged, or slowed down', easy: 'steady focus, you can commit', meeting: 'reality check on identity' },
+    'moon-neptune': { tense: 'emotional fog, can\'t locate the feeling', easy: 'soft, intuitive, kind', meeting: 'feelings blur into imagination' },
+    'mercury-uranus': { tense: 'jumpy thoughts, surprise news, tech glitches', easy: 'lightbulb ideas, quick insight', meeting: 'sudden new thinking' },
+    'venus-pluto': { tense: 'obsessive love or money pressure', easy: 'deep desire, magnetic pull', meeting: 'a relationship or value gets very loaded' },
+    'mars-pluto': { tense: 'power struggles, road rage, force', easy: 'concentrated drive', meeting: 'an intense push' },
+  };
+  if (map[combo]) return map[combo][tone];
+  // Generic fallback
+  if (tone === 'tense') return `friction between ${planetVoice(p1)} and ${planetVoice(p2)}`;
+  if (tone === 'easy') return `flow between ${planetVoice(p1)} and ${planetVoice(p2)}`;
+  return `${planetVoice(p1)} meets ${planetVoice(p2)}`;
+}
+
+function planetVoice(p: string): string {
+  const v: Record<string, string> = {
+    Sun: 'identity', Moon: 'feelings', Mercury: 'thinking', Venus: 'love and money',
+    Mars: 'drive', Jupiter: 'expansion', Saturn: 'structure', Uranus: 'disruption',
+    Neptune: 'fog and dreams', Pluto: 'power', NorthNode: 'growth', SouthNode: 'old patterns',
+    Chiron: 'the old wound', Ascendant: 'how you show up', Midheaven: 'your public face',
+  };
+  return v[p] || p;
+}
+
+function transitAdvice(transit: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  if (tone === 'tense') return `Do: name what's actually being asked. Don't: react fast or pick the fight.`;
+  if (tone === 'easy') return `Do: send the message, ask, or start. Don't: wait for it to come find you.`;
+  return `Do: notice what gets switched on and use it. Don't: ignore the signal.`;
+}
+
+function stationAdvice(planet: string, direction: 'retrograde' | 'direct'): string {
+  if (direction === 'retrograde') return `Do: review, revisit, audit. Don't: launch or commit.`;
+  return `Do: move the thing forward. Don't: keep waiting.`;
+}
+
+function stationTheme(planet: string): string {
+  const m: Record<string, string> = {
+    Mercury: 'plans and communication', Venus: 'money and love', Mars: 'drive and action',
+    Jupiter: 'growth and beliefs', Saturn: 'structure and limits', Uranus: 'sudden change',
+    Neptune: 'dreams and fog', Pluto: 'power and control',
+  };
+  return m[planet] || 'energy';
+}
+
+function aspectNoticeable(p1: string, p2: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  if (tone === 'tense') return `Tension, short tempers, or things scraping in the world`;
+  if (tone === 'easy') return `Doors opening, easier conversations, smoother moments`;
+  return `A loud combined signal of ${planetVoice(p1)} and ${planetVoice(p2)}`;
+}
+
+function personalNoticeable(transit: string, natal: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  const part = NATAL_MEANING[natal] || `your ${natal}`;
+  if (tone === 'tense') return `Friction or restlessness in ${part}`;
+  if (tone === 'easy') return `An opening in ${part}`;
+  return `Your ${part} switches on more than usual`;
+}
+
+function dayPunch(stations: any[], voc: any, tight: any[], moonSign: string): string {
+  if (stations.length) return `${stations[0].name} stations ${stations[0].direction}`;
+  if (tight.length) return `${cap(tight[0].planet1)} ${tight[0].type} ${cap(tight[0].planet2)}`;
+  if (voc?.isVOC) return `Void Moon, hold the small stuff`;
+  return `${moonSign} Moon mood`;
 }
 
 // ─── Tiny flavor helpers (kept short, felt-sense) ─────────────────────
