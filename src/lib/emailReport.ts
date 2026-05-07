@@ -69,19 +69,85 @@ function planetLine(name: string, p: any, retro: boolean): string {
   return `  ${glyph}  ${name.padEnd(8)} ${pos.padStart(7)}  ${p.signName}${tag}`;
 }
 
-// "How does it feel" one-liners by aspect (kept short, felt-sense voice)
-function feltLine(transitPlanet: string, natalPlanet: string, aspect: string): string {
-  const t = transitPlanet, n = natalPlanet;
-  const map: Record<string, string> = {
-    conjunction: `today's ${t} sits right on top of your natal ${n} — that part of you gets switched on.`,
-    opposition: `today's ${t} pulls against your natal ${n} — expect a tug-of-war you can feel.`,
-    square: `today's ${t} grinds on your natal ${n} — a friction you'll want to act on, not stew in.`,
-    trine: `today's ${t} flows with your natal ${n} — things in that area move easily if you start them.`,
-    sextile: `today's ${t} offers a hand to your natal ${n} — small openings if you reach for them.`,
-    quincunx: `today's ${t} is awkward with your natal ${n} — a small adjustment, not a crisis.`,
-    semisextile: `today's ${t} hums quietly next to your natal ${n} — a low background note.`,
-  };
-  return map[aspect] || `${t} ${aspect} natal ${n}.`;
+// Concrete behavioral copy per transit→natal pair, modulated by aspect tone.
+// Voice: tell the reader what they will FEEL or DO today. No jargon, no
+// abstract verbs ("dissolves edges"), no astrology school terms.
+
+type AspectTone = 'easy' | 'tense' | 'meeting';
+function toneOf(aspect: string): AspectTone {
+  if (aspect === 'trine' || aspect === 'sextile') return 'easy';
+  if (aspect === 'square' || aspect === 'opposition' || aspect === 'quincunx') return 'tense';
+  return 'meeting'; // conjunction & semisextile
+}
+
+// Plain-English meaning of each natal point (the "what part of you")
+const NATAL_MEANING: Record<string, string> = {
+  Sun: 'core identity, the "this is me" part',
+  Moon: 'feelings, gut, what soothes you',
+  Mercury: 'thinking and talking',
+  Venus: 'love, money, taste, what you find pleasant',
+  Mars: 'drive, anger, sex, what you go after',
+  Jupiter: 'beliefs, hope, the part that wants more',
+  Saturn: 'discipline, fear, the rules you live by',
+  Uranus: 'where you break the mold',
+  Neptune: 'dreams, imagination, what blurs',
+  Pluto: 'power, control, what you obsess over',
+  Ascendant: 'how you show up to people',
+  Midheaven: 'career, public reputation',
+  NorthNode: 'growth direction',
+  SouthNode: 'old patterns you fall back on',
+  Chiron: 'tender spot, the old wound',
+};
+
+// Plain-English meaning of each fast transit body (the "what gets activated")
+const TRANSIT_FLAVOR: Record<string, { easy: string; tense: string; meeting: string }> = {
+  Moon: {
+    easy: 'a soft mood lands on',
+    tense: 'a touchy mood scrapes against',
+    meeting: 'today\'s mood lands right on',
+  },
+  Sun: {
+    easy: 'today\'s spotlight warms up',
+    tense: 'today\'s spotlight clashes with',
+    meeting: 'today\'s spotlight sits on',
+  },
+  Mercury: {
+    easy: 'a useful conversation or message moves through',
+    tense: 'a misfired message or argument pokes at',
+    meeting: 'a conversation or message lands directly on',
+  },
+  Venus: {
+    easy: 'a sweet or pleasant moment touches',
+    tense: 'a sticky relationship or money moment rubs',
+    meeting: 'a love, money, or taste moment lands on',
+  },
+  Mars: {
+    easy: 'a clean push of energy moves through',
+    tense: 'a flash of anger, urgency or push lands on',
+    meeting: 'a strong drive or impulse fires up',
+  },
+};
+
+function pairCopy(transit: string, natal: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  const meaning = NATAL_MEANING[natal] || `your natal ${natal}`;
+  const flavor = TRANSIT_FLAVOR[transit];
+  if (!flavor) return `${transit} contacts your natal ${natal} (${meaning}).`;
+  const opener = flavor[tone];
+  // Aspect-specific behavioral tail
+  const tail = (() => {
+    switch (aspect) {
+      case 'conjunction': return `That part of you gets switched on, you'll notice it more than usual.`;
+      case 'opposition': return `Expect a back-and-forth with someone (or with yourself) about it. Don't pick the fight, name what's actually being asked.`;
+      case 'square': return `Use the friction. Do one concrete thing in that area instead of stewing.`;
+      case 'trine': return `Door is open in that area. Start the thing, ask for the thing, send the thing.`;
+      case 'sextile': return `Small opening, you have to lean in. It won't come find you.`;
+      case 'quincunx': return `Something in that area needs a small adjustment, not a big move.`;
+      case 'semisextile': return `Quiet background note in that area today.`;
+      default: return '';
+    }
+  })();
+  return `${opener} your ${meaning}. ${tail}`;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────
