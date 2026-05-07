@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
+import { EmailReportModal } from './EmailReportModal';
 import { ChartSelector } from './ChartSelector';
 import { 
   DayData, 
