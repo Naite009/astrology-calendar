@@ -25,6 +25,7 @@ import {
 import * as Astronomy from 'astronomy-engine';
 import { calculateTransitAspects, type TransitAspect } from './transitAspects';
 import { getVOCMoonDetails } from './voidOfCourseMoon';
+import { getHouseForLongitude, signDegreesToLongitude } from './houseCalculations';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 // ─── Constants ────────────────────────────────────────────────────────
