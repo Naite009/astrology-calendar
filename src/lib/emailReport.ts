@@ -560,11 +560,13 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
   // Stations first — personalized if hits, collective otherwise
   for (const s of stations) {
+    const dwhen = stationWhen(s.exact, anchor);
+    const dverb = dwhen.kind === 'past' ? `stationed ${s.direction} ${dwhen.label}` : `stationing ${s.direction}`;
     if (s.hits.length && natalChart) {
       const h = s.hits[0];
-      decoder.push(`${decoderNotice(s.name, h.natal, h.aspect, true)} → ${s.name} stationing ${s.direction} on your ${h.natal}.`);
+      decoder.push(`${decoderNotice(s.name, h.natal, h.aspect, true)} → ${s.name} ${dverb} on your ${h.natal}.`);
     } else {
-      decoder.push(`${decoderStationCollective(s.name)} → ${s.name} stationing ${s.direction} at ${s.pos}.`);
+      decoder.push(`${decoderStationCollective(s.name)} → ${s.name} ${dverb} at ${s.pos}.`);
     }
   }
 
