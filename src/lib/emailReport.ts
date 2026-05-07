@@ -414,107 +414,106 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
   // ─── BUILD BODY ───────────────────────────────────────────────────
   const lines: string[] = [];
+  const DIV = '────────────────────────';
 
   const sunSign = (planets.sun as any).signName;
   const moonSign = (planets.moon as any).signName;
   const sunPos = `${(planets.sun as any).degree}° ${sunSign}`;
   const moonPos = `${(planets.moon as any).degree}° ${moonSign}`;
 
-  if (recipientName) {
-    lines.push(`Hi ${recipientName},`);
-    lines.push('');
-  }
-
   // ── SECTION 1: THE SKY TODAY ──────────────────────────────────────
   lines.push('THE SKY TODAY');
-  lines.push('─'.repeat(50));
+  lines.push(DIV);
 
-  const sky: string[] = [];
-
-  // Moon line
-  let moonLine = `Moon is in ${moonSign} (${moonPhase.phaseName}, ${moonPos}). ${signCollective(moonSign)}.`;
+  // Moon line — one sentence
+  let moonLine = `Moon in ${moonSign} (${moonPhase.phaseName}, ${moonPos}). ${signCollective(moonSign)}.`;
   if (voc.isVOC && voc.start && voc.end) {
     const startH = voc.start.getHours();
     if (startH >= 6 && startH < 24) {
-      const lastA = voc.lastAspect ? ` after Moon ${voc.lastAspect.aspectName} ${voc.lastAspect.planet}` : '';
-      moonLine += ` Void of course from ${fmtTime(voc.start)} to ${fmtTime(voc.end)}${lastA}, drifting time.`;
+      moonLine += ` Void of course from ${fmtTime(voc.start)} to ${fmtTime(voc.end)} — drifting time, hold the small stuff.`;
     }
   }
-  sky.push(moonLine);
+  lines.push(moonLine);
+  lines.push('');
 
-  // Stations
+  // Stations — one sentence each, collective meaning
   for (const s of stations) {
-    const exactStr = s.exact ? ` Exact ${fmtStationDateTime(s.exact)}.` : '';
-    sky.push(`${s.name} stations ${s.direction} at ${s.pos}.${exactStr} ${s.meaning}`);
+    lines.push(`${s.name} stations ${s.direction} at ${s.pos} today. ${s.meaning}`);
+    lines.push('');
   }
 
-  // Tightest sky-to-sky aspects under 2°
+  // Tightest 2 sky-to-sky aspects under 2°
   const tight = [...aspects]
     .filter(a => parseFloat(a.orb) < 2)
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .slice(0, 3);
-  if (tight.length) {
-    const tightStrs = tight.map(a => {
-      const p1 = cap(a.planet1);
-      const p2 = cap(a.planet2);
-      const s1 = (planets as any)[a.planet1.toLowerCase()]?.signName || '';
-      const s2 = (planets as any)[a.planet2.toLowerCase()]?.signName || '';
-      return `${p1} in ${s1} ${a.type} ${p2} in ${s2} (${a.orb}°): ${pairLived(p1, p2, a.type)}`;
-    });
-    sky.push(tightStrs.join(' '));
+    .slice(0, 2);
+  for (const a of tight) {
+    const p1 = cap(a.planet1);
+    const p2 = cap(a.planet2);
+    const s1 = (planets as any)[a.planet1.toLowerCase()]?.signName || '';
+    const s2 = (planets as any)[a.planet2.toLowerCase()]?.signName || '';
+    lines.push(`${p1} in ${s1} ${aspectVerb(a.type)} ${p2} in ${s2} — ${pairLived(p1, p2, a.type)}.`);
+    lines.push('');
   }
 
   // Sun / season backdrop
-  sky.push(`Sun at ${sunPos} sets a ${sunSeasonBackdrop(sunSign)} backdrop.`);
-
-  sky.forEach(p => { lines.push(p); lines.push(''); });
+  lines.push(`Sun at ${sunPos} sets a ${sunSeasonBackdrop(sunSign)} backdrop.`);
+  lines.push('');
 
   // ── SECTION 2: YOUR CHART ─────────────────────────────────────────
   if (natalChart) {
+    lines.push(DIV);
     lines.push(`YOUR CHART${recipientName ? ` — ${recipientName}` : ''}`);
-    lines.push('─'.repeat(50));
+    lines.push(DIV);
 
     const yourEntries: string[] = [];
 
     // Stations land first (always included regardless of orb)
     for (const s of stations) {
-      const houseLabel = s.natalHouse ? `your ${s.natalHouse}${ordSuffix(s.natalHouse)} house (${HOUSE_THEME[s.natalHouse]})` : 'your chart';
+      const houseLabel = s.natalHouse
+        ? `your ${s.natalHouse}${ordSuffix(s.natalHouse)} house of ${HOUSE_THEME[s.natalHouse]}`
+        : 'your chart';
       const ruler = TRADITIONAL_RULER[s.sign];
       const rulerNatalHouse = ruler && natalChart.planets[ruler as keyof typeof natalChart.planets]
         ? getNatalHouseOf(ruler, natalChart) : null;
       const rulerSign = ruler ? (natalChart.planets[ruler as keyof typeof natalChart.planets] as any)?.sign : null;
-      const rulerLine = ruler && rulerNatalHouse
-        ? ` The ruler of that house is ${ruler} in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this lands as ${rulerExpression(ruler, rulerNatalHouse)}.`
-        : '';
-      const hitLine = s.hits.length
-        ? ` It also touches your natal ${s.hits[0].natal} in ${s.hits[0].natalSign}${s.hits[0].natalHouse ? ` (${s.hits[0].natalHouse}${ordSuffix(s.hits[0].natalHouse)} house)` : ''} by ${s.hits[0].aspect}, orb ${s.hits[0].orb}°: ${pairLived(s.name, s.hits[0].natal, s.hits[0].aspect)}.`
-        : '';
-      const advice = stationAdvice(s.name, s.direction);
-      yourEntries.push(
-        `${s.name} stationing ${s.direction} at ${s.pos} sits in ${houseLabel}.${rulerLine}${hitLine} ${advice}`
-      );
+
+      let entry = `${s.name} stationing ${s.direction} at ${s.pos} sits in ${houseLabel}`;
+      if (s.hits.length) {
+        const h = s.hits[0];
+        const hHouseLabel = h.natalHouse ? ` in your ${h.natalHouse}${ordSuffix(h.natalHouse)} house of ${HOUSE_THEME[h.natalHouse]}` : '';
+        entry += `, ${aspectVerb(h.aspect)} your natal ${h.natal} in ${h.natalSign}${hHouseLabel}`;
+      }
+      entry += '.';
+      if (ruler && rulerNatalHouse && rulerSign) {
+        entry += ` The ruler of that house is ${ruler} sitting natally in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this lands as ${rulerExpression(ruler, rulerNatalHouse)}.`;
+      }
+      const adv = concreteAdvice(s.name, s.hits[0]?.natal || '', s.hits[0]?.aspect || 'station');
+      entry += ` Do: ${adv.do}. Don't: ${adv.dont}.`;
+      yourEntries.push(entry);
     }
 
     // Personal transits sorted tightest first (already filtered <2°)
     for (const a of personalTransits) {
       const tHouse = (a as any).transitHouse as number | null;
       const nHouse = (a as any).natalHouse as number | null;
-      const tHouseLabel = tHouse ? `your ${tHouse}${ordSuffix(tHouse)} house (${HOUSE_THEME[tHouse]})` : '';
-      const nHouseLabel = nHouse ? `${nHouse}${ordSuffix(nHouse)} house (${HOUSE_THEME[nHouse]})` : '';
+      const tHouseLabel = tHouse ? `your ${tHouse}${ordSuffix(tHouse)} house of ${HOUSE_THEME[tHouse]}` : 'your chart';
+      const nHouseLabel = nHouse ? ` in your ${nHouse}${ordSuffix(nHouse)} house of ${HOUSE_THEME[nHouse]}` : '';
       const ruler = TRADITIONAL_RULER[a.transitSign];
       const rulerNatalHouse = ruler ? getNatalHouseOf(ruler, natalChart) : null;
       const rulerSign = ruler ? (natalChart.planets[ruler as keyof typeof natalChart.planets] as any)?.sign : null;
-      const rulerLine = ruler && rulerNatalHouse
-        ? ` The ruler of ${a.transitSign} is ${ruler}, sitting natally in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this expresses as ${rulerExpression(ruler, rulerNatalHouse)}.`
-        : '';
-      const advice = transitAdvice(a.transitPlanet, a.aspect);
-      yourEntries.push(
-        `${a.transitPlanet} at ${a.transitDegree}° ${a.transitSign} in ${tHouseLabel} ${a.aspect}s your natal ${a.natalPlanet} in ${a.natalSign}${nHouseLabel ? ' in your ' + nHouseLabel : ''} (orb ${a.orb}°): ${pairLived(a.transitPlanet, a.natalPlanet, a.aspect)}.${rulerLine} ${advice}`
-      );
+
+      let entry = `${a.transitPlanet} at ${a.transitDegree}° ${a.transitSign} moving through ${tHouseLabel} ${aspectVerb(a.aspect)} your natal ${a.natalPlanet} in ${a.natalSign}${nHouseLabel}.`;
+      if (ruler && rulerNatalHouse && rulerSign) {
+        entry += ` The ruler of that transit house is ${ruler}, sitting natally in your ${rulerNatalHouse}${ordSuffix(rulerNatalHouse)} house in ${rulerSign}, so this expresses as ${rulerExpression(ruler, rulerNatalHouse)}.`;
+      }
+      const adv = concreteAdvice(a.transitPlanet, a.natalPlanet, a.aspect);
+      entry += ` Do: ${adv.do}. Don't: ${adv.dont}.`;
+      yourEntries.push(entry);
     }
 
     if (yourEntries.length === 0) {
-      lines.push(`No tight transits on your chart today (under 2° orb). The collective weather above is the main story.`);
+      lines.push(`No tight personal hits today — the collective weather above is the story.`);
       lines.push('');
     } else {
       yourEntries.forEach(e => { lines.push(e); lines.push(''); });
@@ -522,32 +521,40 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   }
 
   // ── SECTION 3: TODAY'S DECODER ────────────────────────────────────
+  lines.push(DIV);
   lines.push("TODAY'S DECODER");
-  lines.push('─'.repeat(50));
+  lines.push(DIV);
 
   const decoder: string[] = [];
 
-  // Stations → personalized decoder line
+  // Stations first — personalized if hits, collective otherwise
   for (const s of stations) {
     if (s.hits.length && natalChart) {
       const h = s.hits[0];
-      decoder.push(`Foggy, off, or oddly tired for no clear reason → ${s.name} stationing ${s.direction}, sitting on your ${h.natal}.`);
+      decoder.push(`${decoderNotice(s.name, h.natal, h.aspect, true)} → ${s.name} stationing ${s.direction} on your ${h.natal}.`);
     } else {
-      decoder.push(`A collective shift around ${stationTheme(s.name)} → ${s.name} stationing ${s.direction} at ${s.pos}.`);
+      decoder.push(`${decoderStationCollective(s.name)} → ${s.name} stationing ${s.direction} at ${s.pos}.`);
     }
   }
 
+  // Personal transit lines (tightest first)
+  for (const a of personalTransits.slice(0, 4)) {
+    decoder.push(`${decoderNotice(a.transitPlanet, a.natalPlanet, a.aspect, true)} → transiting ${a.transitPlanet} ${aspectVerb(a.aspect)} your ${a.natalPlanet}.`);
+  }
+
   // Tight sky aspect lines
-  for (const a of tight.slice(0, 2)) {
-    decoder.push(`${aspectNoticeable(cap(a.planet1), cap(a.planet2), a.type)} → ${cap(a.planet1)} ${a.type} ${cap(a.planet2)}.`);
+  for (const a of tight) {
+    const p1 = cap(a.planet1);
+    const p2 = cap(a.planet2);
+    decoder.push(`${decoderNotice(p1, p2, a.type, false)} → ${p1} ${aspectVerb(a.type)} ${p2}.`);
   }
 
-  // Personal transit lines
-  for (const a of personalTransits.slice(0, 3)) {
-    decoder.push(`${personalNoticeable(a.transitPlanet, a.natalPlanet, a.aspect)} → transiting ${a.transitPlanet} ${a.aspect} your ${a.natalPlanet}.`);
+  // Mars-in-Aries shortcut if present and not already covered
+  if ((planets.mars as any)?.signName === 'Aries' && !decoder.some(d => d.includes('Mars'))) {
+    decoder.push(`Aggressive drivers, short fuses, people acting before thinking → Mars in Aries.`);
   }
 
-  // VOC line
+  // VOC line — last
   if (voc.isVOC && voc.start && voc.end) {
     const startH = voc.start.getHours();
     if (startH >= 6 && startH < 24) {
@@ -555,17 +562,25 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     }
   }
 
-  // Mars-in-Aries shortcut if present
-  if ((planets.mars as any)?.signName === 'Aries') {
-    decoder.push(`Aggressive drivers, short fuses, people acting before thinking → Mars in Aries.`);
-  }
-
-  decoder.slice(0, 8).forEach(d => lines.push(d));
+  // Cap at 8, dedupe
+  const seen = new Set<string>();
+  const decoderFinal = decoder.filter(d => {
+    const key = d.split('→')[1]?.trim() || d;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 8);
+  decoderFinal.forEach(d => lines.push(d));
 
   // Subject
-  const subject = `${anchor.toLocaleDateString('en-US', { weekday: 'long' })}, ${anchor.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} · ${moonSign} Moon · ${dayPunch(stations, voc, tight, moonSign)}`;
+  const subject = `${anchor.toLocaleDateString('en-US', { weekday: 'long' })}, ${anchor.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} · ${moonSign} Moon · ${dayPunch(stations, voc, tight, personalTransits, moonSign)}`;
 
-  return { subject, body: lines.join('\n') };
+  // Final scrubbing: banned words and 400-word cap
+  let body = lines.join('\n');
+  body = scrubBanned(body);
+  body = capWords(body, 400);
+
+  return { subject, body };
 }
 
 // ─── Helpers for the new 3-section format ─────────────────────────────
@@ -693,11 +708,137 @@ function personalNoticeable(transit: string, natal: string, aspect: string): str
   return `Your ${part} switches on more than usual`;
 }
 
-function dayPunch(stations: any[], voc: any, tight: any[], moonSign: string): string {
-  if (stations.length) return `${stations[0].name} stations ${stations[0].direction}`;
-  if (tight.length) return `${cap(tight[0].planet1)} ${tight[0].type} ${cap(tight[0].planet2)}`;
+function dayPunch(stations: any[], voc: any, tight: any[], personals: any[], moonSign: string): string {
+  if (stations.length) {
+    const s = stations[0];
+    return `${s.name} stations ${s.direction} at ${s.pos}`;
+  }
+  const veryTight = tight.find(a => parseFloat(a.orb) < 1);
+  if (veryTight) return `${cap(veryTight.planet1)} ${aspectVerb(veryTight.type)} ${cap(veryTight.planet2)}`;
+  if (personals && personals.length) {
+    const p = personals[0];
+    return `${p.transitPlanet} on your ${p.natalPlanet}`;
+  }
   if (voc?.isVOC) return `Void Moon, hold the small stuff`;
-  return `${moonSign} Moon mood`;
+  return `${moonSign} Moon, ${signCollective(moonSign).toLowerCase().replace('collectively ', '')}`;
+}
+
+// ─── New helpers for 3-section glance ─────────────────────────────────
+
+function aspectVerb(aspect: string): string {
+  const m: Record<string, string> = {
+    conjunction: 'joins', opposition: 'opposes', trine: 'trines',
+    square: 'squares', sextile: 'sextiles', quincunx: 'awkwardly tilts at',
+    semisextile: 'brushes', station: 'lands on',
+  };
+  return m[aspect] || aspect;
+}
+
+function concreteAdvice(transit: string, natal: string, aspect: string): { do: string; dont: string } {
+  const key = `${transit}-${natal}`.toLowerCase();
+  const map: Record<string, { do: string; dont: string }> = {
+    'neptune-moon': { do: 'rest, audit, review what you started in the last six months', dont: 'launch anything new, sign anything, or trust your read on people today' },
+    'neptune-sun': { do: 'soften the schedule, let things blur a little', dont: 'force a decision about who you are right now' },
+    'neptune-venus': { do: 'romanticize quietly, make art, dream', dont: 'commit money or confess love today' },
+    'uranus-venus': { do: 'let what you\'ve outgrown go', dont: 'blow up the relationship or the budget today' },
+    'uranus-jupiter': { do: 'stay open to a surprise opportunity', dont: 'overcommit on the news of the moment' },
+    'uranus-mars': { do: 'move your body, channel the jolt', dont: 'pick a fight or speed' },
+    'saturn-mercury': { do: 'say the hard true thing slowly', dont: 'agree to anything you can\'t deliver' },
+    'saturn-moon': { do: 'name the heavy feeling and let it pass', dont: 'isolate or doom-spiral' },
+    'pluto-venus': { do: 'tell the truth about what you actually want', dont: 'manipulate or test someone' },
+    'pluto-sun': { do: 'sit with the power question honestly', dont: 'give your power away to keep peace' },
+    'jupiter-sun': { do: 'say yes to the bigger room', dont: 'over-promise' },
+    'jupiter-venus': { do: 'enjoy something generously', dont: 'overspend on the high' },
+    'mars-mars': { do: 'use the surge — workout, deep work, hard task', dont: 'react fast in conversation' },
+  };
+  if (map[key]) return map[key];
+  // Tone fallback
+  const tone = toneOf(aspect);
+  if (tone === 'tense') return { do: 'name what\'s actually being asked', dont: 'react fast or pick the fight' };
+  if (tone === 'easy') return { do: 'send the message, ask, or start the thing', dont: 'wait for it to come find you' };
+  if (aspect === 'station') return { do: 'review and audit', dont: 'launch or commit' };
+  return { do: 'notice what gets switched on and use it', dont: 'ignore the signal' };
+}
+
+function decoderNotice(p1: string, p2: string, aspect: string, personal: boolean): string {
+  const key = `${p1}-${p2}`.toLowerCase();
+  const personalMap: Record<string, string> = {
+    'neptune-moon': 'Foggy, exhausted, or emotionally off for no clear reason',
+    'neptune-sun': 'Unsure who you are today, edges blurred',
+    'neptune-venus': 'Romantic haze, can\'t read someone clearly',
+    'uranus-venus': 'Restless about money or a relationship, urge to blow something up',
+    'uranus-jupiter': 'Unexpected news about shared money, debt, or a financial agreement',
+    'uranus-mars': 'Jumpy, accident-prone, sudden physical urgency',
+    'saturn-mercury': 'Conversations feel heavier, words carry more weight',
+    'saturn-moon': 'Mood is heavy, lonely, or older than the day warrants',
+    'pluto-venus': 'A relationship or value feels loaded, intense, or obsessive',
+    'pluto-sun': 'A power dynamic surfaces, someone is testing you',
+    'jupiter-sun': 'A doorway opens, things expand around your name',
+    'jupiter-venus': 'Generosity, money in, easy pleasure',
+  };
+  const collectiveMap: Record<string, string> = {
+    'mars-saturn': 'Things feel blocked, drive meets a wall',
+    'mars-pluto': 'Power struggles, road rage, force in the air',
+    'venus-jupiter': 'People are unusually generous, easy money or affection',
+    'mercury-uranus': 'Surprise news, tech glitches, jumpy thoughts',
+    'sun-saturn': 'The day feels heavier, slower, more weight on what you do',
+    'moon-neptune': 'Collective fog, can\'t locate the feeling',
+  };
+  if (personal && personalMap[key]) return personalMap[key];
+  if (!personal && collectiveMap[key]) return collectiveMap[key];
+  // Tone fallback
+  const tone = toneOf(aspect);
+  if (personal) {
+    const part = NATAL_MEANING[p2] || `your ${p2}`;
+    if (tone === 'tense') return `Friction or restlessness in ${part}`;
+    if (tone === 'easy') return `An opening in ${part}`;
+    return `Your ${part} switches on more than usual`;
+  }
+  if (tone === 'tense') return `Tension and short tempers in the day`;
+  if (tone === 'easy') return `Doors opening, easier conversations`;
+  return `A loud combined signal of ${planetVoice(p1)} and ${planetVoice(p2)}`;
+}
+
+function decoderStationCollective(planet: string): string {
+  const m: Record<string, string> = {
+    Mercury: 'Plans, messages, and tech glitch or get re-read',
+    Venus: 'Old loves, old wants, old money questions resurface',
+    Mars: 'Drive stalls or fires up depending on direction',
+    Jupiter: 'A bigger plan reverses or opens up',
+    Saturn: 'A structure loosens or solidifies',
+    Uranus: 'Sudden change quiets or speeds up',
+    Neptune: 'Things you can\'t quite read or trust today, perception is unreliable',
+    Pluto: 'Buried power dynamics surface or go underground',
+  };
+  return m[planet] || 'A collective shift';
+}
+
+function scrubBanned(text: string): string {
+  return text
+    .replace(/\bmetabolize\w*/gi, 'process')
+    .replace(/\barchetypal\b/gi, 'classic')
+    .replace(/\bportal\b/gi, 'opening')
+    .replace(/\bliminal\b/gi, 'in-between')
+    .replace(/\bintegrate\b/gi, 'absorb')
+    .replace(/\bwound (you|me|us|him|her|them)\b/gi, 'tender spot in $1');
+}
+
+function capWords(text: string, max: number): string {
+  const words = text.split(/\s+/);
+  if (words.length <= max) return text;
+  // Trim from end at line boundaries until under cap
+  const lines = text.split('\n');
+  while (lines.join(' ').split(/\s+/).filter(Boolean).length > max && lines.length > 6) {
+    // Drop trailing non-empty line that isn't a divider/header
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i].trim();
+      if (l && !l.startsWith('─') && l !== "TODAY'S DECODER" && l !== 'THE SKY TODAY' && !l.startsWith('YOUR CHART')) {
+        lines.splice(i, 1);
+        break;
+      }
+    }
+  }
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
 }
 
 // ─── Tiny flavor helpers (kept short, felt-sense) ─────────────────────
