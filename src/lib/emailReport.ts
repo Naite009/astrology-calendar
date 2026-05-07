@@ -152,6 +152,161 @@ function pairCopy(transit: string, natal: string, aspect: string): string {
   return `${opener} your ${meaning}. ${tail}`;
 }
 
+// ─── Station helpers ──────────────────────────────────────────────────
+
+const STATION_MEANING: Record<string, { retrograde: string; direct: string }> = {
+  Mercury: {
+    retrograde: 'Communication, plans, and tech go under review for about 3 weeks. Re-read, re-check, expect delays.',
+    direct: 'Communication and plans pick up speed again. Decisions and travel get traction.',
+  },
+  Venus: {
+    retrograde: 'Love, money, values, and taste get a rewind. Old people and old wants resurface for a second look.',
+    direct: 'Love, money, and values move forward again. You know what (and who) you actually want.',
+  },
+  Mars: {
+    retrograde: 'Drive and action stall. Don\'t push, regroup, fix what\'s broken under the hood.',
+    direct: 'Energy and drive come back online. You can push, fight, or start the thing.',
+  },
+  Jupiter: {
+    retrograde: 'Growth pulls inward. Beliefs, big plans, and "more" get re-examined for a few months.',
+    direct: 'The growth lane opens back up. Say yes, expand, take the bigger room.',
+  },
+  Saturn: {
+    retrograde: 'Structure, responsibility, and the rules loosen so they can re-set. Audit the foundation.',
+    direct: 'Structure and discipline solidify. Time to build and commit.',
+  },
+  Uranus: {
+    retrograde: 'The disrupter quiets externally. Internal change picks up. You feel the itch before others see it.',
+    direct: 'External shake-ups become more likely again. Surprises pick up speed.',
+  },
+  Neptune: {
+    retrograde: 'Dreams, illusions, and spiritual fog reset. What\'s been hazy starts clarifying over the coming months.',
+    direct: 'The dream world re-engages. Imagination, art, and intuition flow outward again.',
+  },
+  Pluto: {
+    retrograde: 'Power and obsession themes turn inward. The deep work happens privately, not in public.',
+    direct: 'Power dynamics surface again externally. What\'s been brewing underground starts moving.',
+  },
+};
+
+// Find exact station moment by binary-searching velocity zero-crossing in ±3 days.
+function findExactStationTime(body: Astronomy.Body, anchor: Date): Date | null {
+  const span = 3 * 86400000; // ±3 days
+  const stepMs = 6 * 3600000; // 6h
+  const start = new Date(anchor.getTime() - span);
+  const end = new Date(anchor.getTime() + span);
+
+  const velocity = (t: Date): number => {
+    const e0 = Astronomy.Ecliptic(Astronomy.GeoVector(body, t, false)).elon;
+    const e1 = Astronomy.Ecliptic(Astronomy.GeoVector(body, new Date(t.getTime() + 3600000), false)).elon;
+    let d = e1 - e0;
+    if (d > 180) d -= 360;
+    if (d < -180) d += 360;
+    return d; // °/hour
+  };
+
+  // Find sign-change in velocity
+  let prev = start;
+  let prevV = velocity(prev);
+  for (let t = start.getTime() + stepMs; t <= end.getTime(); t += stepMs) {
+    const cur = new Date(t);
+    const curV = velocity(cur);
+    if ((prevV > 0 && curV <= 0) || (prevV < 0 && curV >= 0)) {
+      // Binary search
+      let lo = prev.getTime(), hi = cur.getTime();
+      while (hi - lo > 60000) {
+        const mid = (lo + hi) / 2;
+        const mV = velocity(new Date(mid));
+        if ((prevV > 0 && mV > 0) || (prevV < 0 && mV < 0)) lo = mid; else hi = mid;
+      }
+      return new Date((lo + hi) / 2);
+    }
+    prev = cur;
+    prevV = curV;
+  }
+  return null;
+}
+
+const HOUSE_THEME: Record<number, string> = {
+  1: 'self, body, how you show up',
+  2: 'money, possessions, self-worth',
+  3: 'communication, siblings, daily errands',
+  4: 'home, family, roots',
+  5: 'creativity, romance, kids, play',
+  6: 'daily work, health, routines',
+  7: 'partnership, one-to-one relationships',
+  8: 'shared resources, intimacy, depth',
+  9: 'travel, beliefs, big-picture learning',
+  10: 'career, public reputation',
+  11: 'friends, groups, future hopes',
+  12: 'inner life, retreat, the unseen',
+};
+
+const STATION_NATAL_POINTS = [
+  'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+  'Uranus','Neptune','Pluto','NorthNode','SouthNode','Chiron',
+] as const;
+
+const MAJOR_ASPECT_DEFS = [
+  { name: 'conjunction', angle: 0, symbol: '☌' },
+  { name: 'sextile', angle: 60, symbol: '⚹' },
+  { name: 'square', angle: 90, symbol: '□' },
+  { name: 'trine', angle: 120, symbol: '△' },
+  { name: 'opposition', angle: 180, symbol: '☍' },
+];
+
+interface StationHit {
+  natal: string;
+  aspect: string;
+  symbol: string;
+  orb: number;
+  natalSign: string;
+  natalHouse: number | null;
+}
+
+function findStationHits(stationLon: number, chart: NatalChart): StationHit[] {
+  const hits: StationHit[] = [];
+  for (const point of STATION_NATAL_POINTS) {
+    const p = chart.planets[point as keyof typeof chart.planets];
+    if (!p?.sign) continue;
+    const lon = signDegreesToLongitude(p.sign, p.degree, p.minutes || 0);
+    let diff = Math.abs(stationLon - lon);
+    if (diff > 180) diff = 360 - diff;
+    for (const a of MAJOR_ASPECT_DEFS) {
+      const orb = Math.abs(diff - a.angle);
+      if (orb <= 3) {
+        const natalHouse = chart.houseCusps ? getHouseForLongitude(lon, chart) : null;
+        hits.push({ natal: point, aspect: a.name, symbol: a.symbol, orb: parseFloat(orb.toFixed(1)), natalSign: p.sign, natalHouse });
+        break;
+      }
+    }
+  }
+  // Asc/MC from house cusps
+  if (chart.houseCusps) {
+    const angles: Array<[string, any]> = [
+      ['Ascendant', chart.houseCusps.house1],
+      ['Midheaven', chart.houseCusps.house10],
+    ];
+    for (const [name, cusp] of angles) {
+      if (!cusp?.sign) continue;
+      const lon = signDegreesToLongitude(cusp.sign, cusp.degree, cusp.minutes || 0);
+      let diff = Math.abs(stationLon - lon);
+      if (diff > 180) diff = 360 - diff;
+      for (const a of MAJOR_ASPECT_DEFS) {
+        const orb = Math.abs(diff - a.angle);
+        if (orb <= 3) {
+          hits.push({ natal: name, aspect: a.name, symbol: a.symbol, orb: parseFloat(orb.toFixed(1)), natalSign: cusp.sign, natalHouse: null });
+          break;
+        }
+      }
+    }
+  }
+  return hits.sort((a, b) => a.orb - b.orb);
+}
+
+const fmtStationDateTime = (d: Date) =>
+  d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+
 // ─── Public API ───────────────────────────────────────────────────────
 
 export interface BuildReportOptions {
