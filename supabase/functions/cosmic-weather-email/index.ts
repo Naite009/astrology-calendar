@@ -66,7 +66,7 @@ serve(async (req) => {
 
   try {
     const body = (await req.json()) as Body;
-    const { recipientName, dateLabel, chartContext } = body;
+    const { recipientName, dateLabel, currentDate, chartContext, skyBlock } = body;
     if (!dateLabel || !chartContext) {
       return new Response(JSON.stringify({ error: "dateLabel and chartContext required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -81,11 +81,14 @@ serve(async (req) => {
     }
 
     const userPrompt = [
-      `Write the Cosmic Weather email for ${recipientName || "the reader"}, dated ${dateLabel}.`,
+      `Write the Cosmic Weather letter for ${recipientName || "the reader"}.`,
+      `Email date: ${dateLabel}${currentDate ? ` (${currentDate})` : ""}.`,
+      `Use this date as "today" for every claim. A transit is "exact today" ONLY if its exact-hit date in the context matches ${currentDate || dateLabel}.`,
       ``,
+      skyBlock ? `=== TODAY'S SKY (already shown to reader at top of email, do not repeat) ===\n${skyBlock}\n` : ``,
       `=== CHART CONTEXT (verified, source of truth) ===`,
       chartContext,
-    ].join("\n");
+    ].filter(Boolean).join("\n");
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
