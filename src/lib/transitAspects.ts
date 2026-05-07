@@ -1,7 +1,7 @@
 // Transit-to-Natal Aspect Calculation System
 import { PlanetaryPositions, getPlanetSymbol } from './astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { getEffectiveOrb } from './aspectOrbs';
+import { getEffectiveOrb, getTransitOrb } from './aspectOrbs';
 import { 
   getTransitPlanetHouse, 
   getNatalPlanetHouse, 
