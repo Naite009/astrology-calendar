@@ -1,65 +1,80 @@
-## Goal
+# Daily Cosmic Weather Email — Glance Rewrite
 
-Rewrite the **TODAY'S HEADLINES** section of the cosmic weather email so it does the astrologer-thinking for you instead of telling you to look at your own chart. Two specific items:
+The structure is already 3 sections in `src/lib/emailReport.ts`, but each section is over-stuffed, the personal section repeats house-rulers in long sentences, the decoder uses generic templated lines ("Tension, short tempers, or things scraping in the world"), and the subject line + dividers don't match the spec. This plan tightens the existing builder to a true 400-word morning glance.
 
-1. **Stations** (e.g. Neptune stationing retrograde at 3° Aries) — pull the user's chart, compute what house that degree falls in and what natal points it aspects (within tight orb), and write that into the line. Plus one short plain-English line on what a station of that planet generally feels like, and the date/time it's exact.
-2. **Void-of-Course Moon** — drop the "(Moon enters Aquarius after)" parenthetical and instead name the **last aspect** the Moon makes before going void (e.g. "after Moon ☍ Venus at 10:19 AM"). Then the short "make a list / handle small things" guidance.
+## What changes (single file: `src/lib/emailReport.ts`)
 
-Everything stays in `src/lib/emailReport.ts` — no UI changes, no edge function changes.
+### 1. Subject line
+Already close. Keep `[Day], [Date] · [Moon sign] Moon · [punch]`, but improve `dayPunch()` so the punch is specific (not "Capricorn Moon mood"). Priority: station > tightest <1° aspect > VOC > moon-sign collective verb.
 
-## What changes in `src/lib/emailReport.ts`
+### 2. SECTION 1 — THE SKY TODAY (cap at 80 words, prose, no bullets)
+Rewrite to one short paragraph per item, in this fixed order:
 
-### 1. Imports
-- Add `getHouseForLongitude`, `signDegreesToLongitude` from `./houseCalculations`.
-- Add `findNextMoonSignChange` from `./voidOfCourseMoon` (already exports `getVOCMoonDetails`; we'll also expose / reuse the last-aspect that VOC already computes — `voc.lastAspect` already has planet + aspectName + symbol + time, so no new export needed).
+1. **Moon line** — sign, phase, VOC window only if start is between 6am–midnight, plus one collective-mood phrase pulled from `signCollective()`. Trim to one sentence.
+2. **Stations** — one sentence each: `Neptune stations retrograde at 3° Aries today — [collective meaning].` Use `STATION_MEANING` (already exists). No exact-time string here (move it out of Section 1 to keep tight).
+3. **Sky-to-sky aspects under 2°** — only the tightest 2 (not 3). One sentence each, using `pairLived()` for the lived-experience phrase. Keep planet-name + sign + aspect, drop orb numbers from this section to read faster.
+4. **Sun/season** — one short sentence using `sunSeasonBackdrop()`.
 
-### 2. New helper: station exact date/time
-Stations live across ~24h of near-zero motion. For each planet flagged as stationing today, binary-search the velocity zero-crossing in a ±3-day window around `anchor` to get the exact station moment. Format as `Wed Nov 6, 2:14 PM EDT`.
+Add a real divider (`────────`) after this section.
 
-### 3. New helper: station meaning (one short line per planet)
-Plain-language map, e.g.:
-- Mercury: "communication, plans, and tech go under review for ~3 weeks."
-- Venus: "love, money, and values get a rewind."
-- Mars: "drive and action stall — don't push, regroup."
-- Jupiter: "growth pulls inward, beliefs get re-examined."
-- Saturn: "structure and responsibility loosen, then re-set."
-- Uranus: "the disrupter quiets externally, internal change picks up."
-- Neptune: "dreams, illusions, and the spiritual fog reset — what was hazy gets clearer over months."
-- Pluto: "deep power themes turn inward."
-(Direct stations get the inverse phrasing.)
+### 3. SECTION 2 — YOUR CHART (synthesized, not listed facts)
+Keep the existing data prep (stations + `personalTransits` filtered <2° via `calculateTransitAspects`), but rewrite the per-entry sentence builder so each transit reads as **one synthesized 2–3 sentence picture**, not stitched fragments. Pattern:
 
-### 4. Personal station line (when `natalChart` is provided)
-For the stationing planet at, say, 3° Aries:
-- Compute longitude (`signDegreesToLongitude('Aries', 3, 0)`).
-- Compute house with `getHouseForLongitude(lon, natalChart)`.
-- Scan natal points (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Asc, MC, Nodes, Chiron) for major aspects (conj/opp/sq/tri/sex) within 3° orb to that station degree.
-- Build the line:
-  ```
-  ✦ ♆ Neptune stations retrograde at 3° Aries — exact Wed Nov 6, 2:14 PM EDT.
-    What it means: dreams, illusions, and the spiritual fog reset; what's been hazy starts to clarify over the coming months.
-    For you: 3° Aries is in your 6th house (daily work, health, routines).
-    Hits in your chart: opposition to your Moon in Libra (12th, orb 1.4°), square your natal Mercury (orb 2.1°).
-  ```
-- If natal chart has no `houseCusps`, omit the "For you" line.
-- If no aspects in orb, say `Hits in your chart: nothing tight — the house placement is the main story.`
-- If no `natalChart`, fall back to the current generic line but without "look at where X falls in your chart" (just state the station + meaning + exact time).
+> `[Transit planet] [stationing/moving] at [deg sign] is moving through your [N]th house of [HOUSE_THEME], [aspect verb] your natal [planet] in [sign] in your [N]th house of [theme]. The ruler of your [N]th house is [ruler] sitting natally in your [N]th house in [sign], so this lands as [rulerExpression]. Do: [x]. Don't: [y].`
 
-### 5. Rewrite the VOC line
-Replace current line with:
+Improvements:
+- Replace the generic `transitAdvice()` tone-only output with a small `concreteAdvice(transitPlanet, natalPlanet, aspect)` map keyed on the transit pair (Neptune-Moon → "rest, audit, review what you started in the last six months / don't launch, sign, or trust your read on people"; Uranus-Venus → "let what you've outgrown go / don't blow up the relationship today"; etc.). Fall back to tone-based copy.
+- Strip the second ruler-line for personal transits (currently we print BOTH transit-house ruler chain AND natal-house — too much). Keep only the transit-house ruler routing, since that's what tells the reader HOW the energy lands.
+- Use the verb forms "opposes / squares / trines / sextiles / joins" instead of `${aspect}s`.
+- Always include do/don't on its own end-line.
+- If `personalTransits.length === 0` and no stations hit the chart: print one short line ("No tight personal hits today — the collective weather above is the story.") and move on.
+
+Divider after this section.
+
+### 4. SECTION 3 — TODAY'S DECODER (6–8 short lines, `notice → why`)
+The current generic templates ("Tension, short tempers...") violate the spec. Replace `aspectNoticeable()` and `personalNoticeable()` with a **pair-keyed** decoder map, e.g.:
+
+- `mars-aries` (sky) → "Aggressive drivers, people cutting you off, short fuses everywhere → Mars in Aries, everyone is acting first and thinking later."
+- `neptune-moon` (personal) → "Foggy, exhausted, or emotionally off for no clear reason → Neptune stationing on your Moon, your inner world is running the show."
+- `uranus-venus` (personal) → "Restless about money or a relationship, urge to blow something up → Uranus on your Venus."
+- `uranus-jupiter` (personal) → "Unexpected news about shared money or a financial agreement → Uranus on your Jupiter."
+- `saturn-mercury` (sky/personal) → "Conversations feel heavier, words carry more weight."
+- VOC → "Plans made after [time] go sideways → Moon void of course."
+- Station (sky) → "Things you can't quite read or trust today → [Planet] station, perception is off."
+
+Generic fallbacks only kick in if no pair-specific copy exists. Cap at 8 lines, sort: stations first, then personal transits tightest first, then tight sky aspects, VOC last. End on the last decoder line — no trailing blank text, no closing.
+
+### 5. Hard rule enforcement
+- Strip the `Hi [name],` greeting and any trailing closing — the spec forbids both. Keep `recipientName` only as a header label inside Section 2 ("YOUR CHART — Lauren").
+- Banned words filter: scrub any output that contains `metabolize|archetypal|portal|liminal|wound\s+(you|me|us)|integrate` (post-build sweep) — replace with neutral language. None should appear from the new copy maps, but the filter is a safety net.
+- Never call quincunx "friction" — update `pairLived()` and tone helpers so quincunx → "an awkward adjustment, something doesn't quite fit."
+- Total word count check at the end: if body exceeds 400 words, drop sky aspects 3+, then drop the lowest-priority decoder lines until under 400.
+
+### 6. Visual structure (plain-text email)
+Use this exact divider pattern between sections:
+
+```text
+THE SKY TODAY
+────────────────────────
+[content]
+
+────────────────────────
+YOUR CHART — [Name]
+────────────────────────
+[content]
+
+────────────────────────
+TODAY'S DECODER
+────────────────────────
+[content]
 ```
-✦ ☽ Moon is VOID OF COURSE from 10:19 AM EDT into tomorrow,
-   after its last aspect (☽ ☍ ♀ at 10:19 AM) — make a list, handle small things, don't start anything new.
-```
-Pull `voc.lastAspect.{symbol,planet,time}`. If `lastAspect` is missing (Moon was already VOC at sign entry), say `(no major aspect made in this sign)`.
 
-### 6. Tighten wording
-- Remove the "approximate" / "look at where X falls in your chart" generic phrasings entirely — they're now replaced by the personalized lines.
-- Keep headlines compact: each item is 2–4 short lines, not a paragraph.
-
-## Out of scope
-- No changes to the YOUR DAY section (already personal).
-- No new files. No DB migrations. No edge function edits.
-- No changes to the calendar UI.
+This gives a clear visual break between collective / personal / decoder so the reader knows instantly which is which.
 
 ## Files touched
-- `src/lib/emailReport.ts` (only)
+- `src/lib/emailReport.ts` — all edits inside the existing `buildEmail` and helpers below it. No new files. No changes to orb logic (that's already tight via `getTightTransitOrb`). No changes to the on-screen Cosmic Weather UI.
+
+## What stays the same
+- Data sources: `calculateDailyAspects`, `calculateTransitAspects`, `getVOCMoonDetails`, station detection, `findStationHits`, `HOUSE_THEME`, `STATION_MEANING`, `TRADITIONAL_RULER`, `getNatalHouseOf`.
+- 2° orb cap on personal transits, station-always-included exception.
+- The on-page "Daily Cosmic Weather" view is untouched — only the email output changes.
