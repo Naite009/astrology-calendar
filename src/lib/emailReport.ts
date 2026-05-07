@@ -229,25 +229,23 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
         `Use the day for whatever the general mood supports. Without a sharp transit hitting one of your natal points, you're driving, not being driven.`
       );
     } else {
-      // Paragraph 1: list each perfecting transit with approximate exact time
       const items = perfectingToday.map(a => {
         const exactTime = new Date(anchor.getTime() + a.daysToExact * 24 * 60 * 60 * 1000);
         const tg = PLANET_GLYPH[a.transitPlanet] || '';
         const ng = PLANET_GLYPH[a.natalPlanet] || '';
         const ag = ASPECT_GLYPH[a.aspect] || '';
-        return `• ${fmtTime(exactTime)} — ${tg} ${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${feltLine(a.transitPlanet, a.natalPlanet, a.aspect)}`;
+        return `• ${fmtTime(exactTime)}  ${tg} t-${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${pairCopy(a.transitPlanet, a.natalPlanet, a.aspect)}`;
       });
-      lines.push(`These transits PERFECT on your chart today (approximate clock times):`);
+      lines.push(`These transits perfect on your chart today (clock times approximate):`);
       lines.push('');
       lines.push(items.join('\n'));
       lines.push('');
-      // Paragraph 2: synthesis sentence
       const headliner = perfectingToday[0];
+      const exactTimeStr = fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000));
       lines.push(
-        `The biggest moment is around ${fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000))} ` +
-        `when ${headliner.transitPlanet} contacts your natal ${headliner.natalPlanet}. ` +
-        `Plan the day's most important conversation, decision, or first step around that window if you can. ` +
-        `The other contacts are smaller waves layered on top.`
+        `Headline: around ${exactTimeStr}, transiting ${headliner.transitPlanet} ${headliner.aspect}s your natal ${headliner.natalPlanet}. ` +
+        `${pairCopy(headliner.transitPlanet, headliner.natalPlanet, headliner.aspect)} ` +
+        `Aim the day's most loaded conversation, decision, or first move at that window.`
       );
     }
     lines.push('');
