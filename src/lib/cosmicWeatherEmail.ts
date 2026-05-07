@@ -13,12 +13,39 @@ import { formatLocalDateKey } from "./localDate";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 
+export interface CosmicWeatherEmailArgs {
+  date: Date;
+  natalChart: NatalChart | null;
+  chartId: string;
+  recipientName?: string;
+  solarReturnCharts?: SolarReturnChart[];
+  activeChartId?: string;
+}
+
+export interface CosmicWeatherEmailResult {
+  subject: string;
+  body: string;
+  meta: {
+    date: string;
+    dateLabel: string;
+    recipientName?: string;
+    chartId: string;
+    generatedAt: string;
+  };
+}
+
+function formatDateLabel(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric",
+  });
+}
+
 export async function generateCosmicWeatherEmail(
   args: CosmicWeatherEmailArgs,
   opts: { signal?: AbortSignal; onProgress?: (status: string) => void } = {},
 ): Promise<CosmicWeatherEmailResult> {
   const { date, natalChart, chartId, recipientName } = args;
-  const label = dateLabel(date);
+  const label = formatDateLabel(date);
   const subject = recipientName
     ? `${recipientName}'s Cosmic Weather, ${label}`
     : `Cosmic Weather, ${label}`;
@@ -35,37 +62,34 @@ export async function generateCosmicWeatherEmail(
     return {
       subject,
       body: "No chart available. Add or import your natal chart first.",
-      reading: null,
       meta,
     };
   }
 
+  opts.onProgress?.("building chart context");
   const timingData = buildDeterministicTimingData(natalChart, 18, 15, "natal");
   const chartContext = buildChartContext(natalChart, timingData.context, undefined, {
     solarReturnCharts: args.solarReturnCharts,
     activeChartId: args.activeChartId,
   });
 
-  const question = COSMIC_WEATHER_PROMPT(recipientName, label);
-
-  const job = await runAskJob(
-    {
-      messages: [{ role: "user", content: question }],
-      chartContext,
+  opts.onProgress?.("calling AI");
+  const { data, error } = await supabase.functions.invoke("cosmic-weather-email", {
+    body: {
+      recipientName,
+      dateLabel: label,
       currentDate: dateKey,
-      deterministicTiming: timingData.section,
-      chartId,
+      chartContext,
     },
-    { signal: opts.signal, onProgress: (s) => opts.onProgress?.(s) },
-  );
+  });
 
-  if (job.status === "failed") {
-    throw new Error(job.error_message || "Email generation failed.");
-  }
+  if (error) throw new Error(error.message || "Email generation failed.");
+  if (data?.error) throw new Error(data.error);
 
-  const body = flattenReading(job.result, "Reading was empty.");
-  return { subject, body, reading: job.result ?? null, meta };
+  const body = (data?.body as string)?.trim() || "Reading was empty.";
+  return { subject, body, meta };
 }
+
 
 // ─── Recipients (preserved from old emailReport.ts) ───────────────────
 
