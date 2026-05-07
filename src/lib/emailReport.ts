@@ -307,6 +307,12 @@ function findStationHits(stationLon: number, chart: NatalChart): StationHit[] {
 const fmtStationDateTime = (d: Date) =>
   d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
 
+function ordSuffix(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return 'th';
+  switch (n % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────
 
 export interface BuildReportOptions {
