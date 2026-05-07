@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-sr-ai-reading]
 verify_jwt = false
+
+[functions.send-daily-emails]
+verify_jwt = false
