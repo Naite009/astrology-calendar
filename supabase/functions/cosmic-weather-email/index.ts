@@ -99,48 +99,86 @@ serve(async (req) => {
       chartContext,
     ].filter(Boolean).join("\n");
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    // Parse the truth: planet -> sign, from skyBlock
+    const PLANETS = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"];
+    const SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+    const truth: Record<string, string> = {};
+    if (skyBlock) {
+      for (const line of skyBlock.split("\n")) {
+        for (const p of PLANETS) {
+          if (new RegExp(`\\b${p}\\b`).test(line)) {
+            for (const s of SIGNS) {
+              if (line.includes(s)) { truth[p] = s; break; }
+            }
+            break;
+          }
+        }
+      }
+    }
 
-    if (!resp.ok) {
-      const txt = await resp.text();
-      console.error("Lovable AI error:", resp.status, txt);
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded, try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: `AI error ${resp.status}` }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    async function callModel(extraUser = "") {
+      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: userPrompt + extraUser },
+          ],
+        }),
       });
     }
 
-    const data = await resp.json();
-    const text = (data?.choices?.[0]?.message?.content || "").trim();
-    // Strip em dashes defensively per project rule.
+    function findHallucinations(out: string): string[] {
+      const errs: string[] = [];
+      for (const p of PLANETS) {
+        const trueSign = truth[p];
+        if (!trueSign) continue;
+        const re = new RegExp(`\\b${p}\\b[^.\\n]{0,60}?\\b(${SIGNS.join("|")})\\b`, "gi");
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(out)) !== null) {
+          const claimed = m[1];
+          if (claimed.toLowerCase() !== trueSign.toLowerCase()) {
+            errs.push(`You wrote "${m[0]}" but ${p} is currently in ${trueSign}, not ${claimed}.`);
+          }
+        }
+      }
+      return errs;
+    }
+
+    let resp = await callModel();
+    if (!resp.ok) {
+      const txt = await resp.text();
+      console.error("Lovable AI error:", resp.status, txt);
+      if (resp.status === 429) return new Response(JSON.stringify({ error: "Rate limit exceeded, try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (resp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: `AI error ${resp.status}` }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    let data = await resp.json();
+    let text = (data?.choices?.[0]?.message?.content || "").trim();
+
+    let errs = findHallucinations(text);
+    if (errs.length > 0) {
+      console.warn("Hallucinations detected, regenerating:", errs);
+      const correction = `\n\n=== CORRECTION REQUIRED ===\nYour previous draft contained these factual errors:\n${errs.map(e => "- " + e).join("\n")}\n\nRewrite the entire letter. Do NOT repeat any of those false claims. Use ONLY the planet-sign pairings from TODAY'S SKY above. If you cannot anchor a sentence in TODAY'S SKY or the chart context, do not write it.`;
+      const resp2 = await callModel(correction);
+      if (resp2.ok) {
+        const data2 = await resp2.json();
+        const text2 = (data2?.choices?.[0]?.message?.content || "").trim();
+        if (text2) {
+          text = text2;
+          errs = findHallucinations(text);
+        }
+      }
+    }
+
     const cleaned = text
       .replace(/—/g, ", ")
-      .replace(/^#{1,6}\s+/gm, "")   // strip stray markdown headers
-      .replace(/\*\*/g, "");          // strip stray bold
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/\*\*/g, "");
 
-    return new Response(JSON.stringify({ body: cleaned }), {
+    return new Response(JSON.stringify({ body: cleaned, factCheck: { truth, hallucinationsDetected: errs } }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
