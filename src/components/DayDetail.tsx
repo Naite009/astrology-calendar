@@ -500,7 +500,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
             {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </h2>
           <button
-            onClick={() => setIsEmailOpen(true)}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsEmailOpen(true); }}
             className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
             title="Generate an email-ready Cosmic Weather report for this day"
           >
