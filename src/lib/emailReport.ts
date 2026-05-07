@@ -436,7 +436,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   if (voc.isVOC && voc.start && voc.end) {
     const startH = voc.start.getHours();
     if (startH >= 6 && startH < 24) {
-      const lastA = voc.lastAspect ? ` after Moon ${voc.lastAspect.aspectType || ''} ${voc.lastAspect.planet}` : '';
+      const lastA = voc.lastAspect ? ` after Moon ${voc.lastAspect.aspectName} ${voc.lastAspect.planet}` : '';
       moonLine += ` Void of course from ${fmtTime(voc.start)} to ${fmtTime(voc.end)}${lastA}, drifting time.`;
     }
   }
