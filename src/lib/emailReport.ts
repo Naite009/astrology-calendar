@@ -251,9 +251,6 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     lines.push('');
   }
 
-  lines.push('─'.repeat(60));
-  lines.push(`Want the long version with every transit, full interpretations, and 3-day window? Reply and I'll send it.`);
-
   const subject = `Cosmic Weather — ${fmtDate(anchor)}`;
   return { subject, body: lines.join('\n') };
 }
