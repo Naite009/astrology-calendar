@@ -591,6 +591,12 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+const ZODIAC_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+function nextZodiac(sign: string): string {
+  const i = ZODIAC_ORDER.indexOf(sign);
+  return i < 0 ? sign : ZODIAC_ORDER[(i + 1) % 12];
+}
+
 const TRADITIONAL_RULER: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
   Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
