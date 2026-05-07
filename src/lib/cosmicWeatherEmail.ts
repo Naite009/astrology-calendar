@@ -6,9 +6,6 @@
  * Balance", and "Today's Summary" sections that don't belong in an email).
  */
 
-import { supabase } from "@/integrations/supabase/client";
-import { buildChartContext } from "./buildChartContext";
-import { buildDeterministicTimingData } from "./deterministicTiming";
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
 import type { NatalChart } from "@/hooks/useNatalChart";
