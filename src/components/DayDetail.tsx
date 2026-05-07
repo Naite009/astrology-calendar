@@ -591,9 +591,6 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           </div>
         )}
 
-        {isEmailOpen && (
-          <EmailReportModal date={date} onClose={() => setIsEmailOpen(false)} />
-        )}
 
         {/* Exact Lunar Phase Time - Highlighted */}
         {exactLunarPhase && (
