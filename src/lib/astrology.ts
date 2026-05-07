@@ -863,6 +863,41 @@ export const isMercuryRetrograde = (date: Date): boolean => {
   }
 };
 
+// Retrograde state for every body shown in the calendar day grid.
+// Sun and Moon never retrograde. Chiron uses the lookup table's flag.
+export interface DayRetrogrades {
+  mercury: boolean;
+  venus: boolean;
+  mars: boolean;
+  jupiter: boolean;
+  saturn: boolean;
+  uranus: boolean;
+  neptune: boolean;
+  pluto: boolean;
+  chiron: boolean;
+}
+
+export const getDayRetrogrades = (date: Date): DayRetrogrades => {
+  const safe = (body: Astronomy.Body): boolean => {
+    try { return isPlanetRetrograde(body, date); } catch { return false; }
+  };
+  let chironRetro = false;
+  try {
+    chironRetro = !!getDetailedChironPosition(date).isRetrograde;
+  } catch { chironRetro = false; }
+  return {
+    mercury: safe(Astronomy.Body.Mercury),
+    venus: safe(Astronomy.Body.Venus),
+    mars: safe(Astronomy.Body.Mars),
+    jupiter: safe(Astronomy.Body.Jupiter),
+    saturn: safe(Astronomy.Body.Saturn),
+    uranus: safe(Astronomy.Body.Uranus),
+    neptune: safe(Astronomy.Body.Neptune),
+    pluto: safe(Astronomy.Body.Pluto),
+    chiron: chironRetro,
+  };
+};
+
 // Get moon phase using astronomy-engine
 // Note: Major phases (New, Full, Quarter) are tightened to ~12 degree range (~1 day window)
 // so we don't show "Full Moon" for days when the moon has clearly moved past that point
