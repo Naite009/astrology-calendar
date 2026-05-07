@@ -1625,6 +1625,16 @@ Keep the tone professional, insightful, and practically applicable.`,
                           Share
                         </Button>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsEmailOpen(true)}
+                          disabled={!cosmicData}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          Email
+                        </Button>
+                        <Button
                           variant={selectedChart ? "default" : "outline"}
                           size="sm"
                           onClick={handleDownloadPDF}
