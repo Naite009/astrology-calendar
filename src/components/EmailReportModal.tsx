@@ -22,10 +22,15 @@ export const EmailReportModal = ({ date, onClose }: Props) => {
 
   const selected = recipients.find(r => r.email === selectedEmail) || null;
 
-  const { subject, body } = useMemo(
-    () => buildCosmicWeatherEmail({ date, recipientName: selected?.name }),
-    [date, selected]
-  );
+  const { subject, body } = useMemo(() => {
+    try {
+      console.log('[EmailReportModal] building email for', date);
+      return buildCosmicWeatherEmail({ date, recipientName: selected?.name });
+    } catch (err) {
+      console.error('[EmailReportModal] build failed', err);
+      return { subject: 'Cosmic Weather', body: `Failed to build report: ${(err as Error).message}` };
+    }
+  }, [date, selected]);
 
   const handleAdd = () => {
     if (!newName.trim() || !newEmail.trim()) return;
