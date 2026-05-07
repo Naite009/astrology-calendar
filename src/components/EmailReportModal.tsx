@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X, Copy, Check, Trash2, Mail, Loader2, RefreshCw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Copy, Check, Trash2, Mail, Loader2, RefreshCw, Download } from 'lucide-react';
 import {
   generateCosmicWeatherEmail,
   loadRecipients,
