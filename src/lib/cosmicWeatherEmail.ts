@@ -1,43 +1,17 @@
 /**
- * Cosmic Weather email — Path A.
+ * Cosmic Weather email — dedicated, lightweight pipeline.
  *
- * Routes the email generation through the SAME ask-astrology pipeline used
- * by the Ask tab. This eliminates the brittle parallel template engine that
- * was producing inaccurate astrology (wrong stations, mis-timed transits,
- * awkward phrasing). All ephemeris facts, retrograde gates, fact-check
- * blocks, and felt-sense voice rules now apply automatically.
+ * Uses the new `cosmic-weather-email` edge function (NOT the multi-section
+ * ask-astrology pipeline, which force-injects "Timing Windows", "Modal
+ * Balance", and "Today's Summary" sections that don't belong in an email).
  */
 
-import { runAskJob } from "./askJobClient";
+import { supabase } from "@/integrations/supabase/client";
 import { buildChartContext } from "./buildChartContext";
 import { buildDeterministicTimingData } from "./deterministicTiming";
 import { formatLocalDateKey } from "./localDate";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
-
-const COSMIC_WEATHER_PROMPT = (recipientName: string | undefined, dateLabel: string) => `
-Write a Cosmic Weather email for ${recipientName || "the reader"} dated ${dateLabel}.
-
-Required structure (use clean section headers, no markdown symbols beyond ##):
-
-## Today at a glance
-A 2-3 sentence felt-sense opening. Plain language, what they will FEEL or NOTICE.
-
-## What the sky is doing
-Today's Sun, Moon, and the 1-2 tightest aspects perfecting in the sky. Name any planet that is retrograde or stationing. NEVER claim a station unless ephemeris confirms it within ±3 days.
-
-## What it means for you
-2-3 short paragraphs grounded in the user's natal chart. Use the ACTIVE TRANSIT ASPECTS TO NATAL CHART block as the source of truth. Each transit must say what the person will actually feel, do, or notice today — no abstract verbs, no jargon.
-
-## A small move
-One concrete suggestion for today.
-
-Hard rules:
-- Every astrological claim must come from the chart context provided. If a fact is not in context, do not state it.
-- Never use em dashes. Use commas, periods, or parentheses.
-- 3rd-grade plain language. No author citations. No "the chart shows..." filler.
-- Do not invent stations, ingresses, or aspect dates.
-`.trim();
 
 export interface CosmicWeatherEmailArgs {
   date: Date;
@@ -51,9 +25,6 @@ export interface CosmicWeatherEmailArgs {
 export interface CosmicWeatherEmailResult {
   subject: string;
   body: string;
-  /** Full structured AI result (sections, bullets, etc.) for downstream rendering. */
-  reading: any;
-  /** Echoed inputs so an external renderer (e.g. Replit) has everything in one JSON. */
   meta: {
     date: string;
     dateLabel: string;
@@ -63,30 +34,10 @@ export interface CosmicWeatherEmailResult {
   };
 }
 
-function dateLabel(date: Date): string {
+function formatDateLabel(date: Date): string {
   return date.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
-}
-
-/**
- * Strip the AI's structured-reading JSON down to plain email body text.
- */
-function flattenReading(result: any, fallback: string): string {
-  if (!result) return fallback;
-  if (typeof result.raw === "string" && result.raw.trim()) return result.raw.trim();
-  const sections = result.sections;
-  if (!Array.isArray(sections)) return fallback;
-  const parts: string[] = [];
-  for (const s of sections) {
-    if (s?.title) parts.push(`## ${s.title}`);
-    if (typeof s?.body === "string") parts.push(s.body);
-    if (typeof s?.content === "string") parts.push(s.content);
-    if (Array.isArray(s?.bullets)) {
-      for (const b of s.bullets) if (b?.text) parts.push(`• ${b.text}`);
-    }
-  }
-  return parts.join("\n\n").trim() || fallback;
 }
 
 export async function generateCosmicWeatherEmail(
@@ -94,7 +45,7 @@ export async function generateCosmicWeatherEmail(
   opts: { signal?: AbortSignal; onProgress?: (status: string) => void } = {},
 ): Promise<CosmicWeatherEmailResult> {
   const { date, natalChart, chartId, recipientName } = args;
-  const label = dateLabel(date);
+  const label = formatDateLabel(date);
   const subject = recipientName
     ? `${recipientName}'s Cosmic Weather, ${label}`
     : `Cosmic Weather, ${label}`;
@@ -111,37 +62,34 @@ export async function generateCosmicWeatherEmail(
     return {
       subject,
       body: "No chart available. Add or import your natal chart first.",
-      reading: null,
       meta,
     };
   }
 
+  opts.onProgress?.("building chart context");
   const timingData = buildDeterministicTimingData(natalChart, 18, 15, "natal");
   const chartContext = buildChartContext(natalChart, timingData.context, undefined, {
     solarReturnCharts: args.solarReturnCharts,
     activeChartId: args.activeChartId,
   });
 
-  const question = COSMIC_WEATHER_PROMPT(recipientName, label);
-
-  const job = await runAskJob(
-    {
-      messages: [{ role: "user", content: question }],
-      chartContext,
+  opts.onProgress?.("calling AI");
+  const { data, error } = await supabase.functions.invoke("cosmic-weather-email", {
+    body: {
+      recipientName,
+      dateLabel: label,
       currentDate: dateKey,
-      deterministicTiming: timingData.section,
-      chartId,
+      chartContext,
     },
-    { signal: opts.signal, onProgress: (s) => opts.onProgress?.(s) },
-  );
+  });
 
-  if (job.status === "failed") {
-    throw new Error(job.error_message || "Email generation failed.");
-  }
+  if (error) throw new Error(error.message || "Email generation failed.");
+  if (data?.error) throw new Error(data.error);
 
-  const body = flattenReading(job.result, "Reading was empty.");
-  return { subject, body, reading: job.result ?? null, meta };
+  const body = (data?.body as string)?.trim() || "Reading was empty.";
+  return { subject, body, meta };
 }
+
 
 // ─── Recipients (preserved from old emailReport.ts) ───────────────────
 
