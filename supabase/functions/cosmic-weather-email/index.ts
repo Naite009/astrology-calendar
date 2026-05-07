@@ -69,9 +69,9 @@ serve(async (req) => {
       });
     }
 
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
-      return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }), {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -83,32 +83,41 @@ serve(async (req) => {
       chartContext,
     ].join("\n");
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1500,
-        temperature: 0.7,
-        system: SYSTEM,
-        messages: [{ role: "user", content: userPrompt }],
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: SYSTEM },
+          { role: "user", content: userPrompt },
+        ],
       }),
     });
 
     if (!resp.ok) {
       const txt = await resp.text();
-      console.error("Anthropic error:", resp.status, txt);
+      console.error("Lovable AI error:", resp.status, txt);
+      if (resp.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded, try again shortly." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (resp.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: `AI error ${resp.status}` }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await resp.json();
-    const text = data?.content?.[0]?.text?.trim() || "";
+    const text = (data?.choices?.[0]?.message?.content || "").trim();
     // Strip em dashes defensively per project rule.
     const cleaned = text.replace(/—/g, ", ");
 
