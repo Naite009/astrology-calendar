@@ -189,6 +189,7 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
   const planets = useMemo(() => getCachedPlanetaryPositions(date), [date]);
   const moonPhase = useMemo(() => getMoonPhase(date), [date]);
   const mercuryRetro = useMemo(() => isMercuryRetrograde(date), [date]);
+  const retros = useMemo(() => getDayRetrogrades(date), [date]);
   const aspects = useMemo(() => calculateDailyAspects(planets), [planets]);
   const dayColors = useMemo(() => getDayColors(aspects, moonPhase), [aspects, moonPhase]);
   const collectiveDayType = useMemo(() => getDayType(aspects, moonPhase), [aspects, moonPhase]);
