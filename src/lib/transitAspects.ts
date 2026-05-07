@@ -1,7 +1,7 @@
 // Transit-to-Natal Aspect Calculation System
 import { PlanetaryPositions, getPlanetSymbol } from './astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { getEffectiveOrb } from './aspectOrbs';
+import { getEffectiveOrb, getTransitOrb } from './aspectOrbs';
 import { 
   getTransitPlanetHouse, 
   getNatalPlanetHouse, 
@@ -23,6 +23,37 @@ export const ASPECT_TYPES = [
   { name: 'quincunx', angle: 150, orb: 3, symbol: '⚻', color: '#AB47BC', meaning: 'adjustment' },
   { name: 'semisextile', angle: 30, orb: 2, symbol: '⚺', color: '#78909C', meaning: 'subtle connection' },
 ] as const;
+
+/**
+ * TIGHT transit-specific orbs for personal daily transit reading.
+ * Traditional transit orbs are much tighter than natal-chart aspect orbs.
+ * Only real, felt hits should surface here.
+ *   Luminaries (Sun/Moon transit or natal): 3°
+ *   Personal planets (Merc/Ven/Mars):       2°
+ *   Social/Outer (Jup/Sat/Ur/Nep/Pl):       1°
+ *   Angles (ASC/MC):                        2°
+ *   Points (nodes/Chiron/Lilith/asteroids): 1°
+ * Minor aspects (quincunx/semisextile):     1°
+ */
+function getTightTransitOrb(transitPlanet: string, natalPlanet: string, aspectName: string): number {
+  const tier = (p: string): number => {
+    const k = p.toLowerCase();
+    if (k === 'sun' || k === 'moon') return 5;
+    if (k === 'ascendant' || k === 'midheaven' || k === 'mc' || k === 'ic' || k === 'descendant') return 4;
+    if (k === 'mercury' || k === 'venus' || k === 'mars') return 3;
+    if (k === 'jupiter' || k === 'saturn' || k === 'uranus' || k === 'neptune' || k === 'pluto') return 2;
+    return 1; // points, asteroids, nodes
+  };
+  const minor = ['quincunx', 'semisextile', 'semi-sextile'].includes(aspectName.toLowerCase());
+  if (minor) return 1;
+  const top = Math.max(tier(transitPlanet), tier(natalPlanet));
+  if (top === 5) return 3; // luminary involved
+  if (top === 4) return 2; // angle involved
+  if (top === 3) return 2; // personal planet
+  if (top === 2) return 1; // social/outer
+  return 1;                // points only
+}
+
 
 export interface TransitAspect {
   transitPlanet: string;
@@ -197,7 +228,7 @@ export const calculateTransitAspects = (
       // Check for aspects
       ASPECT_TYPES.forEach(aspectType => {
         const angleDiff = Math.abs(diff - aspectType.angle);
-        const effectiveOrb = getEffectiveOrb(transit.name, natal.name, aspectType.name);
+        const effectiveOrb = getTightTransitOrb(transit.name, natal.name, aspectType.name);
         if (angleDiff <= effectiveOrb) {
           // Generate house overlay interpretation
           const houseOverlay = getHouseOverlay(transit.name, transitHouse, natal.name, natalHouse);
