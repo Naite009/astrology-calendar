@@ -126,7 +126,10 @@ serve(async (req) => {
     const data = await resp.json();
     const text = (data?.choices?.[0]?.message?.content || "").trim();
     // Strip em dashes defensively per project rule.
-    const cleaned = text.replace(/—/g, ", ");
+    const cleaned = text
+      .replace(/—/g, ", ")
+      .replace(/^#{1,6}\s+/gm, "")   // strip stray markdown headers
+      .replace(/\*\*/g, "");          // strip stray bold
 
     return new Response(JSON.stringify({ body: cleaned }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
