@@ -302,7 +302,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
         const ag = ASPECT_GLYPH[a.aspect] || '';
         return `• ${fmtTime(exactTime)}  ${tg} t-${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${pairCopy(a.transitPlanet, a.natalPlanet, a.aspect)}`;
       });
-      lines.push(`These transits perfect on your chart today (clock times approximate):`);
+      lines.push(`Your transits today:`);
       lines.push('');
       lines.push(items.join('\n'));
       lines.push('');
