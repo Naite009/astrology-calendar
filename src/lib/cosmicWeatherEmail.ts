@@ -51,6 +51,16 @@ export interface CosmicWeatherEmailArgs {
 export interface CosmicWeatherEmailResult {
   subject: string;
   body: string;
+  /** Full structured AI result (sections, bullets, etc.) for downstream rendering. */
+  reading: any;
+  /** Echoed inputs so an external renderer (e.g. Replit) has everything in one JSON. */
+  meta: {
+    date: string;
+    dateLabel: string;
+    recipientName?: string;
+    chartId: string;
+    generatedAt: string;
+  };
 }
 
 function dateLabel(date: Date): string {
