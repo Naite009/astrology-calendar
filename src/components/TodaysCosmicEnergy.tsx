@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader, Mail } from "lucide-react";
+import { EmailReportModal } from "./EmailReportModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -299,6 +300,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Document excerpts for AI enrichment
@@ -1623,6 +1625,16 @@ Keep the tone professional, insightful, and practically applicable.`,
                           Share
                         </Button>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsEmailOpen(true)}
+                          disabled={!cosmicData}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          Email
+                        </Button>
+                        <Button
                           variant={selectedChart ? "default" : "outline"}
                           size="sm"
                           onClick={handleDownloadPDF}
@@ -1849,6 +1861,14 @@ Keep the tone professional, insightful, and practically applicable.`,
             </div>
           </div>
         </div>
+      )}
+      {isEmailOpen && (
+        <EmailReportModal
+          date={today}
+          natalChart={selectedChart || userNatalChart || null}
+          chartId={selectedChartId || 'user'}
+          onClose={() => setIsEmailOpen(false)}
+        />
       )}
     </>
   );
