@@ -230,6 +230,15 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
             {copied ? <Check size={16} /> : <Copy size={16} />}
             {copied ? 'Copied!' : 'Copy email'}
           </button>
+          <button
+            onClick={handleDownloadJson}
+            disabled={loading || !body}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm disabled:opacity-50"
+            title="Download structured JSON for use in Replit or another renderer"
+          >
+            <Download size={16} />
+            Download JSON
+          </button>
           <a
             href={mailtoHref()}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 text-sm ${loading || !body ? 'pointer-events-none opacity-50' : ''}`}
