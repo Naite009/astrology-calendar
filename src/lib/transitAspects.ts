@@ -197,7 +197,7 @@ export const calculateTransitAspects = (
       // Check for aspects
       ASPECT_TYPES.forEach(aspectType => {
         const angleDiff = Math.abs(diff - aspectType.angle);
-        const effectiveOrb = getEffectiveOrb(transit.name, natal.name, aspectType.name);
+        const effectiveOrb = getTightTransitOrb(transit.name, natal.name, aspectType.name);
         if (angleDiff <= effectiveOrb) {
           // Generate house overlay interpretation
           const houseOverlay = getHouseOverlay(transit.name, transitHouse, natal.name, natalHouse);
