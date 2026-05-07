@@ -96,13 +96,23 @@ export async function generateCosmicWeatherEmail(
   const { date, natalChart, chartId, recipientName } = args;
   const label = dateLabel(date);
   const subject = recipientName
-    ? `${recipientName}'s Cosmic Weather — ${label}`
-    : `Cosmic Weather — ${label}`;
+    ? `${recipientName}'s Cosmic Weather, ${label}`
+    : `Cosmic Weather, ${label}`;
+  const dateKey = formatLocalDateKey(date);
+  const meta = {
+    date: dateKey,
+    dateLabel: label,
+    recipientName,
+    chartId,
+    generatedAt: new Date().toISOString(),
+  };
 
   if (!natalChart) {
     return {
       subject,
       body: "No chart available. Add or import your natal chart first.",
+      reading: null,
+      meta,
     };
   }
 
@@ -118,7 +128,7 @@ export async function generateCosmicWeatherEmail(
     {
       messages: [{ role: "user", content: question }],
       chartContext,
-      currentDate: formatLocalDateKey(date),
+      currentDate: dateKey,
       deterministicTiming: timingData.section,
       chartId,
     },
@@ -130,7 +140,7 @@ export async function generateCosmicWeatherEmail(
   }
 
   const body = flattenReading(job.result, "Reading was empty.");
-  return { subject, body };
+  return { subject, body, reading: job.result ?? null, meta };
 }
 
 // ─── Recipients (preserved from old emailReport.ts) ───────────────────
