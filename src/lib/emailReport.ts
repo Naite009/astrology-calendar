@@ -370,28 +370,50 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   for (const [name, body] of PLANET_BODIES) {
     if (name === 'Sun' || name === 'Moon') continue;
     try {
-      const ecl0 = Astronomy.Ecliptic(Astronomy.GeoVector(body, anchor, false)).elon;
-      const ecl1 = Astronomy.Ecliptic(Astronomy.GeoVector(body, new Date(anchor.getTime() + 86400000), false)).elon;
-      let delta = ecl1 - ecl0;
-      if (delta > 180) delta -= 360;
-      if (delta < -180) delta += 360;
-      if (Math.abs(delta) < 0.05) {
-        const p = (planets as any)[name.toLowerCase()];
-        if (!p) continue;
-        const direction: 'retrograde' | 'direct' = retro[name] ? 'direct' : 'retrograde';
-        const lon = signDegreesToLongitude(p.signName, p.degree, p.minutes || 0);
-        const meaningPair = STATION_MEANING[name];
-        const meaning = meaningPair ? meaningPair[direction] : '';
-        const natalHouse = natalChart?.houseCusps ? getHouseForLongitude(lon, natalChart) : null;
-        const hits = natalChart ? findStationHits(lon, natalChart) : [];
-        stations.push({
-          name, direction,
-          pos: `${p.degree}° ${p.signName}`,
-          sign: p.signName, degree: p.degree, longitude: lon,
-          exact: findExactStationTime(body, anchor),
-          meaning, natalHouse, hits,
-        });
+      // Sample velocities across a ±3-day window to detect a true station
+      // (sign change of daily motion) rather than just "currently slow."
+      const dayMs = 86400000;
+      const samples: { t: Date; v: number }[] = [];
+      for (let off = -3; off <= 3; off++) {
+        const t = new Date(anchor.getTime() + off * dayMs);
+        const e0 = Astronomy.Ecliptic(Astronomy.GeoVector(body, t, false)).elon;
+        const e1 = Astronomy.Ecliptic(Astronomy.GeoVector(body, new Date(t.getTime() + dayMs), false)).elon;
+        let d = e1 - e0;
+        if (d > 180) d -= 360;
+        if (d < -180) d += 360;
+        samples.push({ t, v: d });
       }
+      // Find a velocity sign change inside the window
+      let stationDirection: 'retrograde' | 'direct' | null = null;
+      let stationIdx = -1;
+      for (let i = 1; i < samples.length; i++) {
+        const a = samples[i - 1].v, b = samples[i].v;
+        if (a > 0 && b <= 0) { stationDirection = 'retrograde'; stationIdx = i; break; }
+        if (a < 0 && b >= 0) { stationDirection = 'direct'; stationIdx = i; break; }
+      }
+      if (!stationDirection) continue;
+
+      // Only include if the exact station moment falls within ±2 days of anchor
+      const exact = findExactStationTime(body, anchor);
+      if (!exact) continue;
+      const daysFromAnchor = (exact.getTime() - anchor.getTime()) / dayMs;
+      if (Math.abs(daysFromAnchor) > 2) continue;
+
+      const p = (planets as any)[name.toLowerCase()];
+      if (!p) continue;
+      const lon = signDegreesToLongitude(p.signName, p.degree, p.minutes || 0);
+      const meaningPair = STATION_MEANING[name];
+      const meaning = meaningPair ? meaningPair[stationDirection] : '';
+      const natalHouse = natalChart?.houseCusps ? getHouseForLongitude(lon, natalChart) : null;
+      const hits = natalChart ? findStationHits(lon, natalChart) : [];
+      stations.push({
+        name,
+        direction: stationDirection,
+        pos: `${p.degree}° ${p.signName}`,
+        sign: p.signName, degree: p.degree, longitude: lon,
+        exact,
+        meaning, natalHouse, hits,
+      });
     } catch {}
   }
 
