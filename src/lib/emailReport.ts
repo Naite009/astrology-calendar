@@ -430,7 +430,11 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   if (voc.isVOC && voc.start && voc.end) {
     const startH = voc.start.getHours();
     if (startH >= 6 && startH < 24) {
-      moonLine += ` Void of course from ${fmtTime(voc.start)} to ${fmtTime(voc.end)} — drifting time, hold the small stuff.`;
+      const nextSign = nextZodiac(moonSign);
+      const last = voc.lastAspect
+        ? `Moon makes its last aspect, a ${voc.lastAspect.aspectName} to ${voc.lastAspect.planet}, at ${fmtTime(voc.lastAspect.time)}, then drifts void of course until it enters ${nextSign} at ${fmtTime(voc.end)}`
+        : `Moon goes void of course at ${fmtTime(voc.start)} until it enters ${nextSign} at ${fmtTime(voc.end)}`;
+      moonLine += ` ${last}. Don't start anything new in that window.`;
     }
   }
   lines.push(moonLine);
@@ -586,6 +590,12 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 // ─── Helpers for the new 3-section format ─────────────────────────────
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const ZODIAC_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+function nextZodiac(sign: string): string {
+  const i = ZODIAC_ORDER.indexOf(sign);
+  return i < 0 ? sign : ZODIAC_ORDER[(i + 1) % 12];
+}
 
 const TRADITIONAL_RULER: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
