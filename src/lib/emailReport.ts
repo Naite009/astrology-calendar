@@ -69,19 +69,85 @@ function planetLine(name: string, p: any, retro: boolean): string {
   return `  ${glyph}  ${name.padEnd(8)} ${pos.padStart(7)}  ${p.signName}${tag}`;
 }
 
-// "How does it feel" one-liners by aspect (kept short, felt-sense voice)
-function feltLine(transitPlanet: string, natalPlanet: string, aspect: string): string {
-  const t = transitPlanet, n = natalPlanet;
-  const map: Record<string, string> = {
-    conjunction: `today's ${t} sits right on top of your natal ${n} — that part of you gets switched on.`,
-    opposition: `today's ${t} pulls against your natal ${n} — expect a tug-of-war you can feel.`,
-    square: `today's ${t} grinds on your natal ${n} — a friction you'll want to act on, not stew in.`,
-    trine: `today's ${t} flows with your natal ${n} — things in that area move easily if you start them.`,
-    sextile: `today's ${t} offers a hand to your natal ${n} — small openings if you reach for them.`,
-    quincunx: `today's ${t} is awkward with your natal ${n} — a small adjustment, not a crisis.`,
-    semisextile: `today's ${t} hums quietly next to your natal ${n} — a low background note.`,
-  };
-  return map[aspect] || `${t} ${aspect} natal ${n}.`;
+// Concrete behavioral copy per transit→natal pair, modulated by aspect tone.
+// Voice: tell the reader what they will FEEL or DO today. No jargon, no
+// abstract verbs ("dissolves edges"), no astrology school terms.
+
+type AspectTone = 'easy' | 'tense' | 'meeting';
+function toneOf(aspect: string): AspectTone {
+  if (aspect === 'trine' || aspect === 'sextile') return 'easy';
+  if (aspect === 'square' || aspect === 'opposition' || aspect === 'quincunx') return 'tense';
+  return 'meeting'; // conjunction & semisextile
+}
+
+// Plain-English meaning of each natal point (the "what part of you")
+const NATAL_MEANING: Record<string, string> = {
+  Sun: 'core identity, the "this is me" part',
+  Moon: 'feelings, gut, what soothes you',
+  Mercury: 'thinking and talking',
+  Venus: 'love, money, taste, what you find pleasant',
+  Mars: 'drive, anger, sex, what you go after',
+  Jupiter: 'beliefs, hope, the part that wants more',
+  Saturn: 'discipline, fear, the rules you live by',
+  Uranus: 'where you break the mold',
+  Neptune: 'dreams, imagination, what blurs',
+  Pluto: 'power, control, what you obsess over',
+  Ascendant: 'how you show up to people',
+  Midheaven: 'career, public reputation',
+  NorthNode: 'growth direction',
+  SouthNode: 'old patterns you fall back on',
+  Chiron: 'tender spot, the old wound',
+};
+
+// Plain-English meaning of each fast transit body (the "what gets activated")
+const TRANSIT_FLAVOR: Record<string, { easy: string; tense: string; meeting: string }> = {
+  Moon: {
+    easy: 'a soft mood lands on',
+    tense: 'a touchy mood scrapes against',
+    meeting: 'today\'s mood lands right on',
+  },
+  Sun: {
+    easy: 'today\'s spotlight warms up',
+    tense: 'today\'s spotlight clashes with',
+    meeting: 'today\'s spotlight sits on',
+  },
+  Mercury: {
+    easy: 'a useful conversation or message moves through',
+    tense: 'a misfired message or argument pokes at',
+    meeting: 'a conversation or message lands directly on',
+  },
+  Venus: {
+    easy: 'a sweet or pleasant moment touches',
+    tense: 'a sticky relationship or money moment rubs',
+    meeting: 'a love, money, or taste moment lands on',
+  },
+  Mars: {
+    easy: 'a clean push of energy moves through',
+    tense: 'a flash of anger, urgency or push lands on',
+    meeting: 'a strong drive or impulse fires up',
+  },
+};
+
+function pairCopy(transit: string, natal: string, aspect: string): string {
+  const tone = toneOf(aspect);
+  const meaning = NATAL_MEANING[natal] || `your natal ${natal}`;
+  const flavor = TRANSIT_FLAVOR[transit];
+  if (!flavor) return `${transit} contacts your natal ${natal} (${meaning}).`;
+  const opener = flavor[tone];
+  // Aspect-specific behavioral tail
+  const tail = (() => {
+    switch (aspect) {
+      case 'conjunction': return `That part of you gets switched on, you'll notice it more than usual.`;
+      case 'opposition': return `Expect a back-and-forth with someone (or with yourself) about it. Don't pick the fight, name what's actually being asked.`;
+      case 'square': return `Use the friction. Do one concrete thing in that area instead of stewing.`;
+      case 'trine': return `Door is open in that area. Start the thing, ask for the thing, send the thing.`;
+      case 'sextile': return `Small opening, you have to lean in. It won't come find you.`;
+      case 'quincunx': return `Something in that area needs a small adjustment, not a big move.`;
+      case 'semisextile': return `Quiet background note in that area today.`;
+      default: return '';
+    }
+  })();
+  return `${opener} your ${meaning}. ${tail}`;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────
@@ -121,21 +187,34 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
     .slice(0, 3);
 
   // ── Personal transits perfecting TODAY ──
+  // Strict filters so we don't spam asteroid noise:
+  //  - Transit body must be a fast personal body (Moon/Sun/Mercury/Venus/Mars)
+  //  - Natal endpoint must be a personal point (planets, angles, nodes, Chiron)
+  //  - Tight orb at moment of email: Moon ≤ 6°, Sun/Mercury/Venus/Mars ≤ 3°
+  //    (Moon allowance is wider because Moon moves ~13°/day, so a 6° orb
+  //     still means the aspect perfects within ~11 hours — same day.)
+  //  - Must be applying AND perfect within 24h
+  const NATAL_OK = new Set([
+    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+    'Uranus','Neptune','Pluto','Ascendant','Midheaven','NorthNode','SouthNode','Chiron',
+  ]);
+  const orbCap = (transit: string) => transit === 'Moon' ? 6 : 3;
   let perfectingToday: TransitAspect[] = [];
   if (natalChart) {
     const all = calculateTransitAspects(anchor, planets, natalChart);
     perfectingToday = all.filter(a => {
       if (!FAST_BODIES.has(a.transitPlanet)) return false;
-      // applying within <24h means it perfects sometime today
+      if (!NATAL_OK.has(a.natalPlanet)) return false;
+      if (parseFloat(a.orb) > orbCap(a.transitPlanet)) return false;
       if (!a.applying) return false;
       return a.daysToExact >= 0 && a.daysToExact < 1;
-    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 4);
+    }).sort((a, b) => a.daysToExact - b.daysToExact).slice(0, 5);
   }
 
   // ─── BUILD BODY ───────────────────────────────────────────────────
   const lines: string[] = [];
 
-  lines.push(`COSMIC WEATHER — ${fmtDate(anchor)}`);
+  lines.push(`COSMIC WEATHER: ${fmtDate(anchor)}`);
   lines.push('═'.repeat(60));
   if (recipientName) {
     lines.push('');
@@ -203,7 +282,7 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
 
   // ── 3. YOUR DAY (2 paragraphs) ──
   if (natalChart) {
-    lines.push(`YOUR DAY${recipientName ? ` — ${recipientName}` : ''}`);
+    lines.push(`YOUR DAY${recipientName ? `: ${recipientName}` : ''}`);
     lines.push('─'.repeat(60));
 
     if (perfectingToday.length === 0) {
@@ -216,34 +295,29 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
         `Use the day for whatever the general mood supports. Without a sharp transit hitting one of your natal points, you're driving, not being driven.`
       );
     } else {
-      // Paragraph 1: list each perfecting transit with approximate exact time
       const items = perfectingToday.map(a => {
         const exactTime = new Date(anchor.getTime() + a.daysToExact * 24 * 60 * 60 * 1000);
         const tg = PLANET_GLYPH[a.transitPlanet] || '';
         const ng = PLANET_GLYPH[a.natalPlanet] || '';
         const ag = ASPECT_GLYPH[a.aspect] || '';
-        return `• ${fmtTime(exactTime)} — ${tg} ${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${feltLine(a.transitPlanet, a.natalPlanet, a.aspect)}`;
+        return `• ${fmtTime(exactTime)}  ${tg} t-${a.transitPlanet} ${ag} ${ng} natal ${a.natalPlanet} (${a.aspect}, orb ${a.orb}°)\n    ${pairCopy(a.transitPlanet, a.natalPlanet, a.aspect)}`;
       });
-      lines.push(`These transits PERFECT on your chart today (approximate clock times):`);
+      lines.push(`These transits perfect on your chart today (clock times approximate):`);
       lines.push('');
       lines.push(items.join('\n'));
       lines.push('');
-      // Paragraph 2: synthesis sentence
       const headliner = perfectingToday[0];
+      const exactTimeStr = fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000));
       lines.push(
-        `The biggest moment is around ${fmtTime(new Date(anchor.getTime() + headliner.daysToExact * 24 * 60 * 60 * 1000))} ` +
-        `when ${headliner.transitPlanet} contacts your natal ${headliner.natalPlanet}. ` +
-        `Plan the day's most important conversation, decision, or first step around that window if you can. ` +
-        `The other contacts are smaller waves layered on top.`
+        `Headline: around ${exactTimeStr}, transiting ${headliner.transitPlanet} ${headliner.aspect}s your natal ${headliner.natalPlanet}. ` +
+        `${pairCopy(headliner.transitPlanet, headliner.natalPlanet, headliner.aspect)} ` +
+        `Aim the day's most loaded conversation, decision, or first move at that window.`
       );
     }
     lines.push('');
   }
 
-  lines.push('─'.repeat(60));
-  lines.push(`Want the long version with every transit, full interpretations, and 3-day window? Reply and I'll send it.`);
-
-  const subject = `Cosmic Weather — ${fmtDate(anchor)}`;
+  const subject = `Cosmic Weather: ${fmtDate(anchor)}`;
   return { subject, body: lines.join('\n') };
 }
 
