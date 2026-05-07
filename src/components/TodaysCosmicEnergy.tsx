@@ -300,6 +300,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Document excerpts for AI enrichment
