@@ -24,6 +24,7 @@ import {
 } from './astrology';
 import * as Astronomy from 'astronomy-engine';
 import { calculateTransitAspects, type TransitAspect } from './transitAspects';
+import { getVOCMoonDetails } from './voidOfCourseMoon';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 // ─── Constants ────────────────────────────────────────────────────────
@@ -241,17 +242,62 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   }
   lines.push('');
 
+  // ── 1b. TODAY'S HEADLINES (sky news worth knowing first) ──
+  const headlines: string[] = [];
+
+  // Stations: any planet within ~0.05°/day of zero motion is stationing
+  for (const [name, body] of PLANET_BODIES) {
+    if (name === 'Sun' || name === 'Moon') continue;
+    try {
+      const ecl0 = Astronomy.Ecliptic(Astronomy.GeoVector(body, anchor, false)).elon;
+      const ecl1 = Astronomy.Ecliptic(Astronomy.GeoVector(body, new Date(anchor.getTime() + 86400000), false)).elon;
+      let delta = ecl1 - ecl0;
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      if (Math.abs(delta) < 0.05) {
+        const p = (planets as any)[name.toLowerCase()];
+        const dir = retro[name] ? 'direct' : 'retrograde';
+        const pos = p ? `${p.degree}° ${p.signName}` : '';
+        headlines.push(`✦ ${PLANET_GLYPH[name]} ${name} is STATIONING ${dir} at ${pos} — these days are big, look at where ${pos} falls in your chart.`);
+      }
+    } catch {}
+  }
+
+  // Void of course Moon today
+  const voc = getVOCMoonDetails(anchor);
+  if (voc.isVOC && voc.start && voc.end) {
+    const startStr = voc.start.getTime() < anchor.getTime() ? 'all day' : `from ${fmtTime(voc.start)}`;
+    const endStr = voc.end.getTime() > endOfDay.getTime() ? `into tomorrow` : `until ${fmtTime(voc.end)}`;
+    const into = voc.moonEntersSign ? ` (Moon enters ${voc.moonEntersSign} after)` : '';
+    headlines.push(`✦ ☽ Moon is VOID OF COURSE ${startStr} ${endStr}${into} — make a list, handle small things, don't start anything new.`);
+  }
+
+  // Exact lunar phase today
+  if (exactLunar) {
+    headlines.push(`✦ ${exactLunar.type} EXACT at ${fmtTime(exactLunar.time)} (${exactLunar.position}).`);
+  }
+
+  if (headlines.length) {
+    lines.push("TODAY'S HEADLINES");
+    lines.push('─'.repeat(60));
+    headlines.forEach(h => lines.push(h));
+    lines.push('');
+  }
+
   // ── 2. GENERAL WEATHER (2 paragraphs) ──
   lines.push('GENERAL WEATHER');
   lines.push('─'.repeat(60));
 
-  // Paragraph 1: the mood
-  const sunPos = `${(planets.sun as any).degree}° ${(planets.sun as any).signName}`;
-  const moonPos = `${(planets.moon as any).degree}° ${(planets.moon as any).signName}`;
+  // Paragraph 1: the mood — season + Moon sign combo (Tara's signature)
+  const sunSign = (planets.sun as any).signName;
+  const moonSign = (planets.moon as any).signName;
+  const sunPos = `${(planets.sun as any).degree}° ${sunSign}`;
+  const moonPos = `${(planets.moon as any).degree}° ${moonSign}`;
   const para1: string[] = [];
   para1.push(
-    `The Sun is at ${sunPos} and the Moon is at ${moonPos} (${moonPhase.phaseName}). ` +
-    `That gives the day its base flavor: ${signFlavor((planets.moon as any).signName)}.`
+    `It's ${sunSign} season and we have a ${moonSign} Moon. Sun ${sunPos}, Moon ${moonPos} (${moonPhase.phaseName}). ` +
+    `The feel-good medicine of the day is doing ${moonSign} things: ${signFlavor(moonSign)}. ` +
+    `Look at where ${moonSign} falls in your natal chart — that area of life will feel good to act on today.`
   );
   if (exactLunar) {
     para1.push(`The ${exactLunar.type} perfects at ${fmtTime(exactLunar.time)}, so the energy peaks around then.`);
