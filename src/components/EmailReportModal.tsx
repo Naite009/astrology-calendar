@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X, Copy, Check, Trash2, Mail, Loader2, RefreshCw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Copy, Check, Trash2, Mail, Loader2, RefreshCw, Download } from 'lucide-react';
 import {
   generateCosmicWeatherEmail,
   loadRecipients,
@@ -27,6 +27,7 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
   const [subject, setSubject] = useState('Cosmic Weather');
   const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const lastResultRef = useRef<any>(null);
 
   const selected = recipients.find(r => r.email === selectedEmail) || null;
 
@@ -45,6 +46,7 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
       );
       setSubject(res.subject);
       setBody(res.body);
+      lastResultRef.current = res;
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -77,6 +79,23 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
     await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleDownloadJson = () => {
+    const payload = lastResultRef.current
+      ? { ...lastResultRef.current }
+      : { subject, body };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = (lastResultRef.current?.meta?.date) || date.toISOString().slice(0, 10);
+    const nameSlug = (selected?.name || 'cosmic-weather').toLowerCase().replace(/\s+/g, '-');
+    a.download = `${nameSlug}-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const mailtoHref = () => {
@@ -210,6 +229,15 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
           >
             {copied ? <Check size={16} /> : <Copy size={16} />}
             {copied ? 'Copied!' : 'Copy email'}
+          </button>
+          <button
+            onClick={handleDownloadJson}
+            disabled={loading || !body}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm disabled:opacity-50"
+            title="Download structured JSON for use in Replit or another renderer"
+          >
+            <Download size={16} />
+            Download JSON
           </button>
           <a
             href={mailtoHref()}
