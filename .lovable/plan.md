@@ -1,67 +1,65 @@
 ## Goal
 
-When you open a day on the calendar, give you a fast, scannable "Today at a Glance" tab so you don't have to scroll through every slow planet definition every day. All existing detail stays exactly as-is on a second tab. Zero AI in the glance view — only deterministic ephemeris data we already calculate.
+Rewrite the **TODAY'S HEADLINES** section of the cosmic weather email so it does the astrologer-thinking for you instead of telling you to look at your own chart. Two specific items:
 
-## UX
+1. **Stations** (e.g. Neptune stationing retrograde at 3° Aries) — pull the user's chart, compute what house that degree falls in and what natal points it aspects (within tight orb), and write that into the line. Plus one short plain-English line on what a station of that planet generally feels like, and the date/time it's exact.
+2. **Void-of-Course Moon** — drop the "(Moon enters Aquarius after)" parenthetical and instead name the **last aspect** the Moon makes before going void (e.g. "after Moon ☍ Venus at 10:19 AM"). Then the short "make a list / handle small things" guidance.
 
-Add a tab strip at the top of the `DayDetail` modal (right under the date header):
+Everything stays in `src/lib/emailReport.ts` — no UI changes, no edge function changes.
 
+## What changes in `src/lib/emailReport.ts`
+
+### 1. Imports
+- Add `getHouseForLongitude`, `signDegreesToLongitude` from `./houseCalculations`.
+- Add `findNextMoonSignChange` from `./voidOfCourseMoon` (already exports `getVOCMoonDetails`; we'll also expose / reuse the last-aspect that VOC already computes — `voc.lastAspect` already has planet + aspectName + symbol + time, so no new export needed).
+
+### 2. New helper: station exact date/time
+Stations live across ~24h of near-zero motion. For each planet flagged as stationing today, binary-search the velocity zero-crossing in a ±3-day window around `anchor` to get the exact station moment. Format as `Wed Nov 6, 2:14 PM EDT`.
+
+### 3. New helper: station meaning (one short line per planet)
+Plain-language map, e.g.:
+- Mercury: "communication, plans, and tech go under review for ~3 weeks."
+- Venus: "love, money, and values get a rewind."
+- Mars: "drive and action stall — don't push, regroup."
+- Jupiter: "growth pulls inward, beliefs get re-examined."
+- Saturn: "structure and responsibility loosen, then re-set."
+- Uranus: "the disrupter quiets externally, internal change picks up."
+- Neptune: "dreams, illusions, and the spiritual fog reset — what was hazy gets clearer over months."
+- Pluto: "deep power themes turn inward."
+(Direct stations get the inverse phrasing.)
+
+### 4. Personal station line (when `natalChart` is provided)
+For the stationing planet at, say, 3° Aries:
+- Compute longitude (`signDegreesToLongitude('Aries', 3, 0)`).
+- Compute house with `getHouseForLongitude(lon, natalChart)`.
+- Scan natal points (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Asc, MC, Nodes, Chiron) for major aspects (conj/opp/sq/tri/sex) within 3° orb to that station degree.
+- Build the line:
+  ```
+  ✦ ♆ Neptune stations retrograde at 3° Aries — exact Wed Nov 6, 2:14 PM EDT.
+    What it means: dreams, illusions, and the spiritual fog reset; what's been hazy starts to clarify over the coming months.
+    For you: 3° Aries is in your 6th house (daily work, health, routines).
+    Hits in your chart: opposition to your Moon in Libra (12th, orb 1.4°), square your natal Mercury (orb 2.1°).
+  ```
+- If natal chart has no `houseCusps`, omit the "For you" line.
+- If no aspects in orb, say `Hits in your chart: nothing tight — the house placement is the main story.`
+- If no `natalChart`, fall back to the current generic line but without "look at where X falls in your chart" (just state the station + meaning + exact time).
+
+### 5. Rewrite the VOC line
+Replace current line with:
 ```
-[ Today at a Glance ]   [ Full Detail ]
+✦ ☽ Moon is VOID OF COURSE from 10:19 AM EDT into tomorrow,
+   after its last aspect (☽ ☍ ♀ at 10:19 AM) — make a list, handle small things, don't start anything new.
 ```
+Pull `voc.lastAspect.{symbol,planet,time}`. If `lastAspect` is missing (Moon was already VOC at sign entry), say `(no major aspect made in this sign)`.
 
-- **Today at a Glance** — new, default tab. One screen, no AI.
-- **Full Detail** — wraps the entire current modal body (Cosmic Weather, Personal Transits, Ingresses, Color Explanation, Comprehensive Transit Analysis, etc.) untouched. Nothing is removed or rewritten.
-
-The close button, date heading, and chart selector stay above the tabs so they apply to both views.
-
-## "Today at a Glance" — what it shows
-
-Driven entirely by data already computed in `DayDetail` (`dayData`, `exactLunarPhase`, `voc`, `majorIngresses`, `transitAspects`, `mercuryRetro`, `getAllRetrogradePeriods`, `calculatePlanetaryHours`, `findNextMoonSignChange`). No new ephemeris work, no LLM call.
-
-1. **Headline strip (1 line)**
-   `Moon in {sign} · {phase emoji} {phase name} · {Day Type from getDayType}`
-
-2. **What's actually changing today** (only show rows that exist — these are the things that DON'T happen every day):
-   - Exact lunar phase moment (if `exactLunarPhase` truthy) — "Full Moon in Gemini at 7:14 PM ET", supermoon flag if present.
-   - Planetary ingresses today (from `majorIngresses`) — "Venus enters Capricorn at 3:22 AM ET".
-   - Moon sign change today (from `findNextMoonSignChange` if it falls on this date) — "Moon enters Leo at 11:08 AM ET".
-   - Void-of-Course Moon window (from `voc`) — formatted with `formatVOCRange` + "avoid new starts".
-   - Retrograde stations today (Mercury/Mars/Venus from `getAllRetrogradePeriods` when station date == today) — "Mercury stations Direct".
-   - Mercury Rx phase status only if currently retrograde or in shadow (one-line summary, no long block).
-
-3. **Top 3 personal transits for today** — pulled from the existing `transitAspects` array (already sorted by impact, already filtered to ≤5° orb, already prioritizing outer→personal). Slice to first 3. Each row:
-   `☉ Sun ☌ natal Moon · 1.2° · applying` + the existing one-line `aspect.interpretation`.
-   - Skip the felt-sense block and the entire expanded panel — that lives in Full Detail.
-   - If a chart is active and there are zero ≤5° transits, show a small "No tight personal transits today" line.
-
-4. **Sky right now (collapsed by default)** — a `<Collapsible>` titled "All planet positions" that lists each planet's sign and degree from `dayData.planets`. This is the only place slow planets like Pluto appear in the glance view, and it's hidden until you open it. No interpretive text, just `♇ Pluto 4°12′ Aquarius (R)`.
-
-5. **Today's color band** — the existing `dayData.colors` strip / day-type pill, rendered compact. Reuses the data already in `DayOverviewSection`; we just render a slimmer version (color dots + label, no explanation paragraph — that stays in Full Detail).
-
-What is intentionally NOT in the glance view:
-- Cosmic Weather AI banner (lives in Full Detail).
-- ComprehensiveTransitAnalysis expanded blocks.
-- Daily-guidance prose paragraphs.
-- Repeating outer-planet definitions (Pluto/Neptune/Uranus interpretive text). Those only appear in Full Detail or when the user opens "All planet positions".
-
-## Anti-hallucination guarantees
-
-- The glance tab renders only values from `dayData` and the deterministic helpers already imported in `DayDetail.tsx` (`getMercuryRetrogrades`, `getAllRetrogradePeriods`, `getRetrogradeStatus`, `findNextMoonSignChange`, `formatVOCRange`, `calculatePlanetaryHours`, `getDayType`).
-- No `fetch`, no edge function, no `generate-narrative`, no `ask-astrology` call from this tab.
-- All copy is either a fixed label (e.g. "Void-of-Course Moon") or a value formatted from astronomy-engine output. Memory rule "AI is forbidden from doing math" is preserved.
-
-## Files to change
-
-- `src/components/DayDetail.tsx` — wrap existing body in a `<Tabs>` from `@/components/ui/tabs`. Add a new `TodayAtAGlance` sub-component (in the same file or a sibling file `src/components/dayDetail/TodayAtAGlance.tsx` — sibling file preferred to keep `DayDetail.tsx` from growing). Pass `dayData`, `transitAspects`, `activeChart`, `exactLunarPhase` as props.
-- No edits to `CosmicWeatherBanner`, `ComprehensiveTransitAnalysis`, transit math, or any edge function.
-
-## Default tab
-
-Default to **Today at a Glance**. A user who wants the deep dive clicks "Full Detail" once; selection is not persisted (each day opens fresh on the glance).
+### 6. Tighten wording
+- Remove the "approximate" / "look at where X falls in your chart" generic phrasings entirely — they're now replaced by the personalized lines.
+- Keep headlines compact: each item is 2–4 short lines, not a paragraph.
 
 ## Out of scope
+- No changes to the YOUR DAY section (already personal).
+- No new files. No DB migrations. No edge function edits.
+- No changes to the calendar UI.
 
-- No changes to the calendar grid itself.
-- No changes to Cosmic Weather generation.
-- No new ephemeris calculations — strictly reuses what's already on `dayData`.
+## Files touched
+- `src/lib/emailReport.ts` (only)
