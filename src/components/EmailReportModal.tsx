@@ -46,6 +46,7 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
       );
       setSubject(res.subject);
       setBody(res.body);
+      lastResultRef.current = res;
     } catch (e) {
       setError((e as Error).message);
     } finally {
