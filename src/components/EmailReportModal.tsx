@@ -27,6 +27,7 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
   const [subject, setSubject] = useState('Cosmic Weather');
   const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const lastResultRef = useRef<any>(null);
 
   const selected = recipients.find(r => r.email === selectedEmail) || null;
 
