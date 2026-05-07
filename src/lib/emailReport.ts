@@ -507,7 +507,9 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
         ? getNatalHouseOf(ruler, natalChart) : null;
       const rulerSign = ruler ? (natalChart.planets[ruler as keyof typeof natalChart.planets] as any)?.sign : null;
 
-      let entry = `${s.name} stationing ${s.direction} at ${s.pos} sits in ${houseLabel}`;
+      const swhen = stationWhen(s.exact, anchor);
+      const sverb = swhen.kind === 'past' ? `stationed ${s.direction} ${swhen.label}` : `stationing ${s.direction} ${swhen.label}`;
+      let entry = `${s.name} ${sverb} at ${s.pos} sits in ${houseLabel}`;
       if (s.hits.length) {
         const h = s.hits[0];
         const hHouseLabel = h.natalHouse ? ` in your ${h.natalHouse}${ordSuffix(h.natalHouse)} house of ${HOUSE_THEME[h.natalHouse]}` : '';
