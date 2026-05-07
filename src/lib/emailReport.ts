@@ -462,9 +462,12 @@ export function buildCosmicWeatherEmail(opts: BuildReportOptions): { subject: st
   lines.push(moonLine);
   lines.push('');
 
-  // Stations — one sentence each, collective meaning
+  // Stations — one sentence each, with accurate timing relative to "today"
   for (const s of stations) {
-    lines.push(`${s.name} stations ${s.direction} at ${s.pos} today. ${s.meaning}`);
+    const when = stationWhen(s.exact, anchor);
+    const verb = when.kind === 'past' ? `stationed ${s.direction}` : `stations ${s.direction}`;
+    const exactStr = s.exact ? ` Exact ${fmtStationDateTime(s.exact)}.` : '';
+    lines.push(`${s.name} ${verb} ${when.label} at ${s.pos}.${exactStr} ${s.meaning}`);
     lines.push('');
   }
 
