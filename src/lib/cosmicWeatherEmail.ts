@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildChartContext } from "./buildChartContext";
 import { buildDeterministicTimingData } from "./deterministicTiming";
 import { formatLocalDateKey } from "./localDate";
+import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 
@@ -25,6 +26,7 @@ export interface CosmicWeatherEmailArgs {
 export interface CosmicWeatherEmailResult {
   subject: string;
   body: string;
+  skyBlock: string;
   meta: {
     date: string;
     dateLabel: string;
