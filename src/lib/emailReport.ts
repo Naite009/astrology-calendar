@@ -708,11 +708,137 @@ function personalNoticeable(transit: string, natal: string, aspect: string): str
   return `Your ${part} switches on more than usual`;
 }
 
-function dayPunch(stations: any[], voc: any, tight: any[], moonSign: string): string {
-  if (stations.length) return `${stations[0].name} stations ${stations[0].direction}`;
-  if (tight.length) return `${cap(tight[0].planet1)} ${tight[0].type} ${cap(tight[0].planet2)}`;
+function dayPunch(stations: any[], voc: any, tight: any[], personals: any[], moonSign: string): string {
+  if (stations.length) {
+    const s = stations[0];
+    return `${s.name} stations ${s.direction} at ${s.pos}`;
+  }
+  const veryTight = tight.find(a => parseFloat(a.orb) < 1);
+  if (veryTight) return `${cap(veryTight.planet1)} ${aspectVerb(veryTight.type)} ${cap(veryTight.planet2)}`;
+  if (personals && personals.length) {
+    const p = personals[0];
+    return `${p.transitPlanet} on your ${p.natalPlanet}`;
+  }
   if (voc?.isVOC) return `Void Moon, hold the small stuff`;
-  return `${moonSign} Moon mood`;
+  return `${moonSign} Moon, ${signCollective(moonSign).toLowerCase().replace('collectively ', '')}`;
+}
+
+// ─── New helpers for 3-section glance ─────────────────────────────────
+
+function aspectVerb(aspect: string): string {
+  const m: Record<string, string> = {
+    conjunction: 'joins', opposition: 'opposes', trine: 'trines',
+    square: 'squares', sextile: 'sextiles', quincunx: 'awkwardly tilts at',
+    semisextile: 'brushes', station: 'lands on',
+  };
+  return m[aspect] || aspect;
+}
+
+function concreteAdvice(transit: string, natal: string, aspect: string): { do: string; dont: string } {
+  const key = `${transit}-${natal}`.toLowerCase();
+  const map: Record<string, { do: string; dont: string }> = {
+    'neptune-moon': { do: 'rest, audit, review what you started in the last six months', dont: 'launch anything new, sign anything, or trust your read on people today' },
+    'neptune-sun': { do: 'soften the schedule, let things blur a little', dont: 'force a decision about who you are right now' },
+    'neptune-venus': { do: 'romanticize quietly, make art, dream', dont: 'commit money or confess love today' },
+    'uranus-venus': { do: 'let what you\'ve outgrown go', dont: 'blow up the relationship or the budget today' },
+    'uranus-jupiter': { do: 'stay open to a surprise opportunity', dont: 'overcommit on the news of the moment' },
+    'uranus-mars': { do: 'move your body, channel the jolt', dont: 'pick a fight or speed' },
+    'saturn-mercury': { do: 'say the hard true thing slowly', dont: 'agree to anything you can\'t deliver' },
+    'saturn-moon': { do: 'name the heavy feeling and let it pass', dont: 'isolate or doom-spiral' },
+    'pluto-venus': { do: 'tell the truth about what you actually want', dont: 'manipulate or test someone' },
+    'pluto-sun': { do: 'sit with the power question honestly', dont: 'give your power away to keep peace' },
+    'jupiter-sun': { do: 'say yes to the bigger room', dont: 'over-promise' },
+    'jupiter-venus': { do: 'enjoy something generously', dont: 'overspend on the high' },
+    'mars-mars': { do: 'use the surge — workout, deep work, hard task', dont: 'react fast in conversation' },
+  };
+  if (map[key]) return map[key];
+  // Tone fallback
+  const tone = toneOf(aspect);
+  if (tone === 'tense') return { do: 'name what\'s actually being asked', dont: 'react fast or pick the fight' };
+  if (tone === 'easy') return { do: 'send the message, ask, or start the thing', dont: 'wait for it to come find you' };
+  if (aspect === 'station') return { do: 'review and audit', dont: 'launch or commit' };
+  return { do: 'notice what gets switched on and use it', dont: 'ignore the signal' };
+}
+
+function decoderNotice(p1: string, p2: string, aspect: string, personal: boolean): string {
+  const key = `${p1}-${p2}`.toLowerCase();
+  const personalMap: Record<string, string> = {
+    'neptune-moon': 'Foggy, exhausted, or emotionally off for no clear reason',
+    'neptune-sun': 'Unsure who you are today, edges blurred',
+    'neptune-venus': 'Romantic haze, can\'t read someone clearly',
+    'uranus-venus': 'Restless about money or a relationship, urge to blow something up',
+    'uranus-jupiter': 'Unexpected news about shared money, debt, or a financial agreement',
+    'uranus-mars': 'Jumpy, accident-prone, sudden physical urgency',
+    'saturn-mercury': 'Conversations feel heavier, words carry more weight',
+    'saturn-moon': 'Mood is heavy, lonely, or older than the day warrants',
+    'pluto-venus': 'A relationship or value feels loaded, intense, or obsessive',
+    'pluto-sun': 'A power dynamic surfaces, someone is testing you',
+    'jupiter-sun': 'A doorway opens, things expand around your name',
+    'jupiter-venus': 'Generosity, money in, easy pleasure',
+  };
+  const collectiveMap: Record<string, string> = {
+    'mars-saturn': 'Things feel blocked, drive meets a wall',
+    'mars-pluto': 'Power struggles, road rage, force in the air',
+    'venus-jupiter': 'People are unusually generous, easy money or affection',
+    'mercury-uranus': 'Surprise news, tech glitches, jumpy thoughts',
+    'sun-saturn': 'The day feels heavier, slower, more weight on what you do',
+    'moon-neptune': 'Collective fog, can\'t locate the feeling',
+  };
+  if (personal && personalMap[key]) return personalMap[key];
+  if (!personal && collectiveMap[key]) return collectiveMap[key];
+  // Tone fallback
+  const tone = toneOf(aspect);
+  if (personal) {
+    const part = NATAL_MEANING[p2] || `your ${p2}`;
+    if (tone === 'tense') return `Friction or restlessness in ${part}`;
+    if (tone === 'easy') return `An opening in ${part}`;
+    return `Your ${part} switches on more than usual`;
+  }
+  if (tone === 'tense') return `Tension and short tempers in the day`;
+  if (tone === 'easy') return `Doors opening, easier conversations`;
+  return `A loud combined signal of ${planetVoice(p1)} and ${planetVoice(p2)}`;
+}
+
+function decoderStationCollective(planet: string): string {
+  const m: Record<string, string> = {
+    Mercury: 'Plans, messages, and tech glitch or get re-read',
+    Venus: 'Old loves, old wants, old money questions resurface',
+    Mars: 'Drive stalls or fires up depending on direction',
+    Jupiter: 'A bigger plan reverses or opens up',
+    Saturn: 'A structure loosens or solidifies',
+    Uranus: 'Sudden change quiets or speeds up',
+    Neptune: 'Things you can\'t quite read or trust today, perception is unreliable',
+    Pluto: 'Buried power dynamics surface or go underground',
+  };
+  return m[planet] || 'A collective shift';
+}
+
+function scrubBanned(text: string): string {
+  return text
+    .replace(/\bmetabolize\w*/gi, 'process')
+    .replace(/\barchetypal\b/gi, 'classic')
+    .replace(/\bportal\b/gi, 'opening')
+    .replace(/\bliminal\b/gi, 'in-between')
+    .replace(/\bintegrate\b/gi, 'absorb')
+    .replace(/\bwound (you|me|us|him|her|them)\b/gi, 'tender spot in $1');
+}
+
+function capWords(text: string, max: number): string {
+  const words = text.split(/\s+/);
+  if (words.length <= max) return text;
+  // Trim from end at line boundaries until under cap
+  const lines = text.split('\n');
+  while (lines.join(' ').split(/\s+/).filter(Boolean).length > max && lines.length > 6) {
+    // Drop trailing non-empty line that isn't a divider/header
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i].trim();
+      if (l && !l.startsWith('─') && l !== "TODAY'S DECODER" && l !== 'THE SKY TODAY' && !l.startsWith('YOUR CHART')) {
+        lines.splice(i, 1);
+        break;
+      }
+    }
+  }
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
 }
 
 // ─── Tiny flavor helpers (kept short, felt-sense) ─────────────────────
