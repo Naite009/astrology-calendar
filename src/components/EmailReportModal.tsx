@@ -8,12 +8,15 @@ import {
   type EmailRecipient,
 } from '@/lib/emailReport';
 
+import type { NatalChart } from '@/hooks/useNatalChart';
+
 interface Props {
   date: Date;
   onClose: () => void;
+  natalChart?: NatalChart | null;
 }
 
-export const EmailReportModal = ({ date, onClose }: Props) => {
+export const EmailReportModal = ({ date, onClose, natalChart }: Props) => {
   const [recipients, setRecipients] = useState<EmailRecipient[]>(() => loadRecipients());
   const [selectedEmail, setSelectedEmail] = useState<string>('');
   const [newName, setNewName] = useState('');
@@ -24,13 +27,12 @@ export const EmailReportModal = ({ date, onClose }: Props) => {
 
   const { subject, body } = useMemo(() => {
     try {
-      console.log('[EmailReportModal] building email for', date);
-      return buildCosmicWeatherEmail({ date, recipientName: selected?.name });
+      return buildCosmicWeatherEmail({ date, recipientName: selected?.name, natalChart });
     } catch (err) {
       console.error('[EmailReportModal] build failed', err);
       return { subject: 'Cosmic Weather', body: `Failed to build report: ${(err as Error).message}` };
     }
-  }, [date, selected]);
+  }, [date, selected, natalChart]);
 
   const handleAdd = () => {
     if (!newName.trim() || !newEmail.trim()) return;
