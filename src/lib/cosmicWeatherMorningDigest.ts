@@ -119,7 +119,7 @@ function normalizedAngleDiff(a: number, b: number): number {
   return diff;
 }
 
-function buildDirectPersonalHits(natalChart: NatalChart, date: Date): string[] {
+function buildDirectPersonalHits(natalChart: NatalChart, date: Date): Array<{ line: string; orb: number }> {
   const positions = getPlanetaryPositions(date);
   const hits: Array<{ line: string; orb: number }> = [];
 
@@ -155,10 +155,7 @@ function buildDirectPersonalHits(natalChart: NatalChart, date: Date): string[] {
     if (!existing || hit.orb < existing.orb) deduped.set(hit.line, hit);
   }
 
-  return [...deduped.values()]
-    .sort((a, b) => a.orb - b.orb)
-    .slice(0, 3)
-    .map(hit => hit.line);
+  return [...deduped.values()].sort((a, b) => a.orb - b.orb);
 }
 
 export function buildMorningDigest({ date, natalChart, recipientName }: MorningDigestArgs): string {
@@ -228,20 +225,20 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   const avoidLine = `Avoid: ${mood.avoid}${vocLine ? '; signing/launching during the void window' : ''}.`;
 
   // ── 5. Personal hits (within 1° today) ───────────────────────────
-  const personalLines: string[] = [];
+  const personalHits: Array<{ line: string; orb: number }> = [];
   if (natalChart) {
     try {
       const alerts = calculateTransitAlerts(natalChart, digestMoment)
         .filter(a => a.orb <= 1.5 && (a.alertType === 'exact' || a.motion === 'applying'))
-        .sort((a, b) => a.orb - b.orb)
-        .slice(0, 2);
+        .sort((a, b) => a.orb - b.orb);
       for (const a of alerts) {
-        personalLines.push(personalHitLine(a.transitPlanet, a.aspectType, a.natalPlanet));
+        personalHits.push({
+          line: personalHitLine(a.transitPlanet, a.aspectType, a.natalPlanet),
+          orb: a.orb,
+        });
       }
     } catch { /* ignore */ }
-    if (!personalLines.length) {
-      personalLines.push(...buildDirectPersonalHits(natalChart, digestMoment));
-    }
+    personalHits.push(...buildDirectPersonalHits(natalChart, digestMoment));
   }
 
   // ── Compose ──────────────────────────────────────────────────────
@@ -254,8 +251,12 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   sections.push(`THE STORY\n${storyLine}`);
   if (flags.length) sections.push(`HEADS UP\n${flags.map(f => '• ' + f).join('\n')}`);
   sections.push(`DO / AVOID\n• ${doLine}\n• ${avoidLine}`);
-  if (personalLines.length) {
-    sections.push(`FOR YOU TODAY\n${personalLines.map(l => '• ' + l).join('\n')}`);
+  const mergedPersonalLines = [...new Map(personalHits.map(hit => [hit.line, hit])).values()]
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 3)
+    .map(hit => hit.line);
+  if (mergedPersonalLines.length) {
+    sections.push(`FOR YOU TODAY\n${mergedPersonalLines.map(l => '• ' + l).join('\n')}`);
   }
 
   return sections.join('\n\n');
