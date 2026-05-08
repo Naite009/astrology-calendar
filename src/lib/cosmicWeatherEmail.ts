@@ -40,36 +40,6 @@ function formatDateLabel(date: Date): string {
   });
 }
 
-/**
- * Pull the in-app Cosmic Weather reading from localStorage instead of
- * generating a parallel (worse) version. The TodaysCosmicEnergy component
- * caches its result under `cosmic-weather-${YYYY-MM-DD}-${voiceStyle}`.
- * We grab whichever voice the user last viewed.
- */
-function findCachedInsight(dateKey: string): { insight: string; voiceStyle: string; moonPhase?: string; moonSign?: string } | null {
-  try {
-    const prefix = `cosmic-weather-${dateKey}-`;
-    let best: { insight: string; voiceStyle: string; moonPhase?: string; moonSign?: string; ts: number } | null = null;
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key || !key.startsWith(prefix)) continue;
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      try {
-        const parsed = JSON.parse(raw);
-        if (!parsed?.insight) continue;
-        const voiceStyle = key.slice(prefix.length);
-        const ts = Date.parse(parsed.generatedAt) || 0;
-        if (!best || ts > best.ts) {
-          best = { insight: parsed.insight, voiceStyle, moonPhase: parsed.moonPhase, moonSign: parsed.moonSign, ts };
-        }
-      } catch {}
-    }
-    if (!best) return null;
-    return { insight: best.insight, voiceStyle: best.voiceStyle, moonPhase: best.moonPhase, moonSign: best.moonSign };
-  } catch { return null; }
-}
-
 export async function generateCosmicWeatherEmail(
   args: CosmicWeatherEmailArgs,
   opts: { signal?: AbortSignal; onProgress?: (status: string) => void } = {},
