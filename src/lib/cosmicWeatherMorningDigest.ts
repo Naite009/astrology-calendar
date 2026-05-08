@@ -69,6 +69,14 @@ export interface MorningDigestArgs {
   date: Date;
   natalChart: NatalChart | null;
   recipientName?: string;
+  /** Optional override for the collective sky section. If provided, this
+   *  HTML/prose replaces the auto-generated collective copy. Used to inject
+   *  the cosmic-weather AI prose so we don't generate it twice. */
+  collectiveProseHTML?: string;
+  /** Optional override for the "What Matters Most" items. If provided, these
+   *  items (already AI-generated and whitelist-validated against the day's
+   *  transit array) replace the deterministic personalized fallback. */
+  whatMattersItems?: Array<{ headline: string; body: string }>;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
