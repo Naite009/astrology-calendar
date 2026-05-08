@@ -14,9 +14,8 @@
 
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects } from './astrology';
 import { getVOCMoonDetails, formatVOCTime } from './voidOfCourseMoon';
-import { getRetrogradeDisplay } from './retrogradePatterns';
 import { calculateTransitAlerts } from './transitAlerts';
-import { formatSkyBlockForEmail } from './cosmicWeatherSkyBlock';
+import { formatSkyBlockForEmail, buildSkyEntries } from './cosmicWeatherSkyBlock';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGN_SYMBOL: Record<string, string> = {
