@@ -654,6 +654,30 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
 
       // userTimezone and userTzAbbr already declared above
 
+      // Build the deterministic 24h event timeline. The AI MUST use these times
+      // and is forbidden to invent or recall any others.
+      const events24h = buildEvents24h({
+        now,
+        userTimezone,
+        userTzAbbr,
+        currentAspects: aspectsWithDetails.map(a => ({
+          planet1: a.planet1, planet2: a.planet2, type: a.type, motion: a.motion, orb: a.orb,
+        })),
+        moonSignChange: moonSignChangeToday,
+        imminentSignChanges,
+        exactLunarPhase: (() => {
+          const exact = getExactLunarPhase(now);
+          if (!exact) return null;
+          return {
+            type: exact.type,
+            time: exact.time.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+            iso: exact.time.toISOString(),
+            name: exact.name,
+          };
+        })(),
+      });
+      const events24hPrompt = eventsToPromptBlock(events24h);
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
