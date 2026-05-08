@@ -832,7 +832,32 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       
       // Save to localStorage for the day (with voice style in key) - use effectiveVoiceStyle not state
       localStorage.setItem(`cosmic-weather-${todayKey}-${effectiveVoiceStyle}`, JSON.stringify(newCosmicData));
-      
+
+      // Mirror to Supabase so the daily email function can read today's reading.
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const uid = authData?.user?.id ?? null;
+        const insightHtml = `<div style="font-family:Georgia,serif;max-width:640px;margin:0 auto;padding:20px;color:#333;line-height:1.6;white-space:pre-wrap">${
+          (data.insight || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        }</div>`;
+        const subject = `Cosmic Weather, ${dateStr}`;
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 7);
+        await supabase.from('cosmic_weather_cache').insert({
+          user_id: uid,
+          device_id: '',
+          date_key: todayKey,
+          voice_style: effectiveVoiceStyle,
+          chart_id: selectedChartId || '',
+          content: data.insight || '',
+          subject,
+          body_html: insightHtml,
+          expires_at: expires.toISOString(),
+        });
+      } catch (mirrorErr) {
+        console.warn('Failed to mirror cosmic weather to Supabase:', mirrorErr);
+      }
+
       setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
       
