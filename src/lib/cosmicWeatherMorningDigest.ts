@@ -196,10 +196,10 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
     const slowOnly = aspects
       .filter((a: any) => SLOW.has(a.planet1) && SLOW.has(a.planet2))
       .sort((a: any, b: any) => (a.orb ?? 99) - (b.orb ?? 99));
-    const top = slowOnly[0];
+      const top = slowOnly[0];
     if (top) {
-      const orbStr = top.orb != null ? `${Number(top.orb).toFixed(1)}°` : '';
-      const feel = ASPECT_FEEL[top.aspect] || top.aspect;
+        const orbStr = top.orb != null ? `${Number(top.orb).toFixed(1)}°` : '';
+        const feel = ASPECT_FEEL[top.type] || top.type;
       storyLine = `Strongest current: ${PLANET_GLYPH[top.planet1] || ''} ${top.planet1} ${feel} ${PLANET_GLYPH[top.planet2] || ''} ${top.planet2} ${orbStr ? `(${orbStr} orb)` : ''}. That's the texture of the day for everyone.`;
     }
   } catch { /* ignore */ }
