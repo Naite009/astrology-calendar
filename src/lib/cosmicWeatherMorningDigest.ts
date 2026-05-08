@@ -1,13 +1,14 @@
 /**
- * Morning Cosmic Weather digest — deterministic, house-aware, and personalized.
- * Built from the same ephemeris/transit logic already used in the app.
+ * Morning Cosmic Weather digest — short, interpreted, and personalized.
+ * Uses the same transit-ranking and felt-sense logic already used in the app.
  */
 
-import { getMoonPhase, getPlanetaryPositions, getExactLunarPhase, findNearestMajorPhaseTime } from './astrology';
+import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, getDayType, getExactLunarPhase, findNearestMajorPhaseTime } from './astrology';
 import { findNextMoonSignChange, getVOCMoonDetails, formatVOCTime } from './voidOfCourseMoon';
 import { formatSkyBlockForEmail, getEasternDateAtTime, getEasternMidnightDate } from './cosmicWeatherSkyBlock';
 import { getTransitPlanetHouse, HOUSE_MEANINGS } from './houseCalculations';
-import { calculateTransitAspects } from './transitAspects';
+import { calculateTransitAspects, getTopTransitAspects, getFeltSenseDescription } from './transitAspects';
+import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
 import { getDegreeMeaning } from './characterSynthesis';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
@@ -16,26 +17,20 @@ const SIGN_SYMBOL: Record<string, string> = {
   Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
 };
 
-const ASPECT_VERB: Record<string, string> = {
-  conjunction: 'conjunct',
-  opposition: 'opposite',
-  square: 'square',
-  trine: 'trine',
-  sextile: 'sextile',
-  quincunx: 'quincunx',
-  semisextile: 'semi-sextile',
+const ASPECT_GLYPH: Record<string, string> = {
+  conjunction: '☌', sextile: '⚹', square: '□', trine: '△', opposition: '☍', quincunx: '⚻', semisextile: '⚺',
 };
 
 const PHASE_MEANING: Record<string, string> = {
-  'New Moon': 'seed time, begin and set intention',
-  'Waxing Crescent': 'momentum is building, keep feeding the new thing',
-  'First Quarter': 'pressure to act, decide, and move through friction',
-  'Waxing Gibbous': 'adjust, refine, and get the details right before the peak',
-  'Full Moon': 'peak light, feelings and facts are fully visible',
-  'Waning Gibbous': 'the peak already happened, now it is about processing, sharing, and making meaning',
-  'Last Quarter': 'release what is not working, cut, clear, and reset',
-  'Waning Crescent': 'rest, empty out, and prepare for the next cycle',
-  'Balsamic Moon': 'deep rest and surrender, do less and listen more',
+  'New Moon': 'fresh start energy, good for setting the tone',
+  'Waxing Crescent': 'the new thing is taking shape, keep feeding it',
+  'First Quarter': 'pressure to act, decide, and stop hesitating',
+  'Waxing Gibbous': 'refine, edit, and fix what is not quite ready yet',
+  'Full Moon': 'peak light, big feelings, and clear results',
+  'Waning Gibbous': 'the peak already happened, now process it and make meaning out of it',
+  'Last Quarter': 'cut loose what is draining you, simplify',
+  'Waning Crescent': 'pull back, clear space, rest',
+  'Balsamic Moon': 'deep rest, closure, and surrender',
 };
 
 export interface MorningDigestArgs {
@@ -62,12 +57,6 @@ function ordinal(n: number): string {
   return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }
 
-function houseLabel(house: number | null): string {
-  if (!house) return 'house placement unavailable';
-  const info = HOUSE_MEANINGS[house];
-  return `${ordinal(house)} house${info ? `, ${info.lifeArea}` : ''}`;
-}
-
 function downshiftPhaseName(date: Date, phaseName: string, phaseAngle: number): string {
   const exact = getExactLunarPhase(date);
   if (phaseName === 'New Moon' && exact?.type !== 'New Moon') return phaseAngle < 180 ? 'Waxing Crescent' : 'Waning Crescent';
@@ -75,122 +64,108 @@ function downshiftPhaseName(date: Date, phaseName: string, phaseAngle: number): 
   return phaseName;
 }
 
-function buildMoonMomentLine(label: string, time: Date, natalChart: NatalChart | null): string {
-  const positions = getPlanetaryPositions(time);
-  const moon = positions.moon;
-  const house = natalChart ? getTransitPlanetHouse(moon.signName, moon.degree, natalChart) : null;
-  return `${label}: ☽ ${formatDegree(moon.degree, moon.minutes)} ${SIGN_SYMBOL[moon.signName] || ''} ${moon.signName}${house ? `, your ${ordinal(house)} house` : ''}`;
-}
-
-function buildMoonAspectTimeline(date: Date, natalChart: NatalChart): string[] {
-  const midnight = getEasternMidnightDate(date);
-  const noon = getEasternDateAtTime(date, 12, 0);
-  const end = getEasternDateAtTime(date, 23, 59);
-  const dayEnd = new Date(end.getTime());
-  const signChange = findNextMoonSignChange(midnight);
-  const moments = [
-    { label: '12:00 AM ET', time: midnight },
-    ...(signChange.time <= dayEnd ? [{ label: `${formatET(signChange.time)} ET`, time: signChange.time }] : []),
-    { label: '12:00 PM ET', time: noon },
-    { label: '11:59 PM ET', time: end },
-  ];
-
-  const best = new Map<string, { text: string; orb: number }>();
-
-  for (const moment of moments) {
-    const aspects = calculateTransitAspects(moment.time, getPlanetaryPositions(moment.time), natalChart)
-      .filter(a => a.transitPlanet === 'Moon')
-      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
-
-    for (const aspect of aspects.slice(0, 5)) {
-      const key = `${aspect.aspect}-${aspect.natalPlanet}`;
-      const orb = parseFloat(aspect.orb);
-      const entry = {
-        text: `${moment.label}: ☽ ${ASPECT_VERB[aspect.aspect] || aspect.aspect} your natal ${aspect.natalPlanet}${aspect.natalHouse ? ` in the ${ordinal(aspect.natalHouse)}` : ''} (${orb.toFixed(1)}° orb)` ,
-        orb,
-      };
-      const existing = best.get(key);
-      if (!existing || orb < existing.orb) best.set(key, entry);
-    }
-  }
-
-  return [...best.values()].sort((a, b) => a.orb - b.orb).slice(0, 5).map(x => x.text);
+function moonTimelineLine(label: string, time: Date, chart: NatalChart | null): string {
+  const moon = getPlanetaryPositions(time).moon;
+  const house = chart ? getTransitPlanetHouse(moon.signName, moon.degree, chart) : null;
+  const houseText = house && HOUSE_MEANINGS[house] ? `, your ${ordinal(house)} house of ${HOUSE_MEANINGS[house].keywords.toLowerCase()}` : '';
+  return `${label}: ☽ ${formatDegree(moon.degree, moon.minutes)} ${SIGN_SYMBOL[moon.signName] || ''} ${moon.signName}${houseText}`;
 }
 
 export function buildMorningDigest({ date, natalChart, recipientName }: MorningDigestArgs): string {
   const midnight = getEasternMidnightDate(date);
   const noon = getEasternDateAtTime(date, 12, 0);
   const end = getEasternDateAtTime(date, 23, 59);
-  const phase = getMoonPhase(midnight);
-  const phaseName = downshiftPhaseName(midnight, phase.phaseName, phase.phase);
+  const moonPhase = getMoonPhase(midnight);
+  const phaseName = downshiftPhaseName(midnight, moonPhase.phaseName, moonPhase.phase);
+  const phaseMeaning = PHASE_MEANING[phaseName] || '';
+  const planets = getPlanetaryPositions(midnight);
+  const aspects = calculateDailyAspects(planets);
+  const dayType = getDayType(aspects, { ...moonPhase, phaseName });
   const exactPhase = getExactLunarPhase(midnight);
   const nearestMajor = !exactPhase && (phaseName === 'New Moon' || phaseName === 'Full Moon' || phaseName === 'First Quarter' || phaseName === 'Last Quarter')
     ? findNearestMajorPhaseTime(midnight, phaseName)
     : null;
-  const midnightMoon = getPlanetaryPositions(midnight).moon;
+  const moon = planets.moon;
   const noonMoon = getPlanetaryPositions(noon).moon;
   const endMoon = getPlanetaryPositions(end).moon;
   const signChange = findNextMoonSignChange(midnight);
   const voc = getVOCMoonDetails(midnight);
   const dayEnd = new Date(end.getTime());
-  const degreeMeaning = getDegreeMeaning(midnightMoon.degree).meaning;
   const firstName = recipientName?.trim().split(/\s+/)[0];
-  const moonHouse = natalChart ? getTransitPlanetHouse(midnightMoon.signName, midnightMoon.degree, natalChart) : null;
-  const moonTimeline = [
-    buildMoonMomentLine('12:00 AM ET', midnight, natalChart),
-    ...(signChange.time <= dayEnd ? [buildMoonMomentLine(`${formatET(signChange.time)} ET`, signChange.time, natalChart)] : []),
-    buildMoonMomentLine('12:00 PM ET', noon, natalChart),
-    buildMoonMomentLine('11:59 PM ET', end, natalChart),
-  ];
 
   const sections: string[] = [];
-  sections.push(`${firstName ? `Good morning, ${firstName}.` : 'Good morning.'} Here is the part you cannot get just from knowing the sign.`);
-  sections.push(formatSkyBlockForEmail(date));
+  sections.push(`${firstName ? `Good morning, ${firstName}.` : 'Good morning.'} Here is the short version that should actually help in bed.`);
 
-  const moonSummaryBits = [
-    `The Moon starts the day at ${formatDegree(midnightMoon.degree, midnightMoon.minutes)} ${midnightMoon.signName}`,
-    signChange.time <= dayEnd ? `then changes signs at ${formatET(signChange.time)} ET` : `and does not change signs today`,
-    `it is at ${formatDegree(noonMoon.degree, noonMoon.minutes)} by noon and ${formatDegree(endMoon.degree, endMoon.minutes)} by 11:59 PM ET`,
+  const moonIntro = [
+    `Today carries a ${dayType.label.toLowerCase()} tone. ${dayType.description}.`,
+    `The Moon starts at ${formatDegree(moon.degree, moon.minutes)} ${moon.signName}, is ${Math.round(moonPhase.illumination * 100)}% lit, and the phase is ${phaseName.toLowerCase()}, which means ${phaseMeaning}.`,
+    signChange.time <= dayEnd
+      ? `It changes signs at ${formatET(signChange.time)} ET, so the mood really does shift mid-day.`
+      : `It stays in ${moon.signName} all day, so the tone stays pretty consistent.`,
   ];
 
-  sections.push([
-    'THE MOON TODAY',
-    moonSummaryBits.join('. ') + '.',
-    `Phase: ${phaseName}, ${Math.round(phase.illumination * 100)}% illuminated. ${PHASE_MEANING[phaseName] || ''}.`,
+  sections.push(['TODAY AT A GLANCE', ...moonIntro].join('\n'));
+
+  const timingLines = [
+    moonTimelineLine('12:00 AM ET', midnight, natalChart),
+    ...(signChange.time <= dayEnd ? [moonTimelineLine(`${formatET(signChange.time)} ET`, signChange.time, natalChart)] : []),
+    moonTimelineLine('12:00 PM ET', noon, natalChart),
+    moonTimelineLine('11:59 PM ET', end, natalChart),
     exactPhase
       ? `${exactPhase.type} is exact today at ${formatET(exactPhase.time)} ET.`
       : nearestMajor
-        ? `Nearest major phase: ${nearestMajor.type} at ${formatET(nearestMajor.date)} ET ${nearestMajor.date < midnight ? 'already passed' : 'is coming up'}.`
+        ? `Nearest major phase: ${nearestMajor.type} at ${formatET(nearestMajor.date)} ET ${nearestMajor.date < midnight ? 'already passed' : 'coming up'}.`
         : '',
-    `What the degree means: ${degreeMeaning}`,
     voc.isCurrentlyVOC && voc.end
-      ? `Void of course now until ${formatVOCTime(voc.end)} ET, so do not treat this stretch as clean launch energy.`
+      ? `Void of course now until ${formatVOCTime(voc.end)} ET.`
       : (voc.isVOC && voc.start && voc.end
-          ? `Void of course later: ${formatVOCTime(voc.start)} ET to ${formatVOCTime(voc.end)} ET.`
+          ? `Void of course window: ${formatVOCTime(voc.start)} ET to ${formatVOCTime(voc.end)} ET.`
           : ''),
-  ].filter(Boolean).join('\n'));
+  ].filter(Boolean);
+
+  sections.push(['MOON TIMING', ...timingLines].join('\n'));
 
   if (natalChart) {
-    const moonAspectLines = buildMoonAspectTimeline(date, natalChart);
+    const personalTransits = calculateTransitAspects(midnight, planets, natalChart);
+    const topTransits = getTopTransitAspects(personalTransits, 2);
+    const transitLines = topTransits.map((t) => {
+      const felt = getFeltSenseDescription(t.transitPlanet, t.natalPlanet, t.aspect, t.natalHouse, t.transitHouse);
+      const personalized = getPersonalizedTransitInterpretation(
+        t.transitPlanet,
+        t.aspect,
+        t.natalPlanet,
+        t.natalHouse,
+        t.natalSign,
+      );
+      const header = `${t.transitPlanet} ${ASPECT_GLYPH[t.aspect] || ''} natal ${t.natalPlanet}, ${t.orb}° orb${t.natalHouse ? `, your ${ordinal(t.natalHouse)} house` : ''}`;
+      const body = felt?.felt || personalized.howItFeels || t.interpretation;
+      return `• ${header}\n  ${body}`;
+    });
+
+    const moonHits = personalTransits
+      .filter(t => t.transitPlanet === 'Moon')
+      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+      .slice(0, 3)
+      .map(t => `• ☽ ${ASPECT_GLYPH[t.aspect] || ''} natal ${t.natalPlanet}${t.natalHouse ? ` in your ${ordinal(t.natalHouse)}` : ''}, ${t.orb}° orb`);
+
     sections.push([
-      'WHERE IT LANDS FOR YOU',
-      moonHouse
-        ? `At 12:00 AM ET the Moon is moving through your ${houseLabel(moonHouse)}.`
-        : `Your house data was not available, so I can only give the sky timeline.`,
-      ...moonTimeline.map(line => `• ${line}`),
-      moonAspectLines.length
-        ? 'Main Moon-to-natal hits today:\n' + moonAspectLines.map(line => `• ${line}`).join('\n')
-        : 'The Moon is moving through your chart today, but it is not making a tight major hit to a natal point at the key checkpoints I checked.',
+      'FOR YOU',
+      topTransits.length
+        ? transitLines.join('\n')
+        : 'No major personal transit is dominating the whole day, so the Moon timing matters more than a slow-planet headline.',
+      moonHits.length
+        ? `Moon hits to watch:\n${moonHits.join('\n')}`
+        : '',
+      `What the starting degree means: ${getDegreeMeaning(moon.degree).meaning}`,
+    ].filter(Boolean).join('\n'));
+  } else {
+    sections.push([
+      'FOR YOU',
+      `What the starting degree means: ${getDegreeMeaning(moon.degree).meaning}`,
+      'No natal chart was attached here, so I can only give the collective sky and Moon timing.',
     ].join('\n'));
   }
 
-  sections.push([
-    'WHY THIS MATTERS',
-    moonHouse
-      ? `This is less about a generic ${midnightMoon.signName} Moon meaning, and more about your ${ordinal(moonHouse)} house getting stirred while the Moon changes degree, changes sign, and brushes your natal points.`
-      : `What matters today is the Moon\'s timing, degree, and phase, not a canned sign paragraph.`,
-    `The real story is the movement: ${formatDegree(midnightMoon.degree, midnightMoon.minutes)} at the start of the day, ${signChange.time <= dayEnd ? `a sign shift at ${formatET(signChange.time)} ET, ` : ''}${formatDegree(noonMoon.degree, noonMoon.minutes)} by noon, and ${formatDegree(endMoon.degree, endMoon.minutes)} by late night.`,
-  ].join('\n'));
-
+  sections.push(formatSkyBlockForEmail(date));
   return sections.join('\n\n');
 }
