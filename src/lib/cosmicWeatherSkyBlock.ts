@@ -5,6 +5,7 @@
  */
 
 import * as Astronomy from "astronomy-engine";
+import { findNextMoonSignChange } from "./voidOfCourseMoon";
 
 const ZODIAC = [
   { name: "Aries", symbol: "♈" },
@@ -64,37 +65,47 @@ function fmtPos(lon: number): { sign: string; symbol: string; deg: number; min: 
   return { sign: z.name, symbol: z.symbol, deg, min };
 }
 
-/**
- * Returns a Date for 12:00 AM US Eastern Time on the given calendar date.
- * Eastern is UTC-5 (EST) or UTC-4 (EDT). We use the standard JS DST rule
- * for America/New_York (2nd Sun of March → 1st Sun of November).
- */
-export function getEasternMidnightDate(date: Date): Date {
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  const d = date.getDate();
-
-  // DST: starts 2nd Sunday of March, ends 1st Sunday of November.
+function isEasternDSTAtLocalTime(year: number, month: number, day: number, hour: number, minute = 0): boolean {
   const secondSundayMarch = (() => {
-    const first = new Date(Date.UTC(y, 2, 1));
+    const first = new Date(Date.UTC(year, 2, 1));
     const dow = first.getUTCDay();
     const firstSun = 1 + ((7 - dow) % 7);
     return firstSun + 7;
   })();
+
   const firstSundayNov = (() => {
-    const first = new Date(Date.UTC(y, 10, 1));
+    const first = new Date(Date.UTC(year, 10, 1));
     const dow = first.getUTCDay();
     return 1 + ((7 - dow) % 7);
   })();
 
-  let isDST = false;
-  if (m > 2 && m < 10) isDST = true;
-  else if (m === 2 && d >= secondSundayMarch) isDST = true;
-  else if (m === 10 && d < firstSundayNov) isDST = true;
+  if (month > 2 && month < 10) return true;
+  if (month < 2 || month > 10) return false;
 
-  const offsetHours = isDST ? 4 : 5; // EDT or EST
-  // 12:00 AM Eastern → that hour in UTC is +offset
-  return new Date(Date.UTC(y, m, d, offsetHours, 0, 0));
+  if (month === 2) {
+    if (day > secondSundayMarch) return true;
+    if (day < secondSundayMarch) return false;
+    return hour >= 2;
+  }
+
+  if (day < firstSundayNov) return true;
+  if (day > firstSundayNov) return false;
+  return hour < 2 || (hour === 1 && minute <= 59);
+}
+
+export function getEasternDateAtTime(date: Date, hour: number, minute = 0): Date {
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const d = date.getDate();
+  const offsetHours = isEasternDSTAtLocalTime(y, m, d, hour, minute) ? 4 : 5;
+  return new Date(Date.UTC(y, m, d, hour + offsetHours, minute, 0));
+}
+
+/**
+ * Returns a Date for 12:00 AM US Eastern Time on the given calendar date.
+ */
+export function getEasternMidnightDate(date: Date): Date {
+  return getEasternDateAtTime(date, 0, 0);
 }
 
 export interface SkyEntry {
@@ -128,10 +139,28 @@ export function buildSkyEntries(date: Date): SkyEntry[] {
 }
 
 export function formatSkyBlockForEmail(date: Date): string {
+  const midnightET = getEasternMidnightDate(date);
+  const noonET = getEasternDateAtTime(date, 12, 0);
+  const endOfDayET = getEasternDateAtTime(date, 23, 59);
   const entries = buildSkyEntries(date);
-  const dateLabel = date.toLocaleDateString("en-US", {
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
     weekday: "long", month: "long", day: "numeric", year: "numeric",
+  }).format(midnightET);
+  const formatET = (value: Date) => value.toLocaleTimeString("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
   });
+  const formatMoonPoint = (value: Date) => {
+    const pos = fmtPos(longitudeOf("Moon", value));
+    return `${pos.deg}°${String(pos.min).padStart(2, "0")}' ${pos.symbol} ${pos.sign}`;
+  };
+  const dayEnd = new Date(endOfDayET.getTime());
+  const nextChange = findNextMoonSignChange(midnightET);
+  const signChangeLine = nextChange.time <= dayEnd
+    ? `Sign change: ${formatET(nextChange.time)} ET, enters ${fmtPos(longitudeOf("Moon", nextChange.time)).symbol} ${nextChange.newSign}`
+    : `Sign change: none today`;
   const lines = entries.map(e =>
     `${e.symbol} ${e.label.padEnd(8)} ${e.degree}°${String(e.minutes).padStart(2, "0")}' ${e.signSymbol} ${e.sign}${e.retrograde ? " ℞" : ""}`,
   );
@@ -139,5 +168,11 @@ export function formatSkyBlockForEmail(date: Date): string {
     `Sky at 12:00 AM Eastern, ${dateLabel}`,
     ``,
     ...lines,
+    ``,
+    `☽ Through the day`,
+    `12:00 AM ET: ${formatMoonPoint(midnightET)}`,
+    signChangeLine,
+    `12:00 PM ET: ${formatMoonPoint(noonET)}`,
+    `11:59 PM ET: ${formatMoonPoint(endOfDayET)}`,
   ].join("\n");
 }
