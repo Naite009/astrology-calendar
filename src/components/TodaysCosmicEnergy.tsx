@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange, formatVOCTime, formatVOCDuration, formatVOCRange } from "@/lib/voidOfCourseMoon";
+import { buildEvents24h, eventsToPromptBlock } from "@/lib/next24hEvents";
 import { formatLocalDateKey } from "@/lib/localDate";
 import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeaningsLookup";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
