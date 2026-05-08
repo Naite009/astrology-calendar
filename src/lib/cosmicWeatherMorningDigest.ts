@@ -409,11 +409,11 @@ function collectiveSkyHTML(date: Date): string {
   const phaseLine = `The Moon is ${moonPhase.phaseName.toLowerCase()}, ${Math.round(moonPhase.illumination * 100)}% lit.`;
   const dayLine = `${dayType.description}.`;
   const aspectLine = tightest.length
-    ? `The tightest sky aspect right now is ${tightest.map(a => `${a.planet1} ${a.aspect} ${a.planet2} (${a.orb}° orb)`).join(' and ')}.`
+    ? `The tightest sky aspect right now is ${tightest.map(a => `${a.planet1} ${a.type} ${a.planet2} (${a.orb}° orb)`).join(' and ')}.`
     : `No major collective aspects are perfecting today, the sky is relatively quiet.`;
-  const closer = tightest.some(a => ['square','opposition'].includes(a.aspect))
+  const closer = tightest.some(a => ['square','opposition'].includes(a.type))
     ? `Expect a little friction in the air, even if you can't name it.`
-    : tightest.some(a => ['trine','sextile'].includes(a.aspect))
+    : tightest.some(a => ['trine','sextile'].includes(a.type))
       ? `The collective tone is workable, things tend to flow if you cooperate with them.`
       : `Tone is mostly neutral, what you bring sets the mood.`;
 
