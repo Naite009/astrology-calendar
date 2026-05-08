@@ -520,34 +520,34 @@ const PLANET_DOMAIN: Record<string, string> = {
   Chiron: "old wounds asking to be tended",
 };
 
-// Felt-sense for a hard vs soft pairing. Reads like a real description, not a label.
-function describeCollectiveAspect(p1: string, type: string, p2: string): string {
-  const a = PLANET_DOMAIN[p1] || p1.toLowerCase();
-  const b = PLANET_DOMAIN[p2] || p2.toLowerCase();
-  const verbs: Record<string, string> = {
-    conjunction: `fuse together: ${a} is hard to separate from ${b} right now`,
-    opposition: `face off: ${a} and ${b} pull on each other and ask for balance`,
-    square: `grind against each other: ${a} keeps bumping into ${b}, creating friction nobody can quite name`,
-    trine: `cooperate easily: ${a} and ${b} are on the same wavelength, things click without effort`,
-    sextile: `offer each other a small opening: ${a} and ${b} can help each other if you take the door`,
-    semisextile: `nudge at each other quietly: ${a} and ${b} aren't in open conflict, just slightly out of sync`,
-    quincunx: `don't quite match: ${a} and ${b} are talking past each other, expect awkward adjustments`,
-  };
-  const phrase = verbs[type] || `connect: ${a} meets ${b}`;
-  return `${p1} and ${p2} ${phrase}.`;
-}
+// What each planet, when it's loud in the sky, actually does to the room.
+// Hard = friction-flavored (conjunction/square/opposition/quincunx).
+// Soft = flow-flavored (trine/sextile).
+const PLANET_SCENE: Record<string, { hard: string; soft: string }> = {
+  Sun:     { hard: "people are touchy about being seen and credited", soft: "people feel more comfortable being themselves in public" },
+  Moon:    { hard: "moods run close to the surface and shift fast", soft: "moods are easy to read and easy to settle" },
+  Mercury: { hard: "conversations get tangled, plans need a second look, and small messages misfire", soft: "talking, writing, and making plans come more easily than usual" },
+  Venus:   { hard: "small social slights land harder than they should and money decisions feel itchy", soft: "people are warmer with each other and small pleasures actually land" },
+  Mars:    { hard: "tempers are short, drivers are aggressive, and people are quicker to push back", soft: "it's easier than usual to start something and follow it through" },
+  Jupiter: { hard: "everything wants to get bigger than it should, including reactions, spending, and promises", soft: "things feel more possible than they did yesterday" },
+  Saturn:  { hard: "the world feels heavier and slower, and limits are showing up where they didn't before", soft: "structure, patience, and grown-up decisions are easier to find" },
+  Uranus:  { hard: "the day is twitchy and prone to small surprises that throw off your schedule", soft: "fresh thinking and small breakthroughs are available if you stay loose" },
+  Neptune: { hard: "everything is a little blurry, hard to pin down, and easy to misread", soft: "imagination, music, and compassion run high" },
+  Pluto:   { hard: "control struggles and quiet intensity sit just under the surface of normal interactions", soft: "people can talk honestly about hard things without it blowing up" },
+  Chiron:  { hard: "old sore spots get bumped in small, ordinary ways", soft: "tenderness toward old hurts is available without drama" },
+};
 
-// Plain-language meaning of each Moon phase for the collective.
-const PHASE_FEEL: Record<string, string> = {
-  "New Moon": "It's a planting day. Energy is low and inward, good for setting an intention nobody else needs to know about.",
-  "Waxing Crescent": "Things you started recently are still tender. Protect them, don't show them off yet.",
-  "First Quarter": "A push-back day. Whatever you started at the new moon is meeting its first real obstacle, that's normal, not a sign to quit.",
-  "Waxing Gibbous": "Refining and adjusting. You can see what's working and what needs one more pass before it's ready.",
-  "Full Moon": "Everything is lit up. Feelings run high, things hidden come to the surface, decisions feel urgent. Don't sign anything you can sleep on.",
-  "Waning Gibbous": "Sharing and digesting. The work is done, now it's about telling the truth about what happened and what it meant.",
-  "Last Quarter": "A clearing day. You see what's no longer working and feel the pull to let it go, even if it's uncomfortable.",
-  "Waning Crescent": "Rest, surrender, compost. Don't push, the next cycle hasn't arrived yet. Sleep more than you think you need.",
-  "Balsamic": "The very end of the cycle. Hollow, quiet, dreamy. Let yourself be useless for a beat.",
+// Plain-prose Moon phase line that reads like weather, not a label.
+const PHASE_PROSE: Record<string, string> = {
+  "New Moon": "The Moon is dark, which usually pulls energy inward and makes the day feel quieter than the calendar suggests.",
+  "Waxing Crescent": "The Moon is a thin growing sliver, so anything you started recently is still small and worth protecting.",
+  "First Quarter": "The Moon is half-lit and pushing forward, the part of the cycle where new things meet their first real resistance.",
+  "Waxing Gibbous": "The Moon is almost full, which tends to make people busy, focused, and a little impatient to finish what they started.",
+  "Full Moon": "The Moon is full, which usually turns the volume up on feelings and brings hidden things into the open.",
+  "Waning Gibbous": "The Moon is past full, the stretch of the cycle for honest conversations about what just happened.",
+  "Last Quarter": "The Moon is half-lit and shrinking, which tends to surface what isn't working anymore and make it harder to ignore.",
+  "Waning Crescent": "The Moon is a fading sliver, so most people will feel quieter and more tired than they expect.",
+  "Balsamic": "The Moon is almost dark, which tends to make the day feel slow, dreamy, and not built for big decisions.",
 };
 
 function collectiveSkyHTML(date: Date): string {
@@ -555,30 +555,39 @@ function collectiveSkyHTML(date: Date): string {
   const moonPhase = getMoonPhase(midnight);
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
-  const tightest = [...aspects]
+  const tight = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
     .filter(a => parseFloat(a.orb) <= 3)
     .slice(0, 2);
 
-  const phaseName = moonPhase.phaseName;
-  const pct = Math.round(moonPhase.illumination * 100);
-  const phaseFeel = PHASE_FEEL[phaseName] || "";
-  const phaseLine = `<strong>The Moon is ${phaseName.toLowerCase()}, ${pct}% lit.</strong> ${phaseFeel}`.trim();
+  const phaseLine = PHASE_PROSE[moonPhase.phaseName] || "";
 
-  let aspectBlock: string;
-  if (!tightest.length) {
-    aspectBlock = `The collective sky is quiet today. No big planetary aspects are perfecting, which means the day is shaped more by the Moon and by your own choices than by any loud cosmic event.`;
-  } else {
-    const lines = tightest.map(a => describeCollectiveAspect(a.planet1, a.type, a.planet2));
-    aspectBlock = `The tightest things happening overhead today: <br/><br/>` +
-      lines.map(l => `&nbsp;&nbsp;• ${l}`).join('<br/>');
+  const clauses: string[] = [];
+  for (const a of tight) {
+    const isSoft = a.type === 'trine' || a.type === 'sextile';
+    const s1 = PLANET_SCENE[a.planet1];
+    const s2 = PLANET_SCENE[a.planet2];
+    if (!s1 || !s2) continue;
+    clauses.push(
+      isSoft
+        ? `${s1.soft}, and ${s2.soft}`
+        : `${s1.hard}, while ${s2.hard}`
+    );
   }
 
-  const html = `${phaseLine}<br/><br/>${aspectBlock}`;
+  let prose: string;
+  if (!clauses.length) {
+    prose = `Out in the world today, the sky is quiet. No big planetary pile-up is shaping the room, so the day takes its tone from whatever you and the people around you bring to it. ${phaseLine} A good day to keep your plans simple and pay attention to small things.`;
+  } else {
+    const opener = `Out in the world today, ${clauses[0]}.`;
+    const second = clauses[1] ? ` Underneath that, ${clauses[1]}.` : '';
+    const closer = ` ${phaseLine} A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`;
+    prose = `${opener}${second}${closer}`;
+  }
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
-      ${html}
+      ${prose}
     </div>`;
 }
 
