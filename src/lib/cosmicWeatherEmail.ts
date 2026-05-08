@@ -8,6 +8,7 @@
 
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
+import { buildMorningDigest } from "./cosmicWeatherMorningDigest";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 
