@@ -140,10 +140,10 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   // ── 3. Heads-up flags ────────────────────────────────────────────
   const flags: string[] = [];
   try {
-    const retro = getRetrogradeDisplay(date);
-    if (retro?.activeRetrogrades?.length) {
-      const names = retro.activeRetrogrades.map((r: any) => r.planet).join(', ');
-      flags.push(`Currently retrograde: ${names}.`);
+    const skyEntries = buildSkyEntries(date);
+    const retroNames = skyEntries.filter(e => e.retrograde).map(e => e.label);
+    if (retroNames.length) {
+      flags.push(`Currently retrograde: ${retroNames.join(', ')}.`);
     }
   } catch { /* ignore */ }
 
