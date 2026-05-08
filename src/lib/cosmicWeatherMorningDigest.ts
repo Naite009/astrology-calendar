@@ -338,17 +338,65 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
   return hits;
 }
 
+// Planet-specific felt-sense per aspect. Each entry is 1–2 sentences describing
+// what the body/mind actually does, NOT recycled house-area boilerplate.
+// Aspect families: 'hard' = conjunction/square/opposition, 'soft' = trine/sextile.
+const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
+  Sun:        { hard: "Your mood and your core sense of self are out of step today. You may feel restless, like what you want emotionally and what you're trying to be aren't lining up.",
+                soft: "Your feelings and your identity are on the same page. It's easy to act like yourself without second-guessing it." },
+  Mercury:    { hard: "Your feelings get loud right when you're trying to think or talk clearly. Expect tangled words, overthinking, or texts you'll want to rewrite.",
+                soft: "It's easier than usual to put what you feel into words. Good window for honest conversations and saying the thing." },
+  Venus:      { hard: "What you want and what you're actually getting from people don't match. Touchiness around love, money, or feeling undervalued is likely.",
+                soft: "You feel warmer toward people and easier in your own skin. Affection, beauty, and small pleasures land softly." },
+  Mars:       { hard: "A short fuse. Irritation, impatience, or a flash of anger that wants to pick a fight, slam a drawer, or push too hard. Move your body before you say something.",
+                soft: "Your energy and your mood are pulling in the same direction. Good time to act on something you've been putting off." },
+  Jupiter:    { hard: "Feelings get inflated. Either over-promising, overspending, overeating, or feeling like nothing is enough. Watch the urge to go big to feel better.",
+                soft: "Mood lifts. Optimism, generosity, and a sense that there's more room than you thought." },
+  Saturn:     { hard: "A heavy, contracted feeling. Loneliness, self-doubt, or the sense that you have to handle something alone. Tiredness is real, not a failure.",
+                soft: "Emotionally steady. You can sit with hard things without falling apart, and committing to something feels possible." },
+  Uranus:     { hard: "Jumpy, wired, can't-sit-still energy. Sudden mood shifts, the urge to bolt, blurt something out, or break a routine. Sleep may be twitchy.",
+                soft: "A small spark of insight or freedom. You see your situation from a slightly new angle and want to try something different." },
+  Neptune:    { hard: "Foggy, leaky, oversensitive. You may feel everyone else's feelings as your own, get teary at nothing, or want to escape into a screen, a drink, or sleep.",
+                soft: "Imagination opens. Music, art, dreams, and quiet time all feel more nourishing than usual." },
+  Pluto:      { hard: "Something underneath surfaces. An old feeling, a power struggle, or an urge to control or be controlled. Intensity is the keyword.",
+                soft: "You can look at something dark without flinching. Quiet, private depth; good for honest self-reflection." },
+  Chiron:     { hard: "An old wound gets touched. Something small can sting more than it should because it's hitting an old bruise.",
+                soft: "Tenderness without rawness. You can be with your own hurt, or someone else's, in a useful way." },
+  NorthNode:  { hard: "Pulled toward growth but uncomfortable about it. The thing you're avoiding is the thing today is pointing at.",
+                soft: "A small step in the direction your life is actually trying to go. It will feel quietly right." },
+  SouthNode:  { hard: "Pulled backward into an old comfort, an old role, an old relationship pattern. Easy to default to it; notice it instead of acting on it.",
+                soft: "Old skills come back online. Use them, but don't move in." },
+  Ascendant:  { hard: "How you're feeling and how you're coming across don't match. You may seem 'off' to people without knowing why.",
+                soft: "You feel like yourself, and people receive you that way. Good face-the-world energy." },
+  Midheaven:  { hard: "Feelings collide with work, reputation, or what you're 'supposed' to be doing publicly. Hard to keep a professional face.",
+                soft: "Your private mood supports your public role. A good day to be seen doing your actual work." },
+  Descendant: { hard: "Friction with a partner or close other. Their stuff is landing on you, or yours on them.",
+                soft: "Easy give-and-take with the people closest to you." },
+  IC:         { hard: "Restless at the root. Home, family, or something private feels unsettled.",
+                soft: "Home feels like home. Good time to be in your own space, with your own people." },
+};
+
 function moonHitInterpretation(h: MoonHit): string {
   const houseInfo = h.natalHouse ? HOUSE_MEANINGS[h.natalHouse] : null;
   const houseArea = houseInfo?.lifeArea || 'this part of your life';
-  const tone: Record<string, string> = {
-    conjunction: `The Moon lights up your natal ${h.natalPlanet} directly, bringing ${houseArea} into emotional focus.`,
-    opposition: `An emotional pull between today's Moon and your natal ${h.natalPlanet}, asking you to balance ${houseArea} with what's on the opposite side.`,
-    trine: `A soft, supportive flow to your natal ${h.natalPlanet}, easing ${houseArea}.`,
-    square: `Friction between today's mood and your natal ${h.natalPlanet}, putting pressure on ${houseArea}.`,
-    sextile: `An open door to your natal ${h.natalPlanet}, a small, willing nudge in ${houseArea}.`,
+  const planetKey = h.natalPlanet.replace(/\s+/g, '');
+  const feel = MOON_HIT_FEEL[planetKey];
+  const isHard = h.aspect === 'conjunction' || h.aspect === 'square' || h.aspect === 'opposition';
+  const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
+  const aspectFlavor: Record<string, string> = {
+    conjunction: "merges with",
+    opposition: "pulls against",
+    square: "scrapes against",
+    trine: "flows with",
+    sextile: "opens to",
   };
-  return tone[h.aspect] || `Contact between today's Moon and your natal ${h.natalPlanet} (${houseArea}).`;
+  const verb = aspectFlavor[h.aspect] || "contacts";
+  const lead = `Today's Moon ${verb} your natal ${h.natalPlanet} (${houseArea}).`;
+  if (feel) {
+    const body = isSoft ? feel.soft : isHard ? feel.hard : feel.hard;
+    return `${lead} ${body}`;
+  }
+  return lead;
 }
 
 function moonHitsHTML(date: Date, chart: NatalChart | null): string {
