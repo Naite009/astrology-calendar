@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange, formatVOCTime, formatVOCDuration, formatVOCRange } from "@/lib/voidOfCourseMoon";
+import { buildEvents24h, eventsToPromptBlock } from "@/lib/next24hEvents";
 import { formatLocalDateKey } from "@/lib/localDate";
 import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeaningsLookup";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
@@ -653,6 +654,30 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
 
       // userTimezone and userTzAbbr already declared above
 
+      // Build the deterministic 24h event timeline. The AI MUST use these times
+      // and is forbidden to invent or recall any others.
+      const events24h = buildEvents24h({
+        now,
+        userTimezone,
+        userTzAbbr,
+        currentAspects: aspectsWithDetails.map(a => ({
+          planet1: a.planet1, planet2: a.planet2, type: a.type, motion: a.motion, orb: a.orb,
+        })),
+        moonSignChange: moonSignChangeToday,
+        imminentSignChanges,
+        exactLunarPhase: (() => {
+          const exact = getExactLunarPhase(now);
+          if (!exact) return null;
+          return {
+            type: exact.type,
+            time: exact.time.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+            iso: exact.time.toISOString(),
+            name: exact.name,
+          };
+        })(),
+      });
+      const events24hPrompt = eventsToPromptBlock(events24h);
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
@@ -776,6 +801,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             moonSignChangeToday?.toSign || planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
             planetPositions
           ),
+          // Master pre-calculated event timeline. The AI is forbidden to use
+          // any time not present in events24h.
+          events24h,
+          events24hPrompt,
         }
       });
 

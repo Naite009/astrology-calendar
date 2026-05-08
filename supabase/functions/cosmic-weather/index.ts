@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, mercuryEphemerisVerification, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde, vocMoonData, aspectMeaningsText, moonDispositorChain } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, mercuryEphemerisVerification, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde, vocMoonData, aspectMeaningsText, moonDispositorChain, events24h, events24hPrompt } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, forceRegenerate, userTimezone, userTzAbbr, mercuryRetrogradeInfo, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -725,7 +725,7 @@ HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with 
 
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
-0b. **TIMEZONE & TIMES**: The user is in ${tzName} (${tzLabel}). ONLY use times that are EXPLICITLY provided in the data (moonSignChange.time, imminentSignChanges[].ingressTime, exactLunarPhase.time). NEVER calculate, guess, or recall times from your training data. If no time is provided for an event, do NOT mention a time — just say "today" or "later today". All provided times are already converted to ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation.
+0b. **TIMEZONE & TIMES — STRICT WHITELIST**: The user is in ${tzName} (${tzLabel}). The ONLY times you may use are the ones listed in the EVENTS_24H block (delivered separately as the master timeline). Do NOT use times from moonSignChange.time, imminentSignChanges[].ingressTime, exactLunarPhase.time, or anywhere else unless that exact time also appears in EVENTS_24H. NEVER calculate, guess, infer, or recall times from your training data. If an event you want to discuss is not in EVENTS_24H, describe it generically without a time (use "today" or "later today" only). All EVENTS_24H times are already converted to ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation.
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate. NEVER use dates, degrees, or astronomical facts from your training data — they may be wrong.
 1b. **RETROGRADE DATES**: If the Mercury Retrograde Status section provides specific dates (station retrograde, station direct, shadow dates), use THOSE dates EXACTLY. Do NOT substitute dates from your training data. The dates in the data are computed from real ephemeris and are the ground truth.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
@@ -926,12 +926,19 @@ CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
 6. **NEVER override provided data** - The user's natal chart has been calculated precisely. Trust the data given, do not recalculate.
 ` : '';
 
+    // Master pre-calculated 24h event timeline. The AI is forbidden to use any
+    // time not present in this block.
+    const events24hBlock = events24hPrompt
+      ? `\n\n========================================\n${events24hPrompt}\n========================================\n`
+      : '';
+
     // Use custom prompt if provided, otherwise use the default daily prompt
     const userPrompt = customPrompt ? `${customPrompt}
-
+${events24hBlock}
 ${planetText}
 ${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
 CRITICAL: The day of the week is "${date?.split(',')[0]?.trim() || 'unknown'}". Use this EXACT day name throughout your response — in greetings, Planetary Day Practice, and everywhere else.
+${events24hBlock}
 
 ${bodyTerminologyRule}
 
