@@ -261,6 +261,9 @@ interface MoonHit {
   natalDegree: number;
   natalMin: number;
   natalHouse: number | null;
+  transitSign: string;
+  transitDeg: number;
+  transitHouse: number | null;
   aspect: string;
   orb: number;
 }
@@ -320,13 +323,20 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
         if (o < bestOrb) { bestOrb = o; bestIdx = i; }
       }
       if (bestOrb <= aspect.orb && bestIdx >= 0) {
+        const hitTime = samples[bestIdx].t;
+        const hitLon = samples[bestIdx].lon;
+        const tPos = fromLongitude(hitLon);
+        const tHouse = getTransitPlanetHouse(tPos.sign, tPos.deg, chart);
         hits.push({
-          time: samples[bestIdx].t,
+          time: hitTime,
           natalPlanet: natal.name,
           natalSign: natal.sign,
           natalDegree: natal.degree,
           natalMin: natal.min,
           natalHouse: natal.house,
+          transitSign: tPos.sign,
+          transitDeg: tPos.deg,
+          transitHouse: tHouse,
           aspect: aspect.name,
           orb: bestOrb,
         });
@@ -344,6 +354,8 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
 const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
   Sun:        { hard: "Your mood and your core sense of self are out of step today. You may feel restless, like what you want emotionally and what you're trying to be aren't lining up.",
                 soft: "Your feelings and your identity are on the same page. It's easy to act like yourself without second-guessing it." },
+  Moon:       { hard: "Today's mood scrapes against your baseline emotional pattern — what you usually need to feel okay isn't quite available. Expect waves: hungry, then full; close, then needing distance.",
+                soft: "Today's feelings line up with your normal emotional rhythm. You feel like yourself from the inside out, and your needs are simple to meet." },
   Mercury:    { hard: "Your feelings get loud right when you're trying to think or talk clearly. Expect tangled words, overthinking, or texts you'll want to rewrite.",
                 soft: "It's easier than usual to put what you feel into words. Good window for honest conversations and saying the thing." },
   Venus:      { hard: "What you want and what you're actually getting from people don't match. Touchiness around love, money, or feeling undervalued is likely.",
@@ -402,30 +414,47 @@ const PLANET_EXPLAINER: Record<string, string> = {
   SouthNode: "the comfortable old patterns you default to",
 };
 
+// Concise house labels for the dynamic sentence.
+const HOUSE_LABEL: Record<number, string> = {
+  1: "your sense of self", 2: "your money and self-worth",
+  3: "your day-to-day talking and learning", 4: "your home and private life",
+  5: "your creativity, romance, and play", 6: "your work and daily routine",
+  7: "your one-on-one relationships", 8: "intimacy, shared resources, and what's hidden",
+  9: "your beliefs and bigger view", 10: "your career and public role",
+  11: "your friendships and future plans", 12: "your inner life and what you keep private",
+};
+
+function houseDynamicSentence(h: MoonHit): string {
+  const tH = h.transitHouse;
+  const nH = h.natalHouse;
+  if (!tH || !nH) return '';
+  const tLabel = HOUSE_LABEL[tH];
+  const nLabel = HOUSE_LABEL[nH];
+  const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
+  const isConj = h.aspect === 'conjunction';
+  if (tH === nH) {
+    return isSoft
+      ? `Both sides of this aspect land in ${tLabel}, doubling the focus there in an easy way.`
+      : isConj
+        ? `Both ends sit in ${tLabel} — today's mood and a long-standing pattern stack on top of each other in the same area.`
+        : `The pressure stays inside ${tLabel} — your current mood and a built-in pattern pull at each other in the same room.`;
+  }
+  if (isSoft) {
+    return `Energy moves cleanly from ${tLabel} into ${nLabel} — what's stirring on one side feeds the other instead of disrupting it.`;
+  }
+  if (isConj) {
+    return `Today's mood (${tLabel}) lights up ${nLabel} from the inside — the two areas blur together for a few hours and one bleeds into the other.`;
+  }
+  return `Friction shows up between ${tLabel} and ${nLabel}: something happening in one keeps interrupting or unsettling the other, and you'll feel pulled between them.`;
+}
+
 function moonHitInterpretation(h: MoonHit): string {
-  const houseInfo = h.natalHouse ? HOUSE_MEANINGS[h.natalHouse] : null;
-  const houseArea = houseInfo?.lifeArea || 'this part of your life';
   const planetKey = h.natalPlanet.replace(/\s+/g, '');
   const feel = MOON_HIT_FEEL[planetKey];
   const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
-  const aspectFlavor: Record<string, string> = {
-    conjunction: "merges with",
-    opposition: "pulls against",
-    square: "scrapes against",
-    trine: "flows with",
-    sextile: "opens to",
-  };
-  const verb = aspectFlavor[h.aspect] || "contacts";
-  const explainer = PLANET_EXPLAINER[planetKey];
-  const subject = explainer
-    ? `your natal ${h.natalPlanet} (${explainer}, in your ${houseArea})`
-    : `your natal ${h.natalPlanet} (${houseArea})`;
-  const lead = `Today's Moon ${verb} ${subject}.`;
-  if (feel) {
-    const body = isSoft ? feel.soft : feel.hard;
-    return `${lead} ${body}`;
-  }
-  return lead;
+  const body = feel ? (isSoft ? feel.soft : feel.hard) : '';
+  const dyn = houseDynamicSentence(h);
+  return [body, dyn].filter(Boolean).join(' ');
 }
 
 function moonHitsHTML(date: Date, chart: NatalChart | null): string {
@@ -442,10 +471,14 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   }
 
   const rows = hits.map(h => {
-    const houseInfo = h.natalHouse ? HOUSE_MEANINGS[h.natalHouse] : null;
-    const houseTag = h.natalHouse
-      ? `<span style="color:${COLOR.accent}">${ordinal(h.natalHouse!)} house</span>${houseInfo ? ` · ${escapeHtml(houseInfo.keywords.toLowerCase())}` : ''}`
-      : '';
+    const natalHouseInfo = h.natalHouse ? HOUSE_MEANINGS[h.natalHouse] : null;
+    const natalKeyword = natalHouseInfo ? natalHouseInfo.keywords.toLowerCase() : '';
+    const transitLine = h.transitHouse
+      ? `Transiting Moon in ${escapeHtml(h.transitSign)}, your <span style="color:${COLOR.accent}">${ordinal(h.transitHouse)} house</span>`
+      : `Transiting Moon in ${escapeHtml(h.transitSign)}`;
+    const natalLine = h.natalHouse
+      ? `natal ${escapeHtml(h.natalPlanet)} in ${escapeHtml(h.natalSign)}, your <span style="color:${COLOR.accent}">${ordinal(h.natalHouse)} house</span>${natalKeyword ? ` <span style="color:${COLOR.faint}">(${escapeHtml(natalKeyword)})</span>` : ''}`
+      : `natal ${escapeHtml(h.natalPlanet)} in ${escapeHtml(h.natalSign)}`;
     return `
       <tr>
         <td style="padding:12px 14px;border-top:1px solid ${COLOR.border};vertical-align:top;width:90px;font-size:12px;color:${COLOR.muted};white-space:nowrap">
@@ -456,8 +489,8 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
             ☽ ${ASPECT_GLYPH[h.aspect] || h.aspect} natal ${escapeHtml(h.natalPlanet)}
             <span style="font-weight:400;color:${COLOR.muted}"> · ${h.orb.toFixed(1)}° orb</span>
           </div>
-          <div style="font-size:12px;color:${COLOR.muted};margin-top:2px">${houseTag}</div>
-          <div style="font-size:13px;color:${COLOR.text};margin-top:6px;line-height:1.5">${escapeHtml(moonHitInterpretation(h))}</div>
+          <div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">${transitLine} &nbsp;·&nbsp; ${natalLine}</div>
+          <div style="font-size:13px;color:${COLOR.text};margin-top:8px;line-height:1.55">${moonHitInterpretation(h)}</div>
         </td>
       </tr>`;
   }).join('');
