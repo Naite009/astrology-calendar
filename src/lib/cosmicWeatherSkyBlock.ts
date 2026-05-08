@@ -69,7 +69,7 @@ function fmtPos(lon: number): { sign: string; symbol: string; deg: number; min: 
  * Eastern is UTC-5 (EST) or UTC-4 (EDT). We use the standard JS DST rule
  * for America/New_York (2nd Sun of March → 1st Sun of November).
  */
-function midnightEastern(date: Date): Date {
+export function getEasternMidnightDate(date: Date): Date {
   const y = date.getFullYear();
   const m = date.getMonth();
   const d = date.getDate();
@@ -109,7 +109,7 @@ export interface SkyEntry {
 }
 
 export function buildSkyEntries(date: Date): SkyEntry[] {
-  const target = midnightEastern(date);
+  const target = getEasternMidnightDate(date);
   return PLANETS.map(p => {
     const lon = longitudeOf(p.body, target);
     const pos = fmtPos(lon);

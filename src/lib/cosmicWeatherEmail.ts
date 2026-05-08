@@ -91,8 +91,17 @@ export async function generateCosmicWeatherEmail(
   // Deterministic sky block — pure ephemeris, no AI.
   const skyBlock = formatSkyBlockForEmail(date);
 
-  opts.onProgress?.("building morning digest");
-  const body = buildMorningDigest({ date, natalChart, recipientName });
+  const cached = findCachedInsight(dateKey);
+  let body: string;
+
+  if (cached?.insight?.trim()) {
+    opts.onProgress?.("using full in-app reading");
+    body = `${skyBlock}\n\n${cached.insight.trim()}`;
+  } else {
+    opts.onProgress?.("building fallback digest");
+    body = buildMorningDigest({ date, natalChart, recipientName });
+  }
+
   return { subject, body, skyBlock, meta };
 }
 
