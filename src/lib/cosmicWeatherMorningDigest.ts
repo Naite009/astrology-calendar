@@ -323,13 +323,20 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
         if (o < bestOrb) { bestOrb = o; bestIdx = i; }
       }
       if (bestOrb <= aspect.orb && bestIdx >= 0) {
+        const hitTime = samples[bestIdx].t;
+        const hitLon = samples[bestIdx].lon;
+        const tPos = fromLongitude(hitLon);
+        const tHouse = getTransitPlanetHouse(tPos.sign, tPos.deg, chart);
         hits.push({
-          time: samples[bestIdx].t,
+          time: hitTime,
           natalPlanet: natal.name,
           natalSign: natal.sign,
           natalDegree: natal.degree,
           natalMin: natal.min,
           natalHouse: natal.house,
+          transitSign: tPos.sign,
+          transitDeg: tPos.deg,
+          transitHouse: tHouse,
           aspect: aspect.name,
           orb: bestOrb,
         });
