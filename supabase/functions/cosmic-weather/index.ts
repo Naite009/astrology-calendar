@@ -926,12 +926,19 @@ CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
 6. **NEVER override provided data** - The user's natal chart has been calculated precisely. Trust the data given, do not recalculate.
 ` : '';
 
+    // Master pre-calculated 24h event timeline. The AI is forbidden to use any
+    // time not present in this block.
+    const events24hBlock = events24hPrompt
+      ? `\n\n========================================\n${events24hPrompt}\n========================================\n`
+      : '';
+
     // Use custom prompt if provided, otherwise use the default daily prompt
     const userPrompt = customPrompt ? `${customPrompt}
-
+${events24hBlock}
 ${planetText}
 ${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
 CRITICAL: The day of the week is "${date?.split(',')[0]?.trim() || 'unknown'}". Use this EXACT day name throughout your response — in greetings, Planetary Day Practice, and everywhere else.
+${events24hBlock}
 
 ${bodyTerminologyRule}
 
