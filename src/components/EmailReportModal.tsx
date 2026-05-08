@@ -242,10 +242,10 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
               {error}
             </div>
           ) : body ? (
-            <textarea
-              readOnly
-              value={body}
-              className="w-full h-[420px] font-mono text-xs p-3 rounded-sm border border-border bg-muted/20 leading-relaxed"
+            <iframe
+              title="Cosmic Weather preview"
+              srcDoc={body}
+              className="w-full h-[600px] rounded-sm border border-border bg-background"
             />
           ) : (
             <div className="p-6 bg-muted/20 rounded-sm border border-dashed border-border text-sm text-muted-foreground text-center">
