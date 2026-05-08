@@ -374,6 +374,32 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
                 soft: "Easy give-and-take with the people closest to you." },
   IC:         { hard: "Restless at the root. Home, family, or something private feels unsettled.",
                 soft: "Home feels like home. Good time to be in your own space, with your own people." },
+  Ceres:      { hard: "Something in how you give or receive care feels off. You may feel under-fed (food, attention, mothering) or like you're doing all the feeding.",
+                soft: "Easy day to nourish yourself and the people you love. Cooking, checking in on someone, being checked on." },
+  Pallas:     { hard: "Your strategic brain and your mood are at odds. You can see the pattern or the smart move, but feelings keep getting in the way of executing it.",
+                soft: "Pattern recognition is on. Good day to plan, strategize, or solve a problem you've been circling." },
+  Juno:       { hard: "A sore spot in committed partnership gets pressed. Old fairness issues, who-does-what resentments, or feeling unseen by your person.",
+                soft: "Easier give-and-take with a committed partner. Loyalty and the small contracts of being a 'we' feel workable." },
+  Vesta:      { hard: "Hard to focus on the one thing that actually matters to you. Distraction, or feeling pulled away from your craft, your practice, your private flame.",
+                soft: "You can sink into focused, devoted work. The thing you take seriously gets quiet, full attention." },
+  Lilith:     { hard: "The part of you that refuses to be tamed gets activated. Anger about being managed, talked over, or made small. Don't apologize it away.",
+                soft: "You feel allowed to be fully yourself, including the parts that aren't 'nice.' Honest, not performative." },
+  Eris:       { hard: "Something feels unfair, and you want to name it loudly. Risk of stirring conflict to be acknowledged.",
+                soft: "You can name the elephant in the room without burning the room down." },
+};
+
+// Plain-English explainer for less-known points so the lead sentence isn't
+// just a name the reader doesn't know.
+const PLANET_EXPLAINER: Record<string, string> = {
+  Pallas: "the part of you that sees patterns and thinks strategically",
+  Juno: "the part of you that does committed partnership",
+  Vesta: "the part of you that's devoted to a craft or private practice",
+  Ceres: "the part of you that gives and needs care",
+  Lilith: "the part of you that won't be tamed or talked down to",
+  Chiron: "the part of you that carries an old wound and teaches from it",
+  Eris: "the part of you that names what's unfair",
+  NorthNode: "the direction your life is trying to grow toward",
+  SouthNode: "the comfortable old patterns you default to",
 };
 
 function moonHitInterpretation(h: MoonHit): string {
@@ -381,7 +407,6 @@ function moonHitInterpretation(h: MoonHit): string {
   const houseArea = houseInfo?.lifeArea || 'this part of your life';
   const planetKey = h.natalPlanet.replace(/\s+/g, '');
   const feel = MOON_HIT_FEEL[planetKey];
-  const isHard = h.aspect === 'conjunction' || h.aspect === 'square' || h.aspect === 'opposition';
   const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
   const aspectFlavor: Record<string, string> = {
     conjunction: "merges with",
@@ -391,9 +416,13 @@ function moonHitInterpretation(h: MoonHit): string {
     sextile: "opens to",
   };
   const verb = aspectFlavor[h.aspect] || "contacts";
-  const lead = `Today's Moon ${verb} your natal ${h.natalPlanet} (${houseArea}).`;
+  const explainer = PLANET_EXPLAINER[planetKey];
+  const subject = explainer
+    ? `your natal ${h.natalPlanet} (${explainer}, in your ${houseArea})`
+    : `your natal ${h.natalPlanet} (${houseArea})`;
+  const lead = `Today's Moon ${verb} ${subject}.`;
   if (feel) {
-    const body = isSoft ? feel.soft : isHard ? feel.hard : feel.hard;
+    const body = isSoft ? feel.soft : feel.hard;
     return `${lead} ${body}`;
   }
   return lead;
