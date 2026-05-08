@@ -837,12 +837,92 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       localStorage.setItem(`cosmic-weather-${todayKey}-${effectiveVoiceStyle}`, JSON.stringify(newCosmicData));
 
       // Mirror to Supabase so the daily email function can read today's reading.
+      // We build the FULL morning digest (planet grid, Moon arc, Moon hits,
+      // collective sky, what matters most), inject the cosmic-weather AI prose
+      // into the collective section, and inject AI-generated whatMatters items
+      // grounded in the day's full transit array.
       try {
         const { data: authData } = await supabase.auth.getUser();
         const uid = authData?.user?.id ?? null;
-        const insightHtml = `<div style="font-family:Georgia,serif;max-width:640px;margin:0 auto;padding:20px;color:#333;line-height:1.6;white-space:pre-wrap">${
-          (data.insight || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        }</div>`;
+        const chartForDigest = selectedChart || userNatalChart || null;
+
+        // 1) Calculate the FULL day's transits (all transiting planets vs all
+        //    natal planets) and pre-compute house/orb metadata.
+        let whatMattersItems: Array<{ headline: string; body: string }> | undefined;
+        if (chartForDigest) {
+          const midnightET = new Date(now);
+          const transits = calculateTransitAspects(midnightET, getPlanetaryPositions(midnightET), chartForDigest);
+
+          // Send a normalized, slim payload — the AI is forbidden to use any
+          // transit not in this list (enforced server-side by whitelist).
+          const transitsPayload = transits.map(t => ({
+            transitPlanet: t.transitPlanet,
+            aspect: t.aspect,
+            natalPlanet: t.natalPlanet,
+            natalSign: t.natalSign,
+            natalHouse: t.natalHouse ?? null,
+            orb: t.orb,
+            applying: (t as any).applying,
+          }));
+
+          const natalPlanetsPayload = Object.entries(chartForDigest.planets || {})
+            .filter(([_, p]: any) => p?.sign)
+            .map(([name, p]: any) => ({
+              name,
+              sign: p.sign,
+              degree: p.degree,
+              minutes: p.minutes || 0,
+              house: getTransitPlanetHouse(p.sign, p.degree, chartForDigest),
+              retrograde: !!p.retrograde,
+            }));
+
+          const moonNoonHouse = (() => {
+            const mp = planets.moon;
+            if (!mp?.signName) return null;
+            return getTransitPlanetHouse(mp.signName, mp.degree, chartForDigest);
+          })();
+
+          try {
+            const { data: wmData } = await supabase.functions.invoke('cosmic-weather-what-matters', {
+              body: {
+                natalPlanets: natalPlanetsPayload,
+                transits: transitsPayload,
+                stelliums: stelliums.map(s => ({ sign: s.sign, planets: s.planets })),
+                moonHouseToday: moonNoonHouse,
+                dateLabel: dateStr,
+                recipientName: chartForDigest.name,
+              },
+            });
+            const items = Array.isArray(wmData?.items) ? wmData.items : [];
+            if (items.length) {
+              whatMattersItems = items.map((it: any) => ({
+                headline: String(it.headline || ''),
+                body: String(it.body || ''),
+              }));
+            }
+          } catch (wmErr) {
+            console.warn('what-matters fetch failed:', wmErr);
+          }
+        }
+
+        // 2) Build the full digest with the cosmic-weather prose injected into
+        //    the collective sky section, and the AI items in What Matters Most.
+        const collectiveProseHTML = (data.insight || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\n\n/g, '</p><p style="margin:0 0 10px">')
+          .replace(/\n/g, '<br/>');
+        const wrappedProse = `<p style="margin:0 0 10px">${collectiveProseHTML}</p>`;
+
+        const fullDigestHtml = buildMorningDigest({
+          date: now,
+          natalChart: chartForDigest,
+          recipientName: chartForDigest?.name,
+          collectiveProseHTML: wrappedProse,
+          whatMattersItems,
+        });
+
         const subject = `Cosmic Weather, ${dateStr}`;
         const expires = new Date();
         expires.setDate(expires.getDate() + 7);
@@ -854,7 +934,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           chart_id: selectedChartId || '',
           content: data.insight || '',
           subject,
-          body_html: insightHtml,
+          body_html: fullDigestHtml,
           expires_at: expires.toISOString(),
         });
       } catch (mirrorErr) {
