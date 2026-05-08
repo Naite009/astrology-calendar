@@ -15,7 +15,7 @@
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects } from './astrology';
 import { getVOCMoonDetails, formatVOCTime } from './voidOfCourseMoon';
 import { calculateTransitAlerts } from './transitAlerts';
-import { formatSkyBlockForEmail, buildSkyEntries } from './cosmicWeatherSkyBlock';
+import { formatSkyBlockForEmail, buildSkyEntries, getEasternMidnightDate } from './cosmicWeatherSkyBlock';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGN_SYMBOL: Record<string, string> = {
@@ -95,7 +95,74 @@ export interface MorningDigestArgs {
   recipientName?: string;
 }
 
+const NATAL_HIT_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant'] as const;
+const TRANSIT_HIT_PLANETS = ['Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
+const HIT_ASPECTS = [
+  { angle: 0, name: 'conjunction' },
+  { angle: 60, name: 'sextile' },
+  { angle: 90, name: 'square' },
+  { angle: 120, name: 'trine' },
+  { angle: 180, name: 'opposition' },
+] as const;
+
+const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as const;
+
+function toAbsoluteLongitude(sign: string, degree: number, minutes = 0): number {
+  const signIndex = SIGNS.indexOf(sign as typeof SIGNS[number]);
+  if (signIndex === -1) return 0;
+  return signIndex * 30 + degree + minutes / 60;
+}
+
+function normalizedAngleDiff(a: number, b: number): number {
+  let diff = Math.abs(a - b) % 360;
+  if (diff > 180) diff = 360 - diff;
+  return diff;
+}
+
+function buildDirectPersonalHits(natalChart: NatalChart, date: Date): string[] {
+  const positions = getPlanetaryPositions(date);
+  const hits: Array<{ line: string; orb: number }> = [];
+
+  for (const transitPlanet of TRANSIT_HIT_PLANETS) {
+    const transitKey = transitPlanet.toLowerCase() as keyof typeof positions;
+    const transitPos = positions[transitKey];
+    if (!transitPos) continue;
+
+    const transitLon = toAbsoluteLongitude(transitPos.signName, transitPos.degree, transitPos.minutes);
+
+    for (const natalPlanet of NATAL_HIT_PLANETS) {
+      const natalPos = natalChart.planets[natalPlanet as keyof typeof natalChart.planets];
+      if (!natalPos) continue;
+
+      const natalLon = toAbsoluteLongitude(natalPos.sign, natalPos.degree, natalPos.minutes || 0);
+      const diff = normalizedAngleDiff(transitLon, natalLon);
+
+      for (const aspect of HIT_ASPECTS) {
+        const orb = Math.abs(diff - aspect.angle);
+        if (orb <= 1.5) {
+          hits.push({
+            line: personalHitLine(transitPlanet, aspect.name, natalPlanet),
+            orb,
+          });
+        }
+      }
+    }
+  }
+
+  const deduped = new Map<string, { line: string; orb: number }>();
+  for (const hit of hits) {
+    const existing = deduped.get(hit.line);
+    if (!existing || hit.orb < existing.orb) deduped.set(hit.line, hit);
+  }
+
+  return [...deduped.values()]
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 3)
+    .map(hit => hit.line);
+}
+
 export function buildMorningDigest({ date, natalChart, recipientName }: MorningDigestArgs): string {
+  const digestMoment = getEasternMidnightDate(date);
   const dateLabel = date.toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   });
@@ -103,11 +170,11 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   const greeting = firstName ? `Good morning, ${firstName}.` : 'Good morning.';
 
   // ── 1. Moon ──────────────────────────────────────────────────────
-  const positions = getPlanetaryPositions(date);
+  const positions = getPlanetaryPositions(digestMoment);
   const moonSign = positions.moon.sign;
   const moonDeg = positions.moon.degree;
-  const phase = getMoonPhase(date);
-  const voc = getVOCMoonDetails(date);
+  const phase = getMoonPhase(digestMoment);
+  const voc = getVOCMoonDetails(digestMoment);
   const element = ELEMENT[moonSign] || 'air';
   const mood = MOON_MOOD[element];
 
@@ -123,7 +190,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   // ── 2. Dominant story (one line from tightest aspect today) ──────
   let storyLine = `Today's strongest current: ${element} energy, so lean into ${mood.doIt.split(',')[0].trim()}.`;
   try {
-    const aspects = (calculateDailyAspects as any)(date) || [];
+      const aspects = (calculateDailyAspects as any)(digestMoment) || [];
     // Find the tightest (smallest orb) aspect among slow planets, ignoring Moon
     const SLOW = new Set(['Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
     const slowOnly = aspects
@@ -164,7 +231,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   const personalLines: string[] = [];
   if (natalChart) {
     try {
-      const alerts = calculateTransitAlerts(natalChart, date)
+      const alerts = calculateTransitAlerts(natalChart, digestMoment)
         .filter(a => a.orb <= 1.5 && (a.alertType === 'exact' || a.motion === 'applying'))
         .sort((a, b) => a.orb - b.orb)
         .slice(0, 2);
@@ -172,6 +239,9 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
         personalLines.push(personalHitLine(a.transitPlanet, a.aspectType, a.natalPlanet));
       }
     } catch { /* ignore */ }
+    if (!personalLines.length) {
+      personalLines.push(...buildDirectPersonalHits(natalChart, digestMoment));
+    }
   }
 
   // ── Compose ──────────────────────────────────────────────────────
@@ -186,10 +256,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   sections.push(`DO / AVOID\n• ${doLine}\n• ${avoidLine}`);
   if (personalLines.length) {
     sections.push(`FOR YOU TODAY\n${personalLines.map(l => '• ' + l).join('\n')}`);
-  } else if (natalChart) {
-    sections.push(`FOR YOU TODAY\nNo planet is sitting on a sensitive point of your chart within 1° today. Move with the collective weather above.`);
   }
-  sections.push(`Want the full reading? Open the app for the long version.`);
 
   return sections.join('\n\n');
 }
