@@ -208,6 +208,7 @@ export type Database = {
       }
       cosmic_weather_cache: {
         Row: {
+          body_html: string | null
           chart_id: string
           content: string
           created_at: string
@@ -215,11 +216,13 @@ export type Database = {
           device_id: string
           expires_at: string
           id: string
+          subject: string | null
           updated_at: string
           user_id: string | null
           voice_style: string
         }
         Insert: {
+          body_html?: string | null
           chart_id?: string
           content: string
           created_at?: string
@@ -227,11 +230,13 @@ export type Database = {
           device_id?: string
           expires_at: string
           id?: string
+          subject?: string | null
           updated_at?: string
           user_id?: string | null
           voice_style?: string
         }
         Update: {
+          body_html?: string | null
           chart_id?: string
           content?: string
           created_at?: string
@@ -239,6 +244,7 @@ export type Database = {
           device_id?: string
           expires_at?: string
           id?: string
+          subject?: string | null
           updated_at?: string
           user_id?: string | null
           voice_style?: string
