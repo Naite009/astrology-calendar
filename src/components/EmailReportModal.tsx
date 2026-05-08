@@ -133,7 +133,7 @@ export const EmailReportModal = ({ date, onClose, natalChart, chartId }: Props) 
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-6 shadow-xl md:p-8"
+        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-6 shadow-xl md:p-8"
         onClick={e => e.stopPropagation()}
       >
         <button
