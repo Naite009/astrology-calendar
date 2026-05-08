@@ -737,10 +737,22 @@ function sectionTitle(eyebrow: string, heading: string): string {
 
 // ─── Public entry ───────────────────────────────────────────────────
 
-export function buildMorningDigest({ date, natalChart, recipientName }: MorningDigestArgs): string {
+export function buildMorningDigest({
+  date,
+  natalChart,
+  recipientName,
+  collectiveProseHTML,
+  whatMattersItems,
+}: MorningDigestArgs): string {
   const midnight = getEasternMidnightDate(date);
   const dateLabel = fmtETDate(midnight);
   const firstName = recipientName?.trim().split(/\s+/)[0];
+
+  // If a collective prose override is provided (the cosmic-weather AI prose),
+  // wrap it in the same card shell so the layout is identical.
+  const collectiveSection = collectiveProseHTML
+    ? `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${collectiveProseHTML}</div>`
+    : collectiveSkyHTML(date);
 
   return `<div style="background:${COLOR.bg};padding:28px 18px;font-family:${FONT};color:${COLOR.text}">
     <div style="max-width:680px;margin:0 auto">
@@ -763,10 +775,10 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
       ${moonHitsHTML(date, natalChart)}
 
       ${sectionTitle('The collective sky', 'What everyone is living under')}
-      ${collectiveSkyHTML(date)}
+      ${collectiveSection}
 
       ${sectionTitle('What matters most today', 'Personal to your chart')}
-      ${whatMattersHTML(date, natalChart)}
+      ${whatMattersHTML(date, natalChart, whatMattersItems)}
 
       <div style="margin:36px 0 4px;padding-top:14px;border-top:1px solid ${COLOR.border};font-size:11px;color:${COLOR.faint};text-align:center;font-family:${SANS}">
         Generated from your live chart · all positions calculated in Eastern Time
