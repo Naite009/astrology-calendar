@@ -171,7 +171,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
 
   // ── 1. Moon ──────────────────────────────────────────────────────
   const positions = getPlanetaryPositions(digestMoment);
-  const moonSign = positions.moon.sign;
+  const moonSign = positions.moon.signName;
   const moonDeg = positions.moon.degree;
   const phase = getMoonPhase(digestMoment);
   const voc = getVOCMoonDetails(digestMoment);
@@ -190,7 +190,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   // ── 2. Dominant story (one line from tightest aspect today) ──────
   let storyLine = `Today's strongest current: ${element} energy, so lean into ${mood.doIt.split(',')[0].trim()}.`;
   try {
-      const aspects = (calculateDailyAspects as any)(digestMoment) || [];
+      const aspects = calculateDailyAspects(positions) || [];
     // Find the tightest (smallest orb) aspect among slow planets, ignoring Moon
     const SLOW = new Set(['Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
     const slowOnly = aspects
