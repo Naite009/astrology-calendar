@@ -472,33 +472,80 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
 
 // ─── Section 4: Collective sky paragraph ────────────────────────────
 
+// What each planet brings to a collective aspect, in plain language.
+const PLANET_DOMAIN: Record<string, string> = {
+  Sun: "ego, vitality, the urge to shine",
+  Moon: "mood, the emotional weather of the day",
+  Mercury: "thinking, talking, messages, plans",
+  Venus: "love, money, what we value, social ease",
+  Mars: "drive, anger, the appetite to act",
+  Jupiter: "growth, optimism, going bigger",
+  Saturn: "limits, responsibility, the reality check",
+  Uranus: "shocks, sudden change, the urge to break free",
+  Neptune: "fog, dreams, dissolving edges, longing",
+  Pluto: "power, control, what's hidden underneath",
+  Chiron: "old wounds asking to be tended",
+};
+
+// Felt-sense for a hard vs soft pairing. Reads like a real description, not a label.
+function describeCollectiveAspect(p1: string, type: string, p2: string): string {
+  const a = PLANET_DOMAIN[p1] || p1.toLowerCase();
+  const b = PLANET_DOMAIN[p2] || p2.toLowerCase();
+  const verbs: Record<string, string> = {
+    conjunction: `fuse together: ${a} is hard to separate from ${b} right now`,
+    opposition: `face off: ${a} and ${b} pull on each other and ask for balance`,
+    square: `grind against each other: ${a} keeps bumping into ${b}, creating friction nobody can quite name`,
+    trine: `cooperate easily: ${a} and ${b} are on the same wavelength, things click without effort`,
+    sextile: `offer each other a small opening: ${a} and ${b} can help each other if you take the door`,
+    semisextile: `nudge at each other quietly: ${a} and ${b} aren't in open conflict, just slightly out of sync`,
+    quincunx: `don't quite match: ${a} and ${b} are talking past each other, expect awkward adjustments`,
+  };
+  const phrase = verbs[type] || `connect: ${a} meets ${b}`;
+  return `${p1} and ${p2} ${phrase}.`;
+}
+
+// Plain-language meaning of each Moon phase for the collective.
+const PHASE_FEEL: Record<string, string> = {
+  "New Moon": "It's a planting day. Energy is low and inward, good for setting an intention nobody else needs to know about.",
+  "Waxing Crescent": "Things you started recently are still tender. Protect them, don't show them off yet.",
+  "First Quarter": "A push-back day. Whatever you started at the new moon is meeting its first real obstacle, that's normal, not a sign to quit.",
+  "Waxing Gibbous": "Refining and adjusting. You can see what's working and what needs one more pass before it's ready.",
+  "Full Moon": "Everything is lit up. Feelings run high, things hidden come to the surface, decisions feel urgent. Don't sign anything you can sleep on.",
+  "Waning Gibbous": "Sharing and digesting. The work is done, now it's about telling the truth about what happened and what it meant.",
+  "Last Quarter": "A clearing day. You see what's no longer working and feel the pull to let it go, even if it's uncomfortable.",
+  "Waning Crescent": "Rest, surrender, compost. Don't push, the next cycle hasn't arrived yet. Sleep more than you think you need.",
+  "Balsamic": "The very end of the cycle. Hollow, quiet, dreamy. Let yourself be useless for a beat.",
+};
+
 function collectiveSkyHTML(date: Date): string {
   const midnight = getEasternMidnightDate(date);
   const moonPhase = getMoonPhase(midnight);
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
-  const dayType = getDayType(aspects, moonPhase);
   const tightest = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
     .filter(a => parseFloat(a.orb) <= 3)
     .slice(0, 2);
 
-  const phaseLine = `The Moon is ${moonPhase.phaseName.toLowerCase()}, ${Math.round(moonPhase.illumination * 100)}% lit.`;
-  const dayLine = `${dayType.description}.`;
-  const aspectLine = tightest.length
-    ? `The tightest sky aspect right now is ${tightest.map(a => `${a.planet1} ${a.type} ${a.planet2} (${a.orb}° orb)`).join(' and ')}.`
-    : `No major collective aspects are perfecting today, the sky is relatively quiet.`;
-  const closer = tightest.some(a => ['square','opposition'].includes(a.type))
-    ? `Expect a little friction in the air, even if you can't name it.`
-    : tightest.some(a => ['trine','sextile'].includes(a.type))
-      ? `The collective tone is workable, things tend to flow if you cooperate with them.`
-      : `Tone is mostly neutral, what you bring sets the mood.`;
+  const phaseName = moonPhase.phaseName;
+  const pct = Math.round(moonPhase.illumination * 100);
+  const phaseFeel = PHASE_FEEL[phaseName] || "";
+  const phaseLine = `<strong>The Moon is ${phaseName.toLowerCase()}, ${pct}% lit.</strong> ${phaseFeel}`.trim();
 
-  const paragraph = [phaseLine, dayLine, aspectLine, closer].join(' ');
+  let aspectBlock: string;
+  if (!tightest.length) {
+    aspectBlock = `The collective sky is quiet today. No big planetary aspects are perfecting, which means the day is shaped more by the Moon and by your own choices than by any loud cosmic event.`;
+  } else {
+    const lines = tightest.map(a => describeCollectiveAspect(a.planet1, a.type, a.planet2));
+    aspectBlock = `The tightest things happening overhead today: <br/><br/>` +
+      lines.map(l => `&nbsp;&nbsp;• ${l}`).join('<br/>');
+  }
+
+  const html = `${phaseLine}<br/><br/>${aspectBlock}`;
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
-      ${escapeHtml(paragraph)}
+      ${html}
     </div>`;
 }
 
