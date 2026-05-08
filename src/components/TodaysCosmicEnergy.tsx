@@ -801,6 +801,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             moonSignChangeToday?.toSign || planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
             planetPositions
           ),
+          // Master pre-calculated event timeline. The AI is forbidden to use
+          // any time not present in events24h.
+          events24h,
+          events24hPrompt,
         }
       });
 
