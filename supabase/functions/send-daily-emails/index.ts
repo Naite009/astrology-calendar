@@ -1,4 +1,5 @@
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +8,10 @@ const corsHeaders = {
 
 const FROM = "laurenlevin21@gmail.com";
 const APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
 
 const RECIPIENTS = [
   { name: "Lauren", email: "laurenlevin21@gmail.com" },
@@ -20,28 +25,41 @@ function todayET(): string {
   }).format(new Date());
 }
 
-function personalEmail(name: string, dateStr: string) {
-  return {
-    subject: `${name}'s Personal Cosmic Weather — ${dateStr}`,
-    html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:20px;color:#333">
-      <h1 style="color:#6B46C1">Good morning, ${name}</h1>
-      <p style="font-size:14px;color:#888">${dateStr}</p>
-      <h2>Your personal weather today</h2>
-      <p>This is your personalized daily reading. Content will be tailored to your natal chart.</p>
-      <p style="margin-top:30px;font-size:12px;color:#999">Sent with love from your Astrology Calendar</p>
-    </div>`,
-  };
+function todayKeyET(): string {
+  // YYYY-MM-DD in America/New_York to match formatLocalDateKey on the client.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find(p => p.type === t)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-function generalEmail(name: string, dateStr: string) {
+async function fetchCachedReading(): Promise<{ subject: string; body_html: string } | null> {
+  const dateKey = todayKeyET();
+  const { data, error } = await supabase
+    .from("cosmic_weather_cache")
+    .select("subject, body_html, created_at")
+    .eq("date_key", dateKey)
+    .not("body_html", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.warn("cosmic_weather_cache query error:", error.message);
+    return null;
+  }
+  if (!data?.body_html) return null;
+  return { subject: data.subject || `Today's Cosmic Weather`, body_html: data.body_html };
+}
+
+function placeholderEmail(name: string, dateStr: string) {
   return {
     subject: `Today's Cosmic Weather — ${dateStr}`,
     html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:20px;color:#333">
       <h1 style="color:#6B46C1">Cosmic Weather</h1>
       <p style="font-size:14px;color:#888">${dateStr}</p>
-      <h2>What the sky is doing today</h2>
-      <p>Hi ${name}, here is the general cosmic weather for everyone today.</p>
-      <p style="margin-top:30px;font-size:12px;color:#999">Sent with love from your Astrology Calendar</p>
+      <p>Hi ${name}, no cosmic weather has been generated for today yet. Open the app to generate today's reading.</p>
     </div>`,
   };
 }
@@ -60,27 +78,28 @@ Deno.serve(async (req) => {
 
   const dateStr = todayET();
   const results: any[] = [];
+  const cached = await fetchCachedReading();
 
   try {
     for (const r of RECIPIENTS) {
-      for (const builder of [personalEmail, generalEmail]) {
-        const { subject, html } = builder(r.name, dateStr);
-        try {
-          await client.send({
-            from: `Astrology Calendar <${FROM}>`,
-            to: r.email,
-            subject,
-            content: "auto",
-            html,
-          });
-          results.push({ to: r.email, subject, ok: true });
-        } catch (e) {
-          results.push({ to: r.email, subject, ok: false, error: String(e) });
-        }
+      const { subject, html } = cached
+        ? { subject: cached.subject, html: cached.body_html }
+        : placeholderEmail(r.name, dateStr);
+      try {
+        await client.send({
+          from: `Astrology Calendar <${FROM}>`,
+          to: r.email,
+          subject,
+          content: "auto",
+          html,
+        });
+        results.push({ to: r.email, subject, ok: true, usedCache: !!cached });
+      } catch (e) {
+        results.push({ to: r.email, subject, ok: false, error: String(e) });
       }
     }
     await client.close();
-    return new Response(JSON.stringify({ sentAt: new Date().toISOString(), results }), {
+    return new Response(JSON.stringify({ sentAt: new Date().toISOString(), usedCache: !!cached, results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
