@@ -8,6 +8,7 @@
 
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
+import { buildMorningDigest } from "./cosmicWeatherMorningDigest";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
 
@@ -90,19 +91,9 @@ export async function generateCosmicWeatherEmail(
   // Deterministic sky block — pure ephemeris, no AI.
   const skyBlock = formatSkyBlockForEmail(date);
 
-  opts.onProgress?.("checking cache");
-  const cached = findCachedInsight(dateKey);
-  if (cached) {
-    const greeting = recipientName ? `Hi ${recipientName.split(/\s+/)[0]},\n\n` : "";
-    const body = `${greeting}${skyBlock}\n\n${cached.insight.trim()}`;
-    return { subject, body, skyBlock, meta };
-  }
-
-  // No cached reading available. Do NOT silently call a parallel AI pipeline,
-  // because it produces lower-quality output than the in-app reading.
-  throw new Error(
-    "No Cosmic Weather reading is cached for this date yet. Open Today's Cosmic Weather in the app first (so it generates and caches the full reading), then come back here to email it."
-  );
+  opts.onProgress?.("building morning digest");
+  const body = buildMorningDigest({ date, natalChart, recipientName });
+  return { subject, body, skyBlock, meta };
 }
 
 
