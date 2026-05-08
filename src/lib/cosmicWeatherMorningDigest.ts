@@ -582,10 +582,28 @@ function collectiveSkyHTML(date: Date): string {
   const moonPhase = getMoonPhase(midnight);
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
+  // Real planet-to-planet aspects in the sky today, not just the Moon's.
+  // Wider orb so meaningful activity (Mars conj Saturn at 4°, etc.) is never
+  // dropped, and so the section can never falsely claim the sky is quiet.
   const tight = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .filter(a => parseFloat(a.orb) <= 3)
-    .slice(0, 2);
+    .filter(a => parseFloat(a.orb) <= 6)
+    .slice(0, 3);
+
+  // Outer-planet retrograde callouts (Pluto/Neptune/Uranus/Saturn/Jupiter)
+  // act like collective weather even without a perfecting aspect.
+  const outerRetros: string[] = [];
+  const outerLabels: Record<string, string> = {
+    pluto: "Pluto is moving backward through the sky right now, which keeps slow, structural power questions in the air for everyone",
+    neptune: "Neptune is retrograde, which makes the collective fog a little thinner and the longing for meaning sharper",
+    uranus: "Uranus is retrograde, which turns the urge to break free into something more inward than dramatic",
+    saturn: "Saturn is retrograde, which is asking the world to revisit commitments instead of making new ones",
+    jupiter: "Jupiter is retrograde, so growth is happening internally rather than out in the open",
+  };
+  for (const key of ['pluto','neptune','uranus','saturn','jupiter']) {
+    const p = (planets as any)[key];
+    if (p?.isRetrograde) outerRetros.push(outerLabels[key]);
+  }
 
   const phaseLine = PHASE_PROSE[moonPhase.phaseName] || "";
 
@@ -602,15 +620,21 @@ function collectiveSkyHTML(date: Date): string {
     );
   }
 
-  let prose: string;
-  if (!clauses.length) {
-    prose = `Out in the world today, the sky is quiet. No big planetary pile-up is shaping the room, so the day takes its tone from whatever you and the people around you bring to it. ${phaseLine} A good day to keep your plans simple and pay attention to small things.`;
+  const sentences: string[] = [];
+  if (clauses[0]) sentences.push(`Out in the world today, ${clauses[0]}.`);
+  if (clauses[1]) sentences.push(`Underneath that, ${clauses[1]}.`);
+  if (clauses[2]) sentences.push(`Layered in: ${clauses[2]}.`);
+  if (outerRetros[0]) sentences.push(`${outerRetros[0]}.`);
+  if (phaseLine) sentences.push(phaseLine);
+  if (sentences.length) {
+    sentences.push(`A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`);
   } else {
-    const opener = `Out in the world today, ${clauses[0]}.`;
-    const second = clauses[1] ? ` Underneath that, ${clauses[1]}.` : '';
-    const closer = ` ${phaseLine} A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`;
-    prose = `${opener}${second}${closer}`;
+    // True fallback: no recognized aspects AND no retrogrades. Still anchored in real data.
+    sentences.push(`The strongest thing in the sky right now is the Moon itself.`);
+    if (phaseLine) sentences.push(phaseLine);
+    sentences.push(`Let today take its tone from what's in front of you, not from any big overhead event.`);
   }
+  const prose = sentences.join(' ');
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
