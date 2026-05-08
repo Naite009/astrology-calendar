@@ -354,6 +354,8 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
 const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
   Sun:        { hard: "Your mood and your core sense of self are out of step today. You may feel restless, like what you want emotionally and what you're trying to be aren't lining up.",
                 soft: "Your feelings and your identity are on the same page. It's easy to act like yourself without second-guessing it." },
+  Moon:       { hard: "Today's mood scrapes against your baseline emotional pattern — what you usually need to feel okay isn't quite available. Expect waves: hungry, then full; close, then needing distance.",
+                soft: "Today's feelings line up with your normal emotional rhythm. You feel like yourself from the inside out, and your needs are simple to meet." },
   Mercury:    { hard: "Your feelings get loud right when you're trying to think or talk clearly. Expect tangled words, overthinking, or texts you'll want to rewrite.",
                 soft: "It's easier than usual to put what you feel into words. Good window for honest conversations and saying the thing." },
   Venus:      { hard: "What you want and what you're actually getting from people don't match. Touchiness around love, money, or feeling undervalued is likely.",
@@ -410,6 +412,16 @@ const PLANET_EXPLAINER: Record<string, string> = {
   Eris: "the part of you that names what's unfair",
   NorthNode: "the direction your life is trying to grow toward",
   SouthNode: "the comfortable old patterns you default to",
+};
+
+// Concise house labels for the dynamic sentence.
+const HOUSE_LABEL: Record<number, string> = {
+  1: "your sense of self", 2: "your money and self-worth",
+  3: "your day-to-day talking and learning", 4: "your home and private life",
+  5: "your creativity, romance, and play", 6: "your work and daily routine",
+  7: "your one-on-one relationships", 8: "intimacy, shared resources, and what's hidden",
+  9: "your beliefs and bigger view", 10: "your career and public role",
+  11: "your friendships and future plans", 12: "your inner life and what you keep private",
 };
 
 function moonHitInterpretation(h: MoonHit): string {
