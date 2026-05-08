@@ -424,28 +424,55 @@ const HOUSE_LABEL: Record<number, string> = {
   11: "your friendships and future plans", 12: "your inner life and what you keep private",
 };
 
-function houseDynamicSentence(h: MoonHit): string {
-  const tH = h.transitHouse;
-  const nH = h.natalHouse;
-  if (!tH || !nH) return '';
-  const tLabel = HOUSE_LABEL[tH];
-  const nLabel = HOUSE_LABEL[nH];
-  const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
-  const isConj = h.aspect === 'conjunction';
-  if (tH === nH) {
-    return isSoft
-      ? `Both sides of this aspect land in ${tLabel}, doubling the focus there in an easy way.`
-      : isConj
-        ? `Both ends sit in ${tLabel} — today's mood and a long-standing pattern stack on top of each other in the same area.`
-        : `The pressure stays inside ${tLabel} — your current mood and a built-in pattern pull at each other in the same room.`;
+// Concrete daily-life triggers per natal house. These are the actual things
+// that get bumped when a transit lights up that house, in plain language.
+const HOUSE_TRIGGER: Record<number, string> = {
+  1: "the mirror, getting dressed, deciding how to walk into a room",
+  2: "your bank balance, an upcoming purchase, a conversation about pay",
+  3: "a text thread, a sibling, a short errand, something you're trying to learn",
+  4: "something at home, a parent's voice in your head, a chore you've been putting off",
+  5: "a creative project, a flirt, time with kids, a hobby you keep returning to",
+  6: "your inbox, a workout, a doctor's note, a deadline you can't quite see the bottom of",
+  7: "your partner, a contract, a one-on-one meeting, the person across the table",
+  8: "a shared bill, a vulnerable conversation, an old debt, something you'd rather not look at",
+  9: "a travel plan, a class, a strong opinion you're holding, a long-distance call",
+  10: "your boss, a deadline, how you're being seen at work, your reputation",
+  11: "a group chat, a friend, a future plan you've been dreaming about",
+  12: "a quiet moment alone, a dream, something you've been hiding from yourself",
+};
+
+// Planet-specific closer that names where this exact natal planet (in this exact
+// house) tends to fire. No template family-of-aspects sentences.
+function planetHouseCloser(planet: string, house: number | null): string {
+  if (!house) return '';
+  const t = HOUSE_TRIGGER[house];
+  if (!t) return '';
+  switch (planet) {
+    case 'Sun':       return `Watch for it around ${t}.`;
+    case 'Moon':      return `It tends to surface around ${t}.`;
+    case 'Mercury':   return `Most likely place it shows up: ${t}.`;
+    case 'Venus':     return `Where you'll feel it: ${t}.`;
+    case 'Mars':      return `Likely flashpoint: ${t}.`;
+    case 'Jupiter':   return `Where the urge to go bigger lands: ${t}.`;
+    case 'Saturn':    return `Where the weight settles: ${t}.`;
+    case 'Uranus':    return `Where the surprise wants to land: ${t}.`;
+    case 'Neptune':   return `Where the fog rolls in: ${t}.`;
+    case 'Pluto':     return `Where the intensity collects: ${t}.`;
+    case 'Chiron':    return `The bruise to keep an eye on: ${t}.`;
+    case 'NorthNode': return `Where it's quietly pulling you forward: ${t}.`;
+    case 'SouthNode': return `Where the old pattern reaches for you: ${t}.`;
+    case 'Ascendant': return `It tends to show on your face around ${t}.`;
+    case 'Midheaven': return `Where the public version of you feels it: ${t}.`;
+    case 'Descendant':return `Where another person's stuff lands on you: ${t}.`;
+    case 'IC':        return `Where it lives, privately: ${t}.`;
+    case 'Ceres':     return `Where care, or the lack of it, shows up: ${t}.`;
+    case 'Pallas':    return `Where the strategy actually applies: ${t}.`;
+    case 'Juno':      return `Where the partnership rub lands: ${t}.`;
+    case 'Vesta':     return `Where the focus belongs: ${t}.`;
+    case 'Lilith':    return `Where the no rises up: ${t}.`;
+    case 'Eris':      return `Where the unfairness wants to be named: ${t}.`;
+    default:          return `Watch for it around ${t}.`;
   }
-  if (isSoft) {
-    return `Energy moves cleanly from ${tLabel} into ${nLabel} — what's stirring on one side feeds the other instead of disrupting it.`;
-  }
-  if (isConj) {
-    return `Today's mood (${tLabel}) lights up ${nLabel} from the inside — the two areas blur together for a few hours and one bleeds into the other.`;
-  }
-  return `Friction shows up between ${tLabel} and ${nLabel}: something happening in one keeps interrupting or unsettling the other, and you'll feel pulled between them.`;
 }
 
 function moonHitInterpretation(h: MoonHit): string {
@@ -453,8 +480,8 @@ function moonHitInterpretation(h: MoonHit): string {
   const feel = MOON_HIT_FEEL[planetKey];
   const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
   const body = feel ? (isSoft ? feel.soft : feel.hard) : '';
-  const dyn = houseDynamicSentence(h);
-  return [body, dyn].filter(Boolean).join(' ');
+  const closer = planetHouseCloser(planetKey, h.natalHouse);
+  return [body, closer].filter(Boolean).join(' ');
 }
 
 function moonHitsHTML(date: Date, chart: NatalChart | null): string {
@@ -555,10 +582,28 @@ function collectiveSkyHTML(date: Date): string {
   const moonPhase = getMoonPhase(midnight);
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
+  // Real planet-to-planet aspects in the sky today, not just the Moon's.
+  // Wider orb so meaningful activity (Mars conj Saturn at 4°, etc.) is never
+  // dropped, and so the section can never falsely claim the sky is quiet.
   const tight = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .filter(a => parseFloat(a.orb) <= 3)
-    .slice(0, 2);
+    .filter(a => parseFloat(a.orb) <= 6)
+    .slice(0, 3);
+
+  // Outer-planet retrograde callouts (Pluto/Neptune/Uranus/Saturn/Jupiter)
+  // act like collective weather even without a perfecting aspect.
+  const outerRetros: string[] = [];
+  const outerLabels: Record<string, string> = {
+    pluto: "Pluto is moving backward through the sky right now, which keeps slow, structural power questions in the air for everyone",
+    neptune: "Neptune is retrograde, which makes the collective fog a little thinner and the longing for meaning sharper",
+    uranus: "Uranus is retrograde, which turns the urge to break free into something more inward than dramatic",
+    saturn: "Saturn is retrograde, which is asking the world to revisit commitments instead of making new ones",
+    jupiter: "Jupiter is retrograde, so growth is happening internally rather than out in the open",
+  };
+  for (const key of ['pluto','neptune','uranus','saturn','jupiter']) {
+    const p = (planets as any)[key];
+    if (p?.isRetrograde) outerRetros.push(outerLabels[key]);
+  }
 
   const phaseLine = PHASE_PROSE[moonPhase.phaseName] || "";
 
@@ -575,15 +620,21 @@ function collectiveSkyHTML(date: Date): string {
     );
   }
 
-  let prose: string;
-  if (!clauses.length) {
-    prose = `Out in the world today, the sky is quiet. No big planetary pile-up is shaping the room, so the day takes its tone from whatever you and the people around you bring to it. ${phaseLine} A good day to keep your plans simple and pay attention to small things.`;
+  const sentences: string[] = [];
+  if (clauses[0]) sentences.push(`Out in the world today, ${clauses[0]}.`);
+  if (clauses[1]) sentences.push(`Underneath that, ${clauses[1]}.`);
+  if (clauses[2]) sentences.push(`Layered in: ${clauses[2]}.`);
+  if (outerRetros[0]) sentences.push(`${outerRetros[0]}.`);
+  if (phaseLine) sentences.push(phaseLine);
+  if (sentences.length) {
+    sentences.push(`A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`);
   } else {
-    const opener = `Out in the world today, ${clauses[0]}.`;
-    const second = clauses[1] ? ` Underneath that, ${clauses[1]}.` : '';
-    const closer = ` ${phaseLine} A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`;
-    prose = `${opener}${second}${closer}`;
+    // True fallback: no recognized aspects AND no retrogrades. Still anchored in real data.
+    sentences.push(`The strongest thing in the sky right now is the Moon itself.`);
+    if (phaseLine) sentences.push(phaseLine);
+    sentences.push(`Let today take its tone from what's in front of you, not from any big overhead event.`);
   }
+  const prose = sentences.join(' ');
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
@@ -616,16 +667,22 @@ function whatMattersHTML(date: Date, chart: NatalChart | null): string {
     });
   }
 
-  // Items: top transit aspects, in plain language using existing interpreter.
+  // STRICT: only render transits that exist in the calculated personalTransits
+  // array. No inference, no fabrication. If a field is missing, skip the item.
+  const transitKeys = new Set(
+    personalTransits.map(t => `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`)
+  );
   for (const t of top.slice(0, 3)) {
+    if (!t.transitPlanet || !t.aspect || !t.natalPlanet) continue;
+    const key = `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`;
+    if (!transitKeys.has(key)) continue;
     const personalized = getPersonalizedTransitInterpretation(
       t.transitPlanet, t.aspect, t.natalPlanet, t.natalHouse, t.natalSign,
     );
     const houseInfo = t.natalHouse ? HOUSE_MEANINGS[t.natalHouse] : null;
     const headline = `${t.transitPlanet} ${t.aspect} your natal ${t.natalPlanet}${t.natalHouse ? `, ${ordinal(t.natalHouse)} house` : ''} (${t.orb}° orb).`;
-    const body = personalized.howItFeels || houseInfo
-      ? (personalized.howItFeels || `This activates ${houseInfo!.lifeArea}.`)
-      : t.interpretation;
+    const body = personalized.howItFeels
+      || (houseInfo ? `This activates ${houseInfo.lifeArea}.` : t.interpretation);
     items.push({ headline, body });
   }
 
