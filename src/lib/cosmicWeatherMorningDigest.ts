@@ -667,16 +667,22 @@ function whatMattersHTML(date: Date, chart: NatalChart | null): string {
     });
   }
 
-  // Items: top transit aspects, in plain language using existing interpreter.
+  // STRICT: only render transits that exist in the calculated personalTransits
+  // array. No inference, no fabrication. If a field is missing, skip the item.
+  const transitKeys = new Set(
+    personalTransits.map(t => `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`)
+  );
   for (const t of top.slice(0, 3)) {
+    if (!t.transitPlanet || !t.aspect || !t.natalPlanet) continue;
+    const key = `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`;
+    if (!transitKeys.has(key)) continue;
     const personalized = getPersonalizedTransitInterpretation(
       t.transitPlanet, t.aspect, t.natalPlanet, t.natalHouse, t.natalSign,
     );
     const houseInfo = t.natalHouse ? HOUSE_MEANINGS[t.natalHouse] : null;
     const headline = `${t.transitPlanet} ${t.aspect} your natal ${t.natalPlanet}${t.natalHouse ? `, ${ordinal(t.natalHouse)} house` : ''} (${t.orb}° orb).`;
-    const body = personalized.howItFeels || houseInfo
-      ? (personalized.howItFeels || `This activates ${houseInfo!.lifeArea}.`)
-      : t.interpretation;
+    const body = personalized.howItFeels
+      || (houseInfo ? `This activates ${houseInfo.lifeArea}.` : t.interpretation);
     items.push({ headline, body });
   }
 
