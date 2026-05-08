@@ -80,7 +80,7 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
   const phaseMeaning = PHASE_MEANING[phaseName] || '';
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
-  const dayType = getDayType(aspects, moonPhase);
+  const dayType = getDayType(aspects, { ...moonPhase, phaseName });
   const exactPhase = getExactLunarPhase(midnight);
   const nearestMajor = !exactPhase && (phaseName === 'New Moon' || phaseName === 'Full Moon' || phaseName === 'First Quarter' || phaseName === 'Last Quarter')
     ? findNearestMajorPhaseTime(midnight, phaseName)
