@@ -69,6 +69,14 @@ export interface MorningDigestArgs {
   date: Date;
   natalChart: NatalChart | null;
   recipientName?: string;
+  /** Optional override for the collective sky section. If provided, this
+   *  HTML/prose replaces the auto-generated collective copy. Used to inject
+   *  the cosmic-weather AI prose so we don't generate it twice. */
+  collectiveProseHTML?: string;
+  /** Optional override for the "What Matters Most" items. If provided, these
+   *  items (already AI-generated and whitelist-validated against the day's
+   *  transit array) replace the deterministic personalized fallback. */
+  whatMattersItems?: Array<{ headline: string; body: string }>;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -644,46 +652,53 @@ function collectiveSkyHTML(date: Date): string {
 
 // ─── Section 5: What matters most for you ───────────────────────────
 
-function whatMattersHTML(date: Date, chart: NatalChart | null): string {
+function whatMattersHTML(
+  date: Date,
+  chart: NatalChart | null,
+  override?: Array<{ headline: string; body: string }>,
+): string {
   if (!chart) {
     return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">Attach a natal chart to see personal items.</div>`;
   }
-  const midnight = getEasternMidnightDate(date);
-  const noon = getEasternDateAtTime(date, 12, 0);
-  const planetsNoon = getPlanetaryPositions(noon);
-  const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart);
-  const top = getTopTransitAspects(personalTransits, 4)
-    .filter(t => t.transitPlanet !== 'Moon'); // Moon is its own section
 
-  // Item: Moon's house most of day (use noon as midpoint).
-  const moonHouseNoon = getTransitPlanetHouse(planetsNoon.moon.signName, planetsNoon.moon.degree, chart);
-  const items: Array<{ headline: string; body: string }> = [];
+  let items: Array<{ headline: string; body: string }> = [];
 
-  if (moonHouseNoon) {
-    const info = HOUSE_MEANINGS[moonHouseNoon];
-    items.push({
-      headline: `The Moon spends most of today in your ${ordinal(moonHouseNoon)} house.`,
-      body: `That puts the emotional charge on ${info.lifeArea}. Notice what surfaces here, this is where the day wants your attention.`,
-    });
-  }
+  if (override && override.length) {
+    items = override.slice(0, 5);
+  } else {
+    // Deterministic fallback (no AI). Same logic as before.
+    const midnight = getEasternMidnightDate(date);
+    const noon = getEasternDateAtTime(date, 12, 0);
+    const planetsNoon = getPlanetaryPositions(noon);
+    const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart);
+    const top = getTopTransitAspects(personalTransits, 4)
+      .filter(t => t.transitPlanet !== 'Moon');
 
-  // STRICT: only render transits that exist in the calculated personalTransits
-  // array. No inference, no fabrication. If a field is missing, skip the item.
-  const transitKeys = new Set(
-    personalTransits.map(t => `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`)
-  );
-  for (const t of top.slice(0, 3)) {
-    if (!t.transitPlanet || !t.aspect || !t.natalPlanet) continue;
-    const key = `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`;
-    if (!transitKeys.has(key)) continue;
-    const personalized = getPersonalizedTransitInterpretation(
-      t.transitPlanet, t.aspect, t.natalPlanet, t.natalHouse, t.natalSign,
+    const moonHouseNoon = getTransitPlanetHouse(planetsNoon.moon.signName, planetsNoon.moon.degree, chart);
+    if (moonHouseNoon) {
+      const info = HOUSE_MEANINGS[moonHouseNoon];
+      items.push({
+        headline: `The Moon spends most of today in your ${ordinal(moonHouseNoon)} house.`,
+        body: `That puts the emotional charge on ${info.lifeArea}. Notice what surfaces here, this is where the day wants your attention.`,
+      });
+    }
+
+    const transitKeys = new Set(
+      personalTransits.map(t => `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`)
     );
-    const houseInfo = t.natalHouse ? HOUSE_MEANINGS[t.natalHouse] : null;
-    const headline = `${t.transitPlanet} ${t.aspect} your natal ${t.natalPlanet}${t.natalHouse ? `, ${ordinal(t.natalHouse)} house` : ''} (${t.orb}° orb).`;
-    const body = personalized.howItFeels
-      || (houseInfo ? `This activates ${houseInfo.lifeArea}.` : t.interpretation);
-    items.push({ headline, body });
+    for (const t of top.slice(0, 3)) {
+      if (!t.transitPlanet || !t.aspect || !t.natalPlanet) continue;
+      const key = `${t.transitPlanet}|${t.aspect}|${t.natalPlanet}`;
+      if (!transitKeys.has(key)) continue;
+      const personalized = getPersonalizedTransitInterpretation(
+        t.transitPlanet, t.aspect, t.natalPlanet, t.natalHouse, t.natalSign,
+      );
+      const houseInfo = t.natalHouse ? HOUSE_MEANINGS[t.natalHouse] : null;
+      const headline = `${t.transitPlanet} ${t.aspect} your natal ${t.natalPlanet}${t.natalHouse ? `, ${ordinal(t.natalHouse)} house` : ''} (${t.orb}° orb).`;
+      const body = personalized.howItFeels
+        || (houseInfo ? `This activates ${houseInfo.lifeArea}.` : t.interpretation);
+      items.push({ headline, body });
+    }
   }
 
   if (!items.length) {
@@ -693,16 +708,6 @@ function whatMattersHTML(date: Date, chart: NatalChart | null): string {
     });
   }
 
-  const rows = items.slice(0, 5).map((it, i) => `
-    <tr>
-      <td style="vertical-align:top;padding:14px 14px 14px 18px;width:36px;font-size:18px;color:${COLOR.faint};font-family:${FONT}">${i + 1}</td>
-      <td style="vertical-align:top;padding:14px 18px 14px 0;${i > 0 ? `border-top:1px solid ${COLOR.border};` : ''}">
-        <div style="font-size:14px;color:${COLOR.text};font-weight:600;line-height:1.45">${escapeHtml(it.headline)}</div>
-        <div style="font-size:13px;color:${COLOR.muted};line-height:1.6;margin-top:6px">${escapeHtml(it.body)}</div>
-      </td>
-    </tr>`).join('');
-
-  // Add row top borders properly
   const fixedRows = items.slice(0, 5).map((it, i) => `
     <tr>
       <td style="vertical-align:top;padding:16px 8px 16px 18px;width:36px;font-size:18px;color:${COLOR.faint};font-family:${FONT};${i > 0 ? `border-top:1px solid ${COLOR.border};` : ''}">${i + 1}</td>
@@ -732,10 +737,22 @@ function sectionTitle(eyebrow: string, heading: string): string {
 
 // ─── Public entry ───────────────────────────────────────────────────
 
-export function buildMorningDigest({ date, natalChart, recipientName }: MorningDigestArgs): string {
+export function buildMorningDigest({
+  date,
+  natalChart,
+  recipientName,
+  collectiveProseHTML,
+  whatMattersItems,
+}: MorningDigestArgs): string {
   const midnight = getEasternMidnightDate(date);
   const dateLabel = fmtETDate(midnight);
   const firstName = recipientName?.trim().split(/\s+/)[0];
+
+  // If a collective prose override is provided (the cosmic-weather AI prose),
+  // wrap it in the same card shell so the layout is identical.
+  const collectiveSection = collectiveProseHTML
+    ? `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${collectiveProseHTML}</div>`
+    : collectiveSkyHTML(date);
 
   return `<div style="background:${COLOR.bg};padding:28px 18px;font-family:${FONT};color:${COLOR.text}">
     <div style="max-width:680px;margin:0 auto">
@@ -758,10 +775,10 @@ export function buildMorningDigest({ date, natalChart, recipientName }: MorningD
       ${moonHitsHTML(date, natalChart)}
 
       ${sectionTitle('The collective sky', 'What everyone is living under')}
-      ${collectiveSkyHTML(date)}
+      ${collectiveSection}
 
       ${sectionTitle('What matters most today', 'Personal to your chart')}
-      ${whatMattersHTML(date, natalChart)}
+      ${whatMattersHTML(date, natalChart, whatMattersItems)}
 
       <div style="margin:36px 0 4px;padding-top:14px;border-top:1px solid ${COLOR.border};font-size:11px;color:${COLOR.faint};text-align:center;font-family:${SANS}">
         Generated from your live chart · all positions calculated in Eastern Time
