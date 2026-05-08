@@ -261,6 +261,9 @@ interface MoonHit {
   natalDegree: number;
   natalMin: number;
   natalHouse: number | null;
+  transitSign: string;
+  transitDeg: number;
+  transitHouse: number | null;
   aspect: string;
   orb: number;
 }
