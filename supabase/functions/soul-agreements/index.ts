@@ -167,10 +167,10 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["solitude and quiet time at home", "walking, stretching, or any slow movement", "journaling or saying out loud what you are actually feeling", "time in nature or near water", "creative time with no goal attached", "clear boundaries around who and what you say yes to"],
     ),
     summary: {
-      whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
-      whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
-      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
-      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
+      whatToPractice: "Practice telling the truth about what you actually want, even when it risks disappointing someone or breaking the calm in the room.",
+      whatToWatchFor: "Watch for the moments you stay quiet, soften a need, or laugh something off just to avoid conflict and keep other people comfortable.",
+      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
+      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
       integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
     },
   };
