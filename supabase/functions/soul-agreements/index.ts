@@ -80,6 +80,7 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/owning your truth/gi, "saying what you really think")
       .replace(/soul calling/gi, "life direction")
       .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
+      .replace(/optimistic vision/gi, "insightful vision")
   );
 
 const extractRecognition = (text: string) => {
@@ -372,7 +373,7 @@ Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps 
 6. TIMING AGREEMENT — HOW growth tends to arrive (style, not events). Use Saturn, Nodes, Pluto, angular planets.
    REQUIRED STRUCTURE — explicitly say something like "Growth often comes through:" and then concretely name which of these are strongest in this chart: pressure, endings, truth-telling moments, taking on real responsibility, emotional turning points. Be concrete. Avoid vague phrasing like "growth happens in waves" or "things unfold in cycles." Do NOT predict events.
 
-7. LEGACY AGREEMENT — what you leave behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
+7. LEGACY AGREEMENT — what you leave behind. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies here.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through emotional healing, unseen support systems, helping others feel safe, healing emotional patterns, and compassionate behind-the-scenes leadership. ALWAYS include this exact emotional-boundary line near the end of the Plain English layer: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
 
 8. STRENGTH UNDER STRESS — who you become when life gets hard. Use Mars, Saturn, Pluto, Moon (sign, house, and hard aspects).
