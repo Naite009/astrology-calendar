@@ -307,6 +307,23 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
 
   // Event timeline.
   const startHouseInfo = startHouse ? HOUSE_MEANINGS[startHouse] : null;
+
+  // Daily overview line so the user always knows what sign/house ☽ is in
+  // before reading individual natal-house hits in the table.
+  const endHouseInfo = endHouse ? HOUSE_MEANINGS[endHouse] : null;
+  const overviewParts: string[] = [];
+  if (sameSign) {
+    overviewParts.push(`☽ is in <span style="font-weight:600">${escapeHtml(startPos.sign)}</span> all day`);
+  } else {
+    overviewParts.push(`☽ moves from <span style="font-weight:600">${escapeHtml(startPos.sign)}</span> to <span style="font-weight:600">${escapeHtml(endPos.sign)}</span>`);
+  }
+  if (sameHouse && startHouse) {
+    overviewParts.push(`moving through your <span style="color:${COLOR.accent};font-weight:600">${ordinal(startHouse)} house</span>${startHouseInfo ? ` · ${escapeHtml(startHouseInfo.keywords.toLowerCase())}` : ''}`);
+  } else if (!sameHouse && startHouse && endHouse) {
+    overviewParts.push(`moving through your <span style="color:${COLOR.accent};font-weight:600">${ordinal(startHouse)} house</span>${startHouseInfo ? ` · ${escapeHtml(startHouseInfo.keywords.toLowerCase())}` : ''} → <span style="color:${COLOR.accent};font-weight:600">${ordinal(endHouse)} house</span>${endHouseInfo ? ` · ${escapeHtml(endHouseInfo.keywords.toLowerCase())}` : ''}`);
+  }
+  const overviewHTML = overviewParts.join(', ');
+
   const startLine = `
     <tr>
       <td style="padding:10px 14px;font-size:12px;color:${COLOR.muted};white-space:nowrap;width:90px">12:00 AM</td>
@@ -325,7 +342,6 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
       <td style="padding:8px 14px;background:${COLOR.accentSoft};border-top:1px solid ${COLOR.border};border-bottom:1px solid ${COLOR.border};font-size:13px;color:${COLOR.text}">${e.html}</td>
     </tr>`).join('');
 
-  const endHouseInfo = endHouse ? HOUSE_MEANINGS[endHouse] : null;
   const endLine = `
     <tr>
       <td style="padding:10px 14px;font-size:12px;color:${COLOR.muted};white-space:nowrap;width:90px">11:59 PM</td>
@@ -340,6 +356,9 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
+      <div style="padding:12px 16px;background:${COLOR.accentSoft};border-bottom:1px solid ${COLOR.border};font-size:13px;color:${COLOR.text}">
+        ${overviewHTML}
+      </div>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
         ${startLine}
         ${eventRows}
