@@ -476,9 +476,24 @@ function otherTransitsHTML(date: Date, chart: NatalChart | null): string {
   const noon = getEasternDateAtTime(date, 12, 0);
   const positions = getPlanetaryPositions(noon);
   const aspects = calculateTransitAspects(noon, positions, chart);
+  // Ranking for Longer Transits:
+  // 1) tight/applying first (separating only kept if under 0.5°)
+  // 2) personal targets (Sun/Moon/ASC/MC/Mercury/Venus/Mars) first
+  // 3) outer planets + Chiron over minor points (already filtered)
+  const TARGET_WEIGHT: Record<string, number> = {
+    Sun: 6, Moon: 6, Ascendant: 6, Midheaven: 6,
+    Mercury: 4, Venus: 4, Mars: 4,
+  };
   const filtered = aspects
     .filter(a => OTHER_TRANSIT_OUTERS.has(a.transitPlanet) && OTHER_TRANSIT_INNERS.has(a.natalPlanet))
-    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+    .filter(a => a.applying || parseFloat(a.orb) < 0.5)
+    .sort((a, b) => {
+      const orbA = parseFloat(a.orb);
+      const orbB = parseFloat(b.orb);
+      const scoreA = orbA - (TARGET_WEIGHT[a.natalPlanet] || 1) * 0.5 - (a.applying ? 0.4 : 0);
+      const scoreB = orbB - (TARGET_WEIGHT[b.natalPlanet] || 1) * 0.5 - (b.applying ? 0.4 : 0);
+      return scoreA - scoreB;
+    })
     .slice(0, 6);
 
   if (filtered.length === 0) {
@@ -747,16 +762,19 @@ function moonHitInterpretation(h: MoonHit): string {
   return [body, closer].filter(Boolean).join(' ');
 }
 
-// Planet weighting for Moon-hit ranking. Luminaries + personal planets win
-// over outers, nodes, asteroids. Angles count as personal-planet weight.
+// Planet weighting for Moon-hit ranking.
+// Per ranking rule: prioritize Sun, Moon, ASC, MC, Venus, Mars, Mercury;
+// minor asteroids (Ceres/Pallas/Juno/Vesta/Lilith/Eris) are ignored unless
+// explicitly enabled (filtered out below).
 const MOON_HIT_PLANET_WEIGHT: Record<string, number> = {
-  Sun: 5, Moon: 5, Mercury: 4, Venus: 4, Mars: 4,
-  Ascendant: 4, Midheaven: 4, Descendant: 3, IC: 3,
+  Sun: 6, Moon: 6, Ascendant: 6, Midheaven: 6,
+  Mercury: 5, Venus: 5, Mars: 5,
+  Descendant: 4, IC: 4,
   Jupiter: 3, Saturn: 3,
   Uranus: 2, Neptune: 2, Pluto: 2,
   Chiron: 2, NorthNode: 2, SouthNode: 2,
-  Ceres: 1, Pallas: 1, Juno: 1, Vesta: 1, Lilith: 1, Eris: 1,
 };
+const MINOR_ASTEROIDS = new Set(['Ceres','Pallas','Juno','Vesta','Lilith','Eris']);
 
 function getEasternHourFloat(d: Date): number {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -796,9 +814,11 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   const signChange = findNextMoonSignChange(midnight);
   const hasWakingSignChange = signChange.time <= endOfDay && isWakingHour(signChange.time);
 
-  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight).
+  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight),
+  //    and drop minor asteroids per ranking rule.
   const candidates = allHits.filter(
-    h => isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB,
+    h => !MINOR_ASTEROIDS.has(h.natalPlanet.replace(/\s+/g, '')) &&
+         (isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB),
   );
 
   // 3. Rank by orb tightness + planet weight.
@@ -980,10 +1000,32 @@ function collectiveSkyHTML(date: Date): string {
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
 
-  // Tightest real planet-to-planet aspects in the sky today.
+  // Collective ranking:
+  //  1) Moon-involving aspects, then Sun/Mercury/Venus/Mars
+  //  2) applying preferred over separating
+  //  3) outer-planet background only if exact (orb < 1°) or dominant
+  const SKY_WEIGHT: Record<string, number> = {
+    Moon: 6, Sun: 5, Mercury: 4, Venus: 4, Mars: 4,
+    Jupiter: 2, Saturn: 2, Uranus: 1, Neptune: 1, Pluto: 1, Chiron: 1,
+  };
+  const isOuter = (p: string) => ['Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron'].includes(p);
   const tight = [...aspects]
-    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .filter(a => parseFloat(a.orb) <= 6);
+    .filter(a => {
+      const orb = parseFloat(a.orb);
+      if (orb > 6) return false;
+      // Outer-to-outer only if exact
+      if (isOuter(a.planet1) && isOuter(a.planet2) && orb > 1) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const orbA = parseFloat(a.orb);
+      const orbB = parseFloat(b.orb);
+      const wA = (SKY_WEIGHT[a.planet1] || 1) + (SKY_WEIGHT[a.planet2] || 1);
+      const wB = (SKY_WEIGHT[b.planet1] || 1) + (SKY_WEIGHT[b.planet2] || 1);
+      const scoreA = orbA - wA * 0.4 - (a.applying ? 0.5 : 0);
+      const scoreB = orbB - wB * 0.4 - (b.applying ? 0.5 : 0);
+      return scoreA - scoreB;
+    });
 
   const tightestSoft = tight.find(a => a.type === 'trine' || a.type === 'sextile');
   const tightestHard = tight.find(a => ['square','opposition','conjunction','quincunx'].includes(a.type));
@@ -1074,13 +1116,18 @@ function whatMattersHTML(
   let items: Array<{ headline: string; body: string }> = [];
 
   if (override && override.length) {
-    items = override.slice(0, 5);
+    items = override
+      .filter(it => !/\b(Lilith|Ceres|Pallas|Juno|Vesta|Eris)\b/i.test(`${it.headline} ${it.body}`))
+      .slice(0, 5);
   } else {
     // Deterministic fallback (no AI). Same logic as before.
     const midnight = getEasternMidnightDate(date);
     const noon = getEasternDateAtTime(date, 12, 0);
     const planetsNoon = getPlanetaryPositions(noon);
-    const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart);
+    const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart)
+      // Drop minor asteroids (Lilith, Ceres, Pallas, Juno, Vesta, Eris) per ranking rule.
+      .filter(t => !MINOR_ASTEROIDS.has((t.natalPlanet || '').replace(/\s+/g, '')) &&
+                   !MINOR_ASTEROIDS.has((t.transitPlanet || '').replace(/\s+/g, '')));
     const top = getTopTransitAspects(personalTransits, 4)
       .filter(t => t.transitPlanet !== 'Moon');
 
