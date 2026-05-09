@@ -34,6 +34,7 @@ import {
   type TransitAspect,
 } from './transitAspects';
 import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
+import { findFixedStarActivations, findActiveFixedStarsToday, type FixedStarHit } from './fixedStars';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGNS = [
