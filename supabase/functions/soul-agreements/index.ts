@@ -79,6 +79,7 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/stepping into/gi, "learning")
       .replace(/owning your truth/gi, "saying what you really think")
       .replace(/soul calling/gi, "life direction")
+      .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
   );
 
 const extractRecognition = (text: string) => {
@@ -113,9 +114,9 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
 
   return {
     family: section(
-      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern. The strongest listed Moon contact is ${a("Moon")}.`,
-      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open.",
-      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "family patterns can affect how safe you feel", "you may calm others before naming your own needs"],
+      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern, including the ruler of the 4th. The strongest listed Moon contact is ${a("Moon")}.`,
+      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
+      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
     ),
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
@@ -124,12 +125,12 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
     ),
     purpose: section(
       `${p("NorthNode")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
-      "You are not meant to stay the same person your whole life. Life may keep asking you to trust yourself, speak more honestly, and let go of old ways of acting that only keep the peace.",
-      ["you may outgrow roles that once kept others comfortable", "you may learn to say no more clearly", "you may choose honesty over approval", "you may feel stronger after periods of big change"],
+      "Your growth is specific: say what you actually want instead of softening it, stop managing other people's reactions, and let yourself be seen instead of staying useful.",
+      ["you may catch yourself editing what you want before you say it", "you may stop softening your no", "you may choose honesty over keeping someone comfortable", "you may stop earning your place by being helpful"],
     ),
     relationship: section(
       `${h(7)} is the main relationship marker. The 7th house ruler, Venus, Moon, and Mars are the priority relationship symbols in this reading.`,
-      "Relationships may teach you how to stay connected without disappearing into someone else's needs. The lesson is honest closeness, not keeping peace at any cost.",
+      "Relationships are one of the main ways you learn about yourself. The lesson is honest closeness, not keeping peace at any cost.",
       ["you may adjust yourself to make a relationship work", "you may need partners who respect direct honesty", "you may notice conflict feels risky", "you grow when you stay present and tell the truth kindly"],
     ),
     gift: section(
@@ -349,18 +350,19 @@ ${aspectLines || "(none provided)"}
 
 Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete INTERNAL emotional/thought patterns — never reflective questions, never duplicates of the external behaviors in examples:
 
-1. FAMILY AGREEMENT — early emotional imprint. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+1. FAMILY AGREEMENT — early emotional imprint. Use ONLY the Moon, the 4th house, the ruler of the 4th, and aspects to the Moon. Do NOT use the 10th house or any other parental symbolism here unless explicitly required to make sense of a 4th-house pattern. Keep this strictly about the early home and emotional environment, not career or public-parent themes.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
 2. WOUND AGREEMENT — pain patterns that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
    SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
-3. PURPOSE AGREEMENT — identity and becoming (what you are growing toward). Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
-   SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
-   "You are not meant to stay the same person your whole life. Life will keep pushing you to change in big ways: learning to stop people-pleasing, saying what you really think, trusting yourself more than outside approval, becoming stronger after hard experiences, and letting go of old versions of yourself that were built just to keep peace. Your purpose is to become more honest, stronger, and more fully yourself."
+3. PURPOSE AGREEMENT — identity and becoming. Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
+   STYLE RULE — be DIRECT and SPECIFIC. Name the actual behavior shift this person is growing into (e.g., "say what you actually want instead of softening it", "stop managing other people's reactions", "let yourself be seen instead of staying useful"). Avoid broad spiritual framing like "become more honest" or "step into your power" without naming the concrete behavior. Two or three short, pointed sentences beats a sweeping paragraph.
+   SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer should focus on: stopping people-pleasing, saying what you really think, trusting yourself over outside approval, and letting go of versions of yourself built only to keep peace. Keep it concrete and behavioral, not abstract.
 
 4. RELATIONSHIP AGREEMENT — relationship mirrors and lessons (who helps you grow through connection).
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
+   PHRASE RULE — never write "Relationships are central to your life's lessons." If you want to convey that idea, write: "Relationships are one of the main ways you learn about yourself."
    DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover, and even then never lead with it.
 
 5. GIFT AGREEMENT — natural strengths you arrived already good at.
