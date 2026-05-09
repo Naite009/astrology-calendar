@@ -123,10 +123,12 @@ async function fetchCollectiveProse(
     const positions = getPlanetaryPositions(date);
     const aspects = calculateDailyAspects(positions) as any[];
     const moonPhase = getMoonPhase(date);
+    // Send the 5 tightest sky aspects (was 3). The model needs enough signal
+    // to write something specific to TODAY rather than generic Saturday copy.
     const topAspects = [...aspects]
       .filter(a => parseFloat(a.orb) <= 6)
       .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-      .slice(0, 3)
+      .slice(0, 5)
       .map(a => ({
         planet1: a.planet1,
         planet2: a.planet2,
@@ -135,9 +137,16 @@ async function fetchCollectiveProse(
         applying: a.applying,
       }));
     const retrogrades: string[] = [];
-    for (const key of ["jupiter", "saturn", "uranus", "neptune", "pluto"]) {
+    for (const key of ["mercury", "jupiter", "saturn", "uranus", "neptune", "pluto"]) {
       const p = (positions as any)[key];
       if (p?.isRetrograde) retrogrades.push(key.charAt(0).toUpperCase() + key.slice(1));
+    }
+    // Personal-planet positions (sign only) so the AI can ground the copy
+    // in concrete sky placements rather than abstract day-shape claims.
+    const personalPositions: Record<string, string> = {};
+    for (const key of ["sun", "moon", "mercury", "venus", "mars"]) {
+      const p: any = (positions as any)[key];
+      if (p?.signName) personalPositions[key.charAt(0).toUpperCase() + key.slice(1)] = p.signName;
     }
     const payload = {
       dateLabel: date.toLocaleDateString("en-US", {
@@ -145,6 +154,7 @@ async function fetchCollectiveProse(
       }),
       moonPhaseName: moonPhase.phaseName,
       moonSign: (positions as any).moon?.signName || "",
+      personalPositions,
       topAspects,
       retrogrades,
     };
@@ -156,6 +166,12 @@ async function fetchCollectiveProse(
       console.warn("cosmic-weather-collective edge fn error:", error);
       return "";
     }
+    return String((data as any)?.text || "").trim();
+  } catch (e) {
+    console.warn("cosmic-weather-collective compute error:", e);
+    return "";
+  }
+}
     return String((data as any)?.text || "").trim();
   } catch (e) {
     console.warn("cosmic-weather-collective compute error:", e);
