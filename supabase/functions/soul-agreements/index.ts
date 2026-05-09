@@ -319,6 +319,25 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
     const data = await resp.json();
     const content = data?.choices?.[0]?.message?.content ?? "{}";
 
+    const normalizeAgreements = (value: any) => {
+      const fallback = makeFallbackAgreements({ chartName, placements, houses, aspects });
+      const result: any = { summary: { ...fallback.summary } };
+      for (const key of sectionKeys) {
+        const source = value?.[key];
+        const fallbackSection = fallback[key as SectionKey];
+        const interpretation = cleanPlainLanguage(String(source?.interpretation || fallbackSection.interpretation));
+        const recognition = cleanPlainLanguage(String(source?.question || extractRecognition(interpretation) || fallbackSection.question));
+        result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
+      }
+      result.summary = {
+        coreLesson: cleanPlainLanguage(String(value?.summary?.coreLesson || fallback.summary.coreLesson)),
+        coreWound: cleanPlainLanguage(String(value?.summary?.coreWound || fallback.summary.coreWound)),
+        corePurpose: cleanPlainLanguage(String(value?.summary?.corePurpose || fallback.summary.corePurpose)),
+        coreLegacy: cleanPlainLanguage(String(value?.summary?.coreLegacy || fallback.summary.coreLegacy)),
+      };
+      return result;
+    };
+
     const tryParse = (s: string) => {
       // 1. raw
       try { return JSON.parse(s); } catch {}
@@ -371,16 +390,21 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       if (!retryResp.ok) {
         const t = await retryResp.text();
         console.error("Retry AI gateway error:", retryResp.status, t);
-        return new Response(JSON.stringify({ error: "AI returned malformed JSON" }), {
-          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ agreements: makeFallbackAgreements({ chartName, placements, houses, aspects }), fallback: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const retryData = await retryResp.json();
       const retryContent = retryData?.choices?.[0]?.message?.content ?? "{}";
-      parsed = tryParse(String(retryContent));
+      try {
+        parsed = tryParse(String(retryContent));
+      } catch (retryParseErr) {
+        console.error("soul-agreements retry JSON parse failed; using deterministic fallback. Snippet:", String(retryContent).slice(0, 300));
+        parsed = makeFallbackAgreements({ chartName, placements, houses, aspects });
+      }
     }
 
-    return new Response(JSON.stringify({ agreements: parsed }), {
+    return new Response(JSON.stringify({ agreements: normalizeAgreements(parsed) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
