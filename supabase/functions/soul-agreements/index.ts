@@ -129,7 +129,12 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "AI service is not configured" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { chartName, placements, houses, aspects } = (await req.json()) as Payload;
 
@@ -310,8 +315,8 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
     if (!resp.ok) {
       const errText = await resp.text();
       console.error("AI gateway error:", resp.status, errText);
-      return new Response(JSON.stringify({ error: `AI gateway ${resp.status}` }), {
-        status: 502,
+      return new Response(JSON.stringify({ agreements: makeFallbackAgreements({ chartName, placements, houses, aspects }), fallback: true }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
