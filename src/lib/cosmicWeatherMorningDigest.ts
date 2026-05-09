@@ -1010,8 +1010,11 @@ export function buildMorningDigest({
       ${sectionTitle("The Moon today", 'Arc through your chart')}
       ${moonArcHTML(date, natalChart)}
 
-      ${sectionTitle('Moon hits your natal chart', 'Key moments today')}
+      ${sectionTitle('Moon hits your natal chart', 'Key ☽ moments')}
       ${moonHitsHTML(date, natalChart)}
+
+      ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
+      ${otherTransitsHTML(date, natalChart)}
 
       ${sectionTitle('The collective sky', 'What everyone is living under')}
       ${collectiveSection}
