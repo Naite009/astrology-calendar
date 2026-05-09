@@ -114,9 +114,9 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
 
   return {
     family: section(
-      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern. The strongest listed Moon contact is ${a("Moon")}.`,
-      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open.",
-      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "family patterns can affect how safe you feel", "you may calm others before naming your own needs"],
+      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern, including the ruler of the 4th. The strongest listed Moon contact is ${a("Moon")}.`,
+      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
+      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
     ),
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
@@ -125,12 +125,12 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
     ),
     purpose: section(
       `${p("NorthNode")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
-      "You are not meant to stay the same person your whole life. Life may keep asking you to trust yourself, speak more honestly, and let go of old ways of acting that only keep the peace.",
-      ["you may outgrow roles that once kept others comfortable", "you may learn to say no more clearly", "you may choose honesty over approval", "you may feel stronger after periods of big change"],
+      "Your growth is specific: say what you actually want instead of softening it, stop managing other people's reactions, and let yourself be seen instead of staying useful.",
+      ["you may catch yourself editing what you want before you say it", "you may stop softening your no", "you may choose honesty over keeping someone comfortable", "you may stop earning your place by being helpful"],
     ),
     relationship: section(
       `${h(7)} is the main relationship marker. The 7th house ruler, Venus, Moon, and Mars are the priority relationship symbols in this reading.`,
-      "Relationships may teach you how to stay connected without disappearing into someone else's needs. The lesson is honest closeness, not keeping peace at any cost.",
+      "Relationships are one of the main ways you learn about yourself. The lesson is honest closeness, not keeping peace at any cost.",
       ["you may adjust yourself to make a relationship work", "you may need partners who respect direct honesty", "you may notice conflict feels risky", "you grow when you stay present and tell the truth kindly"],
     ),
     gift: section(
