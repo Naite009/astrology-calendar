@@ -200,11 +200,20 @@ export async function generateCosmicWeatherEmail(
 
   let body: string;
 
+  opts.onProgress?.("writing today's collective sky");
+  const collectiveProseHTML = await fetchCollectiveProse(date, opts.signal);
+
   opts.onProgress?.("personalizing today's weather");
-  const weatherTodayProse = await fetchWeatherTodayProse(date, natalChart, recipientName, opts.signal);
+  const weatherToday = await fetchWeatherTodayParts(date, natalChart, recipientName, opts.signal);
 
   opts.onProgress?.("building personalized morning digest");
-  body = buildMorningDigest({ date, natalChart, recipientName, weatherTodayProse });
+  body = buildMorningDigest({
+    date,
+    natalChart,
+    recipientName,
+    collectiveProseHTML,
+    weatherTodayParts: weatherToday,
+  });
 
   return { subject, body, skyBlock, meta };
 }
