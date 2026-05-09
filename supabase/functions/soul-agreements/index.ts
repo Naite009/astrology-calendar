@@ -114,7 +114,7 @@ Translate the astrology into everyday language. Internally answer: "What does th
 3-5 observable bullet examples. Each bullet is one short sentence describing a recognizable behavior or situation. Use things like: avoiding conflict, keeping the peace, hiding feelings, struggling to say no, overthinking conversations, needing approval, staying too long in unhealthy relationships, rebuilding confidence after setbacks, learning boundaries, speaking up more over time. Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
 
 **Recognition Check**
-End with a Recognition Check, NOT a reflective question. Format exactly:
+Use the heading "Recognition Check" EXACTLY ONCE per section. Never repeat the title inside the body. Format exactly:
 
 This may fit if:
 - [behavior pattern]
@@ -123,6 +123,16 @@ This may fit if:
 - [life pattern]
 
 Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
+
+LANGUAGE REPLACEMENTS (mandatory across ALL sections):
+- Replace "shedding old identities" → "letting go of old ways of acting"
+- Replace "embracing your power" → "learning to trust yourself and speak more honestly"
+- Replace "authentic self" → "the real you"
+- Also avoid: "stepping into", "owning your truth", "soul calling" — use plain everyday phrasing.
+
+15-YEAR-OLD TEST: If a 15-year-old cannot easily explain a sentence back in their own words, rewrite it.
+
+NO DUPLICATE HEADINGS: Each of the 4 sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check) appears EXACTLY ONCE per section. Do not repeat them inside the body text.
 
 The "question" field must contain the same "This may fit if:" block (with bullets), NOT a question.
 
@@ -171,7 +181,7 @@ Write the 7 Soul Agreements using ONLY the data above. Every section MUST follow
 
 4. RELATIONSHIP AGREEMENT — who helps you grow through connection.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
-   Juno is OPTIONAL support only. Do NOT lead with Juno or weight it heavily; mention only as a light closing layer if relevant.
+   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover — and even then, never lead with it.
 
 5. GIFT AGREEMENT — what you arrived already good at.
    PRIORITIZE Venus, Neptune, Moon. Include intuitive gifts, emotional intelligence, symbolic understanding, creativity, and spiritual sensitivity.
