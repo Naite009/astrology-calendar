@@ -53,6 +53,31 @@ const SECTION_META: Array<{ key: keyof Omit<SoulAgreements, "summary">; label: s
 
 const cacheKey = (chartId: string) => `soulAgreements_v1_${chartId}`;
 
+const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
+
+const sanitizeSection = (section?: AgreementSection): AgreementSection | undefined => {
+  if (!section) return section;
+  const matches = [...section.interpretation.matchAll(RECOGNITION_HEADING)];
+  const interpretation = matches.length
+    ? section.interpretation.slice(0, (matches[0].index ?? 0) + (matches[0][1] ? matches[0][1].length : 0)).trim()
+    : section.interpretation.trim();
+  const question = section.question.replace(RECOGNITION_HEADING, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return { interpretation, question };
+};
+
+const sanitizeAgreements = (agreements: SoulAgreements): SoulAgreements => ({
+  ...agreements,
+  family: sanitizeSection(agreements.family)!,
+  wound: sanitizeSection(agreements.wound)!,
+  purpose: sanitizeSection(agreements.purpose)!,
+  relationship: sanitizeSection(agreements.relationship)!,
+  gift: sanitizeSection(agreements.gift)!,
+  timing: sanitizeSection(agreements.timing)!,
+  legacy: sanitizeSection(agreements.legacy)!,
+  strength: sanitizeSection(agreements.strength),
+  reset: sanitizeSection(agreements.reset),
+});
+
 export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   const [open, setOpen] = useState(true);
   const [data, setData] = useState<SoulAgreements | null>(null);
@@ -109,7 +134,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
     setError(null);
     try {
       const raw = localStorage.getItem(cacheKey(chart.id));
-      if (raw) setData(JSON.parse(raw));
+      if (raw) setData(sanitizeAgreements(JSON.parse(raw)));
     } catch {/* ignore */}
   }, [chart.id]);
 
@@ -121,7 +146,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
         body: payload,
       });
       if (invokeErr) throw invokeErr;
-      const agreements = (resp as any)?.agreements as SoulAgreements;
+      const agreements = sanitizeAgreements((resp as any)?.agreements as SoulAgreements);
       if (!agreements?.family || !agreements?.summary) throw new Error("Malformed response");
       setData(agreements);
       try { localStorage.setItem(cacheKey(chart.id), JSON.stringify(agreements)); } catch {/* quota */}
