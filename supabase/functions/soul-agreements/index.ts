@@ -353,38 +353,39 @@ ${houseLines}
 VERIFIED ASPECTS:
 ${aspectLines || "(none provided)"}
 
-Write the 7 Soul Agreements using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete behavioral/emotional/relationship patterns — NEVER reflective questions:
+Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete INTERNAL emotional/thought patterns — never reflective questions, never duplicates of the external behaviors in examples:
 
-1. FAMILY AGREEMENT — emotional environment that shaped you growing up. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+1. FAMILY AGREEMENT — early emotional imprint. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
-2. WOUND AGREEMENT — the pain that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
+2. WOUND AGREEMENT — pain patterns that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
    SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
-3. PURPOSE AGREEMENT — what you are growing toward. Use North Node, Sun, 1st house, Midheaven.
+3. PURPOSE AGREEMENT — identity and becoming (what you are growing toward). Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
    SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
    "You are not meant to stay the same person your whole life. Life will keep pushing you to change in big ways: learning to stop people-pleasing, saying what you really think, trusting yourself more than outside approval, becoming stronger after hard experiences, and letting go of old versions of yourself that were built just to keep peace. Your purpose is to become more honest, stronger, and more fully yourself."
 
-4. RELATIONSHIP AGREEMENT — who helps you grow through connection.
+4. RELATIONSHIP AGREEMENT — relationship mirrors and lessons (who helps you grow through connection).
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
-   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover — and even then, never lead with it.
+   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover, and even then never lead with it.
 
-5. GIFT AGREEMENT — what you arrived already good at.
+5. GIFT AGREEMENT — natural strengths you arrived already good at.
    PRIORITIZE Venus, Neptune, Moon. Include intuitive gifts, emotional intelligence, symbolic understanding, creativity, and spiritual sensitivity.
    Use Jupiter and 2nd/5th houses too, but do NOT default Jupiter to "financial talent." Read it as wisdom, generosity, vision, or teaching unless the chart clearly points to material abundance.
 
-6. TIMING AGREEMENT — HOW your growth tends to unfold (style, not events). Use Saturn, Nodes, Pluto, angular planets. Do NOT predict events.
+6. TIMING AGREEMENT — HOW growth tends to arrive (style, not events). Use Saturn, Nodes, Pluto, angular planets.
+   REQUIRED STRUCTURE — explicitly say something like "Growth often comes through:" and then concretely name which of these are strongest in this chart: pressure, endings, truth-telling moments, taking on real responsibility, emotional turning points. Be concrete. Avoid vague phrasing like "growth happens in waves" or "things unfold in cycles." Do NOT predict events.
 
-7. LEGACY AGREEMENT — what you tend to leave behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
-   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through:
-   - emotional healing
-   - unseen support systems
-   - helping others feel safe
-   - healing emotional patterns
-   - compassionate, behind-the-scenes leadership
-   Do NOT use generic "nurturing" language.
+7. LEGACY AGREEMENT — what you leave behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
+   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through emotional healing, unseen support systems, helping others feel safe, healing emotional patterns, and compassionate behind-the-scenes leadership. ALWAYS include this exact emotional-boundary line near the end of the Plain English layer: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
 
-Then SUMMARY: one plain-English sentence each for core lesson, core wound, core purpose, core legacy. Apply the same jargon ban.
+8. STRENGTH UNDER STRESS — who you become when life gets hard. Use Mars, Saturn, Pluto, Moon (sign, house, and hard aspects).
+   Show resilience patterns: how this person braces, focuses, isolates, or pushes through under pressure, plus the cost of those patterns. Recognition Check should focus on the inner experience under stress (the inner clamp, the urge to handle it alone, the late-night replay), not just outer behavior.
+
+9. WHAT HELPS YOU RESET — what helps this person feel grounded again. Use Moon, Venus, 4th house, 6th house, Neptune.
+   Output must be PRACTICAL regulation strategies, not abstract advice. Draw concrete examples from this list when the chart supports it: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, prayer or quiet ritual, sleep. Tell the user actual things they can do today.
+
+Then SUMMARY: one practical, behavioral instruction for whatToPractice, whatToWatchFor, whatToBuild, whatToGive, plus a final "integration" sentence (default: "Your growth comes from learning how to stay connected to others without losing yourself."). Apply the same jargon ban.
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
