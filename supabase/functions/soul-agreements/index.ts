@@ -122,10 +122,10 @@ Write the 7 Soul Agreements using ONLY the data above:
 1. FAMILY AGREEMENT — emotional environment that shaped the soul. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
 2. WOUND AGREEMENT — pain that became growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
 3. PURPOSE AGREEMENT — what the soul came here to become. Use North Node, Sun, 1st house, Midheaven.
-4. RELATIONSHIP AGREEMENT — who helps evolve the soul. Use 7th house + ruler, then Venus, then Moon, then Mars.
-5. GIFT AGREEMENT — what was brought in already developed. Use Jupiter, Venus, 2nd house, 5th house, supportive trines/conjunctions.
+4. RELATIONSHIP AGREEMENT — who helps evolve the soul. STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars. Juno is OPTIONAL and may only appear as a light supporting layer at the end if relevant; do NOT lead with Juno or weight it heavily.
+5. GIFT AGREEMENT — what was brought in already developed. Weight Venus and Neptune strongly for intuitive, symbolic, artistic, healing, and spiritual gifts. Use Jupiter and the 2nd/5th houses as well, but do NOT default Jupiter to "financial talent" — read it as wisdom, generosity, vision, or teaching unless the chart clearly points to material abundance. Include supportive trines/conjunctions.
 6. TIMING AGREEMENT — HOW growth tends to unfold (style, not events). Use Saturn, Nodes, Pluto, angular planets. Do NOT predict events.
-7. LEGACY AGREEMENT — what is left behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
+7. LEGACY AGREEMENT — what is left behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house. SPECIAL RULE: if the MC is in Cancer AND the Moon is in the 12th house, interpret legacy specifically through emotional healing, invisible care systems, behind-the-scenes psychological support, and the quiet infrastructure that holds others — go beyond generic "nurturing" language.
 
 Then SUMMARY: one sentence each for core lesson, core wound, core purpose, core legacy.
 
