@@ -9,7 +9,7 @@
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
 import { buildMorningDigest } from "./cosmicWeatherMorningDigest";
-import { getPlanetaryPositions } from "./astrology";
+import { getPlanetaryPositions, calculateDailyAspects, getMoonPhase } from "./astrology";
 import { calculateTransitAspects } from "./transitAspects";
 import { getTransitPlanetHouse } from "./houseCalculations";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,13 +22,14 @@ const PERSONAL_TARGETS = new Set([
   "Ascendant", "Midheaven", "Descendant", "IC",
 ]);
 
-async function fetchWeatherTodayProse(
+async function fetchWeatherTodayParts(
   date: Date,
   natalChart: NatalChart | null,
   recipientName: string | undefined,
   signal?: AbortSignal,
-): Promise<string> {
-  if (!natalChart) return "";
+): Promise<{ cause: string; effect: string; bestUse: string }> {
+  const empty = { cause: "", effect: "", bestUse: "" };
+  if (!natalChart) return empty;
   try {
     const transitPositions = getPlanetaryPositions(date);
     const transits = calculateTransitAspects(date, transitPositions, natalChart) as any[];
@@ -43,14 +44,17 @@ async function fetchWeatherTodayProse(
       .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
     const topMoonAspect = moonHits[0] || null;
 
+    // Strongest outer transit under 1° orb (per the new "Tighten" spec).
     const longerHits = transits
       .filter((t) =>
-        SLOW_PLANETS.has(t.transitPlanet) && PERSONAL_TARGETS.has(t.natalPlanet)
+        SLOW_PLANETS.has(t.transitPlanet) &&
+        PERSONAL_TARGETS.has(t.natalPlanet) &&
+        parseFloat(t.orb) <= 1.0
       )
       .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
     const topLongerTransit = longerHits[0] || null;
 
-    if (!transitMoonSign) return "";
+    if (!transitMoonSign) return empty;
 
     const payload = {
       recipientName: recipientName || natalChart.name,
@@ -80,14 +84,67 @@ async function fetchWeatherTodayProse(
     const { data, error } = await supabase.functions.invoke("your-weather-today", {
       body: payload,
     });
-    if (signal?.aborted) return "";
+    if (signal?.aborted) return empty;
     if (error) {
       console.warn("your-weather-today edge fn error:", error);
+      return empty;
+    }
+    const d = (data as any) || {};
+    return {
+      cause: String(d.cause || "").trim(),
+      effect: String(d.effect || d.text || "").trim(),
+      bestUse: String(d.bestUse || "").trim(),
+    };
+  } catch (e) {
+    console.warn("your-weather-today compute error:", e);
+    return empty;
+  }
+}
+
+async function fetchCollectiveProse(
+  date: Date,
+  signal?: AbortSignal,
+): Promise<string> {
+  try {
+    const positions = getPlanetaryPositions(date);
+    const aspects = calculateDailyAspects(positions) as any[];
+    const moonPhase = getMoonPhase(date);
+    const topAspects = [...aspects]
+      .filter(a => parseFloat(a.orb) <= 6)
+      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+      .slice(0, 3)
+      .map(a => ({
+        planet1: a.planet1,
+        planet2: a.planet2,
+        type: a.type,
+        orb: a.orb,
+        applying: a.applying,
+      }));
+    const retrogrades: string[] = [];
+    for (const key of ["jupiter", "saturn", "uranus", "neptune", "pluto"]) {
+      const p = (positions as any)[key];
+      if (p?.isRetrograde) retrogrades.push(key.charAt(0).toUpperCase() + key.slice(1));
+    }
+    const payload = {
+      dateLabel: date.toLocaleDateString("en-US", {
+        weekday: "long", month: "long", day: "numeric", year: "numeric",
+      }),
+      moonPhaseName: moonPhase.phaseName,
+      moonSign: (positions as any).moon?.signName || "",
+      topAspects,
+      retrogrades,
+    };
+    const { data, error } = await supabase.functions.invoke("cosmic-weather-collective", {
+      body: payload,
+    });
+    if (signal?.aborted) return "";
+    if (error) {
+      console.warn("cosmic-weather-collective edge fn error:", error);
       return "";
     }
     return String((data as any)?.text || "").trim();
   } catch (e) {
-    console.warn("your-weather-today compute error:", e);
+    console.warn("cosmic-weather-collective compute error:", e);
     return "";
   }
 }
@@ -143,11 +200,20 @@ export async function generateCosmicWeatherEmail(
 
   let body: string;
 
+  opts.onProgress?.("writing today's collective sky");
+  const collectiveProseHTML = await fetchCollectiveProse(date, opts.signal);
+
   opts.onProgress?.("personalizing today's weather");
-  const weatherTodayProse = await fetchWeatherTodayProse(date, natalChart, recipientName, opts.signal);
+  const weatherToday = await fetchWeatherTodayParts(date, natalChart, recipientName, opts.signal);
 
   opts.onProgress?.("building personalized morning digest");
-  body = buildMorningDigest({ date, natalChart, recipientName, weatherTodayProse });
+  body = buildMorningDigest({
+    date,
+    natalChart,
+    recipientName,
+    collectiveProseHTML,
+    weatherTodayParts: weatherToday,
+  });
 
   return { subject, body, skyBlock, meta };
 }

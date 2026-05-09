@@ -41,7 +41,7 @@ interface Body {
 
 const HOUSE_DOMAINS: Record<number, string> = {
   1: "your sense of self, body, and how you show up",
-  2: "self-worth, stability, what grounds you, and what feels solid (only money if clearly indicated)",
+  2: "self-worth, stability, what feels solid, your values, what grounds you (do NOT default to money — only mention money if the transit clearly points there)",
   3: "conversations, siblings, short trips, and daily thinking",
   4: "home, family, your inner world, and emotional roots",
   5: "creativity, romance, kids, fun, and self-expression",
@@ -54,38 +54,40 @@ const HOUSE_DOMAINS: Record<number, string> = {
   12: "rest, solitude, your inner life, and what's behind the scenes",
 };
 
-const SYSTEM = `You write the "Your Weather Today" section for one specific person. It bridges the collective sky and their personal chart.
+const SYSTEM = `You write the "Your Weather Today" section for one specific person. Tight 3-part block: Cause, Effect, Best use.
 
-HARD RULES (non-negotiable)
-- Output 2 to 3 sentences. Total 40 to 65 words. Never more.
-- Plain human language a smart 15-year-old understands instantly.
-- Describe what the person will FEEL, NOTICE, or DO today.
-- Never use em dashes. Use commas, periods, or parentheses.
-- No jargon. Forbidden words: energy, energies, processing, integrating, themes, alignment, atmosphere, dynamic, vibe, frequency, shadow work, transformation journey, authentic self, reflective, processing, restless, friction, principles outrun feelings, imagination opens.
-- Never explain astrology. Never name aspects, signs, houses, or planets in the output. Translate them into lived experience.
-- Use soft hedges: may, might, can, often.
+INPUTS YOU WILL RECEIVE (use ONLY these — do not add other transits):
+A. The transiting Moon's house in the reader's natal chart.
+B. The single strongest Moon-to-natal aspect today.
+C. The single strongest outer-planet transit currently inside 1 degree.
+(Any of B or C may be missing. Work with whatever is given.)
 
-LANGUAGE RULE — RECOGNIZABLE HUMAN MOMENTS (critical):
-Do NOT translate astrology into vague concepts. Translate into recognizable lived moments.
-BAD (banned): "reflective", "processing", "restless", "friction", "imagination opens", "principles outrun feelings".
-GOOD (use this register): "harder to say what you feel", "wanting space", "feeling misunderstood", "wanting comfort", "feeling emotionally full", "wanting to pull back", "feeling heavier than usual", "feeling clearer than usual".
+OUTPUT FORMAT (return JSON exactly like this):
+{ "cause": "...", "effect": "...", "bestUse": "..." }
 
-2ND HOUSE RULE:
-If the relevant house is the 2nd house, do NOT default to money. Interpret it first as self-worth, stability, what grounds you, what feels solid. Only mention money if the specific transit clearly points there.
+- cause:    1 short sentence naming the actual transit in plain words (e.g. "Moon moving through your home life today" or "Saturn pressing on your sense of self this week"). No glyphs, no degree symbols, no aspect names like "square" or "trine" — translate them into pressure / ease / tension / support words.
+- effect:   1 to 2 short sentences. Describe how it MAY FEEL today. Plain spoken language a 15-year-old gets instantly. Soft hedges (may, might, can, often). Recognizable human moments only.
+- bestUse:  1 short sentence naming what today actually supports. Concrete: e.g. "slower conversations", "fixing things", "rest", "honest one-on-ones", "paperwork", "giving people space".
+
+ABSOLUTELY FORBIDDEN WORDS (auto-fail):
+energy, energies, processing, integrating, themes, alignment, atmosphere, dynamic, vibe, frequency, shadow work, transformation journey, authentic self, reflective, restless, friction, principles outrun feelings, imagination opens, "is bringing", cooler day.
+
+REWRITE TABLE (use the GOOD register):
+- BAD "reflective"            GOOD "harder to say what you feel" / "wanting space"
+- BAD "processing"            GOOD "may not know how to explain what they feel yet"
+- BAD "imagination opens"     GOOD "music, memories, or quiet time may hit harder than expected"
+- BAD "restless"              GOOD "harder to sit still" / "wanting more space than usual"
+- BAD "friction"              GOOD "small things may set you off"
+
+2ND HOUSE RULE (critical):
+If the relevant house is the 2nd house, do NOT default to money. Lead with: self-worth, stability, what grounds you, what feels solid, your values. Mention money ONLY if the specific transit clearly points there.
 
 MOON + NEPTUNE RULE:
-If the data involves the Moon with Neptune (any aspect), never reduce it to "imagination". Interpret it as some mix of: emotional softness, memory, nostalgia, music, grief, intuition, longing, blurred emotional edges.
-Example rewrite — BAD: "Imagination opens." GOOD: "You may feel more sensitive than usual, and memories or music may hit harder than expected."
-Example rewrite — BAD: "restless at home." GOOD: "You may want more quiet or space than usual, even if you can't explain why."
+If the data involves the Moon with Neptune in any aspect, never reduce it to "imagination". Use: emotional softness, memory, nostalgia, music, grief, intuition, longing, blurred emotional edges. Example — BAD "Imagination opens." GOOD "You may feel more sensitive than usual, and memories or music may hit harder than expected."
 
-REQUIRED SHAPE (combine all three in 2-3 sentences):
-1. Emotional tone of today for this person, in recognizable human language.
-2. Where it shows up in life (the life area from the Moon's house, applying the 2nd house rule when relevant).
-3. One concrete thing to watch or notice.
+Never use em dashes anywhere. Use commas, periods, colons, parentheses.
 
-GOAL: The reader feels understood in under 15 seconds. They should recognize the moment in their own day.
-
-Return ONLY a JSON object: { "text": "..." }`;
+Return ONLY the JSON object: { "cause": "...", "effect": "...", "bestUse": "..." }`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -137,14 +139,12 @@ serve(async (req) => {
       dateLabel ? `Date: ${dateLabel}.` : "",
       recipientName ? `Reader: ${recipientName}.` : "",
       "",
-      "USE ONLY THIS DATA (do not invent). Translate it into lived feelings and one concrete area of life:",
+      "USE ONLY THIS DATA. Translate it into lived feelings:",
       moonLine,
       moonAspectLine,
       longerLine,
       "",
-      "Write 2-3 sentences, 40-65 words, plain human language. Combine emotional tone, where it shows up in life, and one thing to watch. Never name signs, houses, planets, or aspects in the output.",
-      "",
-      "Return JSON only: { \"text\": \"...\" }",
+      'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -163,7 +163,7 @@ serve(async (req) => {
     if (!resp.ok) {
       const txt = await resp.text();
       console.error("Lovable AI error:", resp.status, txt);
-      return new Response(JSON.stringify({ error: `AI error ${resp.status}`, text: "" }), {
+      return new Response(JSON.stringify({ error: `AI error ${resp.status}`, cause: "", effect: "", bestUse: "", text: "" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -176,14 +176,19 @@ serve(async (req) => {
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    let text = String(parsed?.text || "").replace(/—/g, ", ").trim();
+    const clean = (s: any) => String(s || "").replace(/—/g, ", ").trim();
+    const cause = clean(parsed?.cause);
+    const effect = clean(parsed?.effect ?? parsed?.text);
+    const bestUse = clean(parsed?.bestUse ?? parsed?.best_use);
+    // Backward-compat single-string field for any legacy caller.
+    const text = [effect, bestUse ? `Best use: ${bestUse}` : ""].filter(Boolean).join(" ");
 
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ cause, effect, bestUse, text }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("your-weather-today error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown", text: "" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown", cause: "", effect: "", bestUse: "", text: "" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
