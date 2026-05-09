@@ -29,10 +29,10 @@ interface SoulAgreements {
   timing: AgreementSection;
   legacy: AgreementSection;
   summary: {
-    coreLesson: string;
-    coreWound: string;
-    corePurpose: string;
-    coreLegacy: string;
+    whatToPractice: string;
+    whatToWatchFor: string;
+    whatToBuild: string;
+    whatToGive: string;
   };
 }
 
