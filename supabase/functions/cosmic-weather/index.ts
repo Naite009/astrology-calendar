@@ -831,29 +831,19 @@ For each noteworthy event, explain:
 - HOW it will FEEL (practical, tangible impact on daily life)]
 
 ## Cosmic Weather
-[3-4 paragraphs weaving together the Moon sign/phase, major aspects (especially applying ones!), and their implications for the COLLECTIVE. 
+[3-4 short paragraphs about what today may look like in real life for ordinary people, based on the Moon sign/phase and major aspects (especially applying ones).
 
-MYTHOLOGICAL/ARCHETYPAL TEXTURE (weave naturally, not as a lecture):
-When a planet is featured prominently today (tight aspect, station, ingress), briefly invoke its mythological origin as EMOTIONAL CONTEXT — not a history lesson, but texture that makes the energy FELT:
-- If Chiron is aspected: Name the wound-and-wisdom dynamic explicitly. Reference the Wounded Healer — the centaur who was abandoned, who felt like an outsider, who became the greatest teacher of heroes precisely because of what he could never fix in himself. What is the specific wound being touched today? What old sore spot is surfacing? What wisdom is possible on the other side?
-- If Eris is aspected: Invoke the goddess of discord — uninvited to the wedding of the gods, she rolled a golden apple marked "for the fairest" into the feast, and the resulting argument started the Trojan War. Eris doesn't cause the fracture; she reveals it. What suppressed truth is surfacing? What false peace is being disrupted? Where has someone's voice been denied a seat at the table?
-- For other planets: Sun (Helios driving the chariot), Moon (Selene/Artemis), Venus (Aphrodite rising from the sea), Mars (Ares, the warrior no one wanted at dinner), Saturn (Kronos who ate his children out of fear), Jupiter (Zeus expanding beyond all limits), Mercury (Hermes the trickster at the crossroads), Neptune (Poseidon's depths), Pluto (Hades and Persephone, what gets buried comes back transformed), Uranus (sky god castrated by his own son — the shock of severance that creates something new).
-- Use this mythological layer ONLY when a planet is genuinely active (aspected, stationing, changing signs). Don't force it.
+THE SAME 14-YEAR-OLD TEST APPLIES: every sentence must describe behavior, feelings, conflict, motivation, patience, truth, distance, tension, or connection a 14-year-old can picture happening today. If they cannot picture it, rewrite it.
 
-THE INVITATION — for each major transit discussed, end with what this energy is ASKING of us. What's possible if we work with it? Be specific to the actual transit, not generic ("this is a powerful time!" is BANNED).
+SAME FORBIDDEN WORDS as The Day at a Glance: energy, energies, processing, reflective, integrating, themes, principles, alignment, atmosphere, dynamic, cooler, energetic, invitations, vibe, frequency. Also avoid abstract verbs like "dissolves," "activates," "rebuilds from within," "shifts the atmosphere."
 
-SOMATIC/SENSORY LANGUAGE: Use body-based descriptions where possible — "there's a tightening in the chest," "a softening around the jaw," "a restlessness in the legs," "the feeling of holding your breath." This makes abstract planetary energy TANGIBLE.
+USE concrete human vocabulary: feelings, behavior, conflict, distance, patience, truth, tension, motivation, frustration, connection. Show what people might say, do, feel, avoid, or notice today.
 
-CLOSING SENTENCE: End the Cosmic Weather section with ONE grounding sentence or reflective question to carry into the day. Make it specific to today's transits. No generic affirmations.
+MYTH (use sparingly, only when a planet is genuinely active today via tight aspect, station, or ingress): you may briefly name a god/goddess and the lived feeling it points to, but immediately translate it into real behavior. Example: "Mars in the picture today, the part of us that gets impatient. People may snap faster than usual." Do NOT lecture about mythology.
 
-CRITICAL FOR ASPECTS:
-- If an aspect is APPLYING, emphasize that energy is BUILDING - "Mercury is moving toward a square with Uranus, intensifying mental restlessness"
-- For tight orbs (<2°), call it "nearly exact" or "almost exact"
-- Explain WHAT the aspect means psychologically, not just that it exists
-- For squares: What's the tension? What wants to break through? What repetitive pattern needs examining?
-- For trines/sextiles: What's flowing easily? What opportunities are available?
+FOR APPLYING ASPECTS: say the pressure is BUILDING in plain terms ("the friction is growing through the day", "by tonight people may feel it more"). For tight orbs (<2°), call it "almost exact". For squares: name the real-life tension or argument that may show up. For trines/sextiles: name what may feel easier today (a conversation, a decision, asking for help).
 
-Write as prose about world energy, cultural mood, and societal themes. How might this show up in news, conversations, and general atmosphere?]
+CLOSING SENTENCE: end with ONE grounded sentence about what to actually do or watch for today. No generic affirmations. No "invitations". No reflection questions written in astrology language.]
 
 ## Coming Up
 [This section is REQUIRED. People need to know what's BUILDING and what's about to happen.
