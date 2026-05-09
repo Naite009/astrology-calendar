@@ -427,16 +427,17 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const fallbackExamples = fallbackSection.interpretation.match(/\*\*Real-Life Examples\*\*\s*([\s\S]*?)\n\n\*\*Recognition Check\*\*/)?.[1]
           ?.split("\n").map((item) => item.replace(/^-\s*/, "").trim()).filter(Boolean) || [];
         const fallbackRecognition = fallbackSection.question.split("\n").filter((item) => item.trim().startsWith("-")).map((item) => item.replace(/^-\s*/, "").trim());
+        const cleanField = (raw: unknown, fallbackText: string) => stripTemplateLeakage(cleanPlainLanguage(String(raw || fallbackText)));
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition
-          ? `**Astrology**\n${cleanPlainLanguage(String(source?.astrology || "This section uses the strongest listed chart markers for this agreement."))}\n\n**Plain English**\n${cleanPlainLanguage(String(source?.plainEnglish || fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits."))}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${item}`).join("\n")}\n\n**Recognition Check**\nThis may fit if:\n${asArray(source?.recognition, fallbackRecognition).map((item) => `- ${item}`).join("\n")}`
+          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
           : String(source?.interpretation || fallbackSection.interpretation);
-        const interpretation = cleanPlainLanguage(structuredInterpretation);
+        const interpretation = stripRecognitionFromInterpretation(cleanPlainLanguage(structuredInterpretation));
         const recognition = cleanPlainLanguage(
           source?.recognition
-            ? `This may fit if:\n${asArray(source.recognition, fallbackRecognition).map((item) => `- ${item}`).join("\n")}`
+            ? `This may fit if:\n${asArray(source.recognition, fallbackRecognition).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
             : String(source?.question || extractRecognition(interpretation) || fallbackSection.question),
         );
-        result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
+        result[key] = { interpretation, question: stripTemplateLeakage(recognition) };
       }
       const s: any = value?.summary || {};
       const validSummaryField = (raw: unknown): string | null => {
