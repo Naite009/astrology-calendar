@@ -135,7 +135,7 @@ Return STRICT JSON only, matching this schema:
     "coreLegacy": string
   }
 }
-The "interpretation" field MUST contain all 4 layered sub-headings (Astrology, Plain English, Real-Life Examples, Reflection). The "question" field repeats the reflection question on its own.`;
+The "interpretation" field MUST contain all 4 layered sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check). The "question" field repeats the "This may fit if:" bullet block — never a question.`;
 
     const userPrompt = `Chart: ${chartName}
 
