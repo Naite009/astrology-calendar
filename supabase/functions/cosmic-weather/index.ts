@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-29-v31-body-classification-node-validation";
+    const PROMPT_VERSION = "2026-05-08-v32-no-natal-references-hard-whitelist";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -731,8 +731,9 @@ CRITICAL RULES:
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
 4. ALWAYS mention APPLYING aspects as building/intensifying and SEPARATING aspects as releasing/completing.
-5. **ABSOLUTELY CRITICAL - NEVER INVENT OR RELABEL ASPECTS**: ONLY mention aspects that are EXPLICITLY listed in the "aspects" data provided.
-   - If two planets are NOT listed as having an aspect, DO NOT claim they have one.
+5. **ABSOLUTELY CRITICAL - NEVER INVENT OR RELABEL ASPECTS - HARD WHITELIST**: ONLY mention aspects that are EXPLICITLY listed in the "aspects" data provided. The "aspects" array is the ONLY source of truth for what planets are aspecting each other today. Treat it as a closed whitelist:
+   - Before writing ANY aspect (e.g., "Mars square Saturn", "Venus conjunct Jupiter"), find that exact pairing in the aspects list. If it is not there, you may NOT write it. No exceptions, even if your training data suggests it is happening today.
+   - If two planets are NOT listed as having an aspect, DO NOT claim they have one. Do NOT use softer phrasings like "moving toward", "echoing", "in the background", "still in orb of" to sneak in a non-listed aspect.
    - When you mention an aspect, you MUST use the provided aspect "type" and/or "symbol" EXACTLY.
      - If the symbol is "□" or the type is "square", you MUST say "square" (not "conjunct").
      - If the symbol is "☌" or the type is "conjunction", you may say "conjunct".
@@ -741,6 +742,14 @@ CRITICAL RULES:
    - Example sanity check: Moon 0° Scorpio and Pluto 3° Aquarius are ~94° apart (a square), not a conjunction.
    - If you see Saturn at 29° and North Node at 10°, that is a 19° gap = NO ASPECT. Do not mention it.
    - Check the orb value provided - if it's over 10°, it's not a valid major aspect.
+5b. **ABSOLUTELY CRITICAL - NEVER REFERENCE THE READER'S NATAL CHART**: This function does NOT receive the reader's natal chart. You do NOT know where their natal Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, Lilith, Nodes, or angles are. You therefore may NOT write phrases like:
+   - "Neptune opposition natal Moon"
+   - "Lilith conjunct your natal Sun"
+   - "Uranus conjunct natal Jupiter"
+   - "transiting X to your natal Y"
+   - "this lands on your natal ___"
+   - any sentence containing the word "natal" or any claim about a transit landing on a specific planet/point in the reader's chart.
+   This is a COLLECTIVE sky reading. Personal transit-to-natal contacts are written by a different system. If you write "natal" anything, the output will be rejected.
 6. Each aspect in the data includes "orb" and "motion" fields - USE them to describe tightness and direction.
 
 PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
