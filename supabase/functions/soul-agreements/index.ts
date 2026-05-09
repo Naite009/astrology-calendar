@@ -104,8 +104,18 @@ Translate the astrology above into direct, simple language. Answer: "What does t
 **Real-Life Examples**
 2-4 concrete bullet examples of how this shows up day-to-day. Each bullet is one short sentence describing a recognizable behavior, situation, or pattern. Draw from things like: people-pleasing, avoiding conflict, struggling to say no, overthinking relationships, hiding feelings, needing approval, learning boundaries, speaking up, rebuilding confidence, changing careers, ending unhealthy relationships. Match the examples to the actual chart.
 
-**Reflection**
-End with ONE grounded, open-ended question (this also goes in the "question" field separately).
+**Recognition Check**
+End with a Recognition Check, NOT a reflective question. Format exactly:
+
+This may fit if:
+- [specific real-life pattern]
+- [specific emotional pattern]
+- [specific relationship pattern]
+- [specific behavior pattern]
+
+Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Do NOT use phrases like "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Goal: recognition before reflection.
+
+The "question" field must contain the same "This may fit if:" block (with bullets) — NOT a question.
 
 Total length per section: 200-350 words including all 4 layers.
 
