@@ -207,6 +207,11 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                     <div><span className="font-medium">What to build:</span> {data.summary.whatToBuild}</div>
                     <div><span className="font-medium">What to give:</span> {data.summary.whatToGive}</div>
                   </div>
+                  {data.summary.integration && (
+                    <p className="mt-4 pt-3 border-t border-primary/20 text-[12px] text-foreground italic leading-relaxed">
+                      {data.summary.integration}
+                    </p>
+                  )}
                 </div>
               )}
 
