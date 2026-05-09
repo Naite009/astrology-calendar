@@ -9,8 +9,88 @@
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
 import { buildMorningDigest } from "./cosmicWeatherMorningDigest";
+import { getPlanetaryPositions } from "./astrology";
+import { calculateTransitAspects } from "./transitAspects";
+import { getTransitPlanetHouse } from "./houseCalculations";
+import { supabase } from "@/integrations/supabase/client";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { SolarReturnChart } from "@/hooks/useSolarReturnChart";
+
+const SLOW_PLANETS = new Set(["Pluto", "Neptune", "Uranus", "Saturn", "Jupiter", "Chiron"]);
+const PERSONAL_TARGETS = new Set([
+  "Sun", "Moon", "Mercury", "Venus", "Mars",
+  "Ascendant", "Midheaven", "Descendant", "IC",
+]);
+
+async function fetchWeatherTodayProse(
+  date: Date,
+  natalChart: NatalChart | null,
+  recipientName: string | undefined,
+  signal?: AbortSignal,
+): Promise<string> {
+  if (!natalChart) return "";
+  try {
+    const transitPositions = getPlanetaryPositions(date);
+    const transits = calculateTransitAspects(date, transitPositions, natalChart) as any[];
+    const moon: any = (transitPositions as any).moon;
+    const transitMoonSign = (moon?.signName || moon?.sign || "").toString();
+    const transitMoonHouse = moon
+      ? getTransitPlanetHouse(transitMoonSign, moon.degree ?? 0, natalChart)
+      : null;
+
+    const moonHits = transits
+      .filter((t) => t.transitPlanet === "Moon")
+      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+    const topMoonAspect = moonHits[0] || null;
+
+    const longerHits = transits
+      .filter((t) =>
+        SLOW_PLANETS.has(t.transitPlanet) && PERSONAL_TARGETS.has(t.natalPlanet)
+      )
+      .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+    const topLongerTransit = longerHits[0] || null;
+
+    if (!transitMoonSign) return "";
+
+    const payload = {
+      recipientName: recipientName || natalChart.name,
+      dateLabel: date.toLocaleDateString("en-US", {
+        weekday: "long", month: "long", day: "numeric", year: "numeric",
+      }),
+      transitMoonSign,
+      transitMoonHouse,
+      topMoonAspect: topMoonAspect && {
+        natalPlanet: topMoonAspect.natalPlanet,
+        aspect: topMoonAspect.aspect,
+        natalSign: topMoonAspect.natalSign,
+        natalHouse: topMoonAspect.natalHouse ?? null,
+        orb: topMoonAspect.orb,
+      },
+      topLongerTransit: topLongerTransit && {
+        transitPlanet: topLongerTransit.transitPlanet,
+        aspect: topLongerTransit.aspect,
+        natalPlanet: topLongerTransit.natalPlanet,
+        natalSign: topLongerTransit.natalSign,
+        natalHouse: topLongerTransit.natalHouse ?? null,
+        orb: topLongerTransit.orb,
+        applying: topLongerTransit.applying,
+      },
+    };
+
+    const { data, error } = await supabase.functions.invoke("your-weather-today", {
+      body: payload,
+    });
+    if (signal?.aborted) return "";
+    if (error) {
+      console.warn("your-weather-today edge fn error:", error);
+      return "";
+    }
+    return String((data as any)?.text || "").trim();
+  } catch (e) {
+    console.warn("your-weather-today compute error:", e);
+    return "";
+  }
+}
 
 export interface CosmicWeatherEmailArgs {
   date: Date;
@@ -63,8 +143,11 @@ export async function generateCosmicWeatherEmail(
 
   let body: string;
 
+  opts.onProgress?.("personalizing today's weather");
+  const weatherTodayProse = await fetchWeatherTodayProse(date, natalChart, recipientName, opts.signal);
+
   opts.onProgress?.("building personalized morning digest");
-  body = buildMorningDigest({ date, natalChart, recipientName });
+  body = buildMorningDigest({ date, natalChart, recipientName, weatherTodayProse });
 
   return { subject, body, skyBlock, meta };
 }
