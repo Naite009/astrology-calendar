@@ -139,14 +139,12 @@ serve(async (req) => {
       dateLabel ? `Date: ${dateLabel}.` : "",
       recipientName ? `Reader: ${recipientName}.` : "",
       "",
-      "USE ONLY THIS DATA (do not invent). Translate it into lived feelings and one concrete area of life:",
+      "USE ONLY THIS DATA. Translate it into lived feelings:",
       moonLine,
       moonAspectLine,
       longerLine,
       "",
-      "Write 2-3 sentences, 40-65 words, plain human language. Combine emotional tone, where it shows up in life, and one thing to watch. Never name signs, houses, planets, or aspects in the output.",
-      "",
-      "Return JSON only: { \"text\": \"...\" }",
+      'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -165,7 +163,7 @@ serve(async (req) => {
     if (!resp.ok) {
       const txt = await resp.text();
       console.error("Lovable AI error:", resp.status, txt);
-      return new Response(JSON.stringify({ error: `AI error ${resp.status}`, text: "" }), {
+      return new Response(JSON.stringify({ error: `AI error ${resp.status}`, cause: "", effect: "", bestUse: "", text: "" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -178,14 +176,19 @@ serve(async (req) => {
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    let text = String(parsed?.text || "").replace(/—/g, ", ").trim();
+    const clean = (s: any) => String(s || "").replace(/—/g, ", ").trim();
+    const cause = clean(parsed?.cause);
+    const effect = clean(parsed?.effect ?? parsed?.text);
+    const bestUse = clean(parsed?.bestUse ?? parsed?.best_use);
+    // Backward-compat single-string field for any legacy caller.
+    const text = [effect, bestUse ? `Best use: ${bestUse}` : ""].filter(Boolean).join(" ");
 
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ cause, effect, bestUse, text }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("your-weather-today error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown", text: "" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown", cause: "", effect: "", bestUse: "", text: "" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
