@@ -994,6 +994,7 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
           <div style="font-size:13px;color:${COLOR.text};font-weight:600">
             ☽ ${ASPECT_GLYPH[h.aspect] || h.aspect} natal ${escapeHtml(h.natalPlanet)}
             <span style="font-weight:400;color:${COLOR.muted}"> · ${h.orb.toFixed(1)}° orb</span>
+            ${moonTagPillHTML(moonHitTag(h))}
           </div>
           <div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">${transitLine} &nbsp;·&nbsp; ${natalLine}</div>
           <div style="font-size:13px;color:${COLOR.text};margin-top:8px;line-height:1.55">${moonHitInterpretation(h)}</div>
