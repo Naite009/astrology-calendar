@@ -476,9 +476,24 @@ function otherTransitsHTML(date: Date, chart: NatalChart | null): string {
   const noon = getEasternDateAtTime(date, 12, 0);
   const positions = getPlanetaryPositions(noon);
   const aspects = calculateTransitAspects(noon, positions, chart);
+  // Ranking for Longer Transits:
+  // 1) tight/applying first (separating only kept if under 0.5°)
+  // 2) personal targets (Sun/Moon/ASC/MC/Mercury/Venus/Mars) first
+  // 3) outer planets + Chiron over minor points (already filtered)
+  const TARGET_WEIGHT: Record<string, number> = {
+    Sun: 6, Moon: 6, Ascendant: 6, Midheaven: 6,
+    Mercury: 4, Venus: 4, Mars: 4,
+  };
   const filtered = aspects
     .filter(a => OTHER_TRANSIT_OUTERS.has(a.transitPlanet) && OTHER_TRANSIT_INNERS.has(a.natalPlanet))
-    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+    .filter(a => a.applying || parseFloat(a.orb) < 0.5)
+    .sort((a, b) => {
+      const orbA = parseFloat(a.orb);
+      const orbB = parseFloat(b.orb);
+      const scoreA = orbA - (TARGET_WEIGHT[a.natalPlanet] || 1) * 0.5 - (a.applying ? 0.4 : 0);
+      const scoreB = orbB - (TARGET_WEIGHT[b.natalPlanet] || 1) * 0.5 - (b.applying ? 0.4 : 0);
+      return scoreA - scoreB;
+    })
     .slice(0, 6);
 
   if (filtered.length === 0) {
