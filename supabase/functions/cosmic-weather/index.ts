@@ -804,6 +804,20 @@ Instead, when mentioning how today's energy lands personally, say:
 
 Keep it simple - do NOT list out examples for different rising signs. That's generic advice that belongs in a horoscope column, not in a cosmic weather report.
 
+DAILY EMAIL OVERRIDE — APPLIES TO ALL FOUR SECTIONS BELOW (collective sky / personal weather / moon hits / outer transits). This OVERRIDES any earlier writing rule, voice template, or summary style:
+
+1. Plain spoken language only. Write like you are talking to an intelligent 15-year-old. If a 15-year-old cannot understand a sentence immediately, rewrite it.
+2. NO abstract astrology language. Forbidden words and phrases (never use any of these, ever): reflective, processing, integrating, "cooler day", cooler, "principles outrun feelings", principles, energy, energies, themes, alignment, "imagination opens", friction, atmosphere, dynamic, vibe, frequency, shift, undercurrent, "tone of the day", invitations.
+3. Describe ACTUAL HUMAN BEHAVIOR. Mandatory rewrites:
+   - "reflective"           → "people may pull back" or "people may need space"
+   - "processing"           → "people may not know how to explain what they feel yet"
+   - "integrating"          → "people may be quietly working through something"
+   - "imagination opens"    → "music, memories, or quiet time may hit harder than usual"
+   - "friction"             → "small things may set people off" or "people may snap quicker than usual"
+   - "cooler day"           → "people may be a little more guarded today"
+4. Prioritize emotional realism over astrological elegance. If the choice is between sounding poetic and sounding true to how a real person feels, choose true.
+5. The 15-year-old test is mandatory on every sentence in every section.
+
 FORMAT:
 
 ## The Day at a Glance
