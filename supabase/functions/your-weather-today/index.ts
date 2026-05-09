@@ -36,6 +36,10 @@ interface Body {
   transitMoonSign: string;
   transitMoonHouse: number | null;
   topMoonAspect?: MoonAspect | null;
+  /** Full set of active outer-planet transits to personal points (≤ 3° orb),
+   *  ordered tightest first. The model SYNTHESIZES across all of them. */
+  outerTransits?: LongerTransit[];
+  /** Deprecated single-aspect field. Ignored when outerTransits has items. */
   topLongerTransit?: LongerTransit | null;
 }
 
