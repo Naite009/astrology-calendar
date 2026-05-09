@@ -194,7 +194,7 @@ ACCURACY & HEDGING RULES:
   GOOD: "You may struggle to fully be yourself in close relationships."
 - Do not overstate. If the chart only hints at something, say "may" or "can sometimes."
 
-REQUIRED SECTION STRUCTURE — every section must have these 4 layers, in this order, inside the "interpretation" field. Use these exact bold sub-headings on their own lines:
+REQUIRED SECTION STRUCTURE — every section must have these 4 layers, in this order. Return them as separate JSON fields. The function will format the headings.
 
 **Astrology**
 Briefly explain the actual placements/aspects being used. Keep this SHORT. 2-5 sentences max. Do not over-explain.
@@ -226,19 +226,19 @@ LANGUAGE REPLACEMENTS (mandatory across ALL sections):
 
 NO DUPLICATE HEADINGS: Each of the 4 sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check) appears EXACTLY ONCE per section. Do not repeat them inside the body text.
 
-The "question" field must contain the same "This may fit if:" block (with bullets), NOT a question.
+The "recognition" field must contain 4 short bullet items as a JSON array, NOT questions.
 
-Total length per section: 200-350 words including all 4 layers.
+Total length per section: 120-190 words including all 4 layers.
 
 Return STRICT JSON only, matching this schema:
 {
-  "family": { "interpretation": string, "question": string },
-  "wound": { "interpretation": string, "question": string },
-  "purpose": { "interpretation": string, "question": string },
-  "relationship": { "interpretation": string, "question": string },
-  "gift": { "interpretation": string, "question": string },
-  "timing": { "interpretation": string, "question": string },
-  "legacy": { "interpretation": string, "question": string },
+  "family": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "wound": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "purpose": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "relationship": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "gift": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "timing": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "legacy": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "summary": {
     "coreLesson": string,
     "coreWound": string,
@@ -246,7 +246,7 @@ Return STRICT JSON only, matching this schema:
     "coreLegacy": string
   }
 }
-The "interpretation" field MUST contain all 4 layered sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check). The "question" field repeats the "This may fit if:" bullet block — never a question.`;
+Do NOT put markdown headings inside JSON values. Do NOT return "interpretation" or "question" fields. No prose outside JSON.`;
 
     const userPrompt = `Chart: ${chartName}
 
@@ -259,7 +259,7 @@ ${houseLines}
 VERIFIED ASPECTS:
 ${aspectLines || "(none provided)"}
 
-Write the 7 Soul Agreements using ONLY the data above. Every section MUST follow the 4-layer structure (Astrology / Plain English / Real-Life Examples / Recognition Check). The Recognition Check is a "This may fit if:" bullet list of concrete behavioral/emotional/relationship patterns — NEVER a reflective question:
+Write the 7 Soul Agreements using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete behavioral/emotional/relationship patterns — NEVER reflective questions:
 
 1. FAMILY AGREEMENT — emotional environment that shaped you growing up. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
