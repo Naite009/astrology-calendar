@@ -1288,6 +1288,9 @@ export function buildMorningDigest({
       ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
       ${otherTransitsHTML(date, natalChart)}
 
+      ${sectionTitle('Fixed star activations', 'Major stars sitting on your natal points')}
+      ${fixedStarsHTML(date, natalChart)}
+
       ${sectionTitle('The collective sky', 'What everyone is living under')}
       ${collectiveSection}
 
