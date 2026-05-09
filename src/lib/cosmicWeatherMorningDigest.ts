@@ -1257,17 +1257,22 @@ export function buildMorningDigest({
   natalChart,
   recipientName,
   collectiveProseHTML,
-  whatMattersItems,
+  weatherTodayProse,
 }: MorningDigestArgs): string {
   const midnight = getEasternMidnightDate(date);
   const dateLabel = fmtETDate(midnight);
   const firstName = recipientName?.trim().split(/\s+/)[0];
 
-  // If a collective prose override is provided (the cosmic-weather AI prose),
-  // wrap it in the same card shell so the layout is identical.
+  // Wrap collective prose (AI-generated) in the same card shell.
   const collectiveSection = collectiveProseHTML
     ? `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${collectiveProseHTML}</div>`
     : collectiveSkyHTML(date);
+
+  const weatherTodayText = (weatherTodayProse || "").trim();
+  const weatherTodaySection = weatherTodayText
+    ? `${sectionTitle('Your weather today', 'How today lands in your chart')}
+       <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${escapeHtml(weatherTodayText)}</div>`
+    : '';
 
   return `<div style="background:${COLOR.bg};padding:28px 18px;font-family:${FONT};color:${COLOR.text}">
     <div style="max-width:680px;margin:0 auto">
@@ -1283,23 +1288,16 @@ export function buildMorningDigest({
       ${sectionTitle('Sky right now', 'Where every planet lands in your chart')}
       ${planetGridHTML(date, natalChart)}
 
-      ${sectionTitle("The Moon today", 'Arc through your chart')}
-      ${moonArcHTML(date, natalChart)}
+      ${sectionTitle('The collective sky', 'What everyone is living under')}
+      ${collectiveSection}
+
+      ${weatherTodaySection}
 
       ${sectionTitle('Moon hits your natal chart', 'Key ☽ moments')}
       ${moonHitsHTML(date, natalChart)}
 
       ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
       ${otherTransitsHTML(date, natalChart)}
-
-      ${sectionTitle('Fixed star activations', 'Major stars sitting on your natal points')}
-      ${fixedStarsHTML(date, natalChart)}
-
-      ${sectionTitle('The collective sky', 'What everyone is living under')}
-      ${collectiveSection}
-
-      ${sectionTitle('What matters most today', 'Personal to your chart')}
-      ${whatMattersHTML(date, natalChart, whatMattersItems)}
 
       <div style="margin:36px 0 4px;padding-top:14px;border-top:1px solid ${COLOR.border};font-size:11px;color:${COLOR.faint};text-align:center;font-family:${SANS}">
         Generated from your live chart · all positions calculated in Eastern Time
