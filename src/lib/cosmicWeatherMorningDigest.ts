@@ -388,7 +388,7 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
 const TRANSIT_PLANET_THEME: Record<string, string> = {
   Jupiter: 'expansion, opportunity, and a pull to grow or take more space',
   Saturn: 'pressure to get serious, define limits, and meet a real responsibility',
-  Uranus: 'sudden change, restlessness, and a need to break a pattern',
+  Uranus: 'sudden change, hard-to-sit-still feelings, and a need to break a pattern',
   Neptune: 'blurring, longing, and a softer, less defined sense of things',
   Pluto: 'a slow, undeniable shift in power, control, and what you can no longer fake',
   Chiron: 'an old sore spot getting touched and asking to be handled honestly',
@@ -438,7 +438,7 @@ const SIGN_TONE: Record<string, string> = {
   Virgo: 'precise, analytical, and quietly self-critical',
   Libra: 'relational, fair-minded, and conflict-averse',
   Scorpio: 'intense, private, and all-or-nothing',
-  Sagittarius: 'restless, philosophical, and looking for meaning',
+  Sagittarius: 'wanting more space, philosophical, and looking for meaning',
   Capricorn: 'serious, ambitious, and structure-seeking',
   Aquarius: 'detached, principled, and pattern-breaking',
   Pisces: 'porous, dreamy, and emotionally absorbent',
