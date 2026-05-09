@@ -171,7 +171,7 @@ serve(async (req) => {
           natalHouse: t.natalHouse ?? null,
         };
       })
-      .slice(0, 5);
+      .slice(0, 3);
 
     return new Response(JSON.stringify({ items, droppedCount: rawItems.length - items.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
