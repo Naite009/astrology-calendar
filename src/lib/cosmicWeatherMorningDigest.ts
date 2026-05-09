@@ -813,34 +813,35 @@ const PLANET_DOMAIN: Record<string, string> = {
   Chiron: "old wounds asking to be tended",
 };
 
-// What each planet, when it's loud in the sky, actually does to the room.
-// Hard = friction-flavored (conjunction/square/opposition/quincunx).
-// Soft = flow-flavored (trine/sextile).
+// Felt-sense weather phrases per planet pair flavor. These are written as
+// emotional-climate sentences (no jargon, no "the moon is..." openers).
+// Hard = friction (conjunction/square/opposition/quincunx).
+// Soft = flow (trine/sextile).
 const PLANET_SCENE: Record<string, { hard: string; soft: string }> = {
-  Sun:     { hard: "people are touchy about being seen and credited", soft: "people feel more comfortable being themselves in public" },
-  Moon:    { hard: "moods run close to the surface and shift fast", soft: "moods are easy to read and easy to settle" },
-  Mercury: { hard: "conversations get tangled, plans need a second look, and small messages misfire", soft: "talking, writing, and making plans come more easily than usual" },
-  Venus:   { hard: "small social slights land harder than they should and money decisions feel itchy", soft: "people are warmer with each other and small pleasures actually land" },
-  Mars:    { hard: "tempers are short, drivers are aggressive, and people are quicker to push back", soft: "it's easier than usual to start something and follow it through" },
-  Jupiter: { hard: "everything wants to get bigger than it should, including reactions, spending, and promises", soft: "things feel more possible than they did yesterday" },
-  Saturn:  { hard: "the world feels heavier and slower, and limits are showing up where they didn't before", soft: "structure, patience, and grown-up decisions are easier to find" },
-  Uranus:  { hard: "the day is twitchy and prone to small surprises that throw off your schedule", soft: "fresh thinking and small breakthroughs are available if you stay loose" },
-  Neptune: { hard: "everything is a little blurry, hard to pin down, and easy to misread", soft: "imagination, music, and compassion run high" },
-  Pluto:   { hard: "control struggles and quiet intensity sit just under the surface of normal interactions", soft: "people can talk honestly about hard things without it blowing up" },
-  Chiron:  { hard: "old sore spots get bumped in small, ordinary ways", soft: "tenderness toward old hurts is available without drama" },
+  Sun:     { hard: "pride sits close to the skin", soft: "it's easier to be seen without performing" },
+  Moon:    { hard: "feelings move faster than people can name them", soft: "moods land softly and pass without a fight" },
+  Mercury: { hard: "conversations keep drifting into the thing nobody wanted to say out loud", soft: "the right words show up at the right time" },
+  Venus:   { hard: "small slights and money twinges land harder than they should", soft: "small pleasures actually register and people are gentler with each other" },
+  Mars:    { hard: "patience is thin and the urge to push back is everywhere", soft: "starting something today takes less effort than it did yesterday" },
+  Jupiter: { hard: "everything wants to be bigger than it actually is, including the reactions", soft: "the day quietly opens a little more room than expected" },
+  Saturn:  { hard: "the day feels heavier, slower, and more accountable than yesterday", soft: "patience and grown-up decisions come more naturally than usual" },
+  Uranus:  { hard: "schedules twitch and small surprises keep clipping the edges of plans", soft: "fresh angles arrive in the middle of ordinary tasks" },
+  Neptune: { hard: "the truth keeps slipping a half-step out of focus", soft: "imagination and tenderness are unusually accessible" },
+  Pluto:   { hard: "ordinary interactions carry an undertow of control and intensity", soft: "honest conversations about hard things actually land" },
+  Chiron:  { hard: "old sore spots get bumped by small, ordinary moments", soft: "tenderness toward old hurts is available without spiraling" },
 };
 
-// Plain-prose Moon phase line that reads like weather, not a label.
+// Plain-prose Moon phase line that reads like emotional weather, not a label.
 const PHASE_PROSE: Record<string, string> = {
-  "New Moon": "The Moon is dark, which usually pulls energy inward and makes the day feel quieter than the calendar suggests.",
-  "Waxing Crescent": "The Moon is a thin growing sliver, so anything you started recently is still small and worth protecting.",
-  "First Quarter": "The Moon is half-lit and pushing forward, the part of the cycle where new things meet their first real resistance.",
-  "Waxing Gibbous": "The Moon is almost full, which tends to make people busy, focused, and a little impatient to finish what they started.",
-  "Full Moon": "The Moon is full, which usually turns the volume up on feelings and brings hidden things into the open.",
-  "Waning Gibbous": "The Moon is past full, the stretch of the cycle for honest conversations about what just happened.",
-  "Last Quarter": "The Moon is half-lit and shrinking, which tends to surface what isn't working anymore and make it harder to ignore.",
-  "Waning Crescent": "The Moon is a fading sliver, so most people will feel quieter and more tired than they expect.",
-  "Balsamic": "The Moon is almost dark, which tends to make the day feel slow, dreamy, and not built for big decisions.",
+  "New Moon": "There's a quiet, inward pull underneath everything, even the busy parts of the day.",
+  "Waxing Crescent": "Anything just-started is still tender and asks to be protected, not announced.",
+  "First Quarter": "New things are meeting their first real friction, and that friction wants a decision.",
+  "Waxing Gibbous": "There's pressure to finish, and patience runs shorter than people will admit.",
+  "Full Moon": "Feelings are turned up and hidden things keep finding their way into the open.",
+  "Waning Gibbous": "Honest conversations about what just happened sit closer to the surface than usual.",
+  "Last Quarter": "What isn't working anymore is harder to keep ignoring today.",
+  "Waning Crescent": "People are quieter and more tired than they expect to be.",
+  "Balsamic": "The day moves slowly and dreamily and isn't built for big decisions.",
 };
 
 function collectiveSkyHTML(date: Date): string {
@@ -848,23 +849,21 @@ function collectiveSkyHTML(date: Date): string {
   const moonPhase = getMoonPhase(midnight);
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
-  // Real planet-to-planet aspects in the sky today, not just the Moon's.
-  // Wider orb so meaningful activity (Mars conj Saturn at 4°, etc.) is never
-  // dropped, and so the section can never falsely claim the sky is quiet.
+
+  // Tightest real planet-to-planet aspects in the sky today.
   const tight = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
     .filter(a => parseFloat(a.orb) <= 6)
-    .slice(0, 3);
+    .slice(0, 2);
 
-  // Outer-planet retrograde callouts (Pluto/Neptune/Uranus/Saturn/Jupiter)
-  // act like collective weather even without a perfecting aspect.
+  // Outer-planet retrogrades read as background emotional weather.
   const outerRetros: string[] = [];
   const outerLabels: Record<string, string> = {
-    pluto: "Pluto is moving backward through the sky right now, which keeps slow, structural power questions in the air for everyone",
-    neptune: "Neptune is retrograde, which makes the collective fog a little thinner and the longing for meaning sharper",
-    uranus: "Uranus is retrograde, which turns the urge to break free into something more inward than dramatic",
-    saturn: "Saturn is retrograde, which is asking the world to revisit commitments instead of making new ones",
-    jupiter: "Jupiter is retrograde, so growth is happening internally rather than out in the open",
+    pluto: "underneath everything, slow questions about power and control are still being chewed on",
+    neptune: "the longing for meaning is sharper than usual and harder to distract from",
+    uranus: "the urge to break free is running inward instead of acting out",
+    saturn: "old commitments keep asking to be looked at again before anything new gets built",
+    jupiter: "growth is happening privately rather than out loud",
   };
   for (const key of ['pluto','neptune','uranus','saturn','jupiter']) {
     const p = (planets as any)[key];
@@ -873,34 +872,32 @@ function collectiveSkyHTML(date: Date): string {
 
   const phaseLine = PHASE_PROSE[moonPhase.phaseName] || "";
 
+  // Build felt-sense clauses from real aspects.
   const clauses: string[] = [];
   for (const a of tight) {
     const isSoft = a.type === 'trine' || a.type === 'sextile';
     const s1 = PLANET_SCENE[a.planet1];
     const s2 = PLANET_SCENE[a.planet2];
     if (!s1 || !s2) continue;
-    clauses.push(
-      isSoft
-        ? `${s1.soft}, and ${s2.soft}`
-        : `${s1.hard}, while ${s2.hard}`
-    );
+    clauses.push(isSoft ? `${s1.soft}, and ${s2.soft}` : `${s1.hard}, while ${s2.hard}`);
   }
 
+  // Compose 2–5 sentences. Lead with felt-sense (phase or first aspect),
+  // never with "the Moon is" or other technical openers.
   const sentences: string[] = [];
-  if (clauses[0]) sentences.push(`Out in the world today, ${clauses[0]}.`);
-  if (clauses[1]) sentences.push(`Underneath that, ${clauses[1]}.`);
-  if (clauses[2]) sentences.push(`Layered in: ${clauses[2]}.`);
-  if (outerRetros[0]) sentences.push(`${outerRetros[0]}.`);
   if (phaseLine) sentences.push(phaseLine);
-  if (sentences.length) {
-    sentences.push(`A useful day to read the mood in the room before you respond to it, and to keep your own plans simple.`);
-  } else {
-    // True fallback: no recognized aspects AND no retrogrades. Still anchored in real data.
-    sentences.push(`The strongest thing in the sky right now is the Moon itself.`);
-    if (phaseLine) sentences.push(phaseLine);
-    sentences.push(`Let today take its tone from what's in front of you, not from any big overhead event.`);
+  if (clauses[0]) sentences.push(`On top of that, ${clauses[0]}.`);
+  if (clauses[1]) sentences.push(`Layered in: ${clauses[1]}.`);
+  if (outerRetros[0]) sentences.push(`${outerRetros[0].charAt(0).toUpperCase()}${outerRetros[0].slice(1)}.`);
+
+  // Fallback if nothing landed.
+  if (sentences.length === 0) {
+    sentences.push("The sky is quiet today, with no sharp aspects pulling the collective in any one direction.");
+    sentences.push("The day will mostly take its tone from what's actually in front of you.");
   }
-  const prose = sentences.join(' ');
+
+  // Cap at 5 sentences.
+  const prose = sentences.slice(0, 5).join(' ');
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
