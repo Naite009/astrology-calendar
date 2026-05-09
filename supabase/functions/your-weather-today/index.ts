@@ -36,6 +36,10 @@ interface Body {
   transitMoonSign: string;
   transitMoonHouse: number | null;
   topMoonAspect?: MoonAspect | null;
+  /** Full set of active outer-planet transits to personal points (≤ 3° orb),
+   *  ordered tightest first. The model SYNTHESIZES across all of them. */
+  outerTransits?: LongerTransit[];
+  /** Deprecated single-aspect field. Ignored when outerTransits has items. */
   topLongerTransit?: LongerTransit | null;
 }
 
@@ -54,20 +58,29 @@ const HOUSE_DOMAINS: Record<number, string> = {
   12: "rest, solitude, your inner life, and what's behind the scenes",
 };
 
-const SYSTEM = `You write the "Your Weather Today" section for one specific person. Tight 3-part block: Cause, Effect, Best use.
+const SYSTEM = `You write the "Your Weather Today" section for ONE specific person. Tight 3-part block: Cause, Effect, Best use.
 
-INPUTS YOU WILL RECEIVE (use ONLY these — do not add other transits):
-A. The transiting Moon's house in the reader's natal chart.
-B. The single strongest Moon-to-natal aspect today.
-C. The single strongest outer-planet transit currently inside 1 degree.
-(Any of B or C may be missing. Work with whatever is given.)
+CORE JOB
+The reader has multiple OUTER-PLANET TRANSITS active right now (e.g. Neptune opposing natal Moon, Uranus opposing natal Venus, Chiron quincunx natal Venus). Your job is to read those AS A COMBINATION and write what the OVERLAP means for THIS person TODAY. Not one transit in isolation. Not a generic mood warning. The intersection.
+
+INPUTS YOU WILL RECEIVE
+A. Transiting Moon's house in the reader's natal chart (sets today's daily focus area).
+B. The single strongest Moon-to-natal aspect today (sets today's emotional flavor).
+C. A list of ALL active outer-planet transits to personal points within 3°. THIS IS THE PRIMARY SIGNAL. Synthesize across the whole list, weighting tighter orbs more heavily.
 
 OUTPUT FORMAT (return JSON exactly like this):
 { "cause": "...", "effect": "...", "bestUse": "..." }
 
-- cause:    1 short sentence naming the actual transit in plain words (e.g. "Moon moving through your home life today" or "Saturn pressing on your sense of self this week"). No glyphs, no degree symbols, no aspect names like "square" or "trine" — translate them into pressure / ease / tension / support words.
-- effect:   1 to 2 short sentences. Describe how it MAY FEEL today. Plain spoken language a 15-year-old gets instantly. Soft hedges (may, might, can, often). Recognizable human moments only.
-- bestUse:  1 short sentence naming what today actually supports. Concrete: e.g. "slower conversations", "fixing things", "rest", "honest one-on-ones", "paperwork", "giving people space".
+- cause:    1 to 2 sentences. Name the COMBINATION of outer transits in plain words and what they share (e.g. "Right now Neptune is softening your moods while Uranus and Chiron are both pressing on your love and money sense — three different long pressures all touching how you feel about closeness and worth this week."). No glyphs, no degree symbols, no aspect names like "square" or "trine" — translate them into pressure / softening / loosening / pressing / pulling words. You MAY name planets and natal points in plain English (e.g. "natal Moon", "your Venus") so the reader recognizes which long-running transits are landing.
+- effect:   2 to 3 sentences. Describe how the COMBINATION may FEEL today specifically. Concrete behavior and recognizable moments only. Tie it to the parts of life the natal points touch (Moon = feelings, comfort, home; Venus = love, worth, money, taste; Sun = identity; Mars = drive, anger; Mercury = thinking, talking; Ascendant = self-presentation; MC = public role). Soft hedges (may, might, can, often).
+- bestUse:  1 short sentence naming what today actually supports given the combination. Concrete: e.g. "slow honest conversations about what you actually want", "rest and gentle music", "fixing one small thing rather than starting a big thing", "letting a relationship question sit one more day".
+
+HARD ANTI-GENERIC RULES (auto-fail if violated):
+- DO NOT write a generic mood paragraph that could apply to anyone on any Saturday.
+- DO NOT write "you might feel on edge, pausing before speaking can help" or anything like it.
+- DO NOT pick one transit and ignore the others when several are active.
+- DO reference at LEAST 2 of the named outer transits when 2 or more are present.
+- DO name the natal point being touched (e.g. "your Moon", "your Venus") so the reader sees it is about THEM.
 
 ABSOLUTELY FORBIDDEN WORDS (auto-fail):
 energy, energies, processing, integrating, themes, alignment, atmosphere, dynamic, vibe, frequency, shadow work, transformation journey, authentic self, reflective, restless, friction, principles outrun feelings, imagination opens, "is bringing", cooler day.
@@ -83,7 +96,10 @@ REWRITE TABLE (use the GOOD register):
 If the relevant house is the 2nd house, do NOT default to money. Lead with: self-worth, stability, what grounds you, what feels solid, your values. Mention money ONLY if the specific transit clearly points there.
 
 MOON + NEPTUNE RULE:
-If the data involves the Moon with Neptune in any aspect, never reduce it to "imagination". Use: emotional softness, memory, nostalgia, music, grief, intuition, longing, blurred emotional edges. Example — BAD "Imagination opens." GOOD "You may feel more sensitive than usual, and memories or music may hit harder than expected."
+If Neptune is in aspect to the Moon, never reduce it to "imagination". Use: emotional softness, memory, nostalgia, music, grief, intuition, longing, blurred emotional edges. Example — BAD "Imagination opens." GOOD "You may feel more sensitive than usual, and memories or music may hit harder than expected."
+
+VENUS + URANUS / CHIRON RULE:
+If Uranus or Chiron is in aspect to Venus, do not write generic "edginess". Translate to: a real question about a relationship or about your sense of worth, an old Venus bruise being pressed (Chiron), or a sudden urge to want something different in love or money (Uranus). Be concrete.
 
 Never use em dashes anywhere. Use commas, periods, colons, parentheses.
 
@@ -99,6 +115,7 @@ serve(async (req) => {
       transitMoonSign,
       transitMoonHouse,
       topMoonAspect,
+      outerTransits,
       topLongerTransit,
     } = body;
 
@@ -129,21 +146,36 @@ serve(async (req) => {
         }${topMoonAspect.natalHouse ? ` (house ${topMoonAspect.natalHouse}: ${HOUSE_DOMAINS[topMoonAspect.natalHouse] || ""})` : ""} · orb ${topMoonAspect.orb}°.`
       : "No tight Moon-to-natal aspect today.";
 
-    const longerLine = topLongerTransit
-      ? `Strongest longer transit active now: ${topLongerTransit.transitPlanet} ${topLongerTransit.aspect} natal ${topLongerTransit.natalPlanet}${
-          topLongerTransit.natalSign ? ` in ${topLongerTransit.natalSign}` : ""
-        }${topLongerTransit.natalHouse ? ` (house ${topLongerTransit.natalHouse}: ${HOUSE_DOMAINS[topLongerTransit.natalHouse] || ""})` : ""} · orb ${topLongerTransit.orb}°${topLongerTransit.applying ? " applying" : ""}.`
-      : "No major longer transit currently within tight orb.";
+    // Build the active outer-transit list. If outerTransits has items, use it
+    // (the new path that lets the AI synthesize across the full set). Fall
+    // back to the legacy single-aspect field for old callers.
+    const outerList = (outerTransits && outerTransits.length)
+      ? outerTransits
+      : (topLongerTransit ? [topLongerTransit] : []);
+
+    const outerTransitsBlock = outerList.length
+      ? [
+          `ACTIVE OUTER-PLANET TRANSITS (synthesize ALL of them — this is the primary signal). Tighter orbs matter more:`,
+          ...outerList.map((t, i) =>
+            `  ${i + 1}. Transiting ${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}${
+              t.natalSign ? ` in ${t.natalSign}` : ""
+            }${t.natalHouse ? ` (the ${t.natalHouse}th house: ${HOUSE_DOMAINS[t.natalHouse] || ""})` : ""}, orb ${t.orb}°${t.applying ? " applying" : " separating"}.`
+          ),
+        ].join("\n")
+      : "No major outer-planet transits currently within 3° orb.";
 
     const userPrompt = [
       dateLabel ? `Date: ${dateLabel}.` : "",
       recipientName ? `Reader: ${recipientName}.` : "",
       "",
-      "USE ONLY THIS DATA. Translate it into lived feelings:",
+      "USE ONLY THIS DATA. Translate it into lived feelings. Synthesize across the outer transits — do not pick one and ignore the rest.",
+      "",
       moonLine,
       moonAspectLine,
-      longerLine,
       "",
+      outerTransitsBlock,
+      "",
+      `WRITE FOR ${recipientName || "this reader"} TODAY (${dateLabel || ""}). Reference the natal points being touched (e.g. "your Moon", "your Venus") so the reader recognizes it is about them. Combine the outer transits into one coherent picture.`,
       'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
