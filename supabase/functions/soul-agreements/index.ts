@@ -79,6 +79,7 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/stepping into/gi, "learning")
       .replace(/owning your truth/gi, "saying what you really think")
       .replace(/soul calling/gi, "life direction")
+      .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
   );
 
 const extractRecognition = (text: string) => {
