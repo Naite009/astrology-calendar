@@ -41,7 +41,7 @@ interface Body {
 
 const HOUSE_DOMAINS: Record<number, string> = {
   1: "your sense of self, body, and how you show up",
-  2: "money, values, self-worth, and what you own",
+  2: "self-worth, stability, what grounds you, and what feels solid (only money if clearly indicated)",
   3: "conversations, siblings, short trips, and daily thinking",
   4: "home, family, your inner world, and emotional roots",
   5: "creativity, romance, kids, fun, and self-expression",
