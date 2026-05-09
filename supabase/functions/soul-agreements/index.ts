@@ -274,19 +274,14 @@ Translate the astrology into everyday language. Internally answer: "What does th
 **Real-Life Examples**
 3-5 observable bullet examples. Each bullet is one short sentence describing a recognizable behavior or situation. Use things like: avoiding conflict, keeping the peace, hiding feelings, struggling to say no, overthinking conversations, needing approval, staying too long in unhealthy relationships, rebuilding confidence after setbacks, learning boundaries, speaking up more over time. Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
 
+**Real-Life Examples**
+EXACTLY 5 observable bullet examples. Each bullet must feel SPECIFIC to THIS chart, not generic. Name the actual life dynamic. BAD: "you sometimes hold back". GOOD: "in a job interview, you undersell yourself before they even ask the salary question." Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
+
 **Recognition Check**
-Use the heading "Recognition Check" EXACTLY ONCE per section. Never repeat the title inside the body. Format exactly:
-
-This may fit if:
-- [behavior pattern]
-- [relationship pattern]
-- [emotional pattern]
-- [life pattern]
-
-Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
+Use the heading "Recognition Check" EXACTLY ONCE per section. EXACTLY 5 bullets. The bullets must VARY in structure. Do NOT start them all with "A tendency to..." or "Feeling a...". Mix sentence shapes: some start with a verb, some with a noun, some with "When...", some with "The..." or "That...". Concrete, observable, INTERNAL emotional/thought patterns. Do NOT ask introspective questions ("How do you...", "In what ways...").
 
 **Real-Life Examples vs Recognition Check — STRICT DIFFERENTIATION (mandatory)**
-These two sections must NEVER overlap. They cover different territory:
+These two sections must NEVER overlap. Real-Life Examples = EXTERNAL behaviors someone watching could see. Recognition Check = INTERNAL experiences (anxiety during disagreement, guilt after saying no, replaying conversations, feeling responsible for other people's emotions, freezing when asked what you want, the relief of being alone). Before writing Recognition Check, look at your Real-Life Examples and make sure NONE of the Recognition Check items repeat the same idea.
 
 Real-Life Examples = EXTERNAL behaviors and observable actions that someone watching the person could see. Examples to draw from: avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet, asking the same question twice.
 
