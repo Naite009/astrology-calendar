@@ -436,29 +436,30 @@ const SIGN_TONE: Record<string, string> = {
   Pisces: 'porous, dreamy, and emotionally absorbent',
 };
 
+// Compress to N words, ending on a sentence boundary if possible. Used to
+// enforce the COMPRESSION PATCH caps without rewriting copy data.
+function capWords(text: string, maxWords: number, maxSentences = 99): string {
+  if (!text) return '';
+  // first, sentence cap
+  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [text];
+  const trimmed = sentences.slice(0, maxSentences).join('').trim();
+  const words = trimmed.split(/\s+/);
+  if (words.length <= maxWords) return trimmed;
+  return words.slice(0, maxWords).join(' ').replace(/[,;:]+$/, '') + '.';
+}
+
 function professionalTransitInterpretation(a: TransitAspect): string {
+  // Longer Transits cap: 2 sentences max, 45 words max. Assume reader knows
+  // astrology — skip the textbook explainer and lead with felt experience.
   const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} influence`;
   const nPart = NATAL_PLANET_PART[a.natalPlanet] || `your natal ${a.natalPlanet}`;
   const feel = ASPECT_FEEL[a.aspect] || '';
-  const tHouseArea = a.transitHouse ? HOUSE_LIFE_AREA[a.transitHouse] : null;
-  const nHouseArea = a.natalHouse ? HOUSE_LIFE_AREA[a.natalHouse] : null;
-  const tone = SIGN_TONE[a.transitSign] || '';
-  const phase = a.applying ? 'building toward exact' : 'past peak, but the residue is still active';
+  const phase = a.applying ? 'building' : 'past peak but still active';
 
-  const s1 = `Right now ${a.transitPlanet} is bringing ${tTheme}, and it is landing on ${nPart}.`;
-  const s2 = feel;
-  const s3 = tHouseArea && nHouseArea
-    ? `Externally it shows up around ${tHouseArea}; internally it touches ${nHouseArea}.`
-    : tHouseArea
-      ? `It tends to show up externally around ${tHouseArea}.`
-      : nHouseArea
-        ? `Inside, it is hitting the part of you that holds ${nHouseArea}.`
-        : '';
-  const s4 = tone
-    ? `The flavor is ${tone}, and the transit is ${phase}.`
-    : `The transit is ${phase}.`;
+  const s1 = `${a.transitPlanet} is bringing ${tTheme}, landing on ${nPart}.`;
+  const s2 = feel || `The transit is ${phase}.`;
 
-  return [s1, s2, s3, s4].filter(Boolean).join(' ');
+  return capWords([s1, s2].filter(Boolean).join(' '), 45, 2);
 }
 
 const OTHER_TRANSIT_OUTERS = new Set(['Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron']);
@@ -755,12 +756,13 @@ function planetHouseCloser(planet: string, house: number | null): string {
 }
 
 function moonHitInterpretation(h: MoonHit): string {
+  // YOUR MOON TODAY cap: 1-2 sentences, max 35 words per aspect.
   const planetKey = h.natalPlanet.replace(/\s+/g, '');
   const feel = MOON_HIT_FEEL[planetKey];
   const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
   const body = feel ? (isSoft ? feel.soft : feel.hard) : '';
   const closer = planetHouseCloser(planetKey, h.natalHouse);
-  return [body, closer].filter(Boolean).join(' ');
+  return capWords([body, closer].filter(Boolean).join(' '), 35, 2);
 }
 
 // Planet weighting for Moon-hit ranking.

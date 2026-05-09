@@ -47,29 +47,31 @@ interface Body {
   recipientName?: string;
 }
 
-const SYSTEM = `You write the "What Matters Most" section of a personal daily astrology email. The reader is one specific person. Your only job: pick the 3 to 5 most significant things happening in THEIR chart today and explain them in plain, grounded language.
+const SYSTEM = `You write the "What Matters Most" section of a personal daily astrology email. The reader is one specific person. Your only job: pick the TOP 3 most significant things happening in THEIR chart today.
 
-HARD RULES (non-negotiable)
-1. You may ONLY reference transits that appear in the TRANSITS list provided. Do not invent any transit. Do not "remember" a transit from training.
-2. Every item must cite a real transit by exact transitKey (format: "{transitPlanet}|{aspect}|{natalPlanet}"). If you can't point to one in TRANSITS, do not write the item.
-3. Use the natal sign/house/degree EXACTLY as given in NATAL_PLANETS. No inference.
-4. The Moon is one input among many. Prioritize: outer-planet transits to angles, luminaries, chart ruler, and personal planets; tight orbs (under 3°); applying aspects; loaded houses; stelliums.
-5. Plain language. 3rd-grade reading level. Describe what the person will FEEL, NOTICE, or DO. No jargon. No "energies" / "archetypal" / "shadow work" / "transformation journey". Never use em dashes.
-6. Each item: one short headline (under 14 words, naming the transit and the natal house in plain English), then 2–3 sentences of body that say what it actually feels like and where it tends to land in daily life.
+HARD COMPRESSION RULES (non-negotiable)
+- Return EXACTLY 3 items. Never 4 or 5. Never 2.
+- Each item: ONE short headline (under 12 words) + ONE single sentence of body (under 25 words). No second sentence. No explanation of obvious astrology. No restating house meanings or sign meanings.
+- Assume the reader already knows astrology. Write for recognition, not education.
+- Every sentence must carry weight. Cut anything generic.
+- Plain language. No jargon, no "energies," no "shadow work," no "transformation journey." Never use em dashes — use commas or periods.
+- Describe what the person will FEEL, NOTICE, or DO today.
+
+WHITELIST RULES
+1. You may ONLY reference transits that appear in the TRANSITS list provided. Do not invent any transit.
+2. Every item must cite a real transit by exact transitKey (format: "{transitPlanet}|{aspect}|{natalPlanet}").
+3. Use the natal sign/house EXACTLY as given.
+4. Prioritize: outer-planet transits to angles, luminaries, chart ruler, and personal planets; tight orbs (under 3°); applying aspects; loaded houses; stelliums.
 
 OUTPUT FORMAT
-Return ONLY a JSON object, no prose around it:
+Return ONLY a JSON object:
 {
   "items": [
-    {
-      "transitKey": "Saturn|square|Sun",
-      "headline": "Saturn is squaring your natal Sun in the 10th house.",
-      "body": "..."
-    }
+    { "transitKey": "Saturn|square|Sun", "headline": "Saturn squaring your Sun in the 10th.", "body": "One sentence on what it feels like today." }
   ]
 }
 
-Choose 3 to 5 items, ordered by significance.`;
+Exactly 3 items, ordered by significance.`;
 
 function pickTopTransits(transits: TransitItem[]): TransitItem[] {
   // Light pre-filter: tight orbs first, then prefer outer planets and angles/luminaries.
@@ -169,7 +171,7 @@ serve(async (req) => {
           natalHouse: t.natalHouse ?? null,
         };
       })
-      .slice(0, 5);
+      .slice(0, 3);
 
     return new Response(JSON.stringify({ items, droppedCount: rawItems.length - items.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
