@@ -115,6 +115,7 @@ serve(async (req) => {
       transitMoonSign,
       transitMoonHouse,
       topMoonAspect,
+      outerTransits,
       topLongerTransit,
     } = body;
 
