@@ -281,12 +281,24 @@ Return STRICT JSON only, matching this schema:
   "timing": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "legacy": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "summary": {
-    "coreLesson": string,
-    "coreWound": string,
-    "corePurpose": string,
-    "coreLegacy": string
+    "whatToPractice": string,
+    "whatToWatchFor": string,
+    "whatToBuild": string,
+    "whatToGive": string
   }
 }
+
+SUMMARY RULES (mandatory, applies to all 4 summary fields):
+- Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
+- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...".
+- Must be specific and recognizable. A 14-year-old must be able to picture doing it.
+- BAD: "Your purpose is transformation." / "Your wound is self-assertion."
+- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone." / "Watch for moments when you stay quiet to avoid conflict."
+- Field meanings:
+  - whatToPractice: the skill or behavior to build (action to repeat).
+  - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
+  - whatToBuild: the inner foundation being developed over time (capacity, steadiness, trust in self).
+  - whatToGive: the strength or support this person can offer others.
 Do NOT put markdown headings inside JSON values. Do NOT return "interpretation" or "question" fields. No prose outside JSON.`;
 
     const userPrompt = `Chart: ${chartName}
