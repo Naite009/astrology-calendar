@@ -807,19 +807,24 @@ Keep it simple - do NOT list out examples for different rising signs. That's gen
 FORMAT:
 
 ## The Day at a Glance
-[COLLECTIVE SKY WEATHER — HARD CAP: 2 to 3 short sentences, 35 to 55 words TOTAL. Write so a 14-year-old immediately understands it. Describe REAL HUMAN BEHAVIOR people might actually do or feel today. Do NOT explain astrology. Do NOT name aspects, signs, houses, or planets unless one is unmistakably the dominant story (Moon sign change, eclipse, exact major aspect).
+[COLLECTIVE SKY WEATHER — HARD CAP: 2 to 3 short sentences, 35 to 55 words TOTAL. Write so a 14-year-old immediately understands it. Describe OBSERVABLE HUMAN BEHAVIOR — what people might actually DO, SAY, or NOTICE in others today. Do NOT explain astrology. Do NOT name aspects, signs, houses, or planets unless one is unmistakably the dominant story (Moon sign change, eclipse, exact major aspect).
 
-THE 14-YEAR-OLD TEST (mandatory): Can a 14-year-old picture this happening today? Can they see a real person doing it, feeling it, or saying it? If not, rewrite the sentence.
+NO ABSTRACT EMOTIONAL SUMMARIES. Sentences like "Today is reflective" or "people are processing" are BANNED. Every sentence must describe something you could actually watch happen — a behavior, a reaction, a tone of voice, something said or left unsaid, a moment that builds or breaks.
 
-FORBIDDEN WORDS (never use): energy, energies, processing, reflective, integrating, themes, principles, alignment, atmosphere, dynamic, cooler, energetic, invitations, vibe, frequency.
+THE OBSERVABLE BEHAVIOR TEST (mandatory): Could you film this happening today? Could you point to a person doing it? If not, rewrite the sentence.
 
-USE THIS VOCABULARY instead: feelings, behavior, conflict, distance, patience, truth, tension, motivation, frustration, connection.
+FORBIDDEN WORDS (never use): energy, energies, processing, reflective, integrating, themes, principles, alignment, atmosphere, dynamic, cooler, energetic, invitations, vibe, frequency, shift, undercurrent, tone of the day.
 
-Use the formula: "Today may feel [emotion]. People may notice [behavior]. It may be easier/harder to [real thing]."
+USE THIS VOCABULARY instead: feelings, behavior, conflict, distance, patience, truth, tension, motivation, frustration, connection, quieter, sharper, harder to read, slower to answer, quicker to react.
 
-GOOD examples: "people may care more than they are showing", "people may be more impatient today", "small talk may feel harder than usual", "honesty may slip out before patience does", "people may want more space", "motivation may come in short bursts", "small things may feel bigger than they are".
+Use the formula: "People may [observable behavior]. [Specific situation] can [happen / build / come out] [how]. It may be easier/harder to [real thing]."
 
-BAD examples (do not write like this): "principles outrun feelings", "the energy is reflective", "people are processing", "the atmosphere is shifting", "things feel cooler today".
+GOLD-STANDARD EXAMPLE (match this concreteness):
+"People may be quieter today and harder to read than usual. Frustration can build fast if someone feels ignored or pushed. Honest conversations can happen today, but they may come out sharper than intended."
+
+MORE GOOD examples: "people may care more than they are showing", "small talk may feel harder than usual", "honesty may slip out before patience does", "people may want more space", "motivation may come in short bursts", "small things may feel bigger than they are", "people may say what they mean and regret the timing".
+
+BAD examples (do not write like this): "today is reflective", "people are processing", "principles outrun feelings", "the energy is reflective", "the atmosphere is shifting", "things feel cooler today", "today has a quieter tone".
 
 Make it specific enough that it could not fit every day. No closing reflection question.]
 
