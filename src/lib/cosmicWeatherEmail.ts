@@ -143,8 +143,11 @@ export async function generateCosmicWeatherEmail(
 
   let body: string;
 
+  opts.onProgress?.("personalizing today's weather");
+  const weatherTodayProse = await fetchWeatherTodayProse(date, natalChart, recipientName, opts.signal);
+
   opts.onProgress?.("building personalized morning digest");
-  body = buildMorningDigest({ date, natalChart, recipientName });
+  body = buildMorningDigest({ date, natalChart, recipientName, weatherTodayProse });
 
   return { subject, body, skyBlock, meta };
 }
