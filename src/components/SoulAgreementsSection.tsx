@@ -51,7 +51,30 @@ const SECTION_META: Array<{ key: keyof Omit<SoulAgreements, "summary">; label: s
   { key: "reset", label: "What Helps You Reset", sub: "What helps you feel grounded again?" },
 ];
 
-const cacheKey = (chartId: string) => `soulAgreements_v1_${chartId}`;
+const cacheKey = (chartId: string) => `soulAgreements_v2_${chartId}`;
+
+const FALLBACK_SUMMARY: SoulAgreements["summary"] = {
+  whatToPractice: "Practice telling the truth about what you actually want, even when it risks disappointing someone or breaking the calm in the room.",
+  whatToWatchFor: "Watch for the moments you stay quiet, soften a need, or laugh something off just to avoid conflict and keep other people comfortable.",
+  whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
+  whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
+  integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
+};
+
+const validSummaryField = (value: unknown) => {
+  const text = typeof value === "string" ? value.trim() : "";
+  if (!text || /\b(regenerate|retry|placeholder)\b/i.test(text)) return null;
+  if (/^\[?\s*(blank|tbd|todo|n\/?a|none)\s*\]?$/i.test(text)) return null;
+  return text.split(/\s+/).filter(Boolean).length >= 15 ? text : null;
+};
+
+const normalizeSummary = (summary: any): SoulAgreements["summary"] => ({
+  whatToPractice: validSummaryField(summary?.whatToPractice ?? summary?.coreLesson) ?? FALLBACK_SUMMARY.whatToPractice,
+  whatToWatchFor: validSummaryField(summary?.whatToWatchFor ?? summary?.coreWound) ?? FALLBACK_SUMMARY.whatToWatchFor,
+  whatToBuild: validSummaryField(summary?.whatToBuild ?? summary?.corePurpose) ?? FALLBACK_SUMMARY.whatToBuild,
+  whatToGive: validSummaryField(summary?.whatToGive ?? summary?.coreLegacy) ?? FALLBACK_SUMMARY.whatToGive,
+  integration: validSummaryField(summary?.integration) ?? FALLBACK_SUMMARY.integration,
+});
 
 const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
 
@@ -76,6 +99,7 @@ const sanitizeAgreements = (agreements: SoulAgreements): SoulAgreements => ({
   legacy: sanitizeSection(agreements.legacy)!,
   strength: sanitizeSection(agreements.strength),
   reset: sanitizeSection(agreements.reset),
+  summary: normalizeSummary((agreements as any).summary),
 });
 
 export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
@@ -132,6 +156,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   useEffect(() => {
     setData(null);
     setError(null);
+    localStorage.removeItem(`soulAgreements_v1_${chart.id}`);
     try {
       const raw = localStorage.getItem(cacheKey(chart.id));
       if (raw) setData(sanitizeAgreements(JSON.parse(raw)));
@@ -141,7 +166,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   const summaryComplete = (s?: SoulAgreements["summary"]) => {
     if (!s) return false;
     const fields = [s.whatToPractice, s.whatToWatchFor, s.whatToBuild, s.whatToGive, s.integration];
-    return fields.every((f) => typeof f === "string" && f.trim().split(/\s+/).filter(Boolean).length >= 5 && !/\bregenerate\b/i.test(f));
+    return fields.every((f) => validSummaryField(f));
   };
 
   const callOnce = async () => {
