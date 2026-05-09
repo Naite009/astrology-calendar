@@ -665,7 +665,7 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
                 soft: "You feel like yourself, and people receive you that way. Good face-the-world energy." },
   Midheaven:  { hard: "Feelings collide with work, reputation, or what you're 'supposed' to be doing publicly. Hard to keep a professional face.",
                 soft: "Your private mood supports your public role. A good day to be seen doing your actual work." },
-  Descendant: { hard: "Friction with a partner or close other. Their stuff is landing on you, or yours on them.",
+  Descendant: { hard: "Bumping up against a partner or close other. Their stuff may land on you, or yours on them.",
                 soft: "Easy give-and-take with the people closest to you." },
   IC:         { hard: "Restless at the root. Home, family, or something private feels unsettled.",
                 soft: "Home feels like home. Good time to be in your own space, with your own people." },
