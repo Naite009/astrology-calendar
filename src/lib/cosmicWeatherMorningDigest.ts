@@ -1122,7 +1122,10 @@ function whatMattersHTML(
     const midnight = getEasternMidnightDate(date);
     const noon = getEasternDateAtTime(date, 12, 0);
     const planetsNoon = getPlanetaryPositions(noon);
-    const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart);
+    const personalTransits = calculateTransitAspects(midnight, getPlanetaryPositions(midnight), chart)
+      // Drop minor asteroids (Lilith, Ceres, Pallas, Juno, Vesta, Eris) per ranking rule.
+      .filter(t => !MINOR_ASTEROIDS.has((t.natalPlanet || '').replace(/\s+/g, '')) &&
+                   !MINOR_ASTEROIDS.has((t.transitPlanet || '').replace(/\s+/g, '')));
     const top = getTopTransitAspects(personalTransits, 4)
       .filter(t => t.transitPlanet !== 'Moon');
 
