@@ -308,7 +308,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         ],
         response_format: { type: "json_object" },
         temperature: 0.4,
-        max_tokens: 16000,
+        max_tokens: 7000,
       }),
     });
 
@@ -388,40 +388,8 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
     try {
       parsed = tryParse(String(content));
     } catch (parseErr) {
-      console.error("soul-agreements JSON parse failed; retrying AI once. Snippet:", String(content).slice(2700, 2850));
-      // Retry once with a stricter instruction
-      const retryResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemPrompt + "\n\nCRITICAL: Output STRICT JSON only. Escape all internal quotes as \\\". Do not include real newlines inside string values — use spaces. No markdown." },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.2,
-          max_tokens: 16000,
-        }),
-      });
-      if (!retryResp.ok) {
-        const t = await retryResp.text();
-        console.error("Retry AI gateway error:", retryResp.status, t);
-        return new Response(JSON.stringify({ agreements: makeFallbackAgreements({ chartName, placements, houses, aspects }), fallback: true }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const retryData = await retryResp.json();
-      const retryContent = retryData?.choices?.[0]?.message?.content ?? "{}";
-      try {
-        parsed = tryParse(String(retryContent));
-      } catch (retryParseErr) {
-        console.error("soul-agreements retry JSON parse failed; using deterministic fallback. Snippet:", String(retryContent).slice(0, 300));
-        parsed = makeFallbackAgreements({ chartName, placements, houses, aspects });
-      }
+      console.error("soul-agreements JSON parse failed; using deterministic fallback. Snippet:", String(content).slice(0, 300));
+      parsed = makeFallbackAgreements({ chartName, placements, houses, aspects });
     }
 
     return new Response(JSON.stringify({ agreements: normalizeAgreements(parsed) }), {
