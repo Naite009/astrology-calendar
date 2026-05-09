@@ -402,11 +402,12 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         );
         result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
       }
+      const s: any = value?.summary || {};
       result.summary = {
-        coreLesson: cleanPlainLanguage(String(value?.summary?.coreLesson || fallback.summary.coreLesson)),
-        coreWound: cleanPlainLanguage(String(value?.summary?.coreWound || fallback.summary.coreWound)),
-        corePurpose: cleanPlainLanguage(String(value?.summary?.corePurpose || fallback.summary.corePurpose)),
-        coreLegacy: cleanPlainLanguage(String(value?.summary?.coreLegacy || fallback.summary.coreLegacy)),
+        whatToPractice: cleanPlainLanguage(String(s.whatToPractice || s.coreLesson || fallback.summary.whatToPractice)),
+        whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
+        whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
+        whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
       };
       return result;
     };
