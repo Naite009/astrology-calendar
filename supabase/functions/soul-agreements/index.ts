@@ -448,12 +448,30 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
       }
       const s: any = value?.summary || {};
+      const validSummaryField = (raw: unknown): string | null => {
+        const txt = cleanPlainLanguage(String(raw ?? "")).trim();
+        if (!txt) return null;
+        // Reject label-only / placeholder content
+        if (/^(\[?\s*(blank|placeholder|tbd|todo|n\/a|none)\s*\]?)$/i.test(txt)) return null;
+        // Reject content that contains the forbidden word "Regenerate"
+        if (/\bregenerate\b/i.test(txt)) return null;
+        // Minimum 15 words
+        const wordCount = txt.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 15) return null;
+        return txt;
+      };
+      const pickSummary = (raw: unknown, fallbackText: string): string => {
+        return validSummaryField(raw) ?? fallbackText;
+      };
       result.summary = {
-        whatToPractice: cleanPlainLanguage(String(s.whatToPractice || s.coreLesson || fallback.summary.whatToPractice)),
-        whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
-        whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
-        whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
-        integration: cleanPlainLanguage(String(s.integration || (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.")),
+        whatToPractice: pickSummary(s.whatToPractice ?? s.coreLesson, fallback.summary.whatToPractice),
+        whatToWatchFor: pickSummary(s.whatToWatchFor ?? s.coreWound, fallback.summary.whatToWatchFor),
+        whatToBuild: pickSummary(s.whatToBuild ?? s.corePurpose, fallback.summary.whatToBuild),
+        whatToGive: pickSummary(s.whatToGive ?? s.coreLegacy, fallback.summary.whatToGive),
+        integration: pickSummary(
+          s.integration,
+          (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.",
+        ),
       };
       return result;
     };
