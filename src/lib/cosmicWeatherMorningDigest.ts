@@ -652,7 +652,7 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
   Uranus:     { hard: "Jumpy, wired, can't-sit-still energy. Sudden mood shifts, the urge to bolt, blurt something out, or break a routine. Sleep may be twitchy.",
                 soft: "A small spark of insight or freedom. You see your situation from a slightly new angle and want to try something different." },
   Neptune:    { hard: "Foggy, leaky, oversensitive. You may feel everyone else's feelings as your own, get teary at nothing, or want to escape into a screen, a drink, or sleep.",
-                soft: "Imagination opens. Music, art, dreams, and quiet time all feel more nourishing than usual." },
+                soft: "You may feel more sensitive than usual, and music, memories, or quiet time may hit harder than expected." },
   Pluto:      { hard: "Something underneath surfaces. An old feeling, a power struggle, or an urge to control or be controlled. Intensity is the keyword.",
                 soft: "You can look at something dark without flinching. Quiet, private depth; good for honest self-reflection." },
   Chiron:     { hard: "An old wound gets touched. Something small can sting more than it should because it's hitting an old bruise.",
