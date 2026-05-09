@@ -93,29 +93,38 @@ transformation, rebirth, evolution, karmic, soul contract, alchemy, sovereignty,
   BAD:  "Develop sovereignty."
   GOOD: "Learn to trust your own choices even when other people disagree."
 
+ACCURACY & HEDGING RULES:
+- Use soft, accurate language: "may", "might", "can", "often", "sometimes". Avoid "always", "definitely", "certainly", "must".
+- Stay BEHAVIORAL, not diagnostic. Do not over-psychologize.
+  BAD: "Your family was secretive."
+  GOOD: "Your family may have kept emotions private or hard to talk about."
+  BAD: "You feel you are not enough."
+  GOOD: "You may struggle to fully be yourself in close relationships."
+- Do not overstate. If the chart only hints at something, say "may" or "can sometimes."
+
 REQUIRED SECTION STRUCTURE — every section must have these 4 layers, in this order, inside the "interpretation" field. Use these exact bold sub-headings on their own lines:
 
 **Astrology**
-One short paragraph stating the astrological meaning clearly and accurately (planet, sign, house, aspect). 2-4 sentences.
+Briefly explain the actual placements/aspects being used. Keep this SHORT. 2-5 sentences max. Do not over-explain.
 
 **Plain English**
-Translate the astrology above into direct, simple language. Answer: "What does this actually look like in real life?" 3-5 sentences. No jargon. 14-year-old comprehension test.
+Translate the astrology into everyday language. Internally answer: "What does this mean in real life?" Short sentences, concrete language, smart-teenager comprehension. No abstract spiritual language without translation. No jargon.
 
 **Real-Life Examples**
-2-4 concrete bullet examples of how this shows up day-to-day. Each bullet is one short sentence describing a recognizable behavior, situation, or pattern. Draw from things like: people-pleasing, avoiding conflict, struggling to say no, overthinking relationships, hiding feelings, needing approval, learning boundaries, speaking up, rebuilding confidence, changing careers, ending unhealthy relationships. Match the examples to the actual chart.
+3-5 observable bullet examples. Each bullet is one short sentence describing a recognizable behavior or situation. Use things like: avoiding conflict, keeping the peace, hiding feelings, struggling to say no, overthinking conversations, needing approval, staying too long in unhealthy relationships, rebuilding confidence after setbacks, learning boundaries, speaking up more over time. Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
 
 **Recognition Check**
 End with a Recognition Check, NOT a reflective question. Format exactly:
 
 This may fit if:
-- [specific real-life pattern]
-- [specific emotional pattern]
-- [specific relationship pattern]
-- [specific behavior pattern]
+- [behavior pattern]
+- [relationship pattern]
+- [emotional pattern]
+- [life pattern]
 
-Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Do NOT use phrases like "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Goal: recognition before reflection.
+Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
 
-The "question" field must contain the same "This may fit if:" block (with bullets) — NOT a question.
+The "question" field must contain the same "This may fit if:" block (with bullets), NOT a question.
 
 Total length per section: 200-350 words including all 4 layers.
 
@@ -151,8 +160,10 @@ ${aspectLines || "(none provided)"}
 Write the 7 Soul Agreements using ONLY the data above. Every section MUST follow the 4-layer structure (Astrology / Plain English / Real-Life Examples / Recognition Check). The Recognition Check is a "This may fit if:" bullet list of concrete behavioral/emotional/relationship patterns — NEVER a reflective question:
 
 1. FAMILY AGREEMENT — emotional environment that shaped you growing up. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+   SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
 2. WOUND AGREEMENT — the pain that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
+   SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
 3. PURPOSE AGREEMENT — what you are growing toward. Use North Node, Sun, 1st house, Midheaven.
    SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
