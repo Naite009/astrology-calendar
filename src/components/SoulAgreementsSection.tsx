@@ -141,16 +141,15 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
       >
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-primary" />
-          <span className="text-sm font-medium uppercase tracking-widest text-foreground">Your 7 Soul Agreements</span>
+          <span className="text-sm font-medium uppercase tracking-widest text-foreground">Soul Agreements (Life Patterns)</span>
         </div>
         {open ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
       </button>
 
       {open && (
         <div className="p-5 space-y-4">
-          <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-            A symbolic, evolutionary reading of your chart as pre-birth soul intentions: lessons, gifts,
-            and relationship contracts. This is reflective, not predictive. Nothing here is fixed fate.
+          <p className="text-[12px] text-muted-foreground leading-relaxed">
+            This section looks at the deeper life patterns your chart may point to: your emotional patterns, growth lessons, natural strengths, and the kinds of experiences and relationships that shape you. This is reflective, not predictive.
           </p>
 
           {!data && !loading && (
