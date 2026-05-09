@@ -181,7 +181,7 @@ Write the 7 Soul Agreements using ONLY the data above. Every section MUST follow
 
 4. RELATIONSHIP AGREEMENT — who helps you grow through connection.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
-   Juno is OPTIONAL support only. Do NOT lead with Juno or weight it heavily; mention only as a light closing layer if relevant.
+   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover — and even then, never lead with it.
 
 5. GIFT AGREEMENT — what you arrived already good at.
    PRIORITIZE Venus, Neptune, Moon. Include intuitive gifts, emotional intelligence, symbolic understanding, creativity, and spiritual sensitivity.
