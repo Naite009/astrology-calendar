@@ -919,11 +919,13 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   const signChange = findNextMoonSignChange(midnight);
   const hasWakingSignChange = signChange.time <= endOfDay && isWakingHour(signChange.time);
 
-  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight),
-  //    and drop minor asteroids per ranking rule.
+  // 2. Filter to waking-hour aspects (7 AM – 10 PM ET) ONLY. The user is
+  //    asleep before 7 AM, so pre-dawn hits are not useful — drop them
+  //    entirely, even if the orb is exceptionally tight. Also drop minor
+  //    asteroids per the ranking rule.
   const candidates = allHits.filter(
     h => !MINOR_ASTEROIDS.has(h.natalPlanet.replace(/\s+/g, '')) &&
-         (isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB),
+         isWakingHour(h.time),
   );
 
   // 3. Rank by orb tightness + planet weight.
