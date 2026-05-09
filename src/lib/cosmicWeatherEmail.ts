@@ -172,12 +172,6 @@ async function fetchCollectiveProse(
     return "";
   }
 }
-    return String((data as any)?.text || "").trim();
-  } catch (e) {
-    console.warn("cosmic-weather-collective compute error:", e);
-    return "";
-  }
-}
 
 export interface CosmicWeatherEmailArgs {
   date: Date;
