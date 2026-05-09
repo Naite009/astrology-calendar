@@ -401,7 +401,7 @@ const NATAL_PLANET_PART: Record<string, string> = {
 const ASPECT_FEEL: Record<string, string> = {
   conjunction: 'It feels fused — the two energies are stuck together and hard to separate.',
   opposition: 'It plays out as a tug-of-war, often through another person mirroring it back.',
-  square: 'There is friction and pressure to act; something has to give.',
+  square: 'It feels like pressure that wants something to give. People may snap quicker, push harder, or have to make a call they have been putting off.',
   trine: 'The flow is easy, almost too easy — it can pass without you noticing the gift.',
   sextile: 'There is an opening if you reach for it, but it will not force itself.',
   quincunx: 'It feels off-axis — two parts of you that do not quite speak the same language.',
