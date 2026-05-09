@@ -431,11 +431,12 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition
           ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
           : String(source?.interpretation || fallbackSection.interpretation);
-        const interpretation = stripRecognitionFromInterpretation(cleanPlainLanguage(structuredInterpretation));
+        const rawInterpretation = cleanPlainLanguage(structuredInterpretation);
+        const interpretation = stripRecognitionFromInterpretation(rawInterpretation);
         const recognition = cleanPlainLanguage(
           source?.recognition
             ? `This may fit if:\n${asArray(source.recognition, fallbackRecognition).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
-            : String(source?.question || extractRecognition(interpretation) || fallbackSection.question),
+            : String(source?.question || extractRecognition(rawInterpretation) || fallbackSection.question),
         );
         result[key] = { interpretation, question: stripTemplateLeakage(recognition) };
       }
