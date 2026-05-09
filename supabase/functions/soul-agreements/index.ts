@@ -207,19 +207,43 @@ serve(async (req) => {
       .map((a) => `${a.planet1} ${a.type} ${a.planet2} (${a.orb.toFixed(1)}° orb)`)
       .join("\n");
 
-    const systemPrompt = `You are an evolutionary astrologer writing a "Soul Agreements" reading. This is a SYMBOLIC, SPIRITUAL layer, NOT predictive astrology.
+    const systemPrompt = `You are writing a Soul Contract reading from a natal chart. This is a SYMBOLIC, SPIRITUAL layer, NOT predictive astrology.
 
 ABSOLUTE RULES:
-- Write so a smart 14-year-old can understand it. If a teenager could not explain it back in plain words, rewrite it.
-- Be emotionally intelligent but grounded. Never fortune-telling. Never deterministic. Never predict death or specific events.
+- Write in DIRECT second person ("you"). State things plainly. NO hedging like "may suggest" or "could indicate". You can still use "may", "might", "often", "sometimes" for accuracy, but do not stack them.
+- Be emotionally intelligent and grounded. Never fortune-telling. Never deterministic. Never predict death or specific events.
 - Never imply suffering was "chosen" in a harmful way. Never romanticize trauma. Never use fear language.
 - Stay STRICTLY chart-specific. Only reference placements, houses, and aspects PRESENT in the data below. Do NOT invent aspects.
-- If data for a section is missing or thin, write a shorter section rather than hallucinating.
 - NEVER use em dashes (—). Use commas, periods, colons, or parentheses.
 - Cross-sign aspects (e.g. 29° Aries to 1° Taurus) are valid when within orb. Sun/Moon conjunctions valid up to 10°.
 
-JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language:
-transformation, rebirth, evolution, karmic, soul contract, alchemy, sovereignty, integration, destiny, ego death, shadow work, ascension, awakening.
+FORBIDDEN WORDS (never use any of these): wound (as a noun in body copy is fine only inside the Wound Agreement label/title), archetypal, liminal, energies, resonate, resonates, resonance, vibration, vibrational, shadow, shadow work, heal, healing, integrate, integration, embody, embodiment, "deeper work", transformation journey, ascension, awakening, ego death, alchemy, sovereignty, karmic, soul calling, authentic self, stepping into, owning your truth.
+
+If you catch yourself reaching for any forbidden word, rewrite the sentence in plain everyday language a smart 14-year-old would use.
+
+EMOTIONAL DISTINCTNESS — each of the 7 core agreements MUST feel emotionally different:
+- Family: like memory. Quiet, early, atmospheric.
+- Wound: should sting slightly. Honest, tender, not cruel.
+- Purpose: a forward call. Direction, not arrival.
+- Relationship: mirror language. What close people show you.
+- Gift: recognition, not aspiration. Things you already do well.
+- Timing: oracular. How growth ARRIVES (style, not events).
+- Resilience (returned in the "strength" field): grounding. How you fall apart and find your way back.
+Do NOT repeat the same insight, phrase, or example across sections.
+
+REQUIRED ANCHORS (mandatory):
+- South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern the soul carried in from before this life.
+- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as the soul's chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where the soul agreed to earn rather than receive.
+- North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
+- South Node also returns in Gift as the talents side, mastered before this life. Keep this distinct from its appearance in Family/Wound.
+
+ACCURACY & HEDGING RULES:
+- Stay BEHAVIORAL, not diagnostic.
+  BAD: "Your family was secretive."  GOOD: "Your family kept emotions private and hard to talk about."
+  BAD: "You feel you are not enough."  GOOD: "You hold back from being fully yourself in close relationships."
+- Do not over-psychologize.
+
+JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: transformation, rebirth, evolution, karmic, soul contract, sovereignty, destiny.
 
   BAD:  "You are here for deep transformation."
   GOOD: "You are not meant to stay the same person your whole life. Life will keep pushing you to grow, change, and become more honest about who you are."
@@ -250,37 +274,20 @@ Translate the astrology into everyday language. Internally answer: "What does th
 **Real-Life Examples**
 3-5 observable bullet examples. Each bullet is one short sentence describing a recognizable behavior or situation. Use things like: avoiding conflict, keeping the peace, hiding feelings, struggling to say no, overthinking conversations, needing approval, staying too long in unhealthy relationships, rebuilding confidence after setbacks, learning boundaries, speaking up more over time. Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
 
+**Real-Life Examples**
+EXACTLY 5 observable bullet examples. Each bullet must feel SPECIFIC to THIS chart, not generic. Name the actual life dynamic. BAD: "you sometimes hold back". GOOD: "in a job interview, you undersell yourself before they even ask the salary question." Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
+
 **Recognition Check**
-Use the heading "Recognition Check" EXACTLY ONCE per section. Never repeat the title inside the body. Format exactly:
-
-This may fit if:
-- [behavior pattern]
-- [relationship pattern]
-- [emotional pattern]
-- [life pattern]
-
-Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
+Use the heading "Recognition Check" EXACTLY ONCE per section. EXACTLY 5 bullets. The bullets must VARY in structure. Do NOT start them all with "A tendency to..." or "Feeling a...". Mix sentence shapes: some start with a verb, some with a noun, some with "When...", some with "The..." or "That...". Concrete, observable, INTERNAL emotional/thought patterns. Do NOT ask introspective questions ("How do you...", "In what ways...", "What are you ready to...").
 
 **Real-Life Examples vs Recognition Check — STRICT DIFFERENTIATION (mandatory)**
-These two sections must NEVER overlap. They cover different territory:
-
-Real-Life Examples = EXTERNAL behaviors and observable actions that someone watching the person could see. Examples to draw from: avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet, asking the same question twice.
-
-Recognition Check = INTERNAL experiences: emotional patterns and thought patterns nobody else sees from outside. Examples to draw from: anxiety during disagreement, feeling guilty after saying no, replaying conversations in your head, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone.
-
-Before writing Recognition Check, look at your Real-Life Examples list and make sure NONE of the Recognition Check items repeat the same idea. If a Recognition Check bullet is just an external behavior in different words, rewrite it as the inner feeling or thought that drives it.
-
-LANGUAGE REPLACEMENTS (mandatory across ALL sections):
-- Replace "shedding old identities" → "letting go of old ways of acting"
-- Replace "embracing your power" → "learning to trust yourself and speak more honestly"
-- Replace "authentic self" → "the real you"
-- Also avoid: "stepping into", "owning your truth", "soul calling" — use plain everyday phrasing.
+These must NEVER overlap. Real-Life Examples = EXTERNAL behaviors someone watching could see (avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet). Recognition Check = INTERNAL experiences nobody else sees (anxiety during disagreement, guilt after saying no, replaying conversations, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone). Before writing Recognition Check, check that none of the bullets just restate an external behavior from Examples.
 
 15-YEAR-OLD TEST: If a 15-year-old cannot easily explain a sentence back in their own words, rewrite it.
 
-NO DUPLICATE HEADINGS: Each of the 4 sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check) appears EXACTLY ONCE per section. Do not repeat them inside the body text.
+NO DUPLICATE HEADINGS: Each of the 4 sub-headings appears EXACTLY ONCE per section.
 
-The "recognition" field must contain 4 short bullet items as a JSON array, NOT questions.
+The "recognition" field must contain 5 short bullet items as a JSON array, NOT questions.
 
 Total length per section: 120-190 words including all 4 layers.
 
@@ -349,40 +356,43 @@ ${houseLines}
 VERIFIED ASPECTS:
 ${aspectLines || "(none provided)"}
 
-Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete INTERNAL emotional/thought patterns — never reflective questions, never duplicates of the external behaviors in examples:
+Write the 9 Life Patterns (the 7 Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples (5 items), recognition (5 items, varied sentence structure, INTERNAL only).
 
-1. FAMILY AGREEMENT — early emotional imprint. Use ONLY the Moon, the 4th house, the ruler of the 4th, and aspects to the Moon. Do NOT use the 10th house or any other parental symbolism here unless explicitly required to make sense of a 4th-house pattern. Keep this strictly about the early home and emotional environment, not career or public-parent themes.
-   SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
+GLOBAL ANCHORING (mandatory):
+- The South Node MUST be named explicitly in BOTH the Family AND the Wound sections, as a pattern the soul carried in from before this life. Use the South Node sign and house specifically.
+- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section. Frame Saturn's house/sign as the domain where the soul agreed to earn rather than receive. Pick whichever fits this chart better.
 
-2. WOUND AGREEMENT — pain patterns that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
-   SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
+EMOTIONAL TONE per section (must feel distinct):
+- Family = memory. Wound = stings slightly. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Resilience (returned as "strength") = grounding. Legacy = weighty. Reset = practical.
 
-3. PURPOSE AGREEMENT — identity and becoming. Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
-   STYLE RULE — be DIRECT and SPECIFIC. Name the actual behavior shift this person is growing into (e.g., "say what you actually want instead of softening it", "stop managing other people's reactions", "let yourself be seen instead of staying useful"). Avoid broad spiritual framing like "become more honest" or "step into your power" without naming the concrete behavior. Two or three short, pointed sentences beats a sweeping paragraph.
-   SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer should focus on: stopping people-pleasing, saying what you really think, trusting yourself over outside approval, and letting go of versions of yourself built only to keep peace. Keep it concrete and behavioral, not abstract.
+1. FAMILY AGREEMENT — what emotional pattern your soul carried in from before this life, and what family it chose to continue that pattern. Use ONLY: Moon (sign, house, aspects), IC / 4th cusp, ruler of the 4th, planets in the 4th, AND the South Node sign/house as past-life emotional default. Do NOT use the 10th house or other parental symbolism here.
+   SPECIAL RULE — a 12th house Moon does NOT automatically mean "secretive family" or "hidden trauma." Prefer: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings.
 
-4. RELATIONSHIP AGREEMENT — relationship mirrors and lessons (who helps you grow through connection).
+2. WOUND AGREEMENT — what pain your soul chose as its primary growth catalyst. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where the soul agreed to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node again as the older pattern this wound traces back to. Should sting slightly, never cruelly.
+   SPECIAL RULE — for Chiron in Aries in the 7th: prefer "difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly" over "you feel unworthy."
+
+3. PURPOSE AGREEMENT — what your soul came here to BECOME. Use North Node (sign, house, conjunctions), Sun as the core identity being developed, planets conjunct the North Node, 1st house, Midheaven. Saturn may anchor here instead of Wound if it fits better. Must feel like a forward pull, something not yet fully achieved.
+   STYLE RULE — DIRECT and SPECIFIC. Name the actual behavior shift (e.g., "say what you actually want instead of softening it", "stop managing other people's reactions", "let yourself be seen instead of staying useful"). Two or three short, pointed sentences beats a sweeping paragraph.
+   SPECIAL RULE — North Node in Scorpio in the 1st: focus on stopping people-pleasing, saying what you really think, trusting yourself over outside approval, letting go of versions of yourself built only to keep peace.
+
+4. RELATIONSHIP AGREEMENT — who helps evolve your soul, and what is the recurring lesson. Name BOTH what you are drawn to AND the pattern that repeats until the lesson is learned.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
-   PHRASE RULE — never write "Relationships are central to your life's lessons." If you want to convey that idea, write: "Relationships are one of the main ways you learn about yourself."
-   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover, and even then never lead with it.
+   PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
+   DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
 
-5. GIFT AGREEMENT — natural strengths you arrived already good at.
-   PRIORITIZE Venus, Neptune, Moon. Include intuitive gifts, emotional intelligence, symbolic understanding, creativity, and spiritual sensitivity.
-   Use Jupiter and 2nd/5th houses too, but do NOT default Jupiter to "financial talent." Read it as wisdom, generosity, vision, or teaching unless the chart clearly points to material abundance.
+5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. Anchor to: South Node (talents side, what was mastered before this life — distinct from how it appears in Family/Wound), Jupiter (sign, house, aspects, as natural abundance — read as wisdom, generosity, vision, or teaching, NOT default to "financial talent"), planets in strong dignity, planets in 1H/5H/9H/11H. Also include intuitive gifts, emotional intelligence, symbolic understanding, creativity, spiritual sensitivity (Venus, Neptune, Moon).
 
-6. TIMING AGREEMENT — HOW growth tends to arrive (style, not events). Use Saturn, Nodes, Pluto, angular planets.
-   REQUIRED STRUCTURE — explicitly say something like "Growth often comes through:" and then concretely name which of these are strongest in this chart: pressure, endings, truth-telling moments, taking on real responsibility, emotional turning points. Be concrete. Avoid vague phrasing like "growth happens in waves" or "things unfold in cycles." Do NOT predict events.
+6. TIMING AGREEMENT — how your soul's growth unfolds, what triggers transformation. Should feel oracular. Use Pluto (forced evolution), Uranus (sudden catalyst), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes.
+   REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY the soul chose this method. Do NOT predict events.
 
-7. LEGACY AGREEMENT — what you leave behind. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies here.
-   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through emotional healing, unseen support systems, helping others feel safe, healing emotional patterns, and compassionate behind-the-scenes leadership. ALWAYS include this exact emotional-boundary line near the end of the Plain English layer: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
+7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
+   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
 
-8. STRENGTH UNDER STRESS — who you become when life gets hard. Use Mars, Saturn, Pluto, Moon (sign, house, and hard aspects).
-   Show resilience patterns: how this person braces, focuses, isolates, or pushes through under pressure, plus the cost of those patterns. Recognition Check should focus on the inner experience under stress (the inner clamp, the urge to handle it alone, the late-night replay), not just outer behavior.
+8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How your soul recovers, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
 
-9. WHAT HELPS YOU RESET — what helps this person feel grounded again. Use Moon, Venus, 4th house, 6th house, Neptune.
-   Output must be PRACTICAL regulation strategies, not abstract advice. Draw concrete examples from this list when the chart supports it: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, prayer or quiet ritual, sleep. Tell the user actual things they can do today.
+9. WHAT HELPS YOU RESET — practical regulation strategies. Use Moon, Venus, 4th house, 6th house, Neptune. Concrete things they can do today: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, quiet ritual, sleep.
 
-Then SUMMARY: one practical, behavioral instruction for whatToPractice, whatToWatchFor, whatToBuild, whatToGive, plus a final "integration" sentence (default: "Your growth comes from learning how to stay connected to others without losing yourself."). Apply the same jargon ban.
+Then SUMMARY — four practical behavioral instructions (whatToPractice, whatToWatchFor, whatToBuild, whatToGive), plus ONE final "integration" sentence that names the central agreement of this entire life: the through-line connecting all 7 core sections. Default integration: "Your growth comes from learning how to stay connected to others without losing yourself." Rephrase only if the chart clearly points elsewhere.
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
