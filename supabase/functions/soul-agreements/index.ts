@@ -278,28 +278,16 @@ Translate the astrology into everyday language. Internally answer: "What does th
 EXACTLY 5 observable bullet examples. Each bullet must feel SPECIFIC to THIS chart, not generic. Name the actual life dynamic. BAD: "you sometimes hold back". GOOD: "in a job interview, you undersell yourself before they even ask the salary question." Forbidden vague examples: "soul growth", "energy shifts", "healing karma".
 
 **Recognition Check**
-Use the heading "Recognition Check" EXACTLY ONCE per section. EXACTLY 5 bullets. The bullets must VARY in structure. Do NOT start them all with "A tendency to..." or "Feeling a...". Mix sentence shapes: some start with a verb, some with a noun, some with "When...", some with "The..." or "That...". Concrete, observable, INTERNAL emotional/thought patterns. Do NOT ask introspective questions ("How do you...", "In what ways...").
+Use the heading "Recognition Check" EXACTLY ONCE per section. EXACTLY 5 bullets. The bullets must VARY in structure. Do NOT start them all with "A tendency to..." or "Feeling a...". Mix sentence shapes: some start with a verb, some with a noun, some with "When...", some with "The..." or "That...". Concrete, observable, INTERNAL emotional/thought patterns. Do NOT ask introspective questions ("How do you...", "In what ways...", "What are you ready to...").
 
 **Real-Life Examples vs Recognition Check — STRICT DIFFERENTIATION (mandatory)**
-These two sections must NEVER overlap. Real-Life Examples = EXTERNAL behaviors someone watching could see. Recognition Check = INTERNAL experiences (anxiety during disagreement, guilt after saying no, replaying conversations, feeling responsible for other people's emotions, freezing when asked what you want, the relief of being alone). Before writing Recognition Check, look at your Real-Life Examples and make sure NONE of the Recognition Check items repeat the same idea.
-
-Real-Life Examples = EXTERNAL behaviors and observable actions that someone watching the person could see. Examples to draw from: avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet, asking the same question twice.
-
-Recognition Check = INTERNAL experiences: emotional patterns and thought patterns nobody else sees from outside. Examples to draw from: anxiety during disagreement, feeling guilty after saying no, replaying conversations in your head, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone.
-
-Before writing Recognition Check, look at your Real-Life Examples list and make sure NONE of the Recognition Check items repeat the same idea. If a Recognition Check bullet is just an external behavior in different words, rewrite it as the inner feeling or thought that drives it.
-
-LANGUAGE REPLACEMENTS (mandatory across ALL sections):
-- Replace "shedding old identities" → "letting go of old ways of acting"
-- Replace "embracing your power" → "learning to trust yourself and speak more honestly"
-- Replace "authentic self" → "the real you"
-- Also avoid: "stepping into", "owning your truth", "soul calling" — use plain everyday phrasing.
+These must NEVER overlap. Real-Life Examples = EXTERNAL behaviors someone watching could see (avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet). Recognition Check = INTERNAL experiences nobody else sees (anxiety during disagreement, guilt after saying no, replaying conversations, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone). Before writing Recognition Check, check that none of the bullets just restate an external behavior from Examples.
 
 15-YEAR-OLD TEST: If a 15-year-old cannot easily explain a sentence back in their own words, rewrite it.
 
-NO DUPLICATE HEADINGS: Each of the 4 sub-headings (Astrology, Plain English, Real-Life Examples, Recognition Check) appears EXACTLY ONCE per section. Do not repeat them inside the body text.
+NO DUPLICATE HEADINGS: Each of the 4 sub-headings appears EXACTLY ONCE per section.
 
-The "recognition" field must contain 4 short bullet items as a JSON array, NOT questions.
+The "recognition" field must contain 5 short bullet items as a JSON array, NOT questions.
 
 Total length per section: 120-190 words including all 4 layers.
 
