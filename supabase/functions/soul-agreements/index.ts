@@ -199,13 +199,65 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
     const data = await resp.json();
     const content = data?.choices?.[0]?.message?.content ?? "{}";
+
+    const tryParse = (s: string) => {
+      // 1. raw
+      try { return JSON.parse(s); } catch {}
+      // 2. strip markdown fences
+      const noFences = s.replace(/```json|```/g, "").trim();
+      try { return JSON.parse(noFences); } catch {}
+      // 3. extract first {...} block
+      const first = noFences.indexOf("{");
+      const last = noFences.lastIndexOf("}");
+      if (first !== -1 && last > first) {
+        const block = noFences.slice(first, last + 1);
+        try { return JSON.parse(block); } catch {
+          // 4. escape stray newlines inside strings (common Gemini failure)
+          const repaired = block.replace(/("(?:[^"\\]|\\.)*")|[\n\r\t]/g, (m, str) => {
+            if (str) return str;
+            if (m === "\n") return "\\n";
+            if (m === "\r") return "\\r";
+            if (m === "\t") return "\\t";
+            return m;
+          });
+          try { return JSON.parse(repaired); } catch {}
+        }
+      }
+      throw new Error("Unparseable AI JSON");
+    };
+
     let parsed: unknown;
     try {
-      parsed = JSON.parse(content);
-    } catch {
-      // try to recover from accidental fences
-      const cleaned = String(content).replace(/```json|```/g, "").trim();
-      parsed = JSON.parse(cleaned);
+      parsed = tryParse(String(content));
+    } catch (parseErr) {
+      console.error("soul-agreements JSON parse failed; retrying AI once. Snippet:", String(content).slice(2700, 2850));
+      // Retry once with a stricter instruction
+      const retryResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt + "\n\nCRITICAL: Output STRICT JSON only. Escape all internal quotes as \\\". Do not include real newlines inside string values — use spaces. No markdown." },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.2,
+        }),
+      });
+      if (!retryResp.ok) {
+        const t = await retryResp.text();
+        console.error("Retry AI gateway error:", retryResp.status, t);
+        return new Response(JSON.stringify({ error: "AI returned malformed JSON" }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const retryData = await retryResp.json();
+      const retryContent = retryData?.choices?.[0]?.message?.content ?? "{}";
+      parsed = tryParse(String(retryContent));
     }
 
     return new Response(JSON.stringify({ agreements: parsed }), {
