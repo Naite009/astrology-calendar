@@ -40,43 +40,33 @@ interface Payload {
 const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy", "strength", "reset"] as const;
 type SectionKey = typeof sectionKeys[number];
 
-const dedupeRecognitionCheck = (value: string) => {
-  // HARD RULE: "Recognition Check" may appear once and only once per section.
-  // Match the heading in any common form the model emits:
-  //   **Recognition Check**, ## Recognition Check, # Recognition Check,
-  //   or a bare "Recognition Check" line on its own.
-  const HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*(?=\n|:|$)/gi;
-  // Any heading that ends a Recognition Check block: another **Heading**,
-  // a markdown ## heading, or end of string.
-  const NEXT_HEADING = /\n\s*(?:\*\*[^*\n]+\*\*|#{1,6}\s+[^\n]+)\s*(?:\n|$)/;
+const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
+const TEMPLATE_HEADING = /(^|\n)\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|END SECTION)\s*:?(?=\n|$)/i;
+const LEADING_TEMPLATE_HEADING = /^\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|(?:Astrology|Plain English|Real-Life Examples|Recognition Check|END SECTION))\s*:?\s*/i;
 
-  const matches = [...value.matchAll(HEADING)];
+const headingStart = (match: RegExpMatchArray) => (match.index ?? 0) + (match[1] ? match[1].length : 0);
+
+const dedupeRecognitionCheck = (value: string) => {
+  const matches = [...value.matchAll(RECOGNITION_HEADING)];
   if (matches.length <= 1) return value;
 
-  // Walk through occurrences. Keep the FIRST block (heading + body until next
-  // heading). For every subsequent occurrence, drop the heading and its body,
-  // but preserve any non-Recognition content that sat between duplicates.
-  let out = "";
-  let cursor = 0;
-  matches.forEach((m, i) => {
-    const headingStart = (m.index ?? 0) + (m[1] ? m[1].length : 0);
-    const headingEnd = (m.index ?? 0) + m[0].length;
-    const after = value.slice(headingEnd);
-    const nextRel = after.search(NEXT_HEADING);
-    const blockEnd = nextRel === -1 ? value.length : headingEnd + nextRel;
+  // Keep the first Recognition Check boundary only. Anything from the second
+  // Recognition Check heading onward belongs to a duplicate block and is cut.
+  const secondStart = headingStart(matches[1]);
+  return value.slice(0, secondStart).replace(/\n\s*END SECTION\s*$/i, "").replace(/\n{3,}/g, "\n\n").trim();
+};
 
-    if (i === 0) {
-      // Keep everything up to and including this first block.
-      out += value.slice(cursor, blockEnd);
-    } else {
-      // Preserve content between previous cursor and this duplicate's heading.
-      if (headingStart > cursor) out += value.slice(cursor, headingStart);
-      // Skip the duplicate heading + its body entirely.
-    }
-    cursor = blockEnd;
-  });
-  if (cursor < value.length) out += value.slice(cursor);
-  return out;
+const stripTemplateLeakage = (value: string) => {
+  const withoutLeadingHeading = value.replace(LEADING_TEMPLATE_HEADING, "");
+  const boundary = withoutLeadingHeading.search(TEMPLATE_HEADING);
+  const bounded = boundary === -1 ? withoutLeadingHeading : withoutLeadingHeading.slice(0, boundary);
+  return bounded.replace(/\n\s*END SECTION\s*$/i, "").trim();
+};
+
+const stripRecognitionFromInterpretation = (value: string) => {
+  const matches = [...value.matchAll(RECOGNITION_HEADING)];
+  if (!matches.length) return value.replace(/\n\s*END SECTION\s*$/i, "").trim();
+  return value.slice(0, headingStart(matches[0])).replace(/\n\s*END SECTION\s*$/i, "").trim();
 };
 
 const cleanPlainLanguage = (value: string) =>
@@ -92,8 +82,9 @@ const cleanPlainLanguage = (value: string) =>
   );
 
 const extractRecognition = (text: string) => {
-  const match = text.match(/\*\*Recognition Check\*\*\s*([\s\S]*)$/i);
-  return cleanPlainLanguage((match?.[1] ?? "").trim());
+  const match = [...text.matchAll(RECOGNITION_HEADING)][0];
+  if (!match) return "";
+  return cleanPlainLanguage(text.slice((match.index ?? 0) + match[0].length).replace(/\n\s*END SECTION\s*$/i, "").trim());
 };
 
 const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
