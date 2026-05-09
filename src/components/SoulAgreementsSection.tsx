@@ -138,15 +138,29 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
     } catch {/* ignore */}
   }, [chart.id]);
 
+  const summaryComplete = (s?: SoulAgreements["summary"]) => {
+    if (!s) return false;
+    const fields = [s.whatToPractice, s.whatToWatchFor, s.whatToBuild, s.whatToGive, s.integration];
+    return fields.every((f) => typeof f === "string" && f.trim().split(/\s+/).filter(Boolean).length >= 5 && !/\bregenerate\b/i.test(f));
+  };
+
+  const callOnce = async () => {
+    const { data: resp, error: invokeErr } = await supabase.functions.invoke("soul-agreements", { body: payload });
+    if (invokeErr) throw invokeErr;
+    return sanitizeAgreements((resp as any)?.agreements as SoulAgreements);
+  };
+
   const generate = async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data: resp, error: invokeErr } = await supabase.functions.invoke("soul-agreements", {
-        body: payload,
-      });
-      if (invokeErr) throw invokeErr;
-      const agreements = sanitizeAgreements((resp as any)?.agreements as SoulAgreements);
+      let agreements = await callOnce();
+      // Internal retry if summary block is incomplete — never expose failure
+      let attempts = 0;
+      while ((!agreements?.family || !summaryComplete(agreements?.summary)) && attempts < 2) {
+        attempts++;
+        agreements = await callOnce();
+      }
       if (!agreements?.family || !agreements?.summary) throw new Error("Malformed response");
       setData(agreements);
       try { localStorage.setItem(cacheKey(chart.id), JSON.stringify(agreements)); } catch {/* quota */}
@@ -196,7 +210,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
           {error && (
             <div className="text-xs text-destructive bg-destructive/10 p-3 rounded-sm">
               {error}
-              <button onClick={generate} className="ml-3 underline">Retry</button>
+              <button onClick={generate} className="ml-3 underline">Try again</button>
             </div>
           )}
 
@@ -244,7 +258,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 onClick={generate}
                 className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
               >
-                <RefreshCw size={11} /> Regenerate
+                <RefreshCw size={11} /> Refresh reading
               </button>
             </div>
           )}
