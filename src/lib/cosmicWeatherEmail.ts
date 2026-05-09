@@ -9,7 +9,7 @@
 import { formatLocalDateKey } from "./localDate";
 import { formatSkyBlockForEmail } from "./cosmicWeatherSkyBlock";
 import { buildMorningDigest } from "./cosmicWeatherMorningDigest";
-import { getPlanetaryPositions } from "./astrology";
+import { getPlanetaryPositions, calculateDailyAspects, getMoonPhase } from "./astrology";
 import { calculateTransitAspects } from "./transitAspects";
 import { getTransitPlanetHouse } from "./houseCalculations";
 import { supabase } from "@/integrations/supabase/client";
