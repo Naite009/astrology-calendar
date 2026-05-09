@@ -40,15 +40,60 @@ interface Payload {
 const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy"] as const;
 type SectionKey = typeof sectionKeys[number];
 
+const dedupeRecognitionCheck = (value: string) => {
+  // Keep only the FIRST "**Recognition Check**" block per section. Strip any
+  // additional Recognition Check headings (and their bodies up to the next
+  // ** heading or end of string) that the model accidentally repeated.
+  const marker = /\*\*Recognition Check\*\*/gi;
+  const matches = [...value.matchAll(marker)];
+  if (matches.length <= 1) return value;
+  const firstIdx = matches[0].index ?? 0;
+  const head = value.slice(0, firstIdx);
+  let tail = value.slice(firstIdx);
+  // Within tail, keep only first "**Recognition Check**" + its body, then drop
+  // every subsequent "**Recognition Check** ... (until next **Heading** or EOF)".
+  // Find the second occurrence relative to tail.
+  const localMatches = [...tail.matchAll(marker)];
+  if (localMatches.length <= 1) return head + tail;
+  // Build a kept version: first block fully, plus any non-recognition blocks
+  // between dup recognition blocks (rare, but preserve them).
+  let kept = "";
+  let cursor = 0;
+  localMatches.forEach((m, i) => {
+    const start = m.index ?? 0;
+    if (i === 0) {
+      // Find end of first Recognition Check block (next "**Something**" or EOF)
+      const after = tail.slice(start + m[0].length);
+      const nextHeading = after.search(/\n\*\*[^*]+\*\*/);
+      const endOfFirst = nextHeading === -1 ? tail.length : start + m[0].length + nextHeading;
+      kept += tail.slice(0, endOfFirst);
+      cursor = endOfFirst;
+    } else {
+      // Skip this duplicate Recognition Check block entirely
+      const after = tail.slice(start + m[0].length);
+      const nextHeading = after.search(/\n\*\*[^*]+\*\*/);
+      const endOfDup = nextHeading === -1 ? tail.length : start + m[0].length + nextHeading;
+      // Append only the gap that came between previous cursor and the start of
+      // this duplicate (so we don't lose any non-Recognition content).
+      if (start > cursor) kept += tail.slice(cursor, start);
+      cursor = endOfDup;
+    }
+  });
+  if (cursor < tail.length) kept += tail.slice(cursor);
+  return head + kept;
+};
+
 const cleanPlainLanguage = (value: string) =>
-  value
-    .replace(/—/g, ",")
-    .replace(/shedding old identities/gi, "letting go of old ways of acting")
-    .replace(/embracing your power/gi, "learning to trust yourself and speak more honestly")
-    .replace(/authentic self/gi, "the real you")
-    .replace(/stepping into/gi, "learning")
-    .replace(/owning your truth/gi, "saying what you really think")
-    .replace(/soul calling/gi, "life direction");
+  dedupeRecognitionCheck(
+    value
+      .replace(/—/g, ",")
+      .replace(/shedding old identities/gi, "letting go of old ways of acting")
+      .replace(/embracing your power/gi, "learning to trust yourself and speak more honestly")
+      .replace(/authentic self/gi, "the real you")
+      .replace(/stepping into/gi, "learning")
+      .replace(/owning your truth/gi, "saying what you really think")
+      .replace(/soul calling/gi, "life direction")
+  );
 
 const extractRecognition = (text: string) => {
   const match = text.match(/\*\*Recognition Check\*\*\s*([\s\S]*)$/i);
