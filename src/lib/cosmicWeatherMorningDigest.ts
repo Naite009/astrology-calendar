@@ -1010,10 +1010,10 @@ const PLANET_SCENE: Record<string, { loud: string; easy: string; hard: string }>
 const PHASE_PROSE: Record<string, string> = {
   "New Moon": "Today feels quiet and inward, even underneath the busy parts.",
   "Waxing Crescent": "Anything just-started is still tender and asks to be protected, not announced.",
-  "First Quarter": "New things are meeting their first real friction, and that friction wants a decision.",
+  "First Quarter": "New things are meeting their first real pushback today, and that pushback is asking for a decision.",
   "Waxing Gibbous": "There is pressure to finish, and patience runs shorter than people will admit.",
   "Full Moon": "Feelings are turned up and hidden things keep finding their way into the open.",
-  "Waning Gibbous": "Today is more reflective than active. People are processing what just happened more than they are starting anything new.",
+  "Waning Gibbous": "People may pull back today and not quite know how to explain what they feel yet. Conversations may go quieter than usual, and starting something new may feel harder than finishing what is already there.",
   "Last Quarter": "What is not working anymore is harder to keep ignoring today.",
   "Waning Crescent": "People are quieter and more tired than they expect to be.",
   "Balsamic": "The day moves slowly and dreamily and is not built for big decisions.",
