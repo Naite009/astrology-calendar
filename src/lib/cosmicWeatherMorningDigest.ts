@@ -996,7 +996,7 @@ const PLANET_SCENE: Record<string, { loud: string; easy: string; hard: string }>
              easy: "fresh angles arrive in the middle of ordinary tasks",
              hard: "things refuse to stay in the shape you put them in" },
   Neptune: { loud: "the truth keeps slipping a half-step out of focus",
-             easy: "imagination and tenderness are unusually accessible",
+             easy: "people may be unusually tender, and music, memories, or quiet time may hit harder than usual",
              hard: "people are foggier, leakier, and more easily disappointed" },
   Pluto:   { loud: "ordinary interactions carry an undertow of control and intensity",
              easy: "people can look at hard things without flinching",
