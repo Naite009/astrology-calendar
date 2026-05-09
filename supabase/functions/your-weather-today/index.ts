@@ -146,21 +146,36 @@ serve(async (req) => {
         }${topMoonAspect.natalHouse ? ` (house ${topMoonAspect.natalHouse}: ${HOUSE_DOMAINS[topMoonAspect.natalHouse] || ""})` : ""} · orb ${topMoonAspect.orb}°.`
       : "No tight Moon-to-natal aspect today.";
 
-    const longerLine = topLongerTransit
-      ? `Strongest longer transit active now: ${topLongerTransit.transitPlanet} ${topLongerTransit.aspect} natal ${topLongerTransit.natalPlanet}${
-          topLongerTransit.natalSign ? ` in ${topLongerTransit.natalSign}` : ""
-        }${topLongerTransit.natalHouse ? ` (house ${topLongerTransit.natalHouse}: ${HOUSE_DOMAINS[topLongerTransit.natalHouse] || ""})` : ""} · orb ${topLongerTransit.orb}°${topLongerTransit.applying ? " applying" : ""}.`
-      : "No major longer transit currently within tight orb.";
+    // Build the active outer-transit list. If outerTransits has items, use it
+    // (the new path that lets the AI synthesize across the full set). Fall
+    // back to the legacy single-aspect field for old callers.
+    const outerList = (outerTransits && outerTransits.length)
+      ? outerTransits
+      : (topLongerTransit ? [topLongerTransit] : []);
+
+    const outerTransitsBlock = outerList.length
+      ? [
+          `ACTIVE OUTER-PLANET TRANSITS (synthesize ALL of them — this is the primary signal). Tighter orbs matter more:`,
+          ...outerList.map((t, i) =>
+            `  ${i + 1}. Transiting ${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}${
+              t.natalSign ? ` in ${t.natalSign}` : ""
+            }${t.natalHouse ? ` (the ${t.natalHouse}th house: ${HOUSE_DOMAINS[t.natalHouse] || ""})` : ""}, orb ${t.orb}°${t.applying ? " applying" : " separating"}.`
+          ),
+        ].join("\n")
+      : "No major outer-planet transits currently within 3° orb.";
 
     const userPrompt = [
       dateLabel ? `Date: ${dateLabel}.` : "",
       recipientName ? `Reader: ${recipientName}.` : "",
       "",
-      "USE ONLY THIS DATA. Translate it into lived feelings:",
+      "USE ONLY THIS DATA. Translate it into lived feelings. Synthesize across the outer transits — do not pick one and ignore the rest.",
+      "",
       moonLine,
       moonAspectLine,
-      longerLine,
       "",
+      outerTransitsBlock,
+      "",
+      `WRITE FOR ${recipientName || "this reader"} TODAY (${dateLabel || ""}). Reference the natal points being touched (e.g. "your Moon", "your Venus") so the reader recognizes it is about them. Combine the outer transits into one coherent picture.`,
       'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
