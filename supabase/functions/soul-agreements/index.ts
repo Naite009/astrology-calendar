@@ -41,46 +41,42 @@ const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timi
 type SectionKey = typeof sectionKeys[number];
 
 const dedupeRecognitionCheck = (value: string) => {
-  // Keep only the FIRST "**Recognition Check**" block per section. Strip any
-  // additional Recognition Check headings (and their bodies up to the next
-  // ** heading or end of string) that the model accidentally repeated.
-  const marker = /\*\*Recognition Check\*\*/gi;
-  const matches = [...value.matchAll(marker)];
+  // HARD RULE: "Recognition Check" may appear once and only once per section.
+  // Match the heading in any common form the model emits:
+  //   **Recognition Check**, ## Recognition Check, # Recognition Check,
+  //   or a bare "Recognition Check" line on its own.
+  const HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*(?=\n|:|$)/gi;
+  // Any heading that ends a Recognition Check block: another **Heading**,
+  // a markdown ## heading, or end of string.
+  const NEXT_HEADING = /\n\s*(?:\*\*[^*\n]+\*\*|#{1,6}\s+[^\n]+)\s*(?:\n|$)/;
+
+  const matches = [...value.matchAll(HEADING)];
   if (matches.length <= 1) return value;
-  const firstIdx = matches[0].index ?? 0;
-  const head = value.slice(0, firstIdx);
-  let tail = value.slice(firstIdx);
-  // Within tail, keep only first "**Recognition Check**" + its body, then drop
-  // every subsequent "**Recognition Check** ... (until next **Heading** or EOF)".
-  // Find the second occurrence relative to tail.
-  const localMatches = [...tail.matchAll(marker)];
-  if (localMatches.length <= 1) return head + tail;
-  // Build a kept version: first block fully, plus any non-recognition blocks
-  // between dup recognition blocks (rare, but preserve them).
-  let kept = "";
+
+  // Walk through occurrences. Keep the FIRST block (heading + body until next
+  // heading). For every subsequent occurrence, drop the heading and its body,
+  // but preserve any non-Recognition content that sat between duplicates.
+  let out = "";
   let cursor = 0;
-  localMatches.forEach((m, i) => {
-    const start = m.index ?? 0;
+  matches.forEach((m, i) => {
+    const headingStart = (m.index ?? 0) + (m[1] ? m[1].length : 0);
+    const headingEnd = (m.index ?? 0) + m[0].length;
+    const after = value.slice(headingEnd);
+    const nextRel = after.search(NEXT_HEADING);
+    const blockEnd = nextRel === -1 ? value.length : headingEnd + nextRel;
+
     if (i === 0) {
-      // Find end of first Recognition Check block (next "**Something**" or EOF)
-      const after = tail.slice(start + m[0].length);
-      const nextHeading = after.search(/\n\*\*[^*]+\*\*/);
-      const endOfFirst = nextHeading === -1 ? tail.length : start + m[0].length + nextHeading;
-      kept += tail.slice(0, endOfFirst);
-      cursor = endOfFirst;
+      // Keep everything up to and including this first block.
+      out += value.slice(cursor, blockEnd);
     } else {
-      // Skip this duplicate Recognition Check block entirely
-      const after = tail.slice(start + m[0].length);
-      const nextHeading = after.search(/\n\*\*[^*]+\*\*/);
-      const endOfDup = nextHeading === -1 ? tail.length : start + m[0].length + nextHeading;
-      // Append only the gap that came between previous cursor and the start of
-      // this duplicate (so we don't lose any non-Recognition content).
-      if (start > cursor) kept += tail.slice(cursor, start);
-      cursor = endOfDup;
+      // Preserve content between previous cursor and this duplicate's heading.
+      if (headingStart > cursor) out += value.slice(cursor, headingStart);
+      // Skip the duplicate heading + its body entirely.
     }
+    cursor = blockEnd;
   });
-  if (cursor < tail.length) kept += tail.slice(cursor);
-  return head + kept;
+  if (cursor < value.length) out += value.slice(cursor);
+  return out;
 };
 
 const cleanPlainLanguage = (value: string) =>
