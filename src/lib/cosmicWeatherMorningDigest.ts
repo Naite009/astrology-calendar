@@ -756,12 +756,13 @@ function planetHouseCloser(planet: string, house: number | null): string {
 }
 
 function moonHitInterpretation(h: MoonHit): string {
+  // YOUR MOON TODAY cap: 1-2 sentences, max 35 words per aspect.
   const planetKey = h.natalPlanet.replace(/\s+/g, '');
   const feel = MOON_HIT_FEEL[planetKey];
   const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
   const body = feel ? (isSoft ? feel.soft : feel.hard) : '';
   const closer = planetHouseCloser(planetKey, h.natalHouse);
-  return [body, closer].filter(Boolean).join(' ');
+  return capWords([body, closer].filter(Boolean).join(' '), 35, 2);
 }
 
 // Planet weighting for Moon-hit ranking.
