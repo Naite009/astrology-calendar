@@ -30,6 +30,7 @@ import {
   calculateTransitAspects,
   getTopTransitAspects,
   ASPECT_TYPES,
+  getTransitPlanetSymbol,
   type TransitAspect,
 } from './transitAspects';
 import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
@@ -196,49 +197,80 @@ function planetGridHTML(date: Date, chart: NatalChart | null): string {
 }
 
 // ─── Section 2: Moon's arc through the day ──────────────────────────
+//
+// New behavior:
+// - If Moon stays in same sign AND same natal house all day, render ONE
+//   summary line with the degree range it covered.
+// - Otherwise, render an event timeline: starting position, sign changes,
+//   house changes, and any EXACT aspects to natal points (orb < 0.5°),
+//   ending with the closing position.
+
+interface ArcEvent {
+  time: Date;
+  kind: 'sign' | 'house' | 'aspect';
+  html: string;
+}
 
 function moonArcHTML(date: Date, chart: NatalChart | null): string {
   const midnight = getEasternMidnightDate(date);
-  const noon = getEasternDateAtTime(date, 12, 0);
   const end = getEasternDateAtTime(date, 23, 59);
   const moonPhase = getMoonPhase(midnight);
-  const signChange = findNextMoonSignChange(midnight);
   const voc = getVOCMoonDetails(midnight);
 
-  const checkpoint = (label: string, t: Date) => {
-    const pos = fromLongitude(moonLongitude(t));
-    const house = chart ? getTransitPlanetHouse(pos.sign, pos.deg, chart) : null;
-    const houseInfo = house ? HOUSE_MEANINGS[house] : null;
-    const houseText = houseInfo
-      ? `<span style="color:${COLOR.accent}">your ${ordinal(house!)} house</span> · ${escapeHtml(houseInfo.keywords.toLowerCase())}`
-      : '';
-    return `
-      <tr>
-        <td style="padding:10px 14px;font-size:12px;color:${COLOR.muted};white-space:nowrap;width:90px">${label}</td>
-        <td style="padding:10px 14px;font-size:13px;color:${COLOR.text}">
-          <span style="font-weight:600">☽ ${fmtDeg(pos.deg, pos.min)} ${escapeHtml(pos.sign)}</span>
-          ${houseText ? `<span style="color:${COLOR.muted}"> · ${houseText}</span>` : ''}
-        </td>
-      </tr>`;
-  };
+  const startPos = fromLongitude(moonLongitude(midnight));
+  const endPos = fromLongitude(moonLongitude(end));
+  const startHouse = chart ? getTransitPlanetHouse(startPos.sign, startPos.deg, chart) : null;
+  const endHouse = chart ? getTransitPlanetHouse(endPos.sign, endPos.deg, chart) : null;
 
-  const rows: string[] = [];
-  rows.push(checkpoint('12:00 AM', midnight));
-
-  if (signChange.time <= end) {
-    const newPos = fromLongitude(moonLongitude(signChange.time));
-    const newHouse = chart ? getTransitPlanetHouse(newPos.sign, newPos.deg, chart) : null;
-    rows.push(`
-      <tr>
-        <td colspan="2" style="padding:8px 14px;background:${COLOR.accentSoft};border-top:1px solid ${COLOR.border};border-bottom:1px solid ${COLOR.border}">
-          <span style="font-size:12px;color:${COLOR.accent};font-weight:600">→ ${fmtET(signChange.time)} ET</span>
-          <span style="font-size:12px;color:${COLOR.text}"> · Moon enters ${escapeHtml(signChange.newSign)}${newHouse ? ` · moves into your <span style="color:${COLOR.accent}">${ordinal(newHouse)} house</span>` : ''}</span>
-        </td>
-      </tr>`);
+  // Walk samples to find sign/house transition timestamps.
+  const STEP_MS = 15 * 60 * 1000;
+  const events: ArcEvent[] = [];
+  let lastSign = startPos.sign;
+  let lastHouse = startHouse;
+  for (let t = midnight.getTime() + STEP_MS; t <= end.getTime(); t += STEP_MS) {
+    const dt = new Date(t);
+    const p = fromLongitude(moonLongitude(dt));
+    const h = chart ? getTransitPlanetHouse(p.sign, p.deg, chart) : null;
+    if (p.sign !== lastSign) {
+      const houseInfo = h ? HOUSE_MEANINGS[h] : null;
+      events.push({
+        time: dt,
+        kind: 'sign',
+        html: `<span style="font-weight:600">☽ enters ${escapeHtml(p.sign)}</span>${
+          h && h !== lastHouse
+            ? ` <span style="color:${COLOR.muted}">· crosses into your <span style="color:${COLOR.accent}">${ordinal(h)} house</span>${houseInfo ? ` · ${escapeHtml(houseInfo.keywords.toLowerCase())}` : ''}</span>`
+            : ''
+        }`,
+      });
+      lastSign = p.sign;
+      lastHouse = h;
+      continue;
+    }
+    if (h !== lastHouse && h) {
+      const houseInfo = HOUSE_MEANINGS[h];
+      events.push({
+        time: dt,
+        kind: 'house',
+        html: `<span style="font-weight:600">☽ crosses into your <span style="color:${COLOR.accent}">${ordinal(h)} house</span></span>${houseInfo ? ` <span style="color:${COLOR.muted}">· ${escapeHtml(houseInfo.keywords.toLowerCase())}</span>` : ''}`,
+      });
+      lastHouse = h;
+    }
   }
 
-  rows.push(checkpoint('12:00 PM', noon));
-  rows.push(checkpoint('11:59 PM', end));
+  // Exact aspects to natal points during the day (orb < 0.5°).
+  if (chart) {
+    const exact = scanMoonHits(date, chart).filter(h => h.orb < 0.5);
+    for (const h of exact) {
+      const aspectWord = h.aspect;
+      events.push({
+        time: h.time,
+        kind: 'aspect',
+        html: `<span style="font-weight:600">☽ ${ASPECT_GLYPH[aspectWord] || aspectWord} natal ${escapeHtml(h.natalPlanet)}</span> <span style="color:${COLOR.muted}">in ${escapeHtml(h.natalSign)}${h.natalHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(h.natalHouse)} house</span>` : ''} · ${h.orb.toFixed(1)}° orb</span>`,
+      });
+    }
+  }
+
+  events.sort((a, b) => a.time.getTime() - b.time.getTime());
 
   const tags: string[] = [];
   tags.push(`${escapeHtml(moonPhase.phaseName)} · ${Math.round(moonPhase.illumination * 100)}% illuminated`);
@@ -251,14 +283,128 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
     .map(t => `<span style="display:inline-block;background:${COLOR.bg};border:1px solid ${COLOR.border};border-radius:999px;padding:4px 10px;font-size:11px;color:${COLOR.muted};margin:6px 6px 0 0">${t}</span>`)
     .join('');
 
+  // Quiet day: no events, same sign and house all day.
+  const sameSign = startPos.sign === endPos.sign;
+  const sameHouse = startHouse === endHouse;
+  if (events.length === 0 && sameSign && sameHouse) {
+    const houseInfo = startHouse ? HOUSE_MEANINGS[startHouse] : null;
+    const houseLine = startHouse
+      ? ` · your <span style="color:${COLOR.accent}">${ordinal(startHouse)} house</span>${houseInfo ? ` · ${escapeHtml(houseInfo.keywords.toLowerCase())}` : ''}`
+      : '';
+    return `
+      <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
+        <div style="padding:14px 16px">
+          <div style="font-size:14px;color:${COLOR.text};line-height:1.55">
+            <span style="font-weight:600">☽ stays in ${escapeHtml(startPos.sign)} all day</span>${houseLine}
+          </div>
+          <div style="font-size:12px;color:${COLOR.muted};margin-top:6px">
+            Drifts from ${fmtDeg(startPos.deg, startPos.min)} (12:00 AM ET) to ${fmtDeg(endPos.deg, endPos.min)} (11:59 PM ET).
+          </div>
+        </div>
+        <div style="padding:10px 14px 14px;border-top:1px solid ${COLOR.border}">${tagHTML}</div>
+      </div>`;
+  }
+
+  // Event timeline.
+  const startHouseInfo = startHouse ? HOUSE_MEANINGS[startHouse] : null;
+  const startLine = `
+    <tr>
+      <td style="padding:10px 14px;font-size:12px;color:${COLOR.muted};white-space:nowrap;width:90px">12:00 AM</td>
+      <td style="padding:10px 14px;font-size:13px;color:${COLOR.text}">
+        <span style="font-weight:600">☽ ${fmtDeg(startPos.deg, startPos.min)} ${escapeHtml(startPos.sign)}</span>${
+          startHouse
+            ? `<span style="color:${COLOR.muted}"> · your <span style="color:${COLOR.accent}">${ordinal(startHouse)} house</span>${startHouseInfo ? ` · ${escapeHtml(startHouseInfo.keywords.toLowerCase())}` : ''}</span>`
+            : ''
+        }
+      </td>
+    </tr>`;
+
+  const eventRows = events.map(e => `
+    <tr>
+      <td style="padding:8px 14px;background:${COLOR.accentSoft};border-top:1px solid ${COLOR.border};border-bottom:1px solid ${COLOR.border};font-size:12px;color:${COLOR.accent};font-weight:600;white-space:nowrap;width:90px">${fmtET(e.time)}</td>
+      <td style="padding:8px 14px;background:${COLOR.accentSoft};border-top:1px solid ${COLOR.border};border-bottom:1px solid ${COLOR.border};font-size:13px;color:${COLOR.text}">${e.html}</td>
+    </tr>`).join('');
+
+  const endHouseInfo = endHouse ? HOUSE_MEANINGS[endHouse] : null;
+  const endLine = `
+    <tr>
+      <td style="padding:10px 14px;font-size:12px;color:${COLOR.muted};white-space:nowrap;width:90px">11:59 PM</td>
+      <td style="padding:10px 14px;font-size:13px;color:${COLOR.text}">
+        <span style="font-weight:600">☽ ${fmtDeg(endPos.deg, endPos.min)} ${escapeHtml(endPos.sign)}</span>${
+          endHouse
+            ? `<span style="color:${COLOR.muted}"> · your <span style="color:${COLOR.accent}">${ordinal(endHouse)} house</span>${endHouseInfo ? ` · ${escapeHtml(endHouseInfo.keywords.toLowerCase())}` : ''}</span>`
+            : ''
+        }
+      </td>
+    </tr>`;
+
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
-        ${rows.join('')}
+        ${startLine}
+        ${eventRows}
+        ${endLine}
       </table>
       <div style="padding:10px 14px 14px;border-top:1px solid ${COLOR.border}">${tagHTML}</div>
     </div>`;
 }
+
+// ─── Section 2b: Other transits — outer planets to inner natal ──────
+
+const OTHER_TRANSIT_OUTERS = new Set(['Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron']);
+const OTHER_TRANSIT_INNERS = new Set(['Sun','Moon','Mercury','Venus','Mars','Ascendant','Midheaven']);
+const OTHER_TRANSIT_ASPECT_LABEL: Record<string, string> = {
+  conjunction: 'conjunct', opposition: 'opposite', trine: 'trine',
+  square: 'square', sextile: 'sextile', quincunx: 'quincunx', semisextile: 'semisextile',
+};
+
+function otherTransitsHTML(date: Date, chart: NatalChart | null): string {
+  if (!chart) {
+    return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">
+      No natal chart attached.
+    </div>`;
+  }
+  const noon = getEasternDateAtTime(date, 12, 0);
+  const positions = getPlanetaryPositions(noon);
+  const aspects = calculateTransitAspects(noon, positions, chart);
+  const filtered = aspects
+    .filter(a => OTHER_TRANSIT_OUTERS.has(a.transitPlanet) && OTHER_TRANSIT_INNERS.has(a.natalPlanet))
+    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
+    .slice(0, 6);
+
+  if (filtered.length === 0) {
+    return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">
+      No outer-planet transits to your inner planets within orb today.
+    </div>`;
+  }
+
+  const rows = filtered.map(a => {
+    const tSym = getTransitPlanetSymbol(a.transitPlanet);
+    const aspectWord = OTHER_TRANSIT_ASPECT_LABEL[a.aspect] || a.aspect;
+    const natalHouseInfo = a.natalHouse ? HOUSE_MEANINGS[a.natalHouse] : null;
+    return `
+      <tr>
+        <td style="padding:12px 14px;border-top:1px solid ${COLOR.border};vertical-align:top">
+          <div style="font-size:13px;color:${COLOR.text};font-weight:600">
+            Transiting ${tSym} ${escapeHtml(a.transitPlanet)} ${escapeHtml(aspectWord)} natal ${escapeHtml(a.natalPlanet)}
+            <span style="font-weight:400;color:${COLOR.muted}"> · ${parseFloat(a.orb).toFixed(1)}° orb${a.applying ? ' applying' : ' separating'}</span>
+          </div>
+          <div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">
+            Transiting ${escapeHtml(a.transitPlanet)} in ${escapeHtml(a.transitSign)}${a.transitHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.transitHouse)} house</span>` : ''} · natal ${escapeHtml(a.natalPlanet)} in ${escapeHtml(a.natalSign)}${a.natalHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.natalHouse)} house</span>${natalHouseInfo ? ` <span style="color:${COLOR.faint}">(${escapeHtml(natalHouseInfo.keywords.toLowerCase())})</span>` : ''}` : ''}
+          </div>
+          ${a.feltSenseDuration ? `<div style="font-size:12px;color:${COLOR.muted};margin-top:6px;font-style:italic;line-height:1.5">${escapeHtml(a.feltSenseDuration)}</div>` : ''}
+        </td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+        ${rows}
+      </table>
+    </div>`;
+}
+
 
 // ─── Section 3: Moon hits to natal chart, with timestamps ───────────
 
@@ -864,8 +1010,11 @@ export function buildMorningDigest({
       ${sectionTitle("The Moon today", 'Arc through your chart')}
       ${moonArcHTML(date, natalChart)}
 
-      ${sectionTitle('Moon hits your natal chart', 'Key moments today')}
+      ${sectionTitle('Moon hits your natal chart', 'Key ☽ moments')}
       ${moonHitsHTML(date, natalChart)}
+
+      ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
+      ${otherTransitsHTML(date, natalChart)}
 
       ${sectionTitle('The collective sky', 'What everyone is living under')}
       ${collectiveSection}
