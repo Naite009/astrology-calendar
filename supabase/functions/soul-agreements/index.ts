@@ -268,6 +268,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           ],
           response_format: { type: "json_object" },
           temperature: 0.2,
+          max_tokens: 16000,
         }),
       });
       if (!retryResp.ok) {
