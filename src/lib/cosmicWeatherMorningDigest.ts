@@ -762,16 +762,19 @@ function moonHitInterpretation(h: MoonHit): string {
   return [body, closer].filter(Boolean).join(' ');
 }
 
-// Planet weighting for Moon-hit ranking. Luminaries + personal planets win
-// over outers, nodes, asteroids. Angles count as personal-planet weight.
+// Planet weighting for Moon-hit ranking.
+// Per ranking rule: prioritize Sun, Moon, ASC, MC, Venus, Mars, Mercury;
+// minor asteroids (Ceres/Pallas/Juno/Vesta/Lilith/Eris) are ignored unless
+// explicitly enabled (filtered out below).
 const MOON_HIT_PLANET_WEIGHT: Record<string, number> = {
-  Sun: 5, Moon: 5, Mercury: 4, Venus: 4, Mars: 4,
-  Ascendant: 4, Midheaven: 4, Descendant: 3, IC: 3,
+  Sun: 6, Moon: 6, Ascendant: 6, Midheaven: 6,
+  Mercury: 5, Venus: 5, Mars: 5,
+  Descendant: 4, IC: 4,
   Jupiter: 3, Saturn: 3,
   Uranus: 2, Neptune: 2, Pluto: 2,
   Chiron: 2, NorthNode: 2, SouthNode: 2,
-  Ceres: 1, Pallas: 1, Juno: 1, Vesta: 1, Lilith: 1, Eris: 1,
 };
+const MINOR_ASTEROIDS = new Set(['Ceres','Pallas','Juno','Vesta','Lilith','Eris']);
 
 function getEasternHourFloat(d: Date): number {
   const parts = new Intl.DateTimeFormat('en-US', {
