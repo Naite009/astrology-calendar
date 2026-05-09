@@ -807,7 +807,7 @@ Keep it simple - do NOT list out examples for different rising signs. That's gen
 FORMAT:
 
 ## The Day at a Glance
-[2-3 sentences capturing the essential quality of the day. CRITICAL: If the Moon changes signs today, lead with that transition. If a planet is about to change signs (imminent sign change), emphasize that - it's unusual and noteworthy. If Mercury is in a retrograde shadow phase, mention it. Focus on what makes TODAY's sky UNIQUE - don't just describe generic sign energy. What is the weather doing? What's the dominant planetary story?]
+[COLLECTIVE SKY WEATHER — HARD CAP: 2 to 3 sentences, 35 to 55 words TOTAL. Do NOT explain the astrology. Do NOT name aspects, signs, houses, or planets unless one is unmistakably the dominant story (Moon sign change, eclipse, exact major aspect). Just describe the emotional atmosphere of the day like weather. Answer only: What does the day FEEL like? What is stronger than usual? What is harder than usual? Make it specific enough that it could not fit every day. Make it short enough to read in 10 seconds. No filler, no "energies," no "invitations," no closing reflection question here.]
 
 ## ⚡ What's Noteworthy Right Now
 [ONLY include this section if there ARE noteworthy events: imminent planet sign changes, Mercury retrograde shadow, rare aspects, etc. If nothing noteworthy, skip this section entirely.
