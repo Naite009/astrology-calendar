@@ -268,6 +268,15 @@ This may fit if:
 
 Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
 
+**Real-Life Examples vs Recognition Check — STRICT DIFFERENTIATION (mandatory)**
+These two sections must NEVER overlap. They cover different territory:
+
+Real-Life Examples = EXTERNAL behaviors and observable actions that someone watching the person could see. Examples to draw from: avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet, asking the same question twice.
+
+Recognition Check = INTERNAL experiences: emotional patterns and thought patterns nobody else sees from outside. Examples to draw from: anxiety during disagreement, feeling guilty after saying no, replaying conversations in your head, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone.
+
+Before writing Recognition Check, look at your Real-Life Examples list and make sure NONE of the Recognition Check items repeat the same idea. If a Recognition Check bullet is just an external behavior in different words, rewrite it as the inner feeling or thought that drives it.
+
 LANGUAGE REPLACEMENTS (mandatory across ALL sections):
 - Replace "shedding old identities" → "letting go of old ways of acting"
 - Replace "embracing your power" → "learning to trust yourself and speak more honestly"
