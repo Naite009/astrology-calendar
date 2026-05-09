@@ -160,8 +160,10 @@ ${aspectLines || "(none provided)"}
 Write the 7 Soul Agreements using ONLY the data above. Every section MUST follow the 4-layer structure (Astrology / Plain English / Real-Life Examples / Recognition Check). The Recognition Check is a "This may fit if:" bullet list of concrete behavioral/emotional/relationship patterns — NEVER a reflective question:
 
 1. FAMILY AGREEMENT — emotional environment that shaped you growing up. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+   SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
 2. WOUND AGREEMENT — the pain that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
+   SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
 3. PURPOSE AGREEMENT — what you are growing toward. Use North Node, Sun, 1st house, Midheaven.
    SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
