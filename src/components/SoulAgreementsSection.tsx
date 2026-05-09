@@ -28,11 +28,14 @@ interface SoulAgreements {
   gift: AgreementSection;
   timing: AgreementSection;
   legacy: AgreementSection;
+  strength?: AgreementSection;
+  reset?: AgreementSection;
   summary: {
     whatToPractice: string;
     whatToWatchFor: string;
     whatToBuild: string;
     whatToGive: string;
+    integration?: string;
   };
 }
 
@@ -44,6 +47,8 @@ const SECTION_META: Array<{ key: keyof Omit<SoulAgreements, "summary">; label: s
   { key: "gift", label: "Gift Agreement", sub: "What did you bring into this life already developed?" },
   { key: "timing", label: "Timing Agreement", sub: "How does growth tend to unfold in your life?" },
   { key: "legacy", label: "Legacy Agreement", sub: "What are you here to leave behind?" },
+  { key: "strength", label: "Strength Under Stress", sub: "Who do you become when life gets hard?" },
+  { key: "reset", label: "What Helps You Reset", sub: "What helps you feel grounded again?" },
 ];
 
 const cacheKey = (chartId: string) => `soulAgreements_v1_${chartId}`;
