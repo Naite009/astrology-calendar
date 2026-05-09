@@ -401,7 +401,7 @@ const NATAL_PLANET_PART: Record<string, string> = {
 const ASPECT_FEEL: Record<string, string> = {
   conjunction: 'It feels fused — the two energies are stuck together and hard to separate.',
   opposition: 'It plays out as a tug-of-war, often through another person mirroring it back.',
-  square: 'There is friction and pressure to act; something has to give.',
+  square: 'It feels like pressure that wants something to give. People may snap quicker, push harder, or have to make a call they have been putting off.',
   trine: 'The flow is easy, almost too easy — it can pass without you noticing the gift.',
   sextile: 'There is an opening if you reach for it, but it will not force itself.',
   quincunx: 'It feels off-axis — two parts of you that do not quite speak the same language.',
@@ -451,14 +451,15 @@ function capWords(text: string, maxWords: number, maxSentences = 99): string {
 }
 
 function professionalTransitInterpretation(a: TransitAspect): string {
-  // Longer Transits cap: 2 sentences max, 45 words max. Assume reader knows
-  // astrology — skip the textbook explainer and lead with felt experience.
-  const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} influence`;
+  // Longer Transits cap: 2 sentences max, 45 words max. Lead with felt
+  // experience. Never open with "X is bringing" — describe what the person
+  // may actually FEEL, NOTICE, or DO.
+  const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} pull`;
   const nPart = NATAL_PLANET_PART[a.natalPlanet] || `your natal ${a.natalPlanet}`;
   const feel = ASPECT_FEEL[a.aspect] || '';
-  const phase = a.applying ? 'building' : 'past peak but still active';
+  const phase = a.applying ? 'still building, so the pressure may grow over the coming days' : 'past peak but you may still feel echoes of it';
 
-  const s1 = `${a.transitPlanet} is bringing ${tTheme}, landing on ${nPart}.`;
+  const s1 = `You may notice ${tTheme} pressing on ${nPart}.`;
   const s2 = feel || `The transit is ${phase}.`;
 
   return capWords([s1, s2].filter(Boolean).join(' '), 45, 2);
@@ -651,7 +652,7 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
   Uranus:     { hard: "Jumpy, wired, can't-sit-still energy. Sudden mood shifts, the urge to bolt, blurt something out, or break a routine. Sleep may be twitchy.",
                 soft: "A small spark of insight or freedom. You see your situation from a slightly new angle and want to try something different." },
   Neptune:    { hard: "Foggy, leaky, oversensitive. You may feel everyone else's feelings as your own, get teary at nothing, or want to escape into a screen, a drink, or sleep.",
-                soft: "Imagination opens. Music, art, dreams, and quiet time all feel more nourishing than usual." },
+                soft: "You may feel more sensitive than usual, and music, memories, or quiet time may hit harder than expected." },
   Pluto:      { hard: "Something underneath surfaces. An old feeling, a power struggle, or an urge to control or be controlled. Intensity is the keyword.",
                 soft: "You can look at something dark without flinching. Quiet, private depth; good for honest self-reflection." },
   Chiron:     { hard: "An old wound gets touched. Something small can sting more than it should because it's hitting an old bruise.",
@@ -664,7 +665,7 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
                 soft: "You feel like yourself, and people receive you that way. Good face-the-world energy." },
   Midheaven:  { hard: "Feelings collide with work, reputation, or what you're 'supposed' to be doing publicly. Hard to keep a professional face.",
                 soft: "Your private mood supports your public role. A good day to be seen doing your actual work." },
-  Descendant: { hard: "Friction with a partner or close other. Their stuff is landing on you, or yours on them.",
+  Descendant: { hard: "Bumping up against a partner or close other. Their stuff may land on you, or yours on them.",
                 soft: "Easy give-and-take with the people closest to you." },
   IC:         { hard: "Restless at the root. Home, family, or something private feels unsettled.",
                 soft: "Home feels like home. Good time to be in your own space, with your own people." },
@@ -995,7 +996,7 @@ const PLANET_SCENE: Record<string, { loud: string; easy: string; hard: string }>
              easy: "fresh angles arrive in the middle of ordinary tasks",
              hard: "things refuse to stay in the shape you put them in" },
   Neptune: { loud: "the truth keeps slipping a half-step out of focus",
-             easy: "imagination and tenderness are unusually accessible",
+             easy: "people may be unusually tender, and music, memories, or quiet time may hit harder than usual",
              hard: "people are foggier, leakier, and more easily disappointed" },
   Pluto:   { loud: "ordinary interactions carry an undertow of control and intensity",
              easy: "people can look at hard things without flinching",
@@ -1009,10 +1010,10 @@ const PLANET_SCENE: Record<string, { loud: string; easy: string; hard: string }>
 const PHASE_PROSE: Record<string, string> = {
   "New Moon": "Today feels quiet and inward, even underneath the busy parts.",
   "Waxing Crescent": "Anything just-started is still tender and asks to be protected, not announced.",
-  "First Quarter": "New things are meeting their first real friction, and that friction wants a decision.",
+  "First Quarter": "New things are meeting their first real pushback today, and that pushback is asking for a decision.",
   "Waxing Gibbous": "There is pressure to finish, and patience runs shorter than people will admit.",
   "Full Moon": "Feelings are turned up and hidden things keep finding their way into the open.",
-  "Waning Gibbous": "Today is more reflective than active. People are processing what just happened more than they are starting anything new.",
+  "Waning Gibbous": "People may pull back today and not quite know how to explain what they feel yet. Conversations may go quieter than usual, and starting something new may feel harder than finishing what is already there.",
   "Last Quarter": "What is not working anymore is harder to keep ignoring today.",
   "Waning Crescent": "People are quieter and more tired than they expect to be.",
   "Balsamic": "The day moves slowly and dreamily and is not built for big decisions.",
@@ -1030,7 +1031,7 @@ const MOON_SIGN_DAYTYPE: Record<string, string> = {
   Scorpio:     "a private, undertow-heavy day where small things carry weight",
   Sagittarius: "a restless, opinion-heavy day that wants out of its current shape",
   Capricorn:   "a serious, work-shaped day that rewards finishing more than feeling",
-  Aquarius:    "a step-back, cooler day where principles outrun feelings",
+  Aquarius:    "a step-back day where people may be a little more guarded and slower to share what they actually feel",
   Pisces:      "a soft, porous day where the edges between people are thinner than usual",
 };
 
