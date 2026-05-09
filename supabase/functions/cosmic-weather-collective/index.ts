@@ -105,20 +105,30 @@ serve(async (req) => {
     }
 
     const lines: string[] = [];
-    if (body.dateLabel) lines.push(`Date: ${body.dateLabel}.`);
-    if (body.moonPhaseName) lines.push(`Moon phase: ${body.moonPhaseName}.`);
-    if (body.moonSign) lines.push(`Moon is in ${body.moonSign} (use this only as flavor, do not name it).`);
-    if (body.topAspects && body.topAspects.length) {
-      lines.push("Tightest sky aspects right now (translate into felt experience, do not name):");
-      for (const a of body.topAspects.slice(0, 3)) {
-        lines.push(`- ${a.planet1} ${a.type} ${a.planet2}, orb ${a.orb}°${a.applying ? " applying" : " separating"}`);
+    if (body.dateLabel) lines.push(`DATE: ${body.dateLabel}.`);
+    if (body.moonPhaseName) lines.push(`MOON PHASE: ${body.moonPhaseName}.`);
+    if (body.moonSign) lines.push(`MOON SIGN: ${body.moonSign}.`);
+    if (body.personalPositions && Object.keys(body.personalPositions).length) {
+      lines.push("PERSONAL-PLANET SIGN POSITIONS TODAY (use to color the day, do not name in output):");
+      for (const [planet, sign] of Object.entries(body.personalPositions)) {
+        lines.push(`  - ${planet} in ${sign}`);
       }
     }
+    if (body.topAspects && body.topAspects.length) {
+      lines.push("");
+      lines.push("TIGHTEST SKY ASPECTS RIGHT NOW (this is the primary signal — synthesize across them, weighting tighter orbs more heavily, but do NOT name them in the output):");
+      for (const a of body.topAspects.slice(0, 5)) {
+        lines.push(`  - ${a.planet1} ${a.type} ${a.planet2}, orb ${a.orb}°${a.applying ? " applying" : " separating"}`);
+      }
+    } else {
+      lines.push("NO TIGHT SKY ASPECTS TODAY: this is a structurally quiet day. Say so honestly in plain language.");
+    }
     if (body.retrogrades && body.retrogrades.length) {
-      lines.push(`Outer planets retrograde (background pressure, do not name): ${body.retrogrades.join(", ")}.`);
+      lines.push("");
+      lines.push(`PLANETS RETROGRADE (background pressure of going back over things — do not name): ${body.retrogrades.join(", ")}.`);
     }
     lines.push("");
-    lines.push("Write 3-5 short sentences. Describe what people may feel, how people may act, and what today is good for. End with a 'Best use:' line if it fits naturally.");
+    lines.push("WRITE THE SECTION NOW. 3 to 5 short sentences anchored in the SPECIFIC aspects above. The output must be different from a generic Saturday — it must reflect THESE specific contacts. End with a 'Best use:' sentence.");
     lines.push('Return JSON only: { "text": "..." }');
 
     const userPrompt = lines.join("\n");
