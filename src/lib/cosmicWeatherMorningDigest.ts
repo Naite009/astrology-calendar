@@ -805,6 +805,41 @@ function moonHitScore(h: MoonHit): number {
   return h.orb * 2 - w * 0.5;
 }
 
+const MOON_HOUSE_FOCUS: Record<number, string> = {
+  1: "Today's emotional focus is on you—how you show up, your mood, and how others read you.",
+  2: "Today's emotional focus is on stability, money, comfort, and what feels worth holding onto.",
+  3: "Today's emotional focus is on conversations, daily errands, siblings, and the small exchanges that fill the day.",
+  4: "Today's emotional focus stays close to home—family, private feelings, memories, and what makes you feel safe.",
+  5: "Today's emotional focus is on play, romance, creativity, and what makes you feel alive.",
+  6: "Today's emotional focus is on work, routines, health, and the small tasks that keep your day running.",
+  7: "Today's emotional focus is on close relationships—partners, collaborators, and the people who mirror you.",
+  8: "Today's emotional focus is on intimacy, trust, shared resources, and feelings that run deeper than usual.",
+  9: "Today's emotional focus is on the bigger picture—travel, learning, beliefs, and what gives life meaning.",
+  10: "Today's emotional focus is on work, reputation, and how you're showing up in public life.",
+  11: "Today's emotional focus is on friends, community, and the future you're trying to build.",
+  12: "Today's emotional focus turns inward—rest, solitude, dreams, and what you usually keep private.",
+};
+
+function moonArcHeaderHTML(date: Date, chart: NatalChart | null): string {
+  const noon = getEasternDateAtTime(date, 12, 0);
+  const pos = fromLongitude(moonLongitude(noon));
+  const house = chart ? getTransitPlanetHouse(pos.sign, pos.deg, chart) : null;
+  const houseLine = house
+    ? ` in your <span style="color:${COLOR.accent}">${ordinal(house)} house</span>`
+    : '';
+  const sentence = house ? (MOON_HOUSE_FOCUS[house] || '') :
+    "This sets the emotional tone of the day and the main life area carrying feeling.";
+  return `
+    <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:14px;color:${COLOR.text};font-weight:600">
+        ☽ in ${escapeHtml(pos.sign)}${houseLine} all day.
+      </div>
+      <div style="font-size:13px;color:${COLOR.muted};margin-top:6px;line-height:1.55">
+        ${sentence}
+      </div>
+    </div>`;
+}
+
 function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   if (!chart) {
     return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">
