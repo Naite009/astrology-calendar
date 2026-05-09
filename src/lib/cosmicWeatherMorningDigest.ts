@@ -492,20 +492,111 @@ function moonHitInterpretation(h: MoonHit): string {
   return [body, closer].filter(Boolean).join(' ');
 }
 
+// Planet weighting for Moon-hit ranking. Luminaries + personal planets win
+// over outers, nodes, asteroids. Angles count as personal-planet weight.
+const MOON_HIT_PLANET_WEIGHT: Record<string, number> = {
+  Sun: 5, Moon: 5, Mercury: 4, Venus: 4, Mars: 4,
+  Ascendant: 4, Midheaven: 4, Descendant: 3, IC: 3,
+  Jupiter: 3, Saturn: 3,
+  Uranus: 2, Neptune: 2, Pluto: 2,
+  Chiron: 2, NorthNode: 2, SouthNode: 2,
+  Ceres: 1, Pallas: 1, Juno: 1, Vesta: 1, Lilith: 1, Eris: 1,
+};
+
+function getEasternHourFloat(d: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: false,
+  }).formatToParts(d);
+  const h = parseInt(parts.find(p => p.type === 'hour')?.value ?? '0', 10);
+  const m = parseInt(parts.find(p => p.type === 'minute')?.value ?? '0', 10);
+  return h + m / 60;
+}
+
+const WAKING_START_HOUR = 7;
+const WAKING_END_HOUR = 22;
+const EXCEPTIONALLY_TIGHT_ORB = 0.3; // off-hours hits keep their slot if tighter than this
+
+function isWakingHour(d: Date): boolean {
+  const h = getEasternHourFloat(d);
+  return h >= WAKING_START_HOUR && h < WAKING_END_HOUR;
+}
+
+function moonHitScore(h: MoonHit): number {
+  const w = MOON_HIT_PLANET_WEIGHT[h.natalPlanet.replace(/\s+/g, '')] ?? 1;
+  // Lower score = higher priority. Orb dominates; weight is a tiebreaker.
+  return h.orb * 2 - w * 0.5;
+}
+
 function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   if (!chart) {
     return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">
       No natal chart attached. Add one to see how today's Moon hits your chart.
     </div>`;
   }
-  const hits = scanMoonHits(date, chart);
-  if (!hits.length) {
+  const allHits = scanMoonHits(date, chart);
+
+  // 1. Sign change during waking hours always makes the cut.
+  const midnight = getEasternMidnightDate(date);
+  const endOfDay = getEasternDateAtTime(date, 23, 59);
+  const signChange = findNextMoonSignChange(midnight);
+  const hasWakingSignChange = signChange.time <= endOfDay && isWakingHour(signChange.time);
+
+  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight).
+  const candidates = allHits.filter(
+    h => isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB,
+  );
+
+  // 3. Rank by orb tightness + planet weight.
+  const ranked = [...candidates].sort((a, b) => moonHitScore(a) - moonHitScore(b));
+
+  // 4. Quiet-day check: every candidate is wide (>2°) OR low weight (<=2).
+  const isQuietDay = ranked.length === 0 || ranked.every(h => {
+    const w = MOON_HIT_PLANET_WEIGHT[h.natalPlanet.replace(/\s+/g, '')] ?? 1;
+    return h.orb > 2 || w <= 2;
+  });
+
+  const targetCount = isQuietDay ? Math.min(3, ranked.length) : Math.min(5, ranked.length);
+  // Reserve a slot for sign-change line if present.
+  const hitSlots = hasWakingSignChange ? Math.max(0, targetCount - 1) : targetCount;
+  const selected = ranked.slice(0, Math.max(hitSlots, isQuietDay ? 2 : 3));
+
+  // 5. Re-sort selected chronologically for display.
+  selected.sort((a, b) => a.time.getTime() - b.time.getTime());
+
+  if (!selected.length && !hasWakingSignChange) {
     return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">
-      The Moon does not make a tight aspect to any of your natal planets today.
+      The Moon stays quiet against your chart today during waking hours. A good day to follow your own rhythm.
     </div>`;
   }
 
-  const rows = hits.map(h => {
+  // Sign-change row, if applicable.
+  let signChangeRow = '';
+  if (hasWakingSignChange) {
+    const newPos = fromLongitude(moonLongitude(signChange.time));
+    const newHouse = getTransitPlanetHouse(newPos.sign, newPos.deg, chart);
+    const houseInfo = newHouse ? HOUSE_MEANINGS[newHouse] : null;
+    signChangeRow = `
+      <tr>
+        <td style="padding:12px 14px;vertical-align:top;width:90px;font-size:12px;color:${COLOR.accent};font-weight:600;white-space:nowrap">
+          ${fmtET(signChange.time)}
+        </td>
+        <td style="padding:12px 14px;vertical-align:top;background:${COLOR.accentSoft}">
+          <div style="font-size:13px;color:${COLOR.text};font-weight:600">
+            ☽ Moon enters ${escapeHtml(signChange.newSign)}
+          </div>
+          ${newHouse ? `<div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">Crosses into your <span style="color:${COLOR.accent}">${ordinal(newHouse)} house</span>${houseInfo ? ` &nbsp;·&nbsp; ${escapeHtml(houseInfo.keywords.toLowerCase())}` : ''}</div>` : ''}
+        </td>
+      </tr>`;
+  }
+
+  const quietNote = (isQuietDay && selected.length) ? `
+    <tr>
+      <td colspan="2" style="padding:10px 14px;border-top:1px solid ${COLOR.border};font-size:12px;color:${COLOR.muted};font-style:italic;line-height:1.5">
+        The Moon is relatively quiet against your chart today. The items above are the closest hits, but none are dominant.
+      </td>
+    </tr>` : '';
+
+  const rows = selected.map(h => {
     const natalHouseInfo = h.natalHouse ? HOUSE_MEANINGS[h.natalHouse] : null;
     const natalKeyword = natalHouseInfo ? natalHouseInfo.keywords.toLowerCase() : '';
     const transitLine = h.transitHouse
@@ -533,7 +624,9 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+        ${signChangeRow}
         ${rows}
+        ${quietNote}
       </table>
     </div>`;
 }
