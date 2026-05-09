@@ -350,18 +350,19 @@ ${aspectLines || "(none provided)"}
 
 Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete INTERNAL emotional/thought patterns — never reflective questions, never duplicates of the external behaviors in examples:
 
-1. FAMILY AGREEMENT — early emotional imprint. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+1. FAMILY AGREEMENT — early emotional imprint. Use ONLY the Moon, the 4th house, the ruler of the 4th, and aspects to the Moon. Do NOT use the 10th house or any other parental symbolism here unless explicitly required to make sense of a 4th-house pattern. Keep this strictly about the early home and emotional environment, not career or public-parent themes.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
 2. WOUND AGREEMENT — pain patterns that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
    SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
-3. PURPOSE AGREEMENT — identity and becoming (what you are growing toward). Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
-   SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
-   "You are not meant to stay the same person your whole life. Life will keep pushing you to change in big ways: learning to stop people-pleasing, saying what you really think, trusting yourself more than outside approval, becoming stronger after hard experiences, and letting go of old versions of yourself that were built just to keep peace. Your purpose is to become more honest, stronger, and more fully yourself."
+3. PURPOSE AGREEMENT — identity and becoming. Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
+   STYLE RULE — be DIRECT and SPECIFIC. Name the actual behavior shift this person is growing into (e.g., "say what you actually want instead of softening it", "stop managing other people's reactions", "let yourself be seen instead of staying useful"). Avoid broad spiritual framing like "become more honest" or "step into your power" without naming the concrete behavior. Two or three short, pointed sentences beats a sweeping paragraph.
+   SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer should focus on: stopping people-pleasing, saying what you really think, trusting yourself over outside approval, and letting go of versions of yourself built only to keep peace. Keep it concrete and behavioral, not abstract.
 
 4. RELATIONSHIP AGREEMENT — relationship mirrors and lessons (who helps you grow through connection).
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
+   PHRASE RULE — never write "Relationships are central to your life's lessons." If you want to convey that idea, write: "Relationships are one of the main ways you learn about yourself."
    DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover, and even then never lead with it.
 
 5. GIFT AGREEMENT — natural strengths you arrived already good at.
