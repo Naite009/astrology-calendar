@@ -549,6 +549,9 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       {/* 2. Top 5 Life Themes */}
       <TopThemesSection themes={portrait.topThemes} />
 
+      {/* 2b. Soul Agreements (symbolic evolutionary layer) */}
+      <SoulAgreementsSection chart={selectedChart} />
+
       {/* 3-8. Domain Deep Dives */}
       <DomainSection domain={portrait.relationshipBlueprint} />
       <DomainSection domain={portrait.careerMoneyMap} />
