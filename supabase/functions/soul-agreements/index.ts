@@ -167,10 +167,10 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["solitude and quiet time at home", "walking, stretching, or any slow movement", "journaling or saying out loud what you are actually feeling", "time in nature or near water", "creative time with no goal attached", "clear boundaries around who and what you say yes to"],
     ),
     summary: {
-      whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
-      whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
-      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
-      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
+      whatToPractice: "Practice telling the truth about what you actually want, even when it risks disappointing someone or breaking the calm in the room.",
+      whatToWatchFor: "Watch for the moments you stay quiet, soften a need, or laugh something off just to avoid conflict and keep other people comfortable.",
+      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
+      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
       integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
     },
   };
@@ -328,12 +328,15 @@ FINAL RULE — every section must answer all three of these:
 3. What can I do with it? (carry into Recognition Check or summary)
 If any of those is missing or weak, rewrite the section before returning.
 
-SUMMARY RULES (mandatory, applies to all 4 summary fields):
-- Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
-- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...".
+SUMMARY RULES (mandatory, applies to all 5 summary fields — whatToPractice, whatToWatchFor, whatToBuild, whatToGive, integration):
+- The summary block is REQUIRED. It may NEVER be empty, blank, or label-only. Every field MUST contain real content.
+- MINIMUM LENGTH: each field must be at least 15 words and 1 to 3 full sentences. No single-word answers. No placeholders. No ellipses.
+- Each field is a practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
+- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...". (integration is a single closing sentence — no verb requirement.)
 - Must be specific and recognizable. A 14-year-old must be able to picture doing it.
-- BAD: "Your purpose is transformation." / "Your wound is self-assertion."
-- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone." / "Watch for moments when you stay quiet to avoid conflict."
+- BAD: "Your purpose is transformation." / "Your wound is self-assertion." / blank fields / "[blank]" / labels with no content.
+- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone, because staying quiet to keep the peace slowly erodes your sense of self."
+- The word "Regenerate" must NEVER appear in any field. Never tell the user to retry.
 - Field meanings:
   - whatToPractice: the skill or behavior to build (action to repeat).
   - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
@@ -445,12 +448,30 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
       }
       const s: any = value?.summary || {};
+      const validSummaryField = (raw: unknown): string | null => {
+        const txt = cleanPlainLanguage(String(raw ?? "")).trim();
+        if (!txt) return null;
+        // Reject label-only / placeholder content
+        if (/^(\[?\s*(blank|placeholder|tbd|todo|n\/a|none)\s*\]?)$/i.test(txt)) return null;
+        // Reject content that contains the forbidden word "Regenerate"
+        if (/\bregenerate\b/i.test(txt)) return null;
+        // Minimum 15 words
+        const wordCount = txt.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 15) return null;
+        return txt;
+      };
+      const pickSummary = (raw: unknown, fallbackText: string): string => {
+        return validSummaryField(raw) ?? fallbackText;
+      };
       result.summary = {
-        whatToPractice: cleanPlainLanguage(String(s.whatToPractice || s.coreLesson || fallback.summary.whatToPractice)),
-        whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
-        whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
-        whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
-        integration: cleanPlainLanguage(String(s.integration || (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.")),
+        whatToPractice: pickSummary(s.whatToPractice ?? s.coreLesson, fallback.summary.whatToPractice),
+        whatToWatchFor: pickSummary(s.whatToWatchFor ?? s.coreWound, fallback.summary.whatToWatchFor),
+        whatToBuild: pickSummary(s.whatToBuild ?? s.corePurpose, fallback.summary.whatToBuild),
+        whatToGive: pickSummary(s.whatToGive ?? s.coreLegacy, fallback.summary.whatToGive),
+        integration: pickSummary(
+          s.integration,
+          (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.",
+        ),
       };
       return result;
     };
