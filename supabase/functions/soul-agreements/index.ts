@@ -339,6 +339,7 @@ SUMMARY RULES (mandatory, applies to all 4 summary fields):
   - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
   - whatToBuild: the inner foundation being developed over time (capacity, steadiness, trust in self).
   - whatToGive: the strength or support this person can offer others.
+  - integration: ONE final sentence that names the single life direction tying all sections together. Default to: "Your growth comes from learning how to stay connected to others without losing yourself." You may rephrase only if the chart clearly points to a different unifying direction.
 Do NOT put markdown headings inside JSON values. Do NOT return "interpretation" or "question" fields. No prose outside JSON.`;
 
     const userPrompt = `Chart: ${chartName}
