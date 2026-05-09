@@ -29,10 +29,10 @@ interface SoulAgreements {
   timing: AgreementSection;
   legacy: AgreementSection;
   summary: {
-    coreLesson: string;
-    coreWound: string;
-    corePurpose: string;
-    coreLegacy: string;
+    whatToPractice: string;
+    whatToWatchFor: string;
+    whatToBuild: string;
+    whatToGive: string;
   };
 }
 
@@ -198,10 +198,10 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 <div className="p-4 bg-primary/5 border border-primary/30 rounded-sm">
                   <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-3">Soul Contract Summary</p>
                   <div className="space-y-2 text-[12px] text-foreground">
-                    <div><span className="font-medium">Core lesson:</span> {data.summary.coreLesson}</div>
-                    <div><span className="font-medium">Core wound:</span> {data.summary.coreWound}</div>
-                    <div><span className="font-medium">Core purpose:</span> {data.summary.corePurpose}</div>
-                    <div><span className="font-medium">Core legacy:</span> {data.summary.coreLegacy}</div>
+                    <div><span className="font-medium">What to practice:</span> {data.summary.whatToPractice}</div>
+                    <div><span className="font-medium">What to watch for:</span> {data.summary.whatToWatchFor}</div>
+                    <div><span className="font-medium">What to build:</span> {data.summary.whatToBuild}</div>
+                    <div><span className="font-medium">What to give:</span> {data.summary.whatToGive}</div>
                   </div>
                 </div>
               )}

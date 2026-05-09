@@ -157,10 +157,10 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
     ),
     summary: {
-      coreLesson: "Learn to stay honest without losing care for other people.",
-      coreWound: "Close relationships may show where you hide your needs to keep peace.",
-      corePurpose: "Your purpose is to become stronger, clearer, and more fully the real you.",
-      coreLegacy: "You may help others feel safe enough to face the truth.",
+      whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
+      whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
+      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
+      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
     },
   };
 };
@@ -281,12 +281,24 @@ Return STRICT JSON only, matching this schema:
   "timing": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "legacy": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "summary": {
-    "coreLesson": string,
-    "coreWound": string,
-    "corePurpose": string,
-    "coreLegacy": string
+    "whatToPractice": string,
+    "whatToWatchFor": string,
+    "whatToBuild": string,
+    "whatToGive": string
   }
 }
+
+SUMMARY RULES (mandatory, applies to all 4 summary fields):
+- Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
+- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...".
+- Must be specific and recognizable. A 14-year-old must be able to picture doing it.
+- BAD: "Your purpose is transformation." / "Your wound is self-assertion."
+- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone." / "Watch for moments when you stay quiet to avoid conflict."
+- Field meanings:
+  - whatToPractice: the skill or behavior to build (action to repeat).
+  - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
+  - whatToBuild: the inner foundation being developed over time (capacity, steadiness, trust in self).
+  - whatToGive: the strength or support this person can offer others.
 Do NOT put markdown headings inside JSON values. Do NOT return "interpretation" or "question" fields. No prose outside JSON.`;
 
     const userPrompt = `Chart: ${chartName}
@@ -390,11 +402,12 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         );
         result[key] = { interpretation, question: recognition.replace(/^\*\*Recognition Check\*\*\s*/i, "").trim() };
       }
+      const s: any = value?.summary || {};
       result.summary = {
-        coreLesson: cleanPlainLanguage(String(value?.summary?.coreLesson || fallback.summary.coreLesson)),
-        coreWound: cleanPlainLanguage(String(value?.summary?.coreWound || fallback.summary.coreWound)),
-        corePurpose: cleanPlainLanguage(String(value?.summary?.corePurpose || fallback.summary.corePurpose)),
-        coreLegacy: cleanPlainLanguage(String(value?.summary?.coreLegacy || fallback.summary.coreLegacy)),
+        whatToPractice: cleanPlainLanguage(String(s.whatToPractice || s.coreLesson || fallback.summary.whatToPractice)),
+        whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
+        whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
+        whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
       };
       return result;
     };
