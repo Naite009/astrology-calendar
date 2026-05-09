@@ -814,9 +814,11 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   const signChange = findNextMoonSignChange(midnight);
   const hasWakingSignChange = signChange.time <= endOfDay && isWakingHour(signChange.time);
 
-  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight).
+  // 2. Filter to waking-hour aspects (or off-hours but exceptionally tight),
+  //    and drop minor asteroids per ranking rule.
   const candidates = allHits.filter(
-    h => isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB,
+    h => !MINOR_ASTEROIDS.has(h.natalPlanet.replace(/\s+/g, '')) &&
+         (isWakingHour(h.time) || h.orb < EXCEPTIONALLY_TIGHT_ORB),
   );
 
   // 3. Rank by orb tightness + planet weight.
