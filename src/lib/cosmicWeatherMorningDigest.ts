@@ -417,7 +417,7 @@ const ASPECT_FEEL: Record<string, string> = {
 
 const HOUSE_LIFE_AREA: Record<number, string> = {
   1: 'how you present yourself and your body',
-  2: 'money, resources, and self-worth',
+  2: 'self-worth, what feels solid, your values, and what grounds you',
   3: 'daily communication, siblings, short trips, and your immediate environment',
   4: 'home, family, and your private inner base',
   5: 'creativity, romance, children, and play',
@@ -706,7 +706,7 @@ const PLANET_EXPLAINER: Record<string, string> = {
 
 // Concise house labels for the dynamic sentence.
 const HOUSE_LABEL: Record<number, string> = {
-  1: "your sense of self", 2: "your money and self-worth",
+  1: "your sense of self", 2: "your self-worth, values, and what grounds you",
   3: "your day-to-day talking and learning", 4: "your home and private life",
   5: "your creativity, romance, and play", 6: "your work and daily routine",
   7: "your one-on-one relationships", 8: "intimacy, shared resources, and what's hidden",
@@ -718,7 +718,7 @@ const HOUSE_LABEL: Record<number, string> = {
 // that get bumped when a transit lights up that house, in plain language.
 const HOUSE_TRIGGER: Record<number, string> = {
   1: "the mirror, getting dressed, deciding how to walk into a room",
-  2: "your bank balance, an upcoming purchase, a conversation about pay",
+  2: "what feels solid right now, a values-check, or something you have been quietly carrying about your worth",
   3: "a text thread, a sibling, a short errand, something you're trying to learn",
   4: "something at home, a parent's voice in your head, a chore you've been putting off",
   5: "a creative project, a flirt, time with kids, a hobby you keep returning to",
@@ -815,7 +815,7 @@ function moonHitScore(h: MoonHit): number {
 
 const MOON_HOUSE_FOCUS: Record<number, string> = {
   1: "Today's emotional focus is on you—how you show up, your mood, and how others read you.",
-  2: "Today's emotional focus is on stability, money, comfort, and what feels worth holding onto.",
+  2: "Today's emotional focus is on what feels solid, your sense of worth, and the things you actually value.",
   3: "Today's emotional focus is on conversations, daily errands, siblings, and the small exchanges that fill the day.",
   4: "Today's emotional focus stays close to home—family, private feelings, memories, and what makes you feel safe.",
   5: "Today's emotional focus is on play, romance, creativity, and what makes you feel alive.",
