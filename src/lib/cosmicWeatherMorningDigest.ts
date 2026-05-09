@@ -907,31 +907,71 @@ const PLANET_DOMAIN: Record<string, string> = {
 // emotional-climate sentences (no jargon, no "the moon is..." openers).
 // Hard = friction (conjunction/square/opposition/quincunx).
 // Soft = flow (trine/sextile).
-const PLANET_SCENE: Record<string, { hard: string; soft: string }> = {
-  Sun:     { hard: "pride sits close to the skin", soft: "it's easier to be seen without performing" },
-  Moon:    { hard: "feelings move faster than people can name them", soft: "moods land softly and pass without a fight" },
-  Mercury: { hard: "conversations keep drifting into the thing nobody wanted to say out loud", soft: "the right words show up at the right time" },
-  Venus:   { hard: "small slights and money twinges land harder than they should", soft: "small pleasures actually register and people are gentler with each other" },
-  Mars:    { hard: "patience is thin and the urge to push back is everywhere", soft: "starting something today takes less effort than it did yesterday" },
-  Jupiter: { hard: "everything wants to be bigger than it actually is, including the reactions", soft: "the day quietly opens a little more room than expected" },
-  Saturn:  { hard: "the day feels heavier, slower, and more accountable than yesterday", soft: "patience and grown-up decisions come more naturally than usual" },
-  Uranus:  { hard: "schedules twitch and small surprises keep clipping the edges of plans", soft: "fresh angles arrive in the middle of ordinary tasks" },
-  Neptune: { hard: "the truth keeps slipping a half-step out of focus", soft: "imagination and tenderness are unusually accessible" },
-  Pluto:   { hard: "ordinary interactions carry an undertow of control and intensity", soft: "honest conversations about hard things actually land" },
-  Chiron:  { hard: "old sore spots get bumped by small, ordinary moments", soft: "tenderness toward old hurts is available without spiraling" },
+// Each planet's contribution as a felt-experience clause. "loud" = how it
+// shows up at all; "easy" = soft-aspect register; "hard" = friction register.
+const PLANET_SCENE: Record<string, { loud: string; easy: string; hard: string }> = {
+  Sun:     { loud: "people are touchier than usual about being recognized for who they are",
+             easy: "it is simpler to act like yourself without performing it",
+             hard: "pride sits close to the skin, and small slights register as bigger ones" },
+  Moon:    { loud: "feelings move faster than people can name them",
+             easy: "moods land softly and pass without a fight",
+             hard: "people are reactive before they are thoughtful" },
+  Mercury: { loud: "conversations keep circling back to the thing nobody wanted to say out loud",
+             easy: "the right words show up at roughly the right time",
+             hard: "talking and thinking keep tripping over each other" },
+  Venus:   { loud: "small money and love twinges register harder than they should",
+             easy: "small pleasures actually land and people are gentler with each other",
+             hard: "what people want and what they are getting do not match" },
+  Mars:    { loud: "patience is thinner than people will admit",
+             easy: "starting something takes less effort than it did yesterday",
+             hard: "the urge to push back, snap, or pick a fight is everywhere" },
+  Jupiter: { loud: "everything wants to be bigger than it actually is, including the reactions",
+             easy: "the day quietly opens a little more room than expected",
+             hard: "people are over-promising, overspending, or overshooting" },
+  Saturn:  { loud: "the day feels heavier and more accountable than yesterday",
+             easy: "patience and grown-up decisions come more naturally than usual",
+             hard: "limits, tiredness, and 'no' are louder than they were yesterday" },
+  Uranus:  { loud: "schedules twitch and small surprises clip the edges of plans",
+             easy: "fresh angles arrive in the middle of ordinary tasks",
+             hard: "things refuse to stay in the shape you put them in" },
+  Neptune: { loud: "the truth keeps slipping a half-step out of focus",
+             easy: "imagination and tenderness are unusually accessible",
+             hard: "people are foggier, leakier, and more easily disappointed" },
+  Pluto:   { loud: "ordinary interactions carry an undertow of control and intensity",
+             easy: "people can look at hard things without flinching",
+             hard: "power dynamics surface in small, ordinary moments" },
+  Chiron:  { loud: "old sore spots get bumped by small, ordinary moments",
+             easy: "tenderness toward old hurts is available without spiraling",
+             hard: "an old bruise gets pressed in a way that is hard to ignore" },
 };
 
 // Plain-prose Moon phase line that reads like emotional weather, not a label.
 const PHASE_PROSE: Record<string, string> = {
-  "New Moon": "There's a quiet, inward pull underneath everything, even the busy parts of the day.",
+  "New Moon": "Today feels quiet and inward, even underneath the busy parts.",
   "Waxing Crescent": "Anything just-started is still tender and asks to be protected, not announced.",
   "First Quarter": "New things are meeting their first real friction, and that friction wants a decision.",
-  "Waxing Gibbous": "There's pressure to finish, and patience runs shorter than people will admit.",
+  "Waxing Gibbous": "There is pressure to finish, and patience runs shorter than people will admit.",
   "Full Moon": "Feelings are turned up and hidden things keep finding their way into the open.",
-  "Waning Gibbous": "Honest conversations about what just happened sit closer to the surface than usual.",
-  "Last Quarter": "What isn't working anymore is harder to keep ignoring today.",
+  "Waning Gibbous": "Today is more reflective than active. People are processing what just happened more than they are starting anything new.",
+  "Last Quarter": "What is not working anymore is harder to keep ignoring today.",
   "Waning Crescent": "People are quieter and more tired than they expect to be.",
-  "Balsamic": "The day moves slowly and dreamily and isn't built for big decisions.",
+  "Balsamic": "The day moves slowly and dreamily and is not built for big decisions.",
+};
+
+// Modality of the Moon sign sets the overall day-shape.
+const MOON_SIGN_DAYTYPE: Record<string, string> = {
+  Aries:       "a fast, restless day that wants action more than reflection",
+  Taurus:      "a slow, sensory day that resists being rushed",
+  Gemini:      "a mentally busy, talkative day with attention pulling in several directions",
+  Cancer:      "a tender, home-shaped day where feelings are running close to the surface",
+  Leo:         "a day with more presence and performance in it than usual",
+  Virgo:       "a useful, detail-shaped day that rewards small careful moves",
+  Libra:       "a day shaped by other people, comparisons, and the urge to keep things smooth",
+  Scorpio:     "a private, undertow-heavy day where small things carry weight",
+  Sagittarius: "a restless, opinion-heavy day that wants out of its current shape",
+  Capricorn:   "a serious, work-shaped day that rewards finishing more than feeling",
+  Aquarius:    "a step-back, cooler day where principles outrun feelings",
+  Pisces:      "a soft, porous day where the edges between people are thinner than usual",
 };
 
 function collectiveSkyHTML(date: Date): string {
@@ -943,11 +983,13 @@ function collectiveSkyHTML(date: Date): string {
   // Tightest real planet-to-planet aspects in the sky today.
   const tight = [...aspects]
     .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .filter(a => parseFloat(a.orb) <= 6)
-    .slice(0, 2);
+    .filter(a => parseFloat(a.orb) <= 6);
 
-  // Outer-planet retrogrades read as background emotional weather.
-  const outerRetros: string[] = [];
+  const tightestSoft = tight.find(a => a.type === 'trine' || a.type === 'sextile');
+  const tightestHard = tight.find(a => ['square','opposition','conjunction','quincunx'].includes(a.type));
+  const loudest = tight[0];
+
+  // Outer-planet retrogrades read as quiet background pressure.
   const outerLabels: Record<string, string> = {
     pluto: "underneath everything, slow questions about power and control are still being chewed on",
     neptune: "the longing for meaning is sharper than usual and harder to distract from",
@@ -955,39 +997,62 @@ function collectiveSkyHTML(date: Date): string {
     saturn: "old commitments keep asking to be looked at again before anything new gets built",
     jupiter: "growth is happening privately rather than out loud",
   };
+  const retros: string[] = [];
   for (const key of ['pluto','neptune','uranus','saturn','jupiter']) {
     const p = (planets as any)[key];
-    if (p?.isRetrograde) outerRetros.push(outerLabels[key]);
+    if (p?.isRetrograde) retros.push(outerLabels[key]);
   }
 
-  const phaseLine = PHASE_PROSE[moonPhase.phaseName] || "";
+  // Moon sign (capitalized name) for daytype.
+  const moonSignName = (planets as any).moon?.signName || '';
+  const dayType = MOON_SIGN_DAYTYPE[moonSignName] || '';
+  const phaseLine = PHASE_PROSE[moonPhase.phaseName] || '';
 
-  // Build felt-sense clauses from real aspects.
-  const clauses: string[] = [];
-  for (const a of tight) {
-    const isSoft = a.type === 'trine' || a.type === 'sextile';
-    const s1 = PLANET_SCENE[a.planet1];
-    const s2 = PLANET_SCENE[a.planet2];
-    if (!s1 || !s2) continue;
-    clauses.push(isSoft ? `${s1.soft}, and ${s2.soft}` : `${s1.hard}, while ${s2.hard}`);
+  // 1. What does today feel like collectively?
+  const s1 = phaseLine || "Today has no single dominant tone in the sky.";
+
+  // 2. What is louder than usual?
+  let s2 = '';
+  if (loudest) {
+    const sc1 = PLANET_SCENE[loudest.planet1];
+    const sc2 = PLANET_SCENE[loudest.planet2];
+    if (sc1 && sc2) {
+      s2 = `What is louder than usual: ${sc1.loud}, while ${sc2.loud}.`;
+    }
+  } else if (retros[0]) {
+    s2 = `What is louder than usual: ${retros[0]}.`;
   }
 
-  // Compose 2–5 sentences. Lead with felt-sense (phase or first aspect),
-  // never with "the Moon is" or other technical openers.
-  const sentences: string[] = [];
-  if (phaseLine) sentences.push(phaseLine);
-  if (clauses[0]) sentences.push(`On top of that, ${clauses[0]}.`);
-  if (clauses[1]) sentences.push(`Layered in: ${clauses[1]}.`);
-  if (outerRetros[0]) sentences.push(`${outerRetros[0].charAt(0).toUpperCase()}${outerRetros[0].slice(1)}.`);
-
-  // Fallback if nothing landed.
-  if (sentences.length === 0) {
-    sentences.push("The sky is quiet today, with no sharp aspects pulling the collective in any one direction.");
-    sentences.push("The day will mostly take its tone from what's actually in front of you.");
+  // 3. What feels easier?
+  let s3 = '';
+  if (tightestSoft) {
+    const sc1 = PLANET_SCENE[tightestSoft.planet1];
+    const sc2 = PLANET_SCENE[tightestSoft.planet2];
+    if (sc1 && sc2) {
+      s3 = `Easier than usual: ${sc1.easy}, and ${sc2.easy}.`;
+    }
   }
 
-  // Cap at 5 sentences.
-  const prose = sentences.slice(0, 5).join(' ');
+  // 4. What feels harder?
+  let s4 = '';
+  if (tightestHard) {
+    const sc1 = PLANET_SCENE[tightestHard.planet1];
+    const sc2 = PLANET_SCENE[tightestHard.planet2];
+    if (sc1 && sc2) {
+      s4 = `Harder than usual: ${sc1.hard}, and ${sc2.hard}.`;
+    }
+  } else if (retros[1] || (retros[0] && !s2.includes(retros[0]))) {
+    const r = retros[1] || retros[0];
+    s4 = `Harder than usual: ${r}.`;
+  }
+
+  // 5. What kind of day is this?
+  const s5 = dayType
+    ? `Overall, this is ${dayType}.`
+    : '';
+
+  const sentences = [s1, s2, s3, s4, s5].filter(Boolean).slice(0, 5);
+  const prose = sentences.join(' ');
 
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">
