@@ -147,20 +147,31 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
     timing: section(
-      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe how growth tends to unfold. This is about style, not fixed events.`,
-      "Growth may come in serious chapters. You may change slowly at first, then make a clear decision when you finally know what is no longer working.",
-      ["you may need time before making big choices", "pressure can build before you act", "you may become clearer after setbacks", "you may trust yourself more with age"],
+      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about style, not fixed events.`,
+      "Growth often comes through pressure, endings, truth-telling moments, taking on real responsibility, and emotional turning points. You may change slowly at first, then make a clear decision once you finally know what is no longer working.",
+      ["growth often arrives after a hard ending or a forced choice", "you may resist change until the cost of staying the same is bigger", "honest conversations can mark the real turning points", "taking on more responsibility can speed up your growth", "you may trust yourself more after a setback you did not collapse under"],
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
-      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly.",
+      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them.",
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
+    ),
+    strength: section(
+      `${p("Mars")}, ${p("Saturn")}, ${p("Pluto")}, and ${p("Moon")} describe who you become when life gets hard.`,
+      "Under stress you may go quiet, get focused, and rely on yourself more than you ask for help. You can stay standing through things that would knock other people down, but the cost can be over-controlling, shutting people out, or pushing past your own limits.",
+      ["you may become more private when things get hard", "you may take on too much before asking for help", "you can stay calm on the outside while a lot is happening inside", "you may push through pain instead of pausing", "you bounce back faster when you let one trusted person see how you really feel"],
+    ),
+    reset: section(
+      `${p("Moon")}, ${p("Venus")}, ${h(4)}, ${h(6)}, and ${p("Neptune")} describe what helps you feel grounded again.`,
+      "You usually need a mix of quiet and gentle care to come back to yourself. Solitude, sleep, time outside, slow body movement, and a small amount of honest conversation tend to reset you faster than pushing through.",
+      ["solitude and quiet time at home", "walking, stretching, or any slow movement", "journaling or saying out loud what you are actually feeling", "time in nature or near water", "creative time with no goal attached", "clear boundaries around who and what you say yes to"],
     ),
     summary: {
       whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
       whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
       whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
       whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
+      integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
     },
   };
 };
