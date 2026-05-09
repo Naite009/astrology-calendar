@@ -813,21 +813,22 @@ const PLANET_DOMAIN: Record<string, string> = {
   Chiron: "old wounds asking to be tended",
 };
 
-// What each planet, when it's loud in the sky, actually does to the room.
-// Hard = friction-flavored (conjunction/square/opposition/quincunx).
-// Soft = flow-flavored (trine/sextile).
+// Felt-sense weather phrases per planet pair flavor. These are written as
+// emotional-climate sentences (no jargon, no "the moon is..." openers).
+// Hard = friction (conjunction/square/opposition/quincunx).
+// Soft = flow (trine/sextile).
 const PLANET_SCENE: Record<string, { hard: string; soft: string }> = {
-  Sun:     { hard: "people are touchy about being seen and credited", soft: "people feel more comfortable being themselves in public" },
-  Moon:    { hard: "moods run close to the surface and shift fast", soft: "moods are easy to read and easy to settle" },
-  Mercury: { hard: "conversations get tangled, plans need a second look, and small messages misfire", soft: "talking, writing, and making plans come more easily than usual" },
-  Venus:   { hard: "small social slights land harder than they should and money decisions feel itchy", soft: "people are warmer with each other and small pleasures actually land" },
-  Mars:    { hard: "tempers are short, drivers are aggressive, and people are quicker to push back", soft: "it's easier than usual to start something and follow it through" },
-  Jupiter: { hard: "everything wants to get bigger than it should, including reactions, spending, and promises", soft: "things feel more possible than they did yesterday" },
-  Saturn:  { hard: "the world feels heavier and slower, and limits are showing up where they didn't before", soft: "structure, patience, and grown-up decisions are easier to find" },
-  Uranus:  { hard: "the day is twitchy and prone to small surprises that throw off your schedule", soft: "fresh thinking and small breakthroughs are available if you stay loose" },
-  Neptune: { hard: "everything is a little blurry, hard to pin down, and easy to misread", soft: "imagination, music, and compassion run high" },
-  Pluto:   { hard: "control struggles and quiet intensity sit just under the surface of normal interactions", soft: "people can talk honestly about hard things without it blowing up" },
-  Chiron:  { hard: "old sore spots get bumped in small, ordinary ways", soft: "tenderness toward old hurts is available without drama" },
+  Sun:     { hard: "pride sits close to the skin", soft: "it's easier to be seen without performing" },
+  Moon:    { hard: "feelings move faster than people can name them", soft: "moods land softly and pass without a fight" },
+  Mercury: { hard: "conversations keep drifting into the thing nobody wanted to say out loud", soft: "the right words show up at the right time" },
+  Venus:   { hard: "small slights and money twinges land harder than they should", soft: "small pleasures actually register and people are gentler with each other" },
+  Mars:    { hard: "patience is thin and the urge to push back is everywhere", soft: "starting something today takes less effort than it did yesterday" },
+  Jupiter: { hard: "everything wants to be bigger than it actually is, including the reactions", soft: "the day quietly opens a little more room than expected" },
+  Saturn:  { hard: "the day feels heavier, slower, and more accountable than yesterday", soft: "patience and grown-up decisions come more naturally than usual" },
+  Uranus:  { hard: "schedules twitch and small surprises keep clipping the edges of plans", soft: "fresh angles arrive in the middle of ordinary tasks" },
+  Neptune: { hard: "the truth keeps slipping a half-step out of focus", soft: "imagination and tenderness are unusually accessible" },
+  Pluto:   { hard: "ordinary interactions carry an undertow of control and intensity", soft: "honest conversations about hard things actually land" },
+  Chiron:  { hard: "old sore spots get bumped by small, ordinary moments", soft: "tenderness toward old hurts is available without spiraling" },
 };
 
 // Plain-prose Moon phase line that reads like weather, not a label.
