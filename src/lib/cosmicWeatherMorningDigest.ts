@@ -370,6 +370,96 @@ function moonArcHTML(date: Date, chart: NatalChart | null): string {
 
 // ─── Section 2b: Other transits — outer planets to inner natal ──────
 
+// Professional transit interpretation: transiting planet (what's happening now)
+// → natal planet (what part of you it activates) → aspect (how it feels)
+// → transiting house (where it shows up externally) → natal house (where it
+// connects internally) → sign (style/temperament). 2–4 grounded sentences, no
+// therapy filler, no "the lesson is", no "integrating".
+
+const TRANSIT_PLANET_THEME: Record<string, string> = {
+  Jupiter: 'expansion, opportunity, and a pull to grow or take more space',
+  Saturn: 'pressure to get serious, define limits, and meet a real responsibility',
+  Uranus: 'sudden change, restlessness, and a need to break a pattern',
+  Neptune: 'blurring, longing, and a softer, less defined sense of things',
+  Pluto: 'a slow, undeniable shift in power, control, and what you can no longer fake',
+  Chiron: 'an old sore spot getting touched and asking to be handled honestly',
+};
+
+const NATAL_PLANET_PART: Record<string, string> = {
+  Sun: 'your core identity and how you want to show up',
+  Moon: 'your emotional baseline and what makes you feel safe',
+  Mercury: 'how you think, talk, and decide',
+  Venus: 'what you value, who you love, and how you relate',
+  Mars: 'your drive, anger, and how you go after what you want',
+  Ascendant: 'how you meet the world and what people see first',
+  Midheaven: 'your public role, career direction, and reputation',
+};
+
+const ASPECT_FEEL: Record<string, string> = {
+  conjunction: 'It feels fused — the two energies are stuck together and hard to separate.',
+  opposition: 'It plays out as a tug-of-war, often through another person mirroring it back.',
+  square: 'There is friction and pressure to act; something has to give.',
+  trine: 'The flow is easy, almost too easy — it can pass without you noticing the gift.',
+  sextile: 'There is an opening if you reach for it, but it will not force itself.',
+  quincunx: 'It feels off-axis — two parts of you that do not quite speak the same language.',
+  semisextile: 'A low, persistent itch — small adjustments rather than a big event.',
+};
+
+const HOUSE_LIFE_AREA: Record<number, string> = {
+  1: 'how you present yourself and your body',
+  2: 'money, resources, and self-worth',
+  3: 'daily communication, siblings, short trips, and your immediate environment',
+  4: 'home, family, and your private inner base',
+  5: 'creativity, romance, children, and play',
+  6: 'work routines, health, and daily service',
+  7: 'one-on-one relationships and partnerships',
+  8: 'shared resources, intimacy, and what you inherit or owe',
+  9: 'beliefs, study, travel, and the bigger picture',
+  10: 'career, public role, and reputation',
+  11: 'friends, groups, and long-range hopes',
+  12: 'private inner life, retreat, and what works behind the scenes',
+};
+
+const SIGN_TONE: Record<string, string> = {
+  Aries: 'direct, fast, and a little combative',
+  Taurus: 'steady, sensory, and slow to move',
+  Gemini: 'curious, talkative, and easily split',
+  Cancer: 'protective, moody, and family-tinged',
+  Leo: 'expressive, proud, and wanting to be seen',
+  Virgo: 'precise, analytical, and quietly self-critical',
+  Libra: 'relational, fair-minded, and conflict-averse',
+  Scorpio: 'intense, private, and all-or-nothing',
+  Sagittarius: 'restless, philosophical, and looking for meaning',
+  Capricorn: 'serious, ambitious, and structure-seeking',
+  Aquarius: 'detached, principled, and pattern-breaking',
+  Pisces: 'porous, dreamy, and emotionally absorbent',
+};
+
+function professionalTransitInterpretation(a: TransitAspect): string {
+  const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} influence`;
+  const nPart = NATAL_PLANET_PART[a.natalPlanet] || `your natal ${a.natalPlanet}`;
+  const feel = ASPECT_FEEL[a.aspect] || '';
+  const tHouseArea = a.transitHouse ? HOUSE_LIFE_AREA[a.transitHouse] : null;
+  const nHouseArea = a.natalHouse ? HOUSE_LIFE_AREA[a.natalHouse] : null;
+  const tone = SIGN_TONE[a.transitSign] || '';
+  const phase = a.applying ? 'building toward exact' : 'past peak, but the residue is still active';
+
+  const s1 = `Right now ${a.transitPlanet} is bringing ${tTheme}, and it is landing on ${nPart}.`;
+  const s2 = feel;
+  const s3 = tHouseArea && nHouseArea
+    ? `Externally it shows up around ${tHouseArea}; internally it touches ${nHouseArea}.`
+    : tHouseArea
+      ? `It tends to show up externally around ${tHouseArea}.`
+      : nHouseArea
+        ? `Inside, it is hitting the part of you that holds ${nHouseArea}.`
+        : '';
+  const s4 = tone
+    ? `The flavor is ${tone}, and the transit is ${phase}.`
+    : `The transit is ${phase}.`;
+
+  return [s1, s2, s3, s4].filter(Boolean).join(' ');
+}
+
 const OTHER_TRANSIT_OUTERS = new Set(['Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron']);
 const OTHER_TRANSIT_INNERS = new Set(['Sun','Moon','Mercury','Venus','Mars','Ascendant','Midheaven']);
 const OTHER_TRANSIT_ASPECT_LABEL: Record<string, string> = {
@@ -411,7 +501,7 @@ function otherTransitsHTML(date: Date, chart: NatalChart | null): string {
           <div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">
             Transiting ${escapeHtml(a.transitPlanet)} in ${escapeHtml(a.transitSign)}${a.transitHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.transitHouse)} house</span>` : ''} · natal ${escapeHtml(a.natalPlanet)} in ${escapeHtml(a.natalSign)}${a.natalHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.natalHouse)} house</span>${natalHouseInfo ? ` <span style="color:${COLOR.faint}">(${escapeHtml(natalHouseInfo.keywords.toLowerCase())})</span>` : ''}` : ''}
           </div>
-          ${a.feltSenseDuration ? `<div style="font-size:12px;color:${COLOR.muted};margin-top:6px;font-style:italic;line-height:1.5">${escapeHtml(a.feltSenseDuration)}</div>` : ''}
+          <div style="font-size:12px;color:${COLOR.text};margin-top:8px;line-height:1.6">${escapeHtml(professionalTransitInterpretation(a))}</div>
         </td>
       </tr>`;
   }).join('');
