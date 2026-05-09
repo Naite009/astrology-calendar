@@ -34,6 +34,7 @@ import {
   type TransitAspect,
 } from './transitAspects';
 import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
+import { findFixedStarActivations, findActiveFixedStarsToday, type FixedStarHit } from './fixedStars';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGNS = [
@@ -1182,6 +1183,59 @@ function whatMattersHTML(
     </div>`;
 }
 
+// ─── Fixed Star Activations (natal + today's triggers) ─────────────
+
+function fixedStarsHTML(date: Date, chart: NatalChart | null): string {
+  if (!chart) return '';
+  const hits = findFixedStarActivations(chart);
+  if (!hits.length) {
+    return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">No major fixed star is within orb of your natal points.</div>`;
+  }
+
+  // Today's transit longitudes for "lit up today" markers (1° from natal point).
+  const noon = getEasternDateAtTime(date, 12, 0);
+  const planetsNoon = getPlanetaryPositions(noon);
+  const tLon: Record<string, number> = {};
+  for (const [k, v] of Object.entries(planetsNoon)) {
+    const p: any = v;
+    if (!p?.signName) continue;
+    const idx = SIGNS.indexOf(p.signName);
+    if (idx < 0) continue;
+    const label = k.charAt(0).toUpperCase() + k.slice(1);
+    tLon[label] = idx * 30 + (p.degree || 0) + (p.minutes || 0) / 60;
+  }
+  const activeToday = new Set(
+    findActiveFixedStarsToday(chart, tLon).map(h => `${h.star}|${h.point}`),
+  );
+
+  const top = hits.slice(0, 8); // tightest 8 are plenty
+  const rows = top.map((h: FixedStarHit, i) => {
+    const isActive = activeToday.has(`${h.star}|${h.point}`);
+    const badge = isActive
+      ? `<span style="display:inline-block;margin-left:8px;padding:2px 7px;font-size:10px;letter-spacing:0.06em;background:${COLOR.accentSoft};color:${COLOR.accent};border-radius:3px;font-family:${SANS};vertical-align:middle">LIT TODAY</span>`
+      : '';
+    return `
+      <tr>
+        <td style="vertical-align:top;padding:14px 18px;${i > 0 ? `border-top:1px solid ${COLOR.border};` : ''}">
+          <div style="font-size:14px;color:${COLOR.text};font-weight:600;line-height:1.45">
+            ${escapeHtml(h.star)} on your ${escapeHtml(h.point)}${badge}
+          </div>
+          <div style="font-size:11px;color:${COLOR.faint};margin-top:3px;font-family:${SANS};letter-spacing:0.04em">
+            star ${escapeHtml(h.starPosition)} · natal ${escapeHtml(h.natalPosition)} · ${h.orb}° orb
+          </div>
+          <div style="font-size:13px;color:${COLOR.muted};line-height:1.6;margin-top:6px">${escapeHtml(h.interpretation)}</div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+        ${rows}
+      </table>
+    </div>`;
+}
+
 // ─── Section title helper ───────────────────────────────────────────
 
 function sectionTitle(eyebrow: string, heading: string): string {
@@ -1233,6 +1287,9 @@ export function buildMorningDigest({
 
       ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
       ${otherTransitsHTML(date, natalChart)}
+
+      ${sectionTitle('Fixed star activations', 'Major stars sitting on your natal points')}
+      ${fixedStarsHTML(date, natalChart)}
 
       ${sectionTitle('The collective sky', 'What everyone is living under')}
       ${collectiveSection}
