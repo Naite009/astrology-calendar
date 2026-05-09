@@ -37,7 +37,7 @@ interface Payload {
   aspects: Aspect[]; // hard aspects to luminaries/Asc + supportive trines/conjunctions
 }
 
-const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy"] as const;
+const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy", "strength", "reset"] as const;
 type SectionKey = typeof sectionKeys[number];
 
 const dedupeRecognitionCheck = (value: string) => {
