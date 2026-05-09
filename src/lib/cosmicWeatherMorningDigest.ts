@@ -1031,7 +1031,7 @@ const MOON_SIGN_DAYTYPE: Record<string, string> = {
   Scorpio:     "a private, undertow-heavy day where small things carry weight",
   Sagittarius: "a restless, opinion-heavy day that wants out of its current shape",
   Capricorn:   "a serious, work-shaped day that rewards finishing more than feeling",
-  Aquarius:    "a step-back, cooler day where principles outrun feelings",
+  Aquarius:    "a step-back day where people may be a little more guarded and slower to share what they actually feel",
   Pisces:      "a soft, porous day where the edges between people are thinner than usual",
 };
 
