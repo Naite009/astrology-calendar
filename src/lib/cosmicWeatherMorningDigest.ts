@@ -624,7 +624,9 @@ function moonHitsHTML(date: Date, chart: NatalChart | null): string {
   return `
     <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+        ${signChangeRow}
         ${rows}
+        ${quietNote}
       </table>
     </div>`;
 }
