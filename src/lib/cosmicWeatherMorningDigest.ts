@@ -1183,6 +1183,7 @@ export function buildMorningDigest({
   recipientName,
   collectiveProseHTML,
   weatherTodayProse,
+  weatherTodayParts,
 }: MorningDigestArgs): string {
   const midnight = getEasternMidnightDate(date);
   const dateLabel = fmtETDate(midnight);
@@ -1193,10 +1194,25 @@ export function buildMorningDigest({
     ? `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${collectiveProseHTML}</div>`
     : collectiveSkyHTML(date);
 
-  const weatherTodayText = (weatherTodayProse || "").trim();
-  const weatherTodaySection = weatherTodayText
+  // Cause / Effect / Best use block. Falls back to the legacy single-string
+  // weatherTodayProse for any caller that hasn't been migrated yet.
+  const cause = (weatherTodayParts?.cause || '').trim();
+  const effect = (weatherTodayParts?.effect || weatherTodayProse || '').trim();
+  const bestUse = (weatherTodayParts?.bestUse || '').trim();
+  const hasWeatherToday = !!(cause || effect || bestUse);
+
+  const labelStyle = `display:block;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${COLOR.faint};font-family:${SANS};margin-bottom:4px;font-weight:600`;
+  const valueStyle = `font-size:14px;color:${COLOR.text};line-height:1.6`;
+  const blockStyle = `padding:14px 18px`;
+  const dividerStyle = `border-top:1px solid ${COLOR.border}`;
+
+  const weatherTodaySection = hasWeatherToday
     ? `${sectionTitle('Your weather today', 'How today lands in your chart')}
-       <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:16px 18px;font-size:14px;line-height:1.65;color:${COLOR.text}">${escapeHtml(weatherTodayText)}</div>`
+       <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;overflow:hidden">
+         ${cause ? `<div style="${blockStyle}"><span style="${labelStyle}">Cause</span><div style="${valueStyle}">${escapeHtml(cause)}</div></div>` : ''}
+         ${effect ? `<div style="${blockStyle};${cause ? dividerStyle : ''}"><span style="${labelStyle}">Effect</span><div style="${valueStyle}">${escapeHtml(effect)}</div></div>` : ''}
+         ${bestUse ? `<div style="${blockStyle};${(cause || effect) ? dividerStyle : ''}"><span style="${labelStyle}">Best use</span><div style="${valueStyle}">${escapeHtml(bestUse)}</div></div>` : ''}
+       </div>`
     : '';
 
   return `<div style="background:${COLOR.bg};padding:28px 18px;font-family:${FONT};color:${COLOR.text}">
