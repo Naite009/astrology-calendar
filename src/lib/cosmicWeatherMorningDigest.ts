@@ -451,14 +451,15 @@ function capWords(text: string, maxWords: number, maxSentences = 99): string {
 }
 
 function professionalTransitInterpretation(a: TransitAspect): string {
-  // Longer Transits cap: 2 sentences max, 45 words max. Assume reader knows
-  // astrology — skip the textbook explainer and lead with felt experience.
-  const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} influence`;
+  // Longer Transits cap: 2 sentences max, 45 words max. Lead with felt
+  // experience. Never open with "X is bringing" — describe what the person
+  // may actually FEEL, NOTICE, or DO.
+  const tTheme = TRANSIT_PLANET_THEME[a.transitPlanet] || `a ${a.transitPlanet} pull`;
   const nPart = NATAL_PLANET_PART[a.natalPlanet] || `your natal ${a.natalPlanet}`;
   const feel = ASPECT_FEEL[a.aspect] || '';
-  const phase = a.applying ? 'building' : 'past peak but still active';
+  const phase = a.applying ? 'still building, so the pressure may grow over the coming days' : 'past peak but you may still feel echoes of it';
 
-  const s1 = `${a.transitPlanet} is bringing ${tTheme}, landing on ${nPart}.`;
+  const s1 = `You may notice ${tTheme} pressing on ${nPart}.`;
   const s2 = feel || `The transit is ${phase}.`;
 
   return capWords([s1, s2].filter(Boolean).join(' '), 45, 2);
