@@ -156,6 +156,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   useEffect(() => {
     setData(null);
     setError(null);
+    localStorage.removeItem(`soulAgreements_v1_${chart.id}`);
     try {
       const raw = localStorage.getItem(cacheKey(chart.id));
       if (raw) setData(sanitizeAgreements(JSON.parse(raw)));
@@ -165,7 +166,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   const summaryComplete = (s?: SoulAgreements["summary"]) => {
     if (!s) return false;
     const fields = [s.whatToPractice, s.whatToWatchFor, s.whatToBuild, s.whatToGive, s.integration];
-    return fields.every((f) => typeof f === "string" && f.trim().split(/\s+/).filter(Boolean).length >= 5 && !/\bregenerate\b/i.test(f));
+    return fields.every((f) => validSummaryField(f));
   };
 
   const callOnce = async () => {
