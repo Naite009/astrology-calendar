@@ -258,7 +258,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 onClick={generate}
                 className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
               >
-                <RefreshCw size={11} /> Regenerate
+                <RefreshCw size={11} /> Refresh reading
               </button>
             </div>
           )}
