@@ -450,6 +450,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
         whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
         whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
+        integration: cleanPlainLanguage(String(s.integration || (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.")),
       };
       return result;
     };
