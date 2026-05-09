@@ -1000,10 +1000,32 @@ function collectiveSkyHTML(date: Date): string {
   const planets = getPlanetaryPositions(midnight);
   const aspects = calculateDailyAspects(planets);
 
-  // Tightest real planet-to-planet aspects in the sky today.
+  // Collective ranking:
+  //  1) Moon-involving aspects, then Sun/Mercury/Venus/Mars
+  //  2) applying preferred over separating
+  //  3) outer-planet background only if exact (orb < 1°) or dominant
+  const SKY_WEIGHT: Record<string, number> = {
+    Moon: 6, Sun: 5, Mercury: 4, Venus: 4, Mars: 4,
+    Jupiter: 2, Saturn: 2, Uranus: 1, Neptune: 1, Pluto: 1, Chiron: 1,
+  };
+  const isOuter = (p: string) => ['Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron'].includes(p);
   const tight = [...aspects]
-    .sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb))
-    .filter(a => parseFloat(a.orb) <= 6);
+    .filter(a => {
+      const orb = parseFloat(a.orb);
+      if (orb > 6) return false;
+      // Outer-to-outer only if exact
+      if (isOuter(a.planet1) && isOuter(a.planet2) && orb > 1) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const orbA = parseFloat(a.orb);
+      const orbB = parseFloat(b.orb);
+      const wA = (SKY_WEIGHT[a.planet1] || 1) + (SKY_WEIGHT[a.planet2] || 1);
+      const wB = (SKY_WEIGHT[b.planet1] || 1) + (SKY_WEIGHT[b.planet2] || 1);
+      const scoreA = orbA - wA * 0.4 - (a.applying ? 0.5 : 0);
+      const scoreB = orbB - wB * 0.4 - (b.applying ? 0.5 : 0);
+      return scoreA - scoreB;
+    });
 
   const tightestSoft = tight.find(a => a.type === 'trine' || a.type === 'sextile');
   const tightestHard = tight.find(a => ['square','opposition','conjunction','quincunx'].includes(a.type));
