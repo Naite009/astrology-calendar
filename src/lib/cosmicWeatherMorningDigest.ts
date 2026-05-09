@@ -1329,6 +1329,7 @@ export function buildMorningDigest({
       ${weatherTodaySection}
 
       ${sectionTitle('Moon hits your natal chart', 'Key ☽ moments')}
+      ${moonArcHeaderHTML(date, natalChart)}
       ${moonHitsHTML(date, natalChart)}
 
       ${sectionTitle('Other transits', 'Outer planets to your inner planets')}
