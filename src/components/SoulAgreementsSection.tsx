@@ -186,8 +186,8 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                       {sec.interpretation}
                     </p>
                     <div className="mt-3 pt-3 border-t border-border/50">
-                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Reflective Question</p>
-                      <p className="text-[12px] italic text-foreground/90">{sec.question}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Recognition Check</p>
+                      <p className="text-[12px] text-foreground/90 whitespace-pre-line">{sec.question}</p>
                     </div>
                   </div>
                 );
