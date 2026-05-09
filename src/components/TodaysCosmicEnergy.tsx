@@ -24,6 +24,7 @@ import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
+import { YourWeatherToday } from "./YourWeatherToday";
 import { ChartSelector } from "./ChartSelector";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
