@@ -328,12 +328,15 @@ FINAL RULE — every section must answer all three of these:
 3. What can I do with it? (carry into Recognition Check or summary)
 If any of those is missing or weak, rewrite the section before returning.
 
-SUMMARY RULES (mandatory, applies to all 4 summary fields):
-- Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
-- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...".
+SUMMARY RULES (mandatory, applies to all 5 summary fields — whatToPractice, whatToWatchFor, whatToBuild, whatToGive, integration):
+- The summary block is REQUIRED. It may NEVER be empty, blank, or label-only. Every field MUST contain real content.
+- MINIMUM LENGTH: each field must be at least 15 words and 1 to 3 full sentences. No single-word answers. No placeholders. No ellipses.
+- Each field is a practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
+- Must start with an action verb: "Practice...", "Watch for...", "Build...", "Give...". (integration is a single closing sentence — no verb requirement.)
 - Must be specific and recognizable. A 14-year-old must be able to picture doing it.
-- BAD: "Your purpose is transformation." / "Your wound is self-assertion."
-- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone." / "Watch for moments when you stay quiet to avoid conflict."
+- BAD: "Your purpose is transformation." / "Your wound is self-assertion." / blank fields / "[blank]" / labels with no content.
+- GOOD: "Practice telling the truth about what you want, even when it risks disappointing someone, because staying quiet to keep the peace slowly erodes your sense of self."
+- The word "Regenerate" must NEVER appear in any field. Never tell the user to retry.
 - Field meanings:
   - whatToPractice: the skill or behavior to build (action to repeat).
   - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
