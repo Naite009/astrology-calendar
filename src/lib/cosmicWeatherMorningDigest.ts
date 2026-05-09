@@ -30,6 +30,7 @@ import {
   calculateTransitAspects,
   getTopTransitAspects,
   ASPECT_TYPES,
+  getTransitPlanetSymbol,
   type TransitAspect,
 } from './transitAspects';
 import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
