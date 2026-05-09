@@ -300,13 +300,33 @@ Return STRICT JSON only, matching this schema:
   "gift": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "timing": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "legacy": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "strength": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "reset": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "summary": {
     "whatToPractice": string,
     "whatToWatchFor": string,
     "whatToBuild": string,
-    "whatToGive": string
+    "whatToGive": string,
+    "integration": string
   }
 }
+
+SECTION DISTINCTION RULE (mandatory): Each section must feel distinct. Do NOT repeat the same theme or example across sections. Domain map:
+- family: early emotional imprint
+- wound: pain patterns that became growth catalysts
+- purpose: identity and becoming
+- relationship: relationship mirrors and lessons
+- gift: natural strengths
+- timing: HOW growth happens (style, not events)
+- legacy: what you leave behind
+- strength: who you become when life gets hard
+- reset: what helps you feel grounded again
+
+FINAL RULE — every section must answer all three of these:
+1. What does this mean? (Astrology + Plain English)
+2. What does this look like? (Real-Life Examples)
+3. What can I do with it? (carry into Recognition Check or summary)
+If any of those is missing or weak, rewrite the section before returning.
 
 SUMMARY RULES (mandatory, applies to all 4 summary fields):
 - Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
