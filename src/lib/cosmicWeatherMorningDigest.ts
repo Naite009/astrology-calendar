@@ -11,7 +11,6 @@ import * as Astronomy from 'astronomy-engine';
 import {
   getMoonPhase,
   getPlanetaryPositions,
-  calculateDailyAspects,
   getDayType,
 } from './astrology';
 import {
