@@ -8,6 +8,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, RankedTheme, NatalPowerPortrait, LifetimeWisdom } from '@/lib/natalPortraitEngine';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
+import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
@@ -547,6 +548,9 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
 
       {/* 2. Top 5 Life Themes */}
       <TopThemesSection themes={portrait.topThemes} />
+
+      {/* 2b. Soul Agreements (symbolic evolutionary layer) */}
+      <SoulAgreementsSection chart={selectedChart} />
 
       {/* 3-8. Domain Deep Dives */}
       <DomainSection domain={portrait.relationshipBlueprint} />
