@@ -210,7 +210,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
           {error && (
             <div className="text-xs text-destructive bg-destructive/10 p-3 rounded-sm">
               {error}
-              <button onClick={generate} className="ml-3 underline">Retry</button>
+              <button onClick={generate} className="ml-3 underline">Try again</button>
             </div>
           )}
 
