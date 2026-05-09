@@ -642,7 +642,7 @@ function scanMoonHits(date: Date, chart: NatalChart): MoonHit[] {
 // what the body/mind actually does, NOT recycled house-area boilerplate.
 // Aspect families: 'hard' = conjunction/square/opposition, 'soft' = trine/sextile.
 const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
-  Sun:        { hard: "Your mood and your core sense of self are out of step today. You may feel restless, like what you want emotionally and what you're trying to be aren't lining up.",
+  Sun:        { hard: "Your mood and your core sense of self are out of step today. You may feel a low, hard-to-name pull, like what you want emotionally and what you are trying to be do not line up.",
                 soft: "Your feelings and your identity are on the same page. It's easy to act like yourself without second-guessing it." },
   Moon:       { hard: "Today's mood scrapes against your baseline emotional pattern — what you usually need to feel okay isn't quite available. Expect waves: hungry, then full; close, then needing distance.",
                 soft: "Today's feelings line up with your normal emotional rhythm. You feel like yourself from the inside out, and your needs are simple to meet." },
@@ -674,7 +674,7 @@ const MOON_HIT_FEEL: Record<string, { hard: string; soft: string }> = {
                 soft: "Your private mood supports your public role. A good day to be seen doing your actual work." },
   Descendant: { hard: "Bumping up against a partner or close other. Their stuff may land on you, or yours on them.",
                 soft: "Easy give-and-take with the people closest to you." },
-  IC:         { hard: "Restless at the root. Home, family, or something private feels unsettled.",
+  IC:         { hard: "Hard to settle at the root. Home, family, or something private may feel unsettled, and you may want to rearrange a room or close a door for a while.",
                 soft: "Home feels like home. Good time to be in your own space, with your own people." },
   Ceres:      { hard: "Something in how you give or receive care feels off. You may feel under-fed (food, attention, mothering) or like you're doing all the feeding.",
                 soft: "Easy day to nourish yourself and the people you love. Cooking, checking in on someone, being checked on." },
