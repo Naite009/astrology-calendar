@@ -807,15 +807,19 @@ Keep it simple - do NOT list out examples for different rising signs. That's gen
 FORMAT:
 
 ## The Day at a Glance
-[COLLECTIVE SKY WEATHER — HARD CAP: 2 to 3 short sentences, 35 to 55 words TOTAL. Write so a smart teenager immediately understands it. Describe what today feels like for ordinary people in real human terms: behavior, emotions, reactions. Do NOT explain astrology. Do NOT name aspects, signs, houses, or planets unless one is unmistakably the dominant story (Moon sign change, eclipse, exact major aspect).
+[COLLECTIVE SKY WEATHER — HARD CAP: 2 to 3 short sentences, 35 to 55 words TOTAL. Write so a 14-year-old immediately understands it. Describe REAL HUMAN BEHAVIOR people might actually do or feel today. Do NOT explain astrology. Do NOT name aspects, signs, houses, or planets unless one is unmistakably the dominant story (Moon sign change, eclipse, exact major aspect).
 
-FORBIDDEN WORDS (never use): energy, processing, reflective, integrating, themes, principles, alignment, atmosphere, dynamic, energies, invitations, vibe, frequency.
+THE 14-YEAR-OLD TEST (mandatory): Can a 14-year-old picture this happening today? Can they see a real person doing it, feeling it, or saying it? If not, rewrite the sentence.
+
+FORBIDDEN WORDS (never use): energy, energies, processing, reflective, integrating, themes, principles, alignment, atmosphere, dynamic, cooler, energetic, invitations, vibe, frequency.
+
+USE THIS VOCABULARY instead: feelings, behavior, conflict, distance, patience, truth, tension, motivation, frustration, connection.
 
 Use the formula: "Today may feel [emotion]. People may notice [behavior]. It may be easier/harder to [real thing]."
 
-GOOD examples: "people may be more impatient today", "emotions may come out sideways", "conversations can feel blunt", "small things may feel bigger than they are", "people may want space", "it may be harder to focus", "motivation may come in bursts", "honesty may feel unavoidable".
+GOOD examples: "people may care more than they are showing", "people may be more impatient today", "small talk may feel harder than usual", "honesty may slip out before patience does", "people may want more space", "motivation may come in short bursts", "small things may feel bigger than they are".
 
-BAD examples (do not write like this): "the energy is reflective", "people are processing", "the atmosphere is shifting".
+BAD examples (do not write like this): "principles outrun feelings", "the energy is reflective", "people are processing", "the atmosphere is shifting", "things feel cooler today".
 
 Make it specific enough that it could not fit every day. No closing reflection question.]
 
