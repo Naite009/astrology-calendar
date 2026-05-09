@@ -37,7 +37,7 @@ interface Payload {
   aspects: Aspect[]; // hard aspects to luminaries/Asc + supportive trines/conjunctions
 }
 
-const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy"] as const;
+const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy", "strength", "reset"] as const;
 type SectionKey = typeof sectionKeys[number];
 
 const dedupeRecognitionCheck = (value: string) => {
@@ -147,20 +147,31 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
     timing: section(
-      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe how growth tends to unfold. This is about style, not fixed events.`,
-      "Growth may come in serious chapters. You may change slowly at first, then make a clear decision when you finally know what is no longer working.",
-      ["you may need time before making big choices", "pressure can build before you act", "you may become clearer after setbacks", "you may trust yourself more with age"],
+      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about style, not fixed events.`,
+      "Growth often comes through pressure, endings, truth-telling moments, taking on real responsibility, and emotional turning points. You may change slowly at first, then make a clear decision once you finally know what is no longer working.",
+      ["growth often arrives after a hard ending or a forced choice", "you may resist change until the cost of staying the same is bigger", "honest conversations can mark the real turning points", "taking on more responsibility can speed up your growth", "you may trust yourself more after a setback you did not collapse under"],
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
-      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly.",
+      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them.",
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
+    ),
+    strength: section(
+      `${p("Mars")}, ${p("Saturn")}, ${p("Pluto")}, and ${p("Moon")} describe who you become when life gets hard.`,
+      "Under stress you may go quiet, get focused, and rely on yourself more than you ask for help. You can stay standing through things that would knock other people down, but the cost can be over-controlling, shutting people out, or pushing past your own limits.",
+      ["you may become more private when things get hard", "you may take on too much before asking for help", "you can stay calm on the outside while a lot is happening inside", "you may push through pain instead of pausing", "you bounce back faster when you let one trusted person see how you really feel"],
+    ),
+    reset: section(
+      `${p("Moon")}, ${p("Venus")}, ${h(4)}, ${h(6)}, and ${p("Neptune")} describe what helps you feel grounded again.`,
+      "You usually need a mix of quiet and gentle care to come back to yourself. Solitude, sleep, time outside, slow body movement, and a small amount of honest conversation tend to reset you faster than pushing through.",
+      ["solitude and quiet time at home", "walking, stretching, or any slow movement", "journaling or saying out loud what you are actually feeling", "time in nature or near water", "creative time with no goal attached", "clear boundaries around who and what you say yes to"],
     ),
     summary: {
       whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
       whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
       whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
       whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
+      integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
     },
   };
 };
@@ -257,6 +268,15 @@ This may fit if:
 
 Rules: concrete, observable, behavior-based, emotionally recognizable. Do NOT ask introspective questions. Forbidden phrasings: "How do you...", "In what ways...", "What are you ready to...". Offer recognizable life patterns the reader either notices in themselves or doesn't. Recognition first; reflection happens naturally.
 
+**Real-Life Examples vs Recognition Check — STRICT DIFFERENTIATION (mandatory)**
+These two sections must NEVER overlap. They cover different territory:
+
+Real-Life Examples = EXTERNAL behaviors and observable actions that someone watching the person could see. Examples to draw from: avoiding conflict, over-explaining, staying too long in something, people-pleasing, saying yes when they mean no, taking on too many tasks, leaving early, going quiet, asking the same question twice.
+
+Recognition Check = INTERNAL experiences: emotional patterns and thought patterns nobody else sees from outside. Examples to draw from: anxiety during disagreement, feeling guilty after saying no, replaying conversations in your head, feeling responsible for other people's emotions, freezing when asked what you want, dreading a phone call, the relief of being alone.
+
+Before writing Recognition Check, look at your Real-Life Examples list and make sure NONE of the Recognition Check items repeat the same idea. If a Recognition Check bullet is just an external behavior in different words, rewrite it as the inner feeling or thought that drives it.
+
 LANGUAGE REPLACEMENTS (mandatory across ALL sections):
 - Replace "shedding old identities" → "letting go of old ways of acting"
 - Replace "embracing your power" → "learning to trust yourself and speak more honestly"
@@ -280,13 +300,33 @@ Return STRICT JSON only, matching this schema:
   "gift": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "timing": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "legacy": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "strength": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "reset": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "summary": {
     "whatToPractice": string,
     "whatToWatchFor": string,
     "whatToBuild": string,
-    "whatToGive": string
+    "whatToGive": string,
+    "integration": string
   }
 }
+
+SECTION DISTINCTION RULE (mandatory): Each section must feel distinct. Do NOT repeat the same theme or example across sections. Domain map:
+- family: early emotional imprint
+- wound: pain patterns that became growth catalysts
+- purpose: identity and becoming
+- relationship: relationship mirrors and lessons
+- gift: natural strengths
+- timing: HOW growth happens (style, not events)
+- legacy: what you leave behind
+- strength: who you become when life gets hard
+- reset: what helps you feel grounded again
+
+FINAL RULE — every section must answer all three of these:
+1. What does this mean? (Astrology + Plain English)
+2. What does this look like? (Real-Life Examples)
+3. What can I do with it? (carry into Recognition Check or summary)
+If any of those is missing or weak, rewrite the section before returning.
 
 SUMMARY RULES (mandatory, applies to all 4 summary fields):
 - Each field is ONE practical, behavioral instruction. Tell the user WHAT TO DO, not what they "are".
@@ -299,6 +339,7 @@ SUMMARY RULES (mandatory, applies to all 4 summary fields):
   - whatToWatchFor: the pattern that pulls you backward (what to notice and pause on).
   - whatToBuild: the inner foundation being developed over time (capacity, steadiness, trust in self).
   - whatToGive: the strength or support this person can offer others.
+  - integration: ONE final sentence that names the single life direction tying all sections together. Default to: "Your growth comes from learning how to stay connected to others without losing yourself." You may rephrase only if the chart clearly points to a different unifying direction.
 Do NOT put markdown headings inside JSON values. Do NOT return "interpretation" or "question" fields. No prose outside JSON.`;
 
     const userPrompt = `Chart: ${chartName}
@@ -312,38 +353,39 @@ ${houseLines}
 VERIFIED ASPECTS:
 ${aspectLines || "(none provided)"}
 
-Write the 7 Soul Agreements using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete behavioral/emotional/relationship patterns — NEVER reflective questions:
+Write the 9 Life Patterns (Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples, recognition. The recognition array is concrete INTERNAL emotional/thought patterns — never reflective questions, never duplicates of the external behaviors in examples:
 
-1. FAMILY AGREEMENT — emotional environment that shaped you growing up. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
+1. FAMILY AGREEMENT — early emotional imprint. Use Moon, 4th house, ruler of the 4th, aspects to Moon.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean a "secretive family" or "hidden trauma." Prefer language like: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings. Avoid "secretive family", "hidden trauma", "emotional manipulation" unless clearly supported by hard aspects in the data.
 
-2. WOUND AGREEMENT — the pain that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
+2. WOUND AGREEMENT — pain patterns that became a growth catalyst. Use Chiron, Saturn, 12th house, hard aspects to Sun/Moon/Ascendant.
    SPECIAL RULE — for Chiron in Aries in the 7th house, prefer: difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly. Avoid "you feel unworthy" or "you are not enough" unless strongly supported elsewhere in the chart.
 
-3. PURPOSE AGREEMENT — what you are growing toward. Use North Node, Sun, 1st house, Midheaven.
+3. PURPOSE AGREEMENT — identity and becoming (what you are growing toward). Use North Node, Sun, 1st house, Midheaven. Do NOT overlap with the relationship section.
    SPECIAL RULE — if North Node is in Scorpio AND in the 1st house, the Plain English layer must include language like:
    "You are not meant to stay the same person your whole life. Life will keep pushing you to change in big ways: learning to stop people-pleasing, saying what you really think, trusting yourself more than outside approval, becoming stronger after hard experiences, and letting go of old versions of yourself that were built just to keep peace. Your purpose is to become more honest, stronger, and more fully yourself."
 
-4. RELATIONSHIP AGREEMENT — who helps you grow through connection.
+4. RELATIONSHIP AGREEMENT — relationship mirrors and lessons (who helps you grow through connection).
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
-   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover — and even then, never lead with it.
+   DO NOT use Juno in core relationship interpretation. Omit Juno entirely unless it adds something genuinely essential that the priority bodies above do not already cover, and even then never lead with it.
 
-5. GIFT AGREEMENT — what you arrived already good at.
+5. GIFT AGREEMENT — natural strengths you arrived already good at.
    PRIORITIZE Venus, Neptune, Moon. Include intuitive gifts, emotional intelligence, symbolic understanding, creativity, and spiritual sensitivity.
    Use Jupiter and 2nd/5th houses too, but do NOT default Jupiter to "financial talent." Read it as wisdom, generosity, vision, or teaching unless the chart clearly points to material abundance.
 
-6. TIMING AGREEMENT — HOW your growth tends to unfold (style, not events). Use Saturn, Nodes, Pluto, angular planets. Do NOT predict events.
+6. TIMING AGREEMENT — HOW growth tends to arrive (style, not events). Use Saturn, Nodes, Pluto, angular planets.
+   REQUIRED STRUCTURE — explicitly say something like "Growth often comes through:" and then concretely name which of these are strongest in this chart: pressure, endings, truth-telling moments, taking on real responsibility, emotional turning points. Be concrete. Avoid vague phrasing like "growth happens in waves" or "things unfold in cycles." Do NOT predict events.
 
-7. LEGACY AGREEMENT — what you tend to leave behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
-   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through:
-   - emotional healing
-   - unseen support systems
-   - helping others feel safe
-   - healing emotional patterns
-   - compassionate, behind-the-scenes leadership
-   Do NOT use generic "nurturing" language.
+7. LEGACY AGREEMENT — what you leave behind. Use Midheaven, ruler of MC, Sun, Saturn, 10th house.
+   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th house, interpret legacy specifically through emotional healing, unseen support systems, helping others feel safe, healing emotional patterns, and compassionate behind-the-scenes leadership. ALWAYS include this exact emotional-boundary line near the end of the Plain English layer: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
 
-Then SUMMARY: one plain-English sentence each for core lesson, core wound, core purpose, core legacy. Apply the same jargon ban.
+8. STRENGTH UNDER STRESS — who you become when life gets hard. Use Mars, Saturn, Pluto, Moon (sign, house, and hard aspects).
+   Show resilience patterns: how this person braces, focuses, isolates, or pushes through under pressure, plus the cost of those patterns. Recognition Check should focus on the inner experience under stress (the inner clamp, the urge to handle it alone, the late-night replay), not just outer behavior.
+
+9. WHAT HELPS YOU RESET — what helps this person feel grounded again. Use Moon, Venus, 4th house, 6th house, Neptune.
+   Output must be PRACTICAL regulation strategies, not abstract advice. Draw concrete examples from this list when the chart supports it: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, prayer or quiet ritual, sleep. Tell the user actual things they can do today.
+
+Then SUMMARY: one practical, behavioral instruction for whatToPractice, whatToWatchFor, whatToBuild, whatToGive, plus a final "integration" sentence (default: "Your growth comes from learning how to stay connected to others without losing yourself."). Apply the same jargon ban.
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
@@ -408,6 +450,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         whatToWatchFor: cleanPlainLanguage(String(s.whatToWatchFor || s.coreWound || fallback.summary.whatToWatchFor)),
         whatToBuild: cleanPlainLanguage(String(s.whatToBuild || s.corePurpose || fallback.summary.whatToBuild)),
         whatToGive: cleanPlainLanguage(String(s.whatToGive || s.coreLegacy || fallback.summary.whatToGive)),
+        integration: cleanPlainLanguage(String(s.integration || (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.")),
       };
       return result;
     };

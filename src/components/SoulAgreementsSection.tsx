@@ -28,11 +28,14 @@ interface SoulAgreements {
   gift: AgreementSection;
   timing: AgreementSection;
   legacy: AgreementSection;
+  strength?: AgreementSection;
+  reset?: AgreementSection;
   summary: {
     whatToPractice: string;
     whatToWatchFor: string;
     whatToBuild: string;
     whatToGive: string;
+    integration?: string;
   };
 }
 
@@ -44,6 +47,8 @@ const SECTION_META: Array<{ key: keyof Omit<SoulAgreements, "summary">; label: s
   { key: "gift", label: "Gift Agreement", sub: "What did you bring into this life already developed?" },
   { key: "timing", label: "Timing Agreement", sub: "How does growth tend to unfold in your life?" },
   { key: "legacy", label: "Legacy Agreement", sub: "What are you here to leave behind?" },
+  { key: "strength", label: "Strength Under Stress", sub: "Who do you become when life gets hard?" },
+  { key: "reset", label: "What Helps You Reset", sub: "What helps you feel grounded again?" },
 ];
 
 const cacheKey = (chartId: string) => `soulAgreements_v1_${chartId}`;
@@ -136,16 +141,15 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
       >
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-primary" />
-          <span className="text-sm font-medium uppercase tracking-widest text-foreground">Your 7 Soul Agreements</span>
+          <span className="text-sm font-medium uppercase tracking-widest text-foreground">Soul Agreements (Life Patterns)</span>
         </div>
         {open ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
       </button>
 
       {open && (
         <div className="p-5 space-y-4">
-          <p className="text-[11px] text-muted-foreground italic leading-relaxed">
-            A symbolic, evolutionary reading of your chart as pre-birth soul intentions: lessons, gifts,
-            and relationship contracts. This is reflective, not predictive. Nothing here is fixed fate.
+          <p className="text-[12px] text-muted-foreground leading-relaxed">
+            This section looks at the deeper life patterns your chart may point to: your emotional patterns, growth lessons, natural strengths, and the kinds of experiences and relationships that shape you. This is reflective, not predictive.
           </p>
 
           {!data && !loading && (
@@ -203,6 +207,11 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                     <div><span className="font-medium">What to build:</span> {data.summary.whatToBuild}</div>
                     <div><span className="font-medium">What to give:</span> {data.summary.whatToGive}</div>
                   </div>
+                  {data.summary.integration && (
+                    <p className="mt-4 pt-3 border-t border-primary/20 text-[12px] text-foreground italic leading-relaxed">
+                      {data.summary.integration}
+                    </p>
+                  )}
                 </div>
               )}
 
