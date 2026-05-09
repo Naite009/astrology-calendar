@@ -85,6 +85,9 @@ ABSOLUTE RULES:
 - Each section: 120-250 words.
 - End each section with ONE reflective question (open-ended, second-person).
 - Do NOT echo planet/sign/house labels in the body unless they add real meaning. Lead with the lived experience.
+- Prefer soft, invitational phrasing like "This may suggest…" or "You might notice…" over hard-certainty phrases like "There was likely…" or "This means…".
+- Cross-sign aspects (e.g. 29° Aries to 1° Taurus) are valid and significant when within orb. Do not dismiss them.
+- Luminary aspects involving the Sun or Moon may be considered valid with orbs up to 10° for conjunctions. Do not dismiss a wide-but-present luminary aspect.
 
 Return STRICT JSON only, matching this schema:
 {
