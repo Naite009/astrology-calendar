@@ -788,6 +788,64 @@ const MOON_HIT_PLANET_WEIGHT: Record<string, number> = {
 };
 const MINOR_ASTEROIDS = new Set(['Ceres','Pallas','Juno','Vesta','Lilith','Eris']);
 
+// ─── Moon aspect tags ───────────────────────────────────────────────
+// One short tag per Moon hit row, for fast scanning. Allowed tags:
+//   Sensitive · Heavy · Clear · Open · Tense · Supportive · Relationship · Insight
+type MoonTag = 'Sensitive' | 'Heavy' | 'Clear' | 'Open' | 'Tense' | 'Supportive' | 'Relationship' | 'Insight';
+
+const TAG_COLOR: Record<MoonTag, { bg: string; fg: string }> = {
+  Sensitive:    { bg: '#EFEAFB', fg: '#6B46C1' }, // soft purple
+  Heavy:        { bg: '#E8E4DD', fg: '#4A3F2A' }, // stone
+  Clear:        { bg: '#E6F0E9', fg: '#2F6B3F' }, // sage
+  Open:         { bg: '#FBF1DD', fg: '#8A5A14' }, // warm amber
+  Tense:        { bg: '#FBE2DE', fg: '#9B2D1F' }, // rust
+  Supportive:   { bg: '#E2EEFB', fg: '#1F4F8A' }, // soft blue
+  Relationship: { bg: '#FBE6F0', fg: '#9B1F66' }, // rose
+  Insight:      { bg: '#EAF6F4', fg: '#1F6B66' }, // teal
+};
+
+function moonHitTag(h: MoonHit): MoonTag {
+  const planet = h.natalPlanet.replace(/\s+/g, '');
+  const isSoft = h.aspect === 'trine' || h.aspect === 'sextile';
+  const isHard = ['conjunction','square','opposition'].includes(h.aspect);
+
+  // Relationship axis takes priority.
+  if (['Venus','Descendant','Juno'].includes(planet)) return 'Relationship';
+
+  // Sensitive — Neptune, Chiron always read as sensitive territory.
+  if (planet === 'Neptune' || planet === 'Chiron') return 'Sensitive';
+
+  // Heavy — Saturn / Pluto under hard aspect.
+  if ((planet === 'Saturn' || planet === 'Pluto') && isHard) return 'Heavy';
+  if ((planet === 'Saturn' || planet === 'Pluto') && isSoft) return 'Supportive';
+
+  // Tense — Mars / Uranus hard.
+  if ((planet === 'Mars' || planet === 'Uranus') && isHard) return 'Tense';
+
+  // Insight — Uranus soft, NorthNode anything, Mercury soft.
+  if (planet === 'Uranus' && isSoft) return 'Insight';
+  if (planet === 'NorthNode') return 'Insight';
+  if (planet === 'Mercury' && isSoft) return 'Clear';
+  if (planet === 'Mercury' && isHard) return 'Tense';
+
+  // Open — Jupiter soft.
+  if (planet === 'Jupiter' && isSoft) return 'Open';
+  if (planet === 'Jupiter' && isHard) return 'Tense';
+
+  // Sun / Moon defaults.
+  if (planet === 'Sun' && isSoft) return 'Clear';
+  if (planet === 'Sun' && isHard) return 'Tense';
+  if (planet === 'Moon' && isSoft) return 'Clear';
+  if (planet === 'Moon' && isHard) return 'Sensitive';
+
+  return isSoft ? 'Supportive' : 'Tense';
+}
+
+function moonTagPillHTML(tag: MoonTag): string {
+  const c = TAG_COLOR[tag];
+  return `<span style="display:inline-block;margin-left:8px;padding:2px 8px;font-size:10px;letter-spacing:0.06em;font-family:${SANS};font-weight:600;text-transform:uppercase;background:${c.bg};color:${c.fg};border-radius:999px;vertical-align:middle">${tag}</span>`;
+}
+
 function getEasternHourFloat(d: Date): number {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: false,
