@@ -1116,7 +1116,9 @@ function whatMattersHTML(
   let items: Array<{ headline: string; body: string }> = [];
 
   if (override && override.length) {
-    items = override.slice(0, 5);
+    items = override
+      .filter(it => !/\b(Lilith|Ceres|Pallas|Juno|Vesta|Eris)\b/i.test(`${it.headline} ${it.body}`))
+      .slice(0, 5);
   } else {
     // Deterministic fallback (no AI). Same logic as before.
     const midnight = getEasternMidnightDate(date);
