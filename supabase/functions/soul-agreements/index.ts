@@ -37,6 +37,93 @@ interface Payload {
   aspects: Aspect[]; // hard aspects to luminaries/Asc + supportive trines/conjunctions
 }
 
+const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy"] as const;
+type SectionKey = typeof sectionKeys[number];
+
+const cleanPlainLanguage = (value: string) =>
+  value
+    .replace(/—/g, ",")
+    .replace(/shedding old identities/gi, "letting go of old ways of acting")
+    .replace(/embracing your power/gi, "learning to trust yourself and speak more honestly")
+    .replace(/authentic self/gi, "the real you")
+    .replace(/stepping into/gi, "learning")
+    .replace(/owning your truth/gi, "saying what you really think")
+    .replace(/soul calling/gi, "life direction");
+
+const extractRecognition = (text: string) => {
+  const match = text.match(/\*\*Recognition Check\*\*\s*([\s\S]*)$/i);
+  return cleanPlainLanguage((match?.[1] ?? "").trim());
+};
+
+const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
+  const byPlanet = (planet: string) => placements.find((p) => p.planet === planet);
+  const house = (n: number) => houses.find((h) => h.house === n);
+  const aspectFor = (planet: string) => aspects.find((a) => a.planet1 === planet || a.planet2 === planet);
+  const p = (planet: string) => {
+    const item = byPlanet(planet);
+    return item ? `${planet} in ${item.sign ?? "an unknown sign"}${item.house ? ` in House ${item.house}` : ""}` : `${planet}`;
+  };
+  const h = (n: number) => {
+    const item = house(n);
+    return item ? `House ${n} begins in ${item.cuspSign ?? "an unknown sign"}${item.ruler ? `, with ${item.ruler} as ruler` : ""}` : `House ${n}`;
+  };
+  const a = (planet: string) => {
+    const item = aspectFor(planet);
+    return item ? `${item.planet1} ${item.type} ${item.planet2}` : `no major listed aspect to ${planet}`;
+  };
+
+  const recognition = `This may fit if:\n- you often notice what other people feel before they say it\n- close relationships teach you where you need clearer boundaries\n- you replay conversations when something feels unfinished\n- hard experiences have made you more honest about what you need`;
+
+  const section = (astro: string, plain: string, examples: string[]) => ({
+    interpretation: cleanPlainLanguage(`**Astrology**\n${astro}\n\n**Plain English**\n${plain}\n\n**Real-Life Examples**\n${examples.map((x) => `- ${x}`).join("\n")}\n\n**Recognition Check**\n${recognition}`),
+    question: recognition,
+  });
+
+  return {
+    family: section(
+      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern. The strongest listed Moon contact is ${a("Moon")}.`,
+      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open.",
+      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "family patterns can affect how safe you feel", "you may calm others before naming your own needs"],
+    ),
+    wound: section(
+      `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
+      "A painful pattern may become a place where you learn steadiness. You may grow by saying what hurts without making yourself wrong for having needs.",
+      ["you may avoid conflict until pressure builds", "you can be hard on yourself when you feel exposed", "you may need time alone to understand your feelings", "you become stronger when you stop hiding your needs"],
+    ),
+    purpose: section(
+      `${p("NorthNode")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
+      "You are not meant to stay the same person your whole life. Life may keep asking you to trust yourself, speak more honestly, and let go of old ways of acting that only keep the peace.",
+      ["you may outgrow roles that once kept others comfortable", "you may learn to say no more clearly", "you may choose honesty over approval", "you may feel stronger after periods of big change"],
+    ),
+    relationship: section(
+      `${h(7)} is the main relationship marker. The 7th house ruler, Venus, Moon, and Mars are the priority relationship symbols in this reading.`,
+      "Relationships may teach you how to stay connected without disappearing into someone else's needs. The lesson is honest closeness, not keeping peace at any cost.",
+      ["you may adjust yourself to make a relationship work", "you may need partners who respect direct honesty", "you may notice conflict feels risky", "you grow when you stay present and tell the truth kindly"],
+    ),
+    gift: section(
+      `${p("Venus")}, ${p("Neptune")}, and ${p("Moon")} describe natural gifts. Jupiter can add wisdom, generosity, or teaching ability.`,
+      "You may be naturally good at sensing what people need, finding meaning in hard moments, and helping others feel less alone.",
+      ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
+    ),
+    timing: section(
+      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe how growth tends to unfold. This is about style, not fixed events.`,
+      "Growth may come in serious chapters. You may change slowly at first, then make a clear decision when you finally know what is no longer working.",
+      ["you may need time before making big choices", "pressure can build before you act", "you may become clearer after setbacks", "you may trust yourself more with age"],
+    ),
+    legacy: section(
+      `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
+      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly.",
+      ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
+    ),
+    summary: {
+      coreLesson: "Learn to stay honest without losing care for other people.",
+      coreWound: "Close relationships may show where you hide your needs to keep peace.",
+      corePurpose: "Your purpose is to become stronger, clearer, and more fully the real you.",
+      coreLegacy: "You may help others feel safe enough to face the truth.",
+    },
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
