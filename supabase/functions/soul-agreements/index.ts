@@ -157,10 +157,10 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
     ),
     summary: {
-      coreLesson: "Learn to stay honest without losing care for other people.",
-      coreWound: "Close relationships may show where you hide your needs to keep peace.",
-      corePurpose: "Your purpose is to become stronger, clearer, and more fully the real you.",
-      coreLegacy: "You may help others feel safe enough to face the truth.",
+      whatToPractice: "Practice telling the truth about what you want, even when it risks disappointing someone.",
+      whatToWatchFor: "Watch for moments when you stay quiet to avoid conflict or hide a need to keep the peace.",
+      whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself or rushing to fix others.",
+      whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame.",
     },
   };
 };
