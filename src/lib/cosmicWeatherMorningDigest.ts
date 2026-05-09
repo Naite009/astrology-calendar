@@ -501,7 +501,7 @@ function otherTransitsHTML(date: Date, chart: NatalChart | null): string {
           <div style="font-size:12px;color:${COLOR.muted};margin-top:4px;line-height:1.5">
             Transiting ${escapeHtml(a.transitPlanet)} in ${escapeHtml(a.transitSign)}${a.transitHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.transitHouse)} house</span>` : ''} · natal ${escapeHtml(a.natalPlanet)} in ${escapeHtml(a.natalSign)}${a.natalHouse ? `, your <span style="color:${COLOR.accent}">${ordinal(a.natalHouse)} house</span>${natalHouseInfo ? ` <span style="color:${COLOR.faint}">(${escapeHtml(natalHouseInfo.keywords.toLowerCase())})</span>` : ''}` : ''}
           </div>
-          ${a.feltSenseDuration ? `<div style="font-size:12px;color:${COLOR.muted};margin-top:6px;font-style:italic;line-height:1.5">${escapeHtml(a.feltSenseDuration)}</div>` : ''}
+          <div style="font-size:12px;color:${COLOR.text};margin-top:8px;line-height:1.6">${escapeHtml(professionalTransitInterpretation(a))}</div>
         </td>
       </tr>`;
   }).join('');
