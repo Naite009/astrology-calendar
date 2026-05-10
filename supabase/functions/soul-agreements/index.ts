@@ -142,7 +142,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
         "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
         ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
       ),
-      survivalPattern: "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
+      survivalPattern: "The emotional rule your home taught you was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
     },
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
@@ -675,7 +675,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const survivalBlock = key === "family"
           ? `\n\n**Emotional Survival Pattern**\n${cleanField(
               source?.survivalPattern,
-              (fallbackSection as any).survivalPattern || "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
+              (fallbackSection as any).survivalPattern || "The emotional rule your home taught you was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
             )}`
           : "";
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
