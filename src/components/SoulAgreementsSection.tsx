@@ -36,6 +36,7 @@ interface SoulAgreements {
     whatToBuild: string;
     whatToGive: string;
     integration?: string;
+    growthSigns?: string[];
   };
 }
 
