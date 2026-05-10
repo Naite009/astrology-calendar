@@ -59,8 +59,26 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
   /\brestoration follows\b[^.\n]*\.?/gi,
 ];
 
+// FORBIDDEN BODIES — final hard block. Any sentence that mentions one of
+// these names is stripped from output. The prompt also forbids them, but
+// this is the deterministic safety net.
+const FORBIDDEN_BODY_NAMES = [
+  "Varuna", "Eris", "Pallas", "Ceres", "Vesta", "Juno", "Lilith",
+  "Sedna", "Makemake", "Haumea", "Quaoar", "Orcus", "Ixion", "Gonggong",
+  "Salacia", "Psyche", "Eros", "Amor", "Hygiea", "Nessus", "Pholus", "Chariklo",
+  "Part of Fortune", "Vertex",
+];
+const FORBIDDEN_BODY_RE = new RegExp(
+  `[^.!?\\n]*\\b(?:${FORBIDDEN_BODY_NAMES.map((n) => n.replace(/\s+/g, "\\s+")).join("|")})\\b[^.!?\\n]*[.!?]?`,
+  "gi",
+);
+const stripForbiddenBodies = (value: string): string => {
+  if (!FORBIDDEN_BODY_RE.test(value)) return value;
+  return value.replace(FORBIDDEN_BODY_RE, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+};
+
 const stripPlaceholders = (value: string) => {
-  let out = value;
+  let out = stripForbiddenBodies(value);
   for (const re of PLACEHOLDER_PATTERNS) out = out.replace(re, "");
   return out.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 };
