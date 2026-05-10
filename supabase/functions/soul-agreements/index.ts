@@ -289,6 +289,20 @@ REQUIRED ANCHORS (mandatory):
 - North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
 - South Node also returns in Gift as the talents side, already well-developed earlier in life. Keep this distinct from its appearance in Family/Wound.
 
+CORE IDENTITY HIERARCHY (mandatory weighting — do not violate):
+- Sun = core identity (who the person IS)
+- Moon = emotional operating system (how they feel and self-soothe)
+- Rising = external behavior pattern (how they show up)
+- North/South Nodes = growth direction (NOT identity)
+- Stelliums = emphasis areas (NOT identity replacement)
+RULES:
+- Do NOT let the Nodes or any stellium override the Sun's sign identity. Purpose ≠ personality. Growth ≠ identity. The nodal axis is never the core self.
+- Family, Purpose, and the Summary MUST each include at least one explicit reference to the SUN sign (and where useful, the Moon and Rising) as the anchor of who this person is.
+- Examples:
+  • Taurus Sun + Virgo/Pisces nodal axis: identity remains TAURUS (steady, sensual, value-driven). Growth occurs THROUGH Virgo/Pisces themes; it does not replace Taurus.
+  • Pisces Sun + Aquarius stellium: identity remains PISCES (empathic, imaginative, porous). Purpose may EXPRESS through Aquarian community/innovation themes, but the person is not "an Aquarian."
+- A North Node in the 6th or 12th house does NOT make the person "a service person" if the Sun says otherwise. Service axis ≠ Sun identity.
+
 ACCURACY & HEDGING RULES:
 - Stay BEHAVIORAL, not diagnostic.
   BAD: "Your family was secretive."  GOOD: "Your family kept emotions private and hard to talk about."
@@ -784,6 +798,38 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const hits = triplet.filter(k => re.test(String(result[k]?.interpretation || "")));
         if (hits.length >= 2) {
           console.warn(`[soul-agreements] differentiation clash on "${root}" across:`, hits);
+        }
+      }
+
+      // ── CORE IDENTITY HIERARCHY CHECK: ensure Sun sign is present in Family, Purpose, and Summary ──
+      const sunSign = placements.find((p) => p.planet === "Sun")?.sign || "";
+      if (sunSign) {
+        const sunRe = new RegExp(`\\b${sunSign}\\b`, "i");
+        const familyTxt = String(result.family?.interpretation || "");
+        const purposeTxt = String(result.purpose?.interpretation || "");
+        const summaryTxt = [
+          result.summary?.whatToPractice, result.summary?.whatToBuild,
+          result.summary?.whatToWatchFor, result.summary?.whatToGive,
+          result.summary?.integration,
+        ].filter(Boolean).join(" ");
+        const missing: string[] = [];
+        if (!sunRe.test(familyTxt)) missing.push("family");
+        if (!sunRe.test(purposeTxt)) missing.push("purpose");
+        if (!sunRe.test(summaryTxt)) missing.push("summary");
+        if (missing.length) {
+          console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
+          if (missing.includes("purpose") && result.purpose?.interpretation) {
+            result.purpose.interpretation = String(result.purpose.interpretation).trim() +
+              ` Underneath all of this, your Sun in ${sunSign} is still the core of who you are; purpose expresses THROUGH that identity, it does not replace it.`;
+          }
+          if (missing.includes("family") && result.family?.interpretation) {
+            result.family.interpretation = String(result.family.interpretation).trim() +
+              ` Your Sun in ${sunSign} is the identity that learned to operate inside this early emotional pattern.`;
+          }
+          if (missing.includes("summary") && result.summary) {
+            result.summary.integration = String(result.summary.integration || "").trim() +
+              ` Stay anchored in your Sun in ${sunSign}; let growth happen through it, not in place of it.`;
+          }
         }
       }
       const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
