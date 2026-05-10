@@ -159,6 +159,13 @@ JSON SCHEMA:
   "moonBridge": {
     "summary": string (2 sentences explaining how the parent and child Moon signs interact as emotional languages),
     "translation": string (one sentence in the format: "When [childName] does [specific behavior], they are actually saying [what they need]." Specific to the child's Moon sign, not generic.)
+  },
+  "pressureProfile": {
+    "title": "How This Child Handles Pressure",
+    "astrology": string (1-3 sentences naming the EXACT signatures present in the child's chart and parent cross-aspects that drive this profile — list aspect + valid degree orb. If no qualifying signatures are present, set this to "" and leave all other fields empty arrays/strings),
+    "plainEnglish": string (2-4 sentences translating the signatures into likely lived behavior under pressure, calibrated to the child's age),
+    "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors, e.g. "smart but hesitant", "freezes when watched"],
+    "whatHelps": [string, ...3-5 short supportive parenting/coaching responses, verbs first, e.g. "praise effort before outcome", "reduce public correction"]
   }
 }
 
