@@ -548,18 +548,30 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           </div>
 
           {report && (
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-border flex-wrap">
               <div className="text-xs text-muted-foreground">
                 {report.rows.length} cross-aspect{report.rows.length === 1 ? "" : "s"} found between{" "}
                 {report.fromName} and {report.toName}.
               </div>
-              <Button onClick={generateAiReading} disabled={aiLoading || report.rows.length === 0}>
-                {aiLoading ? (
-                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
-                ) : (
-                  <><Sparkles className="h-4 w-4 mr-1" /> Generate Reading</>
+              <div className="flex gap-2">
+                {aiReading && (
+                  <Button
+                    variant="outline"
+                    onClick={() => generateAiReading(true)}
+                    disabled={aiLoading || report.rows.length === 0}
+                    title="Generate a fresh reading"
+                  >
+                    <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                  </Button>
                 )}
-              </Button>
+                <Button onClick={() => generateAiReading(false)} disabled={aiLoading || report.rows.length === 0}>
+                  {aiLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                  ) : (
+                    <><Sparkles className="h-4 w-4 mr-1" /> {aiReading ? "View Reading" : "Generate Reading"}</>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
