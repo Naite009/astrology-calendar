@@ -263,7 +263,7 @@ REQUIRED ANCHORS (mandatory):
 - South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern learned early and repeated over time.
 - Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as the soul's chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where the soul agreed to earn rather than receive.
 - North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
-- South Node also returns in Gift as the talents side, mastered before this life. Keep this distinct from its appearance in Family/Wound.
+- South Node also returns in Gift as the talents side, already well-developed earlier in life. Keep this distinct from its appearance in Family/Wound.
 
 ACCURACY & HEDGING RULES:
 - Stay BEHAVIORAL, not diagnostic.
