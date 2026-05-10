@@ -57,6 +57,7 @@ interface ReadingPayload {
   sections: ReadingSection[];
   practice: string; // one focused 90-day practice for the parent
   soulContract?: SoulContract;
+  moonBridge?: { summary: string; translation: string };
 }
 
 function ageStage(years: number | null | undefined): string {
