@@ -388,11 +388,19 @@ export interface PairReadingSection {
   whatHelps: string[];
 }
 
+export interface SoulContract {
+  whyTheseTwo: string;
+  childLesson: string;
+  parentLesson: string;
+  contractSentence: string;
+}
+
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
   sections: PairReadingSection[];
   practice: string;
+  soulContract?: SoulContract | null;
   ageYears: number | null;
   aspectsUsed: number;
   error?: string;
