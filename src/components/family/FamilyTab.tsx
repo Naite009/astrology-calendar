@@ -365,6 +365,46 @@ const AiPairReadingView = ({
         </CardContent>
       </Card>
 
+      {childMoonProfile && (
+        <Card className="border-primary/30">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Heart className="h-4 w-4 text-primary" />
+                Moon in {childMoonProfile.sign}
+                {childMoonProfile.house ? ` · ${ordinal(childMoonProfile.house)} House` : ""}
+              </CardTitle>
+              <Badge variant="outline">Child's Emotional Language</Badge>
+            </div>
+            <CardDescription className="pt-1">{childMoonProfile.headline}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm pt-4">
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What Makes Them Feel Safe
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {childMoonProfile.safetyNeeds.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What Distress Looks Like
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {childMoonProfile.stressSignals.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What to Know as Their Parent
+              </div>
+              <p>{childMoonProfile.parentTip}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {reading.sections.map((sec, idx) => (
         <Card key={idx}>
           <CardHeader className="pb-3">
