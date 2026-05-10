@@ -1147,6 +1147,16 @@ ${houseLines}
 VERIFIED ASPECTS:
 ${aspectLines || "(none provided)"}
 
+═══════════════════════════════════════════════════════════════════
+SECTION ANCHOR LOCK (mandatory — overrides any conflicting instinct):
+
+The following anchors have been preselected from the chart by deterministic code. For the Family, Wound, Gift, Purpose, and Legacy sections you MUST use ONLY these anchors as your interpretive backbone. Do not lead from anything outside this list for those sections. You may briefly reference other listed placements as context, but the lead interpretation MUST come from the anchors below.
+
+${anchorBlock}
+
+If a section has "(no qualifying anchors found)", apply the default rules in the system prompt for that section.
+═══════════════════════════════════════════════════════════════════
+
 Write the 9 Life Patterns (the 7 Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples (5 items), recognition (5 items, varied sentence structure, INTERNAL only).
 
 GLOBAL ANCHORING (mandatory):
