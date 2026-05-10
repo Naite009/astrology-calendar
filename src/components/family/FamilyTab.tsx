@@ -172,6 +172,69 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     }
   };
 
+  // ─── Family System Reading (multi-select) ────────────────────────────────
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [systemReading, setSystemReading] = useState<FamilySystemReadingResponse | null>(null);
+  const [systemLoading, setSystemLoading] = useState(false);
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setSystemReading(null);
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(members.map((m) => m.id)));
+    setSystemReading(null);
+  };
+  const clearSelected = () => {
+    setSelectedIds(new Set());
+    setSystemReading(null);
+  };
+
+  const selectedMembers = useMemo(() => {
+    return members
+      .filter((m) => selectedIds.has(m.id))
+      .map((m) => {
+        const chart = allCharts.find((c) => c.id === m.member_chart_id);
+        return chart ? { chart, role: m.role } : null;
+      })
+      .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
+  }, [members, selectedIds, allCharts]);
+
+  const generateSystemReading = async () => {
+    if (selectedMembers.length < 2) {
+      toast.error("Select at least 2 family members first.");
+      return;
+    }
+    const data = buildFamilySystem(selectedMembers);
+    if (!data) {
+      toast.error("Could not build family system data.");
+      return;
+    }
+    setSystemLoading(true);
+    setSystemReading(null);
+    try {
+      const payload = buildFamilySystemPayload(selectedMembers, data);
+      const { data: resp, error } = await supabase.functions.invoke(
+        "family-system-reading",
+        { body: payload },
+      );
+      if (error) throw error;
+      if ((resp as any)?.error) throw new Error((resp as any).error);
+      setSystemReading(resp as FamilySystemReadingResponse);
+    } catch (e: any) {
+      console.error("[FamilyTab] system reading failed", e);
+      toast.error(e?.message || "Could not generate family reading. Please try again.");
+    } finally {
+      setSystemLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <Card>
