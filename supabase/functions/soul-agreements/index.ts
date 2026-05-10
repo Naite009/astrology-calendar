@@ -899,7 +899,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
             )}`
           : "";
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
-          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
+          ? `**Astrology**\n${cleanField(source?.astrology, fallbackSection.interpretation.match(/\*\*Astrology\*\*\s*([\s\S]*?)\n\n\*\*Plain English\*\*/)?.[1] || "The strongest hard aspects, angular placements, and house rulers in this chart anchor this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern shapes real choices, close relationships, and everyday emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
           : (key === "family"
             ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
             : String(source?.interpretation || fallbackSection.interpretation));
