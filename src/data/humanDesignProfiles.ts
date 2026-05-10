@@ -335,11 +335,11 @@ export const PROFILE_DATA: Record<string, HDProfileData> = {
       unconsciousName: 'Hermit'
     },
     overview: "The 6/2 profile is the natural role model. You consciously develop through three life phases into an exemplar, while unconsciously possessing natural talents and needing solitude.",
-    lifeTheme: "Maturing into a role model who leads by natural example. Your hermit nature allows integration, and your eventual leadership emerges from authentic being.",
+    lifeTheme: "Maturing into a role model who leads by natural example. Your hermit nature allows integration, and your eventual leadership emerges from honest being.",
     trajectory: "Three phases: Until ~30, living like a 3rd line (trial and error). 30-50, on the roof observing while developing talents. After 50, embodying wisdom through natural gifts.",
     howLinesWorkTogether: "Your 6 goes through life phases to develop wisdom. Your 2 provides natural talent that matures with you. Your role modeling is effortless because it's natural.",
     relationshipPatterns: "Relationships evolve through your phases. You need partners who respect your need for solitude and see your developing wisdom. Later relationships are more stable.",
-    careerThemes: "Work that allows for maturation and uses natural gifts. Leadership that emerges rather than is forced. Roles that value lived wisdom and authentic presence.",
+    careerThemes: "Work that allows for maturation and uses natural gifts. Leadership that emerges rather than is forced. Roles that value lived wisdom and honest presence.",
     commonConditioning: [
       "Pressure to be the role model before living the process",
       "Not being allowed hermit time during any phase",

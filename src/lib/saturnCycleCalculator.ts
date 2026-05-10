@@ -281,7 +281,7 @@ const getSignThemes = (sign: string, natalSign: string): string => {
     
     Cancer: `♋ CANCER: Saturn tests your emotional foundations. Themes: family responsibilities, creating real security, maturing emotionally. The challenge is nurturing without smothering, protecting without controlling. You're building an inner home that can't be shaken.`,
     
-    Leo: `♌ LEO: Saturn tests your authentic expression. Themes: creative discipline, leadership responsibilities, earning recognition through effort. The challenge is shining without needing applause, creating without ego. You're learning that true authority comes from within.`,
+    Leo: `♌ LEO: Saturn tests your honest expression. Themes: creative discipline, leadership responsibilities, earning recognition through effort. The challenge is shining without needing applause, creating without ego. You're learning that true authority comes from within.`,
     
     Virgo: `♍ VIRGO: Saturn tests your service and competence. Themes: health restructuring, work refinement, practical skill-building. The challenge is excellence without perfectionism, service without martyrdom. You're mastering your craft.`,
     
@@ -625,6 +625,6 @@ export const calculateUranusOpposition = (
     events,
     isPast: lastEventAge < currentAge,
     isUpcoming: firstEventAge >= currentAge - 1 && firstEventAge <= currentAge + 5,
-    description: `♅ URANUS OPPOSITION (Age ~${events[0]?.age || 42}): The "midlife awakening." Transiting Uranus opposes your natal Uranus, triggering a powerful urge for freedom, authenticity, and breaking from anything that feels stale or inauthentic. This is the cosmic wake-up call that asks: "Is this really MY life, or have I been living someone else's script?" Expect sudden changes, restlessness, and a deep need to reclaim your individuality. What you've suppressed or postponed demands attention now.`
+    description: `♅ URANUS OPPOSITION (Age ~${events[0]?.age || 42}): The "midlife awakening." Transiting Uranus opposes your natal Uranus, triggering a powerful urge for freedom, honesty, and breaking from anything that feels stale or inauthentic. This is the cosmic wake-up call that asks: "Is this really MY life, or have I been living someone else's script?" Expect sudden changes, restlessness, and a deep need to reclaim your individuality. What you've suppressed or postponed demands attention now.`
   };
 };

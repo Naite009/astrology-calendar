@@ -347,7 +347,7 @@ const getSpeedInterpretation = (planet: string, isRetrograde: boolean): string =
 const getDignityInterpretation = (planet: string, sign: string, dignityType: string): string => {
   const dignityFeelings: Record<string, Record<string, string>> = {
     Ruler: {
-      Sun: `**How you FEEL this:** Your identity is clear and powerful. You know who you are. Confidence comes naturally, and others sense your authenticity. Being yourself doesn't require effort—you simply ARE.`,
+      Sun: `**How you FEEL this:** Your identity is clear and powerful. You know who you are. Confidence comes naturally, and others sense your honesty. Being yourself doesn't require effort—you simply ARE.`,
       Moon: `**How you FEEL this:** Your emotional nature flows easily. You feel your feelings fully and naturally nurture yourself and others. Emotional intelligence is instinctive, not learned.`,
       Mercury: `**How you FEEL this:** Your mind works smoothly and powerfully. Thinking, communicating, and learning feel natural. You're in your element when processing information and expressing ideas.`,
       Venus: `**How you FEEL this:** Love, beauty, and pleasure flow naturally. You know what you value and attract it easily. Relationships and aesthetics come effortlessly.`,
@@ -377,7 +377,7 @@ const getDignityInterpretation = (planet: string, sign: string, dignityType: str
       Sun: `**How you FEEL this:** Your identity might have been diminished or overlooked early on. You've had to actively BUILD who you are rather than just being it. This creates remarkable inner strength and self-knowledge.`,
       Moon: `**How you FEEL this:** Emotional needs might have been unmet or dismissed. You've learned to nurture yourself. This can make you an exceptional caretaker—because you KNOW what's missing.`,
       Mercury: `**How you FEEL this:** Your thinking might have been criticized or undervalued. Mental confidence was hard-won. But you've developed careful, thorough thought processes as a result.`,
-      Venus: `**How you FEEL this:** Love or self-worth might have felt out of reach. You've had to consciously learn to value yourself and be valued. This creates deep, authentic relationships when you find them.`,
+      Venus: `**How you FEEL this:** Love or self-worth might have felt out of reach. You've had to consciously learn to value yourself and be valued. This creates deep, honest relationships when you find them.`,
       Mars: `**How you FEEL this:** Your drive might have been crushed or redirected. Direct assertion felt risky. You've learned subtle, strategic ways to pursue goals that are remarkably effective.`,
       Jupiter: `**How you FEEL this:** Faith and optimism might have been tested severely. You know what it is to lose hope and rebuild it. This gives you a wisdom about growth that the naturally lucky never develop.`,
       Saturn: `**How you FEEL this:** Authority and structure might have been destructive or absent. You had to learn discipline without good models. This can create either remarkable self-teaching or a complete rejection of conventions.`
@@ -685,7 +685,7 @@ const SIGN_MEANINGS: Record<string, string> = {
 };
 
 const RULER_VIBES: Record<string, string> = {
-  Sun: "through visibility, confidence, and shining authentically",
+  Sun: "through visibility, confidence, and shining honestly",
   Moon: "through emotional attunement, nurturing, and intuitive flow",
   Mercury: "through curiosity, communication, and mental agility",
   Venus: "through harmony, beauty, pleasure, and connection",
@@ -798,7 +798,7 @@ Your ${planet} still influences your life through:
 
   // What each planet actually represents (core themes)
   const planetThemes: Record<string, string> = {
-    Sun: "your identity, vitality, life purpose, and what makes you feel alive and authentic",
+    Sun: "your identity, vitality, life purpose, and what makes you feel alive and honest",
     Moon: "your emotional needs, instincts, comfort patterns, and what makes you feel safe",
     Mercury: "how you think, communicate, learn, and process information",
     Venus: "what you value, find beautiful, how you relate to others, and what brings you pleasure",
@@ -899,7 +899,7 @@ const getSectInterpretation = (planet: string, sectStatus: string, isDayChart: b
 • Aesthetic sensibilities that others don't immediately appreciate
 • Learning to value yourself independently
 
-**The gift:** You develop authentic self-worth and conscious relationship skills.`,
+**The gift:** You develop honest self-worth and conscious relationship skills.`,
     
     Mars: `**How you might FEEL this:** Your assertiveness and drive may feel misplaced or excessive. In a day chart, Mars's fire doesn't harmonize as well. You might experience:
 • Anger or frustration being harder to channel productively
@@ -1025,7 +1025,7 @@ If a planet has the OPPOSITE declination (e.g., one at 15°N and another at 15°
       Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE—obsessively, completely. What you find beautiful might confuse others or seem "too much." Relationships may be intense or unconventional. You have refined taste that doesn't follow trends. **At ${degreeValue}°, the further beyond 23.5°, the more your aesthetic and relational needs diverge from the mainstream.**`,
       Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy, extreme ambition, or struggle to keep your intensity within socially acceptable bounds. This can manifest as athletic excellence, workaholism, or anger that surprises people. Channel it consciously. **At ${degreeValue}°, you're ${(totalDegrees - 23.5).toFixed(1)}° past normal—the higher, the more raw power you need to manage.**`,
       Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach. You might believe in things others find outlandish, take risks that seem crazy, or achieve beyond what anyone expected. Temper with realism when needed. **At ${degreeValue}°, the higher you go, the bigger your dreams—and the bigger the possible fall if unchecked.**`,
-      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled (rigidly disciplined) or completely rejecting of limits (allergic to rules). You might set impossibly high standards for yourself or rebel against all external structure. Find your own authentic relationship with discipline. **At ${degreeValue}°, the further OOB, the more extreme your relationship with rules and reality.**`
+      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled (rigidly disciplined) or completely rejecting of limits (allergic to rules). You might set impossibly high standards for yourself or rebel against all external structure. Find your own honest relationship with discipline. **At ${degreeValue}°, the further OOB, the more extreme your relationship with rules and reality.**`
     };
     oobSection = `
 

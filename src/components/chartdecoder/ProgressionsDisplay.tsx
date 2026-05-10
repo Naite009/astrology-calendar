@@ -84,7 +84,7 @@ const JOURNEY_STAGES: Record<string, { q1: string; q2: string; q3: string; q4: s
   Scorpio: {
     q1: "The surface breaks. After Libra's lightness, you plunge into depth. Emotions are raw, powerful, and honest. Power dynamics reveal themselves.",
     q2: "You're transforming. Old emotional patterns die — literally crumbling. Intimacy deepens. Trust becomes the central question. Therapy is powerful now.",
-    q3: "You've faced the darkness and found treasure there. Psychological insight is profound. You can see through masks. Your power comes from authenticity.",
+    q3: "You've faced the darkness and found treasure there. Psychological insight is profound. You can see through masks. Your power comes from honesty.",
     q4: "The phoenix rises. The heaviness lifts. You crave MEANING, adventure, philosophy. Sagittarius' arrow points toward the horizon.",
   },
   Sagittarius: {

@@ -603,7 +603,7 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
     patternType: 'aspect',
     planets: ['Sun', 'Uranus'],
     aspectTypes: ['Conjunction', 'Square', 'Opposition'],
-    summary: 'Sun-Uranus contacts create an identity that resists convention. There is a strong need to be authentic and unique, even if it means standing apart from the crowd.',
+    summary: 'Sun-Uranus contacts create an identity that resists convention. There is a strong need to be honest and unique, even if it means standing apart from the crowd.',
     lightExpressions: [
       'Authentic self-expression',
       'Innovative and original personality',

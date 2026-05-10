@@ -28,7 +28,7 @@ export const SATURN_IN_SIGN: Record<string, { asks: string; quality: string; nee
   },
   Leo: {
     asks: "Where have you been seeking validation instead of developing genuine self-expression?",
-    quality: "authentic creativity",
+    quality: "honest creativity",
     need: "self-respect"
   },
   Virgo: {
@@ -44,7 +44,7 @@ export const SATURN_IN_SIGN: Record<string, { asks: string; quality: string; nee
   Scorpio: {
     asks: "Where have you been holding control rather than trusting transformation?",
     quality: "emotional honesty",
-    need: "authentic intimacy"
+    need: "honest intimacy"
   },
   Sagittarius: {
     asks: "Where have you been seeking freedom without responsibility?",
@@ -52,12 +52,12 @@ export const SATURN_IN_SIGN: Record<string, { asks: string; quality: string; nee
     need: "meaningful purpose"
   },
   Capricorn: {
-    asks: "Where has ambition become a substitute for authentic achievement?",
+    asks: "Where has ambition become a substitute for honest achievement?",
     quality: "mature authority",
     need: "lasting accomplishment"
   },
   Aquarius: {
-    asks: "Where have you been different for its own sake rather than for authentic expression?",
+    asks: "Where have you been different for its own sake rather than for honest expression?",
     quality: "principled innovation",
     need: "contribution to community"
   },
@@ -88,7 +88,7 @@ export const SATURN_IN_HOUSE: Record<number, { asks: string; domain: string }> =
     domain: "home and emotional roots"
   },
   5: {
-    asks: "Where has fear blocked joy, creativity, or authentic self-expression?",
+    asks: "Where has fear blocked joy, creativity, or honest self-expression?",
     domain: "creativity and pleasure"
   },
   6: {
@@ -324,7 +324,7 @@ export const ACTION_TEMPLATES: Record<PhaseLabel, string[]> = {
   Release: [
     "Make room for change by reducing one rigid expectation",
     "Choose freedom in one area—but make sure it's safe and stable",
-    "Trust the impulse toward authenticity, even if it's uncomfortable",
+    "Trust the impulse toward honesty, even if it's uncomfortable",
     "Experiment with one small freedom before committing to a large one"
   ],
   Activation: [
@@ -409,7 +409,7 @@ export const LIFE_EVENT_INTERPRETATIONS: Record<string, Record<string, string>> 
   job_change: {
     containment: "Saturn career changes often involve restructuring toward sustainability—leaving something that wasn't working, or building something that can last. Responsibility themes are prominent.",
     stress: "Pluto career changes involve power dynamics—being pushed out, seizing authority, or transforming your public role through intensity. These transitions often feel forced or fated.",
-    release: "Uranus career changes carry awakening energy—suddenly knowing what you don't want, or liberating yourself from a role that constrained your authentic expression.",
+    release: "Uranus career changes carry awakening energy—suddenly knowing what you don't want, or liberating yourself from a role that constrained your honest expression.",
     trigger: "Mars or nodal energy at job change points to decisive action or fated timing. The move was likely marked by urgency or clear external catalysts.",
     default: "Career transitions under these transits are shaped by the planetary themes active. The reasons for leaving and what you're moving toward carry this signature."
   },
@@ -423,7 +423,7 @@ export const LIFE_EVENT_INTERPRETATIONS: Record<string, Record<string, string>> 
   health_event: {
     containment: "Saturn health events often involve the body demanding attention to structure, limits, or sustainability. What was being pushed too hard? What needs better boundaries?",
     stress: "Pluto health events can be transformative crises—the body exposing what the mind avoided, or power over your own physical existence being tested.",
-    release: "Uranus health events may come suddenly, as wake-up calls or unexpected shifts in physical reality. The body disrupts to liberate or to demand authenticity.",
+    release: "Uranus health events may come suddenly, as wake-up calls or unexpected shifts in physical reality. The body disrupts to liberate or to demand honesty.",
     trigger: "Mars or eclipse energy at health events points to acute presentations, decisive interventions, or timing that felt fated.",
     default: "Health events under these transits are connected to the planetary themes active. The body often mirrors what's happening structurally in life."
   },

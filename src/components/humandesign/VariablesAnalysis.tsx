@@ -369,7 +369,7 @@ export function VariablesAnalysis({ chart }: VariablesAnalysisProps) {
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Your motivation variable shows your core drive and what moves you at the deepest level. 
-                  Understanding this helps you recognize when you're operating from authentic motivation 
+                  Understanding this helps you recognize when you're operating from honest motivation 
                   vs. conditioned drives.
                 </p>
                 <div className="rounded border border-border bg-muted/50 p-4">

@@ -216,7 +216,7 @@ const SUIT_QUESTIONS = [
 
 const RANK_QUESTIONS = [
   {
-    question: "How do you relate to your own power?",
+    question: "How do you relate to your ability to trust yourself?",
     icon: "⚡",
     options: [
       { label: "I'm still figuring it out — every day I learn something new", rank: "Page" },
@@ -285,7 +285,7 @@ const COURT_CARD_PROFILES: Record<string, { personality: string; shadow: string;
   "Queen of Wands": {
     personality: "You radiate warmth and creative authority. People gather around you not because you demand attention, but because your presence is magnetic — you make others feel seen, inspired, and capable. You are the sunflower and the sun.",
     shadow: "You can become possessive of your creative territory or jealous when others shine. Your warmth can turn to scorching heat if you feel disrespected.",
-    advice: "Your throne is built on authenticity, not performance. You don't need to be 'on' all the time — your quiet fire is just as powerful as your roar.",
+    advice: "Your throne is built on honesty, not performance. You don't need to be 'on' all the time — your quiet fire is just as powerful as your roar.",
     symbols: "A confident figure on a throne holding a wand and a sunflower, with a black cat at her feet. Creative sovereignty and inner fire."
   },
   "King of Wands": {

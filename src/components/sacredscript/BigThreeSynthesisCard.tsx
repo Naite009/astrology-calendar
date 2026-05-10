@@ -164,7 +164,7 @@ In Hellenistic astrology (Chris Brennan, Demetra George, Robert Schmidt), the co
 
 • **Career:** Your professional success comes through receptivity—listening, adapting, responding to what's needed rather than imposing vision. You may work better behind scenes than in spotlight, excel in fields requiring intuition (therapy, art, caregiving), or lead through emotional intelligence rather than authority.
 
-• **The Paradox of 1st House Sun in Night Chart:** You have the mark of visibility (1st house Sun) but the operating system of hiddenness (night sect). This creates a lifelong tension: moments when you're thrust into visibility but feel exposed, periods where you retreat and wonder if you're "doing life wrong." You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—authentic, emotionally connected, not performing brightness you don't feel.
+• **The Paradox of 1st House Sun in Night Chart:** You have the mark of visibility (1st house Sun) but the operating system of hiddenness (night sect). This creates a lifelong tension: moments when you're thrust into visibility but feel exposed, periods where you retreat and wonder if you're "doing life wrong." You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—honest, emotionally connected, not performing brightness you don't feel.
 `;
 
 // Generate the unified synthesis paragraph
@@ -217,7 +217,7 @@ const generateUnifiedSynthesis = (
       synthesis += `**THE PARADOX YOU FEEL:**\n`;
       synthesis += `Your Sun is in the 1st house—traditionally the placement of someone who IS meant to be seen. But you were born before sunrise, making this a **Night Chart**.\n\n`;
       synthesis += `In night charts, the Moon becomes the "chart lord"—your emotional, receptive nature leads, while the Sun works more quietly, internally. So you have this tension: 1st house Sun says "be seen" but Night Chart Sun says "your power is behind the scenes."\n\n`;
-      synthesis += `This is why you feel like hiding despite being "supposed to" shine. You're not wrong or broken—you're a Night Chart person with a daytime placement. Your visibility will come on YOUR terms: gradual, earned, authentic rather than performed. Your gifts emerge in intimate settings, through written word, through influence that works best when you're not trying to be impressive.\n\n`;
+      synthesis += `This is why you feel like hiding despite being "supposed to" shine. You're not wrong or broken—you're a Night Chart person with a daytime placement. Your visibility will come on YOUR terms: gradual, earned, honest rather than performed. Your gifts emerge in intimate settings, through written word, through influence that works best when you're not trying to be impressive.\n\n`;
     }
   } else {
     // General synthesis for non-triple or other triples
@@ -413,7 +413,7 @@ export const BigThreeSynthesisCard = ({ natalChart }: BigThreeSynthesisCardProps
                     <div className="bg-accent/20 rounded p-3 mt-3">
                       <p><strong>⚡ The Paradox of 1st House Sun in Night Chart:</strong></p>
                       <p>You have the mark of visibility (1st house Sun) but the operating system of hiddenness (night sect). This creates a lifelong tension: moments when you're thrust into visibility but feel exposed, periods where you retreat and wonder if you're "doing life wrong."</p>
-                      <p className="mt-2">You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—authentic, emotionally connected, not performing brightness you don't feel.</p>
+                      <p className="mt-2">You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—honest, emotionally connected, not performing brightness you don't feel.</p>
                     </div>
                   )}
                 </div>

@@ -196,7 +196,7 @@ const TRANSIT_NARRATIVES: Record<TransitingPlanet, { phase: 'containment' | 'str
     phase: 'release',
     narrative: (aspect, target) => {
       const action = aspect === 'conjunction' ? 'awakens' : aspect === 'opposition' ? 'liberates through confrontation' : 'disrupts';
-      return `Uranus ${action} your ${target}. Sudden clarity, restlessness, or a quiet internal switch: "I'm done." What's authentic pushes against what's merely habitual.`;
+      return `Uranus ${action} your ${target}. Sudden clarity, restlessness, or a quiet internal switch: "I'm done." What's honest pushes against what's merely habitual.`;
     }
   },
   Neptune: {
@@ -1100,7 +1100,7 @@ export function getLifeStageCycles(chart: NatalChart): LifeStageCycle[] {
       name: "Second Saturn Return",
       planet: "Saturn",
       ageRange: [57, 61],
-      description: "Saturn returns for the second time. A second major life review—where anything not authentically yours tends to fall away. Legacy, meaning, and what truly matters become the central questions.",
+      description: "Saturn returns for the second time. A second major life review—where anything not honestly yours tends to fall away. Legacy, meaning, and what truly matters become the central questions.",
       invitation: "What do you want your life to have meant? What's worth building in the time remaining?"
     }
   ];

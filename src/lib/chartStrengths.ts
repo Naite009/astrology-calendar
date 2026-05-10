@@ -165,7 +165,7 @@ function analyzeSectLight(
   if (sectData.sect === 'Day') {
     interpretation = isWellPlaced
       ? `Your Sun is your guiding light and it's well-placed. Your conscious will and sense of purpose flow naturally. You thrive when you lead, take visible action, and express your identity boldly.`
-      : `Your Sun is your guiding light, though it faces some challenges. Your path to purpose may require more conscious effort, but this builds authentic rather than inherited confidence.`;
+      : `Your Sun is your guiding light, though it faces some challenges. Your path to purpose may require more conscious effort, but this builds honest rather than inherited confidence.`;
     
     guidance = `Trust your conscious will. You grow through visibility and taking initiative. When making decisions, ask: "Does this align with who I'm becoming?"`;
   } else {
@@ -245,7 +245,7 @@ function analyzeBenefic(
     if (isSectBenefic) {
       interpretation = condition.isWellPlaced
         ? `Venus is your SECT BENEFIC — your primary source of love, beauty, and ease, and she's well-placed! Relationships, pleasure, and values flow naturally, especially in ${planet.house ? HOUSE_TOPICS[planet.house] : 'the area she occupies'}.`
-        : `Venus is your SECT BENEFIC — your primary helper in love and pleasure, though she faces some challenges. You may need to work more consciously for harmony, but this builds authentic taste and genuine connection.`;
+        : `Venus is your SECT BENEFIC — your primary helper in love and pleasure, though she faces some challenges. You may need to work more consciously for harmony, but this builds honest taste and genuine connection.`;
     } else {
       interpretation = condition.isWellPlaced
         ? `Venus is your out-of-sect benefic but well-placed. Love and pleasure are available when you consciously cultivate beauty and connection.`

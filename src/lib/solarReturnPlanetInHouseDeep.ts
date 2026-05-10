@@ -516,7 +516,7 @@ export const srUranusInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   },
   9: {
     title: 'Belief System Reboot',
-    overview: 'Uranus in the 9th house blows up your worldview. Everything you took for granted about religion, philosophy, education, or foreign cultures gets questioned and replaced with something more authentic and original.',
+    overview: 'Uranus in the 9th house blows up your worldview. Everything you took for granted about religion, philosophy, education, or foreign cultures gets questioned and replaced with something more honest and original.',
     practical: 'Sudden travel opportunities. Dropping out of or enrolling in unconventional education. Meeting people from radically different cultures who change your perspective. Publishing or broadcasting innovative ideas. Legal surprises.',
     caution: 'Don\'t throw out all your beliefs at once — some of them were serving you well. Integrate the new with the still-valid old. Travel insurance is wise this year.',
     source: 'Mary Fortier Shea',
@@ -525,13 +525,13 @@ export const srUranusInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'Career Earthquake',
     overview: 'Uranus in the 10th house brings sudden, often dramatic career changes. You may quit, get fired, start something completely new, or become unexpectedly famous. Your public identity undergoes a radical shift.',
     practical: 'Career pivot into technology, innovation, or unconventional fields. Sudden promotion or termination. Going viral. Entrepreneurship. Authority figures behave unpredictably. Your reputation for being "different" grows.',
-    caution: 'Don\'t quit in a blaze of glory without a plan. Uranus wants authentic career expression, not just rebellion against the boss. If you\'re being pushed out, it\'s pushing you toward something more "you."',
+    caution: 'Don\'t quit in a blaze of glory without a plan. Uranus wants honest career expression, not just rebellion against the boss. If you\'re being pushed out, it\'s pushing you toward something more "you."',
     source: 'Mary Fortier Shea',
   },
   11: {
     title: 'Social Circle Revolution',
     overview: 'Uranus in the 11th house (its natural home) brings new, unusual friends and groups into your life while old ones fade away. Your vision for the future changes radically. You join movements, communities, or networks you never expected.',
-    practical: 'Joining activist groups, tech communities, or countercultural movements. Friendships with eccentric or brilliant people. Crowdfunding success. Your long-term goals shift toward something more authentic. Group dynamics are electric but unstable.',
+    practical: 'Joining activist groups, tech communities, or countercultural movements. Friendships with eccentric or brilliant people. Crowdfunding success. Your long-term goals shift toward something more honest. Group dynamics are electric but unstable.',
     caution: 'Don\'t abandon old friends just because new ones are more exciting. Uranus here can make you a joiner-and-leaver. Find the groups worth committing to.',
     source: 'Mary Fortier Shea',
   },
@@ -665,7 +665,7 @@ export const srPlutoInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   5: {
     title: 'Passionate Creation & Intense Love',
     overview: 'Pluto in the 5th house brings obsessive creative energy and all-or-nothing romance. Love affairs are intense, transformative, and potentially consuming. Creative work comes from the deepest places within you.',
-    practical: 'Art that comes from pain or transformation. Love that feels fated and consuming. Power struggles with children. Creative projects that demand everything you have. Sexual intensity in romance. Performing or creating with raw authenticity.',
+    practical: 'Art that comes from pain or transformation. Love that feels fated and consuming. Power struggles with children. Creative projects that demand everything you have. Sexual intensity in romance. Performing or creating with raw honesty.',
     caution: 'Obsessive love is not healthy love — learn the difference. Don\'t try to control children or creative outcomes. Let the intensity flow through you into your art rather than directing it at other people.',
     source: 'Mary Fortier Shea',
   },
@@ -701,7 +701,7 @@ export const srPlutoInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'Career Death & Rebirth',
     overview: 'Pluto in the 10th house transforms your career, public image, and life direction at the deepest level. You may leave a career entirely, expose corruption, or rise to unprecedented power. Nothing about your professional life stays the same.',
     practical: 'Career transformation — sometimes forced by external circumstances. Power struggles with bosses or authority. Whistleblowing or exposure of workplace corruption. Becoming an authority in your field. Public recognition for transformative work.',
-    caution: 'Power corrupts — if you rise, stay ethical. If you fall, it\'s clearing the ground for something more authentic. Don\'t make enemies unnecessarily — Pluto in the 10th makes everything public.',
+    caution: 'Power corrupts — if you rise, stay ethical. If you fall, it\'s clearing the ground for something more honest. Don\'t make enemies unnecessarily — Pluto in the 10th makes everything public.',
     source: 'Mary Fortier Shea',
   },
   11: {

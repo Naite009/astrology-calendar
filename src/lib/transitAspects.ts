@@ -434,7 +434,7 @@ const getTransitInterpretation = (transitPlanet: string, natalPlanet: string, as
       sextile: 'Energy boost. Initiative succeeds.',
     },
     'mars-mars': {
-      conjunction: 'Raw authentic drive returns. Pure motivation.',
+      conjunction: 'Raw honest drive returns. Pure motivation.',
       opposition: 'External conflict mirrors internal fire.',
       trine: 'Energy flows powerfully. Physical vitality.',
       square: 'Old anger resurfaces. What battle is worth it?',
@@ -491,7 +491,7 @@ const getTransitInterpretation = (transitPlanet: string, natalPlanet: string, as
     'uranus-sun': {
       conjunction: 'IDENTITY REVOLUTION. Who you thought you were is changing.',
       opposition: 'Others disrupt your identity. Wake up.',
-      trine: 'Exciting authentic changes. Freedom to be yourself.',
+      trine: 'Exciting honest changes. Freedom to be yourself.',
       square: 'Shocking changes to self. Sudden awakening.',
       sextile: 'Refreshing self-expression. New perspectives.',
     },

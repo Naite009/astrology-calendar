@@ -83,7 +83,7 @@ HARD ANTI-GENERIC RULES (auto-fail if violated):
 - DO name the natal point being touched (e.g. "your Moon", "your Venus") so the reader sees it is about THEM.
 
 ABSOLUTELY FORBIDDEN WORDS (auto-fail):
-energy, energies, processing, integrating, themes, alignment, atmosphere, dynamic, vibe, frequency, shadow work, transformation journey, authentic self, reflective, restless, friction, principles outrun feelings, imagination opens, "is bringing", cooler day.
+energy, energies, processing, integrating, themes, alignment, atmosphere, dynamic, vibe, frequency, shadow work, transformation journey, honest self, reflective, restless, friction, principles outrun feelings, imagination opens, "is bringing", cooler day.
 
 REWRITE TABLE (use the GOOD register):
 - BAD "reflective"            GOOD "harder to say what you feel" / "wanting space"

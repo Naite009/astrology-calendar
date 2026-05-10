@@ -92,7 +92,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
   Moon: {
     conjunction: {
       feeling: 'Your emotions and identity are fused—what you feel IS who you are. There\'s no separation between your inner emotional world and your outer expression.',
-      manifestation: 'You respond to life instinctively. Emotions immediately become actions. Others experience you as authentic and immediate.',
+      manifestation: 'You respond to life instinctively. Emotions immediately become actions. Others experience you as honest and immediate.',
       clientDescription: 'Your Sun and Moon are together, meaning your conscious will and unconscious needs are aligned. You\'re emotionally present in everything you do—for better or worse, you can\'t hide how you feel.',
     },
     opposition: {
@@ -253,7 +253,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
     },
     opposition: {
       feeling: 'Power struggles with others reveal your own need for control. You may attract intense, controlling people.',
-      manifestation: 'Relationship power dynamics. Learning to own your own power by seeing it in others.',
+      manifestation: 'Relationship power dynamics. Learning to own your ability to trust yourself by seeing it in others.',
       clientDescription: 'Pluto opposite your Sun brings power lessons through others. Owning your own intensity stops the projection.',
     },
     square: {
@@ -265,7 +265,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
   Chiron: {
     conjunction: {
       feeling: 'Your identity is marked by a wound—but this wound becomes your gift. You heal through being who you are.',
-      manifestation: 'May feel fundamentally "broken" but becomes a powerful healer by simply being authentic.',
+      manifestation: 'May feel fundamentally "broken" but becomes a powerful healer by simply being honest.',
       clientDescription: 'Chiron on your Sun means your wound is visible and central to who you are. By accepting it, you become a healer for others with similar pain.',
     },
     square: {
@@ -277,7 +277,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
   NorthNode: {
     conjunction: {
       feeling: 'Your identity IS your soul\'s purpose. Being yourself is the destiny.',
-      manifestation: 'Life path involves becoming more fully who you already are. Following authentic self-expression.',
+      manifestation: 'Life path involves becoming more fully who you already are. Following honest self-expression.',
       clientDescription: 'The North Node on your Sun means your soul\'s purpose is to BE YOURSELF fully. Following your heart IS the path.',
     },
   },

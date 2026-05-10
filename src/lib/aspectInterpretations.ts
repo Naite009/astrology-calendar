@@ -107,7 +107,7 @@ export const getAspectInterpretation = (
   const combos: Record<string, Record<string, Record<string, string>>> = {
     conjunction: {
       Pluto: {
-        Venus: 'Pluto conjunct Venus TRANSFORMS your love nature. Relationships intensify dramatically—obsessive attractions, power dynamics in love, or a complete metamorphosis of what you value. Old loves may die to make way for more authentic connections.',
+        Venus: 'Pluto conjunct Venus TRANSFORMS your love nature. Relationships intensify dramatically—obsessive attractions, power dynamics in love, or a complete metamorphosis of what you value. Old loves may die to make way for more honest connections.',
         Sun: 'Pluto conjunct Sun is a profound identity transformation. The person you were dissolves; who you\'re becoming emerges through crisis. Power issues, confrontations with authority, or a complete rebirth of purpose.',
         Moon: 'Pluto conjunct Moon excavates your emotional depths. Intense feelings surface that you may have buried for years. Family dynamics transform. Emotional purging and healing at the root level.',
         Mars: 'Pluto conjunct Mars is volcanic energy. Incredible power to act, but watch for power struggles, rage, or ruthless ambition. Used consciously, this is unstoppable transformative action.',
@@ -115,12 +115,12 @@ export const getAspectInterpretation = (
       },
       Saturn: {
         Venus: 'Saturn conjunct Venus tests love through reality. Relationships that aren\'t built to last may end. Those that survive become more committed. Learning the difference between love and fantasy.',
-        Sun: 'Saturn conjunct Sun is a maturity checkpoint. You confront limitations, take on more responsibility, and define your authentic authority. Hard work, yes—but lasting achievement.',
+        Sun: 'Saturn conjunct Sun is a maturity checkpoint. You confront limitations, take on more responsibility, and define your honest authority. Hard work, yes—but lasting achievement.',
         Moon: 'Saturn conjunct Moon asks for emotional maturity. Loneliness or emotional restriction may surface so you can develop inner security. Mothering themes, especially around limitation.',
       },
       Jupiter: {
         Venus: 'Jupiter conjunct Venus brings LUCK in love and money. Generosity flows, pleasure expands, and relationships bring growth. A blessed time for anything Venusian.',
-        Sun: 'Jupiter conjunct Sun is your personal lucky streak. Confidence expands, opportunities appear, and life feels meaningful. Growth through being authentically yourself.',
+        Sun: 'Jupiter conjunct Sun is your personal lucky streak. Confidence expands, opportunities appear, and life feels meaningful. Growth through being honestly yourself.',
       },
       Neptune: {
         Venus: 'Neptune conjunct Venus blurs the line between you and the person you are falling for. You will romanticize them, ignore red flags, and confuse longing with love. Beautiful art and music can come from this; bad financial and relationship decisions can too. Keep one trusted friend on speed-dial to fact-check you.',
@@ -152,7 +152,7 @@ export const getAspectInterpretation = (
       },
       Uranus: {
         Venus: 'Uranus sextile Venus brings exciting but manageable changes in love. New connections that stimulate without overwhelming.',
-        Sun: 'Uranus sextile Sun offers opportunities for authentic self-expression. Freedom feels accessible.',
+        Sun: 'Uranus sextile Sun offers opportunities for honest self-expression. Freedom feels accessible.',
       },
     },
     trine: {

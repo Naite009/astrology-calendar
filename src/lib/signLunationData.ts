@@ -16,16 +16,16 @@ export interface SignLunationData {
 
 export const SIGN_LUNATION_DATA: Record<string, SignLunationData> = {
   Aries: {
-    expressions: ['courage', 'initiative', 'independence', 'leadership', 'action', 'pioneering', 'assertiveness', 'vitality', 'passion', 'directness', 'authenticity', 'self-trust'],
+    expressions: ['courage', 'initiative', 'independence', 'leadership', 'action', 'pioneering', 'assertiveness', 'vitality', 'passion', 'directness', 'honesty', 'self-trust'],
     shadow: ['impatience', 'aggression', 'selfishness', 'recklessness', 'anger', 'impulsivity', 'burnout from going too fast', 'difficulty listening'],
-    overview: 'This Aries New Moon invites bold beginnings and authentic self-expression. It marks a reset around identity, courage, and the willingness to take the first step.',
+    overview: 'This Aries New Moon invites bold beginnings and honest self-expression. It marks a reset around identity, courage, and the willingness to take the first step.',
     seedGuidance: 'As a cardinal fire New Moon, it asks for courageous intention and willingness to act, even without a guaranteed outcome. Seeds planted now ignite quickly but need sustained attention.',
     themes: [
       { title: 'Reclaiming your fire', description: 'This lunation can reignite passion and remind you what you\'re fighting for. Where have you been playing small?' },
       { title: 'Begin before you\'re ready', description: 'Aries doesn\'t wait for permission. Take the first step now and figure out the rest as you go.' },
       { title: 'Anger as information', description: 'What has been frustrating you? Anger points to what matters. Channel it into action rather than suppression.' }
     ],
-    intentionWords: ['courage', 'action', 'leadership', 'initiative', 'independence', 'vitality', 'pioneering', 'self-trust', 'authenticity', 'boldness']
+    intentionWords: ['courage', 'action', 'leadership', 'initiative', 'independence', 'vitality', 'pioneering', 'self-trust', 'honesty', 'boldness']
   },
   Taurus: {
     expressions: ['stability', 'patience', 'sensuality', 'reliability', 'groundedness', 'values', 'abundance', 'beauty', 'comfort', 'persistence', 'self-worth', 'pleasure'],
@@ -64,16 +64,16 @@ export const SIGN_LUNATION_DATA: Record<string, SignLunationData> = {
     intentionWords: ['nurturing', 'home', 'family', 'emotional security', 'intuition', 'care', 'belonging', 'protection', 'roots', 'comfort']
   },
   Leo: {
-    expressions: ['creativity', 'self-expression', 'confidence', 'generosity', 'joy', 'leadership', 'warmth', 'playfulness', 'heart', 'courage', 'radiance', 'authenticity'],
+    expressions: ['creativity', 'self-expression', 'confidence', 'generosity', 'joy', 'leadership', 'warmth', 'playfulness', 'heart', 'courage', 'radiance', 'honesty'],
     shadow: ['ego inflation', 'need for validation', 'drama', 'arrogance', 'attention-seeking', 'pride', 'difficulty sharing spotlight', 'taking things too personally'],
     overview: 'This Leo New Moon invites creative expression and heart-centered living. It marks a reset around joy, self-expression, and what makes you feel alive.',
     seedGuidance: 'As a fixed fire New Moon, it asks for wholehearted intention and commitment to your creative vision. Seeds planted now need consistent warmth to flourish.',
     themes: [
       { title: 'Follow your heart', description: 'What brings you genuine joy? Make space for play, creativity, and self-expression.' },
-      { title: 'Shine authentically', description: 'Stop dimming your light. The world needs your unique gifts and perspective.' },
+      { title: 'Shine honestly', description: 'Stop dimming your light. The world needs your unique gifts and perspective.' },
       { title: 'Lead with love', description: 'Generosity and warmth open doors. Lead by example and inspire others through your own radiance.' }
     ],
-    intentionWords: ['creativity', 'joy', 'self-expression', 'confidence', 'heart', 'playfulness', 'authenticity', 'generosity', 'radiance', 'courage']
+    intentionWords: ['creativity', 'joy', 'self-expression', 'confidence', 'heart', 'playfulness', 'honesty', 'generosity', 'radiance', 'courage']
   },
   Virgo: {
     expressions: ['service', 'health', 'refinement', 'discernment', 'skill', 'humility', 'practicality', 'healing', 'analysis', 'improvement', 'devotion', 'craftsmanship'],
@@ -137,16 +137,16 @@ export const SIGN_LUNATION_DATA: Record<string, SignLunationData> = {
     rulerNote: 'With Saturn ruling this New Moon at the end of Pisces, there\'s a sense of letting something complete rather than pushing for answers. As both Saturn and Neptune prepare to enter Aries, we\'re making space for a new beginning and a different way forward.'
   },
   Aquarius: {
-    expressions: ['innovation', 'freedom', 'community', 'originality', 'humanitarian', 'visionary', 'independence', 'progressive', 'friendship', 'idealism', 'awakening', 'authenticity'],
+    expressions: ['innovation', 'freedom', 'community', 'originality', 'humanitarian', 'visionary', 'independence', 'progressive', 'friendship', 'idealism', 'awakening', 'honesty'],
     shadow: ['detachment', 'rebellion for its own sake', 'emotional distance', 'contrarianism', 'alienation', 'feeling like an outsider', 'dismissing emotions as illogical'],
-    overview: 'This Aquarius New Moon invites innovation and authentic self-expression. It marks a reset around community, freedom, and your unique contribution.',
+    overview: 'This Aquarius New Moon invites innovation and honest self-expression. It marks a reset around community, freedom, and your unique contribution.',
     seedGuidance: 'As a fixed air New Moon, it asks for visionary intention and commitment to what makes you different. Seeds planted now grow through community and shared ideals.',
     themes: [
       { title: 'Embrace your weirdness', description: 'What makes you different is your gift. Stop trying to fit in and let your originality shine.' },
       { title: 'Community matters', description: 'Find your people. Connection with like-minded souls amplifies your impact.' },
       { title: 'Future-forward thinking', description: 'What world do you want to create? Align your actions with your vision for the future.' }
     ],
-    intentionWords: ['innovation', 'freedom', 'community', 'authenticity', 'vision', 'independence', 'friendship', 'progress', 'originality', 'awakening']
+    intentionWords: ['innovation', 'freedom', 'community', 'honesty', 'vision', 'independence', 'friendship', 'progress', 'originality', 'awakening']
   },
   Pisces: {
     expressions: ['spirituality', 'imagination', 'compassion', 'intuition', 'healing', 'transcendence', 'creativity', 'surrender', 'dreams', 'unity', 'forgiveness', 'faith'],

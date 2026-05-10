@@ -105,7 +105,7 @@ const PLANET_HOUSE_FELT: Record<string, Record<number, string>> = {
     5: 'Creative passion and romantic pursuit intensify. You go after what you want with boldness. Competitive hobbies thrive.',
     6: 'Work pace accelerates dramatically. You push yourself physically — gym goals, demanding projects, and an intolerance for inefficiency.',
     7: 'Conflict and passion in partnerships. Arguments may be more frequent, but so is the desire to fight FOR the relationship.',
-    8: 'Power struggles surface. Sexual energy intensifies. You confront control dynamics head-on and demand authenticity.',
+    8: 'Power struggles surface. Sexual energy intensifies. You confront control dynamics head-on and demand honesty.',
     9: 'You pursue truth aggressively — debates about beliefs, legal battles, or ambitious travel plans require courage.',
     10: 'Career ambition is fierce. You push for advancement, take on leadership roles, and refuse to be overlooked professionally.',
     11: 'You take action within groups. Leadership in communities, activism, or confrontation with friends over principles.',

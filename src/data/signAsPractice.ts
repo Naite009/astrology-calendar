@@ -172,7 +172,7 @@ export const SIGN_PRACTICES: Record<string, SignPractice> = {
   },
   Aquarius: {
     sign: "Aquarius",
-    keywords: ["individuality", "innovation", "community", "freedom", "vision", "revolution", "authenticity"],
+    keywords: ["individuality", "innovation", "community", "freedom", "vision", "revolution", "honesty"],
     prompts: [
       "Where am I conforming when I should be pioneering?",
       "What future am I working toward?",

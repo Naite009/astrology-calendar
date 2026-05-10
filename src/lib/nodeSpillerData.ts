@@ -312,7 +312,7 @@ export const SPILLER_NODE_DATA: Record<string, SpillerNodeData> = {
   Libra: {
     sign: 'Libra',
     pastLifeStory: 'In past lives you were the warrior, the pioneer, the lone adventurer. You depended only on yourself, fought your own battles, and operated entirely on instinct. You mastered independence. Now you must learn that cooperation creates more than competition.',
-    overview: 'Your soul is learning partnership, diplomacy, and the art of seeing through another person\'s eyes. The universe rewards you when you compromise, cooperate, and create harmony — but authentically, not as surrender.',
+    overview: 'Your soul is learning partnership, diplomacy, and the art of seeing through another person\'s eyes. The universe rewards you when you compromise, cooperate, and create harmony — but honestly, not as surrender.',
     desires: [
       'To be self-sufficient and independent',
       'To act first and think later',

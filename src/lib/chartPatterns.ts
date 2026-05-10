@@ -418,7 +418,7 @@ const detectGrandCrosses = (planets: Array<{ name: string; degree: number }>): C
 // Detailed apex planet interpretations for Yods
 const APEX_PLANET_MEANINGS: Record<string, { mission: string; integration: string; shadow: string }> = {
   Sun: {
-    mission: "Your life purpose centers on developing authentic self-expression and leadership. You're being called to shine in a way that may feel uncomfortable at first.",
+    mission: "Your life purpose centers on developing honest self-expression and leadership. You're being called to shine in a way that may feel uncomfortable at first.",
     integration: "Learn to claim your identity without apology. The universe keeps asking: 'Who ARE you, really?'",
     shadow: "May struggle with ego—either inflated or deflated. Identity crises force evolution."
   },

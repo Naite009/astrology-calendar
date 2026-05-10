@@ -412,7 +412,7 @@ export function getFamilyQuestionFrameworks(context: FamilyRelationshipContext):
     return {
       dynamicsQuestion: 'What are the step-family dynamics between you?',
       learningQuestion: 'What is this blended family teaching both of you?',
-      evolutionQuestion: 'How can you build authentic connection without forcing traditional roles?',
+      evolutionQuestion: 'How can you build honest connection without forcing traditional roles?',
       karmicContext: 'Step-family relationships create new karma rather than continuing old patterns. You\'re writing a new story together.'
     };
   }

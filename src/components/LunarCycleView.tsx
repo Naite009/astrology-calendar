@@ -735,7 +735,7 @@ Keep the tone deep, insightful, and practically applicable.`
     Vesta: 'The asteroid of sacred focus — what you DEVOTE yourself to with ritual dedication. Your inner flame.',
     Juno: 'The asteroid of committed partnership — what you NEED in a long-term partner and marriage.',
     Pallas: 'The asteroid of strategic wisdom — how you see PATTERNS, solve problems, and fight for justice.',
-    Lilith: 'Black Moon Lilith — your wild, untamed power that refuses to be domesticated. Raw feminine rage and authenticity.',
+    Lilith: 'Black Moon Lilith — your wild, untamed power that refuses to be domesticated. Raw feminine rage and honesty.',
     PartOfFortune: 'An Arabic Part showing where worldly luck and material abundance flow most naturally.',
     Vertex: 'A fated point — encounters and events here feel destined, as if the universe arranged them.',
   };

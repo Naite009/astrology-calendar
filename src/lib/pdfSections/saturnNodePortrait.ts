@@ -40,7 +40,7 @@ const saturnBody: Record<number, string> = {
 };
 
 const nodeBody: Record<number, string> = {
-  1: 'Your soul is pulled toward independence. The universe rewards authentic self-assertion.',
+  1: 'Your soul is pulled toward independence. The universe rewards honest self-assertion.',
   2: 'Growth through building your own resources. Develop financial and material independence.',
   3: 'Growth through curiosity and communication. Engage with your immediate world.',
   4: 'Growth through vulnerability and nurturing. Create emotional safety — for yourself first.',

@@ -27,7 +27,7 @@ const SIGN_SHADOW_THEMES: Record<string, string[]> = {
   Taurus: ['stubbornness', 'comfort addiction', 'possessiveness', 'resistance to change'],
   Gemini: ['scattered energy', 'superficiality', 'nervous chatter', 'commitment avoidance'],
   Cancer: ['clinginess', 'emotional manipulation', 'hiding behind family', 'moodiness'],
-  Leo: ['ego inflation', 'needing validation', 'drama', 'performance over authenticity'],
+  Leo: ['ego inflation', 'needing validation', 'drama', 'performance over honesty'],
   Virgo: ['perfectionism', 'self-criticism', 'over-analyzing', 'controlling through detail'],
   Libra: ['people-pleasing', 'indecision', 'codependency', 'conflict avoidance'],
   Scorpio: ['power games', 'emotional intensity as control', 'obsession', 'suspicion'],

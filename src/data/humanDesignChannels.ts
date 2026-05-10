@@ -112,7 +112,7 @@ export const HUMAN_DESIGN_CHANNELS: HDChannel[] = [
     circuit: "Individual - Centering",
     type: "Manifestation",
     keynotes: ["Creative role model", "Unique self-expression", "Inspiring through being"],
-    description: "The Channel of Inspiration connects creative direction (Gate 1) with contribution (Gate 8). This is the channel of the creative role model who inspires others simply by being themselves. The inspiration is in the authentic expression of uniqueness.",
+    description: "The Channel of Inspiration connects creative direction (Gate 1) with contribution (Gate 8). This is the channel of the creative role model who inspires others simply by being themselves. The inspiration is in the honest expression of uniqueness.",
     gifts: ["Creative inspiration", "Unique role modeling", "Authentic contribution", "Being yourself as gift"],
     challenges: ["Feeling alone in uniqueness", "Waiting for recognition", "Not trusting creative direction"]
   },
@@ -124,7 +124,7 @@ export const HUMAN_DESIGN_CHANNELS: HDChannel[] = [
     type: "Manifested",
     keynotes: ["Self-love in the now", "Being yourself", "Authentic expression"],
     description: "The Channel of Awakening connects self-love (Gate 10) with present awareness (Gate 20). This channel is about expressing who you are in each moment. True awakening is simply being yourself now.",
-    gifts: ["Self-love", "Present authenticity", "Being yourself", "Spontaneous self-expression"],
+    gifts: ["Self-love", "Present honesty", "Being yourself", "Spontaneous self-expression"],
     challenges: ["Self-criticism", "Not being in the now", "Trying to be what you're not"]
   },
   {

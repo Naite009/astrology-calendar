@@ -104,7 +104,7 @@ const PLANET_LIFE_ADVICE: Record<string, { wellPlaced: string; challenged: strin
   Sun: {
     wellPlaced: 'Your sense of purpose flows naturally. Trust your vision and let yourself be visible. Leadership comes easily—step into it.',
     challenged: 'Building confidence requires conscious effort. Define yourself on your own terms, not others\'. Each act of self-expression strengthens your core.',
-    general: 'The Sun represents your conscious will and life purpose. Where it shines, you\'re meant to express your authentic self.'
+    general: 'The Sun represents your conscious will and life purpose. Where it shines, you\'re meant to express your honest self.'
   },
   Moon: {
     wellPlaced: 'Your emotional instincts are reliable guides. Trust your gut feelings and create nurturing spaces for yourself and others.',
@@ -118,7 +118,7 @@ const PLANET_LIFE_ADVICE: Record<string, { wellPlaced: string; challenged: strin
   },
   Venus: {
     wellPlaced: 'Love, beauty, and pleasure come naturally to you. Trust your taste and let yourself receive. Relationships flow when you relax.',
-    challenged: 'Love and harmony require conscious cultivation. This builds authentic appreciation rather than superficial attraction.',
+    challenged: 'Love and harmony require conscious cultivation. This builds honest appreciation rather than superficial attraction.',
     general: 'Venus governs love, beauty, and values. Invest in relationships, aesthetics, and experiences that bring genuine pleasure.'
   },
   Mars: {
@@ -128,7 +128,7 @@ const PLANET_LIFE_ADVICE: Record<string, { wellPlaced: string; challenged: strin
   },
   Jupiter: {
     wellPlaced: 'Luck and opportunity tend to find you. Say yes to growth. Your optimism and faith are well-founded—expansion flows.',
-    challenged: 'Growth requires more internal work. Your wisdom is earned through seeking, which makes it more authentic.',
+    challenged: 'Growth requires more internal work. Your wisdom is earned through seeking, which makes it more honest.',
     general: 'Jupiter brings expansion and meaning. Pursue education, travel, philosophy—anything that broadens your horizons.'
   },
   Saturn: {
@@ -139,7 +139,7 @@ const PLANET_LIFE_ADVICE: Record<string, { wellPlaced: string; challenged: strin
   Uranus: {
     wellPlaced: 'Your unconventional approach works. Trust your unique perspective and let yourself break from tradition when called.',
     challenged: 'Individuality may feel disruptive. Learn to be yourself without burning bridges—evolution over revolution.',
-    general: 'Uranus represents innovation and authenticity. Don\'t conform where you\'re meant to innovate.'
+    general: 'Uranus represents innovation and honesty. Don\'t conform where you\'re meant to innovate.'
   },
   Neptune: {
     wellPlaced: 'Your imagination and spiritual sensitivity are gifts. Trust your dreams, intuition, and creative visions.',

@@ -27,7 +27,7 @@ interface HouseGuidance {
 
 const PLANET_HOUSE_GUIDANCE: Record<string, Record<number, HouseGuidance>> = {
   Sun: {
-    1: { leanInto: 'Reinventing your image, taking bold personal initiatives, physical transformation', avoid: 'Ego-driven decisions that ignore others\' needs', bestUse: 'Launch something that represents the real you — a project, look, or direction that feels authentically yours' },
+    1: { leanInto: 'Reinventing your image, taking bold personal initiatives, physical transformation', avoid: 'Ego-driven decisions that ignore others\' needs', bestUse: 'Launch something that represents the real you — a project, look, or direction that feels honestly yours' },
     2: { leanInto: 'Building financial stability, clarifying your values, investing in yourself', avoid: 'Overspending to prove your worth or hoarding out of fear', bestUse: 'Create a concrete plan for financial growth — budget, invest, or monetize a skill' },
     3: { leanInto: 'Writing, teaching, learning new skills, strengthening sibling bonds', avoid: 'Gossip, scattered attention, saying yes to every conversation', bestUse: 'Start the course, write the article, have the conversation you\'ve been avoiding' },
     4: { leanInto: 'Home improvements, family healing, creating emotional safety', avoid: 'Isolating yourself or avoiding family issues that need addressing', bestUse: 'Make your living space a true sanctuary — renovate, reorganize, or have honest family conversations' },
@@ -55,7 +55,7 @@ const PLANET_HOUSE_GUIDANCE: Record<string, Record<number, HouseGuidance>> = {
     12: { leanInto: 'Solo physical practice, shadow work, channeling anger constructively', avoid: 'Suppressed rage, self-sabotage, hidden enemies (including yourself)', bestUse: 'Find a physical outlet for anger that doesn\'t involve other people — boxing, running, solo martial arts' },
   },
   Saturn: {
-    1: { leanInto: 'Building authentic self-authority, health discipline, mature self-presentation', avoid: 'Self-criticism, excessive seriousness, refusing help', bestUse: 'Commit to one long-term self-improvement project — the results compound over the entire year' },
+    1: { leanInto: 'Building honest self-authority, health discipline, mature self-presentation', avoid: 'Self-criticism, excessive seriousness, refusing help', bestUse: 'Commit to one long-term self-improvement project — the results compound over the entire year' },
     2: { leanInto: 'Financial discipline, long-term investing, defining core values', avoid: 'Scarcity mindset, hoarding, punishing yourself financially', bestUse: 'Build a 12-month financial plan — structure and consistency pay off here, not impulse' },
     3: { leanInto: 'Serious study, disciplined writing, meaningful conversations', avoid: 'Communication paralysis, excessive self-editing, avoiding difficult conversations', bestUse: 'Commit to a learning program or writing project that requires sustained effort' },
     4: { leanInto: 'Home renovation, family responsibility, emotional foundation work', avoid: 'Emotional coldness at home, avoiding family obligations, rigidity in domestic life', bestUse: 'Address the family or home issue you\'ve been postponing — this year makes it unavoidable' },
@@ -101,7 +101,7 @@ const VENUS_GUIDANCE: Record<number, HouseGuidance> = {
 };
 
 const MOON_GUIDANCE: Record<number, HouseGuidance> = {
-  1: { leanInto: 'Emotional authenticity, showing how you really feel, body awareness', avoid: 'Mood swings driving major decisions, emotional reactivity', bestUse: 'Let your feelings guide your personal reinvention — your instincts about who you\'re becoming are sharp' },
+  1: { leanInto: 'Emotional honesty, showing how you really feel, body awareness', avoid: 'Mood swings driving major decisions, emotional reactivity', bestUse: 'Let your feelings guide your personal reinvention — your instincts about who you\'re becoming are sharp' },
   2: { leanInto: 'Comfort spending that nourishes, emotional relationship with money', avoid: 'Retail therapy, financial anxiety spirals', bestUse: 'Notice what you spend on when emotional — it reveals what you truly value' },
   3: { leanInto: 'Heartfelt conversations, intuitive writing, emotional connection with siblings', avoid: 'Overthinking, anxious texting, reading into every word', bestUse: 'Journal daily — your emotional processing happens through words this year' },
   4: { leanInto: 'Nesting, home cooking, family bonding, creating a sanctuary', avoid: 'Hiding at home to avoid the world, family enmeshment', bestUse: 'Make your home feel exactly right — your emotional health depends on your physical space this year' },
@@ -110,7 +110,7 @@ const MOON_GUIDANCE: Record<number, HouseGuidance> = {
   7: { leanInto: 'Emotional vulnerability in partnerships, asking for what you need', avoid: 'Projecting your feelings onto your partner, emotional dependence', bestUse: 'Tell your partner (or closest person) one true feeling per day — this builds real intimacy' },
   8: { leanInto: 'Deep emotional processing, therapeutic breakthroughs, trust exercises', avoid: 'Emotional manipulation, obsessive fixation, refusing to let go', bestUse: 'Let yourself feel the hard feelings this year — they\'re clearing space for something better' },
   9: { leanInto: 'Feeling moved by new ideas, emotional travel experiences, philosophical wonder', avoid: 'Emotional preaching, using belief systems to avoid feeling', bestUse: 'Travel somewhere that makes you feel something — a place that moves you, not just entertains you' },
-  10: { leanInto: 'Public emotional authenticity, being known for your warmth', avoid: 'Emotional displays at work, letting moods affect your professional reputation', bestUse: 'Lead with empathy at work — your emotional intelligence is a career asset this year' },
+  10: { leanInto: 'Public emotional honesty, being known for your warmth', avoid: 'Emotional displays at work, letting moods affect your professional reputation', bestUse: 'Lead with empathy at work — your emotional intelligence is a career asset this year' },
   11: { leanInto: 'Emotional investment in friendships, caring about your community', avoid: 'Taking group dynamics personally, needing friends to be your therapists', bestUse: 'Find a community where you feel emotionally safe — belonging matters deeply this year' },
   12: { leanInto: 'Rich inner emotional life, vivid dreams, quiet spiritual feelings', avoid: 'Unexplained sadness, isolating instead of processing, emotional martyrdom', bestUse: 'Give yourself permission to feel without explaining — some emotions just need space, not analysis' },
 };
@@ -119,13 +119,13 @@ const URANUS_GUIDANCE: Record<number, HouseGuidance> = {
   1: { leanInto: 'Reinventing your image, trying unexpected things, embracing what makes you different', avoid: 'Changing everything at once, alienating people with sudden shifts', bestUse: 'Experiment with who you\'re becoming — but give people time to adjust' },
   2: { leanInto: 'New income streams, unconventional money moves, redefining what\'s valuable', avoid: 'Financial impulsiveness, quitting stable income on a whim', bestUse: 'Test one new earning idea without burning your safety net' },
   3: { leanInto: 'Original ideas, surprising conversations, learning something completely new', avoid: 'Scattered thinking, saying shocking things for effect', bestUse: 'Start the project or conversation that\'s been feeling too weird — it\'s not' },
-  4: { leanInto: 'Home changes, shaking up family patterns, creating a more authentic living space', avoid: 'Moving impulsively, blowing up family relationships', bestUse: 'Rearrange your living space to match who you\'re becoming, not who you were' },
+  4: { leanInto: 'Home changes, shaking up family patterns, creating a more honest living space', avoid: 'Moving impulsively, blowing up family relationships', bestUse: 'Rearrange your living space to match who you\'re becoming, not who you were' },
   5: { leanInto: 'Experimental creativity, unconventional romance, surprising joys', avoid: 'Thrill-seeking that risks real stability, treating people as experiments', bestUse: 'Create something nobody\'s seen before — your originality is at peak this year' },
   6: { leanInto: 'Overhauling routines, trying alternative wellness, tech-enhanced productivity', avoid: 'Abandoning all structure, rebelling against your own health needs', bestUse: 'Redesign one daily habit from scratch — sometimes disruption IS the solution' },
   7: { leanInto: 'Honest relationship shakeups, more freedom in partnerships, unconventional agreements', avoid: 'Breaking commitments on impulse, using "I need freedom" as an excuse to avoid intimacy', bestUse: 'Have the conversation about what you actually need — the relationship can handle honesty' },
   8: { leanInto: 'Sudden financial shifts that free you, breakthrough therapy moments', avoid: 'Reckless financial risks, forcing transformation', bestUse: 'Be open to the unexpected inheritance, insurance payout, or emotional breakthrough' },
   9: { leanInto: 'Radical new perspectives, spontaneous travel, mind-expanding experiences', avoid: 'Extremist thinking, abandoning all your beliefs at once', bestUse: 'Go somewhere or study something that completely changes how you see the world' },
-  10: { leanInto: 'Career pivots, public reinvention, stepping into a unique professional role', avoid: 'Quitting without a plan, burning professional bridges', bestUse: 'Make the career move that feels scary but authentic — your public role wants to evolve' },
+  10: { leanInto: 'Career pivots, public reinvention, stepping into a unique professional role', avoid: 'Quitting without a plan, burning professional bridges', bestUse: 'Make the career move that feels scary but honest — your public role wants to evolve' },
   11: { leanInto: 'New friend groups, joining unconventional communities, activist energy', avoid: 'Cutting off all old friends, social rebellion without purpose', bestUse: 'Find your real people this year — the ones who get the real you' },
   12: { leanInto: 'Inner awakening, surprising spiritual insights, liberation from old patterns', avoid: 'Spiritual bypassing, using "enlightenment" to avoid real-world responsibilities', bestUse: 'Pay attention to sudden insights during quiet moments — your subconscious is doing important work' },
 };
@@ -146,7 +146,7 @@ const NEPTUNE_GUIDANCE: Record<number, HouseGuidance> = {
 };
 
 const PLUTO_GUIDANCE: Record<number, HouseGuidance> = {
-  1: { leanInto: 'Personal transformation, owning your power, deep self-honesty', avoid: 'Intimidating others, obsessive self-reinvention, control issues', bestUse: 'Let the old version of you go — the person emerging is more authentic and powerful' },
+  1: { leanInto: 'Personal transformation, owning your power, deep self-honesty', avoid: 'Intimidating others, obsessive self-reinvention, control issues', bestUse: 'Let the old version of you go — the person emerging is more honest and powerful' },
   2: { leanInto: 'Financial transformation, discovering hidden resources, redefining your worth', avoid: 'Obsessing over money, power struggles around possessions', bestUse: 'Transform your relationship with money — from scarcity to sufficiency' },
   3: { leanInto: 'Penetrating communication, research skills, uncovering hidden information', avoid: 'Obsessive thinking, verbal manipulation, paranoid interpretations', bestUse: 'Research something deeply — your ability to uncover truth is heightened' },
   4: { leanInto: 'Family healing, transforming your home, facing inherited patterns', avoid: 'Dredging up family trauma without support, controlling domestic life', bestUse: 'Heal one family pattern this year — the ripple effect changes everything' },

@@ -76,9 +76,15 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/your own powerful and the real you/gi, "your own voice")
       .replace(/your the real you/gi, "yourself")
       .replace(/the real you/gi, "yourself")
-      .replace(/authentic self/gi, "yourself")
-      .replace(/authentic power/gi, "your own voice")
+      .replace(/honest self/gi, "yourself")
+      .replace(/honest power/gi, "your ability to trust yourself")
+      .replace(/own power/gi, "ability to trust yourself")
       .replace(/claim your power/gi, "trust yourself and act on what you know is true")
+      .replace(/inspiring others to be true to themselves/gi, "helping others feel safe enough to be honest about what they feel")
+      .replace(/\bauthentic voice\b/gi, "honest voice")
+      .replace(/\bauthenticity\b/gi, "honesty")
+      .replace(/\bauthentically\b/gi, "honestly")
+      .replace(/\bauthentic\b/gi, "honest")
       .replace(/your soul chose this/gi, "this is a long-standing pattern")
       .replace(/past[- ]life tendency/gi, "early pattern")
       .replace(/past[- ]life pattern/gi, "long-standing pattern")
@@ -147,7 +153,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may adjust yourself to make a relationship work", "you may need partners who respect direct honesty", "you may notice conflict feels risky", "you grow when you stay present and tell the truth kindly"],
     ),
     gift: section(
-      `${p("Venus")}, ${p("Neptune")}, and ${p("Moon")} describe natural gifts. Jupiter can add wisdom, generosity, or teaching ability.`,
+      `${p("Moon")}, ${p("Venus")}, ${p("Neptune")}, and ${p("Jupiter")} describe natural gifts, with the South Node showing what was already mastered. Emotional insight comes first; steadiness and wisdom follow.`,
       "You may be naturally good at sensing what people need, finding meaning in hard moments, and helping others feel less alone.",
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
@@ -158,7 +164,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
-      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them.",
+      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them.",
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
     ),
     strength: section(
@@ -229,7 +235,7 @@ ABSOLUTE RULES:
 - NEVER use em dashes (—). Use commas, periods, colons, or parentheses.
 - Cross-sign aspects (e.g. 29° Aries to 1° Taurus) are valid when within orb. Sun/Moon conjunctions valid up to 10°.
 
-FORBIDDEN WORDS (never use any of these): wound (as a noun in body copy is fine only inside the Wound Agreement label/title), archetypal, liminal, energies, resonate, resonates, resonance, vibration, vibrational, shadow, shadow work, heal, healing, integrate, integration, embody, embodiment, "deeper work", transformation, transformation journey, ascension, awakening, ego death, alchemy, sovereignty, karmic, soul calling, authentic self, authentic power, claim your power, the real you, stepping into, owning your truth, past life, past-life, past-life tendency, past-life pattern, your soul chose this. Use plain alternatives instead: "early pattern", "long-standing pattern", "learned pattern", "repeated relationship pattern", "yourself", "your own truth", "your own voice", "trust yourself and act on what you know is true", and describe change as "change how you act, respond, or choose".
+FORBIDDEN WORDS (never use any of these): wound (as a noun in body copy is fine only inside the Wound Agreement label/title), archetypal, liminal, energies, resonate, resonates, resonance, vibration, vibrational, shadow, shadow work, heal, healing, integrate, integration, embody, embodiment, "deeper work", transformation, transformation journey, ascension, awakening, ego death, alchemy, sovereignty, karmic, soul calling, honest self, honest power, claim your power, the real you, stepping into, owning your truth, past life, past-life, past-life tendency, past-life pattern, your soul chose this. Use plain alternatives instead: "early pattern", "long-standing pattern", "learned pattern", "repeated relationship pattern", "yourself", "your own truth", "your own voice", "trust yourself and act on what you know is true", and describe change as "change how you act, respond, or choose".
 
 If you catch yourself reaching for any forbidden word, rewrite the sentence in plain everyday language a smart 14-year-old would use.
 
@@ -583,13 +589,13 @@ EMOTIONAL TONE per section (must feel distinct):
    PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
    DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
 
-5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. Anchor to: South Node (talents side, what was mastered before this life — distinct from how it appears in Family/Wound), Jupiter (sign, house, aspects, as natural abundance — read as wisdom, generosity, vision, or teaching, NOT default to "financial talent"), planets in strong dignity, planets in 1H/5H/9H/11H. Also include intuitive gifts, emotional intelligence, symbolic understanding, creativity, spiritual sensitivity (Venus, Neptune, Moon).
+5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already mastered before this life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
 6. TIMING AGREEMENT — how growth tends to arrive for this person, what kind of trigger sets off real change. Should feel oracular but plain. Use Pluto (forced change), Uranus (sudden disruption), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes. Describe the change in behavioral terms (how they act, respond, or choose), not as "transformation".
    REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY this is the long-standing pattern that wakes them up. Do NOT predict events.
 
 7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
-   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.
+   SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe enough to be honest about what they feel, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language. Do NOT use the phrase "inspiring others to be true to themselves" — replace any such instinct with "helping others feel safe enough to be honest about what they feel".
 
 8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How your soul recovers, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
 

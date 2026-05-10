@@ -209,7 +209,7 @@ const getTransitInHouseInterpretation = (planet: string, house: number | null): 
 const getMoonToNatalInterpretation = (natalPlanet: string, aspect: string, moonSign: string): string => {
   const planetMeanings: Record<string, Record<string, string>> = {
     Sun: {
-      conjunction: `Your emotions and identity merge today. You feel most authentically yourself.`,
+      conjunction: `Your emotions and identity merge today. You feel most honestly yourself.`,
       opposition: `Full Moon energy in YOUR chart. Emotions about who you are reach a peak.`,
       trine: `Easy flow between feelings and self-expression. Confidence comes naturally.`,
       square: `Tension between what you feel and who you think you should be. Honor both.`,

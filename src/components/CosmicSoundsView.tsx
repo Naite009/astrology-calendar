@@ -1401,7 +1401,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
                 moving from contraction (fear, stagnation, numbness) toward expansion (clarity, joy, presence, compassion). 
                 A Pisces placement isn't "higher vibration" than Aries because its Hz number is bigger — each sign 
                 carries its own frequency of <em>experience</em>, its own lesson, its own medicine. The goal isn't to 
-                vibrate faster; it's to vibrate more <em>authentically</em>.
+                vibrate faster; it's to vibrate more <em>honestly</em>.
               </p>
             </div>
           </div>

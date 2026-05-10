@@ -1044,7 +1044,7 @@ const getDevelopmentalMilestoneInterpretation = (
   if (transitPlanet === 'Uranus' && natalPlanet === 'Uranus') {
     if (aspect === 'square') {
       const opener =
-        'This is a Uranus square Uranus — one of the defining developmental transits of early adulthood (it lands around age 21 and again around age 63). It is not a generic "change of scenery" — it is the moment your inherited identity stops fitting and an unmistakable, more authentic version of you tries to break through. Generic restlessness is the surface; the real event is the rejection of a life that was someone else\'s plan.';
+        'This is a Uranus square Uranus — one of the defining developmental transits of early adulthood (it lands around age 21 and again around age 63). It is not a generic "change of scenery" — it is the moment your inherited identity stops fitting and an unmistakable, more honest version of you tries to break through. Generic restlessness is the surface; the real event is the rejection of a life that was someone else\'s plan.';
       const lens: Record<TimingReadingType, string> = {
         relationship: 'In love, this surfaces as either suddenly outgrowing a partner you committed to too early, or finally meeting someone who actually fits the version of you that is emerging. Old loyalties fall away.',
         relocation: 'A move at this age is rarely just a move — it is the body looking for an environment that matches who you are becoming, not who you were when you left home.',
@@ -1114,7 +1114,7 @@ const getDevelopmentalMilestoneInterpretation = (
   if (transitPlanet === 'Chiron' && natalPlanet === 'Chiron' && aspect === 'conjunction') {
     const opener =
       'This is the Chiron return — a once-in-a-lifetime transit around age ~50. The original wound surfaces in a final way, and the work is to meet it as the elder, not the patient. What you have learned to hold in yourself becomes what you can offer others.';
-    return wrap(opener, 'It is a threshold from personal healing into authentic teaching.');
+    return wrap(opener, 'It is a threshold from personal healing into honest teaching.');
   }
 
   // ── Nodal return / opposition ────────────────────────────────────────────

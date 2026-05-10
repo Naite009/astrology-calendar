@@ -6,7 +6,7 @@ export const srSunInHouse: Record<number, { title: string; overview: string; exp
   1: {
     title: 'A Year of Personal Reinvention',
     overview: 'The Sun in the 1st house of your Solar Return is the most personal placement possible — this year is fundamentally about YOU. Your identity, physical body, and how you present yourself to the world are under a spotlight. You may change your appearance, rebrand yourself professionally, or simply feel a stronger sense of "this is who I am now."',
-    experience: 'You will feel more visible, more vital, and more self-directed than usual. Others notice you. There is a quality of "main character energy" — events seem to revolve around your choices and initiative. You may feel restless if you are not actively pursuing something that reflects your authentic self.',
+    experience: 'You will feel more visible, more vital, and more self-directed than usual. Others notice you. There is a quality of "main character energy" — events seem to revolve around your choices and initiative. You may feel restless if you are not actively pursuing something that reflects your honest self.',
     focus: 'Take initiative. Start projects. Make decisions based on what YOU want, not what others expect. This is a year where self-interest is not selfish — it is necessary. Your physical health and vitality are also highlighted; this is a good year to invest in your body.',
     caution: 'The risk is excessive self-focus that alienates partners or collaborators. Balance your renewed sense of self with awareness of how your changes affect those around you.',
   },
@@ -33,7 +33,7 @@ export const srSunInHouse: Record<number, { title: string; overview: string; exp
   },
   5: {
     title: 'A Year of Creativity, Joy & Self-Expression',
-    overview: 'The Sun in the 5th house is one of the most enjoyable SR placements. This is a year to CREATE — art, projects, romance, even children. Your life force wants to play, express, and be seen for who you authentically are. Fun is not optional; it is medicine.',
+    overview: 'The Sun in the 5th house is one of the most enjoyable SR placements. This is a year to CREATE — art, projects, romance, even children. Your life force wants to play, express, and be seen for who you honestly are. Fun is not optional; it is medicine.',
     experience: 'You feel more alive, more creative, and more willing to take risks on things that bring you joy. Romance may blossom — new love or a renewal of passion in existing relationships. If you have children, they may be a major focus. Creative projects feel like extensions of your soul.',
     focus: 'Follow what excites you. Take the creative risk. Ask yourself: "What would I do if I were not afraid of being judged?" Do that. Romance, hobbies, performing, and anything that puts your unique stamp on the world are favored.',
     caution: 'The 5th house Sun can be self-indulgent. Pleasure-seeking without purpose becomes hollow. Also watch for ego attachment to creative output — create for the love of it, not just for applause.',
@@ -92,7 +92,7 @@ export const srSunInHouse: Record<number, { title: string; overview: string; exp
 // ─── Moon in SR House ───────────────────────────────────────────────
 
 export const srMoonInHouse: Record<number, string> = {
-  1: 'Your emotions are right on the surface this year — visible, raw, and personal. You FEEL everything intensely and others can see it on your face. Emotional authenticity is both your gift and your vulnerability. Physical appearance or body image may be an emotional trigger.',
+  1: 'Your emotions are right on the surface this year — visible, raw, and personal. You FEEL everything intensely and others can see it on your face. Emotional honesty is both your gift and your vulnerability. Physical appearance or body image may be an emotional trigger.',
   2: 'Emotional security is tied directly to finances and material stability this year. Money worries (or financial wins) affect your mood deeply. You need to feel that you HAVE enough — enough resources, enough self-worth, enough stability — to feel emotionally safe.',
   3: 'Your mind is emotionally restless. You process feelings through talking, writing, and constant mental activity. Relationships with siblings, neighbors, or peers carry emotional weight. Short trips and learning experiences provide emotional nourishment.',
   4: 'Home IS your emotional world this year. You need a sanctuary — a private space that is entirely yours. Family matters, especially involving a mother figure or your childhood roots, are emotionally prominent. Moving, renovating, or restructuring your living situation is common.',
@@ -115,7 +115,7 @@ export const srMoonInSign: Record<string, string> = {
   Cancer: 'The Moon is home here — emotions are strong, nurturing instincts are heightened, and family/home matters are deeply felt. You are more sensitive and protective than usual.',
   Leo: 'Emotional warmth, generosity, and a need for recognition characterize the year. You need to feel special, appreciated, and creatively expressed. Drama is possible when needs are not met.',
   Virgo: 'Emotions are processed analytically. You need to feel useful and competent. Worry is the shadow side — perfectionism applied to feelings creates anxiety. Service and organization are emotionally grounding.',
-  Libra: 'Emotional harmony and partnership are essential. Conflict is deeply unsettling. You need beauty, fairness, and companionship. People-pleasing at the expense of authenticity is the risk.',
+  Libra: 'Emotional harmony and partnership are essential. Conflict is deeply unsettling. You need beauty, fairness, and companionship. People-pleasing at the expense of honesty is the risk.',
   Scorpio: 'Emotions are intense, transformative, and not easily shared. You feel everything at maximum volume. Trust issues, jealousy, and power dynamics are emotionally charged. Depth is required — surface-level will not satisfy.',
   Sagittarius: 'Emotionally optimistic and freedom-seeking. You need adventure, meaning, and space to roam. Philosophical or spiritual exploration soothes emotional distress. Restlessness when confined.',
   Capricorn: 'Emotions are controlled, pragmatic, and sometimes suppressed. You feel a need to be strong, responsible, and self-sufficient. Allowing vulnerability is this year\'s emotional work.',
@@ -293,7 +293,7 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     6: 'Sudden health developments, job changes, or radical overhaul of daily routines. Technology transforms your work. Unusual health modalities appeal. The daily grind becomes anything but routine.',
     7: 'Relationship upheaval — sudden attractions, unexpected separations, or a partner who behaves unpredictably. If a relationship survives Uranus here, it does so through radical honesty and freedom.',
     8: 'Sudden financial changes involving others\' money — inheritance, insurance, taxes. Psychological breakthroughs through crisis. Sexual liberation or taboo-breaking. Deep transformation through shock.',
-    9: 'Sudden travel, unexpected educational opportunities, or radical shift in worldview. A philosophy or belief system you relied on may shatter, replaced by something more authentic.',
+    9: 'Sudden travel, unexpected educational opportunities, or radical shift in worldview. A philosophy or belief system you relied on may shatter, replaced by something more honest.',
     10: 'Career upheaval — sudden job change, unexpected recognition, or radical professional reinvention. You may break free from a career path that was never truly yours. Freedom matters more than security.',
     11: 'Your social circle transforms. New friends appear suddenly; old friendships may end abruptly. Group dynamics are electric. Your vision for the future becomes more radical and innovative.',
     12: 'Spiritual awakening through unexpected channels. Sudden insights from dreams or meditation. Hidden matters are exposed unexpectedly. Institutional disruption. Liberation through surrendering control.',
@@ -443,7 +443,7 @@ export const srSunAspectInterps: Record<string, Record<string, string>> = {
   Uranus: {
     Conjunction: 'Sun conjunct Uranus brings a year of radical change. Your identity undergoes a revolution. Sudden events alter your life direction. Freedom becomes a non-negotiable need. Nothing stays the same.',
     Opposition: 'Sun opposite Uranus — others disrupt your plans. A partner or external force introduces chaos. Flexibility is survival. What you resist persists; what you embrace transforms you.',
-    Square: 'Sun square Uranus creates tension between stability and freedom. Rebellious urges conflict with responsibilities. Sudden events force adaptation. The year demands you become more authentically yourself.',
+    Square: 'Sun square Uranus creates tension between stability and freedom. Rebellious urges conflict with responsibilities. Sudden events force adaptation. The year demands you become more honestly yourself.',
   },
   Neptune: {
     Conjunction: 'Sun conjunct Neptune dissolves your usual boundaries and certainties. Spiritual sensitivity peaks but so does confusion. Creative inspiration is extraordinary. Reality testing is essential — not everything is as it appears.',

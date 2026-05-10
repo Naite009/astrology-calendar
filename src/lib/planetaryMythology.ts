@@ -341,7 +341,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
       'The golden apple — the question that exposes hidden competition and desire',
       'The uninvited guest — whatever is excluded from consciousness returns as disruption',
       'The Trojan War — the catastrophic consequences of refusing to face uncomfortable truths',
-      'Discord — not chaos for its own sake, but the friction that forces authenticity',
+      'Discord — not chaos for its own sake, but the friction that forces honesty',
     ],
     psychologicalFunction: 'Eris represents the function of disruption in service of truth — the part of the psyche that refuses to play along with false harmony and forces confrontation with what has been denied or excluded.',
     shadowExpression: 'Creating drama for attention, chronic contrarianism, deliberate sabotage, enjoying conflict, unable to accept belonging.',

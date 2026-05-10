@@ -38,7 +38,7 @@ export const TWELFTH_HOUSE_PAST_LIVES: Record<string, TwelfthHousePastLife> = {
     pastLifeDescription: 'In an earlier life you were someone related to children, the world of the feminine, food, the coast and the sea. Your home is truly your "sanctuary" — you need protection and tranquility for psychic balance.',
     subconscious: 'You are more romantic than you show in appearance. Your great subconscious need for family doesn\'t mean you get it easily — there will be tests and limitations.',
     pastLifeOccupation: 'Caregiver, cook, fisher, midwife, or maternal figure',
-    karmicAdvice: 'Express your sweetness and good feelings more openly. Build the family connections you crave through authentic emotional vulnerability.',
+    karmicAdvice: 'Express your sweetness and good feelings more openly. Build the family connections you crave through honest emotional vulnerability.',
   },
   Leo: {
     sign: 'Leo',

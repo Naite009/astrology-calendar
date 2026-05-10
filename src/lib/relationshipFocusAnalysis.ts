@@ -1141,7 +1141,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     tier: 3,
     points: uranusMoon ? 5 : 0,
     interpretation: uranusMoon
-      ? `${uranusMoon.type} (${uranusMoon.orb}° orb): Friendship feels liberating. You encourage each other's authenticity.`
+      ? `${uranusMoon.type} (${uranusMoon.orb}° orb): Friendship feels liberating. You encourage each other's honesty.`
       : 'No Uranus-Moon aspect.',
     strength: uranusMoon ? 'moderate' : 'weak'
   });

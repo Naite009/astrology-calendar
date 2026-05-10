@@ -154,7 +154,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Being known as the 'talker' or 'thinker'",
         "Difficulty separating logic from ego"
       ],
-      growthPath: "Your gift is authentic self-expression. Your growth edge is learning that your thoughts are TOOLS, not YOU. You can change your mind without losing yourself."
+      growthPath: "Your gift is honest self-expression. Your growth edge is learning that your thoughts are TOOLS, not YOU. You can change your mind without losing yourself."
     },
     square: {
       whatItFeelsLike: "Your conscious self and your thinking process are at odds. You may feel misunderstood, like your words don't capture who you really are. Inner critic is loud.",
@@ -165,7 +165,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Feeling like people 'get' you wrong",
         "Inner thoughts not matching outer expression"
       ],
-      growthPath: "The gap between inner and outer is the work. Practice: slow down before speaking. Your authentic voice exists—you're developing the bridge to express it clearly."
+      growthPath: "The gap between inner and outer is the work. Practice: slow down before speaking. Your honest voice exists—you're developing the bridge to express it clearly."
     },
     opposition: {
       whatItFeelsLike: "You understand yourself through dialogue with others. Ideas come alive in conversation. You may project intelligence onto others or feel your thinking is 'out there' rather than inside.",
@@ -179,7 +179,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
       growthPath: "Dialogue is your thinking style—honor it. But develop internal clarity too. You can know your own mind without needing external confirmation."
     },
     trine: {
-      whatItFeelsLike: "Self-expression flows naturally. Speaking, writing, and thinking feel like extensions of who you are. Communication is effortless and authentic.",
+      whatItFeelsLike: "Self-expression flows naturally. Speaking, writing, and thinking feel like extensions of who you are. Communication is effortless and honest.",
       howItManifests: "Natural communicator. Words match intent. May take verbal ease for granted. Others see you as articulate and clear.",
       realLifeExamples: [
         "People understanding you easily",
@@ -444,7 +444,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Feeling allergic to convention",
         "Others calling you 'weird' as compliment or criticism"
       ],
-      growthPath: "Your gift is authentic uniqueness. Your growth is learning that different doesn't mean disconnected. You can belong without conforming."
+      growthPath: "Your gift is honest uniqueness. Your growth is learning that different doesn't mean disconnected. You can belong without conforming."
     },
     square: {
       whatItFeelsLike: "Tension between who you are and your need for freedom. You want to be yourself but it causes disruption. Sudden breaks from stability.",
@@ -455,10 +455,10 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Feeling suffocated by commitment",
         "Freedom that disrupts connection"
       ],
-      growthPath: "The friction is between stability and authenticity. You're learning that real freedom isn't about escaping—it's about being fully yourself WITHIN connection."
+      growthPath: "The friction is between stability and honesty. You're learning that real freedom isn't about escaping—it's about being fully yourself WITHIN connection."
     },
     opposition: {
-      whatItFeelsLike: "Your uniqueness and freedom come out through others. Partners are unusual or create sudden changes. Relationships teach you about authenticity.",
+      whatItFeelsLike: "Your uniqueness and freedom come out through others. Partners are unusual or create sudden changes. Relationships teach you about honesty.",
       howItManifests: "Attracting eccentric or unstable partners. Learning to be yourself through relationship disruption. May project rebel onto others.",
       realLifeExamples: [
         "Partners who are unconventional",
@@ -470,7 +470,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
     },
     trine: {
       whatItFeelsLike: "Natural originality. Being different feels comfortable, not stressful. Innovation comes easily. You're unique without trying.",
-      howItManifests: "Effortless authenticity. Creative and innovative without rebellion. Change feels exciting rather than destabilizing.",
+      howItManifests: "Effortless honesty. Creative and innovative without rebellion. Change feels exciting rather than destabilizing.",
       realLifeExamples: [
         "Being accepted as different",
         "Innovation that comes naturally",
@@ -1101,7 +1101,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Communication breakdowns in love",
         "Values vs. logic conflicts"
       ],
-      growthPath: "The friction is between truth and harmony. You're learning that authentic communication serves love better than false sweetness. Say what you mean kindly."
+      growthPath: "The friction is between truth and harmony. You're learning that honest communication serves love better than false sweetness. Say what you mean kindly."
     },
     opposition: {
       whatItFeelsLike: "You understand love through dialogue. Partners teach you about beauty and values. Communication happens in relationship.",
@@ -1112,7 +1112,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Learning values through dialogue",
         "Relationship as communication school"
       ],
-      growthPath: "The grace you keep finding in partners is YOURS. Own your Venus in communication. You can be charming and authentic without needing others to show you how."
+      growthPath: "The grace you keep finding in partners is YOURS. Own your Venus in communication. You can be charming and honest without needing others to show you how."
     },
     trine: {
       whatItFeelsLike: "Natural charm in communication. Words flow pleasantly. Beauty and mind harmonize. Social grace feels effortless.",
@@ -1674,7 +1674,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Need for space in partnership",
         "Attracted to unusual people"
       ],
-      growthPath: "Your gift is authentic love. Your growth is learning that freedom and commitment can coexist. You can be close AND free."
+      growthPath: "Your gift is honest love. Your growth is learning that freedom and commitment can coexist. You can be close AND free."
     },
     square: {
       whatItFeelsLike: "Friction between stability and freedom in love. Wanting closeness but feeling trapped. Sabotaging security.",
@@ -1707,18 +1707,18 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Change that refreshes rather than destabilizes",
         "Authentic without alienating"
       ],
-      growthPath: "Easy freedom can avoid depth. Your gift is authentic love—now commit to something. Freedom without stakes is empty."
+      growthPath: "Easy freedom can avoid depth. Your gift is honest love—now commit to something. Freedom without stakes is empty."
     },
     sextile: {
-      whatItFeelsLike: "Freedom in love is available when you cultivate it. You CAN have authentic relationships—it takes conscious development.",
+      whatItFeelsLike: "Freedom in love is available when you cultivate it. You CAN have honest relationships—it takes conscious development.",
       howItManifests: "Responds well to unconventional relationship models. Authenticity develops with safety. Change becomes manageable.",
       realLifeExamples: [
-        "Learning to be authentic in love",
+        "Learning to be honest in love",
         "Change becoming less threatening",
         "Finding freedom within commitment",
         "Unconventional working over time"
       ],
-      growthPath: "Your opportunity is conscious freedom. The authentic love is there—it needs safe environments to develop. Seek relationships that welcome uniqueness."
+      growthPath: "Your opportunity is conscious freedom. The honest love is there—it needs safe environments to develop. Seek relationships that welcome uniqueness."
     }
   },
 
@@ -1932,7 +1932,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Learning self-discipline through external limits",
         "Finding balance through opposition"
       ],
-      growthPath: "You can be BOTH driven AND disciplined without splitting it between you and partners. The opposition resolves when you own your own limits and your own power."
+      growthPath: "You can be BOTH driven AND disciplined without splitting it between you and partners. The opposition resolves when you own your own limits and your ability to trust yourself."
     },
     trine: {
       whatItFeelsLike: "Controlled power. Your energy is focused, disciplined, and effective. You can sustain effort without burning out. Ambition feels manageable.",
@@ -2103,7 +2103,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
       realLifeExamples: [
         "Partners who are intense or dominating",
         "Power struggles in relationships",
-        "Learning about your own power through others",
+        "Learning about your ability to trust yourself through others",
         "Projecting intensity onto partners"
       ],
       growthPath: "The power you keep finding in others is YOURS. Own your Pluto-Mars. Your capacity for intense action is valid—use it directly, not through projection."
@@ -2382,7 +2382,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
     },
     square: {
       whatItFeelsLike: "Friction between security and freedom. Structures that crack. Revolution meeting resistance. The old fighting the new.",
-      howItManifests: "Breakdowns and breakthroughs. Tension between conformity and authenticity. Systems under stress. Personal or collective crisis.",
+      howItManifests: "Breakdowns and breakthroughs. Tension between conformity and honesty. Systems under stress. Personal or collective crisis.",
       realLifeExamples: [
         "Structures breaking down",
         "Freedom vs. security conflicts",

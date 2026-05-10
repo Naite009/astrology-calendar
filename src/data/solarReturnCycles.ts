@@ -101,7 +101,7 @@ export const SR_PLANET_CYCLES: SRPlanetCycle[] = [
     cycleLength: '~84-year cycle; tenants each SR house over approximately 14 years',
     keyAges: [21, 42, 63, 84],
     keyAgesDescription: 'Uranus quarter-cycle points (ages 21, 42, 63) are crisis points of individuation. At these ages, the SR Uranus is at a hard angle to its natal position, triggering breakthroughs in self-expression and liberation from outdated structures.',
-    directionNotes: 'Check if Uranus has changed direction in the SR. A direction change signals a shift in the individual\'s relationship with freedom, rebellion, and authenticity.',
+    directionNotes: 'Check if Uranus has changed direction in the SR. A direction change signals a shift in the individual\'s relationship with freedom, rebellion, and honesty.',
     practicalInsight: 'Uranus spends about 14 years cycling through all 12 SR houses. Its current house shows where sudden changes, breakthroughs, and the need for freedom are most active.',
   },
   {
@@ -192,7 +192,7 @@ export const getCycleNotesForAge = (age: number): { planet: string; note: string
     notes.push({ planet: 'Uranus', note: 'Near the Uranus quarter-cycle — a crisis of individuation. Breakthroughs in self-expression and liberation from outdated structures.' });
   }
   if (Math.abs(age - 42) <= 1) {
-    notes.push({ planet: 'Uranus', note: 'Near the Uranus opposition (midlife) — the most powerful individuation crisis. The authentic self demands full expression.' });
+    notes.push({ planet: 'Uranus', note: 'Near the Uranus opposition (midlife) — the most powerful individuation crisis. The honest self demands full expression.' });
   }
 
   // Neptune square

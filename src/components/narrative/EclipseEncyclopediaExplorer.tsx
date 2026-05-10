@@ -132,7 +132,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     period: '2023–2025',
     status: 'ending',
     description: 'Self vs. Other — identity, independence, relationships, and compromise. This series is winding down with its final eclipse in March 2025.',
-    bigPicture: 'The Aries-Libra eclipse series asked us to find the right balance between self-assertion and accommodation. Where had we abandoned ourselves to keep the peace? Where had we been so focused on our own path that we forgot how much we need each other? These eclipses triggered pivotal chapters in relationships, identity reckonings that led to greater authenticity, and moments where partnership dynamics were fundamentally reset.',
+    bigPicture: 'The Aries-Libra eclipse series asked us to find the right balance between self-assertion and accommodation. Where had we abandoned ourselves to keep the peace? Where had we been so focused on our own path that we forgot how much we need each other? These eclipses triggered pivotal chapters in relationships, identity reckonings that led to greater honesty, and moments where partnership dynamics were fundamentally reset.',
     events: [
       {
         date: '2023-04-20', timeUtc: '04:12', type: 'solar', subtype: 'annular-total', sign: 'Aries', degree: 29, minutes: 50, nodal: 'north', series: 'Aries-Libra',
@@ -165,9 +165,9 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         date: '2024-04-08', timeUtc: '18:18', type: 'solar', subtype: 'total', sign: 'Aries', degree: 19, minutes: 24, nodal: 'north', series: 'Aries-Libra',
         title: 'Total Reset in Identity',
         description: 'The most powerful eclipse of this series — a total solar eclipse in Aries. A dramatic new chapter opens in themes of identity, independence, and personal direction. Events triggered here unfold for months.',
-        nodalTheme: 'North Node in Aries: A fated acceleration toward greater independence, personal courage, and authentic self-expression. New people, opportunities, and chapters in identity arrive.',
+        nodalTheme: 'North Node in Aries: A fated acceleration toward greater independence, personal courage, and honest self-expression. New people, opportunities, and chapters in identity arrive.',
         releasingThemes: ['Patterns of self-abandonment in relationships', 'Identity built around others\' definitions of you'],
-        buildingThemes: ['A new, more authentic version of yourself', 'The courage to pursue what you want without constant consultation', 'New chapters in physical vitality, personal projects, and direction'],
+        buildingThemes: ['A new, more honest version of yourself', 'The courage to pursue what you want without constant consultation', 'New chapters in physical vitality, personal projects, and direction'],
         reflectionQuestions: ['Who am I becoming — separate from who others need me to be?', 'What would I begin right now if I knew it was supported by the universe?', 'Where has over-compromise kept me from my own growth?'],
         aspects: [{ planet: 'Chiron', type: 'conjunction', sign: 'Aries', meaning: 'Deep healing available around wounds of self-worth and identity. Old wounds around being seen, valued, and being enough rise for integration.' }],
       },
@@ -317,7 +317,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     period: '2026–2028',
     status: 'upcoming',
     description: 'Self-Expression vs. Community — creativity, heart, leadership, individuality, group consciousness, and humanitarian vision. All SOLAR eclipses fall on this axis.',
-    bigPicture: 'The Leo-Aquarius series will ask: where do personal creative expression and collective vision meet? Where have you been hiding your light to fit in — and where have you lost yourself in group identity? These eclipses bring new chapters in creative leadership, authentic self-expression, and the question of how individual genius serves the collective good.',
+    bigPicture: 'The Leo-Aquarius series will ask: where do personal creative expression and collective vision meet? Where have you been hiding your light to fit in — and where have you lost yourself in group identity? These eclipses bring new chapters in creative leadership, honest self-expression, and the question of how individual genius serves the collective good.',
     events: [
       {
         date: '2026-02-17', timeUtc: '12:01', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 28, minutes: 50, nodal: 'south', series: 'Leo-Aquarius',
@@ -325,7 +325,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         description: 'The opening eclipse of the Leo-Aquarius series. Old group identities, collective belief systems, and social conditioning that have limited your self-expression are ready to be released.',
         nodalTheme: 'South Node in Aquarius: Patterns of conforming to group identity, hiding individuality to fit in, or defining yourself entirely through your tribe are completing.',
         releasingThemes: ['Over-identification with group identity at the expense of individual expression', 'Revolutionary ideas kept safely theoretical rather than lived', 'Emotional detachment used as a shield against real intimacy'],
-        buildingThemes: ['Clarity about what you genuinely believe versus what you\'ve absorbed from your communities', 'The groundwork for more authentic self-expression'],
+        buildingThemes: ['Clarity about what you genuinely believe versus what you\'ve absorbed from your communities', 'The groundwork for more honest self-expression'],
         reflectionQuestions: ['Where have I shaped my identity around what my community approves of?', 'What part of me have I kept hidden because it didn\'t fit my group\'s image?'],
       },
       {
@@ -340,7 +340,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
       {
         date: '2027-02-06', timeUtc: '15:53', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 17, minutes: 38, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Reforming Group Identity',
-        description: 'A second South Node eclipse in Aquarius — releasing outdated collective identities and social roles that have limited authentic self-expression.',
+        description: 'A second South Node eclipse in Aquarius — releasing outdated collective identities and social roles that have limited honest self-expression.',
         nodalTheme: 'South Node in Aquarius: The group structures and social identities that have defined you are being reformed. What communities, ideologies, or collective roles are you ready to release or renegotiate?',
         releasingThemes: ['Communities or roles that require you to suppress your individuality', 'Ideological rigidity masquerading as principle'],
         buildingThemes: ['Communities that celebrate individual expression within collective vision', 'A clearer sense of which groups genuinely resonate with who you are'],
@@ -349,7 +349,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
       {
         date: '2027-08-02', timeUtc: '10:22', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, minutes: 55, nodal: 'north', series: 'Leo-Aquarius',
         title: 'Heart in Full Expression',
-        description: 'A second total solar eclipse in Leo — the creative, heart-centered chapter deepens. New directions in creative work, romantic love, play, and authentic leadership consolidate and expand.',
+        description: 'A second total solar eclipse in Leo — the creative, heart-centered chapter deepens. New directions in creative work, romantic love, play, and honest leadership consolidate and expand.',
         nodalTheme: 'North Node in Leo: The fated acceleration of your creative and expressive life continues. Go further into what lights you up.',
         releasingThemes: ['Any remaining self-censorship in creative work or personal expression'],
         buildingThemes: ['Creative mastery and deeper expression of your unique gifts', 'Love and creative work that flows from genuine joy rather than approval-seeking'],
@@ -367,7 +367,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
       {
         date: '2028-01-26', timeUtc: '15:26', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 6, minutes: 11, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Final Chapter of Group Identity',
-        description: 'The closing eclipse of the Leo-Aquarius series. What has been learned about individual authenticity and collective belonging reaches its final integration.',
+        description: 'The closing eclipse of the Leo-Aquarius series. What has been learned about individual honesty and collective belonging reaches its final integration.',
         nodalTheme: 'South Node in Aquarius: The completion of the Leo-Aquarius lesson — you don\'t have to choose between being yourself and belonging. The right communities celebrate your full expression.',
         releasingThemes: ['The final belief that creative self-expression is incompatible with community'],
         buildingThemes: ['The integrated wisdom: your unique creative voice is your greatest contribution to the collective'],

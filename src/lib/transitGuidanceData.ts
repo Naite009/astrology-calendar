@@ -116,7 +116,7 @@ export const RETROGRADE_GUIDANCE: Record<string, RetrogradGuidance> = {
       'Reconnect with distant friends and former associates',
       'Revive old networks',
       'Process inner restlessness thoughtfully',
-      'Reflect on where you need authentic change',
+      'Reflect on where you need honest change',
     ],
     avoidThis: [
       'Making sudden dramatic life changes',
@@ -175,7 +175,7 @@ export const TRANSIT_ECHO_CONCEPT = {
 export const PLANETARY_CYCLE_AGES: Record<string, { cycle: number; keyAges: number[]; description: string }> = {
   Saturn: { cycle: 29.5, keyAges: [7, 14, 22, 29, 36, 44, 51, 59, 66, 73, 81, 88], description: 'Saturn quarters and returns demand greater maturity, self-mastery, and authority.' },
   Jupiter: { cycle: 12, keyAges: [12, 24, 36, 48, 60, 72, 84], description: 'Jupiter returns bring expansion, good breaks, and new cycles of adventure and learning.' },
-  Uranus: { cycle: 84, keyAges: [21, 42, 63, 84], description: 'Uranus quarters bring identity crises and the need for authentic change and liberation.' },
+  Uranus: { cycle: 84, keyAges: [21, 42, 63, 84], description: 'Uranus quarters bring identity crises and the need for honest change and liberation.' },
 };
 
 // Transit orbs recommendation (Kent's system)

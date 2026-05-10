@@ -17,9 +17,9 @@ export const ERIS_HOUSE_INTERPRETATIONS: Record<number, {
   1: {
     theme: "Identity as Warrior",
     core: "Your very presence is an act of disruption. You are someone whose identity is wrapped up in breaking molds and pioneering new territory. There is no hiding who you are—your soul purpose radiates from your physical being.",
-    soul_purpose: "To embody authenticity so fiercely that others are inspired to drop their masks. You are here to demonstrate what it looks like to be unapologetically yourself.",
+    soul_purpose: "To embody honesty so fiercely that others are inspired to drop their masks. You are here to demonstrate what it looks like to be unapologetically yourself.",
     shadow: "You may struggle with being seen as 'too much' or constantly creating friction simply by existing. There can be a compulsion to fight for your right to be yourself that alienates others.",
-    evolved: "You become a living symbol of authentic self-expression, giving others permission to be who they truly are simply by witnessing you."
+    evolved: "You become a living symbol of honest self-expression, giving others permission to be who they truly are simply by witnessing you."
   },
   2: {
     theme: "Fighting for Authentic Values",
@@ -45,7 +45,7 @@ export const ERIS_HOUSE_INTERPRETATIONS: Record<number, {
   5: {
     theme: "Creative Self-Expression as Soul Mission",
     core: "Your creativity, your children, your romance, your play—these are not pastimes, they are your soul's work. You simply cannot not express yourself, and when you try to suppress this, you suffer.",
-    soul_purpose: "To create from the deepest center of who you are. To express yourself so authentically that your art, children, or creative projects carry your soul's signature.",
+    soul_purpose: "To create from the deepest center of who you are. To express yourself so honestly that your art, children, or creative projects carry your soul's signature.",
     shadow: "You may seek recognition through drama rather than genuine creativity. There can be struggles with children or romantic partners who mirror your own need to be seen.",
     evolved: "Your creative output becomes a legacy that outlives you. What you birth into the world carries medicine for others."
   },
@@ -82,14 +82,14 @@ export const ERIS_HOUSE_INTERPRETATIONS: Record<number, {
     core: "Your career and public reputation are inseparable from your soul purpose. You are meant to be visible, to hold a position of influence that disrupts and transforms your field.",
     soul_purpose: "To achieve mastery in a way that redefines what mastery means. To leave a legacy that changes how your profession or field operates.",
     shadow: "You may court controversy for its own sake or become so identified with your public role that you lose your private self. Fame can become addiction.",
-    evolved: "You become an authority whose power comes from authentic alignment with soul purpose. Your career is your calling."
+    evolved: "You become an authority whose power comes from honest alignment with soul purpose. Your career is your calling."
   },
   11: {
     theme: "Community Activism & Social Causes",
     core: "Your soul purpose is collective. You are here to fight for the future, for humanity, for your chosen tribe. Your friendships and group affiliations are where your warrior nature expresses.",
     soul_purpose: "To organize, galvanize, and lead movements that serve human evolution. To find your true community of fellow paradigm shifters.",
     shadow: "You may become a revolutionary without a cause, fighting everything and achieving nothing. There can be loneliness within groups—the outsider among outsiders.",
-    evolved: "You become a catalyst for collective awakening. Your presence in a group shifts its trajectory toward greater authenticity and purpose."
+    evolved: "You become a catalyst for collective awakening. Your presence in a group shifts its trajectory toward greater honesty and purpose."
   },
   12: {
     theme: "Spiritual Warrior & Collective Unconscious",
@@ -117,7 +117,7 @@ export const ERIS_ASPECT_INTERPRETATIONS: Record<string, Record<string, {
     },
     opposition: {
       meaning: "Others trigger your warrior nature. You project your soul purpose onto partners or enemies.",
-      manifestation: "May see others as either allies or obstacles to your mission. Relationships are battlegrounds for authenticity.",
+      manifestation: "May see others as either allies or obstacles to your mission. Relationships are battlegrounds for honesty.",
       integration: "Recognize the warrior in the mirror. Own what you fight in others."
     },
     trine: {
@@ -435,7 +435,7 @@ export const generateErisGuidance = (
 export const ERIS_SIGN_EXPRESSIONS: Record<string, string> = {
   'Eris-Aries': "= Primal warrior. Eris in her home sign—pure pioneering disruption. Your soul purpose is to be first, to fight for the right to exist, to blaze trails that others couldn't imagine.",
   'Eris-Pisces': "= Spiritual warrior (before 1926). The fight for compassion, for the invisible, for dissolution of false structures.",
-  'Eris-Taurus': "= Material warrior (after 2048). The fight for authentic values, sustainable resources, and what truly matters materially."
+  'Eris-Taurus': "= Material warrior (after 2048). The fight for honest values, sustainable resources, and what truly matters materially."
 };
 
 // ============================================================================
