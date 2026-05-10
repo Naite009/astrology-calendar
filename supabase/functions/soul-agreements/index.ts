@@ -386,6 +386,20 @@ serve(async (req) => {
       .map((a) => `${a.planet1} ${a.type} ${a.planet2} (${a.orb.toFixed(1)}° orb)`)
       .join("\n");
 
+    // ── SECTION ANCHOR PRESELECTION ──
+    // Compute the top-3 allowed chart signatures per section in code BEFORE
+    // generation. The AI is told to use ONLY these anchors per section.
+    const sectionAnchors = computeSectionAnchors(placements, houses, aspects);
+    const renderAnchors = (label: string, items: string[]) =>
+      `${label}:\n${(items.length ? items : ["(no qualifying anchors found — apply default rules)"]).map((s) => `- ${s}`).join("\n")}`;
+    const anchorBlock = [
+      renderAnchors("FAMILY anchors", sectionAnchors.family),
+      renderAnchors("WOUND anchors", sectionAnchors.wound),
+      renderAnchors("GIFT anchors", sectionAnchors.gift),
+      renderAnchors("PURPOSE anchors", sectionAnchors.purpose),
+      renderAnchors("LEGACY anchors", sectionAnchors.legacy),
+    ].join("\n\n");
+
     const systemPrompt = `You are writing a Soul Contract reading from a natal chart. This is a SYMBOLIC, SPIRITUAL layer, NOT predictive astrology.
 
 PRE-GENERATION HARD RULES (apply BEFORE any interpretation):
