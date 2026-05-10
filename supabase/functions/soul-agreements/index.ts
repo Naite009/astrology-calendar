@@ -363,6 +363,18 @@ LEGACY EMOTIONAL-SAFETY GATE (mandatory):
 - Use emotional-safety / emotional-containment language in the Legacy section ONLY when the chart strongly supports it: Cancer prominent (Sun/Moon/MC/ASC in Cancer), Moon angular or in 4th/8th/12th, water emphasis (3+ personal planets in water), or Moon-Saturn / Moon-Pluto as a primary MC signature.
 - If those signatures are NOT present, write Legacy from THIS chart's actual public/visible contribution (builder, teacher, organizer, artist, strategist, protector, translator, witness) and do NOT default to safety/containment phrasing.
 
+CORE BODY RESTRICTION (mandatory):
+- Soul Agreements core logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node, South Node, Chiron, and the Angles (ASC/DSC/MC/IC).
+- DO NOT use or cite Varuna, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, asteroids (Ceres, Pallas, Juno, Vesta, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo), Lilith, Part of Fortune, Vertex, or any minor trans-Neptunian body. If present in chart data, IGNORE them.
+
+SOUTH NODE SUPPRESSION (mandatory):
+- South Node may SUPPORT interpretation but MUST NOT appear among the top 2 interpretive anchors in Wound, Gift, or Purpose UNLESS South Node is conjunct (≤6° orb) the Sun, Moon, Ascendant, or chart ruler.
+- If South Node is not conjunct one of those, demote it to a supporting/background mention only.
+
+FAMILY PRIORITY LOCK (mandatory):
+- The Family section is anchored ONLY by, in this priority order: (1) Moon (sign + house), (2) aspects to the Moon, (3) ruler of the 4th house cusp (its sign, house, condition), (4) planets in the 4th house.
+- Do NOT lead Family from Sun, Saturn, Pluto, nodes, or other placements unless they appear via Moon aspects or 4th-house ruler chains above.
+
 SECTION OWNERSHIP RULE (mandatory — prevents flattening of the chart):
 - Each major planet should have PRIMARY ownership of one or two sections. Default ownership map:
   • Moon → Family, Reset
