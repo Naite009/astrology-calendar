@@ -220,6 +220,44 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     toast.success("Removed from history");
   };
 
+  const loadSavedReading = (r: SavedReading) => {
+    if (r.reading_type === "pair") {
+      // cache_key: `${fId}:${fR}>${tId}:${tR}`
+      const m = r.cache_key.match(/^([^:]+):([^>]+)>([^:]+):(.+)$/);
+      if (!m) {
+        toast.error("Could not load this reading");
+        return;
+      }
+      const [, fId, fR, tId, tR] = m;
+      setFromChartId(fId);
+      setFromRole(fR as FamilyRole);
+      setToChartId(tId);
+      setToRole(tR as FamilyRole);
+      // auto-restore effect will populate aiReading
+      toast.success("Loaded from history");
+      return;
+    }
+    // system: pieces joined by `|`, each `chartId:role`
+    const pieces = r.cache_key.split("|");
+    const ids = new Set<string>();
+    for (const piece of pieces) {
+      const idx = piece.lastIndexOf(":");
+      if (idx < 0) continue;
+      const chartId = piece.slice(0, idx);
+      const role = piece.slice(idx + 1);
+      const member = members.find(
+        (mm) => mm.member_chart_id === chartId && mm.role === role,
+      );
+      if (member) ids.add(member.id);
+    }
+    if (ids.size < 2) {
+      toast.error("Some family members are missing from your list");
+      return;
+    }
+    setSelectedIds(ids);
+    toast.success("Loaded from history");
+  };
+
   // Auto-restore pair reading if a saved one matches the current selection
   useEffect(() => {
     if (!fromChartId || !toChartId || fromChartId === toChartId) {
