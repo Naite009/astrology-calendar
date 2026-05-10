@@ -447,8 +447,8 @@ CORE BODY RESTRICTION (mandatory):
 - DO NOT use or cite Varuna, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, asteroids (Ceres, Pallas, Juno, Vesta, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo), Lilith, Part of Fortune, Vertex, or any minor trans-Neptunian body. If present in chart data, IGNORE them.
 
 SOUTH NODE SUPPRESSION (mandatory):
-- South Node may SUPPORT interpretation but MUST NOT appear among the top 2 interpretive anchors in Wound, Gift, or Purpose UNLESS South Node is conjunct (≤6° orb) the Sun, Moon, Ascendant, or chart ruler.
-- If South Node is not conjunct one of those, demote it to a supporting/background mention only.
+- South Node may SUPPORT interpretation in Family and Wound (and may appear in Gift or Purpose as background) but MUST NOT lead or appear among the top 2 interpretive anchors UNLESS South Node is conjunct (≤4° orb) the Sun, Moon, Ascendant, MC, or chart ruler.
+- If South Node is not tightly conjunct one of those, demote it to a supporting/background mention only ("familiar pattern", "default habit", "long-standing tendency"). Never make South Node the lead anchor for Family or Wound on sign placement alone.
 
 ORB VALIDATION RULE (mandatory — degree-based, NOT sign-based):
 - A conjunction MUST be validated by actual degree separation. Two planets in the same sign are NOT automatically conjunct. Compute |long1 − long2| (mod 360, take the shorter arc) and compare against the maximum orb below.
