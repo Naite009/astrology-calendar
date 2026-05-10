@@ -437,6 +437,9 @@ export interface PairReadingResponse {
   repairProfile?: RepairProfile | null;
   ageYears: number | null;
   aspectsUsed: number;
+  overallIntensity?: "mild" | "moderate" | "strong" | "dominant";
+  totalSignatureScore?: number;
+  highWeightCount?: number;
   error?: string;
 }
 
