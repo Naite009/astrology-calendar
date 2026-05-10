@@ -89,6 +89,8 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/stepping into/gi, "learning")
       .replace(/owning your truth/gi, "saying what you really think")
       .replace(/soul calling/gi, "life direction")
+      .replace(/private transformation/gi, "private change in how you act")
+      .replace(/transformations?/gi, "change in how you act, respond, or choose")
       .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
       .replace(/optimistic vision/gi, "insightful vision")
   );
