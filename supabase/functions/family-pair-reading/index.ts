@@ -65,6 +65,13 @@ interface ReadingPayload {
     whatTheParentMayNotice: string[];
     whatHelps: string[];
   };
+  repairProfile?: {
+    title: string;
+    astrology: string;
+    plainEnglish: string;
+    whatTheParentMayNotice: string[];
+    whatHelps: string[];
+  };
 }
 
 function ageStage(years: number | null | undefined): string {
