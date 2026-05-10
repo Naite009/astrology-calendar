@@ -67,7 +67,7 @@ const PLANET_ESSENCES: Record<string, { name: string; essence: string }> = {
   pluto: { name: 'Pluto', essence: 'Your power, transformation, and where you experience death and rebirth.' },
   chiron: { name: 'Chiron', essence: 'Your deepest wound and greatest healing gift.' },
   northnode: { name: 'North Node', essence: 'Your soul growth direction and karmic destiny.' },
-  southnode: { name: 'South Node', essence: 'Your past life patterns and comfort zone.' },
+  southnode: { name: 'South Node', essence: 'Your long-standing patterns and comfort zone.' },
   ascendant: { name: 'Ascendant', essence: 'Your rising sign, outer personality, and how others see you.' },
 };
 
