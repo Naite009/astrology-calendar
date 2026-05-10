@@ -347,6 +347,222 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
   };
 };
 
+// ── SECTION ANCHOR PRESELECTION ENGINE ──
+// For each section, return up to 3 allowed chart signatures. The AI is told
+// to use ONLY these anchors per section, which prevents the model from
+// elevating the wrong placement (e.g., leading Family from Sun, or leading
+// Wound from a sign placement when a tight hard aspect exists).
+function computeSectionAnchors(
+  placements: Placement[],
+  houses: HouseInfo[],
+  aspects: Aspect[],
+): {
+  family: string[];
+  wound: string[];
+  gift: string[];
+  purpose: string[];
+  legacy: string[];
+} {
+  const lc = (s?: string) => String(s || "").toLowerCase();
+  const find = (name: string) =>
+    placements.find((p) => lc(p.planet) === lc(name));
+  const houseOf = (n: number) => houses.find((h) => h.house === n);
+  const aspectsOf = (name: string) =>
+    aspects.filter((a) => lc(a.planet1) === lc(name) || lc(a.planet2) === lc(name));
+  const isHard = (t: string) =>
+    ["conjunction", "opposition", "square"].includes(lc(t));
+  const isSupportive = (t: string) =>
+    ["trine", "sextile", "conjunction"].includes(lc(t));
+  const fmtAspect = (a: Aspect) =>
+    `${a.planet1} ${a.type} ${a.planet2} (${a.orb.toFixed(1)}° orb)`;
+  const fmtPlacement = (name: string) => {
+    const p = find(name);
+    if (!p) return null;
+    return `${p.planet} in ${p.sign ?? "?"}${p.house ? ` in House ${p.house}` : ""}`;
+  };
+  const fmtHouseCusp = (n: number, label: string) => {
+    const h = houseOf(n);
+    if (!h?.cuspSign) return null;
+    const rulerBit = h.ruler
+      ? ` (ruler ${h.ruler}${h.rulerSign ? ` in ${h.rulerSign}` : ""}${
+          h.rulerHouse ? `, House ${h.rulerHouse}` : ""
+        })`
+      : "";
+    return `${label} cusp in ${h.cuspSign}${rulerBit}`;
+  };
+
+  // Tight-conjunction-to-luminary/angle/chart-ruler check (≤4° orb)
+  const h1 = houseOf(1);
+  const chartRuler = h1?.ruler ? lc(h1.ruler) : "";
+  const tightConjPriority = (name: string) => {
+    return aspectsOf(name).some((a) => {
+      if (lc(a.type) !== "conjunction" || a.orb > 4) return false;
+      const other = lc(a.planet1) === lc(name) ? lc(a.planet2) : lc(a.planet1);
+      return ["sun", "moon", "ascendant", "midheaven"].includes(other) ||
+        (chartRuler && other === chartRuler);
+    });
+  };
+
+  // ── FAMILY: 4th cusp+ruler, Moon, 4th-house planets / Moon aspects ──
+  const family: string[] = [];
+  const fam4 = fmtHouseCusp(4, "4th house");
+  if (fam4) family.push(fam4);
+  const moonLine = fmtPlacement("Moon");
+  if (moonLine) family.push(moonLine);
+  const moonHard = aspectsOf("Moon")
+    .filter((a) => isHard(a.type))
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 2);
+  const planetsIn4 = placements.filter(
+    (p) => p.house === 4 && !["Ascendant", "Midheaven"].includes(p.planet),
+  );
+  if (planetsIn4.length) {
+    family.push(
+      `Planets in 4th house: ${planetsIn4
+        .map((p) => `${p.planet} in ${p.sign ?? "?"}`)
+        .join(", ")}`,
+    );
+  } else if (moonHard.length) {
+    family.push(`Moon aspects: ${moonHard.map(fmtAspect).join("; ")}`);
+  }
+
+  // ── WOUND: Chiron, hard aspects to Sun/Moon/Asc, Saturn/Pluto if connected ──
+  const wound: string[] = [];
+  const chironLine = fmtPlacement("Chiron");
+  if (chironLine) wound.push(chironLine);
+  const chironHard = aspectsOf("Chiron")
+    .filter((a) => isHard(a.type))
+    .sort((a, b) => a.orb - b.orb);
+  if (chironHard.length) {
+    wound.push(
+      `Hard aspects to Chiron: ${chironHard.slice(0, 2).map(fmtAspect).join("; ")}`,
+    );
+  }
+  const lumAngleHard = aspects
+    .filter((a) => {
+      if (!isHard(a.type)) return false;
+      const a1 = lc(a.planet1);
+      const a2 = lc(a.planet2);
+      const involvesLumAngle = ["sun", "moon", "ascendant"].some(
+        (n) => n === a1 || n === a2,
+      );
+      const involvesChiron = a1 === "chiron" || a2 === "chiron";
+      return involvesLumAngle && !involvesChiron;
+    })
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 2);
+  if (lumAngleHard.length && wound.length < 3) {
+    wound.push(
+      `Strongest hard aspects to Sun/Moon/Ascendant: ${lumAngleHard
+        .map(fmtAspect)
+        .join("; ")}`,
+    );
+  }
+  // Saturn / Pluto only if strongly connected to luminary/angle/Chiron (≤6°)
+  const strongConn = (name: string) =>
+    aspectsOf(name)
+      .filter(
+        (a) =>
+          isHard(a.type) &&
+          a.orb <= 6 &&
+          [a.planet1, a.planet2].some((p) =>
+            ["Sun", "Moon", "Chiron", "Ascendant", "Midheaven"].includes(p),
+          ),
+      )
+      .sort((a, b) => a.orb - b.orb);
+  if (wound.length < 3) {
+    const sat = strongConn("Saturn");
+    if (sat.length) wound.push(`Saturn (strongly connected): ${fmtAspect(sat[0])}`);
+  }
+  if (wound.length < 3) {
+    const plu = strongConn("Pluto");
+    if (plu.length) wound.push(`Pluto (strongly connected): ${fmtAspect(plu[0])}`);
+  }
+
+  // ── GIFT: supportive Moon/Venus/Jupiter/Neptune; dignified/angular; SN if tight ──
+  const gift: string[] = [];
+  const giftLeads = ["Moon", "Venus", "Jupiter", "Neptune"];
+  for (const gp of giftLeads) {
+    const supp = aspectsOf(gp)
+      .filter((a) => isSupportive(a.type) && a.orb <= 6)
+      .sort((a, b) => a.orb - b.orb)
+      .slice(0, 1);
+    if (supp.length) {
+      gift.push(`${gp} supportive aspect: ${fmtAspect(supp[0])}`);
+      if (gift.length >= 2) break;
+    }
+  }
+  const angular = placements.filter(
+    (p) =>
+      [1, 4, 7, 10].includes(p.house || 0) &&
+      !["Ascendant", "Midheaven"].includes(p.planet),
+  );
+  if (angular.length && gift.length < 3) {
+    gift.push(
+      `Angular planets: ${angular
+        .slice(0, 3)
+        .map((p) => `${p.planet} in ${p.sign ?? "?"} (House ${p.house})`)
+        .join(", ")}`,
+    );
+  }
+  if (tightConjPriority("South Node") && gift.length < 3) {
+    const sn = fmtPlacement("South Node");
+    if (sn) gift.push(`${sn} (tightly conjunct luminary/angle/chart ruler — eligible as gift anchor)`);
+  }
+
+  // ── PURPOSE: NN, Sun, chart ruler / MC ──
+  const purpose: string[] = [];
+  const nnLine = fmtPlacement("North Node");
+  if (nnLine) {
+    purpose.push(nnLine);
+    const nnAsp = aspectsOf("North Node")
+      .sort((a, b) => a.orb - b.orb)
+      .slice(0, 1);
+    if (nnAsp.length) {
+      purpose.push(`North Node aspect: ${fmtAspect(nnAsp[0])}`);
+    }
+  }
+  const sunLine = fmtPlacement("Sun");
+  if (sunLine && purpose.length < 3) purpose.push(sunLine);
+  if (purpose.length < 3 && h1?.ruler) {
+    purpose.push(
+      `Chart ruler ${h1.ruler}${h1.rulerSign ? ` in ${h1.rulerSign}` : ""}${
+        h1.rulerHouse ? ` (House ${h1.rulerHouse})` : ""
+      }`,
+    );
+  }
+  if (purpose.length < 3) {
+    const mc = fmtHouseCusp(10, "Midheaven");
+    if (mc) purpose.push(mc);
+  }
+
+  // ── LEGACY: MC + ruler, 10th-house planets, Saturn, Sun ──
+  const legacy: string[] = [];
+  const mcLine = fmtHouseCusp(10, "Midheaven");
+  if (mcLine) legacy.push(mcLine);
+  const planetsIn10 = placements.filter(
+    (p) => p.house === 10 && !["Ascendant", "Midheaven"].includes(p.planet),
+  );
+  if (planetsIn10.length) {
+    legacy.push(
+      `Planets in 10th house: ${planetsIn10
+        .map((p) => `${p.planet} in ${p.sign ?? "?"}`)
+        .join(", ")}`,
+    );
+  }
+  const satLine = fmtPlacement("Saturn");
+  if (satLine && legacy.length < 3) legacy.push(satLine);
+  if (sunLine && legacy.length < 3) legacy.push(sunLine);
+
+  return {
+    family: family.slice(0, 3),
+    wound: wound.slice(0, 3),
+    gift: gift.slice(0, 3),
+    purpose: purpose.slice(0, 3),
+    legacy: legacy.slice(0, 3),
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
