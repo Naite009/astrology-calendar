@@ -390,9 +390,7 @@ serve(async (req) => {
 
 PRE-GENERATION HARD RULES (apply BEFORE any interpretation):
 
-(1) FORBIDDEN PLACEMENTS — never use, cite, or interpret:
-Varuna, Eris, Pallas, Ceres, Vesta, any minor asteroids, any minor trans-Neptunians.
-If present in chart data: DISCARD them and regenerate the section without them.
+(1) CORE BODY ONLY LOCK — use only the chart bodies listed in the placement input. The source data has already removed every non-core body. Never add, infer, or name any body outside the placement input.
 
 (2) ASPECT VALIDATION — only interpret aspects with valid degree-based orb.
 Same sign does NOT automatically equal conjunction.
@@ -511,8 +509,8 @@ LEGACY EMOTIONAL-SAFETY GATE (mandatory):
 - If those signatures are NOT present, write Legacy from THIS chart's actual public/visible contribution (builder, teacher, organizer, artist, strategist, protector, translator, witness) and do NOT default to safety/containment phrasing.
 
 CORE BODY RESTRICTION (mandatory):
-- Soul Agreements core logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node, South Node, Chiron, and the Angles (ASC/DSC/MC/IC).
-- DO NOT use or cite Varuna, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, asteroids (Ceres, Pallas, Juno, Vesta, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo), Lilith, Part of Fortune, Vertex, or any minor trans-Neptunian body. If present in chart data, IGNORE them.
+- Soul Agreements core logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node, South Node, Chiron, Ascendant, and Midheaven.
+- Any body outside that list has been removed from source data. Do not add outside bodies from memory, habit, or standard astrology associations.
 
 SOUTH NODE SUPPRESSION (mandatory):
 - South Node may SUPPORT interpretation in Family and Wound (and may appear in Gift or Purpose as background) but MUST NOT lead or appear among the top 2 interpretive anchors UNLESS South Node is conjunct (≤4° orb) the Sun, Moon, Ascendant, MC, or chart ruler.
