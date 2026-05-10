@@ -358,15 +358,19 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
+      {systemReading && (
+        <FamilySystemReadingView reading={systemReading} />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
-            Pair Reading
+            Zoom in: One-on-One Reading
           </CardTitle>
           <CardDescription>
-            Pick whose energy is the source (FROM) and whose nervous system is receiving (TO).
-            Direction matters — a parent's Mars onto a child's Moon is a different reading than the reverse.
+            Want to dig into a single relationship? Pick whose energy is the source (FROM) and whose nervous system is receiving (TO).
+            Direction matters: a parent's Mars onto a child's Moon is a different reading than the reverse.
             Readings use the actual signs, houses, and the child's age.
           </CardDescription>
         </CardHeader>
