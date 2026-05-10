@@ -926,7 +926,7 @@ GLOBAL ANCHORING (mandatory):
 EMOTIONAL TONE per section (must feel distinct):
 - Family = memory. Wound = stings slightly. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Resilience (returned as "strength") = grounding. Legacy = weighty. Reset = practical.
 
-1. FAMILY AGREEMENT — the early emotional pattern that shaped this person and that their family of origin continued. Use ONLY these placements: Moon (sign, house), Moon aspects, the 4th house cusp, planets in the 4th, and the ruler of the 4th. Do NOT use the South Node here. Do NOT use Juno. Do NOT use the 10th house or other parental symbolism here. Frame everything as an "early pattern", "long-standing pattern", or "learned pattern" — never as past-life or soul-chosen.
+1. FAMILY AGREEMENT — the early emotional pattern that shaped this person and that their family of origin continued. Use ONLY these placements: Moon (sign, house), Moon aspects, the 4th house cusp, planets in the 4th, and the ruler of the 4th. Do NOT use the South Node here. Do NOT use the 10th house or other parental symbolism here. Frame everything as an "early pattern", "long-standing pattern", or "learned pattern" — never as past-life or soul-chosen.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean "secretive family" or "hidden trauma." Prefer: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings.
 
 2. WOUND AGREEMENT — the long-standing emotional pain that has shaped how this person grows. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where they have to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node as the older pattern this wound traces back to (frame the South Node as a "long-standing pattern" or "early pattern", never as a past life). Should sting slightly, never cruelly.
@@ -939,7 +939,7 @@ EMOTIONAL TONE per section (must feel distinct):
 4. RELATIONSHIP AGREEMENT — who helps shape your development, and what is the recurring lesson. Name BOTH what you are drawn to AND the pattern that repeats until the lesson is learned.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
    PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
-   DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
+   Do not use any relationship body outside the source-controlled core body list.
 
 5. GIFT AGREEMENT — what you arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already well-developed earlier in life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
@@ -947,7 +947,7 @@ EMOTIONAL TONE per section (must feel distinct):
    Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability.
    The Plain English paragraph must literally name those 5 stages in order, then describe in 2-3 sentences how that cycle plays out for this chart specifically (what the pressure tends to look like, what their withdrawal looks like, what kind of insight lands, what the decisive action looks like, what the new stability feels like). Do NOT list random life events. Do NOT predict events. The 5 Real-Life Examples should each describe ONE stage of the cycle in order (one bullet per stage).
 
-7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
+7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use the Nodes or other bodies.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe enough to be honest about what they feel, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language. Do NOT use the phrase "inspiring others to be true to themselves" — replace any such instinct with "helping others feel safe enough to be honest about what they feel".
 
 8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How you recover, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
