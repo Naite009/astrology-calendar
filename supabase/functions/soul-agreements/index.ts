@@ -418,6 +418,25 @@ HARD ASPECT RULE:
 - If two bodies are in the same sign but outside valid orb, do NOT use any conjunction language at all. Do not call it a conjunction, a contact, a fusion, a meeting, or any similar word.
 - Remove all conjunction language entirely and use only sign-based resonance as background if needed.
 
+PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any check fails, REGENERATE the affected section(s) before output.
+
+(1) EXCLUDED BODY CHECK: Scan the full draft for: Varuna, Eris, Pallas, Ceres, Vesta, Juno, Lilith, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo, Part of Fortune, Vertex, or any other asteroid / minor trans-Neptunian. If ANY appear, REGENERATE without them.
+
+(2) ORB CHECK: Every use of the words "conjunct", "conjunction", "fused with", "joined to" MUST be backed by a valid degree-based orb (per the orb table above). Same sign is NEVER a conjunction. If you cannot cite a valid orb, REPLACE the word with "same sign emphasis" or "related sign emphasis" (background only).
+
+(3) NODE CHECK: South Node MUST NOT be a lead anchor in Family, Gift, or Wound UNLESS South Node is conjunct (within valid orb) the Sun, Moon, Ascendant, chart ruler, or MC. Otherwise demote it and describe it ONLY as "familiar pattern", "default habit", or "old strategy".
+
+(4) SUN IDENTITY INTEGRATION: Do NOT paste Sun identity as a tacked-on sentence after the Real-Life Examples or Recognition Check. Integrate Sun identity naturally inside Plain English or the Summary, framed as the lens THROUGH WHICH growth happens.
+   BAD:  "Your Sun in Taurus is the identity that learned to operate inside this pattern."
+   GOOD: "Because your Sun is in Taurus, this growth needs to happen through steadiness, practical choices, and trust in your own pace."
+
+(5) REPETITION CHECK: Purpose, Gift, Stress (returned as "strength"), and Reset MUST each have a distinct functional meaning:
+   • Purpose = growth direction (where you are going)
+   • Gift = natural talent (what already works)
+   • Stress = crisis response (who you become under pressure)
+   • Reset = recovery method (what restores you)
+   If a single stellium or theme dominates more than two of these sections, REWRITE so each section reflects its own function.
+
 JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: rebirth, evolution, karmic, soul contract, sovereignty, destiny. The word "transformation" is BANNED outright; write "change how you act, respond, or choose" instead.
 
   BAD:  "You are here for deep transformation."
