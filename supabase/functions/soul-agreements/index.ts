@@ -947,7 +947,29 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
             ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
             : String(source?.interpretation || fallbackSection.interpretation));
         const rawInterpretation = cleanPlainLanguage(structuredInterpretation);
-        const interpretation = stripRecognitionFromInterpretation(rawInterpretation);
+        let interpretation = collapseDuplicateHeadings(stripRecognitionFromInterpretation(rawInterpretation));
+
+        // FINAL RENDER VALIDATION: Astrology field must name actual placements/aspects.
+        // If empty or generic, rebuild it from the deterministic chart data.
+        const astroField = extractField(interpretation, "Astrology");
+        if (!isAstrologyResolved(astroField)) {
+          const fallbackAstro =
+            extractField(fallbackSection.interpretation, "Astrology") ||
+            placements
+              .slice(0, 3)
+              .map((pl) => `${pl.planet} in ${pl.sign ?? "?"}${pl.house ? ` in House ${pl.house}` : ""}`)
+              .join("; ") + ".";
+          if (astroField) {
+            interpretation = interpretation.replace(
+              /(\*\*Astrology\*\*\s*)([\s\S]*?)(?=\n\s*\*\*[A-Z][^*\n]*\*\*|$)/i,
+              `$1${fallbackAstro}\n\n`,
+            );
+          } else {
+            interpretation = `**Astrology**\n${fallbackAstro}\n\n${interpretation}`;
+          }
+          console.warn(`[soul-agreements] Rebuilt Astrology field for "${key}" — original was generic/empty.`);
+        }
+
         const recognition = cleanPlainLanguage(
           source?.recognition
             ? `This may fit if:\n${asArray(source.recognition, fallbackRecognition).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
