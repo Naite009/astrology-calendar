@@ -1069,7 +1069,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
           if (missing.includes("purpose") && result.purpose?.interpretation) {
             result.purpose.interpretation = txtOf("purpose").trim() +
-              ` Underneath all of this, your Sun in ${sunSign} is still the core of who you are; purpose expresses THROUGH that identity, it does not replace it.`;
+              ` Your Sun in ${sunSign} stays the core of who you are; this growth direction expresses through that identity, it does not replace it.`;
           }
           if (missing.includes("family") && result.family?.interpretation) {
             result.family.interpretation = txtOf("family").trim() +
@@ -1092,7 +1092,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         if (!has(moonSign, txtOf("reset")) && result.reset?.interpretation) {
           console.warn(`[soul-agreements] Moon (${moonSign}) missing from reset`);
           result.reset.interpretation = txtOf("reset").trim() +
-            ` Restoration follows what your Moon in ${moonSign} actually needs to feel settled again.`;
+            ` Your Moon in ${moonSign} is what actually needs tending for you to feel settled again.`;
         }
       }
 
