@@ -40,6 +40,45 @@ interface Payload {
 const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy", "strength", "reset"] as const;
 type SectionKey = typeof sectionKeys[number];
 
+const ALLOWED_BODY_NAMES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+  "Uranus", "Neptune", "Pluto", "Chiron", "North Node", "South Node",
+  "Ascendant", "Midheaven",
+] as const;
+const ALLOWED_BODY_SET = new Set<string>(ALLOWED_BODY_NAMES.map((name) => name.toLowerCase()));
+const BODY_ALIASES: Record<string, string> = {
+  asc: "Ascendant",
+  ascendant: "Ascendant",
+  mc: "Midheaven",
+  midheaven: "Midheaven",
+  northnode: "North Node",
+  "north node": "North Node",
+  truenode: "North Node",
+  "true node": "North Node",
+  southnode: "South Node",
+  "south node": "South Node",
+};
+const normalizeBodyName = (name?: string) => {
+  const cleaned = String(name || "").replace(/[_.-]+/g, " ").replace(/\s+/g, " ").trim();
+  return BODY_ALIASES[cleaned.toLowerCase().replace(/\s+/g, "")] || BODY_ALIASES[cleaned.toLowerCase()] || cleaned;
+};
+const isAllowedBody = (name?: string) => ALLOWED_BODY_SET.has(normalizeBodyName(name).toLowerCase());
+const filterPayloadAstrology = (payload: Payload): Payload => {
+  const placements = (payload.placements || [])
+    .map((placement) => ({ ...placement, planet: normalizeBodyName(placement.planet) }))
+    .filter((placement) => isAllowedBody(placement.planet));
+  const aspects = (payload.aspects || [])
+    .map((aspect) => ({ ...aspect, planet1: normalizeBodyName(aspect.planet1), planet2: normalizeBodyName(aspect.planet2) }))
+    .filter((aspect) => isAllowedBody(aspect.planet1) && isAllowedBody(aspect.planet2));
+  const houses = (payload.houses || []).map((house) => {
+    const ruler = normalizeBodyName(house.ruler);
+    return house.ruler && !isAllowedBody(ruler)
+      ? { ...house, ruler: undefined, rulerSign: undefined, rulerHouse: undefined }
+      : { ...house, ruler };
+  });
+  return { chartName: payload.chartName, placements, houses, aspects };
+};
+
 const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
 const TEMPLATE_HEADING = /(^|\n)\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|END SECTION)\s*:?(?=\n|$)/i;
 const LEADING_TEMPLATE_HEADING = /^\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|(?:Astrology|Plain English|Real-Life Examples|Recognition Check|END SECTION))\s*:?\s*/i;
