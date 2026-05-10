@@ -704,6 +704,13 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       const pickSummary = (raw: unknown, fallbackText: string): string => {
         return validSummaryField(raw) ?? fallbackText;
       };
+      const fallbackGrowthSigns = (fallback.summary as any).growthSigns as string[] | undefined;
+      const rawGrowthSigns = Array.isArray(s.growthSigns) ? s.growthSigns : [];
+      const cleanedGrowthSigns = rawGrowthSigns
+        .map((item: unknown) => cleanPlainLanguage(String(item)).replace(/^-\s*/, "").replace(/\.$/, "").trim())
+        .filter(Boolean)
+        .slice(0, 5);
+      const growthSigns = cleanedGrowthSigns.length >= 3 ? cleanedGrowthSigns : (fallbackGrowthSigns || []);
       result.summary = {
         whatToPractice: pickSummary(s.whatToPractice ?? s.coreLesson, fallback.summary.whatToPractice),
         whatToWatchFor: pickSummary(s.whatToWatchFor ?? s.coreWound, fallback.summary.whatToWatchFor),
@@ -713,6 +720,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           s.integration,
           (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.",
         ),
+        growthSigns,
       };
       return result;
     };
