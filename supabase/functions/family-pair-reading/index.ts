@@ -173,6 +173,13 @@ JSON SCHEMA:
     "plainEnglish": string (2-4 sentences translating the signatures into likely lived behavior under pressure, calibrated to the child's age),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors, e.g. "smart but hesitant", "freezes when watched"],
     "whatHelps": [string, ...3-5 short supportive parenting/coaching responses, verbs first, e.g. "praise effort before outcome", "reduce public correction"]
+  },
+  "repairProfile": {
+    "title": "What Repair Requires for This Child",
+    "astrology": string (1-3 sentences naming the EXACT signatures driving this child's repair style — Sun/Saturn condition, 4th/10th houses and their rulers, Pluto links to 4th/10th, 8th/12th emphasis, Moon-Chiron, Moon-Neptune, Mercury hard aspects. Include valid degree orbs. If no qualifying signatures, return "" and empty arrays/strings),
+    "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
+    "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
+    "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
   }
 }
 
