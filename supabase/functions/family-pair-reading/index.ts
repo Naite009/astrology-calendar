@@ -24,14 +24,16 @@ interface CrossAspect {
 
 interface RequestBody {
   fromName: string;
-  fromRole: string; // parent / grandparent / sibling
-  fromPlanetsSummary: string; // pre-formatted "Sun: Aries 12° (House 5) ..." text
+  fromRole: string;
+  fromPlanetsSummary: string;
   toName: string;
-  toRole: string; // child / sibling
+  toRole: string;
   toPlanetsSummary: string;
-  toBirthDate?: string; // YYYY-MM-DD; used for age stage
+  toBirthDate?: string;
   toAgeYears?: number | null;
-  aspects: CrossAspect[]; // sorted tightest first; max ~8
+  parentMoonSummary?: string;
+  childMoonSummary?: string;
+  aspects: CrossAspect[];
 }
 
 interface ReadingSection {
@@ -55,6 +57,7 @@ interface ReadingPayload {
   sections: ReadingSection[];
   practice: string; // one focused 90-day practice for the parent
   soulContract?: SoulContract;
+  moonBridge?: { summary: string; translation: string };
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -152,6 +155,10 @@ JSON SCHEMA:
     "childLesson": string (1-2 sentences: what this child agreed to learn through this parent),
     "parentLesson": string (1-2 sentences: what this parent agreed to learn through this child),
     "contractSentence": string (one sentence naming the central agreement, must name BOTH people learning)
+  },
+  "moonBridge": {
+    "summary": string (2 sentences explaining how the parent and child Moon signs interact as emotional languages),
+    "translation": string (one sentence in the format: "When [childName] does [specific behavior], they are actually saying [what they need]." Specific to the child's Moon sign, not generic.)
   }
 }
 
@@ -161,7 +168,9 @@ SOUL CONTRACT RULES:
 - parentLesson: Look at what the child's chart activates in the parent, especially if the child's Sun or Moon aspects the parent's Saturn, Chiron, or South Node. Name what this parent is here to learn through this child.
 - contractSentence: One sentence. Plain English. Must name both people learning something, not just the child learning from the parent. Example format: "They came to teach each other that [truth]."
 - NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
-- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.`;
+- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.
+
+MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
@@ -169,10 +178,14 @@ ${body.fromPlanetsSummary}
 CHILD (${toRoleLabel}): ${body.toName}${ageYears != null ? ` — age ${ageYears}` : " — age unknown"}
 ${body.toPlanetsSummary}
 
+MOON BRIDGE INPUTS:
+- Parent: ${body.parentMoonSummary ?? "unknown"}
+- Child: ${body.childMoonSummary ?? "unknown"}
+
 CROSS-ASPECTS (already verified, tightest first):
 ${aspectLines}
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
