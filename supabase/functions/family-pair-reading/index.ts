@@ -124,15 +124,76 @@ Deno.serve(async (req) => {
     const ageYears = body.toAgeYears ?? computeAge(body.toBirthDate);
     const stage = ageStage(ageYears);
 
-    // Trim to top 8 tightest aspects to keep prompt focused.
-    const aspects = body.aspects.slice(0, 8);
-    const aspectLines = aspects
-      .map((a) => {
+    // Deterministic signature weighting (run BEFORE prompt assembly).
+    const HARD = new Set(["conjunction", "opposition", "square"]);
+    const SOFT = new Set(["trine", "sextile"]);
+    function scoreAspect(a: CrossAspect): number {
+      const f = a.fromPlanet, t = a.toPlanet, asp = a.aspect;
+      const isHard = HARD.has(asp);
+      const involves = (p1: string, p2: string) =>
+        (f === p1 && t === p2) || (f === p2 && t === p1);
+      const involvesAny = (set: string[], other: string) =>
+        (set.includes(f) && t === other) || (set.includes(t) && f === other);
+      // Saturn hard Sun/Moon = +5
+      if (isHard && involvesAny(["Saturn"], "Sun")) return 5;
+      if (isHard && involvesAny(["Saturn"], "Moon")) return 5;
+      // Chiron hard Sun/Moon = +4
+      if (isHard && involvesAny(["Chiron"], "Sun")) return 4;
+      if (isHard && involvesAny(["Chiron"], "Moon")) return 4;
+      // Pluto → Moon = +4 (any aspect)
+      if (involves("Pluto", "Moon")) return 4;
+      // Moon-Neptune hard = +3
+      if (isHard && involves("Moon", "Neptune")) return 3;
+      // Mercury-Chiron = +3 (any aspect, treat as sensitive contact)
+      if (involves("Mercury", "Chiron")) return 3;
+      // Mars-Saturn hard = +3
+      if (isHard && involves("Mars", "Saturn")) return 3;
+      // Node contacts = +2
+      if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
+      // Soft aspects = +1
+      if (SOFT.has(asp)) return 1;
+      // Default qualifying hard contact
+      return 2;
+    }
+    function intensityLabel(total: number, count: number): "mild" | "moderate" | "strong" | "dominant" {
+      if (count >= 3 && total >= 12) return "dominant";
+      if (count >= 2 && total >= 8) return "strong";
+      if (total >= 4) return "moderate";
+      return "mild";
+    }
+
+    // Reduced default aspect count: 4-6 strongest only. Allow up to 6 if extra
+    // aspects have very tight orb (<3°) OR add new planet pair information.
+    const allRanked = [...body.aspects]
+      .map((a) => ({ a, score: scoreAspect(a), tightness: 10 - Math.min(a.orb, 10) }))
+      .sort((x, y) => (y.score + y.tightness * 0.4) - (x.score + x.tightness * 0.4));
+    const seen = new Set<string>();
+    const picked: CrossAspect[] = [];
+    for (const { a } of allRanked) {
+      if (picked.length >= 6) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}`;
+      const isTight = a.orb < 3;
+      const isNewPair = !seen.has(key);
+      if (picked.length < 4 || isTight || isNewPair) {
+        picked.push(a);
+        seen.add(key);
+      }
+    }
+    const aspects = picked;
+
+    // Scored summary (passed to AI for prioritisation).
+    const scored = aspects.map((a) => ({ a, s: scoreAspect(a) }));
+    const totalScore = scored.reduce((sum, x) => sum + x.s, 0);
+    const highWeightCount = scored.filter((x) => x.s >= 4).length;
+    const overallIntensity = intensityLabel(totalScore, highWeightCount);
+
+    const aspectLines = scored
+      .map(({ a, s }) => {
         const fromHouse = a.fromHouse ? ` (H${a.fromHouse})` : "";
         const toHouse = a.toHouse ? ` (H${a.toHouse})` : "";
         const fromRetro = a.fromRetro ? " R" : "";
         const toRetro = a.toRetro ? " R" : "";
-        return `- ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro} — ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
+        return `- [weight ${s}] ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro} — ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
       })
       .join("\n");
 
