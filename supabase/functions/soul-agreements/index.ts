@@ -566,10 +566,9 @@ SECTION OWNERSHIP RULE (mandatory — prevents flattening of the chart):
 
 FINAL ENFORCEMENT LOCK — these override all prior text:
 
-HARD EXCLUSION RULE:
-- NEVER use, cite, or interpret: Varuna, Eris, Pallas, Ceres, Vesta, any minor asteroids, or any minor trans-Neptunian bodies.
+HARD SOURCE RULE:
 - Core Soul Agreements logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, North Node, South Node, Ascendant, Midheaven.
-- If any excluded body appears in chart data, IGNORE it entirely. Do not reference it even in passing.
+- The placement, house ruler, and aspect inputs are source-controlled. Use only those names. Never introduce an unlisted body.
 
 HARD ASPECT RULE:
 - A conjunction is ONLY valid when the actual degree separation is within the valid orb.
@@ -579,7 +578,7 @@ HARD ASPECT RULE:
 
 PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any check fails, REGENERATE the affected section(s) before output.
 
-(1) EXCLUDED BODY CHECK: Scan the full draft for: Varuna, Eris, Pallas, Ceres, Vesta, Juno, Lilith, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo, Part of Fortune, Vertex, or any other asteroid / minor trans-Neptunian. If ANY appear, REGENERATE without them.
+(1) SOURCE BODY CHECK: Scan the full draft. Every named astrology body must be one of the core bodies listed above and must come from the source input. If any outside body appears, REGENERATE without it.
 
 (2) ORB CHECK: Every use of the words "conjunct", "conjunction", "fused with", "joined to" MUST be backed by a valid degree-based orb (per the orb table above). Same sign is NEVER a conjunction. If you cannot cite a valid orb, REPLACE the word with "same sign emphasis" or "related sign emphasis" (background only).
 
