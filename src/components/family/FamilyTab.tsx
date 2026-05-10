@@ -310,7 +310,14 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       </Card>
 
       {aiReading && report && (
-        <AiPairReadingView reading={aiReading} fromName={report.fromName} toName={report.toName} fromRole={report.fromRole} toRole={report.toRole} />
+        <AiPairReadingView
+          reading={aiReading}
+          fromName={report.fromName}
+          toName={report.toName}
+          fromRole={report.fromRole}
+          toRole={report.toRole}
+          childMoonProfile={toRole === "child" && toChart ? buildChildMoonProfile(toChart) : null}
+        />
       )}
     </div>
   );
