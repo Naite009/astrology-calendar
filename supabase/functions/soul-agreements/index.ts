@@ -668,9 +668,17 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           ?.split("\n").map((item) => item.replace(/^-\s*/, "").trim()).filter(Boolean) || [];
         const fallbackRecognition = fallbackSection.question.split("\n").filter((item) => item.trim().startsWith("-")).map((item) => item.replace(/^-\s*/, "").trim());
         const cleanField = (raw: unknown, fallbackText: string) => stripTemplateLeakage(cleanPlainLanguage(String(raw || fallbackText)));
-        const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition
-          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
-          : String(source?.interpretation || fallbackSection.interpretation);
+        const survivalBlock = key === "family"
+          ? `\n\n**Emotional Survival Pattern**\n${cleanField(
+              source?.survivalPattern,
+              (fallbackSection as any).survivalPattern || "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+            )}`
+          : "";
+        const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
+          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
+          : (key === "family"
+            ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
+            : String(source?.interpretation || fallbackSection.interpretation));
         const rawInterpretation = cleanPlainLanguage(structuredInterpretation);
         const interpretation = stripRecognitionFromInterpretation(rawInterpretation);
         const recognition = cleanPlainLanguage(
