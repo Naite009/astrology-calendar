@@ -371,6 +371,43 @@ const AiPairReadingView = ({
         </CardContent>
       </Card>
 
+      {reading.soulContract && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Soul Contract
+              </CardTitle>
+              <Badge variant="outline">{fromName} &amp; {toName}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm pt-4">
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                Why These Two
+              </div>
+              <p>{reading.soulContract.whyTheseTwo}</p>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What {toName} Came to Learn
+              </div>
+              <p>{reading.soulContract.childLesson}</p>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What You Came to Learn
+              </div>
+              <p>{reading.soulContract.parentLesson}</p>
+            </div>
+            <p className="text-base font-semibold border-t border-border pt-3">
+              {reading.soulContract.contractSentence}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {childMoonProfile && (
         <Card className="border-primary/30">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
