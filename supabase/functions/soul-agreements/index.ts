@@ -768,8 +768,24 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           result.legacy.question = String(result.legacy.question).replace(bleedRe, "").replace(/\n{3,}/g, "\n\n").trim();
         }
       }
+      // Also strip the bleed phrase from gift/purpose/strength/family if it leaked there (it should only ever appear in legacy and only when supported)
+      const bleedReGlobal = /[^.!?\n]*helping others feel safe enough to be honest[^.!?\n]*[.!?]?/gi;
+      for (const k of ["family","wound","purpose","relationship","gift","timing","strength","reset"] as const) {
+        if (result[k]?.interpretation) {
+          result[k].interpretation = String(result[k].interpretation).replace(bleedReGlobal, "").replace(/\n{3,}/g, "\n\n").trim();
+        }
+      }
 
-      // ── REPETITION FILTER: log when overused concept words appear across too many sections ──
+      // ── DIFFERENTIATION ENFORCEMENT: Purpose, Gift, Stress must not share a root keyword ──
+      const rootWords = ["service","intellect","truth","innovation","innovative","power","creative","creativity","leadership","wisdom"];
+      const triplet = ["purpose","gift","strength"] as const;
+      for (const root of rootWords) {
+        const re = new RegExp(`\\b${root}\\w*\\b`, "i");
+        const hits = triplet.filter(k => re.test(String(result[k]?.interpretation || "")));
+        if (hits.length >= 2) {
+          console.warn(`[soul-agreements] differentiation clash on "${root}" across:`, hits);
+        }
+      }
       const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
       const tally: Record<string, number> = {};
       for (const key of sectionKeys) {
