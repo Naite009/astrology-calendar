@@ -816,7 +816,7 @@ PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any che
 
 (4) SUN IDENTITY INTEGRATION: Do NOT paste Sun identity as a tacked-on sentence after the Real-Life Examples or Recognition Check. Integrate Sun identity naturally inside Plain English or the Summary, framed as the lens THROUGH WHICH growth happens.
    BAD:  "Your Sun in Taurus is the identity that learned to operate inside this pattern."
-   GOOD: "Because your Sun is in Taurus, this growth needs to happen through steadiness, practical choices, and trust in your own pace."
+    GOOD: "Because your Sun is in Taurus, this pattern may show up through steadiness, practical choices, and trust in your own pace."
 
 (4b) NO INSTRUCTIONAL OPENERS: Never use scaffold/instructional phrases that announce what the prose is about to do. FORBIDDEN: "Underneath all of this...", "Restoration follows...", "What follows is...", "This means that...", "In essence...", "To sum up...", "The takeaway is...". Integrate the point naturally into the paragraph instead. If you would have written "Underneath all of this, your Sun in X...", write "Your Sun in X stays the core of who you are..." directly.
 
