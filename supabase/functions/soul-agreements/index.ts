@@ -1377,15 +1377,15 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
           if (missing.includes("purpose") && result.purpose?.interpretation) {
             result.purpose.interpretation = txtOf("purpose").trim() +
-              ` Your Sun in ${sunSign} stays the core of who you are; this growth direction expresses through that identity, it does not replace it.`;
+              ` Because your Sun is in ${sunSign}, this growth direction may show up through the natural strengths of that sign.`;
           }
           if (missing.includes("family") && result.family?.interpretation) {
             result.family.interpretation = txtOf("family").trim() +
-              ` Your Sun in ${sunSign} is the identity that learned to operate inside this early emotional pattern.`;
+              ` Because your Sun is in ${sunSign}, this early pattern may show up through the habits and defenses that sign tends to rely on.`;
           }
           if (missing.includes("summary") && result.summary) {
             result.summary.integration = String(result.summary.integration || "").trim() +
-              ` Stay anchored in your Sun in ${sunSign}; let growth happen through it, not in place of it.`;
+              ` Your Sun in ${sunSign} stays the core of who you are; let growth happen through it, not in place of it.`;
           }
         }
       }
