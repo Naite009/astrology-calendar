@@ -395,12 +395,26 @@ export interface SoulContract {
   contractSentence: string;
 }
 
+export interface MoonBridgeAi {
+  summary: string;
+  translation: string;
+}
+
+export type MoonBridgeConnection = "bridge" | "gap" | "mirror";
+
+export interface MoonBridge {
+  parentMoonLabel: string;
+  childMoonLabel: string;
+  connectionType: MoonBridgeConnection;
+}
+
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
   sections: PairReadingSection[];
   practice: string;
   soulContract?: SoulContract | null;
+  moonBridge?: MoonBridgeAi | null;
   ageYears: number | null;
   aspectsUsed: number;
   error?: string;
