@@ -154,6 +154,10 @@ JSON SCHEMA:
     "childLesson": string (1-2 sentences: what this child agreed to learn through this parent),
     "parentLesson": string (1-2 sentences: what this parent agreed to learn through this child),
     "contractSentence": string (one sentence naming the central agreement, must name BOTH people learning)
+  },
+  "moonBridge": {
+    "summary": string (2 sentences explaining how the parent and child Moon signs interact as emotional languages),
+    "translation": string (one sentence in the format: "When [childName] does [specific behavior], they are actually saying [what they need]." Specific to the child's Moon sign, not generic.)
   }
 }
 
@@ -163,7 +167,9 @@ SOUL CONTRACT RULES:
 - parentLesson: Look at what the child's chart activates in the parent, especially if the child's Sun or Moon aspects the parent's Saturn, Chiron, or South Node. Name what this parent is here to learn through this child.
 - contractSentence: One sentence. Plain English. Must name both people learning something, not just the child learning from the parent. Example format: "They came to teach each other that [truth]."
 - NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
-- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.`;
+- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.
+
+MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
