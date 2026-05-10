@@ -103,6 +103,24 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/transformations?/gi, "change in how you act, respond, or choose")
       .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
       .replace(/optimistic vision/gi, "insightful vision")
+      // ── REMOVE "SOUL" LANGUAGE GLOBALLY ──
+      .replace(/your soul came here to become/gi, "what you are growing into")
+      .replace(/soul came here to become/gi, "what you are growing into")
+      .replace(/soul'?s development/gi, "your development")
+      .replace(/your soul'?s/gi, "your")
+      .replace(/the soul'?s/gi, "your")
+      .replace(/soul'?s chosen discipline/gi, "chosen discipline")
+      .replace(/soul agreed to/gi, "you agreed to")
+      .replace(/evolve your soul/gi, "shape your development")
+      .replace(/\bsoul contract\b/gi, "life contract")
+      .replace(/\byour soul\b/gi, "you")
+      // ── CORRUPTION CHECK: malformed merged words / duplicate endings ──
+      .replace(/\btrust yourselfful\b/gi, "trust yourself")
+      .replace(/\byourselfful\b/gi, "yourself")
+      .replace(/\b(\w+)\1\b/gi, "$1") // simple duplicate-word collapse e.g. "the the"
+      .replace(/\b(\w{3,})\s+\1\b/gi, "$1") // "trust trust"
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1")
   );
 
 const extractRecognition = (text: string) => {
@@ -265,7 +283,9 @@ Do NOT repeat the same insight, phrase, or example across sections.
 
 REQUIRED ANCHORS (mandatory):
 - South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern learned early and repeated over time.
-- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as the soul's chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where the soul agreed to earn rather than receive.
+- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as a chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where you agreed to earn rather than receive.
+- DO NOT use the word "soul" in body copy. Avoid phrases like "your soul came here to", "soul's development", "soul calling". Use "you", "what you are growing into", "your direction" instead.
+- DIFFERENTIATION ENFORCEMENT: Purpose, Gift, and Stress MUST NOT share the same root keyword (e.g., service, intellect, truth, innovation, power). Purpose = growth direction. Gift = natural strength. Stress = crisis behavior. If a keyword appears in two of these, rewrite one with behavioral specificity.
 - North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
 - South Node also returns in Gift as the talents side, already well-developed earlier in life. Keep this distinct from its appearance in Family/Wound.
 
@@ -593,7 +613,7 @@ Write the 9 Life Patterns (the 7 Soul Agreements + Strength Under Stress + What 
 
 GLOBAL ANCHORING (mandatory):
 - The South Node MUST be named explicitly in BOTH the Family AND the Wound sections, as a pattern learned early and repeated over time. Use the South Node sign and house specifically.
-- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section. Frame Saturn's house/sign as the domain where the soul agreed to earn rather than receive. Pick whichever fits this chart better.
+- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section. Frame Saturn's house/sign as the domain where you agreed to earn rather than receive. Pick whichever fits this chart better.
 
 EMOTIONAL TONE per section (must feel distinct):
 - Family = memory. Wound = stings slightly. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Resilience (returned as "strength") = grounding. Legacy = weighty. Reset = practical.
@@ -604,16 +624,16 @@ EMOTIONAL TONE per section (must feel distinct):
 2. WOUND AGREEMENT — the long-standing emotional pain that has shaped how this person grows. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where they have to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node as the older pattern this wound traces back to (frame the South Node as a "long-standing pattern" or "early pattern", never as a past life). Should sting slightly, never cruelly.
    SPECIAL RULE — for Chiron in Aries in the 7th: prefer "difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly" over "you feel unworthy."
 
-3. PURPOSE AGREEMENT — what your soul came here to BECOME. Use North Node (sign, house, conjunctions), Sun as the core identity being developed, planets conjunct the North Node, 1st house, Midheaven. Saturn may anchor here instead of Wound if it fits better. Must feel like a forward pull, something not yet fully achieved.
+3. PURPOSE AGREEMENT — what you are growing into. Use North Node (sign, house, conjunctions), Sun as the core identity being developed, planets conjunct the North Node, 1st house, Midheaven. Saturn may anchor here instead of Wound if it fits better. Must feel like a forward pull, something not yet fully achieved.
    STYLE RULE — DIRECT and SPECIFIC. Name the actual behavior shift (e.g., "say what you actually want instead of softening it", "stop managing other people's reactions", "let yourself be seen instead of staying useful"). Two or three short, pointed sentences beats a sweeping paragraph.
    SPECIAL RULE — North Node in Scorpio in the 1st: focus on stopping people-pleasing, saying what you really think, trusting yourself over outside approval, letting go of versions of yourself built only to keep peace.
 
-4. RELATIONSHIP AGREEMENT — who helps evolve your soul, and what is the recurring lesson. Name BOTH what you are drawn to AND the pattern that repeats until the lesson is learned.
+4. RELATIONSHIP AGREEMENT — who helps shape your development, and what is the recurring lesson. Name BOTH what you are drawn to AND the pattern that repeats until the lesson is learned.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
    PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
    DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
 
-5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already well-developed earlier in life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
+5. GIFT AGREEMENT — what you arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already well-developed earlier in life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
 6. TIMING AGREEMENT — REBUILT AS A CYCLE, NOT A LIST OF EVENTS. Show the repeatable mechanics of how this person grows. Use Pluto, Uranus, Saturn, the Nodes, 8th and 12th house planets as the chart anchors in the Astrology field, but the Plain English field MUST describe growth as the following 5-stage cycle, in this exact order, using these exact stage labels:
    Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability.
@@ -622,7 +642,7 @@ EMOTIONAL TONE per section (must feel distinct):
 7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe enough to be honest about what they feel, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language. Do NOT use the phrase "inspiring others to be true to themselves" — replace any such instinct with "helping others feel safe enough to be honest about what they feel".
 
-8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How your soul recovers, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
+8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How you recover, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
 
 9. WHAT HELPS YOU RESET — practical regulation strategies. Use Moon, Venus, 4th house, 6th house, Neptune. Concrete things they can do today: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, quiet ritual, sleep.
 
@@ -748,8 +768,24 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           result.legacy.question = String(result.legacy.question).replace(bleedRe, "").replace(/\n{3,}/g, "\n\n").trim();
         }
       }
+      // Also strip the bleed phrase from gift/purpose/strength/family if it leaked there (it should only ever appear in legacy and only when supported)
+      const bleedReGlobal = /[^.!?\n]*helping others feel safe enough to be honest[^.!?\n]*[.!?]?/gi;
+      for (const k of ["family","wound","purpose","relationship","gift","timing","strength","reset"] as const) {
+        if (result[k]?.interpretation) {
+          result[k].interpretation = String(result[k].interpretation).replace(bleedReGlobal, "").replace(/\n{3,}/g, "\n\n").trim();
+        }
+      }
 
-      // ── REPETITION FILTER: log when overused concept words appear across too many sections ──
+      // ── DIFFERENTIATION ENFORCEMENT: Purpose, Gift, Stress must not share a root keyword ──
+      const rootWords = ["service","intellect","truth","innovation","innovative","power","creative","creativity","leadership","wisdom"];
+      const triplet = ["purpose","gift","strength"] as const;
+      for (const root of rootWords) {
+        const re = new RegExp(`\\b${root}\\w*\\b`, "i");
+        const hits = triplet.filter(k => re.test(String(result[k]?.interpretation || "")));
+        if (hits.length >= 2) {
+          console.warn(`[soul-agreements] differentiation clash on "${root}" across:`, hits);
+        }
+      }
       const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
       const tally: Record<string, number> = {};
       for (const key of sectionKeys) {
