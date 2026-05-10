@@ -263,24 +263,71 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           ) : members.length === 0 ? (
             <div className="text-sm text-muted-foreground">No family members yet.</div>
           ) : (
-            <ul className="divide-y divide-border">
-              {members.map(m => (
-                <li key={m.id} className="flex items-center justify-between py-2">
-                  <div>
-                    <div className="font-medium">{m.member_name}</div>
-                    <Badge variant="secondary" className="mt-1 capitalize">{m.role}</Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeMember(m.id)}
-                    aria-label="Remove"
+            <>
+              <div className="flex items-center justify-between text-xs">
+                <div className="text-muted-foreground">
+                  Check the people you want included in the integrated reading.
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="text-primary hover:underline"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearSelected}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <ul className="divide-y divide-border">
+                {members.map(m => (
+                  <li key={m.id} className="flex items-center gap-3 py-2">
+                    <Checkbox
+                      checked={selectedIds.has(m.id)}
+                      onCheckedChange={() => toggleSelected(m.id)}
+                      aria-label={`Select ${m.member_name}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium">{m.member_name}</div>
+                      <Badge variant="secondary" className="mt-1 capitalize">{m.role}</Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeMember(m.id)}
+                      aria-label="Remove"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-border flex-wrap">
+                <div className="text-sm text-muted-foreground">
+                  {selectedIds.size} of {members.length} selected
+                  {selectedIds.size > 0 && selectedIds.size < 2 && (
+                    <span className="ml-2 text-amber-600">(pick at least 2)</span>
+                  )}
+                </div>
+                <Button
+                  onClick={generateSystemReading}
+                  disabled={systemLoading || selectedIds.size < 2}
+                >
+                  {systemLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                  ) : (
+                    <><Home className="h-4 w-4 mr-1" /> Generate Family Reading</>
+                  )}
+                </Button>
+              </div>
+            </>
           )}
 
           <div className="grid gap-2 md:grid-cols-[1fr_180px_auto] items-end pt-3 border-t border-border">
