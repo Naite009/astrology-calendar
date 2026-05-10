@@ -72,6 +72,12 @@ interface ReadingPayload {
     whatTheParentMayNotice: string[];
     whatHelps: string[];
   };
+  perceptionTranslation?: {
+    title: string;
+    misread: string;
+    underneath: string;
+    whatHelps: string[];
+  };
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -187,6 +193,12 @@ JSON SCHEMA:
     "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
     "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
+  },
+  "perceptionTranslation": {
+    "title": "What May Be Happening Underneath",
+    "misread": string (1-2 sentences describing how this child's behavior may APPEAR to the parent on the outside, in plain parenting language. If no qualifying nervous-system signatures, return ""),
+    "underneath": string (1-2 sentences describing what the child may actually be experiencing internally. Use "may"/"might"/"can". If empty, return ""),
+    "whatHelps": [string, ...2-4 concrete parenting responses, verbs first. If empty, return []]
   }
 }
 
@@ -251,7 +263,30 @@ OUTPUT FORMAT for repairProfile:
 - "astrology": Name the exact qualifying signatures with valid orbs. If NO qualifying signatures, return "" and empty arrays.
 - "plainEnglish": Describe this child's repair style and what trust would REQUIRE. Never predict forgiveness.
 - "whatTheParentMayNotice": 3-5 short observable behaviors during/after rupture (e.g. "shuts down when pressured", "asks logical questions instead of showing emotion", "seems detached but remembers everything", "needs time before trusting again").
-- "whatHelps": 3-5 short supportive responses, verbs first (e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "keep conversations calm and brief", "respect their boundaries", "let them decide the pace of closeness").`;
+- "whatHelps": 3-5 short supportive responses, verbs first (e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "keep conversations calm and brief", "respect their boundaries", "let them decide the pace of closeness").
+
+PARENT PERCEPTION TRANSLATION — "What May Be Happening Underneath" (only fill if ${body.toName} is the child in this pair; otherwise return "" and []):
+
+Purpose: Help the parent distinguish between the child's actual internal experience and the behavior the parent may accidentally interpret. This module is a TRANSLATION of nervous-system behavior into plain parenting language. Never excuses harmful behavior. Never villainizes the parent. Goal is translation, not blame.
+
+Pull from the same chart signatures already evaluated for pressureProfile and repairProfile (Saturn–Sun/Moon, Chiron–Mercury/Mars, Moon–Neptune, Moon–Chiron, 12th-house emphasis, Pluto links, hard Mars contacts, hard Mercury aspects, Aquarius/Pisces/Cancer/Scorpio Moon under stress). Pick the ONE most central misread for THIS child.
+
+Translation pairs to draw from (use whichever fit the chart, do not list more than one):
+- fear may look like laziness
+- overwhelm may look like defiance
+- shutdown may look like indifference
+- performance anxiety may look like lack of effort
+- emotional flooding may look dramatic
+- intellectual processing may look detached
+- sensitivity may look manipulative
+- hypervigilance may look controlling
+
+OUTPUT FORMAT for perceptionTranslation:
+- "misread": 1-2 sentences naming how this child's behavior may APPEAR to the parent on the outside, in plain parenting language.
+- "underneath": 1-2 sentences naming what the child may actually be experiencing internally. Use "may"/"might"/"can" only.
+- "whatHelps": 2-4 short concrete parenting responses, verbs first (e.g. "name what you are seeing without labeling it", "lower the stakes before asking again", "give them a private exit instead of public correction").
+- If no qualifying nervous-system signatures, return "" for misread, "" for underneath, [] for whatHelps.
+- HARD RULE: Never excuse harmful behavior (hitting, cruelty, etc.). Never blame the parent. Stay descriptive, not accusatory.`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
@@ -266,7 +301,7 @@ MOON BRIDGE INPUTS:
 CROSS-ASPECTS (already verified, tightest first):
 ${aspectLines}
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those two objects.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -867,6 +867,49 @@ const AiPairReadingView = ({
           </Card>
         )}
 
+      {reading.perceptionTranslation &&
+        (reading.perceptionTranslation.misread?.trim() ||
+          reading.perceptionTranslation.underneath?.trim() ||
+          reading.perceptionTranslation.whatHelps?.length > 0) && (
+          <Card className="border-rose-500/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                {reading.perceptionTranslation.title || "What May Be Happening Underneath"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {reading.perceptionTranslation.misread?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What it may look like
+                  </div>
+                  <p>{reading.perceptionTranslation.misread}</p>
+                </div>
+              )}
+              {reading.perceptionTranslation.underneath?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What may actually be happening
+                  </div>
+                  <p>{reading.perceptionTranslation.underneath}</p>
+                </div>
+              )}
+              {reading.perceptionTranslation.whatHelps?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What helps
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.perceptionTranslation.whatHelps.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
       {reading.repairProfile &&
         (reading.repairProfile.plainEnglish?.trim() ||
           reading.repairProfile.whatHelps?.length > 0) && (
