@@ -86,6 +86,10 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/\bauthentically\b/gi, "honestly")
       .replace(/\bauthentic\b/gi, "honest")
       .replace(/your soul chose this/gi, "this is a long-standing pattern")
+      .replace(/a pattern (?:the soul )?carried in from before this life/gi, "a pattern learned early and repeated over time")
+      .replace(/carried in from before this life/gi, "learned early and repeated over time")
+      .replace(/from before this life/gi, "from early in life")
+      .replace(/before this life/gi, "earlier in life")
       .replace(/past[- ]life tendency/gi, "early pattern")
       .replace(/past[- ]life pattern/gi, "long-standing pattern")
       .replace(/past[- ]life/gi, "early")
@@ -138,7 +142,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
         "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
         ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
       ),
-      survivalPattern: "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+      survivalPattern: "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
     },
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
@@ -260,10 +264,10 @@ EMOTIONAL DISTINCTNESS — each of the 7 core agreements MUST feel emotionally d
 Do NOT repeat the same insight, phrase, or example across sections.
 
 REQUIRED ANCHORS (mandatory):
-- South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern the soul carried in from before this life.
+- South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern learned early and repeated over time.
 - Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as the soul's chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where the soul agreed to earn rather than receive.
 - North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
-- South Node also returns in Gift as the talents side, mastered before this life. Keep this distinct from its appearance in Family/Wound.
+- South Node also returns in Gift as the talents side, already well-developed earlier in life. Keep this distinct from its appearance in Family/Wound.
 
 ACCURACY & HEDGING RULES:
 - Stay BEHAVIORAL, not diagnostic.
@@ -583,7 +587,7 @@ ${aspectLines || "(none provided)"}
 Write the 9 Life Patterns (the 7 Soul Agreements + Strength Under Stress + What Helps You Reset) using ONLY the data above. Every section MUST return: astrology, plainEnglish, examples (5 items), recognition (5 items, varied sentence structure, INTERNAL only).
 
 GLOBAL ANCHORING (mandatory):
-- The South Node MUST be named explicitly in BOTH the Family AND the Wound sections, as a pattern the soul carried in from before this life. Use the South Node sign and house specifically.
+- The South Node MUST be named explicitly in BOTH the Family AND the Wound sections, as a pattern learned early and repeated over time. Use the South Node sign and house specifically.
 - Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section. Frame Saturn's house/sign as the domain where the soul agreed to earn rather than receive. Pick whichever fits this chart better.
 
 EMOTIONAL TONE per section (must feel distinct):
@@ -604,7 +608,7 @@ EMOTIONAL TONE per section (must feel distinct):
    PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
    DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
 
-5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already mastered before this life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
+5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already well-developed earlier in life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
 6. TIMING AGREEMENT — REBUILT AS A CYCLE, NOT A LIST OF EVENTS. Show the repeatable mechanics of how this person grows. Use Pluto, Uranus, Saturn, the Nodes, 8th and 12th house planets as the chart anchors in the Astrology field, but the Plain English field MUST describe growth as the following 5-stage cycle, in this exact order, using these exact stage labels:
    Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability.
@@ -671,7 +675,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const survivalBlock = key === "family"
           ? `\n\n**Emotional Survival Pattern**\n${cleanField(
               source?.survivalPattern,
-              (fallbackSection as any).survivalPattern || "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+              (fallbackSection as any).survivalPattern || "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
             )}`
           : "";
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
