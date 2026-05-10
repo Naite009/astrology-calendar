@@ -291,6 +291,197 @@ The "recognition" field must contain 5 short bullet items as a JSON array, NOT q
 
 Total length per section: 120-190 words including all 4 layers.
 
+═══════════════════════════════════════════════════════════════════
+GOLD STANDARD EXEMPLAR — match this voice, depth, specificity, and section feel.
+This was written for a chart with Moon in Libra in the 12th, Venus in Sagittarius in the 2nd, Sun/Uranus/NN/Mars in Scorpio in the 1st, Chiron in Aries in the 7th, MC Cancer, Saturn in Leo in the 10th, Jupiter in Taurus in the 8th. Adapt the VOICE to the chart you're given, but keep the same structure, tone, and level of concreteness.
+
+──────── FAMILY AGREEMENT ────────
+Astrology: The Moon in Libra in the 12th house, with its ruler Venus in Sagittarius in the 2nd house, suggests a family environment where emotions were often absorbed rather than directly expressed. The Moon's conjunction to Pluto indicates intense, unspoken emotional currents. The Moon's quincunx to Chiron suggests a hidden wound around feeling emotionally seen or heard within the family.
+
+Plain English: Your early home life may have been one where feelings were deeply felt but not always talked about openly. You may have picked up on what was happening beneath the surface, even when no one said it out loud. This can create a pattern of carrying emotions quietly and struggling to know where your feelings end and someone else's begin.
+
+Real-Life Examples:
+- sensing tension before anyone speaks
+- feeling responsible for other people's moods
+- keeping your own feelings private to keep peace
+- struggling to name what you feel
+- carrying emotional heaviness that was never yours
+
+Recognition Check (This may fit if):
+- you often absorb the emotional atmosphere around you
+- you feel things deeply but keep them private
+- you struggle to separate your feelings from others' feelings
+- you often know something is wrong before anyone says it
+- you carry emotional weight that feels bigger than the moment
+
+──────── WOUND AGREEMENT ────────
+Astrology: Chiron in Aries in the 7th house opposing your Sun points to a core wound around asserting yourself in close relationships. Venus quincunx Chiron highlights tension between your own desires and maintaining connection. The Moon quincunx Chiron adds emotional discomfort when your truth clashes with harmony.
+
+Plain English: One of your deepest growth points is learning how to be fully yourself in relationships. Speaking up for what you want may feel risky because part of you fears conflict, rejection, or disconnection. This can create a habit of putting others first while quietly abandoning yourself.
+
+Real-Life Examples:
+- saying yes when you want to say no
+- avoiding conflict even when something matters
+- holding back your opinions
+- over-compromising in relationships
+- feeling anxious when setting boundaries
+
+Recognition Check:
+- you feel guilty after speaking up for yourself
+- you replay conversations wishing you had said more
+- you worry honesty may upset people
+- you feel resentment when your needs go unmet
+- you freeze when conflict feels possible
+
+──────── PURPOSE AGREEMENT ────────
+Astrology: North Node in Scorpio in the 1st house conjunct the Sun and Uranus points to a life path of developing personal truth, strength, and independence. South Node in Taurus in the 7th house shows an old pattern of finding security through others or through keeping relationships stable.
+
+Plain English: Your life is asking you to trust yourself more deeply. You are here to speak your truth, trust your instincts, and stop shaping yourself around other people's expectations. Growth happens when you choose what feels true over what keeps everyone comfortable.
+
+Real-Life Examples:
+- speaking more directly
+- making decisions based on your own truth
+- trusting your instincts over approval
+- stopping people-pleasing
+- choosing yourself even when it disappoints others
+
+Recognition Check:
+- you feel drained after managing others' reactions
+- you feel stronger when you choose honesty
+- you feel restless when you stay too agreeable
+- you know deep down you need to trust yourself more
+- you feel alive when you act from conviction
+
+──────── RELATIONSHIP AGREEMENT ────────
+Astrology: The 7th house cusp in Aries ruled by Mars in Scorpio in the 1st house suggests that relationships are one of the main ways you learn about yourself. Chiron in the 7th house means partnerships often reveal where you struggle with self-assertion. Venus in Sagittarius shows you seek growth, honesty, and freedom in connection.
+
+Plain English: Relationships are one of the main ways you learn about yourself. They show you where you are giving too much, holding back, or losing your voice. Your growth in relationships comes from learning how to stay connected while staying true to yourself.
+
+Real-Life Examples:
+- attracting strong-willed partners
+- learning boundaries through conflict
+- realizing where you over-adapt
+- finding your voice in partnership
+- learning how to disagree honestly
+
+Recognition Check:
+- you feel torn between closeness and independence
+- you lose yourself when trying to keep peace
+- conflict shows you what matters to you
+- you feel stronger after honest conversations
+- relationships expose patterns you didn't see before
+
+──────── GIFT AGREEMENT ────────
+Astrology: Venus in Sagittarius in the 2nd house sextile the Moon, Moon trine Jupiter, and Neptune in Sagittarius point to natural emotional insight, compassion, perspective, and symbolic understanding. These placements support intuitive empathy and the ability to help others make meaning out of life.
+
+Plain English: You naturally understand emotional undercurrents and can often sense what others are feeling before they say it. You have a gift for helping people see the bigger picture, making meaning out of hard experiences, and bringing comfort through understanding.
+
+Real-Life Examples:
+- helping people feel seen
+- understanding emotional dynamics quickly
+- seeing patterns others miss
+- bringing comfort during hard times
+- helping people find meaning in pain
+
+Recognition Check:
+- people often open up to you easily
+- you notice emotional patterns quickly
+- you can sense what someone is feeling without words
+- you often understand deeper meaning in difficult situations
+- you feel fulfilled when helping someone make sense of their experience
+
+──────── TIMING AGREEMENT ────────
+Astrology: Pluto conjunct the Moon and Mercury in the 12th house suggests growth through deep emotional processing and private transformation. Uranus conjunct the Sun and North Node in the 1st house shows sudden identity shifts and personal breakthroughs.
+
+Plain English: Growth in your life often happens during intense emotional periods, sudden changes, and moments when something forces you to be honest with yourself. These turning points push you into stronger versions of yourself.
+
+Real-Life Examples:
+- sudden endings leading to new beginnings
+- emotional breakthroughs after solitude
+- big changes forcing honesty
+- unexpected disruptions changing your direction
+- intense periods leading to clarity
+
+Recognition Check:
+- hard times lead to major inner growth
+- sudden changes change who you are
+- emotional intensity leads to clarity
+- solitude helps you understand yourself
+- endings often create stronger beginnings
+
+──────── LEGACY AGREEMENT ────────
+Astrology: Midheaven in Cancer ruled by the Moon in the 12th house points to a legacy of emotional support, healing, and creating safe spaces. Saturn in Leo in the 10th house adds disciplined leadership and public responsibility.
+
+Plain English: Your impact comes from helping others feel emotionally safe, understood, and supported. You may do this through leadership, teaching, healing, or creating environments where people can feel secure. Part of your growth is learning to support others without carrying what belongs to them.
+
+Real-Life Examples:
+- creating emotional safety for others
+- helping others process difficult feelings
+- leading with empathy
+- building supportive systems
+- protecting vulnerable people
+
+Recognition Check:
+- people trust you with difficult emotions
+- you feel called to help others heal
+- you naturally create calm in hard moments
+- you feel fulfilled when supporting others
+- you need strong boundaries to protect your energy
+
+──────── STRENGTH UNDER STRESS ────────
+Astrology: Mars in Scorpio in the 1st house conjunct Uranus and the North Node gives powerful inner drive, resilience, and determination under pressure. Moon conjunct Pluto gives emotional endurance. Jupiter in Taurus in the 8th house provides grounded resilience during crisis and helps restore stability after emotional upheaval.
+
+Plain English: When life gets hard, you become intensely focused, strong, and determined. You can endure difficult emotional experiences and often come out stronger because of them. Under pressure, you find reserves of strength you didn't know you had.
+
+Real-Life Examples:
+- becoming highly focused in crisis
+- pushing through difficult emotions
+- finding strength when things fall apart
+- making decisive changes under pressure
+- staying grounded during upheaval
+
+Recognition Check:
+- you become sharper under pressure
+- crisis brings out your strength
+- you often survive hard things better than expected
+- you become deeply determined when challenged
+- hard times reveal your resilience
+
+──────── WHAT HELPS YOU RESET ────────
+Astrology: Moon in Libra in the 12th house suggests quiet reflection restores emotional balance. Venus and Neptune in Sagittarius point to healing through creativity, meaning, learning, and spiritual connection.
+
+Plain English: You reset through quiet, reflection, beauty, creativity, and space to process. You also feel restored when learning something meaningful, exploring new ideas, or reconnecting with what gives your life meaning.
+
+Real-Life Examples:
+- solitude
+- journaling
+- nature
+- music
+- learning something inspiring
+
+Recognition Check:
+- quiet helps your nervous system settle
+- creativity helps you process emotions
+- learning restores perspective
+- nature helps you reset
+- solitude helps you hear yourself again
+
+──────── SUMMARY ────────
+What to Practice: Practice speaking your truth directly and honoring your needs, especially in relationships.
+What to Watch For: Watch for people-pleasing, emotional over-carrying, and staying quiet to avoid conflict.
+What to Build: Build self-trust, boundaries, and confidence in your own voice.
+What to Give: Give your emotional insight, compassion, and ability to help others feel understood.
+Final Direction (integration): Your growth comes from learning how to stay connected to others without losing yourself.
+
+KEY THINGS TO COPY FROM THE EXEMPLAR:
+- Astrology paragraphs name the EXACT placement (planet, sign, house) and at least one specific aspect, then say what it suggests in one clean sentence each. No jargon.
+- Plain English is 3 short sentences. No metaphors. No abstract verbs. Just "you may [observable behavior or feeling]".
+- Real-Life Examples are 5 short fragments (4–8 words each). Lowercase. No periods. They are EXTERNAL behaviors.
+- Recognition Check items mostly start with "you" and describe an INTERNAL felt experience. 5 items. No questions.
+- Sections feel emotionally distinct. Family = atmospheric. Wound = tender. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Legacy = weighty. Strength = grounding. Reset = practical.
+- Summary fields are direct behavioral instructions, one sentence each.
+═══════════════════════════════════════════════════════════════════
+
 Return STRICT JSON only, matching this schema:
 {
   "family": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
