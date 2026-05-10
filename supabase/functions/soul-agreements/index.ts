@@ -103,6 +103,24 @@ const cleanPlainLanguage = (value: string) =>
       .replace(/transformations?/gi, "change in how you act, respond, or choose")
       .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
       .replace(/optimistic vision/gi, "insightful vision")
+      // ── REMOVE "SOUL" LANGUAGE GLOBALLY ──
+      .replace(/your soul came here to become/gi, "what you are growing into")
+      .replace(/soul came here to become/gi, "what you are growing into")
+      .replace(/soul'?s development/gi, "your development")
+      .replace(/your soul'?s/gi, "your")
+      .replace(/the soul'?s/gi, "your")
+      .replace(/soul'?s chosen discipline/gi, "chosen discipline")
+      .replace(/soul agreed to/gi, "you agreed to")
+      .replace(/evolve your soul/gi, "shape your development")
+      .replace(/\bsoul contract\b/gi, "life contract")
+      .replace(/\byour soul\b/gi, "you")
+      // ── CORRUPTION CHECK: malformed merged words / duplicate endings ──
+      .replace(/\btrust yourselfful\b/gi, "trust yourself")
+      .replace(/\byourselfful\b/gi, "yourself")
+      .replace(/\b(\w+)\1\b/gi, "$1") // simple duplicate-word collapse e.g. "the the"
+      .replace(/\b(\w{3,})\s+\1\b/gi, "$1") // "trust trust"
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1")
   );
 
 const extractRecognition = (text: string) => {
