@@ -46,6 +46,21 @@ const LEADING_TEMPLATE_HEADING = /^\s*(?:\*\*\s*(?:Astrology|Plain English|Real-
 
 const headingStart = (match: RegExpMatchArray) => (match.index ?? 0) + (match[1] ? match[1].length : 0);
 
+const PLACEHOLDER_PATTERNS: RegExp[] = [
+  /this section uses the strongest listed chart markers[^.\n]*\.?/gi,
+  /based on the (?:chart|placements?) (?:data )?(?:above|provided)[^.\n]*\.?/gi,
+  /drawing from the placements (?:provided|listed)[^.\n]*\.?/gi,
+  /\[insert [^\]]*\]/gi,
+  /\bTBD\b/gi,
+  /\(astrology section to follow\)/gi,
+];
+
+const stripPlaceholders = (value: string) => {
+  let out = value;
+  for (const re of PLACEHOLDER_PATTERNS) out = out.replace(re, "");
+  return out.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+};
+
 const dedupeRecognitionCheck = (value: string) => {
   const matches = [...value.matchAll(RECOGNITION_HEADING)];
   if (matches.length <= 1) return value;
