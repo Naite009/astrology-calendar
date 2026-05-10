@@ -406,6 +406,19 @@ FAMILY PRIORITY LOCK (mandatory):
 - The Family section is anchored ONLY by, in this priority order: (1) Moon (sign + house), (2) aspects to the Moon, (3) ruler of the 4th house cusp (its sign, house, condition), (4) planets in the 4th house.
 - Do NOT lead Family from Sun, Saturn, Pluto, nodes, or other placements unless they appear via Moon aspects or 4th-house ruler chains above.
 
+TRAUMA SENSITIVITY PATCH (mandatory — for Family and Wound sections):
+- If the chart shows ANY of the following signatures (within valid orb), you are PERMITTED and EXPECTED to use stronger, more specific family/early-life language:
+  • Saturn hard aspect (conjunction, square, opposition) to Sun
+  • Saturn hard aspect to Moon
+  • Pluto ruling the 4th house (Pluto is the ruler of the 4th cusp sign)
+  • Moon in hard aspect to Pluto, Saturn, Mars, or Uranus
+  • Chiron hard aspect to Sun or Moon
+- When supported, themes you MAY name plainly include: fear of authority, walking on eggshells at home, emotional intimidation, criticism in early home life, learning to hide to stay safe, hypervigilance, feeling unsafe expressing yourself, scanning a parent's mood before speaking.
+- Translate into lived nervous-system patterns the person can recognize in their body and behavior. Examples: "you may have learned to read a room before you spoke", "your body may still brace when someone raises their voice", "you may go quiet the moment a conversation feels charged".
+- DO NOT sanitize these signatures into generic phrases like "emotional intensity", "deep family feelings", "complex dynamics", or "powerful emotional currents". That is a failure of accuracy.
+- Stay behavioral and somatic, never clinical or diagnostic. Do not name disorders. Use "may" / "might" / "can" for accuracy.
+- If NONE of the above signatures are present, do NOT invent trauma language. Keep Family/Wound at their default tenderness.
+
 SECTION OWNERSHIP RULE (mandatory — prevents flattening of the chart):
 - Each major planet should have PRIMARY ownership of one or two sections. Default ownership map:
   • Moon → Family, Reset
