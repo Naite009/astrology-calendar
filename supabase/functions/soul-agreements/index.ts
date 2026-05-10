@@ -1223,15 +1223,37 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       throw new Error("Unparseable AI JSON");
     };
 
-    let parsed: unknown;
-    try {
-      parsed = tryParse(String(content));
-    } catch (parseErr) {
-      console.error("soul-agreements JSON parse failed; using deterministic fallback. Snippet:", String(content).slice(0, 300));
-      parsed = makeFallbackAgreements({ chartName, placements, houses, aspects });
+    let agreements: unknown = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      let content = "{}";
+      try {
+        content = await fetchGeneratedContent();
+        if (containsForbiddenBody(content)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in raw output`);
+          continue;
+        }
+        const parsed = tryParse(String(content));
+        if (hasForbiddenBodyInOutput(parsed)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in parsed output`);
+          continue;
+        }
+        const normalized = normalizeAgreements(parsed);
+        if (hasForbiddenBodyInOutput(normalized)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in final output`);
+          continue;
+        }
+        agreements = normalized;
+        break;
+      } catch (err) {
+        console.error("soul-agreements generation failed:", err, "Snippet:", String(content).slice(0, 300));
+      }
     }
 
-    return new Response(JSON.stringify({ agreements: normalizeAgreements(parsed) }), {
+    if (!agreements) {
+      agreements = makeFallbackAgreements({ chartName, placements, houses, aspects });
+    }
+
+    return new Response(JSON.stringify({ agreements }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
