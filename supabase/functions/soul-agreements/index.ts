@@ -158,7 +158,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
-      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them.",
+      "Your life may leave people with more emotional honesty, more safety, and a stronger sense that hard things can be faced directly. Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them.",
       ["you may become someone others trust in private moments", "you may support people without needing attention", "you may help name feelings people avoid", "you may model strength that still has compassion"],
     ),
     strength: section(
