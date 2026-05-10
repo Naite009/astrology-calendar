@@ -111,10 +111,17 @@ const FORBIDDEN_BODY_RE = new RegExp(
   `[^.!?\\n]*\\b(?:${FORBIDDEN_BODY_NAMES.map((n) => n.replace(/\s+/g, "\\s+")).join("|")})\\b[^.!?\\n]*[.!?]?`,
   "gi",
 );
+const containsForbiddenBody = (value: unknown): boolean => {
+  FORBIDDEN_BODY_RE.lastIndex = 0;
+  return FORBIDDEN_BODY_RE.test(String(value ?? ""));
+};
 const stripForbiddenBodies = (value: string): string => {
-  if (!FORBIDDEN_BODY_RE.test(value)) return value;
+  if (!containsForbiddenBody(value)) return value;
+  FORBIDDEN_BODY_RE.lastIndex = 0;
   return value.replace(FORBIDDEN_BODY_RE, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 };
+
+const hasForbiddenBodyInOutput = (value: unknown): boolean => containsForbiddenBody(JSON.stringify(value ?? ""));
 
 const stripPlaceholders = (value: string) => {
   let out = stripForbiddenBodies(value);
