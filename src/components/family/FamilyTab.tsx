@@ -863,6 +863,59 @@ const AiPairReadingView = ({
                   </ul>
                 </div>
               )}
+          </Card>
+        )}
+
+      {reading.repairProfile &&
+        (reading.repairProfile.plainEnglish?.trim() ||
+          reading.repairProfile.whatHelps?.length > 0) && (
+          <Card className="border-sky-500/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                {reading.repairProfile.title || "What Repair Requires for This Child"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {reading.repairProfile.astrology?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Astrology
+                  </div>
+                  <p className="text-muted-foreground">{reading.repairProfile.astrology}</p>
+                </div>
+              )}
+              {reading.repairProfile.plainEnglish?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Plain English
+                  </div>
+                  <p>{reading.repairProfile.plainEnglish}</p>
+                </div>
+              )}
+              {reading.repairProfile.whatTheParentMayNotice?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What the parent may notice
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.repairProfile.whatTheParentMayNotice.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {reading.repairProfile.whatHelps?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What helps
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.repairProfile.whatHelps.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
