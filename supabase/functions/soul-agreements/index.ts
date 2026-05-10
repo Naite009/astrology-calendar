@@ -54,6 +54,9 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
   /\[insert [^\]]*\]/gi,
   /\bTBD\b/gi,
   /\(astrology section to follow\)/gi,
+  // Instructional / scaffold openers — the AI must integrate, not announce.
+  /\bunderneath all of this,?\s*/gi,
+  /\brestoration follows\b[^.\n]*\.?/gi,
 ];
 
 const stripPlaceholders = (value: string) => {
