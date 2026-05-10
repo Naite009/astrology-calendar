@@ -186,6 +186,13 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
       whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
       integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
+      growthSigns: [
+        "you speak up sooner instead of replaying it later",
+        "you set a boundary without a long apology",
+        "you trust your own decision before asking for outside approval",
+        "you recover faster after conflict instead of going silent for days",
+        "you stop over-carrying other people's emotions as your job",
+      ],
     },
   };
 };
