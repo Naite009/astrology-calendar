@@ -15,6 +15,8 @@ import {
   FamilyRole,
   buildPairReadingPayload,
   PairReadingResponse,
+  buildChildMoonProfile,
+  ChildMoonProfile,
 } from "@/lib/parentChildSynastry";
 
 interface FamilyMember {
