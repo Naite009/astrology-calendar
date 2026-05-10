@@ -692,3 +692,111 @@ const AiPairReadingView = ({
     </div>
   );
 };
+
+const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResponse }) => {
+  return (
+    <div className="space-y-4">
+      <Card className="border-primary/40">
+        <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Home className="h-4 w-4 text-primary" />
+            Your Family as a System
+          </CardTitle>
+          <CardDescription className="pt-1">
+            How everyone you selected functions together as one whole.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4 text-sm">
+          <p>{reading.familyEssence}</p>
+        </CardContent>
+      </Card>
+
+      {reading.rolesNarrative?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Roles in the System</CardTitle>
+            <CardDescription>The part each person plays in the group dynamic.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.rolesNarrative.map((r, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{r.name}</div>
+                <p className="text-muted-foreground">{r.line}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.emotionalClimate && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">The Emotional Climate</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <p>{reading.emotionalClimate}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.whereEveryoneMeets && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Where Everyone Meets</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <p>{reading.whereEveryoneMeets}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.pressurePoints?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Pressure Points</CardTitle>
+            <CardDescription>Where the household has to translate across difference.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.pressurePoints.map((p, i) => (
+              <div key={i}>
+                <div className="font-semibold">{p.headline}</div>
+                <p className="text-muted-foreground">{p.body}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.bridges?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Bridges</CardTitle>
+            <CardDescription>The gifts this family can lean on.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.bridges.map((b, i) => (
+              <div key={i}>
+                <div className="font-semibold">{b.headline}</div>
+                <p className="text-muted-foreground">{b.body}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.practice && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              One Practice for the Whole Family (Next 90 Days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{reading.practice}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
