@@ -161,9 +161,9 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
     timing: section(
-      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about style, not fixed events.`,
-      "Growth often comes through pressure, endings, truth-telling moments, taking on real responsibility, and emotional turning points. You may change slowly at first, then make a clear decision once you finally know what is no longer working.",
-      ["growth often arrives after a hard ending or a forced choice", "you may resist change until the cost of staying the same is bigger", "honest conversations can mark the real turning points", "taking on more responsibility can speed up your growth", "you may trust yourself more after a setback you did not collapse under"],
+      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about the repeating cycle, not specific events.`,
+      "Your growth pattern often follows this cycle: Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability. Pressure builds until you pull back to feel and think, something clicks, you make a clear move, and a steadier version of life settles in until the next cycle starts.",
+      ["pressure builds before any real change", "you may pull back or go quiet to process what you feel", "an insight lands that reframes the whole situation", "you make one clear, decisive move once you finally see it", "a new, steadier version of life settles in afterward"],
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
