@@ -439,6 +439,9 @@ Write the reading. One section per cross-aspect above, in the same order. Genera
         ...payload,
         ageYears,
         aspectsUsed: aspects.length,
+        overallIntensity,
+        totalSignatureScore: totalScore,
+        highWeightCount,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
