@@ -512,7 +512,7 @@ KEY THINGS TO COPY FROM THE EXEMPLAR:
 
 Return STRICT JSON only, matching this schema:
 {
-  "family": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "family": { "astrology": string, "plainEnglish": string, "survivalPattern": string, "examples": string[], "recognition": string[] },
   "wound": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "purpose": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "relationship": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
@@ -526,9 +526,14 @@ Return STRICT JSON only, matching this schema:
     "whatToWatchFor": string,
     "whatToBuild": string,
     "whatToGive": string,
-    "integration": string
+    "integration": string,
+    "growthSigns": string[]
   }
 }
+
+FAMILY SECTION REQUIRES "survivalPattern" — a 1-2 sentence string answering: "What emotional rule did home teach me?" Examples of the kind of rule to name (do not copy verbatim): stay quiet to keep peace; scan the room before speaking; manage other people's emotions first; hide strong feelings; never need too much. Make it specific to THIS chart's Moon and 4th house. Plain language. No jargon. This is the SURVIVAL strategy the child learned, not a value judgment.
+
+SUMMARY REQUIRES "growthSigns" — 3 to 5 short behavioral bullets answering: "How will you know you're actually growing?" Each bullet is one short observable change in behavior, lowercase, no period. Examples of the form (adapt to chart): "you speak up sooner", "you set boundaries faster", "you trust your own decisions", "you recover faster after conflict", "you stop over-carrying others' emotions". These must be measurable changes someone could notice in themselves over 3-6 months. Never abstract.
 
 SECTION DISTINCTION RULE (mandatory): Each section must feel distinct. Do NOT repeat the same theme or example across sections. Domain map:
 - family: early emotional imprint
