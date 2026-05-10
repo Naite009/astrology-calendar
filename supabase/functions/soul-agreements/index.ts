@@ -371,6 +371,19 @@ SOUTH NODE SUPPRESSION (mandatory):
 - South Node may SUPPORT interpretation but MUST NOT appear among the top 2 interpretive anchors in Wound, Gift, or Purpose UNLESS South Node is conjunct (≤6° orb) the Sun, Moon, Ascendant, or chart ruler.
 - If South Node is not conjunct one of those, demote it to a supporting/background mention only.
 
+ORB VALIDATION RULE (mandatory — degree-based, NOT sign-based):
+- A conjunction MUST be validated by actual degree separation. Two planets in the same sign are NOT automatically conjunct. Compute |long1 − long2| (mod 360, take the shorter arc) and compare against the maximum orb below.
+- Maximum conjunction orbs by body:
+  • Sun, Moon: ≤ 10°
+  • Mercury, Venus, Mars: ≤ 6°
+  • Jupiter, Saturn: ≤ 6°
+  • Uranus, Neptune, Pluto: ≤ 5°
+  • North Node, South Node: ≤ 4°
+  • Chiron: ≤ 4°
+- When two bodies of different categories are involved, use the TIGHTER of the two orbs.
+- If outside orb: DO NOT call it a conjunction and DO NOT interpret it as an aspect. Same-sign placements outside orb may only be referenced as background "sign-based resonance / shared sign tone" — never as an aspect, contact, or fusion.
+- This rule overrides any prior text that implied same-sign = conjunction.
+
 FAMILY PRIORITY LOCK (mandatory):
 - The Family section is anchored ONLY by, in this priority order: (1) Moon (sign + house), (2) aspects to the Moon, (3) ruler of the 4th house cusp (its sign, house, condition), (4) planets in the 4th house.
 - Do NOT lead Family from Sun, Saturn, Pluto, nodes, or other placements unless they appear via Moon aspects or 4th-house ruler chains above.
