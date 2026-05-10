@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2 } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   computeFamilySynastry,
@@ -22,6 +23,11 @@ import {
   buildContractOverlap,
   ContractOverlapFlag,
 } from "@/lib/parentChildSynastry";
+import {
+  buildFamilySystem,
+  buildFamilySystemPayload,
+  FamilySystemReadingResponse,
+} from "@/lib/familySystemSynastry";
 
 interface FamilyMember {
   id: string;
@@ -166,6 +172,69 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     }
   };
 
+  // ─── Family System Reading (multi-select) ────────────────────────────────
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [systemReading, setSystemReading] = useState<FamilySystemReadingResponse | null>(null);
+  const [systemLoading, setSystemLoading] = useState(false);
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setSystemReading(null);
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(members.map((m) => m.id)));
+    setSystemReading(null);
+  };
+  const clearSelected = () => {
+    setSelectedIds(new Set());
+    setSystemReading(null);
+  };
+
+  const selectedMembers = useMemo(() => {
+    return members
+      .filter((m) => selectedIds.has(m.id))
+      .map((m) => {
+        const chart = allCharts.find((c) => c.id === m.member_chart_id);
+        return chart ? { chart, role: m.role } : null;
+      })
+      .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
+  }, [members, selectedIds, allCharts]);
+
+  const generateSystemReading = async () => {
+    if (selectedMembers.length < 2) {
+      toast.error("Select at least 2 family members first.");
+      return;
+    }
+    const data = buildFamilySystem(selectedMembers);
+    if (!data) {
+      toast.error("Could not build family system data.");
+      return;
+    }
+    setSystemLoading(true);
+    setSystemReading(null);
+    try {
+      const payload = buildFamilySystemPayload(selectedMembers, data);
+      const { data: resp, error } = await supabase.functions.invoke(
+        "family-system-reading",
+        { body: payload },
+      );
+      if (error) throw error;
+      if ((resp as any)?.error) throw new Error((resp as any).error);
+      setSystemReading(resp as FamilySystemReadingResponse);
+    } catch (e: any) {
+      console.error("[FamilyTab] system reading failed", e);
+      toast.error(e?.message || "Could not generate family reading. Please try again.");
+    } finally {
+      setSystemLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <Card>
@@ -194,24 +263,71 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           ) : members.length === 0 ? (
             <div className="text-sm text-muted-foreground">No family members yet.</div>
           ) : (
-            <ul className="divide-y divide-border">
-              {members.map(m => (
-                <li key={m.id} className="flex items-center justify-between py-2">
-                  <div>
-                    <div className="font-medium">{m.member_name}</div>
-                    <Badge variant="secondary" className="mt-1 capitalize">{m.role}</Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeMember(m.id)}
-                    aria-label="Remove"
+            <>
+              <div className="flex items-center justify-between text-xs">
+                <div className="text-muted-foreground">
+                  Check the people you want included in the integrated reading.
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="text-primary hover:underline"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearSelected}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <ul className="divide-y divide-border">
+                {members.map(m => (
+                  <li key={m.id} className="flex items-center gap-3 py-2">
+                    <Checkbox
+                      checked={selectedIds.has(m.id)}
+                      onCheckedChange={() => toggleSelected(m.id)}
+                      aria-label={`Select ${m.member_name}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium">{m.member_name}</div>
+                      <Badge variant="secondary" className="mt-1 capitalize">{m.role}</Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeMember(m.id)}
+                      aria-label="Remove"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-border flex-wrap">
+                <div className="text-sm text-muted-foreground">
+                  {selectedIds.size} of {members.length} selected
+                  {selectedIds.size > 0 && selectedIds.size < 2 && (
+                    <span className="ml-2 text-amber-600">(pick at least 2)</span>
+                  )}
+                </div>
+                <Button
+                  onClick={generateSystemReading}
+                  disabled={systemLoading || selectedIds.size < 2}
+                >
+                  {systemLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                  ) : (
+                    <><Home className="h-4 w-4 mr-1" /> Generate Family Reading</>
+                  )}
+                </Button>
+              </div>
+            </>
           )}
 
           <div className="grid gap-2 md:grid-cols-[1fr_180px_auto] items-end pt-3 border-t border-border">
@@ -242,15 +358,19 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
+      {systemReading && (
+        <FamilySystemReadingView reading={systemReading} />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
-            Pair Reading
+            Zoom in: One-on-One Reading
           </CardTitle>
           <CardDescription>
-            Pick whose energy is the source (FROM) and whose nervous system is receiving (TO).
-            Direction matters — a parent's Mars onto a child's Moon is a different reading than the reverse.
+            Want to dig into a single relationship? Pick whose energy is the source (FROM) and whose nervous system is receiving (TO).
+            Direction matters: a parent's Mars onto a child's Moon is a different reading than the reverse.
             Readings use the actual signs, houses, and the child's age.
           </CardDescription>
         </CardHeader>
@@ -562,6 +682,114 @@ const AiPairReadingView = ({
             <CardTitle className="text-base flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               One Practice for the Next 90 Days
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{reading.practice}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResponse }) => {
+  return (
+    <div className="space-y-4">
+      <Card className="border-primary/40">
+        <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Home className="h-4 w-4 text-primary" />
+            Your Family as a System
+          </CardTitle>
+          <CardDescription className="pt-1">
+            How everyone you selected functions together as one whole.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4 text-sm">
+          <p>{reading.familyEssence}</p>
+        </CardContent>
+      </Card>
+
+      {reading.rolesNarrative?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Roles in the System</CardTitle>
+            <CardDescription>The part each person plays in the group dynamic.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.rolesNarrative.map((r, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{r.name}</div>
+                <p className="text-muted-foreground">{r.line}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.emotionalClimate && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">The Emotional Climate</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <p>{reading.emotionalClimate}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.whereEveryoneMeets && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Where Everyone Meets</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            <p>{reading.whereEveryoneMeets}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.pressurePoints?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Pressure Points</CardTitle>
+            <CardDescription>Where the household has to translate across difference.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.pressurePoints.map((p, i) => (
+              <div key={i}>
+                <div className="font-semibold">{p.headline}</div>
+                <p className="text-muted-foreground">{p.body}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.bridges?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Bridges</CardTitle>
+            <CardDescription>The gifts this family can lean on.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.bridges.map((b, i) => (
+              <div key={i}>
+                <div className="font-semibold">{b.headline}</div>
+                <p className="text-muted-foreground">{b.body}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.practice && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              One Practice for the Whole Family (Next 90 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>

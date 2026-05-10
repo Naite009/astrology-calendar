@@ -1,80 +1,71 @@
-# Daily Cosmic Weather Email — Glance Rewrite
+# Family System Reading
 
-The structure is already 3 sections in `src/lib/emailReport.ts`, but each section is over-stuffed, the personal section repeats house-rulers in long sentences, the decoder uses generic templated lines ("Tension, short tempers, or things scraping in the world"), and the subject line + dividers don't match the spec. This plan tightens the existing builder to a true 400-word morning glance.
+## What you'll get
 
-## What changes (single file: `src/lib/emailReport.ts`)
+A new flow on the Parent/Child tab that replaces the dropdown-driven pair selector as the primary action:
 
-### 1. Subject line
-Already close. Keep `[Day], [Date] · [Moon sign] Moon · [punch]`, but improve `dayPunch()` so the punch is specific (not "Capricorn Moon mood"). Priority: station > tightest <1° aspect > VOC > moon-sign collective verb.
+1. **Checkboxes beside each family member** in the "My Family" list.
+2. **"Generate Family Reading" button directly under the list** with a count of selected members ("3 selected").
+3. **One integrated reading** showing how the whole selected group functions as a unit, not a series of one-on-one pairings.
+4. The existing pair reading (one-to-one) stays available below as a secondary option for when you want to zoom into a single relationship.
 
-### 2. SECTION 1 — THE SKY TODAY (cap at 80 words, prose, no bullets)
-Rewrite to one short paragraph per item, in this fixed order:
+## How the integrated reading is structured
 
-1. **Moon line** — sign, phase, VOC window only if start is between 6am–midnight, plus one collective-mood phrase pulled from `signCollective()`. Trim to one sentence.
-2. **Stations** — one sentence each: `Neptune stations retrograde at 3° Aries today — [collective meaning].` Use `STATION_MEANING` (already exists). No exact-time string here (move it out of Section 1 to keep tight).
-3. **Sky-to-sky aspects under 2°** — only the tightest 2 (not 3). One sentence each, using `pairLived()` for the lived-experience phrase. Keep planet-name + sign + aspect, drop orb numbers from this section to read faster.
-4. **Sun/season** — one short sentence using `sunSeasonBackdrop()`.
+The combined reading needs to do something a pair reading cannot: show emergent family-system patterns. Here is the proposed structure of the output card stack:
 
-Add a real divider (`────────`) after this section.
+1. **Family Essence** — 3 sentences naming the overall character of this group (e.g., "An emotionally heavy household with two fire-Moon kids and a water-Moon parent…")
+2. **Roles in the System** — for each selected member, one line on the role they play in the group dynamic (the regulator, the spark, the peacemaker, the truth-teller, etc.)
+3. **The Emotional Climate** — what it actually feels like to live in this household day-to-day, derived from a Moon-cluster analysis (count of fire/earth/air/water Moons, dominant element).
+4. **Where Everyone Meets** — shared aspects, repeated signs, and stelliums across multiple charts (e.g., "Three of you have Mars in fire signs — conflict in this house is fast and loud.")
+5. **Pressure Points** — the 2–3 cross-aspects most likely to create friction in the group, named by who is doing what to whom.
+6. **Bridges** — the 2–3 cross-aspects most likely to provide ease and repair in the group.
+7. **One Practice for the Whole Family** — a single concrete action the group can do together for the next 90 days.
 
-### 3. SECTION 2 — YOUR CHART (synthesized, not listed facts)
-Keep the existing data prep (stations + `personalTransits` filtered <2° via `calculateTransitAspects`), but rewrite the per-entry sentence builder so each transit reads as **one synthesized 2–3 sentence picture**, not stitched fragments. Pattern:
+Pair-level cards (Soul Contract, Moon Bridge, Where Your Contracts Meet) remain on the one-to-one pair reading. The integrated reading focuses on group-level patterns.
 
-> `[Transit planet] [stationing/moving] at [deg sign] is moving through your [N]th house of [HOUSE_THEME], [aspect verb] your natal [planet] in [sign] in your [N]th house of [theme]. The ruler of your [N]th house is [ruler] sitting natally in your [N]th house in [sign], so this lands as [rulerExpression]. Do: [x]. Don't: [y].`
+## UI changes
 
-Improvements:
-- Replace the generic `transitAdvice()` tone-only output with a small `concreteAdvice(transitPlanet, natalPlanet, aspect)` map keyed on the transit pair (Neptune-Moon → "rest, audit, review what you started in the last six months / don't launch, sign, or trust your read on people"; Uranus-Venus → "let what you've outgrown go / don't blow up the relationship today"; etc.). Fall back to tone-based copy.
-- Strip the second ruler-line for personal transits (currently we print BOTH transit-house ruler chain AND natal-house — too much). Keep only the transit-house ruler routing, since that's what tells the reader HOW the energy lands.
-- Use the verb forms "opposes / squares / trines / sextiles / joins" instead of `${aspect}s`.
-- Always include do/don't on its own end-line.
-- If `personalTransits.length === 0` and no stations hit the chart: print one short line ("No tight personal hits today — the collective weather above is the story.") and move on.
+- Each row in "My Family" gets a checkbox on the left.
+- "Select all" / "Clear" links above the list.
+- New action bar under the list: `[Generate Family Reading]  3 of 4 selected` — disabled until 2+ are checked.
+- A new results panel renders below "My Family" when the reading is ready, with the 7 cards above.
+- The existing "Pair Reading" card below is renamed to **"Zoom in: One-on-One Reading"** so it is clearly the optional deep-dive, not the main flow.
 
-Divider after this section.
+## Technical plan
 
-### 4. SECTION 3 — TODAY'S DECODER (6–8 short lines, `notice → why`)
-The current generic templates ("Tension, short tempers...") violate the spec. Replace `aspectNoticeable()` and `personalNoticeable()` with a **pair-keyed** decoder map, e.g.:
-
-- `mars-aries` (sky) → "Aggressive drivers, people cutting you off, short fuses everywhere → Mars in Aries, everyone is acting first and thinking later."
-- `neptune-moon` (personal) → "Foggy, exhausted, or emotionally off for no clear reason → Neptune stationing on your Moon, your inner world is running the show."
-- `uranus-venus` (personal) → "Restless about money or a relationship, urge to blow something up → Uranus on your Venus."
-- `uranus-jupiter` (personal) → "Unexpected news about shared money or a financial agreement → Uranus on your Jupiter."
-- `saturn-mercury` (sky/personal) → "Conversations feel heavier, words carry more weight."
-- VOC → "Plans made after [time] go sideways → Moon void of course."
-- Station (sky) → "Things you can't quite read or trust today → [Planet] station, perception is off."
-
-Generic fallbacks only kick in if no pair-specific copy exists. Cap at 8 lines, sort: stations first, then personal transits tightest first, then tight sky aspects, VOC last. End on the last decoder line — no trailing blank text, no closing.
-
-### 5. Hard rule enforcement
-- Strip the `Hi [name],` greeting and any trailing closing — the spec forbids both. Keep `recipientName` only as a header label inside Section 2 ("YOUR CHART — Lauren").
-- Banned words filter: scrub any output that contains `metabolize|archetypal|portal|liminal|wound\s+(you|me|us)|integrate` (post-build sweep) — replace with neutral language. None should appear from the new copy maps, but the filter is a safety net.
-- Never call quincunx "friction" — update `pairLived()` and tone helpers so quincunx → "an awkward adjustment, something doesn't quite fit."
-- Total word count check at the end: if body exceeds 400 words, drop sky aspects 3+, then drop the lowest-priority decoder lines until under 400.
-
-### 6. Visual structure (plain-text email)
-Use this exact divider pattern between sections:
+A short technical section for context — feel free to skip.
 
 ```text
-THE SKY TODAY
-────────────────────────
-[content]
+src/lib/familySystemSynastry.ts   (new)
+  - buildFamilySystem(members[], charts[])
+      → returns deterministic system data:
+        - moonElementBreakdown
+        - sharedSigns / repeated placements
+        - all pairwise cross-aspects (parent↔child, sibling↔sibling, parent↔parent)
+        - top friction aspects (squares/oppositions, tightest orbs)
+        - top bridge aspects (trines/sextiles/conjunctions, tightest orbs)
+        - role assignments per member (rule-based: heaviest Saturn = anchor,
+          tightest Moon-Sun = regulator, most personal planets in fire = spark, etc.)
 
-────────────────────────
-YOUR CHART — [Name]
-────────────────────────
-[content]
+supabase/functions/family-system-reading/index.ts   (new edge function)
+  - takes the deterministic system data
+  - returns the 7-card narrative payload
+  - same voice rules as family-pair-reading: plain English, no jargon, no em dashes,
+    behavioral language only
 
-────────────────────────
-TODAY'S DECODER
-────────────────────────
-[content]
+src/components/family/FamilyTab.tsx   (edit)
+  - add `selectedIds: Set<string>` state
+  - add checkbox column + select all/clear
+  - add Generate Family Reading button + loading state
+  - render new <FamilySystemReadingView /> when result arrives
+  - rename pair section heading and move it below
 ```
 
-This gives a clear visual break between collective / personal / decoder so the reader knows instantly which is which.
+No changes to existing pair-reading code, edge function, or aspect interpretation library. The new system reading is additive.
 
-## Files touched
-- `src/lib/emailReport.ts` — all edits inside the existing `buildEmail` and helpers below it. No new files. No changes to orb logic (that's already tight via `getTightTransitOrb`). No changes to the on-screen Cosmic Weather UI.
+## What I need from you before building
 
-## What stays the same
-- Data sources: `calculateDailyAspects`, `calculateTransitAspects`, `getVOCMoonDetails`, station detection, `findStationHits`, `HOUSE_THEME`, `STATION_MEANING`, `TRADITIONAL_RULER`, `getNatalHouseOf`.
-- 2° orb cap on personal transits, station-always-included exception.
-- The on-page "Daily Cosmic Weather" view is untouched — only the email output changes.
+1. **Confirm the 7-section structure above** or tell me what to add, drop, or rename.
+2. **Role labels** — okay with my list (anchor, spark, peacemaker, regulator, truth-teller, mirror, wildcard) or want different ones?
+3. **Selection minimum** — 2+ members (any combo), or require at least one parent + one child?
+4. **Should the existing pair reading stay**, or do you want it removed entirely once the family reading exists?
