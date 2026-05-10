@@ -960,35 +960,33 @@ Then SUMMARY — four practical behavioral instructions (whatToPractice, whatToW
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.4,
-        max_tokens: 7000,
-      }),
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error("AI gateway error:", resp.status, errText);
-      return new Response(JSON.stringify({ agreements: makeFallbackAgreements({ chartName, placements, houses, aspects }), fallback: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const fetchGeneratedContent = async () => {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.4,
+          max_tokens: 7000,
+        }),
       });
-    }
 
-    const data = await resp.json();
-    const content = data?.choices?.[0]?.message?.content ?? "{}";
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`AI gateway error ${resp.status}: ${errText}`);
+      }
+
+      const data = await resp.json();
+      return data?.choices?.[0]?.message?.content ?? "{}";
+    };
 
     const normalizeAgreements = (value: any) => {
       const fallback = makeFallbackAgreements({ chartName, placements, houses, aspects });
