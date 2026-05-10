@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2 } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   computeFamilySynastry,
@@ -22,6 +23,11 @@ import {
   buildContractOverlap,
   ContractOverlapFlag,
 } from "@/lib/parentChildSynastry";
+import {
+  buildFamilySystem,
+  buildFamilySystemPayload,
+  FamilySystemReadingResponse,
+} from "@/lib/familySystemSynastry";
 
 interface FamilyMember {
   id: string;
