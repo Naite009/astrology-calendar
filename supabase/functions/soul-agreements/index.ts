@@ -731,6 +731,38 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         ),
         growthSigns,
       };
+
+      // ── NO TEMPLATE BLEED: gate the "helping others feel safe enough to be honest" phrase to charts that actually support emotional containment ──
+      const mcSign = (houses.find((h) => h.house === 10)?.cuspSign || "").toLowerCase();
+      const moonHouse = placements.find((p) => p.planet === "Moon")?.house;
+      const containmentChart =
+        (mcSign === "cancer" || mcSign === "pisces") &&
+        (moonHouse === 4 || moonHouse === 8 || moonHouse === 12);
+      if (!containmentChart && result.legacy?.interpretation) {
+        const bleedRe = /[^.!?\n]*helping others feel safe enough to be honest[^.!?\n]*[.!?]?/gi;
+        result.legacy.interpretation = String(result.legacy.interpretation)
+          .replace(bleedRe, "")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+        if (result.legacy.question) {
+          result.legacy.question = String(result.legacy.question).replace(bleedRe, "").replace(/\n{3,}/g, "\n\n").trim();
+        }
+      }
+
+      // ── REPETITION FILTER: log when overused concept words appear across too many sections ──
+      const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
+      const tally: Record<string, number> = {};
+      for (const key of sectionKeys) {
+        const txt = String(result[key]?.interpretation || "").toLowerCase();
+        for (const w of watchWords) {
+          if (new RegExp(`\\b${w}\\b`).test(txt)) tally[w] = (tally[w] || 0) + 1;
+        }
+      }
+      const overused = Object.entries(tally).filter(([, n]) => n > 2);
+      if (overused.length) {
+        console.warn("[soul-agreements] repetition filter flagged:", overused);
+      }
+
       return result;
     };
 
