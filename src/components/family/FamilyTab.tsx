@@ -490,6 +490,53 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
+      {savedReadings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Reading History
+            </CardTitle>
+            <CardDescription>
+              Past readings are saved automatically so you don't have to regenerate the same one. Tap any reading to view it again.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-border">
+              {savedReadings.map((r) => (
+                <li key={r.id} className="flex items-center gap-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => loadSavedReading(r)}
+                    className="flex-1 min-w-0 text-left hover:bg-muted/40 -mx-2 px-2 py-1 rounded"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={r.reading_type === "system" ? "default" : "secondary"} className="capitalize">
+                        {r.reading_type === "system" ? "Family" : "Pair"}
+                      </Badge>
+                      <span className="font-medium truncate">{r.label}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(r.created_at).toLocaleDateString(undefined, {
+                        year: "numeric", month: "short", day: "numeric",
+                      })}
+                    </div>
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteSavedReading(r.id)}
+                    aria-label="Delete saved reading"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {systemReading && (
         <FamilySystemReadingView reading={systemReading} />
       )}
