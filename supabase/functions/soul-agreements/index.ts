@@ -54,6 +54,9 @@ const PLACEHOLDER_PATTERNS: RegExp[] = [
   /\[insert [^\]]*\]/gi,
   /\bTBD\b/gi,
   /\(astrology section to follow\)/gi,
+  // Instructional / scaffold openers — the AI must integrate, not announce.
+  /\bunderneath all of this,?\s*/gi,
+  /\brestoration follows\b[^.\n]*\.?/gi,
 ];
 
 const stripPlaceholders = (value: string) => {
@@ -444,8 +447,8 @@ CORE BODY RESTRICTION (mandatory):
 - DO NOT use or cite Varuna, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, asteroids (Ceres, Pallas, Juno, Vesta, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo), Lilith, Part of Fortune, Vertex, or any minor trans-Neptunian body. If present in chart data, IGNORE them.
 
 SOUTH NODE SUPPRESSION (mandatory):
-- South Node may SUPPORT interpretation but MUST NOT appear among the top 2 interpretive anchors in Wound, Gift, or Purpose UNLESS South Node is conjunct (≤6° orb) the Sun, Moon, Ascendant, or chart ruler.
-- If South Node is not conjunct one of those, demote it to a supporting/background mention only.
+- South Node may SUPPORT interpretation in Family and Wound (and may appear in Gift or Purpose as background) but MUST NOT lead or appear among the top 2 interpretive anchors UNLESS South Node is conjunct (≤4° orb) the Sun, Moon, Ascendant, MC, or chart ruler.
+- If South Node is not tightly conjunct one of those, demote it to a supporting/background mention only ("familiar pattern", "default habit", "long-standing tendency"). Never make South Node the lead anchor for Family or Wound on sign placement alone.
 
 ORB VALIDATION RULE (mandatory — degree-based, NOT sign-based):
 - A conjunction MUST be validated by actual degree separation. Two planets in the same sign are NOT automatically conjunct. Compute |long1 − long2| (mod 360, take the shorter arc) and compare against the maximum orb below.
@@ -519,6 +522,8 @@ PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any che
 (4) SUN IDENTITY INTEGRATION: Do NOT paste Sun identity as a tacked-on sentence after the Real-Life Examples or Recognition Check. Integrate Sun identity naturally inside Plain English or the Summary, framed as the lens THROUGH WHICH growth happens.
    BAD:  "Your Sun in Taurus is the identity that learned to operate inside this pattern."
    GOOD: "Because your Sun is in Taurus, this growth needs to happen through steadiness, practical choices, and trust in your own pace."
+
+(4b) NO INSTRUCTIONAL OPENERS: Never use scaffold/instructional phrases that announce what the prose is about to do. FORBIDDEN: "Underneath all of this...", "Restoration follows...", "What follows is...", "This means that...", "In essence...", "To sum up...", "The takeaway is...". Integrate the point naturally into the paragraph instead. If you would have written "Underneath all of this, your Sun in X...", write "Your Sun in X stays the core of who you are..." directly.
 
 (5) REPETITION CHECK: Purpose, Gift, Stress (returned as "strength"), and Reset MUST each have a distinct functional meaning:
    • Purpose = growth direction (where you are going)
@@ -1069,7 +1074,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
           if (missing.includes("purpose") && result.purpose?.interpretation) {
             result.purpose.interpretation = txtOf("purpose").trim() +
-              ` Underneath all of this, your Sun in ${sunSign} is still the core of who you are; purpose expresses THROUGH that identity, it does not replace it.`;
+              ` Your Sun in ${sunSign} stays the core of who you are; this growth direction expresses through that identity, it does not replace it.`;
           }
           if (missing.includes("family") && result.family?.interpretation) {
             result.family.interpretation = txtOf("family").trim() +
@@ -1092,7 +1097,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         if (!has(moonSign, txtOf("reset")) && result.reset?.interpretation) {
           console.warn(`[soul-agreements] Moon (${moonSign}) missing from reset`);
           result.reset.interpretation = txtOf("reset").trim() +
-            ` Restoration follows what your Moon in ${moonSign} actually needs to feel settled again.`;
+            ` Your Moon in ${moonSign} is what actually needs tending for you to feel settled again.`;
         }
       }
 
