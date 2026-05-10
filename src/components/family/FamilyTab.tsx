@@ -413,6 +413,52 @@ const AiPairReadingView = ({
         </Card>
       )}
 
+      {moonBridge && reading.moonBridge && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base">How Your Emotional Languages Meet</CardTitle>
+              <Badge
+                variant="outline"
+                className={
+                  moonBridge.connectionType === "bridge"
+                    ? "border-emerald-500 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30"
+                    : moonBridge.connectionType === "gap"
+                    ? "border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30"
+                    : "border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950/30"
+                }
+              >
+                {moonBridge.connectionType === "bridge"
+                  ? "Bridge"
+                  : moonBridge.connectionType === "gap"
+                  ? "Gap"
+                  : "Mirror"}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  {fromName}'s Moon
+                </div>
+                <p className="text-sm">{moonBridge.parentMoonLabel}</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  {toName}'s Moon
+                </div>
+                <p className="text-sm">{moonBridge.childMoonLabel}</p>
+              </div>
+            </div>
+            <p>{reading.moonBridge.summary}</p>
+            <p className="italic text-muted-foreground border-l-2 border-primary/40 pl-3">
+              {reading.moonBridge.translation}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {childMoonProfile && (
         <Card className="border-primary/30">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
