@@ -515,7 +515,78 @@ export function buildPairReadingPayload(
     toRole,
     toPlanetsSummary: planetSummary(toChart),
     toBirthDate: toChart.birthDate,
+    parentMoonSummary: moonSummary(fromChart),
+    childMoonSummary: moonSummary(toChart),
     aspects,
+  };
+}
+
+const MOON_SHORT_DESCRIPTORS: Record<string, string> = {
+  Aries: "acts first, feels second",
+  Taurus: "needs consistency and physical comfort",
+  Gemini: "processes by talking",
+  Cancer: "absorbs the emotional atmosphere",
+  Leo: "needs to be witnessed",
+  Virgo: "manages feelings through doing",
+  Libra: "keeps feelings under the surface to preserve peace",
+  Scorpio: "feels everything intensely, shows little",
+  Sagittarius: "needs freedom to feel safe",
+  Capricorn: "manages feelings by staying in control",
+  Aquarius: "detaches to self-protect",
+  Pisces: "absorbs everyone else's feelings",
+};
+
+function ordinalShort(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function moonLabel(chart: NatalChart): string | null {
+  const moon = (chart.planets as Record<string, NatalPlanetPosition | undefined>)?.Moon;
+  if (!moon?.sign) return null;
+  const desc = MOON_SHORT_DESCRIPTORS[moon.sign] ?? "";
+  const calcHouse = buildHouseCalc(chart);
+  const abs = toAbsoluteDegree(moon);
+  const house = abs != null && calcHouse ? calcHouse(abs) : null;
+  const housePart = house ? ` in the ${ordinalShort(house)}` : "";
+  return `${moon.sign}${housePart}${desc ? `, ${desc}` : ""}`;
+}
+
+function moonSummary(chart: NatalChart): string {
+  const moon = (chart.planets as Record<string, NatalPlanetPosition | undefined>)?.Moon;
+  if (!moon?.sign) return "Moon: unknown";
+  const calcHouse = buildHouseCalc(chart);
+  const abs = toAbsoluteDegree(moon);
+  const house = abs != null && calcHouse ? calcHouse(abs) : null;
+  return `Moon in ${moon.sign}${house ? `, ${ordinalShort(house)} house` : ""}`;
+}
+
+export function buildMoonBridge(
+  parentChart: NatalChart,
+  childChart: NatalChart,
+  existingRows: FamilyAspectRow[],
+): MoonBridge | null {
+  const parentLabel = moonLabel(parentChart);
+  const childLabel = moonLabel(childChart);
+  if (!parentLabel || !childLabel) return null;
+
+  const moonRow = existingRows.find(
+    (r) => r.fromPlanet === "Moon" && r.toPlanet === "Moon" && r.orb <= 8,
+  );
+  let connectionType: MoonBridgeConnection;
+  if (!moonRow) {
+    connectionType = "gap";
+  } else if (moonRow.aspect === "trine" || moonRow.aspect === "sextile") {
+    connectionType = "bridge";
+  } else {
+    connectionType = "mirror";
+  }
+
+  return {
+    parentMoonLabel: parentLabel,
+    childMoonLabel: childLabel,
+    connectionType,
   };
 }
 
