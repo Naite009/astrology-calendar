@@ -72,6 +72,12 @@ interface ReadingPayload {
     whatTheParentMayNotice: string[];
     whatHelps: string[];
   };
+  perceptionTranslation?: {
+    title: string;
+    misread: string;
+    underneath: string;
+    whatHelps: string[];
+  };
 }
 
 function ageStage(years: number | null | undefined): string {
