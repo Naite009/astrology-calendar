@@ -58,6 +58,13 @@ interface ReadingPayload {
   practice: string; // one focused 90-day practice for the parent
   soulContract?: SoulContract;
   moonBridge?: { summary: string; translation: string };
+  pressureProfile?: {
+    title: string;
+    astrology: string;
+    plainEnglish: string;
+    whatTheParentMayNotice: string[];
+    whatHelps: string[];
+  };
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -159,6 +166,13 @@ JSON SCHEMA:
   "moonBridge": {
     "summary": string (2 sentences explaining how the parent and child Moon signs interact as emotional languages),
     "translation": string (one sentence in the format: "When [childName] does [specific behavior], they are actually saying [what they need]." Specific to the child's Moon sign, not generic.)
+  },
+  "pressureProfile": {
+    "title": "How This Child Handles Pressure",
+    "astrology": string (1-3 sentences naming the EXACT signatures present in the child's chart and parent cross-aspects that drive this profile — list aspect + valid degree orb. If no qualifying signatures are present, set this to "" and leave all other fields empty arrays/strings),
+    "plainEnglish": string (2-4 sentences translating the signatures into likely lived behavior under pressure, calibrated to the child's age),
+    "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors, e.g. "smart but hesitant", "freezes when watched"],
+    "whatHelps": [string, ...3-5 short supportive parenting/coaching responses, verbs first, e.g. "praise effort before outcome", "reduce public correction"]
   }
 }
 
@@ -170,7 +184,33 @@ SOUL CONTRACT RULES:
 - NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
 - Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.
 
-MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.`;
+MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.
+
+PRESSURE PROFILE — "How This Child Handles Pressure" (only fill if ${body.toName} is the child in this pair; otherwise return empty strings/arrays):
+
+Purpose: Help the parent understand how this child may experience authority pressure, fear, protection, inhibition, and performance confidence. Stay careful. Do NOT diagnose abuse. Do NOT claim abuse happened from the chart. If harsh parenting is already known from context, you may describe how the child experienced and adapted to it. Always use "may", "might", "can".
+
+Evaluate these signatures using the cross-aspects and the child's own chart (only count aspects with valid degree-based orb — Sun/Moon ≤10°, Mercury/Venus/Mars ≤6°, Jupiter/Saturn ≤6°, Uranus/Neptune/Pluto ≤5°, Chiron ≤4°, Nodes ≤4°. Same-sign is NOT an aspect.):
+
+1. AUTHORITY PRESSURE SIGNATURE — Saturn hard aspect (conjunction, opposition, square, tight quincunx within orb) to the child's Sun. Possible patterns: fear of disappointing authority, feeling criticized, needing to earn approval, self-criticism, perfection pressure, hesitating when watched, low confidence despite ability, fear of visible mistakes.
+
+2. MOTHER / HOME DIFFERENTIATION — Do NOT collapse Mother and Home into one meaning. Moon = emotional caregiving experience; 4th house = home atmosphere; 4th ruler = deeper family system. A protective Moon can show a loving caregiver while a difficult 4th house/ruler can still show a tense or unsafe home atmosphere. Name the distinction explicitly when relevant.
+
+3. FEARFUL CHILD SIGNATURE — Several of: Saturn hard aspect Sun, Saturn hard aspect Moon, Saturn hard aspect Ascendant, Pluto connected to 4th house/ruler, Scorpio IC or Scorpio Rising, Moon in Cancer or Pisces under stress, Chiron hard aspect Sun/Moon/Mercury/Mars, Mars/Chiron contact, Mercury/Chiron contact. Patterns: hypervigilance, walking on eggshells, fear of being wrong/yelled at, shutting down under pressure, avoiding visibility, overthinking before acting, underperforming despite intelligence.
+
+4. PERFORMANCE EXPOSURE — Chiron conjunct Mercury, Chiron hard aspect Mars, Saturn hard aspect Mars, Saturn hard aspect Mercury, Scorpio Rising, Mars under hard Saturn/Chiron/Neptune influence, 5th house Chiron, Aries placements under Chiron/Saturn pressure. Patterns: plays well defensively but avoids the shot, passes quickly instead of initiating, avoids being center of attention, rushed choices under pressure, freezes when success requires visible action, hides full ability because failure would be public. Frame as "not lack of talent — fear of visible failure."
+
+5. DIFFERENT CHILDREN, SAME PARENT — Do not assume siblings respond the same way. Read THIS child's chart as THIS child's adaptation (freeze/fawn/withdraw vs fight/defiance vs performance avoidance).
+
+6. SPORTS CONFIDENCE TRANSLATION — If the child has strong fire or Mars but still avoids performance, check Chiron-Mercury, Chiron-Mars, Saturn-Mars, Saturn-Sun, Scorpio Rising, 5th house wounds, 12th house fear/inhibition. Translate as: drive exists, but visibility may trigger nervous-system safety response.
+
+OUTPUT FORMAT for pressureProfile:
+- "astrology": Name the exact qualifying signatures with their orbs (e.g. "Saturn square Sun within 2.1°", "Chiron conjunct Mars within 1.4°"). If NO qualifying signatures exist, return "" for astrology, "" for plainEnglish, [] for both arrays.
+- "plainEnglish": Translate to likely behavior, age-calibrated, using "may"/"might"/"can".
+- "whatTheParentMayNotice": 3-5 short observable behaviors (e.g. "smart but hesitant", "strong defense but avoids shooting", "freezes when watched", "passes responsibility quickly", "gets upset after correction").
+- "whatHelps": 3-5 short supportive responses, verbs first (e.g. "praise effort before outcome", "reduce public correction", "give one simple instruction at a time", "practice pressure moments privately first", "name the fear without shaming it", "build confidence through safe repetition").
+
+FINAL RULE: Always translate astrology into parenting behavior. Never end on "this child has Saturn opposite Sun." End on what to DO and what the child NEEDS.`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
@@ -185,7 +225,7 @@ MOON BRIDGE INPUTS:
 CROSS-ASPECTS (already verified, tightest first):
 ${aspectLines}
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules — only fill it if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every pressureProfile field.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

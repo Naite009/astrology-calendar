@@ -813,6 +813,60 @@ const AiPairReadingView = ({
         </Card>
       )}
 
+      {reading.pressureProfile &&
+        (reading.pressureProfile.plainEnglish?.trim() ||
+          reading.pressureProfile.whatHelps?.length > 0) && (
+          <Card className="border-amber-500/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                {reading.pressureProfile.title || "How This Child Handles Pressure"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {reading.pressureProfile.astrology?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Astrology
+                  </div>
+                  <p className="text-muted-foreground">{reading.pressureProfile.astrology}</p>
+                </div>
+              )}
+              {reading.pressureProfile.plainEnglish?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Plain English
+                  </div>
+                  <p>{reading.pressureProfile.plainEnglish}</p>
+                </div>
+              )}
+              {reading.pressureProfile.whatTheParentMayNotice?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What the parent may notice
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.pressureProfile.whatTheParentMayNotice.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {reading.pressureProfile.whatHelps?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What helps
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.pressureProfile.whatHelps.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
       {childMoonProfile && (
         <Card className="border-primary/30">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
