@@ -24,14 +24,16 @@ interface CrossAspect {
 
 interface RequestBody {
   fromName: string;
-  fromRole: string; // parent / grandparent / sibling
-  fromPlanetsSummary: string; // pre-formatted "Sun: Aries 12° (House 5) ..." text
+  fromRole: string;
+  fromPlanetsSummary: string;
   toName: string;
-  toRole: string; // child / sibling
+  toRole: string;
   toPlanetsSummary: string;
-  toBirthDate?: string; // YYYY-MM-DD; used for age stage
+  toBirthDate?: string;
   toAgeYears?: number | null;
-  aspects: CrossAspect[]; // sorted tightest first; max ~8
+  parentMoonSummary?: string;
+  childMoonSummary?: string;
+  aspects: CrossAspect[];
 }
 
 interface ReadingSection {
