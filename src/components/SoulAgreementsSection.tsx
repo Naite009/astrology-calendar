@@ -297,6 +297,22 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 </div>
               )}
 
+              {/* How to Know You're Growing */}
+              {data.summary?.growthSigns && data.summary.growthSigns.length > 0 && (
+                <div className="p-4 bg-primary/10 border border-primary/40 rounded-sm">
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">How to Know You're Growing</p>
+                  <p className="text-[11px] text-muted-foreground mb-3">Small, observable changes that signal real progress.</p>
+                  <ul className="space-y-1.5 text-[12px] text-foreground">
+                    {data.summary.growthSigns.map((sign, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-primary mt-0.5">✓</span>
+                        <span>{sign}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <button
                 onClick={generate}
                 className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
