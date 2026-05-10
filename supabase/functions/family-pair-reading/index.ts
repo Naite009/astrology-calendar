@@ -146,8 +146,22 @@ JSON SCHEMA:
       "whatHelps": [string, string, ...2-3 concrete things the parent can DO, not feel — verbs, not adjectives]
     }
   ],
-  "practice": string (1 short paragraph naming ONE focused practice for the parent for the next 90 days based on the tightest or most pressing cross-aspect)
-}`;
+  "practice": string (1 short paragraph naming ONE focused practice for the parent for the next 90 days based on the tightest or most pressing cross-aspect),
+  "soulContract": {
+    "whyTheseTwo": string (2-3 sentences on the karmic pull that brought these two souls into this family),
+    "childLesson": string (1-2 sentences: what this child agreed to learn through this parent),
+    "parentLesson": string (1-2 sentences: what this parent agreed to learn through this child),
+    "contractSentence": string (one sentence naming the central agreement, must name BOTH people learning)
+  }
+}
+
+SOUL CONTRACT RULES:
+- whyTheseTwo: Look at the child's North Node and Chiron cross-aspects to the parent's chart. State plainly what karmic agreement brought these two souls together. Do not use mystical language, write it like you are telling someone something true.
+- childLesson: Based on the child's North Node direction and the tightest challenging cross-aspects, name what this child is here to learn specifically through this parent.
+- parentLesson: Look at what the child's chart activates in the parent, especially if the child's Sun or Moon aspects the parent's Saturn, Chiron, or South Node. Name what this parent is here to learn through this child.
+- contractSentence: One sentence. Plain English. Must name both people learning something, not just the child learning from the parent. Example format: "They came to teach each other that [truth]."
+- NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
+- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
