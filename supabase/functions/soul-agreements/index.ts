@@ -86,7 +86,7 @@ const stripRecognitionFromInterpretation = (value: string) => {
 
 const cleanPlainLanguage = (value: string) =>
   dedupeRecognitionCheck(
-    value
+    stripPlaceholders(value)
       .replace(/—/g, ",")
       .replace(/your own powerful and the real you/gi, "your own voice")
       .replace(/your the real you/gi, "yourself")
