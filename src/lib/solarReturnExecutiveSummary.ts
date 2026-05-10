@@ -287,7 +287,7 @@ export function generateExecutiveSummary(
     items.push({
       type: 'challenge',
       title: `Deep evolution in your ${HOUSE_KEYWORDS[plutoH] || 'life'} area`,
-      description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more authentic and powerful.`,
+      description: `Something in your ${HOUSE_KEYWORDS[plutoH] || 'personal'} life is evolving at a fundamental level. Old patterns are clearing space for something more honest and powerful.`,
       source: `Transformation focus in ${HOUSE_KEYWORDS[plutoH] || 'life area'}`,
       house: plutoH,
       intensity: 7,

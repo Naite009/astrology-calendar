@@ -169,7 +169,7 @@ const getSunSignMeaning = (sign: string): string => {
     Leo: "Your identity is built around self-expression, creativity, and recognition. You feel most yourself when you're performing, creating, or being appreciated for your unique gifts. You need to shine and to feel special.",
     Virgo: "Your identity is built around analyzing, improving, and serving. You feel most yourself when you're solving problems, refining systems, or being genuinely useful. You need order, purpose, and to feel competent.",
     Libra: "Your identity is built around relating, balancing, and creating harmony. You feel most yourself when you're connecting with others, creating beauty, or mediating between different perspectives. You need partnership and to feel fair.",
-    Scorpio: "Your identity is built around depth, transformation, and intensity. You feel most yourself when you're uncovering hidden truths, experiencing deep intimacy, or navigating crisis. You need authenticity and emotional honesty.",
+    Scorpio: "Your identity is built around depth, transformation, and intensity. You feel most yourself when you're uncovering hidden truths, experiencing deep intimacy, or navigating crisis. You need honesty and emotional honesty.",
     Sagittarius: "Your identity is built around seeking, exploring, and meaning-making. You feel most yourself when you're learning, traveling, or expanding your worldview. You need freedom, adventure, and a sense of purpose.",
     Capricorn: "Your identity is built around achieving, structuring, and mastering. You feel most yourself when you're working toward long-term goals, building reputation, or taking responsibility. You need to feel accomplished and respected.",
     Aquarius: "Your identity is built around innovating, reforming, and being different. You feel most yourself when you're questioning norms, contributing to the collective, or expressing your uniqueness. You need intellectual freedom and to feel true to yourself.",
@@ -431,7 +431,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 </summary>
                 <div className="mt-3 space-y-4">
                   <p className="text-xs text-muted-foreground italic">
-                    Your Sun sign reveals how you express your core identity—who you are when you're being authentically yourself. 
+                    Your Sun sign reveals how you express your core identity—who you are when you're being honestly yourself. 
                     This is the energy you radiate naturally and what you're here to develop throughout your life.
                   </p>
                   <div className="bg-gradient-to-br from-violet-50/50 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-violet-200 dark:border-violet-800">

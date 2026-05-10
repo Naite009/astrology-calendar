@@ -362,7 +362,7 @@ export const RETROGRADE_SIGN_COMBOS: RetrogradeSignCombo[] = [
     summary: "Venus retrograde in Aries (its detriment) creates a soul learning to balance fierce independence with intimate relating. Self-love must be established before partnership can thrive.",
     gifts: [
       "Strong sense of self in relationships",
-      "Courage to love authentically",
+      "Courage to love honestly",
       "Independence within partnership",
       "Pioneering in matters of love",
       "Honest, direct affection",

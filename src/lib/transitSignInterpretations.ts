@@ -242,13 +242,13 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Uranus-Aries': {
     whatItFeelsLike: "Revolution in identity and action. The collective awakens to 'I can do what I want.' Sudden independence, breakthrough through boldness.",
     howItManifests: "New identities emerge, pioneers and disruptors rise, impulsive revolutions, technology for individuals. (2010-2019) Also: recklessness, anger, fragmentation.",
-    whatToDo: "Embrace your authentic self even if it disrupts. Take risks for freedom. But channel rebellion constructively—chaos without purpose is just chaos."
+    whatToDo: "Embrace your honest self even if it disrupts. Take risks for freedom. But channel rebellion constructively—chaos without purpose is just chaos."
   },
   
   'Uranus-Taurus': {
     whatItFeelsLike: "Revolution in values, money, and the material world. What we VALUE is being shaken up. The earth itself—and our relationship to it—changes.",
     howItManifests: "Financial disruption (crypto, banking changes), environmental awakening, food systems transforming, body autonomy issues. (2018-2026) Also: economic instability, values confusion.",
-    whatToDo: "Liberate your relationship with money and stuff. Embrace sustainable innovations. Let go of possessions that don't serve authentic values. Your security is in adaptability, not accumulation."
+    whatToDo: "Liberate your relationship with money and stuff. Embrace sustainable innovations. Let go of possessions that don't serve honest values. Your security is in adaptability, not accumulation."
   },
   
   'Uranus-Gemini': {
@@ -260,25 +260,25 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Uranus-Cancer': {
     whatItFeelsLike: "Revolution in home, family, and belonging. What 'HOME' and 'FAMILY' mean gets redefined. Emotional breakthroughs through disruption.",
     howItManifests: "Family structures changing, home life disrupted, ancestral patterns breaking, nationalism vs. globalism. Also: rootlessness, family chaos, emotional instability.",
-    whatToDo: "Free yourself from outdated family patterns. Create home that reflects your authentic self. Let emotional breakthroughs happen. Your security is in emotional authenticity, not familiar patterns."
+    whatToDo: "Free yourself from outdated family patterns. Create home that reflects your honest self. Let emotional breakthroughs happen. Your security is in emotional honesty, not familiar patterns."
   },
   
   'Uranus-Leo': {
     whatItFeelsLike: "Revolution in self-expression and creativity. Who we ARE and how we SHINE breaks free. Individual genius emerges unexpectedly.",
     howItManifests: "Creative breakthroughs, unexpected fame, children/youth culture changing, entertainment revolution. Also: ego disruption, recognition lost, drama and chaos.",
-    whatToDo: "Express your unique genius without apology. Let creativity surprise you. Free yourself from needing approval for your light. Your shine is authentic when it can't be controlled."
+    whatToDo: "Express your unique genius without apology. Let creativity surprise you. Free yourself from needing approval for your light. Your shine is honest when it can't be controlled."
   },
   
   'Uranus-Virgo': {
     whatItFeelsLike: "Revolution in work, health, and service. HOW we work and care for bodies transforms. Technology meets healing.",
     howItManifests: "Healthcare technology, work automation, service industries disrupted, environmental health. Also: health anxiety, job instability, perfectionism crisis.",
-    whatToDo: "Embrace new approaches to health and work. Let go of perfectionism that limits innovation. Serve in ways that are authentic, not just expected. Your usefulness is in adaptability."
+    whatToDo: "Embrace new approaches to health and work. Let go of perfectionism that limits innovation. Serve in ways that are honest, not just expected. Your usefulness is in adaptability."
   },
   
   'Uranus-Libra': {
     whatItFeelsLike: "Revolution in relationships and justice. HOW we partner and what 'FAIRNESS' means transforms. Social contracts rewritten.",
     howItManifests: "Relationship norms changing, marriage/partnership redefined, justice system challenged, art revolution. Also: relationship instability, fairness battles, commitment fears.",
-    whatToDo: "Free your relationships from outdated expectations. Partner in authentic ways. Fight for real fairness, not comfortable harmony. Your connections thrive through honest freedom."
+    whatToDo: "Free your relationships from outdated expectations. Partner in honest ways. Fight for real fairness, not comfortable harmony. Your connections thrive through honest freedom."
   },
   
   'Uranus-Scorpio': {
@@ -290,13 +290,13 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Uranus-Sagittarius': {
     whatItFeelsLike: "Revolution in beliefs, education, and meaning. WHAT WE BELIEVE is liberated—or fragmented. Truth becomes personal and diverse.",
     howItManifests: "Religious and philosophical upheaval, education transformed, global travel/connection, ideology disrupted. Also: extremism, meaning crisis, scattered beliefs.",
-    whatToDo: "Free yourself from inherited beliefs. Seek truth through direct experience. Embrace the adventure of not-knowing. Your meaning is found through authentic exploration."
+    whatToDo: "Free yourself from inherited beliefs. Seek truth through direct experience. Embrace the adventure of not-knowing. Your meaning is found through honest exploration."
   },
   
   'Uranus-Capricorn': {
     whatItFeelsLike: "Revolution in structures, institutions, and authority. The SYSTEMS we've built are challenged and transformed. Old authorities fall.",
     howItManifests: "Government/corporate disruption, career paths changed, authority redefined, ambition taking new forms. Also: institutional chaos, career instability, authority crisis.",
-    whatToDo: "Build new structures that serve real purpose. Lead in innovative ways. Don't cling to positions that need to change. Your authority is authentic when it serves evolution."
+    whatToDo: "Build new structures that serve real purpose. Lead in innovative ways. Don't cling to positions that need to change. Your authority is honest when it serves evolution."
   },
   
   'Uranus-Aquarius': {
@@ -308,7 +308,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Uranus-Pisces': {
     whatItFeelsLike: "Revolution in spirituality, imagination, and transcendence. How we DREAM and ESCAPE transforms. Collective unconscious is stirred.",
     howItManifests: "Spiritual awakening, artistic revolution, escape methods changing, compassion movements. Also: confusion, escapism, boundary dissolution, collective overwhelm.",
-    whatToDo: "Let your spirituality be authentically weird. Create art that surprises even you. Transcend in ways that are YOUR own. Your mysticism is valid when it frees rather than escapes."
+    whatToDo: "Let your spirituality be honestly weird. Create art that surprises even you. Transcend in ways that are YOUR own. Your mysticism is valid when it frees rather than escapes."
   },
 
   // ============================================================================
@@ -418,7 +418,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Pluto-Leo': {
     whatItFeelsLike: "Power through creativity and self-expression. The collective transforms WHO IT IS. Personal power becomes collective transformation.",
     howItManifests: "Creative power wielded, celebrity culture transformed, children as change agents, ego death/rebirth. Also: megalomania, power through spectacle, ego destruction.",
-    whatToDo: "Transform through authentic self-expression. Create from power, not for approval. But keep ego in check—your light isn't just for you."
+    whatToDo: "Transform through honest self-expression. Create from power, not for approval. But keep ego in check—your light isn't just for you."
   },
   
   'Pluto-Virgo': {
@@ -430,7 +430,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Pluto-Libra': {
     whatItFeelsLike: "Power through relationship and justice. The collective transforms HOW IT RELATES. Partnership, fairness, and beauty become arenas of deep change.",
     howItManifests: "Relationship patterns transformed, justice system overhauled, power dynamics in partnership exposed. Also: codependency, manipulation through charm, justice corrupted.",
-    whatToDo: "Transform your relationship patterns. Fight for real justice. But examine your own power dynamics—balance requires honest self-awareness."
+    whatToDo: "Transform your relationship patterns. Fight for real justice. But examine your ability to trust yourself dynamics—balance requires honest self-awareness."
   },
   
   'Pluto-Scorpio': {
@@ -469,7 +469,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   
   'Chiron-Aries': {
     whatItFeelsLike: "The collective wound is around identity and courage. 'Am I allowed to BE myself?' The healing comes through brave self-assertion. (2018-2027)",
-    howItManifests: "Identity wounds surfacing, courage to be authentic, healing through action, wounded warriors teaching. Also: identity crisis, aggression from wounding, fear of assertion.",
+    howItManifests: "Identity wounds surfacing, courage to be honest, healing through action, wounded warriors teaching. Also: identity crisis, aggression from wounding, fear of assertion.",
     whatToDo: "Heal by taking courageous action anyway. Your wounds around identity become your teaching. But don't weaponize victimhood—healing requires moving forward."
   },
   
@@ -494,7 +494,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Chiron-Leo': {
     whatItFeelsLike: "The collective wound is around self-expression and recognition. 'Am I special? Am I seen?' The healing comes through creating anyway.",
     howItManifests: "Creative wounds surfacing, healing through expression, wounded artists teaching. Also: recognition hunger, spotlight wounds, creative blocks.",
-    whatToDo: "Heal by creating and expressing anyway. Your visibility wounds become your gift for authentic expression. But don't perform for healing—create for truth."
+    whatToDo: "Heal by creating and expressing anyway. Your visibility wounds become your gift for honest expression. But don't perform for healing—create for truth."
   },
   
   'Chiron-Virgo': {
@@ -504,9 +504,9 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   },
   
   'Chiron-Libra': {
-    whatItFeelsLike: "The collective wound is around relationship and fairness. 'Am I lovable? Is life fair?' The healing comes through authentic relating.",
+    whatItFeelsLike: "The collective wound is around relationship and fairness. 'Am I lovable? Is life fair?' The healing comes through honest relating.",
     howItManifests: "Relationship wounds surfacing, healing through partnership, wounded mediators. Also: codependency, rejection wounds, justice rage.",
-    whatToDo: "Heal by relating authentically anyway. Your relationship wounds become your gift for genuine connection. But don't partner to heal—heal to partner."
+    whatToDo: "Heal by relating honestly anyway. Your relationship wounds become your gift for genuine connection. But don't partner to heal—heal to partner."
   },
   
   'Chiron-Scorpio': {
@@ -518,17 +518,17 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   'Chiron-Sagittarius': {
     whatItFeelsLike: "The collective wound is around meaning and truth. 'Is there meaning? Can I believe?' The healing comes through seeking anyway.",
     howItManifests: "Faith wounds surfacing, healing through teaching truth, wounded philosophers. Also: meaning crisis, belief betrayal, spiritual cynicism.",
-    whatToDo: "Heal by seeking meaning anyway. Your faith wounds become your gift for authentic truth. But don't preach from wound—teach from healing."
+    whatToDo: "Heal by seeking meaning anyway. Your faith wounds become your gift for honest truth. But don't preach from wound—teach from healing."
   },
   
   'Chiron-Capricorn': {
     whatItFeelsLike: "The collective wound is around achievement and authority. 'Have I accomplished enough? Am I legitimate?' The healing comes through earned mastery.",
     howItManifests: "Achievement wounds surfacing, healing through responsibility, wounded authorities. Also: imposter syndrome, father wounds, success anxiety.",
-    whatToDo: "Heal by building anyway. Your authority wounds become your gift for genuine leadership. But don't achieve to prove—prove through authentic achievement."
+    whatToDo: "Heal by building anyway. Your authority wounds become your gift for genuine leadership. But don't achieve to prove—prove through honest achievement."
   },
   
   'Chiron-Aquarius': {
-    whatItFeelsLike: "The collective wound is around belonging and difference. 'Am I too weird? Do I fit?' The healing comes through authentic community.",
+    whatItFeelsLike: "The collective wound is around belonging and difference. 'Am I too weird? Do I fit?' The healing comes through honest community.",
     howItManifests: "Belonging wounds surfacing, healing through groups, wounded visionaries. Also: outsider pain, social anxiety, idealism wounded.",
     whatToDo: "Heal by being yourself in community anyway. Your belonging wounds become your gift for inclusive vision. But don't rebel to belong—belong to evolve."
   },

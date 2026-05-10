@@ -215,7 +215,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
   'Sun/Uranus': {
     title: 'Identity & Freedom',
     emoji: '☉♅',
-    basicIdea: 'Your uniqueness, originality, and need for independence. This midpoint electrifies your sense of self — it\'s where you break free from convention and insist on being authentically you.',
+    basicIdea: 'Your uniqueness, originality, and need for independence. This midpoint electrifies your sense of self — it\'s where you break free from convention and insist on being honestly you.',
     personalLife: 'Your rebellious streak, innovative thinking, and tolerance for sudden change. How you handle disruption and surprise.',
     relationships: 'Need for space and autonomy within partnerships. Attraction to unconventional people or relationship structures.',
     bodyMind: 'Nervous system sensitivity, electrical impulses in the body. Sudden health events or breakthroughs.',
@@ -251,7 +251,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
   'Sun/Ascendant': {
     title: 'Identity & Presence',
     emoji: '☉↑',
-    basicIdea: 'How your inner self meets the outer world. This midpoint shows how visible and authentic your self-expression is — whether people see the "real you" or a mask.',
+    basicIdea: 'How your inner self meets the outer world. This midpoint shows how visible and honest your self-expression is — whether people see the "real you" or a mask.',
     personalLife: 'Your personal impact on others. How you walk into a room. Your body language and the impression you make without trying.',
     relationships: 'First impressions in love and friendship. How quickly people "get" who you are. Whether you attract people who appreciate your true self.',
     bodyMind: 'Physical appearance, overall vitality and health presentation. How your inner state shows up in your face and posture.',

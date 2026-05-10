@@ -268,7 +268,7 @@ const UranusOppositionCard = ({
           
           <div className="mt-3 p-2 bg-cyan-500/10 rounded border-l-2 border-cyan-400">
             <span className="font-medium">Reflection: </span>
-            Where have I been playing it safe? What authentic part of myself have I suppressed?
+            Where have I been playing it safe? What honest part of myself have I suppressed?
           </div>
         </div>
       </details>

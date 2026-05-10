@@ -133,7 +133,7 @@ const getTransitInterpretation = (planet: string, aspect: string): string => {
       conjunction: 'Emotions visible to others. Your mood sets the tone.',
       sextile: 'Easy self-expression. Others respond to your vibe.',
       square: 'Tension between inner feelings and outer image.',
-      trine: 'Natural authenticity. Be yourself comfortably.',
+      trine: 'Natural honesty. Be yourself comfortably.',
       opposition: 'Relationships reflect your emotional state.',
     },
     Midheaven: {

@@ -357,7 +357,7 @@ const VENUS_MARS: PlanetPairAspects = {
         'Magnetic romantic presence',
         'Strong creative drive',
         'Unified masculine/feminine energy',
-        'Attracts through authenticity'
+        'Attracts through honesty'
       ],
       challenges: [
         'Impulsive in love',
@@ -609,7 +609,7 @@ const MOON_PLUTO: PlanetPairAspects = {
         'Relationships are transformative',
         'Attracts deep partners',
         'Grows through intimacy',
-        'Learns to own power through others'
+        'Learns to ability to trust yourself through others'
       ],
       challenges: [
         'May attract controlling types',
@@ -906,7 +906,7 @@ const MARS_PLUTO: PlanetPairAspects = {
       symbol: '□',
       name: 'The Power Struggle',
       tone: '"I fight against control."',
-      description: 'Friction between will and power. May have battled authority or experienced abuse. Creates tremendous drive through struggle. Eventually masters own power after difficult lessons.',
+      description: 'Friction between will and power. May have battled authority or experienced abuse. Creates tremendous drive through struggle. Eventually masters ability to trust yourself after difficult lessons.',
       gifts: [
         'Forged through power struggles',
         'Cannot be dominated',
@@ -1415,7 +1415,7 @@ const SUN_URANUS: PlanetPairAspects = {
   planet1: 'Sun',
   planet2: 'Uranus',
   coreSignature: 'The Awakener',
-  coreDescription: 'Sun + Uranus = identity that demands freedom and authenticity. This combination cannot conform. The self is linked to originality, rebellion, and sudden changes. May have had disrupted relationship with father or experienced sudden life changes. Becomes the agent of awakening for others.',
+  coreDescription: 'Sun + Uranus = identity that demands freedom and honesty. This combination cannot conform. The self is linked to originality, rebellion, and sudden changes. May have had disrupted relationship with father or experienced sudden life changes. Becomes the agent of awakening for others.',
   aspects: [
     {
       aspectType: 'Conjunction',
@@ -1979,7 +1979,7 @@ const VENUS_PLUTO: PlanetPairAspects = {
       description: 'Friction between love and power. Relationships trigger deep transformation. May experience painful endings that lead to rebirth. Eventually learns healthy intimacy through crisis.',
       gifts: [
         'Transformed through love\'s fire',
-        'Develops authentic intimacy',
+        'Develops honest intimacy',
         'Cannot do superficial love',
         'Eventually becomes powerful healer'
       ],
@@ -2583,7 +2583,7 @@ const MERCURY_VENUS: PlanetPairAspects = {
       tone: '"I struggle to balance truth and tact."',
       description: 'Friction between honest expression and desire for harmony. May experience tension in relationships around communication. Develops diplomatic skills through challenge.',
       gifts: ['Develops true diplomacy', 'Learns balanced communication', 'Builds social skills', 'Finds beauty through struggle'],
-      challenges: ['Tension between truth and tact', 'Social anxiety', 'Difficulty with direct communication', 'Must learn authentic charm']
+      challenges: ['Tension between truth and tact', 'Social anxiety', 'Difficulty with direct communication', 'Must learn honest charm']
     },
     {
       aspectType: 'Opposition',
@@ -2696,7 +2696,7 @@ const SUN_VENUS: PlanetPairAspects = {
       name: 'The Value Struggle',
       tone: '"I fight for what I love."',
       description: 'Friction between identity and values. May experience challenges in love or around self-worth. Develops true values through struggle.',
-      gifts: ['Develops authentic values', 'Learns self-worth through challenge', 'Builds genuine charm', 'Finds true love after struggle'],
+      gifts: ['Develops honest values', 'Learns self-worth through challenge', 'Builds genuine charm', 'Finds true love after struggle'],
       challenges: ['Self-worth challenges', 'Love life difficulties', 'May attract value conflicts', 'Must learn true appreciation']
     },
     {
@@ -2883,10 +2883,10 @@ const VENUS_URANUS: PlanetPairAspects = {
   coreDescription: 'Venus + Uranus = love infused with freedom and uniqueness. Relationships are unconventional. Attracted to what is different. May indicate sudden attractions or departures.',
   aspects: [
     { aspectType: 'Conjunction', symbol: '☌', name: 'The Revolutionary Heart', tone: '"I love differently and freely."', description: 'Love and freedom are fused. Attracted to the unique and unconventional.', gifts: ['Unique love style', 'Attracts interesting people', 'Freedom in relationship'], challenges: ['Difficulty with commitment', 'Sudden changes in love', 'May seem cold or detached'] },
-    { aspectType: 'Square', symbol: '□', name: 'The Love Rebel', tone: '"I fight between stability and freedom."', description: 'Friction between love and freedom. May experience sudden breakups.', gifts: ['Develops authentic love style', 'Learns balance', 'Grows through disruption'], challenges: ['Sudden romantic changes', 'Conflict between closeness and space', 'May sabotage stability'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Love Rebel', tone: '"I fight between stability and freedom."', description: 'Friction between love and freedom. May experience sudden breakups.', gifts: ['Develops honest love style', 'Learns balance', 'Grows through disruption'], challenges: ['Sudden romantic changes', 'Conflict between closeness and space', 'May sabotage stability'] },
     { aspectType: 'Opposition', symbol: '☍', name: 'The Exciting Partner', tone: '"Others bring excitement to love."', description: 'Projects freedom onto partners. Relationships involve excitement.', gifts: ['Learns freedom through others', 'Attracts exciting people', 'Develops through change'], challenges: ['Attracts unstable partners', 'Projects restlessness onto love', 'Relationships feel volatile'] },
     { aspectType: 'Trine', symbol: '△', name: 'The Natural Free Spirit', tone: '"Love and freedom flow together."', description: 'Easy flow between love and independence. Natural ability for close yet free relationships.', gifts: ['Natural relationship freedom', 'Effortless uniqueness', 'Comfortable with change'], challenges: ['May not develop depth', 'Could avoid commitment', 'May stay detached'] },
-    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Original', tone: '"I can cultivate authentic freedom in love."', description: 'Opportunity to develop independent relating with effort.', gifts: ['Develops relationship freedom', 'Learns authentic uniqueness', 'Builds healthy independence'], challenges: ['Must work on authenticity', 'Could stay too conventional', 'May fear uniqueness'] }
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Original', tone: '"I can cultivate honest freedom in love."', description: 'Opportunity to develop independent relating with effort.', gifts: ['Develops relationship freedom', 'Learns honest uniqueness', 'Builds healthy independence'], challenges: ['Must work on honesty', 'Could stay too conventional', 'May fear uniqueness'] }
   ]
 };
 
@@ -2934,10 +2934,10 @@ const JUPITER_PLUTO: PlanetPairAspects = {
   coreDescription: 'Jupiter + Pluto = expansion and transformation combined. Massive growth through intensity. The capacity to influence masses or achieve significant power.',
   aspects: [
     { aspectType: 'Conjunction', symbol: '☌', name: 'The Transformative Expander', tone: '"My growth is profound and total."', description: 'Expansion and transformation are fused. Massive capacity for influence and wealth.', gifts: ['Profound growth capacity', 'Natural influence', 'Wealth potential', 'Transformative faith'], challenges: ['Obsessive ambition', 'May seek too much power', 'Difficulty with moderation'] },
-    { aspectType: 'Square', symbol: '□', name: 'The Power Struggler', tone: '"My expansion meets resistance."', description: 'Friction between expansion and power. May experience power struggles.', gifts: ['Develops authentic power', 'Learns from intensity', 'Grows through challenge'], challenges: ['Power struggles', 'May over-reach', 'Conflicts over beliefs'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Power Struggler', tone: '"My expansion meets resistance."', description: 'Friction between expansion and power. May experience power struggles.', gifts: ['Develops honest power', 'Learns from intensity', 'Grows through challenge'], challenges: ['Power struggles', 'May over-reach', 'Conflicts over beliefs'] },
     { aspectType: 'Opposition', symbol: '☍', name: 'The Powerful Partner', tone: '"Others bring transformation."', description: 'Projects power onto others. Relationships involve intense growth.', gifts: ['Learns power through others', 'Attracts transformers', 'Develops through intensity'], challenges: ['Attracts controlling types', 'Projects power onto others', 'Relationships feel intense'] },
     { aspectType: 'Trine', symbol: '△', name: 'The Natural Magnate', tone: '"Growth and power flow together."', description: 'Easy flow between expansion and transformation. Natural capacity for wealth.', gifts: ['Natural power and wealth', 'Effortless influence', 'Comfortable with depth'], challenges: ['May take power for granted', 'Could become complacent', 'May not examine motives'] },
-    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Power', tone: '"I can cultivate transformative growth."', description: 'Opportunity to develop powerful expansion with effort.', gifts: ['Develops authentic power', 'Learns transformative growth', 'Builds genuine influence'], challenges: ['Must work on power', 'Could avoid intensity', 'May fear own depth'] }
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Power', tone: '"I can cultivate transformative growth."', description: 'Opportunity to develop powerful expansion with effort.', gifts: ['Develops honest power', 'Learns transformative growth', 'Builds genuine influence'], challenges: ['Must work on power', 'Could avoid intensity', 'May fear own depth'] }
   ]
 };
 
@@ -2985,10 +2985,10 @@ const URANUS_PLUTO: PlanetPairAspects = {
   coreDescription: 'Uranus + Pluto = radical change and deep transformation. Major generational aspect. Those born during the 1960s conjunction are especially marked.',
   aspects: [
     { aspectType: 'Conjunction', symbol: '☌', name: 'The Revolutionary Soul', tone: '"I am built to break and rebuild."', description: 'Revolution and transformation are fused. Born at a time of radical cultural change (1960s).', gifts: ['Profound capacity for change', 'Revolutionary power', 'Regenerative ability', 'Breaks old structures'], challenges: ['May be destructive', 'Difficulty with stability', 'Intense energy'] },
-    { aspectType: 'Square', symbol: '□', name: 'The Intense Transformer', tone: '"My drive for change meets deep resistance."', description: 'Friction between breakthrough and transformation. May experience power struggles.', gifts: ['Develops authentic change', 'Learns from power struggle', 'Grows through intensity'], challenges: ['Power struggles', 'May be too intense', 'Conflicts over change'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Intense Transformer', tone: '"My drive for change meets deep resistance."', description: 'Friction between breakthrough and transformation. May experience power struggles.', gifts: ['Develops honest change', 'Learns from power struggle', 'Grows through intensity'], challenges: ['Power struggles', 'May be too intense', 'Conflicts over change'] },
     { aspectType: 'Opposition', symbol: '☍', name: 'The Transforming Partner', tone: '"Others represent breakthrough or destruction."', description: 'Projects revolution or power onto others. Relationships involve intense transformation.', gifts: ['Learns transformation through others', 'Attracts powerful transformers', 'Develops through relating'], challenges: ['Attracts controlling or volatile types', 'Projects power onto others', 'Relationships feel explosive'] },
     { aspectType: 'Trine', symbol: '△', name: 'The Natural Transformer', tone: '"Revolution and depth flow together."', description: 'Easy flow between breakthrough and transformation. Natural capacity for profound change.', gifts: ['Natural transformative power', 'Effortless revolution', 'Comfortable with depth'], challenges: ['May take power for granted', 'Could be complacent', 'May not examine destructive tendencies'] },
-    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Revolutionary', tone: '"I can cultivate transformative breakthrough."', description: 'Opportunity to develop revolutionary capacity with effort.', gifts: ['Develops authentic change', 'Learns deep transformation', 'Builds revolutionary skills'], challenges: ['Must work on change', 'Could avoid intensity', 'May fear own power'] }
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Revolutionary', tone: '"I can cultivate transformative breakthrough."', description: 'Opportunity to develop revolutionary capacity with effort.', gifts: ['Develops honest change', 'Learns deep transformation', 'Builds revolutionary skills'], challenges: ['Must work on change', 'Could avoid intensity', 'May fear ability to trust yourself'] }
   ]
 };
 

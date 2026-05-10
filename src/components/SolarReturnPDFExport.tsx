@@ -144,7 +144,7 @@ export const stelliumHouseMeaning: Record<number, string> = {
   5: 'Creative self-expression, romance, and joy are center stage. Multiple planets here demand you PLAY, create, and take emotional risks.',
   6: 'Daily routines, health, and work are being overhauled. Your body is sending messages — listen to them. Small daily changes create the biggest transformation.',
   7: 'Relationships are the main event. Partnerships demand your full attention. The lesson: balancing your needs with someone else\'s.',
-  8: 'Deep transformation, shared finances, and psychological intensity define this year. Something needs to die so something authentic can be born.',
+  8: 'Deep transformation, shared finances, and psychological intensity define this year. Something needs to die so something honest can be born.',
   9: 'Your worldview is expanding. Travel, education, publishing, and philosophical exploration absorb your energy. You are searching for MEANING.',
   10: 'Career and public reputation are being forged. The world is watching. Professional responsibilities increase, but so does recognition.',
   11: 'Community, friendships, and collective purpose are center stage. Your social circle is being reshuffled.',
@@ -207,7 +207,7 @@ export const saturnHouseMeaning: Record<number, string> = {
 };
 
 export const nodeHouseMeaning: Record<number, string> = {
-  1: 'Growth edge: SELF-assertion. Your soul is being pulled toward independence and defining yourself on your own terms. Stop deferring to others. The universe rewards you every time you choose yourself — not selfishly, but authentically. What do YOU want?',
+  1: 'Growth edge: SELF-assertion. Your soul is being pulled toward independence and defining yourself on your own terms. Stop deferring to others. The universe rewards you every time you choose yourself — not selfishly, but honestly. What do YOU want?',
   2: 'Growth: building financial independence and clarifying your values. What is worth your time, money, and energy? Stop borrowing from others\' value systems. Develop your own resources and trust your own worth.',
   3: 'Growth: communication, learning, and intellectual curiosity. Speak up. Write. Teach. Ask questions. The growth happens in everyday conversations, not grand gestures. Your local environment holds the lessons.',
   4: 'Growth: home, family, emotional foundations. Put down roots — emotionally and literally. Stop chasing external achievement at the expense of inner security. What does "home" mean to you on a soul level?',
@@ -225,14 +225,14 @@ export const nodeHouseMeaning: Record<number, string> = {
 import type jsPDF from 'jspdf';
 
 const HTYM_SUN_BODY: Record<number, string> = {
-  1: 'Your core identity is being refreshed and redefined. People see a more authentic version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
   2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
   3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
   4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',
   5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun pulls you toward play, creative risk-taking, and emotional vulnerability. Romance and children may also feature prominently — you feel most alive when creating or loving boldly.',
   6: 'Daily routines, health, and work efficiency are being restructured. The 6th house Sun sharpens your awareness of what isn\'t working in your daily life — small, consistent changes produce the biggest results, and you feel genuine satisfaction from fixing what\'s broken.',
   7: 'Relationships define this year. The 7th house Sun places partnerships — romantic, business, or creative — at the center. Growth happens through the mirror of another person.',
-  8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty. Something old must end for something authentic to begin.',
+  8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty. Something old must end for something honest to begin.',
   9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar — philosophy, culture, and big-picture thinking.',
   10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible — professional responsibilities increase, but so does recognition and authority.',
   11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger — your social circle is being restructured.',
@@ -262,7 +262,7 @@ const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: str
     rising: 'You come across as warm, caring, and approachable — people instinctively trust you and feel comfortable sharing their feelings with you.',
   },
   Leo: {
-    sun: 'You shine when you are creating, performing, or leading — you need recognition, creative expression, and the freedom to be authentically yourself in everything you do.',
+    sun: 'You shine when you are creating, performing, or leading — you need recognition, creative expression, and the freedom to be honestly yourself in everything you do.',
     moon: 'You need to feel special and appreciated to be emotionally secure — genuine praise and loyal love are not luxuries for you, they are necessities.',
     rising: 'You come across as confident, warm, and charismatic — people are naturally drawn to your presence and see you as someone who lights up a room.',
   },
@@ -484,7 +484,7 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
     'Taurus': `With ${planetNames} clustered in Taurus${houseContext}, material reality is the main event. Your body, your bank account, your physical space — these are the arenas. You will feel a deep pull toward stability and things you can TOUCH. The challenge: resistance to necessary change. The gift: anything you build this year has staying power.`,
     'Gemini': `With ${planetNames} clustered in Gemini${houseContext}, your mind is the main character. You will feel mentally overstimulated — processing multiple streams of information, having conversations that shift your perspective. Writing, teaching, and networking are amplified. The challenge: scattered attention. The gift: ideas that connect dots no one else sees.`,
     'Cancer': `With ${planetNames} clustered in Cancer${houseContext}, home, family, and emotional foundations dominate. Gut instincts are louder, emotional reactions are stronger, and your need for safety is non-negotiable. Family dynamics may require your full attention. The challenge: mood swings and emotional overwhelm. The gift: deep emotional wisdom and the ability to create sanctuary.`,
-    'Leo': `With ${planetNames} clustered in Leo${houseContext}, creative self-expression and visibility are the assignment. You will feel an expanding warmth, a need to CREATE and be SEEN. Whether through art, romance, children, or leadership — step forward. The challenge: needing external validation. The gift: authentic creative power that inspires.`,
+    'Leo': `With ${planetNames} clustered in Leo${houseContext}, creative self-expression and visibility are the assignment. You will feel an expanding warmth, a need to CREATE and be SEEN. Whether through art, romance, children, or leadership — step forward. The challenge: needing external validation. The gift: honest creative power that inspires.`,
     'Virgo': `With ${planetNames} clustered in Virgo${houseContext}, systems, health, and daily function are under review. You will feel a compulsion to organize, fix, and improve. Your analytical powers are at peak strength. The body sends clear messages. The challenge: paralysis through perfectionism. The gift: mastery of the practical.`,
     'Libra': `With ${planetNames} clustered in Libra${houseContext}, relationships and balance are central. You will feel heightened sensitivity to discord. Partnership decisions carry enormous weight. The challenge: people-pleasing. The gift: the ability to create genuine harmony.`,
     'Scorpio': `With ${planetNames} clustered in Scorpio${houseContext}, transformation and intensity define the year. You are pulled toward hidden truths and situations that demand depth. Surface-level engagement is not an option. The challenge: controlling tendencies. The gift: profound psychological insight and capacity for rebirth.`,

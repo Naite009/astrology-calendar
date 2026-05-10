@@ -54,7 +54,7 @@ const PLANET_KEYWORDS: Record<string, { nature: string; gift: string; guidance: 
   Sun: {
     nature: 'vitality, purpose, and self-expression',
     gift: 'Your life force and creative power flow naturally. You have a reliable sense of who you are.',
-    guidance: 'Trust your vision. When you express yourself authentically, doors open.'
+    guidance: 'Trust your vision. When you express yourself honestly, doors open.'
   },
   Moon: {
     nature: 'emotional intelligence and intuition',
@@ -106,7 +106,7 @@ const PLANET_KEYWORDS: Record<string, { nature: string; gift: string; guidance: 
 const GROWTH_EDGE_GUIDANCE: Record<string, { work: string; reframe: string }> = {
   Sun: {
     work: 'Building confidence and self-expression requires conscious effort',
-    reframe: 'Your sense of self becomes more authentic through the very struggle to find it'
+    reframe: 'Your sense of self becomes more honest through the very struggle to find it'
   },
   Moon: {
     work: 'Emotional security doesn\'t come automatically—you learn to create it',

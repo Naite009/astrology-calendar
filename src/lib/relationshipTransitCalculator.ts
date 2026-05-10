@@ -335,7 +335,7 @@ export class RelationshipTransitCalculator {
       } else if (factorCount > 0) {
         return `Multiple connections create a meaningful friendship. Your charts show specific reasons why you're drawn to each other.`;
       } else {
-        return `Your friendship is based on choice and shared experiences rather than overwhelming astrological pull. This creates an authentic, grounded bond.`;
+        return `Your friendship is based on choice and shared experiences rather than overwhelming astrological pull. This creates an honest, grounded bond.`;
       }
     }
     
@@ -379,7 +379,7 @@ export class RelationshipTransitCalculator {
       case 'friendship':
         if (hasManyFactors) return `Multiple connections create a friendship that feels meaningful and lasting. ${person1Name} and ${person2Name} are drawn together on multiple levels.`;
         if (hasSomeFactors) return `Real connection exists between you. Your friendship has depth beyond surface interests.`;
-        return `Your friendship is based on shared experiences and choice. This creates an authentic, grounded bond.`;
+        return `Your friendship is based on shared experiences and choice. This creates an honest, grounded bond.`;
       case 'creative':
         if (hasManyFactors) return `Multiple alignments suggest powerful creative potential. ${person1Name} and ${person2Name} can produce remarkable work together.`;
         if (hasSomeFactors) return `Creative synergy exists. Your collaboration is supported by genuine astrological connection.`;
@@ -953,7 +953,7 @@ export class RelationshipTransitCalculator {
       'Saturn_square_Mars': `Saturn squaring ${personName}'s Mars creates constant frustration. Everything they try to do gets blocked. Anger simmers. They may take it out on ${partnerName}. Let them vent safely.`,
       
       // Uranus transits
-      'Uranus_conjunction_Sun': `Uranus has electrified ${personName}'s Sun. They're waking up to who they really are - and it might not match who they've been in this relationship. Expect sudden changes, restlessness, and a need for authenticity.`,
+      'Uranus_conjunction_Sun': `Uranus has electrified ${personName}'s Sun. They're waking up to who they really are - and it might not match who they've been in this relationship. Expect sudden changes, restlessness, and a need for honesty.`,
       'Uranus_square_Sun': `Uranus is disrupting ${personName}'s identity. They're rebelling against expectations, including yours. The person you knew is changing. Flexibility from ${partnerName} is essential.`,
       'Uranus_opposition_Sun': `Uranus opposing ${personName}'s Sun is revolutionary energy. They're breaking free of old versions of themselves. This can feel destabilizing for the relationship. Evolution or separation - those are the options.`,
       'Uranus_conjunction_Moon': `Uranus has hit ${personName}'s Moon. Their emotions are erratic, unpredictable. They need freedom to feel differently than before. Don't try to stabilize them - ride the wave.`,
@@ -1433,7 +1433,7 @@ export class RelationshipTransitCalculator {
     const adviceMap: Record<string, string> = {
       'Saturn': 'Saturn is testing this relationship. This is not the time for romance - it\'s the time for reality. Face what\'s not working honestly. Do the necessary repairs or make the hard decision. Maturity, patience, and honesty are your tools. Shortcuts will backfire.',
       'Pluto': 'Deep transformation is happening whether you want it or not. Don\'t resist - you can\'t win against Pluto. Surrender control. Look at your shadows. Power struggles will destroy; vulnerability will strengthen. Something must die for something real to be born.',
-      'Uranus': 'Expect the unexpected. Uranus demands authenticity and freedom. If the relationship feels like a cage, something will break. Stay flexible. Be willing to revolutionize how you do things. Breakthrough or breakup energy is high.',
+      'Uranus': 'Expect the unexpected. Uranus demands honesty and freedom. If the relationship feels like a cage, something will break. Stay flexible. Be willing to revolutionize how you do things. Breakthrough or breakup energy is high.',
       'Neptune': 'Reality check time. Are you seeing clearly? Neptune can bring beautiful connection OR complete delusion. Trust your gut but verify the facts. Don\'t make permanent decisions in temporary fog. Spiritual connection is possible if you stay grounded.',
       'Jupiter': 'Lucky period for the relationship. Doors open. Joy is available. Don\'t take this for granted - actively expand together. Travel, learn, grow. Share your optimism. Watch for overindulgence but otherwise ride this wave of grace.',
       'Mars': 'Energy is high. Use it for passion, not war. If conflict arises, fight fair and make up well. Sexual energy can be channeled or can become destructive. Physical activity together helps. Don\'t let anger fester.',

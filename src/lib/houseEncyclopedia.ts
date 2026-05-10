@@ -167,7 +167,7 @@ export const HOUSES_DATA: HouseData[] = [
       esoteric: { text: 'The soul chooses the body and persona it needs for this incarnation. The 1st house is the vehicle the soul selected — not random, but intentional. Your physical form and instinctive approach are spiritual tools.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       relational: { text: 'In relationships, the 1st house represents how you assert your individuality. Partners must learn to respect this energy, and you must learn not to bulldoze others with it. Healthy relationships require you to show up as yourself without dominating.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       shadow: { text: 'The danger of the 1st house is narcissism — becoming so identified with your persona that you lose access to your deeper self. The mask becomes the face. Alternatively, rejecting your body or appearance entirely, living only in your head.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
-      soulQuestion: { text: 'Who am I when I stop performing? What is the authentic self beneath the persona?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Who am I when I stop performing? What is the honest self beneath the persona?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
     },
   },
   {
@@ -248,7 +248,7 @@ export const HOUSES_DATA: HouseData[] = [
     rulerGuidance: 'The ruler of the 5th shows how and where your creative energy naturally flows. Its aspects show what supports or blocks your joy.',
     teaching: 'The 5th house teaches that play is not frivolous — it is essential. Joy is a spiritual practice.',
     perspectives: {
-      esoteric: { text: 'The 5th house is where the soul creates — not just art, but reality itself. Creative expression is a divine act: bringing something from nothing into form. Children are the ultimate 5th house creation, but so is any authentic self-expression that didn\'t exist before you made it.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      esoteric: { text: 'The 5th house is where the soul creates — not just art, but reality itself. Creative expression is a divine act: bringing something from nothing into form. Children are the ultimate 5th house creation, but so is any honest self-expression that didn\'t exist before you made it.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       relational: { text: 'Romantic love lives in the 5th house — the intoxication, the drama, the falling. But this is love as performance, not partnership (7th house). In long-term relationships, maintaining 5th house energy means keeping courtship alive — date nights, surprises, seeing your partner as fascinating rather than familiar.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       shadow: { text: 'The shadow of the 5th house is ego inflation through creation — believing your art, your children, or your romantic conquests make you special. Using creativity to avoid responsibility. Gambling addiction. Drama addiction. Living as if life is a stage and you must always be performing.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       soulQuestion: { text: 'What do I create that is uniquely mine? Can I express myself without needing applause?', source: 'Moses Siregar III, Secrets of the 12 Houses' },

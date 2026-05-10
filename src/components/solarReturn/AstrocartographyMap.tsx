@@ -554,7 +554,7 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
   },
   Moon: {
     ASC: { vibe: 'Emotional antenna fully extended. You feel everything deeply — yours and everyone else\'s.', bestFor: ['Therapy/healing work', 'Creative expression', 'Psychic development'], watchFor: ['Emotional overwhelm', 'Absorbing others\' moods'], dayToDay: 'Your face shows every feeling. People come to you for comfort. Tears flow easily.' },
-    MC: { vibe: 'Emotional life becomes visible. Career involves nurturing, food, homes, or caring for others.', bestFor: ['Counseling', 'Real estate', 'Hospitality'], watchFor: ['Emotionally exposed at work', 'Reputation fluctuating'], dayToDay: 'Work feels personal. Instincts guide decisions. Public responds to authenticity.' },
+    MC: { vibe: 'Emotional life becomes visible. Career involves nurturing, food, homes, or caring for others.', bestFor: ['Counseling', 'Real estate', 'Hospitality'], watchFor: ['Emotionally exposed at work', 'Reputation fluctuating'], dayToDay: 'Work feels personal. Instincts guide decisions. Public responds to honesty.' },
     DSC: { vibe: 'Relationships deeply emotional. Partners who nurture you or need nurturing.', bestFor: ['Moving in together', 'Starting a family', 'Deep bonding'], watchFor: ['Codependency', 'Emotionally needy partners'], dayToDay: 'You crave closeness. Partners become family. Emotional conversations natural.' },
     IC: { vibe: 'Moon\'s home court. Emotional security peaks. Profoundly rooted, connected to ancestry.', bestFor: ['Healing childhood wounds', 'Buying a home', 'Recovery'], watchFor: ['Becoming too insular', 'Regressing into old patterns'], dayToDay: 'Home is your refueling station. Cooking, nesting feel sacred. Dreams vivid.' },
   },

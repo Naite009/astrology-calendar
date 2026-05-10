@@ -180,7 +180,7 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     activityWeights: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
     advice: {
       challenging: 'Relationships are in the spotlight this year — expect meaningful conversations, honest boundary-setting, and a chance to build something more real. The connections that matter most get stronger.',
-      transformative: 'Love and intimacy are evolving at a deep level — old patterns are making room for something more authentic.',
+      transformative: 'Love and intimacy are evolving at a deep level — old patterns are making room for something more honest.',
       supportive: 'Genuine warmth, connection, and romantic opportunity are flowing this year — say yes to love.',
       quiet: 'Relationships are quieter — invest in self-knowledge and let partnerships breathe naturally.',
       mixed: 'Relationship energy is present but nuanced — both support and growth areas are in play.',
@@ -275,7 +275,7 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2, Sun: 1.5, Neptune: 1.5, Mercury: 1, Moon: 1, Mars: 1, Uranus: 1.5, Jupiter: 1 },
     advice: {
-      challenging: 'Creative expression may feel like it\'s pushing you — the effort is building something new and more authentically yours.',
+      challenging: 'Creative expression may feel like it\'s pushing you — the effort is building something new and more honestly yours.',
       transformative: 'Your creative voice is evolving — old styles are making room for fresh, exciting new forms of expression.',
       supportive: 'Creative energy is flowing beautifully — this is a genuinely wonderful year to make, write, perform, or create.',
       quiet: 'Creative energy is building quietly — consume inspiration now and create when it feels ready.',

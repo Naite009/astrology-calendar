@@ -119,7 +119,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     archetype: 'The Catalyst • The Uncorking • The Generational Healer',
     inYourChart: 'Where small actions create massive change. Turning points and catalysts. Opening "Pandora\'s box." Generational patterns that get released. Addiction and healing patterns.',
     keywords: ['Small cause → big effect', 'Catalyst', 'Generational healing', 'Addiction patterns', 'Turning points', 'Uncorking what was sealed'],
-    shadow: 'Unleashing chaos unintentionally. Compulsive pattern repetition. Fearing your own power.',
+    shadow: 'Unleashing chaos unintentionally. Compulsive pattern repetition. Fearing your ability to trust yourself.',
     integration: 'Recognize your catalytic nature. Your small acts ripple through generations.',
     currentSign: 'Capricorn',
     currentSignNote: 'Pholus in Capricorn relates to catalyzing structural/institutional changes.',
@@ -167,7 +167,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     shadow: 'Judging from false moral high ground. Obsession with reputation. Lies catching up.',
     integration: 'Live as if the All-Seeing Eye watches. Your reputation reflects your truth.',
     currentSign: 'Leo',
-    currentSignNote: 'Varuna in Leo emphasizes visibility, creative reputation, and authentic self-expression.',
+    currentSignNote: 'Varuna in Leo emphasizes visibility, creative reputation, and honest self-expression.',
   },
 ];
 

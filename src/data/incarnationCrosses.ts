@@ -769,7 +769,7 @@ export const incarnationCrosses: IncarnationCross[] = [
     type: "Left Angle",
     gates: { consciousSun: 9, consciousEarth: 16, unconsciousSun: 64, unconsciousEarth: 63 },
     quarter: "Mutation",
-    theme: "Secure in authentic expression",
+    theme: "Secure in honest expression",
     description: "Those with this incarnation cross are typically secure in their identity. They have a clear understanding of who they are."
   },
   {
@@ -1042,7 +1042,7 @@ export const incarnationCrosses: IncarnationCross[] = [
     description: "You incarnated to show people the power and creativity that lives inside real constraints. Your conscious Sun in Gate 60 (Limitation) means you have a deep, lived understanding that genuine breakthroughs only happen when you accept what's actually possible rather than wishing it away. Your Earth in Gate 56 (Stimulation) grounds you through the ability to communicate that acceptance in ways that inspire rather than discourage. Unconsciously, Gate 50 (Values) gives your body a protective instinct for what matters, while Gate 3 (Ordering) keeps you creatively restless underneath. Your life's work is demonstrating that limitation isn't the enemy of creativity — it's the container for it.",
     lifeWork: "Demonstrating that genuine creative breakthroughs come from accepting real constraints, not fighting them",
     collectiveContribution: "You show others that working within limits isn't settling — it's where the real magic happens",
-    gateIntegration: "Gate 60's acceptance of limits gives Gate 56 something authentic to teach; Gate 50's values protect what matters while Gate 3 senses when new order is ready",
+    gateIntegration: "Gate 60's acceptance of limits gives Gate 56 something honest to teach; Gate 50's values protect what matters while Gate 3 senses when new order is ready",
     livingYourCross: "Stop fighting the constraints. Your deepest creativity emerges when you fully accept what IS possible. That acceptance is your superpower, not your limitation."
   },
   {
@@ -1331,7 +1331,7 @@ export const incarnationCrosses: IncarnationCross[] = [
     gates: { consciousSun: 6, consciousEarth: 36, unconsciousSun: 12, unconsciousEarth: 11 },
     quarter: "Duality",
     theme: "Intimacy and expression",
-    description: "People with this cross often find their path through emotional depth and authentic expression."
+    description: "People with this cross often find their path through emotional depth and honest expression."
   },
   {
     name: "Right Angle Cross of Consciousness",
@@ -1435,7 +1435,7 @@ export const incarnationCrosses: IncarnationCross[] = [
     gates: { consciousSun: 10, consciousEarth: 15, unconsciousSun: 25, unconsciousEarth: 46 },
     quarter: "Mutation",
     theme: "Authentic love expression",
-    description: "This cross carries the energy of embodying and expressing universal love through authentic behavior."
+    description: "This cross carries the energy of embodying and expressing universal love through honest behavior."
   },
   {
     name: "Right Angle Cross of The Vessel of Love 2",
@@ -1515,7 +1515,7 @@ export const crossTypeDescriptions = {
   'Right Angle': {
     percentage: 70,
     theme: "Personal Destiny",
-    description: "Right Angle Crosses represent personal destiny. People with Right Angle crosses are absorbed in their own process and life journey. They are not here for others specifically but rather to live out their own unique purpose. Their impact on others is a byproduct of living authentically rather than the primary focus."
+    description: "Right Angle Crosses represent personal destiny. People with Right Angle crosses are absorbed in their own process and life journey. They are not here for others specifically but rather to live out their own unique purpose. Their impact on others is a byproduct of living honestly rather than the primary focus."
   },
   'Left Angle': {
     percentage: 25,

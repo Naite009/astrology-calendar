@@ -669,7 +669,7 @@ export const VERB_DICTIONARY: Record<string, Record<string, string[]>> = {
     Capricorn: ['masters structure', 'builds authority', 'endures', 'fears failure'],
     Aquarius: ['systematizes', 'structures groups', 'fears conformity', 'masters innovation'],
     Cancer: ['protects boundaries', 'structures nurturing', 'fears abandonment', 'masters caregiving'],
-    Leo: ['disciplines creativity', 'masters performance', 'fears invisibility', 'learns authentic expression'],
+    Leo: ['disciplines creativity', 'masters performance', 'fears invisibility', 'learns honest expression'],
     Virgo: ['perfects systems', 'masters service', 'fears imperfection', 'learns good enough'],
     Libra: ['structures relationships', 'masters fairness', 'fears imbalance', 'learns commitment'],
     Scorpio: ['controls depths', 'masters transformation', 'fears vulnerability', 'learns trust'],

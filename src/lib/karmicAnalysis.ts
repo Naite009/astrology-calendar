@@ -130,7 +130,7 @@ function getNorthNodeInterpretation(planet: string, aspect: string, focus: Relat
   const interpretations: Record<string, Record<RelationshipFocus, string>> = {
     Sun: {
       romance: `This person ${aspectDescriptor} your life purpose through love. They illuminate who you're becoming in this lifetime, and romantic partnership is a vehicle for that evolution.`,
-      friendship: `This friend ${aspectDescriptor} your life direction. Through this friendship, you discover more about your authentic identity and the person you're meant to become.`,
+      friendship: `This friend ${aspectDescriptor} your life direction. Through this friendship, you discover more about your honest identity and the person you're meant to become.`,
       business: `This person ${aspectDescriptor} your professional destiny. In business together, you're pushed toward your highest potential and true career path.`,
       family: `This family member ${aspectDescriptor} your identity evolution. Through this bond, you learn essential lessons about who you truly are.`,
       creative: `This creative partner ${aspectDescriptor} your artistic destiny. Your collaboration pushes you toward the creative expression you're meant to develop.`
@@ -232,7 +232,7 @@ function getSaturnInterpretation(planet: string, aspect: string, focus: Relation
   const interpretations: Record<string, Record<RelationshipFocus, string>> = {
     Sun: {
       romance: `Saturn ${aspectDescriptor} identity in this romance. One partner may feel judged or restricted. The lesson is building confidence through consistent love.`,
-      friendship: `Saturn ${aspectDescriptor} identity in this friendship. Respect is earned over time. The lesson is mutual recognition of each other's authentic selves.`,
+      friendship: `Saturn ${aspectDescriptor} identity in this friendship. Respect is earned over time. The lesson is mutual recognition of each other's honest selves.`,
       business: `Saturn ${aspectDescriptor} professional identity. Authority and leadership are tested. The lesson is building credibility through reliable performance.`,
       family: `Saturn ${aspectDescriptor} family identity patterns. Authority figures and family roles are prominent. The lesson is healthy autonomy within family structure.`,
       creative: `Saturn ${aspectDescriptor} creative identity. Artistic confidence is tested. The lesson is disciplined development of creative vision.`
@@ -423,7 +423,7 @@ function getTwelfthHouseInterpretation(planet: string, focus: RelationshipFocus)
 function getEighthHouseInterpretation(planet: string, focus: RelationshipFocus): string {
   const interpretations: Record<string, Record<RelationshipFocus, string>> = {
     Sun: {
-      romance: `Their identity activates your deepest intimacy needs. This romance demands authentic vulnerability and has transformative potential.`,
+      romance: `Their identity activates your deepest intimacy needs. This romance demands honest vulnerability and has transformative potential.`,
       friendship: `Their presence transforms your trust patterns. This friendship will deepen or expose trust issues—surface relating won't satisfy.`,
       business: `Their professional identity affects shared resources. Business involves deep financial entanglement and power dynamics requiring consciousness.`,
       family: `Their identity activates inheritance and family resource patterns. Issues of what's passed down may be prominent.`,
@@ -438,7 +438,7 @@ function getEighthHouseInterpretation(planet: string, focus: RelationshipFocus):
     },
     Venus: {
       romance: `Their love activates your deepest capacity for intimacy. This romance transforms what love means to you—nothing superficial will do.`,
-      friendship: `Their appreciation transforms your trust in being valued. This friendship offers deep knowing but demands authentic vulnerability.`,
+      friendship: `Their appreciation transforms your trust in being valued. This friendship offers deep knowing but demands honest vulnerability.`,
       business: `Their values deeply affect shared finances. Business involves merging resources with all the trust that requires.`,
       family: `Their values activate inheritance patterns. What's valued in the family lineage becomes prominent in this connection.`,
       creative: `Their aesthetic transforms your creative depth. Collaboration accesses profound beauty through vulnerability.`
@@ -762,7 +762,7 @@ function getSoulPurpose(karmicType: KarmicAnalysis['karmicType'], focus: Relatio
     twin_flame: {
       romance: 'Mirror relationship for radical romantic self-awareness and love transformation.',
       friendship: 'Mirror friendship for profound self-discovery through deep platonic connection.',
-      business: 'Mirror partnership for radical professional transformation and authentic work expression.',
+      business: 'Mirror partnership for radical professional transformation and honest work expression.',
       family: 'Mirror family bond for ancestral healing and identity transformation.',
       creative: 'Mirror collaboration for radical artistic evolution and creative breakthrough.'
     },
@@ -782,7 +782,7 @@ function getSoulPurpose(karmicType: KarmicAnalysis['karmicType'], focus: Relatio
     },
     soul_family: {
       romance: 'Supportive soul love connection for mutual romantic flourishing.',
-      friendship: 'Precious soul friendship for mutual support and authentic connection.',
+      friendship: 'Precious soul friendship for mutual support and honest connection.',
       business: 'Aligned professional partnership for mutual career success.',
       family: 'Soul family reunion for healing and joyful connection.',
       creative: 'Soul-aligned creative partnership for inspired collaboration.'

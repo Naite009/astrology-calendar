@@ -31,7 +31,7 @@ const CHIRON_WOUND_BY_SIGN: Record<string, {
 }> = {
   Aries: {
     wound: "The wound of SELF — feeling like you don't have the right to exist, assert yourself, or take up space. Fear of being too much or not enough.",
-    gift: "Becoming a champion for others' right to exist authentically. You help others find their courage because you know what it's like to feel invisible.",
+    gift: "Becoming a champion for others' right to exist honestly. You help others find their courage because you know what it's like to feel invisible.",
     healingPath: "Learning that your existence is not a burden. Taking action despite fear. Claiming your right to be HERE."
   },
   Taurus: {
@@ -99,8 +99,8 @@ const CHIRON_WOUND_BY_HOUSE: Record<number, {
 }> = {
   1: {
     lifeArea: "Self-Image & Identity",
-    personalWound: "Your wound manifests in how you see yourself and present to the world. You may struggle with self-doubt, feeling 'wrong' in your own skin, or difficulty asserting your authentic self.",
-    personalGift: "You become a model of authentic self-acceptance, helping others embrace who they really are."
+    personalWound: "Your wound manifests in how you see yourself and present to the world. You may struggle with self-doubt, feeling 'wrong' in your own skin, or difficulty asserting your honest self.",
+    personalGift: "You become a model of honest self-acceptance, helping others embrace who they really are."
   },
   2: {
     lifeArea: "Self-Worth & Resources",
@@ -120,7 +120,7 @@ const CHIRON_WOUND_BY_HOUSE: Record<number, {
   5: {
     lifeArea: "Creativity & Self-Expression",
     personalWound: "Your wound manifests in creativity, romance, and joy. You may have been shamed for self-expression, had your creative spark diminished, or struggle to 'play.'",
-    personalGift: "You become a creative healer who helps others reclaim their joy and authentic self-expression."
+    personalGift: "You become a creative healer who helps others reclaim their joy and honest self-expression."
   },
   6: {
     lifeArea: "Health & Daily Work",
@@ -145,7 +145,7 @@ const CHIRON_WOUND_BY_HOUSE: Record<number, {
   10: {
     lifeArea: "Career & Public Role",
     personalWound: "Your wound manifests in career, reputation, and public life. You may struggle with authority figures, imposter syndrome, or feel your achievements are never enough.",
-    personalGift: "You become a compassionate leader who guides others to authentic success, not success at the cost of soul."
+    personalGift: "You become a compassionate leader who guides others to honest success, not success at the cost of soul."
   },
   11: {
     lifeArea: "Community & Belonging",
@@ -1052,7 +1052,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         symbol: '♅', label: 'Uranus Opposition',
         start: uranusOppStart, end: uranusOppEnd,
         age: `Age ${formatAge(uranusOppStart)}-${formatAge(uranusOppEnd)}`,
-        description: 'Midlife awakening — radical authenticity call',
+        description: 'Midlife awakening — radical honesty call',
         bg: 'bg-cyan-500/10',
         isPast: now > uranusOppEnd,
         isCurrent: now >= uranusOppStart && now <= uranusOppEnd,

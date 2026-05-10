@@ -536,7 +536,7 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     orbitalYears: 8.85,
     timeInSign: '~9 months',
     speedNote: 'Black Moon Lilith is the lunar apogee—a calculated point, not a physical body. It represents the Moon\'s farthest point from Earth.',
-    summary: 'Your shadow feminine, repressed desires, and raw power. Lilith shows where you refuse to be tamed and may face exile for your authenticity.'
+    summary: 'Your shadow feminine, repressed desires, and raw power. Lilith shows where you refuse to be tamed and may face exile for your honesty.'
   },
   {
     name: 'Part of Fortune',

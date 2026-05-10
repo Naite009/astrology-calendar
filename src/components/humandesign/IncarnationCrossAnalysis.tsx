@@ -371,7 +371,7 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
                 <p>
                   Your Incarnation Cross is not something you DO — it's something you ARE 
                   when you're living correctly according to your Strategy and Authority. 
-                  The cross emerges naturally when you're being yourself authentically.
+                  The cross emerges naturally when you're being yourself honestly.
                 </p>
                 {consciousSunGate && (
                   <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">

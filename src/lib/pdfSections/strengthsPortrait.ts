@@ -41,7 +41,7 @@ const sunShadow: Record<string, string> = {
   Taurus: 'Stubbornness that masquerades as stability. Resistance to necessary change.',
   Gemini: 'Scattered attention, superficiality when depth is required, and using wit to deflect emotional vulnerability.',
   Cancer: 'Emotional manipulation through guilt or withdrawal. Smothering under the guise of nurturing.',
-  Leo: 'Need for validation that undermines authentic self-expression. Can become domineering when feeling unseen.',
+  Leo: 'Need for validation that undermines honest self-expression. Can become domineering when feeling unseen.',
   Virgo: 'Paralysis through perfectionism. Critical inner voice that extends outward. Anxiety disguised as productivity.',
   Libra: 'People-pleasing that erodes identity. Avoiding conflict until it explodes.',
   Scorpio: 'Controlling behavior driven by fear of betrayal. Holding grudges as emotional armor.',
@@ -53,7 +53,7 @@ const sunShadow: Record<string, string> = {
 
 // ─── SR Sun in House ────────────────────────────────
 const srSunHouseBody: Record<number, string> = {
-  1: 'Your core identity is being refreshed and redefined. People see a more authentic version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
   2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
   3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
   4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',

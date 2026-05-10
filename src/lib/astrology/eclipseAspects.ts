@@ -177,7 +177,7 @@ function getNorthNodePathForPlanet(point: NatalPointKey, aspect: AspectType, ecl
     },
     ASC: {
       release: "The way you present yourself to the world — your automatic persona, your first impression — is ready for an update. The mask that once protected you may now be hiding you.",
-      grow: "Step into a more authentic self-presentation. How you show up in the world is shifting — let the new version emerge rather than clinging to the familiar public face.",
+      grow: "Step into a more honest self-presentation. How you show up in the world is shifting — let the new version emerge rather than clinging to the familiar public face.",
     },
     MC: {
       release: "Your career path or public role may be completing a chapter. The professional identity you've built may need to evolve — not because it failed, but because you've outgrown it.",

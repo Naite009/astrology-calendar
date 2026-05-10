@@ -215,7 +215,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
       'Relationships—harmony at all costs, even at expense of the self',
       'Thrive on novelty, adventure; hate being bored, consistent, repetitious, therefore impatient',
       'Independent, freedom—loving, thinker, curious, talkative, observant',
-      'Sociable pretence often assumed at expense of authenticity'
+      'Sociable pretence often assumed at expense of honesty'
     ],
     
     keywords: [
@@ -860,7 +860,7 @@ export const SATURN_IN_HOUSES_GREENE: Record<number, SaturnHouseGreene> = {
     house: 1,
     beast: 'Deep insecurity about the right to exist. A sense that you must earn the right to take up space. Self-consciousness, shyness, or overcompensation through rigid self-control. You may feel like the world is hostile and that you must defend yourself at every turn.',
     prince: 'Hard-won self-authority and a presence that commands respect without demanding it. You become your own authority figure — someone whose identity was forged in fire and is therefore unshakeable. Leadership through earned wisdom, not inherited privilege.',
-    greeneInsight: 'Saturn in the 1st house creates a personality built through effort rather than ease. The individual must construct their sense of self consciously, brick by brick, which ultimately produces a far more durable and authentic identity than one that came without struggle.',
+    greeneInsight: 'Saturn in the 1st house creates a personality built through effort rather than ease. The individual must construct their sense of self consciously, brick by brick, which ultimately produces a far more durable and honest identity than one that came without struggle.',
     coreWound: 'Feeling invisible, inadequate, or "not enough" — as if your very existence requires justification.',
     goldPotential: 'A self-made identity of extraordinary integrity. You become the person others turn to for strength because yours was hard-won.',
   },
@@ -989,7 +989,7 @@ export const SATURN_ASPECTS_GREENE: Record<string, SaturnAspectGreene> = {
   },
   'Saturn-Mars': {
     planets: 'Saturn-Mars',
-    beast: 'Frustration and suppressed anger. Your drive and initiative feel blocked at every turn. You may explode periodically after long periods of bottling up aggression, or you may turn the anger inward, creating depression and self-punishment. Fear of your own power.',
+    beast: 'Frustration and suppressed anger. Your drive and initiative feel blocked at every turn. You may explode periodically after long periods of bottling up aggression, or you may turn the anger inward, creating depression and self-punishment. Fear of your ability to trust yourself.',
     prince: 'Controlled, strategic power. The capacity for sustained effort over long periods. Endurance, stamina, and the ability to work toward a goal with relentless patience. The warrior who has learned discipline — far more dangerous and effective than raw aggression.',
     greeneInsight: 'Saturn-Mars is often experienced as a brake on the accelerator — enormous energy that cannot find release. The key is learning that controlled force is exponentially more powerful than uncontrolled force. The individual must learn to express anger cleanly rather than swallowing it.',
   },
@@ -1084,13 +1084,13 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
   },
   Leo: {
     sign: 'Leo',
-    soulPurpose: 'To develop authentic self-expression and creative authority. To shine without needing applause.',
-    lifeLesson: 'You are learning authentic self-expression without seeking external validation. The lesson is about creative power and generous leadership.',
-    directive: 'Express yourself authentically. Lead from the heart. Shine without needing permission.',
+    soulPurpose: 'To develop honest self-expression and creative authority. To shine without needing applause.',
+    lifeLesson: 'You are learning honest self-expression without seeking external validation. The lesson is about creative power and generous leadership.',
+    directive: 'Express yourself honestly. Lead from the heart. Shine without needing permission.',
     challenge: 'Need for validation. Fear of being seen. Creative blocks. Pride that masks insecurity.',
     mastery: 'The ability to lead with warmth and creativity. Authentic self-expression that inspires others.',
     questions: ['Where do you hide your light?', 'What would you create if no one was watching?', 'How do you handle not being recognized?'],
-    firstReturn: 'Major restructuring around self-expression and recognition. Time to stop performing and start being authentic.',
+    firstReturn: 'Major restructuring around self-expression and recognition. Time to stop performing and start being honest.',
     secondReturn: 'Wisdom about true creative power. Teaching others to find their own light.',
     beast: 'Fear of being seen, or its opposite — a desperate need for recognition that never feels satisfied. Creative blocks rooted in shame. You may suppress your natural warmth and playfulness, believing joy is irresponsible.',
     prince: 'Disciplined creativity that produces lasting works of genuine beauty. Your self-expression carries authority because it cost you everything to find it. A warm, generous leader whose light is steady because it was hard-won.',

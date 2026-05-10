@@ -558,7 +558,7 @@ export class RelationshipTimelineCalculator {
       'Deepening': 'Use challenges to grow closer. Build trust through consistency. This phase determines long-term potential.',
       'Commitment Test': 'Saturn demands honesty and maturity. Face realities together. This is make-or-break time. Do the work or move on.',
       'Transformation Crisis': 'Deep change is happening. Don\'t resist—transform. Power struggles will destroy; empowerment will strengthen.',
-      'Sudden Change': 'Embrace change rather than forcing stability. Freedom and commitment can coexist. Be authentic.',
+      'Sudden Change': 'Embrace change rather than forcing stability. Freedom and commitment can coexist. Be honest.',
       'Ongoing': 'Maintain connection intentionally. Don\'t take each other for granted. Keep growing together.'
     };
     

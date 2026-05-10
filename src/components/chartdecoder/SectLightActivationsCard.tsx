@@ -271,8 +271,8 @@ function getTransitThemes(transitPlanet: string, aspectType: string, isNightChar
       },
       trine: {
         theme: `Exciting changes support your ${lightNature}`,
-        dailyLife: isNightChart ? 'Refreshing emotional insights.' : 'Exciting authentic expression.',
-        relationships: isNightChart ? 'Emotional freedom feels good.' : 'Relationships allow authenticity.',
+        dailyLife: isNightChart ? 'Refreshing emotional insights.' : 'Exciting honest expression.',
+        relationships: isNightChart ? 'Emotional freedom feels good.' : 'Relationships allow honesty.',
         career: isNightChart ? 'Intuitive innovations succeed.' : 'Creative freedom opens doors.'
       },
       sextile: {

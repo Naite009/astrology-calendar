@@ -39,7 +39,7 @@ const CHART_RULER_HOUSE_MEANINGS: Record<number, {
     dailyExpression: 'You express your chart ruler energy directly — people see it immediately when they meet you',
     pathMeaning: 'Your life direction IS about you — your identity, your body, your personal journey. You are the project.',
     challenges: 'Can be too self-focused; may struggle to see beyond personal perspective',
-    gifts: 'Natural self-awareness; people follow your lead instinctively; authentic presence'
+    gifts: 'Natural self-awareness; people follow your lead instinctively; honest presence'
   },
   2: {
     lifeDirection: 'Building resources and establishing self-worth',
@@ -162,7 +162,7 @@ const WORKING_WITH_RULER_GUIDANCE: Record<string, {
   },
   challenged: {
     condition: 'Your chart ruler faces challenges',
-    awareness: 'Your life direction requires conscious work. What others receive naturally, you must earn. This builds authentic mastery — but only if you engage with awareness.',
+    awareness: 'Your life direction requires conscious work. What others receive naturally, you must earn. This builds honest mastery — but only if you engage with awareness.',
     practices: [
       'Name your chart ruler\'s specific challenges and create strategies for each',
       'Find role models who\'ve thrived with similar placements',

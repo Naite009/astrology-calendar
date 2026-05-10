@@ -593,7 +593,7 @@ export function generateRemedies(planet: ChartPlanet, dignity: DignityType): str
       remedies.push('Learn something new that challenges your current thinking.');
       break;
     case 'Venus':
-      remedies.push('Surround yourself with beauty that feels authentic to you.');
+      remedies.push('Surround yourself with beauty that feels honest to you.');
       remedies.push('Clarify your values — what you would pay for without regret.');
       break;
     case 'Mars':
@@ -626,7 +626,7 @@ export function generateRemedies(planet: ChartPlanet, dignity: DignityType): str
 const FINAL_DISPOSITOR_EXPERIENCES: Record<string, { selfRuled: string; rulingOthers: string }> = {
   Sun: {
     selfRuled: "Your Sun answers to no one. Your identity is SELF-DETERMINED. You don't need external permission to be who you are. When you walk into a room, you bring your own light—you're not borrowing it from anyone. This is rare and powerful. The challenge? You must actually CLAIM this. Many people with self-ruling Suns still look outside themselves for validation out of habit. Stop. You are the authority on you.",
-    rulingOthers: "All roads in your chart lead to your Sun—your IDENTITY. Every decision, every emotion, every thought ultimately asks: 'Does this serve who I AM?' You experience life through the lens of self-expression and authenticity. When something feels off, it's usually because you've compromised your core identity for something else."
+    rulingOthers: "All roads in your chart lead to your Sun—your IDENTITY. Every decision, every emotion, every thought ultimately asks: 'Does this serve who I AM?' You experience life through the lens of self-expression and honesty. When something feels off, it's usually because you've compromised your core identity for something else."
   },
   Moon: {
     selfRuled: "Your Moon answers to no one. Your emotional nature is SELF-SOURCING. You don't need others to make you feel safe—you create your own emotional home wherever you go. Your feelings are valid simply because you feel them; they don't require external justification. This is profound self-nurturing. The gift: emotional autonomy. The work: not isolating or refusing to let others in.",
@@ -657,7 +657,7 @@ const FINAL_DISPOSITOR_EXPERIENCES: Record<string, { selfRuled: string; rulingOt
     rulingOthers: "All roads lead to Neptune—TRANSCENDENCE and IMAGINATION. Every practical concern, every relationship, every identity question eventually dissolves into: 'What is the DEEPER meaning? What is the SOUL of this?' You experience life through a mystical, artistic lens. Pure logic or harsh reality feels spiritually suffocating."
   },
   Uranus: {
-    selfRuled: "Your Uranus answers to no one. Your uniqueness and freedom are SELF-AUTHORIZED. You don't need anyone's permission to be different, to break rules, to innovate. Your originality is its own validation. This is radical authenticity. The challenge: not rejecting everything conventional just because it's conventional.",
+    selfRuled: "Your Uranus answers to no one. Your uniqueness and freedom are SELF-AUTHORIZED. You don't need anyone's permission to be different, to break rules, to innovate. Your originality is its own validation. This is radical honesty. The challenge: not rejecting everything conventional just because it's conventional.",
     rulingOthers: "All roads lead to Uranus—FREEDOM and INNOVATION. Every emotion, every responsibility, every relationship eventually asks: 'Am I FREE here? Is this AUTHENTIC? Am I being MYSELF?' You experience life through the lens of liberation and originality. Conformity feels like spiritual death."
   },
   Pluto: {

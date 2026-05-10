@@ -560,7 +560,7 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
   Pallas: { domain: 'strategic wisdom, pattern recognition, and creative intelligence', drive: 'to see the big picture and craft elegant solutions', body: '' },
   Ceres: { domain: 'nurturing, nourishment, and cycles of loss and return', drive: 'to care for others and process grief into growth', body: '' },
   Lilith: { domain: 'raw power, suppressed desires, and reclaimed autonomy', drive: 'to own the parts of yourself others find uncomfortable', body: '' },
-  Eris: { domain: 'disruption, whistleblowing, and necessary confrontation', drive: 'to expose what is hidden and demand authenticity', body: '' },
+  Eris: { domain: 'disruption, whistleblowing, and necessary confrontation', drive: 'to expose what is hidden and demand honesty', body: '' },
 };
 
 const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
@@ -799,7 +799,7 @@ export const analyzeSolarReturn = (
         2: `${ruler} rules your SR Ascendant and lands in your natal 2nd house — this year's energy flows into your money, possessions, and self-worth. How you earn, spend, and value yourself is where the year's themes play out. Building material security or reassessing what you truly value becomes central.`,
         3: `${ruler} rules your SR Ascendant and lands in your natal 3rd house — this year's energy flows into communication, learning, writing, and your immediate environment. Siblings, neighbors, short trips, and how you process and share information become the stage for the year's main themes.`,
         4: `${ruler} rules your SR Ascendant and lands in your natal 4th house — this year's energy flows into home, family, roots, and your private inner world. Your living situation, a parent, or your emotional foundation is where the year's story unfolds. Building from the inside out.`,
-        5: `${ruler} rules your SR Ascendant and lands in your natal 5th house — this year's energy flows into creativity, romance, children, and self-expression. Joy, play, and putting your authentic stamp on the world is where the year's themes come alive. Follow what excites you.`,
+        5: `${ruler} rules your SR Ascendant and lands in your natal 5th house — this year's energy flows into creativity, romance, children, and self-expression. Joy, play, and putting your honest stamp on the world is where the year's themes come alive. Follow what excites you.`,
         6: `${ruler} rules your SR Ascendant and lands in your natal 6th house — this year's energy flows into daily routines, health, work habits, and service. How you show up every day — your body, your job, your rituals — is where the year's story plays out. Small, consistent improvements create big change.`,
         7: `${ruler} rules your SR Ascendant and lands in your natal 7th house — this year's energy flows into partnerships, marriage, contracts, and one-on-one relationships. Another person — romantic, business, or even an adversary — is central to how the year's themes manifest.`,
         8: `${ruler} rules your SR Ascendant and lands in your natal 8th house — this year's energy flows into transformation, shared resources, intimacy, and psychological depth. Joint finances, power dynamics, and letting go of what no longer serves you is where the year's story lives.`,

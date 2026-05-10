@@ -281,7 +281,7 @@ function getSaturnSynthesis(sign: string, house: number | undefined): string {
     Taurus: { lesson: 'that security must be earned, not assumed', mastery: 'building lasting wealth through patience' },
     Gemini: { lesson: 'focused thinking — your mind can\'t chase every idea', mastery: 'structured communication and deep knowledge' },
     Cancer: { lesson: 'emotional boundaries and mature nurturing', mastery: 'building inner security that doesn\'t depend on others' },
-    Leo: { lesson: 'that recognition must be earned, not demanded', mastery: 'authentic self-expression that inspires rather than performs' },
+    Leo: { lesson: 'that recognition must be earned, not demanded', mastery: 'honest self-expression that inspires rather than performs' },
     Virgo: { lesson: 'that perfectionism is a trap — good enough is sometimes enough', mastery: 'practical excellence through disciplined service' },
     Libra: { lesson: 'that relationships require commitment, not just charm', mastery: 'mature partnership built on fairness and accountability' },
     Scorpio: { lesson: 'that control is an illusion — surrender is the real power', mastery: 'psychological depth through facing your shadows' },
@@ -346,7 +346,7 @@ function generateChartRulerPathSummary(
   if (condition.qualityRating === 'Excellent' || condition.qualityRating === 'Good') {
     parts.push(`Because ${chartRuler} is well-placed, this comes relatively naturally to you. Your path has support.`);
   } else if (condition.qualityRating === 'Challenged' || condition.qualityRating === 'Difficult') {
-    parts.push(`Because ${chartRuler} faces challenges, your path requires conscious work — but this builds authentic mastery.`);
+    parts.push(`Because ${chartRuler} faces challenges, your path requires conscious work — but this builds honest mastery.`);
   } else {
     parts.push(`${chartRuler} operates in neutral territory — your path responds to how you consciously engage.`);
   }

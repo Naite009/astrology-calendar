@@ -110,7 +110,7 @@ const TRANSIT_MESSAGES: Record<string, Record<string, { title: string; desc: str
     },
     'Venus': { 
       title: 'Love Lessons', 
-      desc: 'Relationships tested for authenticity. Commitment or release.',
+      desc: 'Relationships tested for honesty. Commitment or release.',
       advice: 'Be realistic about love. Commit to what\'s real.'
     },
     'default': { 
@@ -123,7 +123,7 @@ const TRANSIT_MESSAGES: Record<string, Record<string, { title: string; desc: str
     'Sun': { 
       title: 'Liberation & Awakening', 
       desc: 'Radical changes to identity possible. Expect the unexpected.',
-      advice: 'Embrace change. Be authentic. Freedom is calling.'
+      advice: 'Embrace change. Be honest. Freedom is calling.'
     },
     'Moon': { 
       title: 'Emotional Revolution', 

@@ -73,7 +73,7 @@ const EXALTATION_SIGNS: Record<string, string> = {
 };
 
 const PLANET_MEANINGS: Record<string, string> = {
-  Sun: "Your life force radiates outward. You're meant to be seen, to lead, to express your authentic self without apology. Your vitality, confidence, and creative fire are the engine of your entire chart.",
+  Sun: "Your life force radiates outward. You're meant to be seen, to lead, to express your honest self without apology. Your vitality, confidence, and creative fire are the engine of your entire chart.",
   Moon: "Your emotional world runs the show. You process everything through feeling first, and your intuition is your most reliable compass. Nurturing, memory, and emotional intelligence are your superpowers.",
   Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought.",
   Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision.",

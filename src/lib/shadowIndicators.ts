@@ -122,7 +122,7 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
       riskLevel: plutoSun.type === 'square' ? 'significant' : 'caution',
       description: `${plutoSun.type} (${plutoSun.orb}° orb): ${plutoSunOwnership.planet1Owner}'s Pluto ♇ aspects ${plutoSunOwnership.planet2Owner}'s Sun ☉`,
       dynamicExplanation: `${plutoSunOwnership.planet1Owner} (Pluto) may unconsciously attempt to reshape, dominate, or "improve" ${plutoSunOwnership.planet2Owner}'s (Sun) sense of self. ${plutoSunOwnership.planet2Owner} may initially be fascinated by ${plutoSunOwnership.planet1Owner}'s intensity but over time feel their individuality is being erased.`,
-      healthyExpression: `${plutoSunOwnership.planet1Owner} empowers ${plutoSunOwnership.planet2Owner} to embrace their shadow and become more authentic. ${plutoSunOwnership.planet2Owner} helps ${plutoSunOwnership.planet1Owner} soften their intensity. Both transform together rather than one dominating.`,
+      healthyExpression: `${plutoSunOwnership.planet1Owner} empowers ${plutoSunOwnership.planet2Owner} to embrace their shadow and become more honest. ${plutoSunOwnership.planet2Owner} helps ${plutoSunOwnership.planet1Owner} soften their intensity. Both transform together rather than one dominating.`,
       warningBehaviors: [
         `${plutoSunOwnership.planet1Owner} criticizes ${plutoSunOwnership.planet2Owner}'s friends, interests, or self-expression`,
         `${plutoSunOwnership.planet2Owner} starts changing who they are to please ${plutoSunOwnership.planet1Owner}`,
@@ -295,8 +295,8 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
       category: 'boundary',
       riskLevel: 'watch',
       description: `${lilithMars.type} (${lilithMars.orb}° orb): Strong primal attraction and chemistry.`,
-      dynamicExplanation: `This creates powerful, magnetic attraction with a raw, authentic quality. Both partners may discover new aspects of their desires through this connection. This intensity is a gift when channeled consciously.`,
-      healthyExpression: 'Liberating exploration of authentic connection. Both feel empowered and accepted. Desires expressed openly with mutual respect.',
+      dynamicExplanation: `This creates powerful, magnetic attraction with a raw, honest quality. Both partners may discover new aspects of their desires through this connection. This intensity is a gift when channeled consciously.`,
+      healthyExpression: 'Liberating exploration of honest connection. Both feel empowered and accepted. Desires expressed openly with mutual respect.',
       warningBehaviors: [
         'Attraction feels overwhelming or all-consuming',
         'Difficulty maintaining other priorities when together',

@@ -193,7 +193,7 @@ export const vertexInSign: Record<string, {
   },
   Scorpio: {
     title: 'Fated Transformation',
-    fatedTheme: 'Destiny demands psychological death and rebirth. Fated events strip away what is no longer authentic, forcing transformation through crisis, intimacy, or confrontation with power.',
+    fatedTheme: 'Destiny demands psychological death and rebirth. Fated events strip away what is no longer honest, forcing transformation through crisis, intimacy, or confrontation with power.',
     encounters: 'An intensely transformative individual — a therapist, lover, financial partner, or power figure — enters your life at a pivotal moment. The encounter is unforgettable and irreversible.',
     lesson: 'The universe is teaching you about surrender. What must die cannot be saved, and what is being born cannot be stopped. Trust the process of destruction and renewal.',
   },

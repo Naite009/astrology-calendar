@@ -371,7 +371,7 @@ function generateAspectExpressions(
       energy: 'Power dynamics around identity and ego transformation.',
       lightExpressions: [
         `${personAName} catalyzes profound identity evolution in ${personBName}`,
-        `${personBName} becomes more authentically themselves`,
+        `${personBName} becomes more honestly themselves`,
         'Deep mutual respect for each other\'s power',
         'Transformative impact on self-confidence'
       ],
@@ -382,7 +382,7 @@ function generateAspectExpressions(
         'Control battles that undermine both'
       ],
       personAAdvice: `Your transformative power works best when you support ${personBName}'s light, not overshadow it.`,
-      personBAdvice: `Stand in your authentic power. Don't shrink yourself.`,
+      personBAdvice: `Stand in your honest power. Don't shrink yourself.`,
       growthEdge: 'Both can be powerful without diminishing the other.'
     },
     'Pluto-Sun-conjunction': {
@@ -481,7 +481,7 @@ function generateAspectExpressions(
       energy: 'Electric attraction with freedom as a core value.',
       lightExpressions: [
         'Exciting, unconventional love connection',
-        'Freedom to be authentic with each other',
+        'Freedom to be honest with each other',
         'Innovation and experimentation in love',
         'Mutual liberation from old relationship patterns'
       ],
@@ -496,10 +496,10 @@ function generateAspectExpressions(
       growthEdge: 'Creating a relationship that honors both connection and autonomy.'
     },
     'Uranus-Moon-square': {
-      energy: 'Emotional volatility with a need for authentic feeling.',
+      energy: 'Emotional volatility with a need for honest feeling.',
       lightExpressions: [
         'Emotional breakthroughs and awakenings',
-        'Freedom to feel authentically without judgment',
+        'Freedom to feel honestly without judgment',
         'Innovation in nurturing and home life',
         'Breaking free from family patterns'
       ],
@@ -509,14 +509,14 @@ function generateAspectExpressions(
         'Difficulty creating consistent emotional security',
         'Sudden mood shifts that confuse the partner'
       ],
-      personAAdvice: 'Your emotional authenticity is a gift, but consistency builds trust.',
+      personAAdvice: 'Your emotional honesty is a gift, but consistency builds trust.',
       personBAdvice: 'Accept that their emotions run on an unusual frequency. Find your own stability.',
       growthEdge: 'Creating emotional freedom within secure connection.'
     },
     'Uranus-Sun-opposition': {
       energy: 'Push-pull between individuality and partnership.',
       lightExpressions: [
-        'Each person inspires the other to be more authentic',
+        'Each person inspires the other to be more honest',
         'Mutual respect for individual paths',
         'Electric attraction through difference',
         'Growth through honoring uniqueness'
@@ -625,7 +625,7 @@ function generateAspectExpressions(
       energy: 'Destiny connection - you illuminate each other\'s life path.',
       lightExpressions: [
         `${personAName} illuminates ${personBName}'s life purpose and destiny path`,
-        `${personBName} helps ${personAName} step into their authentic self`,
+        `${personBName} helps ${personAName} step into their honest self`,
         'Feeling destined to meet',
         'Mutual evolution through the connection'
       ],
@@ -660,7 +660,7 @@ function generateAspectExpressions(
     'NorthNode-Mercury-conjunction': {
       energy: 'Communication and thinking evolution through connection.',
       lightExpressions: [
-        `${personAName} helps ${personBName} find and communicate their authentic voice`,
+        `${personAName} helps ${personBName} find and communicate their honest voice`,
         `${personBName} is learning new ways of thinking through ${personAName}`,
         'Mental/communication evolution is a key theme',
         'Conversations that change perspectives'

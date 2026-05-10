@@ -291,7 +291,7 @@ function getHowPartnerFeels(
     },
     'Uranus-Sun': {
       harmonic: `${partnerName}, ${natalOwnerName} is feeling free-spirited and innovative. Support their unique ideas and personal growth.`,
-      tense: `${partnerName}, ${natalOwnerName} may be unpredictable or rebellious. This is about their need for authenticity, not rejection of you.`
+      tense: `${partnerName}, ${natalOwnerName} may be unpredictable or rebellious. This is about their need for honesty, not rejection of you.`
     },
     'Uranus-Moon': {
       harmonic: `${partnerName}, ${natalOwnerName}'s emotional life is awakening in new ways. They may share unconventional feelings or insights.`,

@@ -114,7 +114,7 @@ interface StarData {
 
 const FIXED_STARS: StarData[] = [
   // ── Royal Stars (the Big Four) ──
-  { name: 'Aldebaran', longitude2000: 69.78, magnitude: 0.85, nature: 'Mars', interpretation: 'The "Eye of the Bull" — one of the four Royal Stars. Integrity, honor, and success through moral courage. A year of standing firm in your values and being tested for authenticity. Success comes when you refuse to compromise your principles.' },
+  { name: 'Aldebaran', longitude2000: 69.78, magnitude: 0.85, nature: 'Mars', interpretation: 'The "Eye of the Bull" — one of the four Royal Stars. Integrity, honor, and success through moral courage. A year of standing firm in your values and being tested for honesty. Success comes when you refuse to compromise your principles.' },
   { name: 'Regulus', longitude2000: 149.83, magnitude: 1.35, nature: 'Jupiter-Mars', interpretation: 'The "Heart of the Lion" — one of the four Royal Stars. Leadership, authority, and success through generosity. A year of commanding respect and stepping into power. The warning: success is lost through revenge or petty behavior.' },
   { name: 'Antares', longitude2000: 249.77, magnitude: 1.09, nature: 'Mars-Jupiter', interpretation: 'The "Heart of the Scorpion" — one of the four Royal Stars. Intensity, obsession, and strategic power. A year of high stakes, deep passion, and potential confrontation. Success through fearless engagement with what is difficult.' },
   { name: 'Fomalhaut', longitude2000: 333.87, magnitude: 1.16, nature: 'Venus-Mercury', interpretation: 'The "Mouth of the Fish" — one of the four Royal Stars. Dreams, idealism, and following a high vision. A year of pursuing something meaningful, but success only holds if you stay honest. Associated with fame, creativity, and following your conscience.' },
@@ -753,7 +753,7 @@ export function calculateSynthesisSections(
       const desc: Record<string, string> = {
         Saturn: `Your commitment area (${housePlain(h)}) invites honest evaluation — the relationships that matter most get stronger through real conversations`,
         Neptune: `Your imagination is very active around ${h === 7 ? 'partnerships' : 'relationships'} — trust your intuition, but make sure you\'re seeing people clearly`,
-        Pluto: `${housePlain(h)} is going through a meaningful evolution — old relationship patterns are making room for deeper, more authentic connections`,
+        Pluto: `${housePlain(h)} is going through a meaningful evolution — old relationship patterns are making room for deeper, more honest connections`,
         Uranus: `Exciting, unexpected changes are happening around ${housePlain(h)} — stay open to surprises in how you connect`,
         Chiron: `An old sensitive spot around ${h === 7 ? 'commitment' : h === 5 ? 'self-expression and romance' : 'trust and vulnerability'} is ready to heal this year`,
       };
@@ -947,7 +947,7 @@ const MIDPOINT_INTERPS: Record<string, string> = {
   'Saturn/Neptune': 'Structure meets dissolution — activation brings confusion about responsibilities, but also the ability to bring dreams into practical form.',
   'Saturn/Uranus': 'Order meets disruption — activation brings sudden changes to structures, career shifts, or breakthroughs from breaking old patterns.',
   'Jupiter/Pluto': 'Expansion meets transformation — activation brings major power plays, financial windfalls, or ambitious projects with deep impact.',
-  'Sun/Pluto': 'Your identity meets deep change — activation brings power dynamics, ego transformations, and the need to claim your authentic self.',
+  'Sun/Pluto': 'Your identity meets deep change — activation brings power dynamics, ego transformations, and the need to claim your honest self.',
   'Mercury/Saturn': 'Your thinking meets structure — activation brings serious study, important documents, or decisions requiring careful thought.',
   'Venus/Mars': 'Desire meets attraction — activation heightens romantic and creative energy, bringing passionate encounters or artistic breakthroughs.',
   'Venus/Pluto': 'Love meets transformation — activation brings obsessive attraction, relationship power shifts, or deep creative breakthroughs.',
@@ -1143,7 +1143,7 @@ const SPEED_INTERPS: Record<string, { stationed: string; slow: string; fast: str
   },
   Jupiter: {
     stationed: 'Jupiter is nearly stationary — growth, faith, and opportunity are intensely focused. A specific area of life is being flooded with meaning and expansion. The benefits (or excesses) are magnified.',
-    slow: 'Jupiter is moving slowly — opportunities develop gradually but with greater depth and authenticity.',
+    slow: 'Jupiter is moving slowly — opportunities develop gradually but with greater depth and honesty.',
     fast: 'Jupiter is moving quickly — luck and opportunity come and go swiftly. Catch them while they pass.',
   },
   Saturn: {

@@ -60,7 +60,7 @@ export const PLANET_ROLES: Record<string, CharacterRole> = {
   },
   Uranus: {
     role: 'The Revolutionary / Wild Card',
-    archetype: 'The unexpected twist—rebellion, innovation, sudden change, and authentic individuality.',
+    archetype: 'The unexpected twist—rebellion, innovation, sudden change, and honest individuality.',
     movieAnalogy: 'Like the plot twist, the rebel character, the moment everything changes unexpectedly.',
     importance: 'background'
   },
@@ -402,9 +402,9 @@ ${dignityImpact}${retrogradeNote}`;
 // Planet-specific guidance for "leaning in" to angular house placements
 const LEAN_IN_GUIDANCE: Record<string, string> = {
   Sun: 'Put yourself forward. Take leadership roles. Let people SEE you—don\'t hide your light. Make decisions visibly. Your confidence inspires others.',
-  Moon: 'Let people know how you feel. Create nurturing environments publicly. Your emotional authenticity moves others. Trust your instincts in public situations.',
+  Moon: 'Let people know how you feel. Create nurturing environments publicly. Your emotional honesty moves others. Trust your instincts in public situations.',
   Mercury: 'Speak up, write, teach, present. Your ideas need an audience. Start conversations. Your communication style IS your brand.',
-  Venus: 'Express your aesthetic. Be the one who makes things beautiful. Share what you love openly. Let your values be known. Attract through authenticity.',
+  Venus: 'Express your aesthetic. Be the one who makes things beautiful. Share what you love openly. Let your values be known. Attract through honesty.',
   Mars: 'Take initiative. Be the one who starts things. Your directness is an asset. Physical presence matters. Lead with action, not words.',
   Jupiter: 'Share your wisdom. Be generous publicly. Your optimism is contagious. Teach, mentor, expand horizons for others. Think bigger than seems reasonable.',
   Saturn: 'Take responsibility publicly. Be the mature one. Your discipline is visible—use it to build lasting structures. Authority looks natural on you.',

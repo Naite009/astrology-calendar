@@ -98,7 +98,7 @@ const PLANET_IN_SIGN_ENERGY: Record<string, Record<string, string>> = {
     Taurus: 'lessons in material discipline — you are learning the difference between security and hoarding, stability and stagnation',
     Gemini: 'lessons in focused thinking — scattered communication must become disciplined, ideas must be followed through',
     Cancer: 'lessons in emotional boundaries — you are learning to nurture without losing yourself, to feel without drowning',
-    Leo: 'lessons in humility and authentic confidence — ego must be earned through substance, not performance',
+    Leo: 'lessons in humility and honest confidence — ego must be earned through substance, not performance',
     Virgo: 'lessons in self-compassion — perfectionism becomes productive only when you stop punishing yourself for being human',
     Libra: 'lessons in relationship responsibility — fairness must be genuine, not people-pleasing disguised as diplomacy',
     Scorpio: 'lessons in power and control — you are learning to hold power without manipulating, to trust without testing',
@@ -118,7 +118,7 @@ const PLANET_IN_SIGN_ENERGY: Record<string, Record<string, string>> = {
     Scorpio: 'deep psychological breakthroughs — hidden material surfaces abruptly, power structures collapse and rebuild',
     Sagittarius: 'sudden expansions of worldview — travel, education, or philosophical revelations change your perspective overnight',
     Capricorn: 'disruptions to career and authority structures — professional reinvention, institutional change, status shifts',
-    Aquarius: 'radical authenticity emerging — you stop conforming, community connections shift, future vision clarifies suddenly',
+    Aquarius: 'radical honesty emerging — you stop conforming, community connections shift, future vision clarifies suddenly',
     Pisces: 'spiritual breakthroughs and dissolution — intuition heightens dramatically, reality and imagination blur',
   },
   Neptune: {

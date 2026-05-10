@@ -120,9 +120,9 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     personAExperience: {
       romance: "You feel seen at your deepest core—and it's terrifying and exhilarating. They perceive everything you hide. You feel transformed, empowered, but also exposed and vulnerable. Your sense of self is being reconstructed. You can't hide, can't be casual, can't escape their penetrating awareness. Life-changing intensity.",
-      friendship: "This is not a light friendship. They see your shadow and reflect it back. You feel stripped of pretense. They challenge you to be authentic in ways that are uncomfortable but ultimately freeing. You can't fake anything around them.",
+      friendship: "This is not a light friendship. They see your shadow and reflect it back. You feel stripped of pretense. They challenge you to be honest in ways that are uncomfortable but ultimately freeing. You can't fake anything around them.",
       business: "They see your potential and your blocks. They push you toward your power, sometimes ruthlessly. You may feel controlled or manipulated OR powerfully supported—depends on their maturity. Your identity and authority are being tested and forged.",
-      creative: "They catalyze your deepest creative power. Your work transforms when collaborating with them. They push you toward your authentic creative voice, not the safe one. Scary but breakthrough-inducing.",
+      creative: "They catalyze your deepest creative power. Your work transforms when collaborating with them. They push you toward your honest creative voice, not the safe one. Scary but breakthrough-inducing.",
       family: "Intense, complex dynamics. They may try to control or shape your identity. Power struggles over who you're 'supposed to be' vs. who you are. Transformation through this relationship is inevitable, for better or worse."
     },
     
@@ -157,7 +157,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
         year7_plus: "If survived: formidable partnership. Sun's leadership is empowered by Pluto's strategic depth. Pluto trusts Sun's vision. Together, unstoppable."
       },
       creative: {
-        year1_3: "Intense creative chemistry. Work goes to depths Sun didn't know they could access. Pluto pushes Sun toward authentic expression.",
+        year1_3: "Intense creative chemistry. Work goes to depths Sun didn't know they could access. Pluto pushes Sun toward honest expression.",
         year4_7: "Creative differences may become power struggles. Whose vision wins? Can both serve the work without ego battles?",
         year7_plus: "Transformative creative legacy. The work has changed both people. Deep, powerful art that couldn't have been made alone."
       },

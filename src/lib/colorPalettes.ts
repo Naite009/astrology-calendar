@@ -154,7 +154,7 @@ const PLANET_KEYWORDS: Record<string, string> = {
   Ceres: 'nurturing/self-care',
   Vesta: 'focus/devotion',
   Chiron: 'healing/wounds',
-  Lilith: 'shadow/authenticity',
+  Lilith: 'shadow/honesty',
 };
 
 export interface TransitDetail {

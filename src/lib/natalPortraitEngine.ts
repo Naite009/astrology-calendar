@@ -331,13 +331,13 @@ const SUN_IDENTITY: Record<string, string> = {
   Taurus: 'Your core identity is built around stability, sensuality, and building lasting value. You need beauty, comfort, and consistency to thrive.',
   Gemini: 'Your core identity is built around curiosity, communication, and connecting ideas. Mental stimulation is oxygen for you.',
   Cancer: 'Your core identity is built around nurturing, emotional security, and belonging. Creating safe spaces for yourself and others is your purpose.',
-  Leo: 'Your core identity is built around self-expression, creativity, and being seen. You need to shine authentically and inspire through your unique gifts.',
+  Leo: 'Your core identity is built around self-expression, creativity, and being seen. You need to shine honestly and inspire through your unique gifts.',
   Virgo: 'Your core identity is built around service, analysis, and refinement. You find meaning in improving systems and being genuinely useful.',
   Libra: 'Your core identity is built around harmony, partnership, and aesthetic beauty. You thrive when creating balance in relationships and environments.',
-  Scorpio: 'Your core identity is built around depth, transformation, and emotional truth. You need intensity, authenticity, and to understand what lies beneath.',
+  Scorpio: 'Your core identity is built around depth, transformation, and emotional truth. You need intensity, honesty, and to understand what lies beneath.',
   Sagittarius: 'Your core identity is built around exploration, meaning, and freedom. You need to expand your worldview through travel, study, or philosophical seeking.',
   Capricorn: 'Your core identity is built around achievement, responsibility, and mastery. You earn respect through competence and long-term commitment.',
-  Aquarius: 'Your core identity is built around innovation, independence, and serving the collective. You need intellectual freedom and authenticity above all.',
+  Aquarius: 'Your core identity is built around innovation, independence, and serving the collective. You need intellectual freedom and honesty above all.',
   Pisces: 'Your core identity is built around empathy, creativity, and spiritual connection. You dissolve boundaries to merge with something greater than yourself.',
 };
 
