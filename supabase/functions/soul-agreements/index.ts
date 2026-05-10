@@ -356,7 +356,8 @@ serve(async (req) => {
       });
     }
 
-    const { chartName, placements, houses, aspects } = (await req.json()) as Payload;
+    const rawPayload = (await req.json()) as Payload;
+    const { chartName, placements, houses, aspects } = filterPayloadAstrology(rawPayload);
 
     const placementLines = placements
       .map((p) =>
