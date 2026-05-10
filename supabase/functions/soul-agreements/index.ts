@@ -583,7 +583,7 @@ EMOTIONAL TONE per section (must feel distinct):
 
 5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. Anchor to: South Node (talents side, what was mastered before this life — distinct from how it appears in Family/Wound), Jupiter (sign, house, aspects, as natural abundance — read as wisdom, generosity, vision, or teaching, NOT default to "financial talent"), planets in strong dignity, planets in 1H/5H/9H/11H. Also include intuitive gifts, emotional intelligence, symbolic understanding, creativity, spiritual sensitivity (Venus, Neptune, Moon).
 
-6. TIMING AGREEMENT — how your soul's growth unfolds, what triggers transformation. Should feel oracular. Use Pluto (forced evolution), Uranus (sudden catalyst), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes.
+6. TIMING AGREEMENT — how growth tends to arrive for this person, what kind of trigger sets off real change. Should feel oracular but plain. Use Pluto (forced change), Uranus (sudden disruption), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes. Describe the change in behavioral terms (how they act, respond, or choose), not as "transformation".
    REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY the soul chose this method. Do NOT predict events.
 
 7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
