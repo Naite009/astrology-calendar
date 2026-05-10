@@ -36,6 +36,7 @@ interface SoulAgreements {
     whatToBuild: string;
     whatToGive: string;
     integration?: string;
+    growthSigns?: string[];
   };
 }
 
@@ -59,6 +60,13 @@ const FALLBACK_SUMMARY: SoulAgreements["summary"] = {
   whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
   whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
   integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
+  growthSigns: [
+    "you speak up sooner instead of replaying it later",
+    "you set a boundary without a long apology",
+    "you trust your own decision before asking for outside approval",
+    "you recover faster after conflict instead of going silent for days",
+    "you stop over-carrying other people's emotions as your job",
+  ],
 };
 
 const validSummaryField = (value: unknown) => {
@@ -68,12 +76,22 @@ const validSummaryField = (value: unknown) => {
   return text.split(/\s+/).filter(Boolean).length >= 15 ? text : null;
 };
 
+const normalizeGrowthSigns = (raw: unknown): string[] => {
+  if (!Array.isArray(raw)) return FALLBACK_SUMMARY.growthSigns!;
+  const cleaned = raw
+    .map((item) => (typeof item === "string" ? item.replace(/^-\s*/, "").replace(/\.$/, "").trim() : ""))
+    .filter(Boolean)
+    .slice(0, 5);
+  return cleaned.length >= 3 ? cleaned : FALLBACK_SUMMARY.growthSigns!;
+};
+
 const normalizeSummary = (summary: any): SoulAgreements["summary"] => ({
   whatToPractice: validSummaryField(summary?.whatToPractice ?? summary?.coreLesson) ?? FALLBACK_SUMMARY.whatToPractice,
   whatToWatchFor: validSummaryField(summary?.whatToWatchFor ?? summary?.coreWound) ?? FALLBACK_SUMMARY.whatToWatchFor,
   whatToBuild: validSummaryField(summary?.whatToBuild ?? summary?.corePurpose) ?? FALLBACK_SUMMARY.whatToBuild,
   whatToGive: validSummaryField(summary?.whatToGive ?? summary?.coreLegacy) ?? FALLBACK_SUMMARY.whatToGive,
   integration: validSummaryField(summary?.integration) ?? FALLBACK_SUMMARY.integration,
+  growthSigns: normalizeGrowthSigns(summary?.growthSigns),
 });
 
 const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
@@ -276,6 +294,22 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                       {data.summary.integration}
                     </p>
                   )}
+                </div>
+              )}
+
+              {/* How to Know You're Growing */}
+              {data.summary?.growthSigns && data.summary.growthSigns.length > 0 && (
+                <div className="p-4 bg-primary/10 border border-primary/40 rounded-sm">
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">How to Know You're Growing</p>
+                  <p className="text-[11px] text-muted-foreground mb-3">Small, observable changes that signal real progress.</p>
+                  <ul className="space-y-1.5 text-[12px] text-foreground">
+                    {data.summary.growthSigns.map((sign, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-primary mt-0.5">✓</span>
+                        <span>{sign}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 

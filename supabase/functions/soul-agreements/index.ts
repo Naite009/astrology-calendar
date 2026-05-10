@@ -132,11 +132,14 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
   });
 
   return {
-    family: section(
-      `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern, including the ruler of the 4th. The strongest listed Moon contact is ${a("Moon")}.`,
-      "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
-      ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
-    ),
+    family: {
+      ...section(
+        `${p("Moon")} is the main emotional marker. ${h(4)} describes the early home pattern, including the ruler of the 4th. The strongest listed Moon contact is ${a("Moon")}.`,
+        "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
+        ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
+      ),
+      survivalPattern: "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+    },
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
       "A painful pattern may become a place where you learn steadiness. You may grow by saying what hurts without making yourself wrong for having needs.",
@@ -158,9 +161,9 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
     timing: section(
-      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about style, not fixed events.`,
-      "Growth often comes through pressure, endings, truth-telling moments, taking on real responsibility, and emotional turning points. You may change slowly at first, then make a clear decision once you finally know what is no longer working.",
-      ["growth often arrives after a hard ending or a forced choice", "you may resist change until the cost of staying the same is bigger", "honest conversations can mark the real turning points", "taking on more responsibility can speed up your growth", "you may trust yourself more after a setback you did not collapse under"],
+      `${p("Saturn")}, ${p("Pluto")}, and the Nodes describe HOW your growth tends to arrive. This is about the repeating cycle, not specific events.`,
+      "Your growth pattern often follows this cycle: Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability. Pressure builds until you pull back to feel and think, something clicks, you make a clear move, and a steadier version of life settles in until the next cycle starts.",
+      ["pressure builds before any real change", "you may pull back or go quiet to process what you feel", "an insight lands that reframes the whole situation", "you make one clear, decisive move once you finally see it", "a new, steadier version of life settles in afterward"],
     ),
     legacy: section(
       `${h(10)} and ${p("Sun")} describe what you leave behind. Saturn adds the part that takes patience and responsibility.`,
@@ -183,6 +186,13 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       whatToBuild: "Build the inner steadiness to feel uncomfortable feelings without abandoning yourself, rushing to fix others, or numbing out until the moment passes.",
       whatToGive: "Give people the kind of honest, calm presence that helps them say hard things out loud without shame, judgment, or pressure to perform.",
       integration: "Your growth comes from learning how to stay connected to others without losing yourself.",
+      growthSigns: [
+        "you speak up sooner instead of replaying it later",
+        "you set a boundary without a long apology",
+        "you trust your own decision before asking for outside approval",
+        "you recover faster after conflict instead of going silent for days",
+        "you stop over-carrying other people's emotions as your job",
+      ],
     },
   };
 };
@@ -502,7 +512,7 @@ KEY THINGS TO COPY FROM THE EXEMPLAR:
 
 Return STRICT JSON only, matching this schema:
 {
-  "family": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
+  "family": { "astrology": string, "plainEnglish": string, "survivalPattern": string, "examples": string[], "recognition": string[] },
   "wound": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "purpose": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
   "relationship": { "astrology": string, "plainEnglish": string, "examples": string[], "recognition": string[] },
@@ -516,9 +526,14 @@ Return STRICT JSON only, matching this schema:
     "whatToWatchFor": string,
     "whatToBuild": string,
     "whatToGive": string,
-    "integration": string
+    "integration": string,
+    "growthSigns": string[]
   }
 }
+
+FAMILY SECTION REQUIRES "survivalPattern" — a 1-2 sentence string answering: "What emotional rule did home teach me?" Examples of the kind of rule to name (do not copy verbatim): stay quiet to keep peace; scan the room before speaking; manage other people's emotions first; hide strong feelings; never need too much. Make it specific to THIS chart's Moon and 4th house. Plain language. No jargon. This is the SURVIVAL strategy the child learned, not a value judgment.
+
+SUMMARY REQUIRES "growthSigns" — 3 to 5 short behavioral bullets answering: "How will you know you're actually growing?" Each bullet is one short observable change in behavior, lowercase, no period. Examples of the form (adapt to chart): "you speak up sooner", "you set boundaries faster", "you trust your own decisions", "you recover faster after conflict", "you stop over-carrying others' emotions". These must be measurable changes someone could notice in themselves over 3-6 months. Never abstract.
 
 SECTION DISTINCTION RULE (mandatory): Each section must feel distinct. Do NOT repeat the same theme or example across sections. Domain map:
 - family: early emotional imprint
@@ -591,8 +606,9 @@ EMOTIONAL TONE per section (must feel distinct):
 
 5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already mastered before this life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
-6. TIMING AGREEMENT — how growth tends to arrive for this person, what kind of trigger sets off real change. Should feel oracular but plain. Use Pluto (forced change), Uranus (sudden disruption), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes. Describe the change in behavioral terms (how they act, respond, or choose), not as "transformation".
-   REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY this is the long-standing pattern that wakes them up. Do NOT predict events.
+6. TIMING AGREEMENT — REBUILT AS A CYCLE, NOT A LIST OF EVENTS. Show the repeatable mechanics of how this person grows. Use Pluto, Uranus, Saturn, the Nodes, 8th and 12th house planets as the chart anchors in the Astrology field, but the Plain English field MUST describe growth as the following 5-stage cycle, in this exact order, using these exact stage labels:
+   Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability.
+   The Plain English paragraph must literally name those 5 stages in order, then describe in 2-3 sentences how that cycle plays out for this chart specifically (what the pressure tends to look like, what their withdrawal looks like, what kind of insight lands, what the decisive action looks like, what the new stability feels like). Do NOT list random life events. Do NOT predict events. The 5 Real-Life Examples should each describe ONE stage of the cycle in order (one bullet per stage).
 
 7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe enough to be honest about what they feel, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language. Do NOT use the phrase "inspiring others to be true to themselves" — replace any such instinct with "helping others feel safe enough to be honest about what they feel".
@@ -601,7 +617,9 @@ EMOTIONAL TONE per section (must feel distinct):
 
 9. WHAT HELPS YOU RESET — practical regulation strategies. Use Moon, Venus, 4th house, 6th house, Neptune. Concrete things they can do today: solitude, movement, journaling, truth-telling, rest, creative expression, time in nature, clear boundaries, water, music, slow meals, quiet ritual, sleep.
 
-Then SUMMARY — four practical behavioral instructions (whatToPractice, whatToWatchFor, whatToBuild, whatToGive), plus ONE final "integration" sentence that names the central agreement of this entire life: the through-line connecting all 7 core sections. Default integration: "Your growth comes from learning how to stay connected to others without losing yourself." Rephrase only if the chart clearly points elsewhere.
+ALSO — the FAMILY section MUST return a "survivalPattern" string answering "What emotional rule did home teach me?" (1-2 short sentences, plain language, specific to this chart's Moon and 4th house). See system prompt for examples.
+
+Then SUMMARY — four practical behavioral instructions (whatToPractice, whatToWatchFor, whatToBuild, whatToGive), ONE final "integration" sentence, AND a "growthSigns" array of 3-5 short observable behavior changes that signal real growth ("How to Know You're Growing"). Each growth sign is a short fragment, lowercase, no period (e.g., "you speak up sooner", "you set boundaries faster"). Default integration: "Your growth comes from learning how to stay connected to others without losing yourself." Rephrase only if the chart clearly points elsewhere.
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
@@ -650,9 +668,17 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           ?.split("\n").map((item) => item.replace(/^-\s*/, "").trim()).filter(Boolean) || [];
         const fallbackRecognition = fallbackSection.question.split("\n").filter((item) => item.trim().startsWith("-")).map((item) => item.replace(/^-\s*/, "").trim());
         const cleanField = (raw: unknown, fallbackText: string) => stripTemplateLeakage(cleanPlainLanguage(String(raw || fallbackText)));
-        const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition
-          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
-          : String(source?.interpretation || fallbackSection.interpretation);
+        const survivalBlock = key === "family"
+          ? `\n\n**Emotional Survival Pattern**\n${cleanField(
+              source?.survivalPattern,
+              (fallbackSection as any).survivalPattern || "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+            )}`
+          : "";
+        const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
+          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
+          : (key === "family"
+            ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
+            : String(source?.interpretation || fallbackSection.interpretation));
         const rawInterpretation = cleanPlainLanguage(structuredInterpretation);
         const interpretation = stripRecognitionFromInterpretation(rawInterpretation);
         const recognition = cleanPlainLanguage(
@@ -678,6 +704,13 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       const pickSummary = (raw: unknown, fallbackText: string): string => {
         return validSummaryField(raw) ?? fallbackText;
       };
+      const fallbackGrowthSigns = (fallback.summary as any).growthSigns as string[] | undefined;
+      const rawGrowthSigns = Array.isArray(s.growthSigns) ? s.growthSigns : [];
+      const cleanedGrowthSigns = rawGrowthSigns
+        .map((item: unknown) => cleanPlainLanguage(String(item)).replace(/^-\s*/, "").replace(/\.$/, "").trim())
+        .filter(Boolean)
+        .slice(0, 5);
+      const growthSigns = cleanedGrowthSigns.length >= 3 ? cleanedGrowthSigns : (fallbackGrowthSigns || []);
       result.summary = {
         whatToPractice: pickSummary(s.whatToPractice ?? s.coreLesson, fallback.summary.whatToPractice),
         whatToWatchFor: pickSummary(s.whatToWatchFor ?? s.coreWound, fallback.summary.whatToWatchFor),
@@ -687,6 +720,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           s.integration,
           (fallback.summary as any).integration || "Your growth comes from learning how to stay connected to others without losing yourself.",
         ),
+        growthSigns,
       };
       return result;
     };
