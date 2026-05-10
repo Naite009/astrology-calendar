@@ -214,6 +214,22 @@ ABSOLUTE RULES:
 9. Plain English. 6th-grade reading level. No astrological jargon in the prose unless naming a specific placement.
 10. Output ONLY valid JSON matching the schema. No markdown fences, no commentary.
 
+PRECISION & WEIGHTING RULES (apply to pressureProfile, repairProfile, and perceptionTranslation):
+- Each cross-aspect in CROSS-ASPECTS arrives pre-scored with [weight N]. Higher = more central.
+  Saturn hard Sun/Moon = 5; Chiron hard Sun/Moon = 4; Pluto–Moon = 4; Moon–Neptune hard = 3;
+  Mercury–Chiron = 3; Mars–Saturn hard = 3; Node contacts = 2; soft aspects = 1.
+- PressureProfile and RepairProfile MUST be built from the highest-scoring signatures only.
+  Do not give equal weight to a +1 soft aspect and a +5 Saturn–Sun square.
+- Use intensity language matching the OVERALL INTENSITY label provided in the user prompt:
+  • mild → "may occasionally", "sometimes notices", "a small thread of"
+  • moderate → "can show up as", "tends to lean toward"
+  • strong → "often", "is a real pattern here"
+  • dominant → "is a defining feature", "shows up across most situations"
+- OVERCONFIRMATION PROTECTION: If only ONE qualifying high-weight signature exists (count of weight ≥3 is 1),
+  do NOT use strong fear/shutdown/freeze language. Use "may occasionally..." rather than "this child often...".
+  Reserve "often / consistently / dominant" wording for cases with 2+ high-weight signatures clustering.
+- Do not stack adjectives. One precise sentence beats three dramatic ones.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
