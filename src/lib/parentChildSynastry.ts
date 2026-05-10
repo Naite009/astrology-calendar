@@ -416,6 +416,8 @@ export interface PressureProfile {
   whatHelps: string[];
 }
 
+export type RepairProfile = PressureProfile;
+
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
@@ -424,6 +426,7 @@ export interface PairReadingResponse {
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
+  repairProfile?: RepairProfile | null;
   ageYears: number | null;
   aspectsUsed: number;
   error?: string;
