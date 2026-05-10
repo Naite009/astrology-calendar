@@ -283,7 +283,9 @@ Do NOT repeat the same insight, phrase, or example across sections.
 
 REQUIRED ANCHORS (mandatory):
 - South Node MUST appear explicitly in BOTH the Family and the Wound sections, named as a pattern learned early and repeated over time.
-- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as the soul's chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where the soul agreed to earn rather than receive.
+- Saturn MUST be a primary anchor in EITHER the Wound OR the Purpose section (your choice based on the chart), described as a chosen discipline, not just a limitation. Name Saturn's house/sign as the domain where you agreed to earn rather than receive.
+- DO NOT use the word "soul" in body copy. Avoid phrases like "your soul came here to", "soul's development", "soul calling". Use "you", "what you are growing into", "your direction" instead.
+- DIFFERENTIATION ENFORCEMENT: Purpose, Gift, and Stress MUST NOT share the same root keyword (e.g., service, intellect, truth, innovation, power). Purpose = growth direction. Gift = natural strength. Stress = crisis behavior. If a keyword appears in two of these, rewrite one with behavioral specificity.
 - North Node anchors Purpose. It must feel like a forward pull, something not yet fully achieved but unmistakably the direction.
 - South Node also returns in Gift as the talents side, already well-developed earlier in life. Keep this distinct from its appearance in Family/Wound.
 
