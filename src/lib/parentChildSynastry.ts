@@ -408,6 +408,14 @@ export interface MoonBridge {
   connectionType: MoonBridgeConnection;
 }
 
+export interface PressureProfile {
+  title: string;
+  astrology: string;
+  plainEnglish: string;
+  whatTheParentMayNotice: string[];
+  whatHelps: string[];
+}
+
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
@@ -415,6 +423,7 @@ export interface PairReadingResponse {
   practice: string;
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
+  pressureProfile?: PressureProfile | null;
   ageYears: number | null;
   aspectsUsed: number;
   error?: string;
