@@ -199,7 +199,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
   'NorthNode-Sun': {
     conjunction: {
       interpretation: "The Sun person embodies exactly what the Node person needs to become. This is a fated connection where the Sun person acts as a beacon for the Node person's evolution. The Node person is deeply drawn to the Sun person's core identity.",
-      pastLife: "The Sun person may have been a leader, authority figure, or role model the Node person admired in a past life.",
+      pastLife: "The Sun person may have been a leader, authority figure, or role model the Node person admired from a long-standing pattern between you.",
       lesson: "The Node person is learning to embody the Sun person's confidence and self-expression."
     },
     opposition: {
@@ -216,45 +216,45 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
   'NorthNode-Moon': {
     conjunction: {
       interpretation: "The Moon person provides the emotional nourishment the Node person needs to fulfill their destiny. Deep emotional safety allows for soul growth. The Node person feels 'at home' with the Moon person in a destiny-aligned way.",
-      pastLife: "The Moon person may have been a mother, caretaker, or emotional anchor in a past life.",
+      pastLife: "The Moon person may have been a mother, caretaker, or emotional anchor from a long-standing pattern between you.",
       lesson: "Learning that emotional security supports rather than hinders growth."
     },
     opposition: {
       interpretation: "The Moon person provides emotional familiarity and comfort for the Node person. This nurturing connection offers a safe foundation.",
-      pastLife: "Emotional patterns from past connections that feel nurturing and secure.",
+      pastLife: "Emotional patterns from a long-standing pattern that feel nurturing and secure.",
       lesson: "Build on the emotional foundation while continuing to evolve together."
     }
   },
   'NorthNode-Venus': {
     conjunction: {
       interpretation: "FATED LOVE. The Venus person embodies the love the Node person is meant to experience. This is one of the strongest indicators of a destined romantic connection. Venus shows the Node person a new way to love.",
-      pastLife: "A love connection that was interrupted or incomplete in past lives, now returning for fulfillment.",
+      pastLife: "A love connection that was interrupted or incomplete in long-standing patterns, now returning for fulfillment.",
       lesson: "Learning to receive and give love in alignment with soul growth."
     },
     opposition: {
       interpretation: "The Venus person represents familiar love patterns for the Node person. There's natural attraction with an element of comfort and recognition.",
-      pastLife: "A love connection with echoes of the past—familiar energy that may feel like 'coming home.'",
+      pastLife: "A love connection with echoes of a long-standing pattern—familiar energy that may feel like 'coming home.'",
       lesson: "Appreciate the natural ease while continuing to grow together."
     }
   },
   'NorthNode-Mars': {
     conjunction: {
       interpretation: "The Mars person energizes the Node person's destiny path. Mars motivates, challenges, and pushes the Node person toward their North Node. A dynamic, activating connection.",
-      pastLife: "The Mars person may have been a warrior, competitor, or catalyst in a past life.",
+      pastLife: "The Mars person may have been a warrior, competitor, or catalyst from a long-standing pattern between you.",
       lesson: "Learning to take action toward destiny, using Mars's energy as fuel."
     }
   },
   'NorthNode-Saturn': {
     conjunction: {
       interpretation: "A karmic teacher connection. Saturn provides structure, lessons, and sometimes limitations that serve the Node person's growth. Can feel heavy but is deeply purposeful.",
-      pastLife: "Saturn may have been an authority figure, parent, or teacher in a past life.",
+      pastLife: "Saturn may have been an authority figure, parent, or teacher from a long-standing pattern between you.",
       lesson: "Accepting necessary limitations and structure as part of soul growth."
     }
   },
   'NorthNode-Chiron': {
     conjunction: {
       interpretation: "The Chiron person's wounds are connected to the Node person's destiny. Healing Chiron's pain is somehow linked to the Node person's life purpose. A profound healing-destiny connection.",
-      pastLife: "Wounds from past lives that need healing as part of this lifetime's growth.",
+      pastLife: "Wounds from long-standing patterns that need healing as part of this lifetime's growth.",
       lesson: "Integrating wound healing into life purpose. The healing IS the path."
     }
   }
@@ -723,7 +723,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
       type: 'karmic',
       score: Math.min(100, Math.round((scores.karmic.points / maxPossible) * 100 + 15)),
       label: 'Karmic / Soul Contract',
-      description: 'Deep past-life connection with lessons to learn together',
+      description: 'Deep long-standing connection with lessons to learn together',
       icon: '🌙',
       indicators: scores.karmic.indicators
     },
@@ -949,7 +949,7 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
         : 'Your souls have connected to support mutual growth and evolution.';
   
   const pastLifeConnection = karmicIndicators.find(k => k.pastLifeTheme)?.pastLifeTheme || 
-    'While specific past-life indicators are subtle, the depth of your connection suggests you have met before in some capacity.';
+    'While specific long-standing indicators are subtle, the depth of your connection suggests you have met before in some capacity.';
   
   return {
     overallCompatibility,
@@ -1021,7 +1021,7 @@ function generatePurposeNarrative(
     business: 'build something tangible together—a project, business, or shared legacy',
     friendship: 'enjoy companionship, mutual support, and shared experiences',
     'teacher-student': 'facilitate learning and growth through mentorship',
-    karmic: 'complete unfinished business from past lives and heal old patterns',
+    karmic: 'complete unfinished business from long-standing patterns and heal old patterns',
     creative: 'inspire each other artistically and bring imaginative visions to life'
   };
   
