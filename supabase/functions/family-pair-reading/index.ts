@@ -65,6 +65,13 @@ interface ReadingPayload {
     whatTheParentMayNotice: string[];
     whatHelps: string[];
   };
+  repairProfile?: {
+    title: string;
+    astrology: string;
+    plainEnglish: string;
+    whatTheParentMayNotice: string[];
+    whatHelps: string[];
+  };
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -173,6 +180,13 @@ JSON SCHEMA:
     "plainEnglish": string (2-4 sentences translating the signatures into likely lived behavior under pressure, calibrated to the child's age),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors, e.g. "smart but hesitant", "freezes when watched"],
     "whatHelps": [string, ...3-5 short supportive parenting/coaching responses, verbs first, e.g. "praise effort before outcome", "reduce public correction"]
+  },
+  "repairProfile": {
+    "title": "What Repair Requires for This Child",
+    "astrology": string (1-3 sentences naming the EXACT signatures driving this child's repair style — Sun/Saturn condition, 4th/10th houses and their rulers, Pluto links to 4th/10th, 8th/12th emphasis, Moon-Chiron, Moon-Neptune, Mercury hard aspects. Include valid degree orbs. If no qualifying signatures, return "" and empty arrays/strings),
+    "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
+    "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
+    "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
   }
 }
 
@@ -210,7 +224,34 @@ OUTPUT FORMAT for pressureProfile:
 - "whatTheParentMayNotice": 3-5 short observable behaviors (e.g. "smart but hesitant", "strong defense but avoids shooting", "freezes when watched", "passes responsibility quickly", "gets upset after correction").
 - "whatHelps": 3-5 short supportive responses, verbs first (e.g. "praise effort before outcome", "reduce public correction", "give one simple instruction at a time", "practice pressure moments privately first", "name the fear without shaming it", "build confidence through safe repetition").
 
-FINAL RULE: Always translate astrology into parenting behavior. Never end on "this child has Saturn opposite Sun." End on what to DO and what the child NEEDS.`;
+FINAL RULE: Always translate astrology into parenting behavior. Never end on "this child has Saturn opposite Sun." End on what to DO and what the child NEEDS.
+
+REPAIR PROFILE — "What Repair Requires for This Child" (only fill if ${body.toName} is the child in this pair; otherwise return empty strings/arrays):
+
+Purpose: Help the parent understand how this child may experience parental absence, harsh authority, repair, forgiveness, learning differences, and emotional safety. Stay careful. Do NOT diagnose abuse. Do NOT diagnose learning disabilities. Use "may"/"might"/"can". DO NOT predict whether this child will or will not forgive — describe what repair would REQUIRE for this child.
+
+Evaluate using the child's chart and parent cross-aspects (orb-validated only):
+
+1. PARENTAL ABSENCE / RUPTURE SIGNATURES — Sun condition, Saturn condition, 10th house, 4th house, ruler of 4th, ruler of 10th, Pluto links to 4th/10th, 8th house emphasis, 12th house emphasis. Possible themes: emotional distance from a parent, parent experienced as unavailable / unsafe / absent / hard to reach, early pressure to grow up, difficulty trusting authority, guardedness around repair, needing proof through consistent action not promises.
+
+2. REPAIR STYLE BY CHILD TYPE — Do NOT assume siblings repair the same way. Match the child's chart to ONE primary style:
+   • Fear-based child (Saturn–Sun/Moon hard, Chiron–Sun/Moon, Scorpio Rising/IC, Pluto–4th): needs safety, calm, predictability, NO pressure to forgive.
+   • Intellectual child (Aquarius/Mercury emphasis, Mercury–Saturn, Mercury–Uranus, 3rd/9th emphasis): needs honest explanation, consistency, space to decide what they think.
+   • Anger / protection child (Mars strong, Mars–Pluto, Aries/Scorpio emphasis, Mars–Saturn): needs validation of anger, respect for boundaries, NO forced reconciliation.
+   • Sensitive / merging child (Pisces/Cancer emphasis, Moon–Neptune, 12th emphasis): needs help separating their feelings from the parent's feelings.
+   • Performance-sensitive child (Chiron–Mercury/Mars, Saturn–Mercury/Mars, 5th house Chiron): needs repair through encouragement, not criticism.
+
+3. FORGIVENESS RULE (HARD) — FORBIDDEN to write "this child will forgive" or "this child will not forgive". Use only conditional language: "Repair may be possible when safety is consistent, accountability is real, the child is not pressured, boundaries are respected, and the parent's behavior changes over time."
+
+4. LEARNING DIFFERENCE / NONSTANDARD PROCESSING — Do NOT diagnose learning disabilities. If the chart shows Aquarius emphasis, strong Uranus, Mercury hard aspects, Mercury–Pluto, Mercury–Neptune, Mercury–Chiron, 12th-house Jupiter/Neptune/Mercury, Saturn stress to Mercury or Sun, Moon–Chiron, or Moon–Neptune, you MAY gently flag: possible nonstandard learning style, sensitivity to pressure, difficulty performing when watched, deep thinking but uneven output, intuitive/visual learning, needs time to process, may underperform when anxious, may know more than they can show on demand. Always frame as possibility, never diagnosis.
+
+5. SELF-CONTAINED / OBSERVANT CHILD PATTERN — If chart shows several of: Aquarius Sun, Capricorn MC, Saturn emphasis, 8th house North Node, 12th house Jupiter/Neptune, Moon–Chiron — note this child may become self-contained, observant, emotionally private; understands more than they say; may look detached but is processing deeply; may forgive mentally before trusting emotionally; may need proof not promises.
+
+OUTPUT FORMAT for repairProfile:
+- "astrology": Name the exact qualifying signatures with valid orbs. If NO qualifying signatures, return "" and empty arrays.
+- "plainEnglish": Describe this child's repair style and what trust would REQUIRE. Never predict forgiveness.
+- "whatTheParentMayNotice": 3-5 short observable behaviors during/after rupture (e.g. "shuts down when pressured", "asks logical questions instead of showing emotion", "seems detached but remembers everything", "needs time before trusting again").
+- "whatHelps": 3-5 short supportive responses, verbs first (e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "keep conversations calm and brief", "respect their boundaries", "let them decide the pace of closeness").`;
 
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
@@ -225,7 +266,7 @@ MOON BRIDGE INPUTS:
 CROSS-ASPECTS (already verified, tightest first):
 ${aspectLines}
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules — only fill it if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every pressureProfile field.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those two objects.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
