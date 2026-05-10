@@ -816,7 +816,7 @@ PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any che
 
 (4) SUN IDENTITY INTEGRATION: Do NOT paste Sun identity as a tacked-on sentence after the Real-Life Examples or Recognition Check. Integrate Sun identity naturally inside Plain English or the Summary, framed as the lens THROUGH WHICH growth happens.
    BAD:  "Your Sun in Taurus is the identity that learned to operate inside this pattern."
-   GOOD: "Because your Sun is in Taurus, this growth needs to happen through steadiness, practical choices, and trust in your own pace."
+    GOOD: "Because your Sun is in Taurus, this pattern may show up through steadiness, practical choices, and trust in your own pace."
 
 (4b) NO INSTRUCTIONAL OPENERS: Never use scaffold/instructional phrases that announce what the prose is about to do. FORBIDDEN: "Underneath all of this...", "Restoration follows...", "What follows is...", "This means that...", "In essence...", "To sum up...", "The takeaway is...". Integrate the point naturally into the paragraph instead. If you would have written "Underneath all of this, your Sun in X...", write "Your Sun in X stays the core of who you are..." directly.
 
@@ -1377,15 +1377,15 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
           if (missing.includes("purpose") && result.purpose?.interpretation) {
             result.purpose.interpretation = txtOf("purpose").trim() +
-              ` Your Sun in ${sunSign} stays the core of who you are; this growth direction expresses through that identity, it does not replace it.`;
+              ` Because your Sun is in ${sunSign}, this growth direction may show up through the natural strengths of that sign.`;
           }
           if (missing.includes("family") && result.family?.interpretation) {
             result.family.interpretation = txtOf("family").trim() +
-              ` Your Sun in ${sunSign} is the identity that learned to operate inside this early emotional pattern.`;
+              ` Because your Sun is in ${sunSign}, this early pattern may show up through the habits and defenses that sign tends to rely on.`;
           }
           if (missing.includes("summary") && result.summary) {
             result.summary.integration = String(result.summary.integration || "").trim() +
-              ` Stay anchored in your Sun in ${sunSign}; let growth happen through it, not in place of it.`;
+              ` Your Sun in ${sunSign} stays the core of who you are; let growth happen through it, not in place of it.`;
           }
         }
       }
