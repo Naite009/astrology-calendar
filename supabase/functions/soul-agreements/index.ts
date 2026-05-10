@@ -85,6 +85,48 @@ const stripRecognitionFromInterpretation = (value: string) => {
   return value.slice(0, headingStart(matches[0])).replace(/\n\s*END SECTION\s*$/i, "").trim();
 };
 
+// Collapse duplicate sub-headings within an interpretation block. For each
+// canonical heading we keep only the FIRST occurrence and remove later ones
+// (the body content under duplicates is preserved).
+const collapseDuplicateHeadings = (value: string): string => {
+  const headings = ["Astrology", "Plain English", "Real-Life Examples", "Emotional Survival Pattern"];
+  let out = value;
+  for (const h of headings) {
+    const re = new RegExp(`(^|\\n)\\s*(?:\\*\\*\\s*${h}\\s*\\*\\*|#{1,6}\\s*${h}|${h})\\s*:?(?=\\n|$)`, "gi");
+    const matches = [...out.matchAll(re)];
+    if (matches.length <= 1) continue;
+    let result = "";
+    let cursor = 0;
+    for (let i = 0; i < matches.length; i++) {
+      const m = matches[i];
+      const start = (m.index ?? 0) + (m[1] ? m[1].length : 0);
+      const end = (m.index ?? 0) + m[0].length;
+      result += out.slice(cursor, i === 0 ? end : start);
+      cursor = end;
+    }
+    result += out.slice(cursor);
+    out = result.replace(/\n{3,}/g, "\n\n");
+  }
+  return out.trim();
+};
+
+// An Astrology field is "resolved" when it names at least one body and
+// either a sign or house. Generic scaffold sentences fail this check.
+const PLANET_TOKEN_RE = /\b(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|North Node|South Node|Ascendant|Midheaven|MC|ASC|IC|DSC)\b/i;
+const SIGN_TOKEN_RE = /\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i;
+const HOUSE_TOKEN_RE = /\b(?:House\s*\d{1,2}|\d{1,2}(?:st|nd|rd|th)\s*house)\b/i;
+const isAstrologyResolved = (text: string): boolean => {
+  const t = (text || "").trim();
+  if (t.length < 30) return false;
+  if (!PLANET_TOKEN_RE.test(t)) return false;
+  return SIGN_TOKEN_RE.test(t) || HOUSE_TOKEN_RE.test(t);
+};
+
+const extractField = (text: string, label: string): string => {
+  const re = new RegExp(`\\*\\*\\s*${label}\\s*\\*\\*\\s*([\\s\\S]*?)(?=\\n\\s*\\*\\*[A-Z][^*\\n]*\\*\\*|$)`, "i");
+  return text.match(re)?.[1]?.trim() || "";
+};
+
 const cleanPlainLanguage = (value: string) =>
   dedupeRecognitionCheck(
     stripPlaceholders(value)
@@ -905,7 +947,29 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
             ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
             : String(source?.interpretation || fallbackSection.interpretation));
         const rawInterpretation = cleanPlainLanguage(structuredInterpretation);
-        const interpretation = stripRecognitionFromInterpretation(rawInterpretation);
+        let interpretation = collapseDuplicateHeadings(stripRecognitionFromInterpretation(rawInterpretation));
+
+        // FINAL RENDER VALIDATION: Astrology field must name actual placements/aspects.
+        // If empty or generic, rebuild it from the deterministic chart data.
+        const astroField = extractField(interpretation, "Astrology");
+        if (!isAstrologyResolved(astroField)) {
+          const fallbackAstro =
+            extractField(fallbackSection.interpretation, "Astrology") ||
+            placements
+              .slice(0, 3)
+              .map((pl) => `${pl.planet} in ${pl.sign ?? "?"}${pl.house ? ` in House ${pl.house}` : ""}`)
+              .join("; ") + ".";
+          if (astroField) {
+            interpretation = interpretation.replace(
+              /(\*\*Astrology\*\*\s*)([\s\S]*?)(?=\n\s*\*\*[A-Z][^*\n]*\*\*|$)/i,
+              `$1${fallbackAstro}\n\n`,
+            );
+          } else {
+            interpretation = `**Astrology**\n${fallbackAstro}\n\n${interpretation}`;
+          }
+          console.warn(`[soul-agreements] Rebuilt Astrology field for "${key}" — original was generic/empty.`);
+        }
+
         const recognition = cleanPlainLanguage(
           source?.recognition
             ? `This may fit if:\n${asArray(source.recognition, fallbackRecognition).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
