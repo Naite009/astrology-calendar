@@ -291,13 +291,21 @@ REQUIRED ANCHORS (mandatory):
 
 CORE IDENTITY HIERARCHY (mandatory weighting — do not violate):
 - Sun = core identity (who the person IS)
-- Moon = emotional operating system (how they feel and self-soothe)
-- Rising = external behavior pattern (how they show up)
+- Moon = emotional pattern / operating system (how they feel and self-soothe)
+- Rising / Ascendant = outward behavior and life approach (how they show up)
+- Chart ruler (planet ruling the Rising sign) = operating style
 - North/South Nodes = growth direction (NOT identity)
-- Stelliums = emphasis areas (NOT identity replacement)
+- Stelliums = major emphasis areas (NOT identity replacement)
+- Houses = life arenas where the action happens (NOT the person)
 RULES:
-- Do NOT let the Nodes or any stellium override the Sun's sign identity. Purpose ≠ personality. Growth ≠ identity. The nodal axis is never the core self.
-- Family, Purpose, and the Summary MUST each include at least one explicit reference to the SUN sign (and where useful, the Moon and Rising) as the anchor of who this person is.
+- Do NOT let the Nodes, any stellium, or house emphasis override the Sun's sign identity. Purpose ≠ personality. Growth axis ≠ identity. A stellium does NOT replace Sun/Moon/Rising.
+- BEFORE writing each section, mentally verify and then make sure the final output passes ALL of these checks:
+  (1) Sun sign identity is clearly present in Family, Purpose, and Summary.
+  (2) Moon emotional pattern is clearly present in Family and Reset (and named where it appears in any other section).
+  (3) Rising/Ascendant behavior pattern is clearly present in Purpose or Relationship.
+  (4) Nodes are described ONLY as growth direction, never as "who you are".
+  (5) Stelliums are described as emphasis areas, never as the whole person.
+  If any answer is NO, rewrite that section before returning JSON.
 - Examples:
   • Taurus Sun + Virgo/Pisces nodal axis: identity remains TAURUS (steady, sensual, value-driven). Growth occurs THROUGH Virgo/Pisces themes; it does not replace Taurus.
   • Pisces Sun + Aquarius stellium: identity remains PISCES (empathic, imaginative, porous). Purpose may EXPRESS through Aquarian community/innovation themes, but the person is not "an Aquarian."
@@ -801,29 +809,32 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         }
       }
 
-      // ── CORE IDENTITY HIERARCHY CHECK: ensure Sun sign is present in Family, Purpose, and Summary ──
+      // ── CORE IDENTITY HIERARCHY CHECK: Sun in Family/Purpose/Summary, Moon in Family/Reset, Rising in Purpose/Relationship ──
       const sunSign = placements.find((p) => p.planet === "Sun")?.sign || "";
+      const moonSign = placements.find((p) => p.planet === "Moon")?.sign || "";
+      const risingSign = houses.find((h) => h.house === 1)?.cuspSign || "";
+      const txtOf = (k: string) => String(result[k]?.interpretation || "");
+      const summaryTxt = [
+        result.summary?.whatToPractice, result.summary?.whatToBuild,
+        result.summary?.whatToWatchFor, result.summary?.whatToGive,
+        result.summary?.integration,
+      ].filter(Boolean).join(" ");
+      const has = (sign: string, txt: string) => sign ? new RegExp(`\\b${sign}\\b`, "i").test(txt) : true;
+
+      // Sun checks
       if (sunSign) {
-        const sunRe = new RegExp(`\\b${sunSign}\\b`, "i");
-        const familyTxt = String(result.family?.interpretation || "");
-        const purposeTxt = String(result.purpose?.interpretation || "");
-        const summaryTxt = [
-          result.summary?.whatToPractice, result.summary?.whatToBuild,
-          result.summary?.whatToWatchFor, result.summary?.whatToGive,
-          result.summary?.integration,
-        ].filter(Boolean).join(" ");
         const missing: string[] = [];
-        if (!sunRe.test(familyTxt)) missing.push("family");
-        if (!sunRe.test(purposeTxt)) missing.push("purpose");
-        if (!sunRe.test(summaryTxt)) missing.push("summary");
+        if (!has(sunSign, txtOf("family"))) missing.push("family");
+        if (!has(sunSign, txtOf("purpose"))) missing.push("purpose");
+        if (!has(sunSign, summaryTxt)) missing.push("summary");
         if (missing.length) {
           console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
           if (missing.includes("purpose") && result.purpose?.interpretation) {
-            result.purpose.interpretation = String(result.purpose.interpretation).trim() +
+            result.purpose.interpretation = txtOf("purpose").trim() +
               ` Underneath all of this, your Sun in ${sunSign} is still the core of who you are; purpose expresses THROUGH that identity, it does not replace it.`;
           }
           if (missing.includes("family") && result.family?.interpretation) {
-            result.family.interpretation = String(result.family.interpretation).trim() +
+            result.family.interpretation = txtOf("family").trim() +
               ` Your Sun in ${sunSign} is the identity that learned to operate inside this early emotional pattern.`;
           }
           if (missing.includes("summary") && result.summary) {
@@ -832,6 +843,35 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           }
         }
       }
+
+      // Moon checks (Family + Reset)
+      if (moonSign) {
+        if (!has(moonSign, txtOf("family")) && result.family?.interpretation) {
+          console.warn(`[soul-agreements] Moon (${moonSign}) missing from family`);
+          result.family.interpretation = txtOf("family").trim() +
+            ` Your Moon in ${moonSign} describes the emotional pattern that took shape inside this family climate.`;
+        }
+        if (!has(moonSign, txtOf("reset")) && result.reset?.interpretation) {
+          console.warn(`[soul-agreements] Moon (${moonSign}) missing from reset`);
+          result.reset.interpretation = txtOf("reset").trim() +
+            ` Restoration follows what your Moon in ${moonSign} actually needs to feel settled again.`;
+        }
+      }
+
+      // Rising checks (Purpose OR Relationship)
+      if (risingSign) {
+        const inPurpose = has(risingSign, txtOf("purpose"));
+        const inRel = has(risingSign, txtOf("relationship"));
+        if (!inPurpose && !inRel) {
+          console.warn(`[soul-agreements] Rising (${risingSign}) missing from purpose AND relationship`);
+          if (result.purpose?.interpretation) {
+            result.purpose.interpretation = txtOf("purpose").trim() +
+              ` Your ${risingSign} Rising shapes how you show up while you do this work; the outward style stays ${risingSign}, even as you grow.`;
+          }
+        }
+      }
+
+
       const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
       const tally: Record<string, number> = {};
       for (const key of sectionKeys) {
