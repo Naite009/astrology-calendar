@@ -147,7 +147,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may adjust yourself to make a relationship work", "you may need partners who respect direct honesty", "you may notice conflict feels risky", "you grow when you stay present and tell the truth kindly"],
     ),
     gift: section(
-      `${p("Venus")}, ${p("Neptune")}, and ${p("Moon")} describe natural gifts. Jupiter can add wisdom, generosity, or teaching ability.`,
+      `${p("Moon")}, ${p("Venus")}, ${p("Neptune")}, and ${p("Jupiter")} describe natural gifts, with the South Node showing what was already mastered. Emotional insight comes first; steadiness and wisdom follow.`,
       "You may be naturally good at sensing what people need, finding meaning in hard moments, and helping others feel less alone.",
       ["people may come to you when they need comfort", "you may understand feelings that are hard to explain", "creative or symbolic things may come naturally", "you may help people feel seen without forcing advice"],
     ),
