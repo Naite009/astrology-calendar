@@ -405,6 +405,7 @@ ORB VALIDATION RULE (mandatory — degree-based, NOT sign-based):
 FAMILY PRIORITY LOCK (mandatory):
 - The Family section is anchored ONLY by, in this priority order: (1) Moon (sign + house), (2) aspects to the Moon, (3) ruler of the 4th house cusp (its sign, house, condition), (4) planets in the 4th house.
 - Do NOT lead Family from Sun, Saturn, Pluto, nodes, or other placements unless they appear via Moon aspects or 4th-house ruler chains above.
+- INTERPRETATION REFINEMENT: Moon SIGN = emotional style. Moon HOUSE = where emotions are lived out. 4th house + 4th ruler = home atmosphere and family system. Do NOT project Moon-sign traits directly onto the family environment unless strongly supported by the 4th house or its ruler. Example: Moon in Leo does NOT automatically mean a dramatic family — it may simply describe an expressive emotional style. Keep these layers distinct in the prose.
 
 TRAUMA SENSITIVITY PATCH (mandatory — for Family and Wound sections):
 - If the chart shows ANY of the following signatures (within valid orb), you are PERMITTED and EXPECTED to use stronger, more specific family/early-life language:
