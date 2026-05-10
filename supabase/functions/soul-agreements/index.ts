@@ -291,13 +291,21 @@ REQUIRED ANCHORS (mandatory):
 
 CORE IDENTITY HIERARCHY (mandatory weighting — do not violate):
 - Sun = core identity (who the person IS)
-- Moon = emotional operating system (how they feel and self-soothe)
-- Rising = external behavior pattern (how they show up)
+- Moon = emotional pattern / operating system (how they feel and self-soothe)
+- Rising / Ascendant = outward behavior and life approach (how they show up)
+- Chart ruler (planet ruling the Rising sign) = operating style
 - North/South Nodes = growth direction (NOT identity)
-- Stelliums = emphasis areas (NOT identity replacement)
+- Stelliums = major emphasis areas (NOT identity replacement)
+- Houses = life arenas where the action happens (NOT the person)
 RULES:
-- Do NOT let the Nodes or any stellium override the Sun's sign identity. Purpose ≠ personality. Growth ≠ identity. The nodal axis is never the core self.
-- Family, Purpose, and the Summary MUST each include at least one explicit reference to the SUN sign (and where useful, the Moon and Rising) as the anchor of who this person is.
+- Do NOT let the Nodes, any stellium, or house emphasis override the Sun's sign identity. Purpose ≠ personality. Growth axis ≠ identity. A stellium does NOT replace Sun/Moon/Rising.
+- BEFORE writing each section, mentally verify and then make sure the final output passes ALL of these checks:
+  (1) Sun sign identity is clearly present in Family, Purpose, and Summary.
+  (2) Moon emotional pattern is clearly present in Family and Reset (and named where it appears in any other section).
+  (3) Rising/Ascendant behavior pattern is clearly present in Purpose or Relationship.
+  (4) Nodes are described ONLY as growth direction, never as "who you are".
+  (5) Stelliums are described as emphasis areas, never as the whole person.
+  If any answer is NO, rewrite that section before returning JSON.
 - Examples:
   • Taurus Sun + Virgo/Pisces nodal axis: identity remains TAURUS (steady, sensual, value-driven). Growth occurs THROUGH Virgo/Pisces themes; it does not replace Taurus.
   • Pisces Sun + Aquarius stellium: identity remains PISCES (empathic, imaginative, porous). Purpose may EXPRESS through Aquarian community/innovation themes, but the person is not "an Aquarian."
