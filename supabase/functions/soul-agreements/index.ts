@@ -539,15 +539,20 @@ FAMILY SECTION REQUIRES "survivalPattern" — a 1-2 sentence string answering: "
 
 SUMMARY REQUIRES "growthSigns" — 3 to 5 short behavioral bullets answering: "How will you know you're actually growing?" Each bullet is one short observable change in behavior, lowercase, no period. Examples of the form (adapt to chart): "you speak up sooner", "you set boundaries faster", "you trust your own decisions", "you recover faster after conflict", "you stop over-carrying others' emotions". These must be measurable changes someone could notice in themselves over 3-6 months. Never abstract.
 
-SECTION DISTINCTION RULE (mandatory): Each section must feel distinct. Do NOT repeat the same theme or example across sections. Domain map:
-- family: early emotional imprint
-- wound: pain patterns that became growth catalysts
-- purpose: identity and becoming
-- relationship: relationship mirrors and lessons
-- gift: natural strengths
-- timing: HOW growth happens (style, not events)
-- legacy: what you leave behind
-- strength: who you become when life gets hard
+SECTION DIFFERENTIATION LOCK (mandatory): Each section must answer its OWN unique question. Do NOT repeat the same core theme, phrase, or example across sections. Strict domain map — every section must answer ONLY its own question:
+- family: "What early emotional rules did I learn?" (early emotional imprint, NOT present pain)
+- wound: "What is my present pain pattern?" (the ache I still carry, NOT early rules)
+- purpose: "Who am I becoming?" (identity growth, NOT a relationship mirror)
+- relationship: "What do close people mirror back to me?" (relational mirrors, NOT my purpose)
+- gift: "What is my natural talent?" (already-present skill, NOT aspiration)
+- timing: "How does growth ARRIVE?" (cycle mechanics, NOT events)
+- legacy: "What do I leave behind?" (chart-derived; NOT a recycled emotional safety line)
+- strength: "How do I respond in emergencies?" (emergency response system)
+- reset: "How do I restore myself?" (restoration system)
+
+NO TEMPLATE BLEED (mandatory): Legacy must be derived from THIS chart's MC, ruler of MC, Saturn, and Sun. Do NOT use the phrase "helping others feel safe enough to be honest" unless the chart DIRECTLY supports emotional containment (MC in Cancer/Pisces AND Moon prominent in 4th/8th/12th, OR Moon-Saturn or Moon-Pluto as a primary MC signature). Otherwise write a legacy line that names THIS chart's actual public/visible contribution (e.g., builder, teacher, organizer, artist, strategist, protector, translator, witness).
+
+REPETITION FILTER (mandatory): Before finalizing, scan all 9 sections for repeated concept words. If any of these appear in more than 2 sections, rewrite the duplicates with different behavioral language: innovative, power, truth, safe, service, transformation, deep, intense, authentic, honest, growth, journey. The goal is thematic variety — every section must use its OWN behavioral vocabulary.
 - reset: what helps you feel grounded again
 
 FINAL RULE — every section must answer all three of these:
