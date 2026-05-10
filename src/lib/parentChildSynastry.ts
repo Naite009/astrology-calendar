@@ -437,6 +437,9 @@ export interface PairReadingResponse {
   repairProfile?: RepairProfile | null;
   ageYears: number | null;
   aspectsUsed: number;
+  overallIntensity?: "mild" | "moderate" | "strong" | "dominant";
+  totalSignatureScore?: number;
+  highWeightCount?: number;
   error?: string;
 }
 
@@ -507,7 +510,7 @@ export function buildPairReadingPayload(
   const fromPlanets = fromChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
   const toPlanets = toChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
 
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 8).map((r) => {
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 12).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;

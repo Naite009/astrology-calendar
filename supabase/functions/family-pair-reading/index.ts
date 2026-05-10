@@ -124,15 +124,76 @@ Deno.serve(async (req) => {
     const ageYears = body.toAgeYears ?? computeAge(body.toBirthDate);
     const stage = ageStage(ageYears);
 
-    // Trim to top 8 tightest aspects to keep prompt focused.
-    const aspects = body.aspects.slice(0, 8);
-    const aspectLines = aspects
-      .map((a) => {
+    // Deterministic signature weighting (run BEFORE prompt assembly).
+    const HARD = new Set(["conjunction", "opposition", "square"]);
+    const SOFT = new Set(["trine", "sextile"]);
+    function scoreAspect(a: CrossAspect): number {
+      const f = a.fromPlanet, t = a.toPlanet, asp = a.aspect;
+      const isHard = HARD.has(asp);
+      const involves = (p1: string, p2: string) =>
+        (f === p1 && t === p2) || (f === p2 && t === p1);
+      const involvesAny = (set: string[], other: string) =>
+        (set.includes(f) && t === other) || (set.includes(t) && f === other);
+      // Saturn hard Sun/Moon = +5
+      if (isHard && involvesAny(["Saturn"], "Sun")) return 5;
+      if (isHard && involvesAny(["Saturn"], "Moon")) return 5;
+      // Chiron hard Sun/Moon = +4
+      if (isHard && involvesAny(["Chiron"], "Sun")) return 4;
+      if (isHard && involvesAny(["Chiron"], "Moon")) return 4;
+      // Pluto → Moon = +4 (any aspect)
+      if (involves("Pluto", "Moon")) return 4;
+      // Moon-Neptune hard = +3
+      if (isHard && involves("Moon", "Neptune")) return 3;
+      // Mercury-Chiron = +3 (any aspect, treat as sensitive contact)
+      if (involves("Mercury", "Chiron")) return 3;
+      // Mars-Saturn hard = +3
+      if (isHard && involves("Mars", "Saturn")) return 3;
+      // Node contacts = +2
+      if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
+      // Soft aspects = +1
+      if (SOFT.has(asp)) return 1;
+      // Default qualifying hard contact
+      return 2;
+    }
+    function intensityLabel(total: number, count: number): "mild" | "moderate" | "strong" | "dominant" {
+      if (count >= 3 && total >= 12) return "dominant";
+      if (count >= 2 && total >= 8) return "strong";
+      if (total >= 4) return "moderate";
+      return "mild";
+    }
+
+    // Reduced default aspect count: 4-6 strongest only. Allow up to 6 if extra
+    // aspects have very tight orb (<3°) OR add new planet pair information.
+    const allRanked = [...body.aspects]
+      .map((a) => ({ a, score: scoreAspect(a), tightness: 10 - Math.min(a.orb, 10) }))
+      .sort((x, y) => (y.score + y.tightness * 0.4) - (x.score + x.tightness * 0.4));
+    const seen = new Set<string>();
+    const picked: CrossAspect[] = [];
+    for (const { a } of allRanked) {
+      if (picked.length >= 6) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}`;
+      const isTight = a.orb < 3;
+      const isNewPair = !seen.has(key);
+      if (picked.length < 4 || isTight || isNewPair) {
+        picked.push(a);
+        seen.add(key);
+      }
+    }
+    const aspects = picked;
+
+    // Scored summary (passed to AI for prioritisation).
+    const scored = aspects.map((a) => ({ a, s: scoreAspect(a) }));
+    const totalScore = scored.reduce((sum, x) => sum + x.s, 0);
+    const highWeightCount = scored.filter((x) => x.s >= 4).length;
+    const overallIntensity = intensityLabel(totalScore, highWeightCount);
+
+    const aspectLines = scored
+      .map(({ a, s }) => {
         const fromHouse = a.fromHouse ? ` (H${a.fromHouse})` : "";
         const toHouse = a.toHouse ? ` (H${a.toHouse})` : "";
         const fromRetro = a.fromRetro ? " R" : "";
         const toRetro = a.toRetro ? " R" : "";
-        return `- ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro} — ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
+        return `- [weight ${s}] ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro} — ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
       })
       .join("\n");
 
@@ -152,6 +213,22 @@ ABSOLUTE RULES:
 8. Write in second person to the parent: "your Mercury", "your daughter feels...", "what helps".
 9. Plain English. 6th-grade reading level. No astrological jargon in the prose unless naming a specific placement.
 10. Output ONLY valid JSON matching the schema. No markdown fences, no commentary.
+
+PRECISION & WEIGHTING RULES (apply to pressureProfile, repairProfile, and perceptionTranslation):
+- Each cross-aspect in CROSS-ASPECTS arrives pre-scored with [weight N]. Higher = more central.
+  Saturn hard Sun/Moon = 5; Chiron hard Sun/Moon = 4; Pluto–Moon = 4; Moon–Neptune hard = 3;
+  Mercury–Chiron = 3; Mars–Saturn hard = 3; Node contacts = 2; soft aspects = 1.
+- PressureProfile and RepairProfile MUST be built from the highest-scoring signatures only.
+  Do not give equal weight to a +1 soft aspect and a +5 Saturn–Sun square.
+- Use intensity language matching the OVERALL INTENSITY label provided in the user prompt:
+  • mild → "may occasionally", "sometimes notices", "a small thread of"
+  • moderate → "can show up as", "tends to lean toward"
+  • strong → "often", "is a real pattern here"
+  • dominant → "is a defining feature", "shows up across most situations"
+- OVERCONFIRMATION PROTECTION: If only ONE qualifying high-weight signature exists (count of weight ≥3 is 1),
+  do NOT use strong fear/shutdown/freeze language. Use "may occasionally..." rather than "this child often...".
+  Reserve "often / consistently / dominant" wording for cases with 2+ high-weight signatures clustering.
+- Do not stack adjectives. One precise sentence beats three dramatic ones.
 
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
@@ -202,13 +279,14 @@ JSON SCHEMA:
   }
 }
 
-SOUL CONTRACT RULES:
-- whyTheseTwo: Look at the child's North Node and Chiron cross-aspects to the parent's chart. State plainly what karmic agreement brought these two souls together. Do not use mystical language, write it like you are telling someone something true.
-- childLesson: Based on the child's North Node direction and the tightest challenging cross-aspects, name what this child is here to learn specifically through this parent.
-- parentLesson: Look at what the child's chart activates in the parent, especially if the child's Sun or Moon aspects the parent's Saturn, Chiron, or South Node. Name what this parent is here to learn through this child.
-- contractSentence: One sentence. Plain English. Must name both people learning something, not just the child learning from the parent. Example format: "They came to teach each other that [truth]."
-- NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
-- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.
+SOUL CONTRACT RULES (psychological framing, NOT mystical):
+- Lead with PSYCHOLOGY, not destiny. Prefer "what each person helps bring out in the other" over "why these souls chose each other."
+- whyTheseTwo: Look at the child's North Node and Chiron cross-aspects to the parent's chart. State plainly what each person helps the other notice, learn, or grow through. Avoid "fated", "destined", "karmic agreement", "souls chose", "cosmic", "past life". Write it the way a thoughtful therapist would.
+- childLesson: Based on the child's North Node direction and the strongest challenging cross-aspects, name a real-world growth edge this child gets to practice through this parent.
+- parentLesson: Look at what the child's chart activates in the parent (especially child's Sun/Moon to parent's Saturn, Chiron, or South Node). Name a real-world growth edge this parent gets to practice through this child.
+- contractSentence: One plain-English sentence naming what each one helps bring out in the other. Format: "[Parent] helps [child] [verb], and [child] helps [parent] [verb]."
+- NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal, fated, destined, karmic, cosmic, past life, soul agreement.
+- Active voice always. Specific over poetic.
 
 MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.
 
@@ -298,8 +376,11 @@ MOON BRIDGE INPUTS:
 - Parent: ${body.parentMoonSummary ?? "unknown"}
 - Child: ${body.childMoonSummary ?? "unknown"}
 
-CROSS-ASPECTS (already verified, tightest first):
+CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
+
+OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
+INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
 
 Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
@@ -358,6 +439,9 @@ Write the reading. One section per cross-aspect above, in the same order. Genera
         ...payload,
         ageYears,
         aspectsUsed: aspects.length,
+        overallIntensity,
+        totalSignatureScore: totalScore,
+        highWeightCount,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
