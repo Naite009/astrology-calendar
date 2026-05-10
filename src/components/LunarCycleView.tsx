@@ -727,7 +727,7 @@ Keep the tone deep, insightful, and practically applicable.`
     Neptune: 'Your spirituality, imagination, and blind spots — where you DISSOLVE boundaries.',
     Pluto: 'Your deepest power, shadow, and transformation — where you DIE and are REBORN.',
     NorthNode: 'Your soul\'s growth direction this lifetime — the unfamiliar territory you\'re meant to GROW into.',
-    SouthNode: 'Your past-life gifts and comfort zone — what comes naturally but can hold you BACK.',
+    SouthNode: 'Your long-standing strengths and comfort zone, what comes naturally but can hold you BACK.',
     Chiron: 'Your deepest wound that becomes your greatest healing gift — where you HURT and ultimately TEACH.',
     Ascendant: 'Your rising sign — the lens through which you meet the world and others\' first impression of you.',
     Midheaven: 'Your public reputation and career direction — how the world SEES your purpose.',

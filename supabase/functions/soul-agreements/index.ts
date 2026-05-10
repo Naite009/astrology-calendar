@@ -73,12 +73,24 @@ const cleanPlainLanguage = (value: string) =>
   dedupeRecognitionCheck(
     value
       .replace(/—/g, ",")
+      .replace(/your own powerful and the real you/gi, "your own voice")
+      .replace(/your the real you/gi, "yourself")
+      .replace(/the real you/gi, "yourself")
+      .replace(/authentic self/gi, "yourself")
+      .replace(/authentic power/gi, "your own voice")
+      .replace(/claim your power/gi, "trust yourself and act on what you know is true")
+      .replace(/your soul chose this/gi, "this is a long-standing pattern")
+      .replace(/past[- ]life tendency/gi, "early pattern")
+      .replace(/past[- ]life pattern/gi, "long-standing pattern")
+      .replace(/past[- ]life/gi, "early")
+      .replace(/past life/gi, "early life")
       .replace(/shedding old identities/gi, "letting go of old ways of acting")
       .replace(/embracing your power/gi, "learning to trust yourself and speak more honestly")
-      .replace(/authentic self/gi, "the real you")
       .replace(/stepping into/gi, "learning")
       .replace(/owning your truth/gi, "saying what you really think")
       .replace(/soul calling/gi, "life direction")
+      .replace(/private transformation/gi, "private change in how you act")
+      .replace(/transformations?/gi, "change in how you act, respond, or choose")
       .replace(/Relationships are central to your life'?s lessons\.?/gi, "Relationships are one of the main ways you learn about yourself.")
       .replace(/optimistic vision/gi, "insightful vision")
   );
@@ -217,7 +229,7 @@ ABSOLUTE RULES:
 - NEVER use em dashes (—). Use commas, periods, colons, or parentheses.
 - Cross-sign aspects (e.g. 29° Aries to 1° Taurus) are valid when within orb. Sun/Moon conjunctions valid up to 10°.
 
-FORBIDDEN WORDS (never use any of these): wound (as a noun in body copy is fine only inside the Wound Agreement label/title), archetypal, liminal, energies, resonate, resonates, resonance, vibration, vibrational, shadow, shadow work, heal, healing, integrate, integration, embody, embodiment, "deeper work", transformation journey, ascension, awakening, ego death, alchemy, sovereignty, karmic, soul calling, authentic self, stepping into, owning your truth.
+FORBIDDEN WORDS (never use any of these): wound (as a noun in body copy is fine only inside the Wound Agreement label/title), archetypal, liminal, energies, resonate, resonates, resonance, vibration, vibrational, shadow, shadow work, heal, healing, integrate, integration, embody, embodiment, "deeper work", transformation, transformation journey, ascension, awakening, ego death, alchemy, sovereignty, karmic, soul calling, authentic self, authentic power, claim your power, the real you, stepping into, owning your truth, past life, past-life, past-life tendency, past-life pattern, your soul chose this. Use plain alternatives instead: "early pattern", "long-standing pattern", "learned pattern", "repeated relationship pattern", "yourself", "your own truth", "your own voice", "trust yourself and act on what you know is true", and describe change as "change how you act, respond, or choose".
 
 If you catch yourself reaching for any forbidden word, rewrite the sentence in plain everyday language a smart 14-year-old would use.
 
@@ -243,10 +255,10 @@ ACCURACY & HEDGING RULES:
   BAD: "You feel you are not enough."  GOOD: "You hold back from being fully yourself in close relationships."
 - Do not over-psychologize.
 
-JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: transformation, rebirth, evolution, karmic, soul contract, sovereignty, destiny.
+JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: rebirth, evolution, karmic, soul contract, sovereignty, destiny. The word "transformation" is BANNED outright; write "change how you act, respond, or choose" instead.
 
   BAD:  "You are here for deep transformation."
-  GOOD: "You are not meant to stay the same person your whole life. Life will keep pushing you to grow, change, and become more honest about who you are."
+  GOOD: "You are not meant to stay the same person your whole life. Life will keep pushing you to grow and become more honest about who you are."
 
   BAD:  "Release old identity structures."
   GOOD: "Let go of old ways of acting that were built to keep other people comfortable."
@@ -556,10 +568,10 @@ GLOBAL ANCHORING (mandatory):
 EMOTIONAL TONE per section (must feel distinct):
 - Family = memory. Wound = stings slightly. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Resilience (returned as "strength") = grounding. Legacy = weighty. Reset = practical.
 
-1. FAMILY AGREEMENT — what emotional pattern your soul carried in from before this life, and what family it chose to continue that pattern. Use ONLY: Moon (sign, house, aspects), IC / 4th cusp, ruler of the 4th, planets in the 4th, AND the South Node sign/house as past-life emotional default. Do NOT use the 10th house or other parental symbolism here.
+1. FAMILY AGREEMENT — the early emotional pattern that shaped this person and that their family of origin continued. Use ONLY these placements: Moon (sign, house), Moon aspects, the 4th house cusp, planets in the 4th, and the ruler of the 4th. Do NOT use the South Node here. Do NOT use Juno. Do NOT use the 10th house or other parental symbolism here. Frame everything as an "early pattern", "long-standing pattern", or "learned pattern" — never as past-life or soul-chosen.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean "secretive family" or "hidden trauma." Prefer: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings.
 
-2. WOUND AGREEMENT — what pain your soul chose as its primary growth catalyst. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where the soul agreed to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node again as the older pattern this wound traces back to. Should sting slightly, never cruelly.
+2. WOUND AGREEMENT — the long-standing emotional pain that has shaped how this person grows. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where they have to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node as the older pattern this wound traces back to (frame the South Node as a "long-standing pattern" or "early pattern", never as a past life). Should sting slightly, never cruelly.
    SPECIAL RULE — for Chiron in Aries in the 7th: prefer "difficulty staying fully yourself in relationships, struggle asserting your own needs, fear of conflict when speaking honestly" over "you feel unworthy."
 
 3. PURPOSE AGREEMENT — what your soul came here to BECOME. Use North Node (sign, house, conjunctions), Sun as the core identity being developed, planets conjunct the North Node, 1st house, Midheaven. Saturn may anchor here instead of Wound if it fits better. Must feel like a forward pull, something not yet fully achieved.
@@ -573,8 +585,8 @@ EMOTIONAL TONE per section (must feel distinct):
 
 5. GIFT AGREEMENT — what your soul arrived already knowing. Must feel like recognition, not aspiration. Anchor to: South Node (talents side, what was mastered before this life — distinct from how it appears in Family/Wound), Jupiter (sign, house, aspects, as natural abundance — read as wisdom, generosity, vision, or teaching, NOT default to "financial talent"), planets in strong dignity, planets in 1H/5H/9H/11H. Also include intuitive gifts, emotional intelligence, symbolic understanding, creativity, spiritual sensitivity (Venus, Neptune, Moon).
 
-6. TIMING AGREEMENT — how your soul's growth unfolds, what triggers transformation. Should feel oracular. Use Pluto (forced evolution), Uranus (sudden catalyst), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes.
-   REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY the soul chose this method. Do NOT predict events.
+6. TIMING AGREEMENT — how growth tends to arrive for this person, what kind of trigger sets off real change. Should feel oracular but plain. Use Pluto (forced change), Uranus (sudden disruption), Saturn returns and Saturn aspects (scheduled tests), 8th and 12th house planets, the Nodes. Describe the change in behavioral terms (how they act, respond, or choose), not as "transformation".
+   REQUIRED — name the TYPE of trigger that runs this chart: crisis, pressure, sudden disruption, loss, endings, truth-telling moments, taking on real responsibility. Then briefly say WHY this is the long-standing pattern that wakes them up. Do NOT predict events.
 
 7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe and supported, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language.

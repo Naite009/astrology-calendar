@@ -240,7 +240,7 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   if (domainHint === 'spiritual') {
     if (planetName === 'Neptune') return `Your spiritual connection opens ${style}, most permeable in ${area}`;
     if (planetName === 'NorthNode') return `Your soul's growth direction points ${style} toward ${area}`;
-    if (planetName === 'SouthNode') return `Your past-life gifts operate ${style} through ${area}`;
+    if (planetName === 'SouthNode') return `Your long-standing strengths operate ${style} through ${area}`;
     if (planetName === 'Chiron') return `Your healing journey unfolds ${style} in ${area}`;
     if (planetName === 'Sedna') return `Your surrender lesson lives ${style} in ${area}`;
     if (planetName === 'Vesta') return `Your sacred devotion burns ${style}, consecrated to ${area}`;

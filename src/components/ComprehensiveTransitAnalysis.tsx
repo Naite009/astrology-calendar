@@ -67,7 +67,7 @@ const PLANET_ESSENCES: Record<string, { name: string; essence: string }> = {
   pluto: { name: 'Pluto', essence: 'Your power, transformation, and where you experience death and rebirth.' },
   chiron: { name: 'Chiron', essence: 'Your deepest wound and greatest healing gift.' },
   northnode: { name: 'North Node', essence: 'Your soul growth direction and karmic destiny.' },
-  southnode: { name: 'South Node', essence: 'Your past life patterns and comfort zone.' },
+  southnode: { name: 'South Node', essence: 'Your long-standing patterns and comfort zone.' },
   ascendant: { name: 'Ascendant', essence: 'Your rising sign, outer personality, and how others see you.' },
 };
 
@@ -549,7 +549,7 @@ const NATAL_TARGET_FEELING: Record<string, { area: string; when_activated: strin
   ascendant: { area: 'how you present yourself and how others perceive you', when_activated: 'Your physical appearance, first impressions, and the mask you show the world are being directly altered. People may see you differently — or you may feel like a different person.', house_flavor: (h) => `This directly affects your 1st house of self-presentation, physical body, and personal identity. Others notice changes in you before you do.` },
   midheaven: { area: 'your career direction and public reputation', when_activated: 'Your professional life, public image, and life direction are in the spotlight. Career shifts, recognition, or reevaluation of your path are likely.', house_flavor: (h) => `This directly affects your 10th house of career, public standing, and life direction. Professional changes are unfolding.` },
   northnode: { area: 'your soul growth direction', when_activated: 'Your karmic path is being activated. Life events are pushing you toward your growth edge — away from comfort and toward destiny.', house_flavor: (h) => h ? `Your soul growth is expressing through ${HOUSE_MEANINGS[h].keywords}. Pay attention — this is where life is guiding you.` : '' },
-  southnode: { area: 'your past-life patterns', when_activated: 'Old habits, comfort zones, and past-life tendencies are surfacing. You are being asked to release what no longer serves your evolution.', house_flavor: (h) => h ? `Past patterns and karmic release are playing out through ${HOUSE_MEANINGS[h].keywords}. What can you let go of here?` : '' },
+  southnode: { area: 'your long-standing patterns', when_activated: 'Old habits, comfort zones, and learned patterns are surfacing. You are being asked to let go of what no longer fits who you are now.', house_flavor: (h) => h ? `Long-standing patterns are playing out through ${HOUSE_MEANINGS[h].keywords}. What can you let go of here?` : '' },
 };
 
 // How each ASPECT TYPE colors the interaction
