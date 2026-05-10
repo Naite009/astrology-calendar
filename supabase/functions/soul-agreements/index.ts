@@ -138,7 +138,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
         "Your emotional life may have grown around reading the room, staying careful with feelings, and learning when it is safe to be open at home.",
         ["you pick up on moods quickly", "you may keep feelings private until you trust someone", "the early home environment shaped how safe you feel sharing emotion", "you may calm others before naming your own needs"],
       ),
-      survivalPattern: "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+      survivalPattern: "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
     },
     wound: section(
       `${p("Chiron")} and ${p("Saturn")} show tender places that ask for maturity. The 12th house also matters here: ${h(12)}.`,
