@@ -17,6 +17,8 @@ import {
   PairReadingResponse,
   buildChildMoonProfile,
   ChildMoonProfile,
+  buildMoonBridge,
+  MoonBridge,
 } from "@/lib/parentChildSynastry";
 
 interface FamilyMember {
