@@ -562,6 +562,103 @@ function moonSummary(chart: NatalChart): string {
   return `Moon in ${moon.sign}${house ? `, ${ordinalShort(house)} house` : ""}`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Contract Overlap (deterministic, no AI)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ContractOverlapType = "node-axis" | "chiron-core" | "moon-mirror";
+
+export interface ContractOverlapFlag {
+  type: ContractOverlapType;
+  headline: string;
+  body: string;
+}
+
+const OPPOSITE_SIGN: Record<string, string> = {
+  Aries: "Libra", Libra: "Aries",
+  Taurus: "Scorpio", Scorpio: "Taurus",
+  Gemini: "Sagittarius", Sagittarius: "Gemini",
+  Cancer: "Capricorn", Capricorn: "Cancer",
+  Leo: "Aquarius", Aquarius: "Leo",
+  Virgo: "Pisces", Pisces: "Virgo",
+};
+
+function aspectBetween(
+  a: NatalPlanetPosition | undefined,
+  b: NatalPlanetPosition | undefined,
+  maxOrb = 8,
+): { name: string; orb: number } | null {
+  const d1 = toAbsoluteDegree(a);
+  const d2 = toAbsoluteDegree(b);
+  if (d1 == null || d2 == null) return null;
+  let diff = Math.abs(d1 - d2);
+  if (diff > 180) diff = 360 - diff;
+  for (const asp of ASPECTS) {
+    const orb = Math.abs(diff - asp.angle);
+    if (orb <= maxOrb) return { name: asp.name, orb };
+  }
+  return null;
+}
+
+export function buildContractOverlap(
+  parentChart: NatalChart,
+  childChart: NatalChart,
+): { flags: ContractOverlapFlag[] } {
+  const flags: ContractOverlapFlag[] = [];
+  const pp = parentChart.planets as Record<string, NatalPlanetPosition | undefined>;
+  const cp = childChart.planets as Record<string, NatalPlanetPosition | undefined>;
+  const parentName = parentChart.name;
+  const childName = childChart.name;
+
+  // Condition 1 — Node Axis Handoff
+  // Parent SouthNode = opposite of NorthNode
+  const parentNN = pp.NorthNode?.sign;
+  const childNN = cp.NorthNode?.sign;
+  if (parentNN && childNN) {
+    const parentSN = OPPOSITE_SIGN[parentNN];
+    if (parentSN && (parentSN === childNN || OPPOSITE_SIGN[parentSN] === childNN)) {
+      flags.push({
+        type: "node-axis",
+        headline: `${parentName}'s past is ${childName}'s future`,
+        body: `Your South Node in ${parentSN} marks a pattern you are learning to move beyond. ${childName}'s North Node in ${childNN} is the direction they are growing toward. You are living proof of what they are becoming — which means your own growth directly models their path.`,
+      });
+    }
+  }
+
+  // Condition 2 — Chiron-Core Activation
+  const chironHit =
+    aspectBetween(pp.Chiron, cp.Sun) ||
+    aspectBetween(pp.Chiron, cp.Moon) ||
+    aspectBetween(cp.Chiron, pp.Sun) ||
+    aspectBetween(cp.Chiron, pp.Moon);
+  if (chironHit) {
+    flags.push({
+      type: "chiron-core",
+      headline: "Your sensitive spot is where they grow",
+      body: `The place in your chart that carries your deepest sensitivity directly aspects ${childName}'s core identity. This is not an accident. The things that activate your own uncertainty are the exact areas where they need you to have worked on yourself. Your growth here is their permission slip.`,
+    });
+  }
+
+  // Condition 3 — Moon Mirror
+  const moonAsp = aspectBetween(pp.Moon, cp.Moon);
+  if (
+    moonAsp &&
+    (moonAsp.name === "conjunction" || moonAsp.name === "square" || moonAsp.name === "opposition")
+  ) {
+    const parentMoonSign = pp.Moon?.sign;
+    const childMoonSign = cp.Moon?.sign;
+    if (parentMoonSign && childMoonSign) {
+      flags.push({
+        type: "moon-mirror",
+        headline: "You feel the world differently — and that is the point",
+        body: `Your Moon in ${parentMoonSign} and ${childName}'s Moon in ${childMoonSign} do not naturally speak the same emotional language. This creates friction that is actually the curriculum. You are each here to stretch into a way of feeling that does not come naturally. The frustration between you is the lesson, not a sign something is wrong.`,
+      });
+    }
+  }
+
+  return { flags };
+}
+
 export function buildMoonBridge(
   parentChart: NatalChart,
   childChart: NatalChart,

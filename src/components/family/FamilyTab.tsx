@@ -19,6 +19,8 @@ import {
   ChildMoonProfile,
   buildMoonBridge,
   MoonBridge,
+  buildContractOverlap,
+  ContractOverlapFlag,
 } from "@/lib/parentChildSynastry";
 
 interface FamilyMember {
@@ -320,6 +322,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           toRole={report.toRole}
           childMoonProfile={toRole === "child" && toChart ? buildChildMoonProfile(toChart) : null}
           moonBridge={toRole === "child" && fromChart && toChart && report ? buildMoonBridge(fromChart, toChart, report.rows) : null}
+          contractOverlapFlags={toRole === "child" && fromChart && toChart ? buildContractOverlap(fromChart, toChart).flags : []}
         />
       )}
     </div>
@@ -340,6 +343,7 @@ const AiPairReadingView = ({
   toRole,
   childMoonProfile,
   moonBridge,
+  contractOverlapFlags,
 }: {
   reading: PairReadingResponse;
   fromName: string;
@@ -348,6 +352,7 @@ const AiPairReadingView = ({
   toRole: FamilyRole;
   childMoonProfile?: ChildMoonProfile | null;
   moonBridge?: MoonBridge | null;
+  contractOverlapFlags?: ContractOverlapFlag[];
 }) => {
   return (
     <div className="space-y-4">
@@ -531,6 +536,25 @@ const AiPairReadingView = ({
           </CardContent>
         </Card>
       ))}
+
+      {contractOverlapFlags && contractOverlapFlags.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center gap-2 pt-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Where Your Contracts Meet
+          </h3>
+          {contractOverlapFlags.map((flag, idx) => (
+            <Card key={idx} className="border-primary/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold">{flag.headline}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{flag.body}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {reading.practice && (
         <Card>
