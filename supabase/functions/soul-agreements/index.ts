@@ -800,6 +800,38 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           console.warn(`[soul-agreements] differentiation clash on "${root}" across:`, hits);
         }
       }
+
+      // ── CORE IDENTITY HIERARCHY CHECK: ensure Sun sign is present in Family, Purpose, and Summary ──
+      const sunSign = placements.find((p) => p.planet === "Sun")?.sign || "";
+      if (sunSign) {
+        const sunRe = new RegExp(`\\b${sunSign}\\b`, "i");
+        const familyTxt = String(result.family?.interpretation || "");
+        const purposeTxt = String(result.purpose?.interpretation || "");
+        const summaryTxt = [
+          result.summary?.whatToPractice, result.summary?.whatToBuild,
+          result.summary?.whatToWatchFor, result.summary?.whatToGive,
+          result.summary?.integration,
+        ].filter(Boolean).join(" ");
+        const missing: string[] = [];
+        if (!sunRe.test(familyTxt)) missing.push("family");
+        if (!sunRe.test(purposeTxt)) missing.push("purpose");
+        if (!sunRe.test(summaryTxt)) missing.push("summary");
+        if (missing.length) {
+          console.warn(`[soul-agreements] Sun identity (${sunSign}) missing from:`, missing);
+          if (missing.includes("purpose") && result.purpose?.interpretation) {
+            result.purpose.interpretation = String(result.purpose.interpretation).trim() +
+              ` Underneath all of this, your Sun in ${sunSign} is still the core of who you are; purpose expresses THROUGH that identity, it does not replace it.`;
+          }
+          if (missing.includes("family") && result.family?.interpretation) {
+            result.family.interpretation = String(result.family.interpretation).trim() +
+              ` Your Sun in ${sunSign} is the identity that learned to operate inside this early emotional pattern.`;
+          }
+          if (missing.includes("summary") && result.summary) {
+            result.summary.integration = String(result.summary.integration || "").trim() +
+              ` Stay anchored in your Sun in ${sunSign}; let growth happen through it, not in place of it.`;
+          }
+        }
+      }
       const watchWords = ["innovative", "power", "truth", "safe", "service", "transformation", "authentic", "deep", "intense"];
       const tally: Record<string, number> = {};
       for (const key of sectionKeys) {
