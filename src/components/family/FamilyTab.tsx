@@ -339,6 +339,7 @@ const AiPairReadingView = ({
   fromRole,
   toRole,
   childMoonProfile,
+  moonBridge,
 }: {
   reading: PairReadingResponse;
   fromName: string;
@@ -346,6 +347,7 @@ const AiPairReadingView = ({
   fromRole: FamilyRole;
   toRole: FamilyRole;
   childMoonProfile?: ChildMoonProfile | null;
+  moonBridge?: MoonBridge | null;
 }) => {
   return (
     <div className="space-y-4">
