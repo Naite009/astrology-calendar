@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -145,16 +145,148 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const [aiReading, setAiReading] = useState<PairReadingResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Reset AI reading when pair changes
-  useEffect(() => {
-    setAiReading(null);
-  }, [fromChartId, toChartId, fromRole, toRole]);
+  // ─── Saved readings history ───────────────────────────────────────────────
+  type SavedReading = {
+    id: string;
+    reading_type: "pair" | "system";
+    cache_key: string;
+    label: string;
+    payload: any;
+    created_at: string;
+  };
+  const [savedReadings, setSavedReadings] = useState<SavedReading[]>([]);
 
-  const generateAiReading = async () => {
+  const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
+    `${fId}:${fR}>${tId}:${tR}`;
+  const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
+    sel
+      .map((s) => `${s.chart.id}:${s.role}`)
+      .sort()
+      .join("|");
+
+  // Load saved readings
+  useEffect(() => {
+    if (!user) {
+      setSavedReadings([]);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("family_readings")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("[FamilyTab] load saved readings failed", error);
+        return;
+      }
+      setSavedReadings((data ?? []) as SavedReading[]);
+    })();
+  }, [user]);
+
+  const saveReading = async (
+    reading_type: "pair" | "system",
+    cache_key: string,
+    label: string,
+    payload: any,
+  ) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("family_readings")
+      .upsert(
+        { user_id: user.id, reading_type, cache_key, label, payload },
+        { onConflict: "user_id,reading_type,cache_key" },
+      )
+      .select()
+      .single();
+    if (error) {
+      console.error("[FamilyTab] save reading failed", error);
+      return;
+    }
+    setSavedReadings((prev) => {
+      const filtered = prev.filter(
+        (r) => !(r.reading_type === reading_type && r.cache_key === cache_key),
+      );
+      return [data as SavedReading, ...filtered];
+    });
+  };
+
+  const deleteSavedReading = async (id: string) => {
+    const { error } = await supabase.from("family_readings").delete().eq("id", id);
+    if (error) {
+      toast.error("Could not delete");
+      return;
+    }
+    setSavedReadings((prev) => prev.filter((r) => r.id !== id));
+    toast.success("Removed from history");
+  };
+
+  const loadSavedReading = (r: SavedReading) => {
+    if (r.reading_type === "pair") {
+      // cache_key: `${fId}:${fR}>${tId}:${tR}`
+      const m = r.cache_key.match(/^([^:]+):([^>]+)>([^:]+):(.+)$/);
+      if (!m) {
+        toast.error("Could not load this reading");
+        return;
+      }
+      const [, fId, fR, tId, tR] = m;
+      setFromChartId(fId);
+      setFromRole(fR as FamilyRole);
+      setToChartId(tId);
+      setToRole(tR as FamilyRole);
+      // auto-restore effect will populate aiReading
+      toast.success("Loaded from history");
+      return;
+    }
+    // system: pieces joined by `|`, each `chartId:role`
+    const pieces = r.cache_key.split("|");
+    const ids = new Set<string>();
+    for (const piece of pieces) {
+      const idx = piece.lastIndexOf(":");
+      if (idx < 0) continue;
+      const chartId = piece.slice(0, idx);
+      const role = piece.slice(idx + 1);
+      const member = members.find(
+        (mm) => mm.member_chart_id === chartId && mm.role === role,
+      );
+      if (member) ids.add(member.id);
+    }
+    if (ids.size < 2) {
+      toast.error("Some family members are missing from your list");
+      return;
+    }
+    setSelectedIds(ids);
+    toast.success("Loaded from history");
+  };
+
+  // Auto-restore pair reading if a saved one matches the current selection
+  useEffect(() => {
+    if (!fromChartId || !toChartId || fromChartId === toChartId) {
+      setAiReading(null);
+      return;
+    }
+    const key = pairCacheKey(fromChartId, fromRole, toChartId, toRole);
+    const found = savedReadings.find(
+      (r) => r.reading_type === "pair" && r.cache_key === key,
+    );
+    setAiReading(found ? (found.payload as PairReadingResponse) : null);
+  }, [fromChartId, toChartId, fromRole, toRole, savedReadings]);
+
+  const generateAiReading = async (force = false) => {
     if (!fromChart || !toChart || !report) return;
     if (report.rows.length === 0) {
       toast.error("No significant cross-aspects found between these two charts.");
       return;
+    }
+    const key = pairCacheKey(fromChartId, fromRole, toChartId, toRole);
+    if (!force) {
+      const cached = savedReadings.find(
+        (r) => r.reading_type === "pair" && r.cache_key === key,
+      );
+      if (cached) {
+        setAiReading(cached.payload as PairReadingResponse);
+        toast.success("Loaded from history");
+        return;
+      }
     }
     setAiLoading(true);
     setAiReading(null);
@@ -164,6 +296,8 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setAiReading(data as PairReadingResponse);
+      const label = `${report.fromName} (${fromRole}) → ${report.toName} (${toRole})`;
+      await saveReading("pair", key, label, data);
     } catch (e: any) {
       console.error("[FamilyTab] AI reading failed", e);
       toast.error(e?.message || "Could not generate reading. Please try again.");
@@ -184,12 +318,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       else next.add(id);
       return next;
     });
-    setSystemReading(null);
   };
 
   const selectAll = () => {
     setSelectedIds(new Set(members.map((m) => m.id)));
-    setSystemReading(null);
   };
   const clearSelected = () => {
     setSelectedIds(new Set());
@@ -206,10 +338,34 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
   }, [members, selectedIds, allCharts]);
 
-  const generateSystemReading = async () => {
+  // Auto-restore system reading if a saved one matches current selection
+  useEffect(() => {
+    if (selectedMembers.length < 2) {
+      setSystemReading(null);
+      return;
+    }
+    const key = systemCacheKey(selectedMembers);
+    const found = savedReadings.find(
+      (r) => r.reading_type === "system" && r.cache_key === key,
+    );
+    setSystemReading(found ? (found.payload as FamilySystemReadingResponse) : null);
+  }, [selectedMembers, savedReadings]);
+
+  const generateSystemReading = async (force = false) => {
     if (selectedMembers.length < 2) {
       toast.error("Select at least 2 family members first.");
       return;
+    }
+    const key = systemCacheKey(selectedMembers);
+    if (!force) {
+      const cached = savedReadings.find(
+        (r) => r.reading_type === "system" && r.cache_key === key,
+      );
+      if (cached) {
+        setSystemReading(cached.payload as FamilySystemReadingResponse);
+        toast.success("Loaded from history");
+        return;
+      }
     }
     const data = buildFamilySystem(selectedMembers);
     if (!data) {
@@ -227,6 +383,8 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       if (error) throw error;
       if ((resp as any)?.error) throw new Error((resp as any).error);
       setSystemReading(resp as FamilySystemReadingResponse);
+      const label = selectedMembers.map((s) => s.chart.name).join(", ");
+      await saveReading("system", key, label, resp);
     } catch (e: any) {
       console.error("[FamilyTab] system reading failed", e);
       toast.error(e?.message || "Could not generate family reading. Please try again.");
@@ -316,16 +474,28 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
                     <span className="ml-2 text-amber-600">(pick at least 2)</span>
                   )}
                 </div>
-                <Button
-                  onClick={generateSystemReading}
-                  disabled={systemLoading || selectedIds.size < 2}
-                >
-                  {systemLoading ? (
-                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
-                  ) : (
-                    <><Home className="h-4 w-4 mr-1" /> Generate Family Reading</>
+                <div className="flex gap-2">
+                  {systemReading && (
+                    <Button
+                      variant="outline"
+                      onClick={() => generateSystemReading(true)}
+                      disabled={systemLoading || selectedIds.size < 2}
+                      title="Generate a fresh reading"
+                    >
+                      <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    onClick={() => generateSystemReading(false)}
+                    disabled={systemLoading || selectedIds.size < 2}
+                  >
+                    {systemLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                    ) : (
+                      <><Home className="h-4 w-4 mr-1" /> {systemReading ? "View Reading" : "Generate Family Reading"}</>
+                    )}
+                  </Button>
+                </div>
               </div>
             </>
           )}
@@ -357,6 +527,53 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {savedReadings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Reading History
+            </CardTitle>
+            <CardDescription>
+              Past readings are saved automatically so you don't have to regenerate the same one. Tap any reading to view it again.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-border">
+              {savedReadings.map((r) => (
+                <li key={r.id} className="flex items-center gap-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => loadSavedReading(r)}
+                    className="flex-1 min-w-0 text-left hover:bg-muted/40 -mx-2 px-2 py-1 rounded"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={r.reading_type === "system" ? "default" : "secondary"} className="capitalize">
+                        {r.reading_type === "system" ? "Family" : "Pair"}
+                      </Badge>
+                      <span className="font-medium truncate">{r.label}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(r.created_at).toLocaleDateString(undefined, {
+                        year: "numeric", month: "short", day: "numeric",
+                      })}
+                    </div>
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteSavedReading(r.id)}
+                    aria-label="Delete saved reading"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {systemReading && (
         <FamilySystemReadingView reading={systemReading} />
@@ -416,18 +633,30 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           </div>
 
           {report && (
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-border flex-wrap">
               <div className="text-xs text-muted-foreground">
                 {report.rows.length} cross-aspect{report.rows.length === 1 ? "" : "s"} found between{" "}
                 {report.fromName} and {report.toName}.
               </div>
-              <Button onClick={generateAiReading} disabled={aiLoading || report.rows.length === 0}>
-                {aiLoading ? (
-                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
-                ) : (
-                  <><Sparkles className="h-4 w-4 mr-1" /> Generate Reading</>
+              <div className="flex gap-2">
+                {aiReading && (
+                  <Button
+                    variant="outline"
+                    onClick={() => generateAiReading(true)}
+                    disabled={aiLoading || report.rows.length === 0}
+                    title="Generate a fresh reading"
+                  >
+                    <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                  </Button>
                 )}
-              </Button>
+                <Button onClick={() => generateAiReading(false)} disabled={aiLoading || report.rows.length === 0}>
+                  {aiLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                  ) : (
+                    <><Sparkles className="h-4 w-4 mr-1" /> {aiReading ? "View Reading" : "Generate Reading"}</>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

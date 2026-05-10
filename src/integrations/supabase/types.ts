@@ -284,6 +284,39 @@ export type Database = {
         }
         Relationships: []
       }
+      family_readings: {
+        Row: {
+          cache_key: string
+          created_at: string
+          id: string
+          label: string
+          payload: Json
+          reading_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          id?: string
+          label: string
+          payload: Json
+          reading_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          id?: string
+          label?: string
+          payload?: Json
+          reading_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       family_relationships: {
         Row: {
           created_at: string
