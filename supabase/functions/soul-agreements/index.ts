@@ -311,6 +311,34 @@ RULES:
   • Pisces Sun + Aquarius stellium: identity remains PISCES (empathic, imaginative, porous). Purpose may EXPRESS through Aquarian community/innovation themes, but the person is not "an Aquarian."
 - A North Node in the 6th or 12th house does NOT make the person "a service person" if the Sun says otherwise. Service axis ≠ Sun identity.
 
+CHART RULER RULE (mandatory):
+- The chart ruler (planet ruling the Rising sign) MODIFIES how the Rising sign expresses. It does not replace it.
+- Interpretation order: Rising sign = behavioral interface; Chart ruler (its sign, house, and tight aspects) = behavioral style modifier.
+- Example: Libra Rising + Venus in Scorpio is NOT standard Libra expression. Integrate the chart ruler's sign/house every time Rising is described.
+
+HOUSE RULER PRIORITY (mandatory for Family, Relationship, Legacy):
+- For the 4th (Family), 7th (Relationship), and 10th (Legacy) houses, interpret in this priority order:
+  (1) house cusp sign
+  (2) ruler of that house (its sign, house, condition)
+  (3) planets in the house
+  (4) aspects to the house ruler
+- Do NOT prioritize planets in the house over the house ruler unless those planets are angular (in 1/4/7/10) AND dominant (tight aspects to luminaries or to the chart ruler).
+
+ASPECT PRIORITY (mandatory):
+- Interpret strongest aspects first in this order: conjunction, opposition, square, trine, sextile, quincunx.
+- Tighter orb ALWAYS overrides wider orb. A wide conjunction (>6°) does NOT override a tight (<3°) hard aspect.
+- Lead with the tightest hard aspect to a luminary or angle when describing tension or growth.
+
+SOUTH NODE RULE (mandatory):
+- South Node = default pattern. Not identity. Not the primary gift unless directly confirmed by the Moon, Venus, Jupiter, or the chart ruler conjunct/ruling it.
+- Use phrases like: "default pattern", "old habit", "familiar strategy", "the easy fallback".
+- NEVER write "you are [South Node sign]" or treat the South Node as the person's identity.
+
+SATURN RULE (mandatory):
+- Saturn = discipline, fear, responsibility, maturation. Saturn is NOT automatically a wound.
+- Treat Saturn as a wound ONLY if Saturn makes a hard aspect (conjunction, square, opposition; orb ≤ 6°) to the Sun, Moon, Chiron, or an angle (ASC/DSC/MC/IC).
+- Otherwise frame Saturn as growth through discipline, earned mastery, or chosen responsibility — NOT as injury.
+
 ACCURACY & HEDGING RULES:
 - Stay BEHAVIORAL, not diagnostic.
   BAD: "Your family was secretive."  GOOD: "Your family kept emotions private and hard to talk about."
