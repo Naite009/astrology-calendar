@@ -172,7 +172,7 @@ ${body.toPlanetsSummary}
 CROSS-ASPECTS (already verified, tightest first):
 ${aspectLines}
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
