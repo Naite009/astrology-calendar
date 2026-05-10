@@ -19,6 +19,8 @@ import {
   ChildMoonProfile,
   buildMoonBridge,
   MoonBridge,
+  buildContractOverlap,
+  ContractOverlapFlag,
 } from "@/lib/parentChildSynastry";
 
 interface FamilyMember {
