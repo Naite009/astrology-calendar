@@ -280,12 +280,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       else next.add(id);
       return next;
     });
-    setSystemReading(null);
   };
 
   const selectAll = () => {
     setSelectedIds(new Set(members.map((m) => m.id)));
-    setSystemReading(null);
   };
   const clearSelected = () => {
     setSelectedIds(new Set());
@@ -302,10 +300,34 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
   }, [members, selectedIds, allCharts]);
 
-  const generateSystemReading = async () => {
+  // Auto-restore system reading if a saved one matches current selection
+  useEffect(() => {
+    if (selectedMembers.length < 2) {
+      setSystemReading(null);
+      return;
+    }
+    const key = systemCacheKey(selectedMembers);
+    const found = savedReadings.find(
+      (r) => r.reading_type === "system" && r.cache_key === key,
+    );
+    setSystemReading(found ? (found.payload as FamilySystemReadingResponse) : null);
+  }, [selectedMembers, savedReadings]);
+
+  const generateSystemReading = async (force = false) => {
     if (selectedMembers.length < 2) {
       toast.error("Select at least 2 family members first.");
       return;
+    }
+    const key = systemCacheKey(selectedMembers);
+    if (!force) {
+      const cached = savedReadings.find(
+        (r) => r.reading_type === "system" && r.cache_key === key,
+      );
+      if (cached) {
+        setSystemReading(cached.payload as FamilySystemReadingResponse);
+        toast.success("Loaded from history");
+        return;
+      }
     }
     const data = buildFamilySystem(selectedMembers);
     if (!data) {
@@ -323,6 +345,8 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       if (error) throw error;
       if ((resp as any)?.error) throw new Error((resp as any).error);
       setSystemReading(resp as FamilySystemReadingResponse);
+      const label = selectedMembers.map((s) => s.chart.name).join(", ");
+      await saveReading("system", key, label, resp);
     } catch (e: any) {
       console.error("[FamilyTab] system reading failed", e);
       toast.error(e?.message || "Could not generate family reading. Please try again.");
