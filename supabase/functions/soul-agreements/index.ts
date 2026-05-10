@@ -46,6 +46,22 @@ const LEADING_TEMPLATE_HEADING = /^\s*(?:\*\*\s*(?:Astrology|Plain English|Real-
 
 const headingStart = (match: RegExpMatchArray) => (match.index ?? 0) + (match[1] ? match[1].length : 0);
 
+const PLACEHOLDER_PATTERNS: RegExp[] = [
+  /this section uses the strongest listed chart markers[^.\n]*\.?/gi,
+  /this pattern may show up in real choices[^.\n]*\.?/gi,
+  /based on the (?:chart|placements?) (?:data )?(?:above|provided)[^.\n]*\.?/gi,
+  /drawing from the placements (?:provided|listed)[^.\n]*\.?/gi,
+  /\[insert [^\]]*\]/gi,
+  /\bTBD\b/gi,
+  /\(astrology section to follow\)/gi,
+];
+
+const stripPlaceholders = (value: string) => {
+  let out = value;
+  for (const re of PLACEHOLDER_PATTERNS) out = out.replace(re, "");
+  return out.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+};
+
 const dedupeRecognitionCheck = (value: string) => {
   const matches = [...value.matchAll(RECOGNITION_HEADING)];
   if (matches.length <= 1) return value;
@@ -71,7 +87,7 @@ const stripRecognitionFromInterpretation = (value: string) => {
 
 const cleanPlainLanguage = (value: string) =>
   dedupeRecognitionCheck(
-    value
+    stripPlaceholders(value)
       .replace(/—/g, ",")
       .replace(/your own powerful and the real you/gi, "your own voice")
       .replace(/your the real you/gi, "yourself")
@@ -468,6 +484,12 @@ PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any che
    • Stress = crisis response (who you become under pressure)
    • Reset = recovery method (what restores you)
    If a single stellium or theme dominates more than two of these sections, REWRITE so each section reflects its own function.
+
+(6) SECTION COMPLETION ENFORCEMENT: Every agreement section MUST fully resolve before output. FORBIDDEN output includes placeholder language, template scaffolding, meta-commentary, or unfinished markers. Examples that are FORBIDDEN: "This section uses the strongest listed chart markers", "This pattern may show up", "Based on the chart data above", "Drawing from the placements provided", "[insert placement]", "TBD", "...", any sentence that describes what the section is going to do instead of doing it. Every Astrology, Plain English, Real-Life Examples, and Recognition Check field must contain finished, specific interpretation grounded in the actual placements. If a section cannot fully resolve, REGENERATE that section before returning JSON.
+
+(7) RECOGNITION CHECK LOCK: Each agreement section may contain EXACTLY ONE Recognition Check block. Never duplicate the heading or the bullets within a single section. Run a final dedup pass before returning JSON: if any section contains two or more "Recognition Check" headings or repeats the same bullet text, collapse to one block with 5 unique bullets.
+
+(8) ASPECT PRIORITY RULE — when selecting wound and stress signatures, hard aspects come FIRST and sign placement is context only. Selection priority order: (a) opposition, (b) square, (c) conjunction within valid orb, (d) quincunx, (e) any hard aspect involving Saturn, (f) any hard aspect involving Pluto, (g) any hard aspect involving Chiron. Within each tier, tighter orb wins. Do NOT lead a wound interpretation from a sign placement (e.g. "Chiron in Aries") when a tighter hard aspect to a luminary or angle exists — lead with the aspect, then ground it in the sign and house. Sign placement is context, not anchor, when stronger aspect data is present.
 
 JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: rebirth, evolution, karmic, soul contract, sovereignty, destiny. The word "transformation" is BANNED outright; write "change how you act, respond, or choose" instead.
 
@@ -878,7 +900,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
             )}`
           : "";
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
-          ? `**Astrology**\n${cleanField(source?.astrology, "This section uses the strongest listed chart markers for this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern may show up in real choices, relationships, and emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
+          ? `**Astrology**\n${cleanField(source?.astrology, fallbackSection.interpretation.match(/\*\*Astrology\*\*\s*([\s\S]*?)\n\n\*\*Plain English\*\*/)?.[1] || "The strongest hard aspects, angular placements, and house rulers in this chart anchor this agreement.")}\n\n**Plain English**\n${cleanField(source?.plainEnglish, fallbackSection.interpretation.match(/\*\*Plain English\*\*\s*([\s\S]*?)\n\n\*\*Real-Life Examples\*\*/)?.[1] || "This pattern shapes real choices, close relationships, and everyday emotional habits.")}${survivalBlock}\n\n**Real-Life Examples**\n${asArray(source?.examples, fallbackExamples).map((item) => `- ${stripTemplateLeakage(item)}`).join("\n")}`
           : (key === "family"
             ? String(fallbackSection.interpretation).replace(/\*\*Real-Life Examples\*\*/, `${survivalBlock}\n\n**Real-Life Examples**`)
             : String(source?.interpretation || fallbackSection.interpretation));
