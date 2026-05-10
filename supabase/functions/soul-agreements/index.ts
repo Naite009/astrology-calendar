@@ -259,6 +259,24 @@ serve(async (req) => {
 
     const systemPrompt = `You are writing a Soul Contract reading from a natal chart. This is a SYMBOLIC, SPIRITUAL layer, NOT predictive astrology.
 
+PRE-GENERATION HARD RULES (apply BEFORE any interpretation):
+
+(1) FORBIDDEN PLACEMENTS — never use, cite, or interpret:
+Varuna, Eris, Pallas, Ceres, Vesta, any minor asteroids, any minor trans-Neptunians.
+If present in chart data: DISCARD them and regenerate the section without them.
+
+(2) ASPECT VALIDATION — only interpret aspects with valid degree-based orb.
+Same sign does NOT automatically equal conjunction.
+If orb is invalid: DISCARD the aspect entirely. Do not infer it from sign.
+
+(3) SOUTH NODE — describes familiar pattern only.
+Do NOT use as primary wound, primary gift, or primary motive UNLESS tightly conjunct (within valid orb) a luminary (Sun, Moon) or an angle (Ascendant, MC).
+If not tightly conjunct: demote to background mention only.
+
+(4) SATURN — do NOT default to inadequacy or wound.
+Before treating Saturn as a wound, CHECK: is Saturn hard-aspected (conjunction, square, opposition, within valid orb) to the Sun, Moon, Chiron, Ascendant, or MC?
+If NO: interpret Saturn as discipline, structure, earned mastery, or chosen responsibility.
+
 ABSOLUTE RULES:
 - Write in DIRECT second person ("you"). State things plainly. NO hedging like "may suggest" or "could indicate". You can still use "may", "might", "often", "sometimes" for accuracy, but do not stack them.
 - Be emotionally intelligent and grounded. Never fortune-telling. Never deterministic. Never predict death or specific events.
