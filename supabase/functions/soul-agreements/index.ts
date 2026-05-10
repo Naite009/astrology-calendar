@@ -48,6 +48,7 @@ const headingStart = (match: RegExpMatchArray) => (match.index ?? 0) + (match[1]
 
 const PLACEHOLDER_PATTERNS: RegExp[] = [
   /this section uses the strongest listed chart markers[^.\n]*\.?/gi,
+  /this pattern may show up in real choices[^.\n]*\.?/gi,
   /based on the (?:chart|placements?) (?:data )?(?:above|provided)[^.\n]*\.?/gi,
   /drawing from the placements (?:provided|listed)[^.\n]*\.?/gi,
   /\[insert [^\]]*\]/gi,
