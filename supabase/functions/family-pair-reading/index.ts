@@ -279,13 +279,14 @@ JSON SCHEMA:
   }
 }
 
-SOUL CONTRACT RULES:
-- whyTheseTwo: Look at the child's North Node and Chiron cross-aspects to the parent's chart. State plainly what karmic agreement brought these two souls together. Do not use mystical language, write it like you are telling someone something true.
-- childLesson: Based on the child's North Node direction and the tightest challenging cross-aspects, name what this child is here to learn specifically through this parent.
-- parentLesson: Look at what the child's chart activates in the parent, especially if the child's Sun or Moon aspects the parent's Saturn, Chiron, or South Node. Name what this parent is here to learn through this child.
-- contractSentence: One sentence. Plain English. Must name both people learning something, not just the child learning from the parent. Example format: "They came to teach each other that [truth]."
-- NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal.
-- Speak in terms of what the soul CHOSE, not what happened TO them. Active voice always.
+SOUL CONTRACT RULES (psychological framing, NOT mystical):
+- Lead with PSYCHOLOGY, not destiny. Prefer "what each person helps bring out in the other" over "why these souls chose each other."
+- whyTheseTwo: Look at the child's North Node and Chiron cross-aspects to the parent's chart. State plainly what each person helps the other notice, learn, or grow through. Avoid "fated", "destined", "karmic agreement", "souls chose", "cosmic", "past life". Write it the way a thoughtful therapist would.
+- childLesson: Based on the child's North Node direction and the strongest challenging cross-aspects, name a real-world growth edge this child gets to practice through this parent.
+- parentLesson: Look at what the child's chart activates in the parent (especially child's Sun/Moon to parent's Saturn, Chiron, or South Node). Name a real-world growth edge this parent gets to practice through this child.
+- contractSentence: One plain-English sentence naming what each one helps bring out in the other. Format: "[Parent] helps [child] [verb], and [child] helps [parent] [verb]."
+- NEVER use the words: wound, heal, archetypal, energies, vibration, shadow, integrate, liminal, fated, destined, karmic, cosmic, past life, soul agreement.
+- Active voice always. Specific over poetic.
 
 MOON BRIDGE: Write 2 sentences (summary) explaining how these two Moon signs interact as emotional languages. Then write one sentence (translation) in the format: "When ${body.toName} does [specific behavior], they are actually saying [what they need]." Make the translation specific to the child's Moon sign, not generic.
 
