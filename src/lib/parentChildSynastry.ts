@@ -174,6 +174,201 @@ export function computeFamilySynastry(
   };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Child Moon Profile (deterministic, no AI)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ChildMoonProfile {
+  sign: string;
+  house: number | null;
+  headline: string;
+  safetyNeeds: string[];
+  stressSignals: string[];
+  parentTip: string;
+}
+
+const MOON_PROFILES: Record<string, Omit<ChildMoonProfile, "sign" | "house">> = {
+  Aries: {
+    headline: "Aries Moon: needs to act, not be managed",
+    safetyNeeds: [
+      "space to move and decide quickly",
+      "direct honest responses with no sugarcoating",
+      "to feel like their anger is allowed",
+    ],
+    stressSignals: [
+      "sudden outbursts that end fast",
+      "physical restlessness when upset",
+      "shutting down if they feel controlled",
+    ],
+    parentTip: "This Moon hears 'calm down' as an attack. Match their directness instead.",
+  },
+  Taurus: {
+    headline: "Taurus Moon: needs consistency above everything",
+    safetyNeeds: [
+      "predictable routines they can count on",
+      "physical comfort, food, softness, warmth",
+      "no sudden changes without warning",
+    ],
+    stressSignals: [
+      "digging in and refusing to move",
+      "comfort eating or hoarding objects",
+      "extreme stubbornness when feeling unsafe",
+    ],
+    parentTip: "Disrupting their routine without notice lands harder than you think. Warn early, warn often.",
+  },
+  Gemini: {
+    headline: "Gemini Moon: needs to talk it through",
+    safetyNeeds: [
+      "to verbalize feelings out loud, even if scattered",
+      "variety, same routine every day is draining",
+      "a parent who asks questions and actually listens",
+    ],
+    stressSignals: [
+      "talking too fast, jumping topics when anxious",
+      "nervous humor or deflection",
+      "going quiet suddenly after being very verbal",
+    ],
+    parentTip: "They process by speaking. Let them talk the feeling out before offering a solution.",
+  },
+  Cancer: {
+    headline: "Cancer Moon: needs to feel like home is safe",
+    safetyNeeds: [
+      "a parent who remembers small emotional details",
+      "to cry without being told to stop",
+      "physical closeness especially after conflict",
+    ],
+    stressSignals: [
+      "clinginess or sudden withdrawal",
+      "retreating to their room and going silent",
+      "stomach complaints or physical symptoms when emotionally overwhelmed",
+    ],
+    parentTip: "They track the emotional temperature of the home constantly. Your unspoken stress becomes their anxiety.",
+  },
+  Leo: {
+    headline: "Leo Moon: needs to be witnessed and celebrated",
+    safetyNeeds: [
+      "direct expressions of pride and specific praise",
+      "to feel special, not just loved, but seen as uniquely wonderful",
+      "an audience for their feelings and creations",
+    ],
+    stressSignals: [
+      "performing distress rather than stating it",
+      "dramatic escalation when ignored",
+      "sudden deflation after not getting a reaction",
+    ],
+    parentTip: "Generic praise lands flat. Name what you actually noticed. 'I saw how hard you worked on that' hits differently than 'good job.'",
+  },
+  Virgo: {
+    headline: "Virgo Moon: needs order and to feel useful",
+    safetyNeeds: [
+      "to understand why rules exist",
+      "to contribute, being given real responsibilities",
+      "a calm, organized environment without chaos",
+    ],
+    stressSignals: [
+      "picking at themselves or others when anxious",
+      "over-explaining or apologizing excessively",
+      "stomach tension or physical complaints under stress",
+    ],
+    parentTip: "Criticism lands 10x harder than you intend. This Moon is already harder on themselves than you will ever be.",
+  },
+  Libra: {
+    headline: "Libra Moon: needs harmony and to feel fair treatment",
+    safetyNeeds: [
+      "to feel like decisions affecting them are explained fairly",
+      "no yelling or prolonged tension in the home",
+      "to have their perspective heard even when the answer is no",
+    ],
+    stressSignals: [
+      "people-pleasing and suppressing their own feelings to keep peace",
+      "difficulty making decisions under pressure",
+      "indirect communication about what's actually bothering them",
+    ],
+    parentTip: "They will absorb household conflict as their own fault. Name out loud that disagreements between adults are not their responsibility.",
+  },
+  Scorpio: {
+    headline: "Scorpio Moon: needs depth and total honesty",
+    safetyNeeds: [
+      "to never be lied to, even kindly",
+      "emotional intensity to be matched, not minimized",
+      "privacy that is genuinely respected",
+    ],
+    stressSignals: [
+      "testing you with small provocations to see if you'll stay",
+      "going completely silent and unreachable",
+      "obsessive thinking about a perceived betrayal",
+    ],
+    parentTip: "Half-truths feel like betrayal to this Moon. If they sense you're managing them, trust breaks fast and rebuilds slowly.",
+  },
+  Sagittarius: {
+    headline: "Sagittarius Moon: needs freedom and big-picture meaning",
+    safetyNeeds: [
+      "space to explore, question, and disagree",
+      "honest answers to big questions without being dismissed",
+      "adventures, even small ones, that expand their world",
+    ],
+    stressSignals: [
+      "restlessness and pushing every boundary when constrained",
+      "philosophical arguments as a form of emotional distance",
+      "bluntness that sounds rude but is actually distress",
+    ],
+    parentTip: "Telling them what to believe backfires. Give them the reasoning and let them arrive at their own conclusion.",
+  },
+  Capricorn: {
+    headline: "Capricorn Moon: needs competence and to be taken seriously",
+    safetyNeeds: [
+      "to be given real responsibility, not baby tasks",
+      "practical demonstrations of love more than verbal ones",
+      "to not be babied, they find it embarrassing",
+    ],
+    stressSignals: [
+      "shutting emotions down completely and going cold",
+      "workaholism or over-achievement as emotional management",
+      "difficulty asking for help even when genuinely struggling",
+    ],
+    parentTip: "They experience emotional coddling as disrespect. Treat them as capable and they will be.",
+  },
+  Aquarius: {
+    headline: "Aquarius Moon: needs independence and to not be emotionally crowded",
+    safetyNeeds: [
+      "space to be different without it being a problem",
+      "to be reasoned with, not emotionally pressured",
+      "friendships and a social world outside the family",
+    ],
+    stressSignals: [
+      "detaching completely and going intellectual when overwhelmed",
+      "sudden contrarian behavior as a bid for autonomy",
+      "flatness or numbness rather than visible distress",
+    ],
+    parentTip: "Pushing for emotional closeness pushes them away. Create low-pressure side-by-side time instead of face-to-face intensity.",
+  },
+  Pisces: {
+    headline: "Pisces Moon: needs gentleness and to feel spiritually held",
+    safetyNeeds: [
+      "a soft emotional environment, raised voices are physically distressing",
+      "creative outlets, music, art, imagination",
+      "to feel like their sensitivity is a gift, not a problem",
+    ],
+    stressSignals: [
+      "dissolving into the emotions of others around them",
+      "retreating into fantasy or screens when overwhelmed",
+      "difficulty naming what is wrong because it is everything at once",
+    ],
+    parentTip: "This Moon absorbs the emotional atmosphere like a sponge. Their distress is often not even theirs, it is everyone else's they have collected.",
+  },
+};
+
+export function buildChildMoonProfile(childChart: NatalChart): ChildMoonProfile | null {
+  const moon = (childChart.planets as Record<string, NatalPlanetPosition | undefined>)?.Moon;
+  if (!moon?.sign) return null;
+  const profile = MOON_PROFILES[moon.sign];
+  if (!profile) return null;
+  const calcHouse = buildHouseCalc(childChart);
+  const moonAbs = toAbsoluteDegree(moon);
+  const house = moonAbs != null && calcHouse ? calcHouse(moonAbs) : null;
+  return { sign: moon.sign, house, ...profile };
+}
+
 export const FAMILY_ROLE_OPTIONS: { value: FamilyRole; label: string }[] = [
   { value: "parent", label: "Parent" },
   { value: "child", label: "Child" },
