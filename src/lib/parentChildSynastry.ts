@@ -418,6 +418,13 @@ export interface PressureProfile {
 
 export type RepairProfile = PressureProfile;
 
+export interface PerceptionTranslation {
+  title: string;
+  misread: string;
+  underneath: string;
+  whatHelps: string[];
+}
+
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
@@ -426,6 +433,7 @@ export interface PairReadingResponse {
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
+  perceptionTranslation?: PerceptionTranslation | null;
   repairProfile?: RepairProfile | null;
   ageYears: number | null;
   aspectsUsed: number;
