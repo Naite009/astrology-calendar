@@ -145,16 +145,110 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const [aiReading, setAiReading] = useState<PairReadingResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Reset AI reading when pair changes
-  useEffect(() => {
-    setAiReading(null);
-  }, [fromChartId, toChartId, fromRole, toRole]);
+  // ─── Saved readings history ───────────────────────────────────────────────
+  type SavedReading = {
+    id: string;
+    reading_type: "pair" | "system";
+    cache_key: string;
+    label: string;
+    payload: any;
+    created_at: string;
+  };
+  const [savedReadings, setSavedReadings] = useState<SavedReading[]>([]);
 
-  const generateAiReading = async () => {
+  const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
+    `${fId}:${fR}>${tId}:${tR}`;
+  const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
+    sel
+      .map((s) => `${s.chart.id}:${s.role}`)
+      .sort()
+      .join("|");
+
+  // Load saved readings
+  useEffect(() => {
+    if (!user) {
+      setSavedReadings([]);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("family_readings")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("[FamilyTab] load saved readings failed", error);
+        return;
+      }
+      setSavedReadings((data ?? []) as SavedReading[]);
+    })();
+  }, [user]);
+
+  const saveReading = async (
+    reading_type: "pair" | "system",
+    cache_key: string,
+    label: string,
+    payload: any,
+  ) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("family_readings")
+      .upsert(
+        { user_id: user.id, reading_type, cache_key, label, payload },
+        { onConflict: "user_id,reading_type,cache_key" },
+      )
+      .select()
+      .single();
+    if (error) {
+      console.error("[FamilyTab] save reading failed", error);
+      return;
+    }
+    setSavedReadings((prev) => {
+      const filtered = prev.filter(
+        (r) => !(r.reading_type === reading_type && r.cache_key === cache_key),
+      );
+      return [data as SavedReading, ...filtered];
+    });
+  };
+
+  const deleteSavedReading = async (id: string) => {
+    const { error } = await supabase.from("family_readings").delete().eq("id", id);
+    if (error) {
+      toast.error("Could not delete");
+      return;
+    }
+    setSavedReadings((prev) => prev.filter((r) => r.id !== id));
+    toast.success("Removed from history");
+  };
+
+  // Auto-restore pair reading if a saved one matches the current selection
+  useEffect(() => {
+    if (!fromChartId || !toChartId || fromChartId === toChartId) {
+      setAiReading(null);
+      return;
+    }
+    const key = pairCacheKey(fromChartId, fromRole, toChartId, toRole);
+    const found = savedReadings.find(
+      (r) => r.reading_type === "pair" && r.cache_key === key,
+    );
+    setAiReading(found ? (found.payload as PairReadingResponse) : null);
+  }, [fromChartId, toChartId, fromRole, toRole, savedReadings]);
+
+  const generateAiReading = async (force = false) => {
     if (!fromChart || !toChart || !report) return;
     if (report.rows.length === 0) {
       toast.error("No significant cross-aspects found between these two charts.");
       return;
+    }
+    const key = pairCacheKey(fromChartId, fromRole, toChartId, toRole);
+    if (!force) {
+      const cached = savedReadings.find(
+        (r) => r.reading_type === "pair" && r.cache_key === key,
+      );
+      if (cached) {
+        setAiReading(cached.payload as PairReadingResponse);
+        toast.success("Loaded from history");
+        return;
+      }
     }
     setAiLoading(true);
     setAiReading(null);
@@ -164,6 +258,8 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setAiReading(data as PairReadingResponse);
+      const label = `${report.fromName} (${fromRole}) → ${report.toName} (${toRole})`;
+      await saveReading("pair", key, label, data);
     } catch (e: any) {
       console.error("[FamilyTab] AI reading failed", e);
       toast.error(e?.message || "Could not generate reading. Please try again.");
