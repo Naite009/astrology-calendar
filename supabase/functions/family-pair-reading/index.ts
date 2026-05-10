@@ -42,11 +42,19 @@ interface ReadingSection {
   whatHelps: string[]; // 2-3 concrete actions, age-calibrated
 }
 
+interface SoulContract {
+  whyTheseTwo: string;
+  childLesson: string;
+  parentLesson: string;
+  contractSentence: string;
+}
+
 interface ReadingPayload {
   essence: string[]; // 3-5 bullet headlines, plain English
   ageNote: string; // short framing of developmental stage
   sections: ReadingSection[];
   practice: string; // one focused 90-day practice for the parent
+  soulContract?: SoulContract;
 }
 
 function ageStage(years: number | null | undefined): string {
