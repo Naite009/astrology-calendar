@@ -376,8 +376,11 @@ MOON BRIDGE INPUTS:
 - Parent: ${body.parentMoonSummary ?? "unknown"}
 - Child: ${body.childMoonSummary ?? "unknown"}
 
-CROSS-ASPECTS (already verified, tightest first):
+CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
+
+OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
+INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
 
 Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
