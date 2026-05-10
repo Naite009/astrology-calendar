@@ -436,16 +436,28 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
                     <span className="ml-2 text-amber-600">(pick at least 2)</span>
                   )}
                 </div>
-                <Button
-                  onClick={generateSystemReading}
-                  disabled={systemLoading || selectedIds.size < 2}
-                >
-                  {systemLoading ? (
-                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
-                  ) : (
-                    <><Home className="h-4 w-4 mr-1" /> Generate Family Reading</>
+                <div className="flex gap-2">
+                  {systemReading && (
+                    <Button
+                      variant="outline"
+                      onClick={() => generateSystemReading(true)}
+                      disabled={systemLoading || selectedIds.size < 2}
+                      title="Generate a fresh reading"
+                    >
+                      <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    onClick={() => generateSystemReading(false)}
+                    disabled={systemLoading || selectedIds.size < 2}
+                  >
+                    {systemLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Reading…</>
+                    ) : (
+                      <><Home className="h-4 w-4 mr-1" /> {systemReading ? "View Reading" : "Generate Family Reading"}</>
+                    )}
+                  </Button>
+                </div>
               </div>
             </>
           )}
