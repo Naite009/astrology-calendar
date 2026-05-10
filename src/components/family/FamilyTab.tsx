@@ -537,6 +537,25 @@ const AiPairReadingView = ({
         </Card>
       ))}
 
+      {contractOverlapFlags && contractOverlapFlags.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center gap-2 pt-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Where Your Contracts Meet
+          </h3>
+          {contractOverlapFlags.map((flag, idx) => (
+            <Card key={idx} className="border-primary/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold">{flag.headline}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{flag.body}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
