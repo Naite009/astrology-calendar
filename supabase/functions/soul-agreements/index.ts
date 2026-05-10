@@ -253,10 +253,10 @@ ACCURACY & HEDGING RULES:
   BAD: "You feel you are not enough."  GOOD: "You hold back from being fully yourself in close relationships."
 - Do not over-psychologize.
 
-JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: transformation, rebirth, evolution, karmic, soul contract, sovereignty, destiny.
+JARGON BAN — these words are FORBIDDEN unless you immediately translate them in the same sentence into plain language: rebirth, evolution, karmic, soul contract, sovereignty, destiny. The word "transformation" is BANNED outright; write "change how you act, respond, or choose" instead.
 
   BAD:  "You are here for deep transformation."
-  GOOD: "You are not meant to stay the same person your whole life. Life will keep pushing you to grow, change, and become more honest about who you are."
+  GOOD: "You are not meant to stay the same person your whole life. Life will keep pushing you to grow and become more honest about who you are."
 
   BAD:  "Release old identity structures."
   GOOD: "Let go of old ways of acting that were built to keep other people comfortable."
