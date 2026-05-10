@@ -863,6 +863,7 @@ const AiPairReadingView = ({
                   </ul>
                 </div>
               )}
+            </CardContent>
           </Card>
         )}
 
