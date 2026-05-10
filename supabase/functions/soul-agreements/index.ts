@@ -255,7 +255,10 @@ const extractRecognition = (text: string) => {
 };
 
 const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
-  const byPlanet = (planet: string) => placements.find((p) => p.planet === planet);
+  const byPlanet = (planet: string) => {
+    const canonical = normalizeBodyName(planet);
+    return placements.find((p) => normalizeBodyName(p.planet) === canonical);
+  };
   const house = (n: number) => houses.find((h) => h.house === n);
   const aspectFor = (planet: string) => aspects.find((a) => a.planet1 === planet || a.planet2 === planet);
   const p = (planet: string) => {
@@ -293,7 +296,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may avoid conflict until pressure builds", "you can be hard on yourself when you feel exposed", "you may need time alone to understand your feelings", "you become stronger when you stop hiding your needs"],
     ),
     purpose: section(
-      `${p("NorthNode")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
+      `${p("North Node")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
       "Your growth is specific: say what you actually want instead of softening it, stop managing other people's reactions, and let yourself be seen instead of staying useful.",
       ["you may catch yourself editing what you want before you say it", "you may stop softening your no", "you may choose honesty over keeping someone comfortable", "you may stop earning your place by being helpful"],
     ),
