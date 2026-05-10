@@ -40,6 +40,45 @@ interface Payload {
 const sectionKeys = ["family", "wound", "purpose", "relationship", "gift", "timing", "legacy", "strength", "reset"] as const;
 type SectionKey = typeof sectionKeys[number];
 
+const ALLOWED_BODY_NAMES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+  "Uranus", "Neptune", "Pluto", "Chiron", "North Node", "South Node",
+  "Ascendant", "Midheaven",
+] as const;
+const ALLOWED_BODY_SET = new Set<string>(ALLOWED_BODY_NAMES.map((name) => name.toLowerCase()));
+const BODY_ALIASES: Record<string, string> = {
+  asc: "Ascendant",
+  ascendant: "Ascendant",
+  mc: "Midheaven",
+  midheaven: "Midheaven",
+  northnode: "North Node",
+  "north node": "North Node",
+  truenode: "North Node",
+  "true node": "North Node",
+  southnode: "South Node",
+  "south node": "South Node",
+};
+const normalizeBodyName = (name?: string) => {
+  const cleaned = String(name || "").replace(/[_.-]+/g, " ").replace(/\s+/g, " ").trim();
+  return BODY_ALIASES[cleaned.toLowerCase().replace(/\s+/g, "")] || BODY_ALIASES[cleaned.toLowerCase()] || cleaned;
+};
+const isAllowedBody = (name?: string) => ALLOWED_BODY_SET.has(normalizeBodyName(name).toLowerCase());
+const filterPayloadAstrology = (payload: Payload): Payload => {
+  const placements = (payload.placements || [])
+    .map((placement) => ({ ...placement, planet: normalizeBodyName(placement.planet) }))
+    .filter((placement) => isAllowedBody(placement.planet));
+  const aspects = (payload.aspects || [])
+    .map((aspect) => ({ ...aspect, planet1: normalizeBodyName(aspect.planet1), planet2: normalizeBodyName(aspect.planet2) }))
+    .filter((aspect) => isAllowedBody(aspect.planet1) && isAllowedBody(aspect.planet2));
+  const houses = (payload.houses || []).map((house) => {
+    const ruler = normalizeBodyName(house.ruler);
+    return house.ruler && !isAllowedBody(ruler)
+      ? { ...house, ruler: undefined, rulerSign: undefined, rulerHouse: undefined }
+      : { ...house, ruler };
+  });
+  return { chartName: payload.chartName, placements, houses, aspects };
+};
+
 const RECOGNITION_HEADING = /(^|\n)\s*(?:\*\*\s*Recognition Check\s*\*\*|#{1,6}\s*Recognition Check|Recognition Check)\s*:?(?=\n|$)/gi;
 const TEMPLATE_HEADING = /(^|\n)\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|END SECTION)\s*:?(?=\n|$)/i;
 const LEADING_TEMPLATE_HEADING = /^\s*(?:\*\*\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)\s*\*\*|#{1,6}\s*(?:Astrology|Plain English|Real-Life Examples|Recognition Check)|(?:Astrology|Plain English|Real-Life Examples|Recognition Check|END SECTION))\s*:?\s*/i;
@@ -72,10 +111,17 @@ const FORBIDDEN_BODY_RE = new RegExp(
   `[^.!?\\n]*\\b(?:${FORBIDDEN_BODY_NAMES.map((n) => n.replace(/\s+/g, "\\s+")).join("|")})\\b[^.!?\\n]*[.!?]?`,
   "gi",
 );
+const containsForbiddenBody = (value: unknown): boolean => {
+  FORBIDDEN_BODY_RE.lastIndex = 0;
+  return FORBIDDEN_BODY_RE.test(String(value ?? ""));
+};
 const stripForbiddenBodies = (value: string): string => {
-  if (!FORBIDDEN_BODY_RE.test(value)) return value;
+  if (!containsForbiddenBody(value)) return value;
+  FORBIDDEN_BODY_RE.lastIndex = 0;
   return value.replace(FORBIDDEN_BODY_RE, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 };
+
+const hasForbiddenBodyInOutput = (value: unknown): boolean => containsForbiddenBody(JSON.stringify(value ?? ""));
 
 const stripPlaceholders = (value: string) => {
   let out = stripForbiddenBodies(value);
@@ -209,7 +255,10 @@ const extractRecognition = (text: string) => {
 };
 
 const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
-  const byPlanet = (planet: string) => placements.find((p) => p.planet === planet);
+  const byPlanet = (planet: string) => {
+    const canonical = normalizeBodyName(planet);
+    return placements.find((p) => normalizeBodyName(p.planet) === canonical);
+  };
   const house = (n: number) => houses.find((h) => h.house === n);
   const aspectFor = (planet: string) => aspects.find((a) => a.planet1 === planet || a.planet2 === planet);
   const p = (planet: string) => {
@@ -247,7 +296,7 @@ const makeFallbackAgreements = ({ placements, houses, aspects }: Payload) => {
       ["you may avoid conflict until pressure builds", "you can be hard on yourself when you feel exposed", "you may need time alone to understand your feelings", "you become stronger when you stop hiding your needs"],
     ),
     purpose: section(
-      `${p("NorthNode")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
+      `${p("North Node")} points toward growth. ${p("Sun")} and ${h(10)} add life direction and visibility.`,
       "Your growth is specific: say what you actually want instead of softening it, stop managing other people's reactions, and let yourself be seen instead of staying useful.",
       ["you may catch yourself editing what you want before you say it", "you may stop softening your no", "you may choose honesty over keeping someone comfortable", "you may stop earning your place by being helpful"],
     ),
@@ -310,7 +359,8 @@ serve(async (req) => {
       });
     }
 
-    const { chartName, placements, houses, aspects } = (await req.json()) as Payload;
+    const rawPayload = (await req.json()) as Payload;
+    const { chartName, placements, houses, aspects } = filterPayloadAstrology(rawPayload);
 
     const placementLines = placements
       .map((p) =>
@@ -340,9 +390,7 @@ serve(async (req) => {
 
 PRE-GENERATION HARD RULES (apply BEFORE any interpretation):
 
-(1) FORBIDDEN PLACEMENTS — never use, cite, or interpret:
-Varuna, Eris, Pallas, Ceres, Vesta, any minor asteroids, any minor trans-Neptunians.
-If present in chart data: DISCARD them and regenerate the section without them.
+(1) CORE BODY ONLY LOCK — use only the chart bodies listed in the placement input. The source data has already removed every non-core body. Never add, infer, or name any body outside the placement input.
 
 (2) ASPECT VALIDATION — only interpret aspects with valid degree-based orb.
 Same sign does NOT automatically equal conjunction.
@@ -461,8 +509,8 @@ LEGACY EMOTIONAL-SAFETY GATE (mandatory):
 - If those signatures are NOT present, write Legacy from THIS chart's actual public/visible contribution (builder, teacher, organizer, artist, strategist, protector, translator, witness) and do NOT default to safety/containment phrasing.
 
 CORE BODY RESTRICTION (mandatory):
-- Soul Agreements core logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node, South Node, Chiron, and the Angles (ASC/DSC/MC/IC).
-- DO NOT use or cite Varuna, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, asteroids (Ceres, Pallas, Juno, Vesta, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo), Lilith, Part of Fortune, Vertex, or any minor trans-Neptunian body. If present in chart data, IGNORE them.
+- Soul Agreements core logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node, South Node, Chiron, Ascendant, and Midheaven.
+- Any body outside that list has been removed from source data. Do not add outside bodies from memory, habit, or standard astrology associations.
 
 SOUTH NODE SUPPRESSION (mandatory):
 - South Node may SUPPORT interpretation in Family and Wound (and may appear in Gift or Purpose as background) but MUST NOT lead or appear among the top 2 interpretive anchors UNLESS South Node is conjunct (≤4° orb) the Sun, Moon, Ascendant, MC, or chart ruler.
@@ -518,10 +566,9 @@ SECTION OWNERSHIP RULE (mandatory — prevents flattening of the chart):
 
 FINAL ENFORCEMENT LOCK — these override all prior text:
 
-HARD EXCLUSION RULE:
-- NEVER use, cite, or interpret: Varuna, Eris, Pallas, Ceres, Vesta, any minor asteroids, or any minor trans-Neptunian bodies.
+HARD SOURCE RULE:
 - Core Soul Agreements logic uses ONLY: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, North Node, South Node, Ascendant, Midheaven.
-- If any excluded body appears in chart data, IGNORE it entirely. Do not reference it even in passing.
+- The placement, house ruler, and aspect inputs are source-controlled. Use only those names. Never introduce an unlisted body.
 
 HARD ASPECT RULE:
 - A conjunction is ONLY valid when the actual degree separation is within the valid orb.
@@ -531,7 +578,7 @@ HARD ASPECT RULE:
 
 PRE-RENDER QA LOCK — run ALL of these checks before returning JSON. If any check fails, REGENERATE the affected section(s) before output.
 
-(1) EXCLUDED BODY CHECK: Scan the full draft for: Varuna, Eris, Pallas, Ceres, Vesta, Juno, Lilith, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Gonggong, Salacia, Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo, Part of Fortune, Vertex, or any other asteroid / minor trans-Neptunian. If ANY appear, REGENERATE without them.
+(1) SOURCE BODY CHECK: Scan the full draft. Every named astrology body must be one of the core bodies listed above and must come from the source input. If any outside body appears, REGENERATE without it.
 
 (2) ORB CHECK: Every use of the words "conjunct", "conjunction", "fused with", "joined to" MUST be backed by a valid degree-based orb (per the orb table above). Same sign is NEVER a conjunction. If you cannot cite a valid orb, REPLACE the word with "same sign emphasis" or "related sign emphasis" (background only).
 
@@ -879,7 +926,7 @@ GLOBAL ANCHORING (mandatory):
 EMOTIONAL TONE per section (must feel distinct):
 - Family = memory. Wound = stings slightly. Purpose = forward call. Relationship = mirror. Gift = recognition. Timing = oracular. Resilience (returned as "strength") = grounding. Legacy = weighty. Reset = practical.
 
-1. FAMILY AGREEMENT — the early emotional pattern that shaped this person and that their family of origin continued. Use ONLY these placements: Moon (sign, house), Moon aspects, the 4th house cusp, planets in the 4th, and the ruler of the 4th. Do NOT use the South Node here. Do NOT use Juno. Do NOT use the 10th house or other parental symbolism here. Frame everything as an "early pattern", "long-standing pattern", or "learned pattern" — never as past-life or soul-chosen.
+1. FAMILY AGREEMENT — the early emotional pattern that shaped this person and that their family of origin continued. Use ONLY these placements: Moon (sign, house), Moon aspects, the 4th house cusp, planets in the 4th, and the ruler of the 4th. Do NOT use the South Node here. Do NOT use the 10th house or other parental symbolism here. Frame everything as an "early pattern", "long-standing pattern", or "learned pattern" — never as past-life or soul-chosen.
    SPECIAL RULE — a 12th house Moon does NOT automatically mean "secretive family" or "hidden trauma." Prefer: private emotional life, absorbing family emotions, unspoken emotional patterns, difficulty naming feelings.
 
 2. WOUND AGREEMENT — the long-standing emotional pain that has shaped how this person grows. Use Chiron (sign, house, aspects), Saturn (as chosen discipline, naming the house/sign as the domain where they have to earn rather than receive), hard aspects to Sun/Moon/Ascendant, AND the South Node as the older pattern this wound traces back to (frame the South Node as a "long-standing pattern" or "early pattern", never as a past life). Should sting slightly, never cruelly.
@@ -892,7 +939,7 @@ EMOTIONAL TONE per section (must feel distinct):
 4. RELATIONSHIP AGREEMENT — who helps shape your development, and what is the recurring lesson. Name BOTH what you are drawn to AND the pattern that repeats until the lesson is learned.
    STRICT priority order: (1) 7th house placements, (2) ruler of the 7th, (3) Venus, (4) Moon, (5) Mars.
    PHRASE RULE — never write "Relationships are central to your life's lessons." Use: "Relationships are one of the main ways you learn about yourself."
-   DO NOT use Juno unless it adds something genuinely essential the priority bodies do not cover, and never lead with it.
+   Do not use any relationship body outside the source-controlled core body list.
 
 5. GIFT AGREEMENT — what you arrived already knowing. Must feel like recognition, not aspiration. STRICT priority order: (1) Moon (emotional insight, sensing what others feel), (2) Venus (relational warmth, beauty, taste), (3) Neptune (intuition, imagination, compassion), (4) Jupiter (wisdom, generosity, teaching — NOT default to "financial talent"), (5) South Node (talents already well-developed earlier in life — distinct from how it appears in Family/Wound). LEAD with emotional insight first; stability and wisdom come second. Also acknowledge planets in strong dignity and planets in 1H/5H/9H/11H where relevant.
 
@@ -900,7 +947,7 @@ EMOTIONAL TONE per section (must feel distinct):
    Pressure → Withdrawal or emotional processing → Insight → Decisive action → New stability.
    The Plain English paragraph must literally name those 5 stages in order, then describe in 2-3 sentences how that cycle plays out for this chart specifically (what the pressure tends to look like, what their withdrawal looks like, what kind of insight lands, what the decisive action looks like, what the new stability feels like). Do NOT list random life events. Do NOT predict events. The 5 Real-Life Examples should each describe ONE stage of the cycle in order (one bullet per stage).
 
-7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use Juno, the Nodes, or other bodies.
+7. LEGACY AGREEMENT — what you leave behind. Should feel weighty. Use ONLY: Midheaven, ruler of Midheaven, Saturn, Sun. Do not use the Nodes or other bodies.
    SPECIAL RULE — if MC is in Cancer AND Moon is in the 12th: interpret legacy through emotional healing-work, unseen support systems, helping others feel safe enough to be honest about what they feel, compassionate behind-the-scenes leadership. ALWAYS include this exact line near the end of Plain English: "Your gift is helping others feel safe enough to be honest about what they feel, but part of your growth is learning not to carry what belongs to them." Do NOT use generic "nurturing" language. Do NOT use the phrase "inspiring others to be true to themselves" — replace any such instinct with "helping others feel safe enough to be honest about what they feel".
 
 8. STRENGTH UNDER STRESS — RESILIENCE AGREEMENT (returned as "strength"). How you recover, rebuilds, and faces the world after collapse. Should feel grounding, not clinical. Use Mars (sign, house — how you fight back), Moon (emotional recovery style), 12th house planets (private processing), Neptune/Jupiter (what restores meaning). Cover BOTH how you fall apart AND how you find your way back.
@@ -913,35 +960,33 @@ Then SUMMARY — four practical behavioral instructions (whatToPractice, whatToW
 
 Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.4,
-        max_tokens: 7000,
-      }),
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error("AI gateway error:", resp.status, errText);
-      return new Response(JSON.stringify({ agreements: makeFallbackAgreements({ chartName, placements, houses, aspects }), fallback: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const fetchGeneratedContent = async () => {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.4,
+          max_tokens: 7000,
+        }),
       });
-    }
 
-    const data = await resp.json();
-    const content = data?.choices?.[0]?.message?.content ?? "{}";
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`AI gateway error ${resp.status}: ${errText}`);
+      }
+
+      const data = await resp.json();
+      return data?.choices?.[0]?.message?.content ?? "{}";
+    };
 
     const normalizeAgreements = (value: any) => {
       const fallback = makeFallbackAgreements({ chartName, placements, houses, aspects });
@@ -1175,15 +1220,37 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       throw new Error("Unparseable AI JSON");
     };
 
-    let parsed: unknown;
-    try {
-      parsed = tryParse(String(content));
-    } catch (parseErr) {
-      console.error("soul-agreements JSON parse failed; using deterministic fallback. Snippet:", String(content).slice(0, 300));
-      parsed = makeFallbackAgreements({ chartName, placements, houses, aspects });
+    let agreements: unknown = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      let content = "{}";
+      try {
+        content = await fetchGeneratedContent();
+        if (containsForbiddenBody(content)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in raw output`);
+          continue;
+        }
+        const parsed = tryParse(String(content));
+        if (hasForbiddenBodyInOutput(parsed)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in parsed output`);
+          continue;
+        }
+        const normalized = normalizeAgreements(parsed);
+        if (hasForbiddenBodyInOutput(normalized)) {
+          console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in final output`);
+          continue;
+        }
+        agreements = normalized;
+        break;
+      } catch (err) {
+        console.error("soul-agreements generation failed:", err, "Snippet:", String(content).slice(0, 300));
+      }
     }
 
-    return new Response(JSON.stringify({ agreements: normalizeAgreements(parsed) }), {
+    if (!agreements) {
+      agreements = makeFallbackAgreements({ chartName, placements, houses, aspects });
+    }
+
+    return new Response(JSON.stringify({ agreements }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
