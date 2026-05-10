@@ -350,6 +350,19 @@ ANGULARITY WEIGHTING (mandatory):
 - INCREASE importance for planets in the 1st, 4th, 7th, or 10th houses. Angular planets carry stronger life influence and should be foregrounded.
 - Weight angular placements ABOVE cadent (3rd/6th/9th/12th) placements unless the angular planet is in detriment/fall AND the cadent planet is dignified.
 
+WOUND ANCHOR RULE (mandatory):
+- The PRIMARY wound anchor MUST be Chiron — its sign, house, and strongest hard aspects (conjunction/square/opposition, tightest orb first).
+- Priority order for the Wound section: (1) Chiron sign + house, (2) hard aspects to Chiron, (3) Saturn ONLY if it qualifies as a wound under the Saturn Rule, (4) South Node as the older repeating pattern.
+- A Sun/South Node opposition or other Sun–node contact may provide background context but MUST NOT become the main wound interpretation. Chiron leads.
+
+GIFT LEAD INDICATOR RULE (mandatory):
+- South Node may SUPPORT the Gift section but MUST NOT be the lead gift indicator unless corroborated by Moon, Venus, Jupiter, OR the chart ruler (by conjunction, rulership, or sign placement reinforcing the South Node theme).
+- Lead gift indicators come FIRST in the Gift section, in this order: (1) Moon, (2) Venus, (3) Jupiter, (4) chart ruler, (5) Neptune. South Node appears AFTER these as the "already well-developed earlier in life" layer.
+
+LEGACY EMOTIONAL-SAFETY GATE (mandatory):
+- Use emotional-safety / emotional-containment language in the Legacy section ONLY when the chart strongly supports it: Cancer prominent (Sun/Moon/MC/ASC in Cancer), Moon angular or in 4th/8th/12th, water emphasis (3+ personal planets in water), or Moon-Saturn / Moon-Pluto as a primary MC signature.
+- If those signatures are NOT present, write Legacy from THIS chart's actual public/visible contribution (builder, teacher, organizer, artist, strategist, protector, translator, witness) and do NOT default to safety/containment phrasing.
+
 SECTION OWNERSHIP RULE (mandatory — prevents flattening of the chart):
 - Each major planet should have PRIMARY ownership of one or two sections. Default ownership map:
   • Moon → Family, Reset
