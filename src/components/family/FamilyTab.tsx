@@ -329,12 +329,14 @@ const AiPairReadingView = ({
   toName,
   fromRole,
   toRole,
+  childMoonProfile,
 }: {
   reading: PairReadingResponse;
   fromName: string;
   toName: string;
   fromRole: FamilyRole;
   toRole: FamilyRole;
+  childMoonProfile?: ChildMoonProfile | null;
 }) => {
   return (
     <div className="space-y-4">
