@@ -671,7 +671,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
         const survivalBlock = key === "family"
           ? `\n\n**Emotional Survival Pattern**\n${cleanField(
               source?.survivalPattern,
-              (fallbackSection as any).survivalPattern || "The emotional rule home taught you may be: stay tuned to other people's moods first, keep your own feelings quiet, and only speak once it feels safe.",
+              (fallbackSection as any).survivalPattern || "The emotional rule you learned was to scan the emotional room before expressing yourself, and to manage your feelings privately if they might disrupt harmony.",
             )}`
           : "";
         const structuredInterpretation = source?.astrology || source?.plainEnglish || source?.examples || source?.recognition || (key === "family" && source?.survivalPattern)
