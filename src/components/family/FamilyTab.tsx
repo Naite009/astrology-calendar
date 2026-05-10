@@ -322,6 +322,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           toRole={report.toRole}
           childMoonProfile={toRole === "child" && toChart ? buildChildMoonProfile(toChart) : null}
           moonBridge={toRole === "child" && fromChart && toChart && report ? buildMoonBridge(fromChart, toChart, report.rows) : null}
+          contractOverlapFlags={toRole === "child" && fromChart && toChart ? buildContractOverlap(fromChart, toChart).flags : []}
         />
       )}
     </div>
