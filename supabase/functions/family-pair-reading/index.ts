@@ -193,6 +193,12 @@ JSON SCHEMA:
     "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
     "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
+  },
+  "perceptionTranslation": {
+    "title": "What May Be Happening Underneath",
+    "misread": string (1-2 sentences describing how this child's behavior may APPEAR to the parent on the outside, in plain parenting language. If no qualifying nervous-system signatures, return ""),
+    "underneath": string (1-2 sentences describing what the child may actually be experiencing internally. Use "may"/"might"/"can". If empty, return ""),
+    "whatHelps": [string, ...2-4 concrete parenting responses, verbs first. If empty, return []]
   }
 }
 
