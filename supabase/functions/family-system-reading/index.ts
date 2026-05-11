@@ -118,8 +118,8 @@ JSON SCHEMA (return exactly this shape):
   "rolesNarrative": [
     { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms) }
   ],
-  "emotionalClimate": string (one short paragraph, 3-4 sentences, on what it actually feels like to live in this household day-to-day, grounded in the Moon element breakdown),
-  "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
+  "emotionalClimate": string (one short paragraph, 3-4 sentences. Describe the climate as SET BY the parent(s) named in the hierarchy line, grounded in the Moon element breakdown and the parents' own placements. Then in one sentence note that each child meets this climate differently depending on age and temperament. Do NOT describe the climate as a shared peer creation.),
+  "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. Frame shared placements as the meeting ground inside the parent-set system, not as equal contributions. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
   "pressurePoints": [
     { "headline": string (short, names who and what), "body": string (2-3 sentences in plain English on how the friction shows up in real life and what it asks of the family) }
   ],
