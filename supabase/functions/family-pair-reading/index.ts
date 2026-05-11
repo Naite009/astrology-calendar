@@ -278,7 +278,7 @@ JSON SCHEMA:
       "whatHelps": [string, string, ...2-3 concrete things the parent can DO, not feel — verbs, not adjectives]
     }
   ],
-  "practice": string (1 short paragraph naming ONE focused practice for the parent for the next 90 days based on the tightest or most pressing cross-aspect),
+  "practice": string (1 short paragraph naming ONE focused practice for the parent for the next 90 days based on the tightest or most pressing cross-aspect. Must be a small, repeatable, low-pressure action, not an idealized family-therapy ritual. See REAL-WORLD FAMILY PRACTICE RULE below.),
   "soulContract": {
     "whyTheseTwo": string (2-3 sentences on the karmic pull that brought these two souls into this family),
     "childLesson": string (1-2 sentences: what this child agreed to learn through this parent),
