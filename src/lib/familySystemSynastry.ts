@@ -314,13 +314,11 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface FamilySystemReadingResponse {
-  familyEssence: string; // 3 sentences
-  rolesNarrative: { name: string; line: string }[]; // one line per member
-  emotionalClimate: string; // 1 short paragraph
-  whereEveryoneMeets: string; // 1 short paragraph naming shared signs/aspects
-  pressurePoints: { headline: string; body: string }[]; // 2-3
-  bridges: { headline: string; body: string }[]; // 2-3
-  practice: string; // single 90-day practice for the whole family
+  householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
+  childAdaptations: { name: string; line: string }[]; // one per child
+  siblingPressurePoints: { headline: string; body: string }[]; // exact sibling synastry only
+  whatEscalates: { headline: string; body: string }[]; // patterns that increase dysregulation
+  whatHelps: string; // realistic, low-pressure practices for THIS family
   error?: string;
 }
 
