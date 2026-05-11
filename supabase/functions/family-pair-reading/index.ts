@@ -181,6 +181,29 @@ Deno.serve(async (req) => {
     }
     const aspects = picked;
 
+    // Hard orb gate for qualifying signatures (used by pressureProfile / repairProfile / perceptionTranslation).
+    // Anything outside these limits is invisible to the AI for those sections.
+    const MAX_ORB: Record<string, number> = {
+      Sun: 10, Moon: 10,
+      Mercury: 6, Venus: 6, Mars: 6,
+      Jupiter: 6, Saturn: 6,
+      Uranus: 5, Neptune: 5, Pluto: 5,
+      Chiron: 4, NorthNode: 4, SouthNode: 4, Node: 4,
+    };
+    const orbLimitFor = (planet: string): number => MAX_ORB[planet] ?? 6;
+    const isOrbValid = (a: CrossAspect): boolean => {
+      const limit = Math.min(orbLimitFor(a.fromPlanet), orbLimitFor(a.toPlanet));
+      return a.orb <= limit;
+    };
+    const qualifying = body.aspects.filter(isOrbValid);
+    const qualifyingLines = qualifying
+      .map((a) => {
+        const fromHouse = a.fromHouse ? ` (H${a.fromHouse})` : "";
+        const toHouse = a.toHouse ? ` (H${a.toHouse})` : "";
+        return `- ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse} (${a.aspect}, orb ${a.orb.toFixed(1)}°)`;
+      })
+      .join("\n") || "(no cross-aspects pass the orb gate for this pair)";
+
     // Scored summary (passed to AI for prioritisation).
     const scored = aspects.map((a) => ({ a, s: scoreAspect(a) }));
     const totalScore = scored.reduce((sum, x) => sum + x.s, 0);
@@ -381,6 +404,19 @@ ${aspectLines}
 
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
 INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
+
+QUALIFYING SIGNATURES (the ONLY cross-aspects you may cite in pressureProfile, repairProfile, or perceptionTranslation — every other aspect is OUT OF ORB and INVISIBLE for those sections):
+${qualifyingLines}
+
+ORB GATE (hard rule, no exceptions):
+- Sun/Moon ≤ 10°, Mercury/Venus/Mars/Jupiter/Saturn ≤ 6°, Uranus/Neptune/Pluto ≤ 5°, Chiron ≤ 4°, Nodes ≤ 4°.
+- The pair limit is the TIGHTER of the two planets' limits. A Chiron-Mercury aspect at 5.0° is OUT (Chiron caps at 4°). Do not cite it. Do not paraphrase it. Do not allude to it.
+- If a signature is not in the QUALIFYING SIGNATURES block above, it does not exist for this reading.
+
+NAMING RULE (hard rule for pressureProfile.astrology, repairProfile.astrology, and any astrology sentence in perceptionTranslation):
+- Every astrology sentence must name BOTH planets with their signs AND the exact aspect AND the exact orb to one decimal.
+- Required form: "[Name]'s [Planet] in [Sign] [aspect] [Name]'s [Planet] in [Sign] within [X.X]°".
+- Forbidden: vague phrasings like "Cancer Moon being in a challenging aspect to your chart", "your sensitive placements clash", "the heavy Saturn energy between you", "general tension in the synastry". Reject and rewrite any sentence that does not name a specific aspect with its orb.
 
 Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
