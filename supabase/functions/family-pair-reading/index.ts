@@ -316,7 +316,9 @@ JSON SCHEMA:
     "astrology": string (1-3 sentences naming the EXACT signatures present in the child's chart and parent cross-aspects that drive this profile — list aspect + valid degree orb. If no qualifying signatures are present, set this to "" and leave all other fields empty arrays/strings),
     "plainEnglish": string (2-4 sentences translating the signatures into likely lived behavior under pressure, calibrated to the child's age),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors, e.g. "smart but hesitant", "freezes when watched"],
-    "whatHelps": [string, ...3-5 short supportive parenting/coaching responses, verbs first, e.g. "praise effort before outcome", "reduce public correction"]
+    "whatHelps": [string, ...3-5 short supportive parenting/coaching responses the parent can DO in the moment, verbs first, e.g. "praise effort privately", "reduce public correction", "give one instruction at a time", "lower your voice before redirecting"],
+    "safetyNeeds": [string, ...3-5 short items naming what THIS child needs to feel safe enough to function, grounded in their Moon, 4th house, and Saturn/Chiron signatures, e.g. "predictable transitions", "warning before changes", "no surprise visitors at homework time", "quiet recovery space after school"],
+    "whatMakesItWorse": [string, ...3-5 short items the parent should AVOID because it may dysregulate this specific child, verbs first, e.g. "correcting in front of siblings", "raising your voice when they're already frozen", "demanding eye contact during repair", "stacking instructions on top of each other"]
   },
   "repairProfile": {
     "title": "What Repair Requires for This Child",
