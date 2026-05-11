@@ -1100,68 +1100,50 @@ const AiPairReadingView = ({
 const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResponse }) => {
   return (
     <div className="space-y-4">
-      <Card className="border-primary/40">
-        <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Home className="h-4 w-4 text-primary" />
-            Your Family as a System
-          </CardTitle>
-          <CardDescription className="pt-1">
-            How everyone you selected functions together as one whole.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4 text-sm">
-          <p>{reading.familyEssence}</p>
-        </CardContent>
-      </Card>
+      {reading.householdRegulationPattern && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Home className="h-4 w-4 text-primary" />
+              Household Regulation Pattern
+            </CardTitle>
+            <CardDescription className="pt-1">
+              How the parent or caregiver sets the emotional tone, conflict style, and repair pattern.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 text-sm">
+            <p>{reading.householdRegulationPattern}</p>
+          </CardContent>
+        </Card>
+      )}
 
-      {reading.rolesNarrative?.length > 0 && (
+      {reading.childAdaptations?.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Roles in the System</CardTitle>
-            <CardDescription>The part each person plays in the group dynamic.</CardDescription>
+            <CardTitle className="text-base">How Each Child Adapts</CardTitle>
+            <CardDescription>
+              Each child's regulation style based on Moon, Saturn/Chiron sensitivity, Mercury/Mars pattern, and parent-child synastry.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {reading.rolesNarrative.map((r, i) => (
+            {reading.childAdaptations.map((c, i) => (
               <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{r.name}</div>
-                <p className="text-muted-foreground">{r.line}</p>
+                <div className="font-semibold">{c.name}</div>
+                <p className="text-muted-foreground">{c.line}</p>
               </div>
             ))}
           </CardContent>
         </Card>
       )}
 
-      {reading.emotionalClimate && (
+      {reading.siblingPressurePoints?.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">The Emotional Climate</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <p>{reading.emotionalClimate}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {reading.whereEveryoneMeets && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Where Everyone Meets</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <p>{reading.whereEveryoneMeets}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {reading.pressurePoints?.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Pressure Points</CardTitle>
-            <CardDescription>Where the household has to translate across difference.</CardDescription>
+            <CardTitle className="text-base">Sibling Pressure Points</CardTitle>
+            <CardDescription>From exact synastry between siblings only.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {reading.pressurePoints.map((p, i) => (
+            {reading.siblingPressurePoints.map((p, i) => (
               <div key={i}>
                 <div className="font-semibold">{p.headline}</div>
                 <p className="text-muted-foreground">{p.body}</p>
@@ -1171,33 +1153,34 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
         </Card>
       )}
 
-      {reading.bridges?.length > 0 && (
+      {reading.whatEscalates?.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Bridges</CardTitle>
-            <CardDescription>The gifts this family can lean on.</CardDescription>
+            <CardTitle className="text-base">What Escalates the Household</CardTitle>
+            <CardDescription>Patterns that increase dysregulation, comparison, shutdown, defensiveness, or overstimulation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {reading.bridges.map((b, i) => (
+            {reading.whatEscalates.map((p, i) => (
               <div key={i}>
-                <div className="font-semibold">{b.headline}</div>
-                <p className="text-muted-foreground">{b.body}</p>
+                <div className="font-semibold">{p.headline}</div>
+                <p className="text-muted-foreground">{p.body}</p>
               </div>
             ))}
           </CardContent>
         </Card>
       )}
 
-      {reading.practice && (
+      {reading.whatHelps && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              One Practice for the Whole Family (Next 90 Days)
+              What Actually Helps This Family
             </CardTitle>
+            <CardDescription>Realistic, low-pressure practices that fit this family's nervous systems.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">{reading.practice}</p>
+            <p className="text-sm">{reading.whatHelps}</p>
           </CardContent>
         </Card>
       )}
