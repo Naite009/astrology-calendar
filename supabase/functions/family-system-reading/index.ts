@@ -124,7 +124,7 @@ JSON SCHEMA (return exactly this shape):
   "bridges": [
     { "headline": string, "body": string (2-3 sentences on how this gift shows up in real life and how the family can lean on it more) }
   ],
-  "practice": string (one short paragraph naming ONE concrete thing this family can do together for the next 90 days, based on the most pressing pattern in the data. Must be a verb, an action, something they DO together.)
+  "practice": string (one short paragraph, 4-6 sentences. MUST do all of the following: (a) Open by NAMING the specific signature you are targeting, e.g. "Because [ParentName]'s Saturn squares [ChildName]'s Moon" or "Because three of you have Moons in water signs". (b) The action must be something only THIS family would do given THIS data, not generic parenting advice. (c) Assign roles by hierarchy: state what the PARENT(S) initiate and hold, and what the CHILD(REN) are invited to do at their level. Do not flatten the family into peers. (d) Be a concrete weekly or daily ritual with a specific trigger, time, or place, not an abstract principle. (e) Reference at least one real placement or aspect from the data by name.)
 }
 
 Generate exactly one rolesNarrative entry per member listed. Generate 2 to 3 pressurePoints and 2 to 3 bridges. If there are no significant friction or bridge aspects, name that honestly in the body and skip filler.`;
