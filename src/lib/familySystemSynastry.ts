@@ -8,6 +8,16 @@
 import { NatalChart, NatalPlanetPosition } from "@/hooks/useNatalChart";
 import { getEffectiveOrb } from "./aspectOrbs";
 import { FamilyRole } from "./parentChildSynastry";
+import {
+  moonPhaseAtBirth,
+  sectOfChart,
+  rulershipChain,
+  retrogradeFlags,
+  currentProfectedHouse,
+  parentActivationMap,
+  crossChartTSquares,
+  householdComposite,
+} from "./familyAstrology";
 
 const ZODIAC_SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
