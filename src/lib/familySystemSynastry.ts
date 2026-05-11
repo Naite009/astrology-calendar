@@ -315,7 +315,7 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 
 export interface FamilySystemReadingResponse {
   householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
-  childAdaptations: { name: string; line: string }[]; // one per child
+  childAdaptations: { name: string; line: string; respondsBestWhen?: string[] }[]; // one per child
   siblingPressurePoints: { headline: string; body: string }[]; // exact sibling synastry only
   whatEscalates: { headline: string; body: string }[]; // patterns that increase dysregulation
   whatHelps: string; // realistic, low-pressure practices for THIS family
