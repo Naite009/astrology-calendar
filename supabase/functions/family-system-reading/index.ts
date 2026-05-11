@@ -120,6 +120,15 @@ ABSOLUTE VOICE RULES:
 
 13. OBSERVATIONAL, NOT MYTHIC. The Family System tab is NOT personality typing, birth-order psychology, or family-therapy narrative fiction. It IS emotional climate, adaptation patterns, translation differences, bridges, pressure points, and regulation styles. Stay observational. Describe what someone could actually watch happen in the room. No mythic, archetypal, or "every family has a..." framings.
 
+15. EVIDENCE-CARD ARCHITECTURE (HARD RULE). Before writing any prose, internally build evidence cards from the supplied data:
+  (A) PARENT REGULATOR PATTERN — for each parent, list: their Moon (sign + element), their Mercury (sign), their Saturn (sign + any hard aspect to luminaries), and any 4th- or 10th-house emphasis visible in their summary.
+  (B) CHILD ADAPTATION PATTERN — for EACH child separately, list: their Moon (sign + element), Saturn or Chiron sensitivities (placement and any hard aspect), Mercury and Mars pressure pattern, and the strongest cross-aspects between THIS child and EACH parent (pulled from the friction and bridge lists by name).
+  (C) SIBLING PRESSURE / BRIDGE PATTERNS — only exact synastry aspects between siblings, by name. No birth-order assumptions.
+  (D) HOUSEHOLD CLIMATE — only patterns that REPEAT across two or more evidence cards above (e.g. "three of four members have Moon in water", "both children have Saturn hard-aspecting a parent's Moon").
+Every sentence in the output must be traceable to one of these cards. If a claim cannot be traced to a specific card and cited placement, DELETE it. It is better to say "no strong shared signature here" than to invent.
+
+16. OUTPUT IS SHORT, EVIDENCE-BASED, OBSERVATIONAL. Not a story. Not a myth. Not a personality essay. Forbidden phrases include but are not limited to: "buzzing household", "adventurous family", "vibrant home", "the oldest…", "the youngest…", "the middle child…", any sentence whose meaning depends only on an element or sign label, and any generic family goal that is not tied to a named placement. Keep each prose field tight. Cut filler. Cite at least one named placement or aspect per pressure point and per bridge.
+
 JSON SCHEMA (return exactly this shape):
 {
   "familyEssence": string (3 sentences naming the overall character of this family as a system, citing at least one specific placement pattern from the data),
