@@ -129,7 +129,15 @@ JSON SCHEMA (return exactly this shape):
 
 Generate exactly one rolesNarrative entry per member listed. Generate 2 to 3 pressurePoints and 2 to 3 bridges. If there are no significant friction or bridge aspects, name that honestly in the body and skip filler.`;
 
+    const parents = body.members.filter((m) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(m.role));
+    const children = body.members.filter((m) => /child|son|daughter|stepchild|kid/i.test(m.role));
+    const hierarchyLine = parents.length && children.length
+      ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
+      : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
+
     const userPrompt = `FAMILY MEMBERS: ${memberList}
+
+${hierarchyLine}
 
 MEMBER CHARTS:
 ${body.memberSummaries.join("\n\n")}
