@@ -253,6 +253,13 @@ PRECISION & WEIGHTING RULES (apply to pressureProfile, repairProfile, and percep
   Reserve "often / consistently / dominant" wording for cases with 2+ high-weight signatures clustering.
 - Do not stack adjectives. One precise sentence beats three dramatic ones.
 
+HUMAN CONTRADICTION RULE (hard requirement):
+- Real children are internally mixed. Do NOT flatten this child into a single emotional theme.
+- At least ONE meaningful internal contradiction MUST appear in either pressureProfile.plainEnglish, repairProfile.plainEnglish, OR one of the essence bullets.
+- A contradiction names two true things in tension, e.g.: "wants closeness but pulls away when overwhelmed", "highly intelligent but freezes under visible pressure", "deeply sensitive but hides emotion behind logic or humor", "wants recognition but fears exposure", "strong-willed but shuts down under criticism", "independent externally but emotionally dependent internally", "confident in private but hesitant in public", "caring toward others but harsh toward self".
+- Do NOT reduce the child to a single adjective like "sensitive", "emotional", "creative", or "strong" without naming the tension or counter-current alongside it.
+- The contradiction must be grounded in this child's actual chart signatures, not pasted in as a generic phrase.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
