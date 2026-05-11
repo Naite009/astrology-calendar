@@ -1080,6 +1080,25 @@ const AiPairReadingView = ({
         </div>
       )}
 
+      {reading.respondsBestWhen && reading.respondsBestWhen.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Responds Best When
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Concrete interaction strategies for this specific child.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {reading.respondsBestWhen.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
