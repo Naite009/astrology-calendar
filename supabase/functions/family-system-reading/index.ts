@@ -184,7 +184,7 @@ EVIDENCE-CARD STEP (do this BEFORE writing any prose):
 4. Build a Household Climate card from ONLY patterns that repeat across 2+ of the cards above.
 Then write the JSON. Every claim must trace to one of those cards. If a card is empty, say so plainly rather than invent.
 
-PRACTICE CHECKLIST (the practice field will be rejected if it fails any of these):
+WHAT-HELPS CHECKLIST (the whatHelps field will be rejected if it fails any of these):
 - Does it name a specific aspect or placement from the data above by planet and sign?
 - Could it ONLY belong to this family, or could you paste it into any parenting blog?
 - Does the parent lead and the child respond, or are you treating them as equals?
