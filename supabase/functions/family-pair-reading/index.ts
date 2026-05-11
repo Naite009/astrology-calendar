@@ -405,6 +405,19 @@ ${aspectLines}
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
 INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
 
+QUALIFYING SIGNATURES (the ONLY cross-aspects you may cite in pressureProfile, repairProfile, or perceptionTranslation — every other aspect is OUT OF ORB and INVISIBLE for those sections):
+${qualifyingLines}
+
+ORB GATE (hard rule, no exceptions):
+- Sun/Moon ≤ 10°, Mercury/Venus/Mars/Jupiter/Saturn ≤ 6°, Uranus/Neptune/Pluto ≤ 5°, Chiron ≤ 4°, Nodes ≤ 4°.
+- The pair limit is the TIGHTER of the two planets' limits. A Chiron-Mercury aspect at 5.0° is OUT (Chiron caps at 4°). Do not cite it. Do not paraphrase it. Do not allude to it.
+- If a signature is not in the QUALIFYING SIGNATURES block above, it does not exist for this reading.
+
+NAMING RULE (hard rule for pressureProfile.astrology, repairProfile.astrology, and any astrology sentence in perceptionTranslation):
+- Every astrology sentence must name BOTH planets with their signs AND the exact aspect AND the exact orb to one decimal.
+- Required form: "[Name]'s [Planet] in [Sign] [aspect] [Name]'s [Planet] in [Sign] within [X.X]°".
+- Forbidden: vague phrasings like "Cancer Moon being in a challenging aspect to your chart", "your sensitive placements clash", "the heavy Saturn energy between you", "general tension in the synastry". Reject and rewrite any sentence that does not name a specific aspect with its orb.
+
 Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
