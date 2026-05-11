@@ -175,6 +175,13 @@ PRACTICE CHECKLIST (the practice field will be rejected if it fails any of these
 - Could it ONLY belong to this family, or could you paste it into any parenting blog?
 - Does the parent lead and the child respond, or are you treating them as equals?
 - Is there a concrete trigger (a moment, a time of day, a recurring situation) rather than a vague principle?
+
+REAL-WORLD FAMILY PRACTICE RULE (also rejected if it fails any of these):
+- Do NOT default to idealized family-therapy rituals. Forbidden defaults: forced family circles, mandatory emotional sharing, structured gratitude rituals, spotlight-style praise systems, weekly "feelings check-ins" for the whole household, group emotional processing as a default, public praise as the regulation tool.
+- Do NOT assume this family is emotionally expressive, comfortable sharing feelings together, able to process safely as a group, or has the bandwidth for weekly structured rituals. Many families have nervous-system overwhelm, sibling dynamics that punish visibility, attention sensitivity, trauma adaptation, emotional shutdown, overstimulation from being watched, or plain exhaustion.
+- PREFER: small repeatable actions, low-pressure connection, side-by-side interaction (cooking, walking, driving), individualized support, regulation BEFORE discussion, practical emotional safety. Concrete examples to draw from when appropriate to the data: short one-on-one moments, low-intensity consistency, calm transitions, PRIVATE encouragement instead of public praise, brief repair after conflict, reducing public correction, individualized connection styles for each child.
+- If the chart data shows Saturn-Sun, Chiron, 12th-house, Moon-Neptune, Moon-Pluto, or hard Mars contacts in the children, explicitly avoid spotlight or group-processing recommendations and lean toward private, low-visibility connection.
+- A practice that "sounds emotionally healthy" is NOT automatically right for THIS family. The signature in the chart must support that the family can actually hold the practice.
 If any answer is wrong, rewrite before returning.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
