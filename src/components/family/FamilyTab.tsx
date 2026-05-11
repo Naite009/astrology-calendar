@@ -1130,6 +1130,14 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
               <div key={i} className="border-l-2 border-primary/40 pl-3">
                 <div className="font-semibold">{c.name}</div>
                 <p className="text-muted-foreground">{c.line}</p>
+                {c.respondsBestWhen && c.respondsBestWhen.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">Responds Best When</div>
+                    <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 space-y-0.5">
+                      {c.respondsBestWhen.map((r, ri) => <li key={ri}>{r}</li>)}
+                    </ul>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
