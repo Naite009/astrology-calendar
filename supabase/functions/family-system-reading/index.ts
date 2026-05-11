@@ -107,6 +107,8 @@ ABSOLUTE VOICE RULES:
 6. Trines, sextiles, and conjunctions are gifts. Name them and tell the family how to LEAN ON them.
 7. Refer to people by their first names. Never "the parent" or "the child".
 8. HIERARCHY IS REAL. Parents lead, set tone, and hold the container. Children participate at their developmental level. Never write practices, roles, or climate language as if everyone is a peer. Do not assign emotional regulation work to children. Do not ask a child to "give the parent feedback" or "hold space" for the parent. The parent is the one who steers; the child responds.
+8a. STRUCTURAL CENTER vs ADAPTERS. The parent(s) ARE the structural center of this family system. They set the emotional structure, authority tone, conflict style, nervous-system baseline, and the rules around emotion, repair, and safety. Children do NOT co-create the climate; they ADAPT to it. emotionalClimate, familyEssence, and whereEveryoneMeets MUST describe the parent(s) as the source of the atmosphere and each child as adapting differently to that same atmosphere based on their age, Moon style, Saturn/Chiron sensitivity, developmental stage, birth order, and temperament. Never write "everyone in this family contributes equally to the mood" or any equivalent peer-equality framing.
+8b. DEVELOPMENTAL ADAPTATION. The same family atmosphere lands differently at different ages. Use these defaults when describing how each child adapts: young children (under ~10) ABSORB and mirror back what they cannot yet name; adolescents (~11-19) DIFFERENTIATE, push against, or test the system; adult children (20+) REINTERPRET, distance from, or consciously rework the system. Name the age or stage of each child when describing their adaptation. Two children of different ages in the same family should be described as adapting differently, not identically.
 9. NEVER write generic parenting advice ("use I-feel statements", "active listening", "validate feelings", "schedule a weekly check-in", "create a safe space"). If the practice could appear in any parenting book without the chart data, it is wrong.
 10. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
 
@@ -114,10 +116,10 @@ JSON SCHEMA (return exactly this shape):
 {
   "familyEssence": string (3 sentences naming the overall character of this family as a system, citing at least one specific placement pattern from the data),
   "rolesNarrative": [
-    { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms) }
+    { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms. For PARENTS: name what structure, tone, or rule they SET. For CHILDREN: name how they ADAPT to the parent-set system at their specific age or developmental stage, e.g. "absorbs", "mirrors", "differentiates", "tests", "reinterprets", "distances", referencing their Moon style or Saturn/Chiron sensitivity when relevant.) }
   ],
-  "emotionalClimate": string (one short paragraph, 3-4 sentences, on what it actually feels like to live in this household day-to-day, grounded in the Moon element breakdown),
-  "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
+  "emotionalClimate": string (one short paragraph, 3-4 sentences. Describe the climate as SET BY the parent(s) named in the hierarchy line, grounded in the Moon element breakdown and the parents' own placements. Then in one sentence note that each child meets this climate differently depending on age and temperament. Do NOT describe the climate as a shared peer creation.),
+  "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. Frame shared placements as the meeting ground inside the parent-set system, not as equal contributions. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
   "pressurePoints": [
     { "headline": string (short, names who and what), "body": string (2-3 sentences in plain English on how the friction shows up in real life and what it asks of the family) }
   ],
