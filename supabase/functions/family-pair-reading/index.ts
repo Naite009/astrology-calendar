@@ -22,6 +22,21 @@ interface CrossAspect {
   orb: number;
 }
 
+interface AstroContext {
+  moonPhase?: { label: string; separationDeg: number; regulationCue: string } | null;
+  sect?: { sect: "day" | "night"; sunHouse: number | null; leadingLuminary: "Sun" | "Moon" } | null;
+  rulers?: { house: number; cuspSign: string; ruler: string; rulerSign: string | null; rulerHouse: number | null; rulerRetrograde: boolean }[];
+  retrograde?: { mercuryRx: boolean; marsRx: boolean; saturnRx: boolean; venusRx: boolean; notes: string[] };
+  profection?: { ageYears: number; profectedHouse: number; cuspSign: string | null; yearLordPlanet: string | null; yearLordSign: string | null; yearLordHouse: number | null; themeNote: string } | null;
+}
+
+interface ParentActivationHit {
+  parentPlanet: string; parentSign?: string;
+  childPlanet: string; childSign?: string;
+  aspect: string; symbol: string; orb: number;
+  parentTrigger: string;
+}
+
 interface RequestBody {
   fromName: string;
   fromRole: string;
@@ -34,6 +49,9 @@ interface RequestBody {
   parentMoonSummary?: string;
   childMoonSummary?: string;
   aspects: CrossAspect[];
+  childAstroContext?: AstroContext;
+  parentAstroContext?: { retrograde?: AstroContext["retrograde"] };
+  parentActivation?: ParentActivationHit[];
 }
 
 interface ReadingSection {
