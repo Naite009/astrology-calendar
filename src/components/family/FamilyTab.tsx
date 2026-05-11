@@ -851,13 +851,37 @@ const AiPairReadingView = ({
                   </ul>
                 </div>
               )}
+              {reading.pressureProfile.safetyNeeds && reading.pressureProfile.safetyNeeds.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What this child needs to feel safe
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.pressureProfile.safetyNeeds.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {reading.pressureProfile.whatHelps?.length > 0 && (
                 <div>
                   <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                    What helps
+                    What helps in the moment
                   </div>
                   <ul className="list-disc pl-5 space-y-1">
                     {reading.pressureProfile.whatHelps.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {reading.pressureProfile.whatMakesItWorse && reading.pressureProfile.whatMakesItWorse.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What makes it worse (avoid)
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.pressureProfile.whatMakesItWorse.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
                   </ul>
