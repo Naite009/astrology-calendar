@@ -414,6 +414,8 @@ export interface PressureProfile {
   plainEnglish: string;
   whatTheParentMayNotice: string[];
   whatHelps: string[];
+  safetyNeeds?: string[];
+  whatMakesItWorse?: string[];
 }
 
 export type RepairProfile = PressureProfile;
