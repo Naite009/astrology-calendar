@@ -432,6 +432,7 @@ export interface PairReadingResponse {
   ageNote: string;
   sections: PairReadingSection[];
   practice: string;
+  respondsBestWhen?: string[];
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
