@@ -1167,13 +1167,13 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Sibling Pressure Points</CardTitle>
-            <CardDescription>From exact synastry between siblings only.</CardDescription>
+            <CardDescription>How each child experiences their siblings, from their own perspective. Based on exact synastry between siblings only.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
+          <CardContent className="space-y-4 text-sm">
             {reading.siblingPressurePoints.map((p, i) => (
-              <div key={i}>
-                <div className="font-semibold">{p.headline}</div>
-                <p className="text-muted-foreground">{p.body}</p>
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{p.name}</div>
+                <p className="text-muted-foreground whitespace-pre-line">{p.body}</p>
               </div>
             ))}
           </CardContent>
