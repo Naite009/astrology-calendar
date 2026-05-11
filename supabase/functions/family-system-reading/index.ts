@@ -129,24 +129,22 @@ Every sentence in the output must be traceable to one of these cards. If a claim
 
 16. OUTPUT IS SHORT, EVIDENCE-BASED, OBSERVATIONAL. Not a story. Not a myth. Not a personality essay. Forbidden phrases include but are not limited to: "buzzing household", "adventurous family", "vibrant home", "the oldest…", "the youngest…", "the middle child…", any sentence whose meaning depends only on an element or sign label, and any generic family goal that is not tied to a named placement. Keep each prose field tight. Cut filler. Cite at least one named placement or aspect per pressure point and per bridge.
 
-JSON SCHEMA (return exactly this shape):
+JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
-  "familyEssence": string (3 sentences naming the overall character of this family as a system, citing at least one specific placement pattern from the data),
-  "rolesNarrative": [
-    { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms. For PARENTS: name what structure, tone, or rule they SET. For CHILDREN: name how they ADAPT to the parent-set system at their specific age or developmental stage, e.g. "absorbs", "mirrors", "differentiates", "tests", "reinterprets", "distances", referencing their Moon style or Saturn/Chiron sensitivity when relevant.) }
+  "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
+  "childAdaptations": [
+    { "name": "ChildName", "line": string (2-3 sentences. For THIS specific child, describe their regulation and adaptation style based on: their Moon (sign + element), Saturn or Chiron sensitivities, Mercury/Mars pressure pattern, and the strongest named cross-aspects between THIS child and EACH parent. Reference age or developmental stage when relevant: young children absorb, adolescents differentiate, adult children reinterpret. NO birth-order labels. NO generic sibling archetypes. Each child's line MUST cite at least one named placement and at least one named parent-child synastry aspect.) }
   ],
-  "emotionalClimate": string (one short paragraph, 3-4 sentences. Describe the climate as SET BY the parent(s) named in the hierarchy line, grounded in the Moon element breakdown and the parents' own placements. Then in one sentence note that each child meets this climate differently depending on age and temperament. Do NOT describe the climate as a shared peer creation.),
-  "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. Frame shared placements as the meeting ground inside the parent-set system, not as equal contributions. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
-  "pressurePoints": [
-    { "headline": string (short, names who and what), "body": string (2-3 sentences in plain English on how the friction shows up in real life and what it asks of the family) }
+  "siblingPressurePoints": [
+    { "headline": string (names which siblings and which exact aspect), "body": string (2-3 sentences. ONLY use exact sibling-to-sibling synastry aspects from the friction/bridge lists. Describe what someone could OBSERVE between these two specific children. NO birth-order stereotypes ("the oldest…", "the youngest…", "the middle child…"). If there are no significant sibling aspects, return an empty array.) }
   ],
-  "bridges": [
-    { "headline": string, "body": string (2-3 sentences on how this gift shows up in real life and how the family can lean on it more) }
+  "whatEscalates": [
+    { "headline": string (short label of the escalation pattern), "body": string (2-3 sentences naming a specific repeated chart pattern that increases dysregulation, comparison, shutdown, defensiveness, or overstimulation in this household. Anchor each item to a named placement or repeated aspect. Examples of valid framings: "When [Parent]'s Mars squares [Child]'s Moon, raising voice triggers shutdown", "Three water Moons under one roof means unspoken moods spread fast". 2-4 items max.) }
   ],
-  "practice": string (one short paragraph, 4-6 sentences. MUST do all of the following: (a) Open by NAMING the specific signature you are targeting, e.g. "Because [ParentName]'s Saturn squares [ChildName]'s Moon" or "Because three of you have Moons in water signs". (b) The action must be something only THIS family would do given THIS data, not generic parenting advice. (c) Assign roles by hierarchy: state what the PARENT(S) initiate and hold, and what the CHILD(REN) are invited to do at their level. Do not flatten the family into peers. (d) Be a concrete weekly or daily ritual with a specific trigger, time, or place, not an abstract principle. (e) Reference at least one real placement or aspect from the data by name.)
+  "whatHelps": string (one short paragraph, 4-6 sentences. Realistic, low-pressure practices that fit THIS family's nervous systems. MUST: (a) open by naming a specific repeated signature you are targeting; (b) describe what the parent(s) initiate and hold, with each child meeting it at their own level; (c) be concrete actions a parent can do in real life this week, not abstract principles; (d) reference at least one named placement or aspect. Forbidden: weekly emotional sharing circles unless group-processing aspects clearly support it, public praise rituals by default, generic goals like "everyone wants to get along".)
 }
 
-Generate exactly one rolesNarrative entry per member listed. Generate 2 to 3 pressurePoints and 2 to 3 bridges. If there are no significant friction or bridge aspects, name that honestly in the body and skip filler.`;
+Generate exactly one childAdaptations entry per CHILD (not per member; parents do not get an entry here). Generate 0 to 3 siblingPressurePoints based ONLY on exact sibling synastry. Generate 2 to 4 whatEscalates items, each tied to a named pattern. If a section has no real evidence, return an empty array or a one-sentence honest note rather than inventing filler.`;
 
     const parents = body.members.filter((m) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(m.role));
     const children = body.members.filter((m) => /child|son|daughter|stepchild|kid/i.test(m.role));
