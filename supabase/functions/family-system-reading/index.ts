@@ -179,6 +179,13 @@ ${bridgeLines}
 
 Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
 
+EVIDENCE-CARD STEP (do this BEFORE writing any prose):
+1. Build a Parent Regulator card for each parent: Moon, Mercury, Saturn, 4th/10th emphasis.
+2. Build a Child Adaptation card for EACH child: Moon, Saturn/Chiron sensitivity, Mercury/Mars pressure, strongest cross-aspects to each parent (cite by name from the friction/bridge lists).
+3. Build a Sibling card from EXACT synastry aspects between siblings only (no birth-order assumptions).
+4. Build a Household Climate card from ONLY patterns that repeat across 2+ of the cards above.
+Then write the JSON. Every claim must trace to one of those cards. If a card is empty, say so plainly rather than invent.
+
 PRACTICE CHECKLIST (the practice field will be rejected if it fails any of these):
 - Does it name a specific aspect or placement from the data above by planet and sign?
 - Could it ONLY belong to this family, or could you paste it into any parenting blog?
