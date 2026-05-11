@@ -237,6 +237,8 @@ ABSOLUTE RULES:
 9. Plain English. 6th-grade reading level. No astrological jargon in the prose unless naming a specific placement.
 10. Output ONLY valid JSON matching the schema. No markdown fences, no commentary.
 
+11. NO ELEMENTAL OR SIGN STEREOTYPES. Do NOT default to symbolic shorthand. Forbidden assumptions: Air = socially talkative; Fire = outgoing or active; Sagittarius = externally adventurous; Aquarius = socially engaged; Libra = harmonious; Water = openly emotionally expressive. Translate placements BEHAVIORALLY, not symbolically. Plausible alternates: Air → internal analysis, coding, observation, detachment; Sagittarius → private solo interests; Aquarius → withdrawal into systems or technology; Libra → external conflict avoidance with suppressed internal emotion; Fire → restless internal intensity, not visible action; Water → guarded or somatic emotion rather than expressive display. Describe what someone could actually OBSERVE in the child or parent, not what the element is "supposed to" mean. Never romanticize a placement into a stereotype unless the aspects clearly support that expression.
+
 PRECISION & WEIGHTING RULES (apply to pressureProfile, repairProfile, and perceptionTranslation):
 - Each cross-aspect in CROSS-ASPECTS arrives pre-scored with [weight N]. Higher = more central.
   Saturn hard Sun/Moon = 5; Chiron hard Sun/Moon = 4; Pluto–Moon = 4; Moon–Neptune hard = 3;
