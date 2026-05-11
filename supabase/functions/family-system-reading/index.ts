@@ -106,7 +106,9 @@ ABSOLUTE VOICE RULES:
 5. Squares and oppositions are growth, not damage. Frame as "where this family has to translate" or "where the friction lives", not "where you hurt each other".
 6. Trines, sextiles, and conjunctions are gifts. Name them and tell the family how to LEAN ON them.
 7. Refer to people by their first names. Never "the parent" or "the child".
-8. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
+8. HIERARCHY IS REAL. Parents lead, set tone, and hold the container. Children participate at their developmental level. Never write practices, roles, or climate language as if everyone is a peer. Do not assign emotional regulation work to children. Do not ask a child to "give the parent feedback" or "hold space" for the parent. The parent is the one who steers; the child responds.
+9. NEVER write generic parenting advice ("use I-feel statements", "active listening", "validate feelings", "schedule a weekly check-in", "create a safe space"). If the practice could appear in any parenting book without the chart data, it is wrong.
+10. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
 
 JSON SCHEMA (return exactly this shape):
 {
