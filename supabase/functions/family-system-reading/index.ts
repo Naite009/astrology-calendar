@@ -106,7 +106,9 @@ ABSOLUTE VOICE RULES:
 5. Squares and oppositions are growth, not damage. Frame as "where this family has to translate" or "where the friction lives", not "where you hurt each other".
 6. Trines, sextiles, and conjunctions are gifts. Name them and tell the family how to LEAN ON them.
 7. Refer to people by their first names. Never "the parent" or "the child".
-8. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
+8. HIERARCHY IS REAL. Parents lead, set tone, and hold the container. Children participate at their developmental level. Never write practices, roles, or climate language as if everyone is a peer. Do not assign emotional regulation work to children. Do not ask a child to "give the parent feedback" or "hold space" for the parent. The parent is the one who steers; the child responds.
+9. NEVER write generic parenting advice ("use I-feel statements", "active listening", "validate feelings", "schedule a weekly check-in", "create a safe space"). If the practice could appear in any parenting book without the chart data, it is wrong.
+10. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
 
 JSON SCHEMA (return exactly this shape):
 {
@@ -122,12 +124,20 @@ JSON SCHEMA (return exactly this shape):
   "bridges": [
     { "headline": string, "body": string (2-3 sentences on how this gift shows up in real life and how the family can lean on it more) }
   ],
-  "practice": string (one short paragraph naming ONE concrete thing this family can do together for the next 90 days, based on the most pressing pattern in the data. Must be a verb, an action, something they DO together.)
+  "practice": string (one short paragraph, 4-6 sentences. MUST do all of the following: (a) Open by NAMING the specific signature you are targeting, e.g. "Because [ParentName]'s Saturn squares [ChildName]'s Moon" or "Because three of you have Moons in water signs". (b) The action must be something only THIS family would do given THIS data, not generic parenting advice. (c) Assign roles by hierarchy: state what the PARENT(S) initiate and hold, and what the CHILD(REN) are invited to do at their level. Do not flatten the family into peers. (d) Be a concrete weekly or daily ritual with a specific trigger, time, or place, not an abstract principle. (e) Reference at least one real placement or aspect from the data by name.)
 }
 
 Generate exactly one rolesNarrative entry per member listed. Generate 2 to 3 pressurePoints and 2 to 3 bridges. If there are no significant friction or bridge aspects, name that honestly in the body and skip filler.`;
 
+    const parents = body.members.filter((m) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(m.role));
+    const children = body.members.filter((m) => /child|son|daughter|stepchild|kid/i.test(m.role));
+    const hierarchyLine = parents.length && children.length
+      ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
+      : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
+
     const userPrompt = `FAMILY MEMBERS: ${memberList}
+
+${hierarchyLine}
 
 MEMBER CHARTS:
 ${body.memberSummaries.join("\n\n")}
@@ -148,7 +158,14 @@ ${frictionLines}
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
 
-Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.`;
+Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
+
+PRACTICE CHECKLIST (the practice field will be rejected if it fails any of these):
+- Does it name a specific aspect or placement from the data above by planet and sign?
+- Could it ONLY belong to this family, or could you paste it into any parenting blog?
+- Does the parent lead and the child respond, or are you treating them as equals?
+- Is there a concrete trigger (a moment, a time of day, a recurring situation) rather than a vague principle?
+If any answer is wrong, rewrite before returning.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
