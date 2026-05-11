@@ -116,7 +116,7 @@ JSON SCHEMA (return exactly this shape):
 {
   "familyEssence": string (3 sentences naming the overall character of this family as a system, citing at least one specific placement pattern from the data),
   "rolesNarrative": [
-    { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms) }
+    { "name": "PersonName", "line": string (one sentence describing the role they play in the group dynamic in plain real-life terms. For PARENTS: name what structure, tone, or rule they SET. For CHILDREN: name how they ADAPT to the parent-set system at their specific age or developmental stage, e.g. "absorbs", "mirrors", "differentiates", "tests", "reinterprets", "distances", referencing their Moon style or Saturn/Chiron sensitivity when relevant.) }
   ],
   "emotionalClimate": string (one short paragraph, 3-4 sentences. Describe the climate as SET BY the parent(s) named in the hierarchy line, grounded in the Moon element breakdown and the parents' own placements. Then in one sentence note that each child meets this climate differently depending on age and temperament. Do NOT describe the climate as a shared peer creation.),
   "whereEveryoneMeets": string (one short paragraph, 3-4 sentences, naming shared signs and conjunctions across multiple members and what that creates as a household pattern. Frame shared placements as the meeting ground inside the parent-set system, not as equal contributions. If no shared placements exist, write about the dominant Sun or Moon element as the meeting point.),
