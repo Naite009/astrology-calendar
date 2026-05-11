@@ -181,6 +181,29 @@ Deno.serve(async (req) => {
     }
     const aspects = picked;
 
+    // Hard orb gate for qualifying signatures (used by pressureProfile / repairProfile / perceptionTranslation).
+    // Anything outside these limits is invisible to the AI for those sections.
+    const MAX_ORB: Record<string, number> = {
+      Sun: 10, Moon: 10,
+      Mercury: 6, Venus: 6, Mars: 6,
+      Jupiter: 6, Saturn: 6,
+      Uranus: 5, Neptune: 5, Pluto: 5,
+      Chiron: 4, NorthNode: 4, SouthNode: 4, Node: 4,
+    };
+    const orbLimitFor = (planet: string): number => MAX_ORB[planet] ?? 6;
+    const isOrbValid = (a: CrossAspect): boolean => {
+      const limit = Math.min(orbLimitFor(a.fromPlanet), orbLimitFor(a.toPlanet));
+      return a.orb <= limit;
+    };
+    const qualifying = body.aspects.filter(isOrbValid);
+    const qualifyingLines = qualifying
+      .map((a) => {
+        const fromHouse = a.fromHouse ? ` (H${a.fromHouse})` : "";
+        const toHouse = a.toHouse ? ` (H${a.toHouse})` : "";
+        return `- ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse} (${a.aspect}, orb ${a.orb.toFixed(1)}°)`;
+      })
+      .join("\n") || "(no cross-aspects pass the orb gate for this pair)";
+
     // Scored summary (passed to AI for prioritisation).
     const scored = aspects.map((a) => ({ a, s: scoreAspect(a) }));
     const totalScore = scored.reduce((sum, x) => sum + x.s, 0);
