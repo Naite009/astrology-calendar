@@ -112,6 +112,12 @@ ABSOLUTE VOICE RULES:
 9. NEVER write generic parenting advice ("use I-feel statements", "active listening", "validate feelings", "schedule a weekly check-in", "create a safe space"). If the practice could appear in any parenting book without the chart data, it is wrong.
 10. Output ONLY valid JSON matching the schema. No markdown fences. No commentary.
 
+11. NO BIRTH-ORDER STEREOTYPES OR SIBLING ARCHETYPES. Forbidden phrasings include "the oldest absorbs", "the oldest takes responsibility", "the middle child tests / mediates / disappears", "the youngest brings lightness / is the baby / is the wild card", "the firstborn leads", or any equivalent generic sibling archetype. Birth order may only be mentioned as neutral context (e.g. "as the older of the two"); it can never be the source of a personality claim.
+
+12. NO INVENTED FAMILY NARRATIVE. Every statement in familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, and bridges MUST be anchored to a specific signature visible in the data: the person's exact Moon sign and element, Saturn or Chiron sensitivity (placement and aspects), Mercury communication style (sign and aspects), a named parent-child cross-aspect, the child's developmental stage, or an actual synastry aspect from the friction or bridge lists. If the astrology does not clearly support a tidy psychological story, do NOT invent one. It is better to say "no strong shared signature here" than to fabricate a narrative.
+
+13. OBSERVATIONAL, NOT MYTHIC. The Family System tab is NOT personality typing, birth-order psychology, or family-therapy narrative fiction. It IS emotional climate, adaptation patterns, translation differences, bridges, pressure points, and regulation styles. Stay observational. Describe what someone could actually watch happen in the room. No mythic, archetypal, or "every family has a..." framings.
+
 JSON SCHEMA (return exactly this shape):
 {
   "familyEssence": string (3 sentences naming the overall character of this family as a system, citing at least one specific placement pattern from the data),
