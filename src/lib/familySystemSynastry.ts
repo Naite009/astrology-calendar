@@ -317,7 +317,7 @@ export interface FamilySystemReadingResponse {
   householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
   childAdaptations: { name: string; line: string; respondsBestWhen?: string[] }[]; // one per child
   siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
-  whatEscalates: { headline: string; body: string }[]; // patterns that increase dysregulation
+  whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
   whatHelps: string; // realistic, low-pressure practices for THIS family
   error?: string;
 }
