@@ -270,7 +270,7 @@ JSON SCHEMA:
   "sections": [
     {
       "heading": "FROM_NAME's PLANET ASPECT TO_NAME's PLANET" (use the actual names and aspect word, e.g. "Lauren's Mercury square Ben's Moon"),
-      "badge": "Aspect · X.X°",
+      "badge": "HumanLabel · X.X°" (use ONE of these human-readable category labels — never the bare astrology word. Pick the one that best fits the aspect's emotional meaning for a parent: "Different Emotional Languages" (Moon-Mercury, Moon-Sun, or Moon-Moon hard/quincunx where styles clash), "This Pushes Growth" (Saturn, Chiron, or North Node hard contacts that stretch the child), "Needs Extra Understanding" (Moon-Neptune, Moon-Pluto, or 12th-house contacts where feelings are hidden or hard to read), "Natural Emotional Flow" (Moon trines/sextiles, Venus trines/sextiles, easy luminary contacts), "You Trigger Similar Feelings" (conjunctions or same-sign emphasis where both feel the same thing at once), "Sensitive Spot" (Mars-Saturn, Pluto, or Chiron hard contacts that bruise easily), "Easy Support Between You" (Jupiter, Venus, or Sun trines/sextiles that make help land naturally). Format: "Different Emotional Languages · 7.7°"),
       "howItLands": string (2-3 sentences from the child's lived experience at this age, sign-specific),
       "blindSpot": string (1 sentence the parent likely doesn't see, warm and non-blaming),
       "whatHelps": [string, string, ...2-3 concrete things the parent can DO, not feel — verbs, not adjectives]
