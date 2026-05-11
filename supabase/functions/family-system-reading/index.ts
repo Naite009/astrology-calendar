@@ -158,7 +158,14 @@ ${frictionLines}
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
 
-Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.`;
+Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
+
+PRACTICE CHECKLIST (the practice field will be rejected if it fails any of these):
+- Does it name a specific aspect or placement from the data above by planet and sign?
+- Could it ONLY belong to this family, or could you paste it into any parenting blog?
+- Does the parent lead and the child respond, or are you treating them as equals?
+- Is there a concrete trigger (a moment, a time of day, a recurring situation) rather than a vague principle?
+If any answer is wrong, rewrite before returning.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
