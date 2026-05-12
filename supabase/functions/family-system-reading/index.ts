@@ -32,6 +32,41 @@ interface CrossAspect {
   orb: number;
 }
 
+interface MemberCtx {
+  name: string;
+  role: string;
+  age: number | null;
+  moonPhase?: { label: string; separationDeg: number; regulationCue: string } | null;
+  sect?: { sect: "day" | "night"; sunHouse: number | null; leadingLuminary: "Sun" | "Moon" } | null;
+  rulers?: { house: number; cuspSign: string; ruler: string; rulerSign: string | null; rulerHouse: number | null; rulerRetrograde: boolean }[];
+  retrograde?: { mercuryRx: boolean; marsRx: boolean; saturnRx: boolean; venusRx: boolean; notes: string[] };
+  profection?: { ageYears: number; profectedHouse: number; cuspSign: string | null; yearLordPlanet: string | null; yearLordSign: string | null; yearLordHouse: number | null; themeNote: string } | null;
+}
+
+interface ParentActivationGroup {
+  parentName: string;
+  childName: string;
+  hits: { parentPlanet: string; parentSign?: string; childPlanet: string; childSign?: string; aspect: string; symbol: string; orb: number; parentTrigger: string }[];
+}
+
+interface CrossChartTSquare {
+  apex: { name: string; planet: string; sign?: string };
+  endA: { name: string; planet: string; sign?: string };
+  endB: { name: string; planet: string; sign?: string };
+  orb: number;
+}
+
+interface CompositeChart {
+  Sun?: { sign: string; degree: number };
+  Moon?: { sign: string; degree: number };
+  Mercury?: { sign: string; degree: number };
+  Venus?: { sign: string; degree: number };
+  Mars?: { sign: string; degree: number };
+  Jupiter?: { sign: string; degree: number };
+  Saturn?: { sign: string; degree: number };
+  Ascendant?: { sign: string; degree: number };
+}
+
 interface RequestBody {
   members: { name: string; role: string }[];
   memberSummaries: string[];
@@ -42,6 +77,10 @@ interface RequestBody {
   roles: RoleAssignment[];
   topFriction: CrossAspect[];
   topBridges: CrossAspect[];
+  memberContext?: MemberCtx[];
+  parentActivations?: ParentActivationGroup[];
+  crossChartTSquares?: CrossChartTSquare[];
+  householdComposite?: CompositeChart;
 }
 
 interface ReadingPayload {
