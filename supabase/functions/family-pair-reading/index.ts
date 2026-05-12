@@ -446,6 +446,28 @@ OUTPUT FORMAT for perceptionTranslation:
 - If no qualifying nervous-system signatures, return "" for misread, "" for underneath, [] for whatHelps.
 - HARD RULE: Never excuse harmful behavior (hitting, cruelty, etc.). Never blame the parent. Stay descriptive, not accusatory.`;
 
+    // ─── Astrology context block (deterministic facts the AI MUST cite) ───
+    const ctx = body.childAstroContext;
+    const childMoonPhaseLine = ctx?.moonPhase
+      ? `- Moon phase at birth: ${ctx.moonPhase.label} (Sun→Moon ${ctx.moonPhase.separationDeg}°). Regulation cue: ${ctx.moonPhase.regulationCue}`
+      : "- Moon phase at birth: unknown";
+    const childSectLine = ctx?.sect
+      ? `- Sect: ${ctx.sect.sect.toUpperCase()} chart (Sun in house ${ctx.sect.sunHouse}). Leading luminary for regulation: ${ctx.sect.leadingLuminary}.`
+      : "- Sect: unknown";
+    const childRulersLines = (ctx?.rulers ?? []).length
+      ? (ctx!.rulers!).map((r) => `- House ${r.house} (cusp ${r.cuspSign}) ruled by ${r.ruler}, currently in ${r.rulerSign ?? "?"}${r.rulerHouse ? ` H${r.rulerHouse}` : ""}${r.rulerRetrograde ? " R" : ""}`).join("\n")
+      : "(rulers unavailable)";
+    const childRetroLines = (ctx?.retrograde?.notes ?? []).join("\n- ");
+    const childRetroBlock = childRetroLines ? `- ${childRetroLines}` : "(no significant retrograde flags)";
+    const childProfLine = ctx?.profection
+      ? `- Current profected house (age ${ctx.profection.ageYears}): House ${ctx.profection.profectedHouse} in ${ctx.profection.cuspSign}. Year Lord: ${ctx.profection.yearLordPlanet} in ${ctx.profection.yearLordSign ?? "?"}${ctx.profection.yearLordHouse ? ` H${ctx.profection.yearLordHouse}` : ""}. Theme this year: ${ctx.profection.themeNote}`
+      : "- Profection: unknown";
+    const parentRetroNotes = (body.parentAstroContext?.retrograde?.notes ?? []).join("\n- ");
+    const parentRetroBlock = parentRetroNotes ? `- ${parentRetroNotes}` : "(no significant parent retrograde flags)";
+    const activationLines = (body.parentActivation ?? []).length
+      ? (body.parentActivation!).map((h) => `- ${body.fromName}'s ${h.parentPlanet} in ${h.parentSign ?? "?"} ${h.symbol} ${body.toName}'s ${h.childPlanet} in ${h.childSign ?? "?"} (${h.aspect}, orb ${h.orb}°). What this activates IN the parent: ${h.parentTrigger}`).join("\n")
+      : "(no Saturn/Chiron hard hits from parent to child's Sun/Moon/Mars)";
+
     const userPrompt = `PARENT (${fromRoleLabel}): ${body.fromName}
 ${body.fromPlanetsSummary}
 
@@ -455,6 +477,21 @@ ${body.toPlanetsSummary}
 MOON BRIDGE INPUTS:
 - Parent: ${body.parentMoonSummary ?? "unknown"}
 - Child: ${body.childMoonSummary ?? "unknown"}
+
+CHILD ASTROLOGICAL CONTEXT (you MUST cite at least Moon phase, sect, and the ASC/4th/10th rulers somewhere in the reading):
+${childMoonPhaseLine}
+${childSectLine}
+House rulers chain (where each angular house's ruler lives):
+${childRulersLines}
+Retrograde flags at birth:
+${childRetroBlock}
+${childProfLine}
+
+PARENT ACTIVATION MAP (parent's Chiron/Saturn → child's Sun/Moon/Mars; what gets triggered IN THE PARENT, not the child):
+${activationLines}
+
+PARENT RETROGRADE FLAGS (their own internalized authority/anger/communication patterns to be aware of):
+${parentRetroBlock}
 
 CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
@@ -474,6 +511,12 @@ NAMING RULE (hard rule for pressureProfile.astrology, repairProfile.astrology, a
 - Every astrology sentence must name BOTH planets with their signs AND the exact aspect AND the exact orb to one decimal.
 - Required form: "[Name]'s [Planet] in [Sign] [aspect] [Name]'s [Planet] in [Sign] within [X.X]°".
 - Forbidden: vague phrasings like "Cancer Moon being in a challenging aspect to your chart", "your sensitive placements clash", "the heavy Saturn energy between you", "general tension in the synastry". Reject and rewrite any sentence that does not name a specific aspect with its orb.
+
+INLINE CITATION RULE (HARD): Every sentence in essence, sections.howItLands, sections.blindSpot, pressureProfile.plainEnglish, repairProfile.plainEnglish, and perceptionTranslation MUST trace to a specific named placement, retrograde flag, Moon phase, sect, profected house, ruler chain link, parent-activation hit, or cross-aspect from the data above. Inline citation in parentheses is preferred, e.g. "(Leo Moon, Last Quarter phase)" or "(your Saturn square his Sun, 2.1°)". A claim with no astrological source MUST be deleted. It is better to say less than to invent.
+
+THIS YEAR FOR THIS CHILD: At least ONE sentence in essence MUST reference the current profected house and year-lord theme above (e.g. "this year is a 5th-house profection — visibility and play are leading"). If profection data is unknown, skip silently.
+
+PARENT ACTIVATION SECTION: If the PARENT ACTIVATION MAP above contains any hits, the perceptionTranslation.whatHelps array MUST include one item directed AT THE PARENT (not the child) describing a regulation move for the parent (e.g. "When his anger lands on your Chiron, step out for 60 seconds and breathe before responding").
 
 Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
 
