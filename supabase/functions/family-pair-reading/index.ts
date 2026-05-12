@@ -570,6 +570,34 @@ Write the reading. One section per cross-aspect above, in the same order. Genera
       });
     }
 
+    // ─── Forbidden-symbolic phrase validator (post-process scrub) ─────────
+    const FORBIDDEN: RegExp[] = [
+      /\bneeds? freedom\b/gi,
+      /\bcraves? validation\b/gi,
+      /\bvalues? harmony\b/gi,
+      /\bseeks? adventure\b/gi,
+      /\bwants? to be seen\b/gi,
+      /\byearns? for\b/gi,
+      /\bsoul[- ]chosen\b/gi,
+      /\bdivine\b/gi,
+      /\bsacred\b/gi,
+    ];
+    const scrubText = (s: unknown): unknown => {
+      if (typeof s === "string") {
+        let out = s;
+        for (const re of FORBIDDEN) out = out.replace(re, "");
+        return out.replace(/\s{2,}/g, " ").replace(/ ,/g, ",").trim();
+      }
+      if (Array.isArray(s)) return s.map(scrubText);
+      if (s && typeof s === "object") {
+        const o: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(s as Record<string, unknown>)) o[k] = scrubText(v);
+        return o;
+      }
+      return s;
+    };
+    payload = scrubText(payload) as ReadingPayload;
+
     return new Response(
       JSON.stringify({
         ...payload,
