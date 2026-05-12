@@ -195,12 +195,63 @@ Generate exactly one childAdaptations entry per CHILD (not per member; parents d
       ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
       : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
 
+    // ─── Astrology context blocks ─────────────────────────────────────────
+    const memberCtxBlock = (body.memberContext ?? []).map((m) => {
+      const lines: string[] = [];
+      lines.push(`### ${m.name} (${m.role}${m.age != null ? `, age ${m.age}` : ""})`);
+      if (m.moonPhase) lines.push(`- Moon phase at birth: ${m.moonPhase.label} (Sun→Moon ${m.moonPhase.separationDeg}°). Cue: ${m.moonPhase.regulationCue}`);
+      if (m.sect) lines.push(`- Sect: ${m.sect.sect.toUpperCase()} chart (Sun H${m.sect.sunHouse}). Leading luminary: ${m.sect.leadingLuminary}.`);
+      if (m.rulers?.length) {
+        lines.push(`- House rulers chain:`);
+        for (const r of m.rulers) lines.push(`    • H${r.house} (${r.cuspSign}) → ${r.ruler} in ${r.rulerSign ?? "?"}${r.rulerHouse ? ` H${r.rulerHouse}` : ""}${r.rulerRetrograde ? " R" : ""}`);
+      }
+      if (m.retrograde?.notes?.length) {
+        lines.push(`- Retrograde flags:`);
+        for (const n of m.retrograde.notes) lines.push(`    • ${n}`);
+      }
+      if (m.profection) lines.push(`- This year: H${m.profection.profectedHouse} profection in ${m.profection.cuspSign}, year-lord ${m.profection.yearLordPlanet} in ${m.profection.yearLordSign ?? "?"}${m.profection.yearLordHouse ? ` H${m.profection.yearLordHouse}` : ""}. Theme: ${m.profection.themeNote}`);
+      return lines.join("\n");
+    }).join("\n\n") || "(no per-member context)";
+
+    const activationBlock = (body.parentActivations ?? []).flatMap((g) => {
+      if (!g.hits.length) return [];
+      return [`${g.parentName} → ${g.childName}:`, ...g.hits.map((h) => `  - ${g.parentName}'s ${h.parentPlanet} in ${h.parentSign ?? "?"} ${h.symbol} ${g.childName}'s ${h.childPlanet} in ${h.childSign ?? "?"} (${h.aspect}, orb ${h.orb}°). Activates IN parent: ${h.parentTrigger}`)];
+    }).join("\n") || "(no Saturn/Chiron hard hits from parents to children's Sun/Moon/Mars)";
+
+    const tsqBlock = (body.crossChartTSquares ?? []).length
+      ? body.crossChartTSquares!.map((t) => `- T-square: ${t.endA.name}'s ${t.endA.planet} in ${t.endA.sign ?? "?"} ↔ ${t.endB.name}'s ${t.endB.planet} in ${t.endB.sign ?? "?"} (opposition), apex ${t.apex.name}'s ${t.apex.planet} in ${t.apex.sign ?? "?"} squaring both (avg orb ${t.orb}°). The apex carries the household's released pressure.`).join("\n")
+      : "(no cross-chart T-squares found in this family)";
+
+    const c = body.householdComposite ?? {};
+    const compositeBlock = c && (c.Sun || c.Moon)
+      ? [`- Composite Sun: ${c.Sun?.sign ?? "?"} ${c.Sun?.degree ?? ""}°`,
+         `- Composite Moon: ${c.Moon?.sign ?? "?"} ${c.Moon?.degree ?? ""}° (HOUSEHOLD'S shared regulation style)`,
+         `- Composite Mercury: ${c.Mercury?.sign ?? "?"} ${c.Mercury?.degree ?? ""}°`,
+         `- Composite Venus: ${c.Venus?.sign ?? "?"} ${c.Venus?.degree ?? ""}°`,
+         `- Composite Mars: ${c.Mars?.sign ?? "?"} ${c.Mars?.degree ?? ""}°`,
+         `- Composite Saturn: ${c.Saturn?.sign ?? "?"} ${c.Saturn?.degree ?? ""}° (where the household enforces structure or shuts down)`,
+         `- Composite Ascendant: ${c.Ascendant?.sign ?? "?"} ${c.Ascendant?.degree ?? ""}°`,
+        ].join("\n")
+      : "(no composite chart available)";
+
     const userPrompt = `FAMILY MEMBERS: ${memberList}
 
 ${hierarchyLine}
 
 MEMBER CHARTS:
 ${body.memberSummaries.join("\n\n")}
+
+PER-MEMBER ASTROLOGICAL CONTEXT (Moon phase, sect, house rulers chain, retrograde flags, current profected house). You MUST cite at least one of these per child in childAdaptations:
+${memberCtxBlock}
+
+PARENT ACTIVATION MAP (where each child's chart triggers each parent's Chiron/Saturn — describes what gets stirred IN THE PARENT, not the child):
+${activationBlock}
+
+CROSS-CHART T-SQUARES (apex carries the household's pressure release point — recurring family pattern, not just one-off aspects):
+${tsqBlock}
+
+HOUSEHOLD COMPOSITE CHART (circular midpoint of all members — the family's SHARED emotional center, treated as a single entity):
+${compositeBlock}
 
 MOON ELEMENT BREAKDOWN: ${moonBreakdown}
 SUN ELEMENT BREAKDOWN: ${sunBreakdown}
@@ -221,11 +272,19 @@ ${bridgeLines}
 Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
 
 EVIDENCE-CARD STEP (do this BEFORE writing any prose):
-1. Build a Parent Regulator card for each parent: Moon, Mercury, Saturn, 4th/10th emphasis.
-2. Build a Child Adaptation card for EACH child: Moon, Saturn/Chiron sensitivity, Mercury/Mars pressure, strongest cross-aspects to each parent (cite by name from the friction/bridge lists).
+1. Build a Parent Regulator card for each parent: Moon (with phase + sect), Mercury, Saturn, ASC/4th/10th rulers, retrograde flags, current profected house.
+2. Build a Child Adaptation card for EACH child: Moon (with phase + sect), Saturn/Chiron sensitivity, Mercury/Mars pressure, ASC/4th/10th rulers, retrograde flags, current profected house, strongest cross-aspects to each parent.
 3. Build a Sibling card from EXACT synastry aspects between siblings only (no birth-order assumptions).
-4. Build a Household Climate card from ONLY patterns that repeat across 2+ of the cards above.
+4. Build a Household Climate card using: composite Moon + composite Saturn + composite Ascendant + any cross-chart T-square apex + repeated patterns across 2+ member cards.
 Then write the JSON. Every claim must trace to one of those cards. If a card is empty, say so plainly rather than invent.
+
+INLINE CITATION RULE (HARD): Every sentence in householdRegulationPattern, childAdaptations.line, siblingPressurePoints.body, whatEscalates.body, and whatHelps MUST trace to a specific named placement, Moon phase, sect, profected house, ruler chain link, retrograde flag, parent-activation hit, cross-chart T-square apex, composite-chart placement, or named cross-aspect from the data. Inline citation in parentheses preferred (e.g. "(composite Moon in Capricorn)" or "(Lauren's Saturn square Max's Sun, 1.8°)"). A claim with no astrological source MUST be deleted.
+
+HOUSEHOLD COMPOSITE USAGE (HARD): householdRegulationPattern MUST cite the composite Moon AND composite Saturn at least once. The composite chart describes the family AS ONE ENTITY — its Moon is the household's shared regulation style, its Saturn is where the household enforces structure or collectively shuts down.
+
+T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
+
+PROFECTION USAGE: Each childAdaptations.line MUST mention this child's current profected-house theme in at least one sentence ("this year for [name] is a [house] profection — [theme]").
 
 WHAT-HELPS CHECKLIST (the whatHelps field will be rejected if it fails any of these):
 - Does it name a specific aspect or placement from the data above by planet and sign?
@@ -235,10 +294,9 @@ WHAT-HELPS CHECKLIST (the whatHelps field will be rejected if it fails any of th
 
 REAL-WORLD FAMILY PRACTICE RULE (also rejected if it fails any of these):
 - Do NOT default to idealized family-therapy rituals. Forbidden defaults: forced family circles, mandatory emotional sharing, structured gratitude rituals, spotlight-style praise systems, weekly "feelings check-ins" for the whole household, group emotional processing as a default, public praise as the regulation tool.
-- Do NOT assume this family is emotionally expressive, comfortable sharing feelings together, able to process safely as a group, or has the bandwidth for weekly structured rituals. Many families have nervous-system overwhelm, sibling dynamics that punish visibility, attention sensitivity, trauma adaptation, emotional shutdown, overstimulation from being watched, or plain exhaustion.
-- PREFER: small repeatable actions, low-pressure connection, side-by-side interaction (cooking, walking, driving), individualized support, regulation BEFORE discussion, practical emotional safety. Concrete examples to draw from when appropriate to the data: short one-on-one moments, low-intensity consistency, calm transitions, PRIVATE encouragement instead of public praise, brief repair after conflict, reducing public correction, individualized connection styles for each child.
+- Do NOT assume this family is emotionally expressive, comfortable sharing feelings together, able to process safely as a group, or has the bandwidth for weekly structured rituals.
+- PREFER: small repeatable actions, low-pressure connection, side-by-side interaction, individualized support, regulation BEFORE discussion.
 - If the chart data shows Saturn-Sun, Chiron, 12th-house, Moon-Neptune, Moon-Pluto, or hard Mars contacts in the children, explicitly avoid spotlight or group-processing recommendations and lean toward private, low-visibility connection.
-- A practice that "sounds emotionally healthy" is NOT automatically right for THIS family. The signature in the chart must support that the family can actually hold the practice.
 If any answer is wrong, rewrite before returning.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
