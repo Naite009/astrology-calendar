@@ -8,6 +8,16 @@
 import { NatalChart, NatalPlanetPosition } from "@/hooks/useNatalChart";
 import { getEffectiveOrb } from "./aspectOrbs";
 import { FamilyRole } from "./parentChildSynastry";
+import {
+  moonPhaseAtBirth,
+  sectOfChart,
+  rulershipChain,
+  retrogradeFlags,
+  currentProfectedHouse,
+  parentActivationMap,
+  crossChartTSquares,
+  householdComposite,
+} from "./familyAstrology";
 
 const ZODIAC_SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -326,6 +336,43 @@ export function buildFamilySystemPayload(
   members: FamilyMemberInput[],
   data: FamilySystemData,
 ) {
+  const memberContext = members.map((m) => {
+    let age: number | null = null;
+    if (m.chart.birthDate) {
+      const [y, mo, d] = m.chart.birthDate.split("-").map(Number);
+      if (y && mo && d) {
+        const now = new Date();
+        let a = now.getFullYear() - y;
+        const before = now.getMonth() + 1 < mo || (now.getMonth() + 1 === mo && now.getDate() < d);
+        if (before) a--;
+        age = a;
+      }
+    }
+    return {
+      name: m.chart.name,
+      role: m.role,
+      age,
+      moonPhase: moonPhaseAtBirth(m.chart),
+      sect: sectOfChart(m.chart),
+      rulers: rulershipChain(m.chart, [1, 4, 10]),
+      retrograde: retrogradeFlags(m.chart),
+      profection: age != null ? currentProfectedHouse(m.chart, age) : null,
+    };
+  });
+
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child" || m.role === "sibling");
+  const parentActivations = parents.flatMap((p) =>
+    children.map((c) => ({
+      parentName: p.chart.name,
+      childName: c.chart.name,
+      hits: parentActivationMap(p.chart, c.chart),
+    })),
+  );
+
+  const tsquares = crossChartTSquares(members.map((m) => ({ name: m.chart.name, chart: m.chart })));
+  const composite = householdComposite(members);
+
   return {
     members: members.map((m) => ({ name: m.chart.name, role: m.role })),
     memberSummaries: data.memberSummaries,
@@ -336,5 +383,9 @@ export function buildFamilySystemPayload(
     roles: data.roles,
     topFriction: data.topFriction,
     topBridges: data.topBridges,
+    memberContext,
+    parentActivations,
+    crossChartTSquares: tsquares,
+    householdComposite: composite,
   };
 }

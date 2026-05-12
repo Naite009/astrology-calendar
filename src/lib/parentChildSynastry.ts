@@ -15,6 +15,14 @@ import {
   PARENT_CHILD_INTERPRETATIONS,
   ParentChildInterpretation,
 } from "@/data/parentChildInterpretations";
+import {
+  moonPhaseAtBirth,
+  sectOfChart,
+  rulershipChain,
+  retrogradeFlags,
+  currentProfectedHouse,
+  parentActivationMap,
+} from "./familyAstrology";
 
 const ZODIAC_SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -533,6 +541,29 @@ export function buildPairReadingPayload(
     };
   });
 
+  // ─── Astrology context: child + parent enrichment ──────────────────────
+  const childMoonPhase = moonPhaseAtBirth(toChart);
+  const childSect = sectOfChart(toChart);
+  const childRulers = rulershipChain(toChart, [1, 4, 10]);
+  const childRetro = retrogradeFlags(toChart);
+  const parentRetro = retrogradeFlags(fromChart);
+  // Approximate age from birthDate for current profection
+  let childAge: number | null = null;
+  if (toChart.birthDate) {
+    const [y, m, d] = toChart.birthDate.split("-").map(Number);
+    if (y && m && d) {
+      const now = new Date();
+      let a = now.getFullYear() - y;
+      const before = now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d);
+      if (before) a--;
+      childAge = a;
+    }
+  }
+  const childProfection = childAge != null ? currentProfectedHouse(toChart, childAge) : null;
+  const activation = fromRole === "parent" || fromRole === "grandparent"
+    ? parentActivationMap(fromChart, toChart)
+    : [];
+
   return {
     fromName: fromChart.name,
     fromRole,
@@ -544,6 +575,17 @@ export function buildPairReadingPayload(
     parentMoonSummary: moonSummary(fromChart),
     childMoonSummary: moonSummary(toChart),
     aspects,
+    childAstroContext: {
+      moonPhase: childMoonPhase,
+      sect: childSect,
+      rulers: childRulers,
+      retrograde: childRetro,
+      profection: childProfection,
+    },
+    parentAstroContext: {
+      retrograde: parentRetro,
+    },
+    parentActivation: activation,
   };
 }
 
