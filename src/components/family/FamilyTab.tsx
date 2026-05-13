@@ -1250,6 +1250,30 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
           </CardContent>
         </Card>
       )}
+
+      {reading.householdInTheMoment && reading.householdInTheMoment.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              What To Do In The Moment (Household)
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Real-time de-escalation actions for common household scenarios.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {reading.householdInTheMoment.map((m, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{m.scenario}</div>
+                <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
+                  {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
+                </ul>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
