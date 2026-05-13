@@ -1099,6 +1099,30 @@ const AiPairReadingView = ({
         </Card>
       )}
 
+      {reading.inTheMoment && reading.inTheMoment.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              What To Do In The Moment
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Real-time de-escalation actions for common scenarios with this child.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {reading.inTheMoment.map((m, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{m.scenario}</div>
+                <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
+                  {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
+                </ul>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
@@ -1157,6 +1181,21 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
                     </ul>
                   </div>
                 )}
+                {c.inTheMoment && c.inTheMoment.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">What To Do In The Moment</div>
+                    <div className="space-y-2 mt-1">
+                      {c.inTheMoment.map((m, mi) => (
+                        <div key={mi}>
+                          <div className="text-xs font-medium">{m.scenario}</div>
+                          <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                            {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
@@ -1208,6 +1247,30 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
           </CardHeader>
           <CardContent>
             <p className="text-sm">{reading.whatHelps}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.householdInTheMoment && reading.householdInTheMoment.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              What To Do In The Moment (Household)
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Real-time de-escalation actions for common household scenarios.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {reading.householdInTheMoment.map((m, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{m.scenario}</div>
+                <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
+                  {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
+                </ul>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
