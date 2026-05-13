@@ -1181,6 +1181,21 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
                     </ul>
                   </div>
                 )}
+                {c.inTheMoment && c.inTheMoment.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">What To Do In The Moment</div>
+                    <div className="space-y-2 mt-1">
+                      {c.inTheMoment.map((m, mi) => (
+                        <div key={mi}>
+                          <div className="text-xs font-medium">{m.scenario}</div>
+                          <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                            {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
