@@ -441,6 +441,7 @@ export interface PairReadingResponse {
   sections: PairReadingSection[];
   practice: string;
   respondsBestWhen?: string[];
+  inTheMoment?: { scenario: string; actions: string[] }[];
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
