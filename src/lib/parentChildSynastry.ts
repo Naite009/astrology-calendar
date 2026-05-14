@@ -443,6 +443,7 @@ export interface PairReadingResponse {
   respondsBestWhen?: string[];
   inTheMoment?: { scenario: string; actions: string[] }[];
   whatMakesItWorse?: string[];
+  whatAlreadyWorks?: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;

@@ -96,6 +96,7 @@ interface ReadingPayload {
     underneath: string;
     whatHelps: string[];
   };
+  whatAlreadyWorks: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -332,6 +333,16 @@ STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressurePro
 - REQUIRED overall tone: "this is complex, AND here is what is genuinely working between you, AND here is what to build on" — never "this is broken".
 - If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridge (a single trine, a shared sign, a Moon-Venus contact, a shared ruler) and name it as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
 
+NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
+- This is a REQUIRED, standalone section. It must NOT be merged into other sections.
+- List 3-5 specific, concrete, observable strengths this parent and child already have as a pair.
+- Ground every claim in actual chart evidence: bridge aspects (trines, sextiles, conjunctions), shared element or sect, harmonious Moon/Venus/Jupiter contacts, easy ruler chains, shared sign emphasis.
+- Describe where this pair naturally connects or functions well.
+- FORBIDDEN: vague positivity like "loving relationship", "they care about each other", "strong bond".
+- REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern.
+- Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the parent engage" (cite the child's Mars or Sun placement), "There is an easy flow in one-on-one connection" (cite a trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
+- The user should recognize: "This is not just hard — there are things already working here."
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
@@ -356,6 +367,7 @@ JSON SCHEMA:
     // Generate ONLY scenarios the chart actually supports (0-4). Return [] if no qualifying signature exists. Do not pad.
   ],
   "whatMakesItWorse": [string, string, ...3-5 specific parent behaviors to AVOID with THIS child because they reliably escalate dysregulation, shutdown, or defensiveness. Each item must be a concrete observable parent action, verb-first, calibrated to this child's Moon/Mercury/Mars/Saturn/Chiron pattern and the parent-child synastry. Examples: "asking 'why did you do that?' when they're already overwhelmed", "stacking multiple instructions at once", "correcting in front of siblings", "matching their volume when they get loud", "pushing for an answer immediately instead of giving processing time", "lecturing during escalation instead of pausing", "demanding eye contact during repair". FORBIDDEN: vague language ("being too harsh"), therapy phrasing ("invalidating their inner child"), symbolic astrology ("crushing their Leo spark"). The parent should immediately recognize: "oh… I do that… and that's making it worse."],
+  "whatAlreadyWorks": [string, string, ...3-5 specific, concrete, observable strengths this parent-child pair already has. Ground every claim in actual chart evidence: bridge aspects (trines, sextiles, conjunctions), shared element or sect, harmonious Moon/Venus/Jupiter contacts, easy ruler chains, shared sign emphasis. Describe where this pair naturally connects or functions well. FORBIDDEN: vague positivity like "loving relationship" or "they care about each other". REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern. The user should recognize: "This is not just hard — there are things already working here."],
   "soulContract": {
     "whyTheseTwo": string (2-3 sentences on the karmic pull that brought these two souls into this family),
     "childLesson": string (1-2 sentences: what this child agreed to learn through this parent),

@@ -329,6 +329,7 @@ export interface FamilySystemReadingResponse {
   siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
   whatHelps: string; // realistic, low-pressure practices for THIS family
+  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
   householdInTheMoment?: { scenario: string; actions: string[] }[]; // family-wide real-time interventions
   householdMakesItWorse?: string[]; // household-level patterns to avoid
   error?: string;
