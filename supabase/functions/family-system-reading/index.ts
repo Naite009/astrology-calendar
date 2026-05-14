@@ -191,7 +191,7 @@ SCENARIO DERIVATION RULE (CRITICAL — applies to childAdaptations[].inTheMoment
 - Goal: every scenario should make the parent think "yes, that actually happens" and recognize it as the same pattern named earlier, not a new claim.
 
 
-NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdMakesItWorse):
+NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps):
 - ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what each member may DO or SHOW.
 - FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame", "grief underneath", "fear of abandonment", "emotional wound"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
 - USE hedged behavioral language: "may tend to", "can show up as", "often responds by", "may lean toward", "tends to".
