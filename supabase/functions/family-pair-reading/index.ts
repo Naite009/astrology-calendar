@@ -361,6 +361,13 @@ NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
 - Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the parent engage" (cite the child's Mars or Sun placement), "There is an easy flow in one-on-one connection" (cite a trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
 - The user should recognize: "This is not just hard — there are things already working here."
 
+ASPECT STRUCTURE VALIDATION RULE (CRITICAL — applies to T-square, Grand Trine, Grand Cross, Yod, Stellium, Mystic Rectangle, Kite, and ANY named configuration):
+- You may ONLY label a structure if it is mathematically valid and explicitly provided in the deterministic data blocks above. Required for a T-square: one opposition within allowed orb AND a third planet squaring BOTH ends within allowed orb.
+- NEVER infer a configuration from sign occupancy alone. Three planets in cardinal signs is NOT a T-square. Three planets in fire signs is NOT a Grand Trine. Same-sign placement is NOT an aspect.
+- If degrees do not support a named structure, you MUST NOT label it (no "T-square", no "apex", no "Grand Trine"). Describe the situation as "multiple tensions between these placements" or "several friction aspects clustering between [people]" instead.
+- Do NOT assign psychological meaning that requires a valid configuration (e.g. apex "absorbs emotional fallout", "carries the pressure", Grand Trine "ease pattern", Yod "fated finger") unless that configuration is mathematically valid and listed in the data blocks above.
+- Goal: prevent false structural claims. When in doubt, describe the raw aspects, not the structure.
+
 ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlreadyWorks, repairProfile, respondsBestWhen, sections, essence):
 - Do NOT convert astrological aspects into guaranteed positive or ideal outcomes. Every aspect is a RANGE of expression, not a fixed result.
 - Each strength, bridge, or harmonious contact must be stated as a POTENTIAL that can also distort, miss, or turn friction depending on mood, regulation, sect, hard aspects to the same body, or real-life context.
