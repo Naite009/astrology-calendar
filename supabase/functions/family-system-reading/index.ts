@@ -306,7 +306,7 @@ EVIDENCE-CARD STEP (do this BEFORE writing any prose):
 1. Build a Parent Regulator card for each parent: Moon (with phase + sect), Mercury, Saturn, ASC/4th/10th rulers, retrograde flags, current profected house.
 2. Build a Child Adaptation card for EACH child: Moon (with phase + sect), Saturn/Chiron sensitivity, Mercury/Mars pressure, ASC/4th/10th rulers, retrograde flags, current profected house, strongest cross-aspects to each parent.
 3. Build a Sibling card from EXACT synastry aspects between siblings only (no birth-order assumptions).
-4. Build a Household Climate card using: composite Moon + composite Saturn + composite Ascendant + any cross-chart T-square apex + repeated patterns across 2+ member cards.
+4. Build a Household Climate card primarily from: repeated patterns observed across 2+ member cards, cross-chart T-square apex, parent-activation hits, and the dominant moon-element tally. The household composite Moon/Saturn/Ascendant may be added ONLY as a light supporting tone (see FAMILY COMPOSITE WEIGHTING RULE).
 Then write the JSON. Every claim must trace to one of those cards. If a card is empty, say so plainly rather than invent.
 
 INLINE CITATION RULE (HARD): Every sentence in householdRegulationPattern, childAdaptations.line, siblingPressurePoints.body, whatEscalates.body, and whatHelps MUST trace to a specific named placement, Moon phase, sect, profected house, ruler chain link, retrograde flag, parent-activation hit, cross-chart T-square apex, composite-chart placement, or named cross-aspect from the data. Inline citation in parentheses preferred (e.g. "(composite Moon in Capricorn)" or "(Lauren's Saturn square Max's Sun, 1.8°)"). A claim with no astrological source MUST be deleted.
