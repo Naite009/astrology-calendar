@@ -335,7 +335,8 @@ export interface FamilySystemReadingResponse {
   siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
   /** @deprecated Replaced by static "What To Do When Things Escalate" playbook in UI. Field retained for backward compatibility with cached readings; new readings will not populate it. */
   householdInTheMoment?: { scenario: string; actions: string[] }[];
-  householdMakesItWorse?: string[]; // household-level patterns to avoid
+  /** @deprecated Replaced by static "When Pressure Builds" section computed client-side from chart data. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  householdMakesItWorse?: string[];
   error?: string;
 }
 
@@ -420,4 +421,37 @@ export function buildFamilySystemPayload(
     householdComposite: composite,
     pairComposites,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic "When Pressure Builds" pattern generator (client-side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildPressurePattern(chart: NatalChart): string {
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  // Mars = primary action under pressure; fall back to Moon (emotional reactivity), then Mercury
+  const sign = planets.Mars?.sign || planets.Moon?.sign || planets.Mercury?.sign;
+  if (!sign) return "may become quieter or more self-contained";
+
+  // Fire
+  if (sign === "Aries") return "may act quickly, push back, or resist direction";
+  if (sign === "Leo") return "may become more expressive or noticeable";
+  if (sign === "Sagittarius") return "may speak directly or pull away to get space";
+
+  // Water
+  if (sign === "Cancer") return "may become quiet or focused on safety";
+  if (sign === "Scorpio") return "may become intense, reactive, or hard to read";
+  if (sign === "Pisces") return "may withdraw or become overwhelmed by the noise";
+
+  // Air
+  if (sign === "Gemini") return "may talk faster or intellectualize the situation";
+  if (sign === "Libra") return "may try to restore calm or step back to think things through";
+  if (sign === "Aquarius") return "may detach and observe before responding";
+
+  // Earth
+  if (sign === "Taurus") return "may slow down and hold their ground";
+  if (sign === "Virgo") return "may try to fix the problem or organize the situation";
+  if (sign === "Capricorn") return "may become more focused on fixing things or getting them done";
+
+  return "may become quieter or more self-contained";
 }
