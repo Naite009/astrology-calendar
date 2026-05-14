@@ -238,6 +238,12 @@ RELATIONSHIP COVERAGE RULE (CRITICAL — applies to parentChildConnections AND c
 - Do NOT imply lack of connection by omission. Skipping a relationship creates the false impression "there is no bond here." Every parent must see themselves in relationship with EACH child, not just the easiest ones to describe.
 - 3-5 sentences per pair. Plain English. Inline citation of the named aspect(s) used.
 
+CONNECTION DEFINITION RULE (CRITICAL — applies to parentChildConnections AND siblingConnections):
+- "Connection" does NOT mean easy, smooth, positive, or harmonious. Connection means EMOTIONALLY IMPACTFUL, activating, influential, and meaningful in real life.
+- Every primary relationship MUST be included: every parent↔child pair AND every sibling↔sibling pair. NEVER skip a pair because it is tense, frustrating, inconsistent, or hard to describe positively.
+- For each pair, include BOTH "what can work" AND "what can feel hard". A friction-heavy pair is still a connection — name the friction honestly while framing the bond as significant. Example pivot: instead of "they connect easily", write "this relationship can feel intense or frustrating at times, but it is also one of the most emotionally significant in the system."
+- Omission implies "there is no bond here" — never let that happen. The user must feel every important relationship was acknowledged.
+
 TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - This is the entry point of the entire reading. Every family member (parents AND children) MUST get exactly ONE simple line describing their core behavioral pattern.
 - Format per entry: { "name": "<member name>", "line": "<one sentence>" }. One sentence per person. Plain English. Observable behavior only.
