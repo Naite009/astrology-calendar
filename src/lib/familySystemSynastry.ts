@@ -331,7 +331,8 @@ export interface FamilySystemReadingResponse {
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
   whatHelps: string; // realistic, low-pressure practices for THIS family
   whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
-  parentChildConnections?: { parent: string; child: string; body: string }[]; // REQUIRED: one entry per parent-child pair, no skipping
+  parentChildConnections?: { parent: string; child: string; body: string }[]; // REQUIRED: one entry per parent-child pair, no skipping (connection = emotionally impactful, not necessarily easy)
+  siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
   householdInTheMoment?: { scenario: string; actions: string[] }[]; // family-wide real-time interventions
   householdMakesItWorse?: string[]; // household-level patterns to avoid
   error?: string;
