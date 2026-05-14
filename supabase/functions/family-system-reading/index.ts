@@ -181,6 +181,16 @@ REAL-TIME SCENARIO VALIDATION RULE (applies to childAdaptations[].inTheMoment AN
 - If only ONE qualifying signature exists for a child or for the household, return ONE scenario. If TWO exist, return TWO. Do NOT pad to 4. If NONE exist, return an empty array []. Accuracy over completeness.
 - Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
 
+SCENARIO DERIVATION RULE (CRITICAL — applies to childAdaptations[].inTheMoment AND householdInTheMoment, layered ON TOP OF the validation rule above):
+- inTheMoment scenarios MUST be derived from patterns ALREADY DESCRIBED earlier in THIS SAME reading: "whatEscalates" (per-member triggers), "childAdaptations[].line" (each child's regulation/adaptation style), "childAdaptations[].respondsBestWhen", and "childAdaptations[].whatMakesItWorse". Do NOT introduce a new behavior pattern in inTheMoment that was not already named upstream.
+- Process you MUST follow internally before writing any scenario: (1) identify the actual escalation patterns you already wrote in whatEscalates / childAdaptations.line / whatMakesItWorse for this family, (2) select 2-4 of those patterns that are also chart-supported, (3) convert each into a real-time moment phrased as the parent would actually witness it, (4) write actions for THOSE exact moments.
+- FORBIDDEN: generic astrology assumptions ("Leo Moon = dramatic reaction", "Cancer Moon = retreats to room"), default sibling tropes ("one shuts down, one escalates") unless that exact split was already established earlier in childAdaptations, any scenario not explicitly supported by an earlier section of this same reading.
+- If no clear pattern exists for a given child or for the household, REDUCE the number of scenarios. Do not fabricate. An empty array is correct.
+- CONSISTENCY RULE (HARD): Each child's inTheMoment scenarios must match how that child was characterized earlier. If a child was described in childAdaptations.line as escalating / loud / reactive, do NOT later describe them as withdrawing or shutting down in inTheMoment. If a child was described as quiet / shutdown / withdrawing, do NOT later describe them as explosive. Internal contradiction across sections is INVALID OUTPUT.
+- The household scenario set must mirror the household's escalation pattern as already described in householdRegulationPattern + whatEscalates entries. No new household failure modes introduced here.
+- Goal: every scenario should make the parent think "yes, that actually happens" and recognize it as the same pattern named earlier, not a new claim.
+
+
 NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdInTheMoment, householdMakesItWorse):
 - ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what each member may DO or SHOW.
 - FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame", "grief underneath", "fear of abandonment", "emotional wound"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
