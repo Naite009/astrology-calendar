@@ -428,6 +428,15 @@ JSON SCHEMA:
     "misread": string (1-2 sentences describing how this child's behavior may APPEAR to the parent on the outside, in plain parenting language. If no qualifying nervous-system signatures, return ""),
     "underneath": string (1-2 sentences describing what the child may actually be experiencing internally. Use "may"/"might"/"can". If empty, return ""),
     "whatHelps": [string, ...2-4 concrete parenting responses, verbs first. If empty, return []]
+  },
+  "connectionMisfire": {
+    "title": "When Connection Misfires",
+    "framing": string (1-2 sentences. Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
+    "parentIntent": string (1-2 sentences. What the parent is TRYING to do — explain, reason, make things fair, protect, teach, set limits. Anchor to the parent's own Mercury/Sun/Saturn/Chiron pattern shown in the cross-aspects.),
+    "childExperience": string (1-2 sentences. How the child may EXPERIENCE that intent — as pressure, control, being unseen emotionally, being cornered, being judged. Anchor to the child's Moon/Mercury/Saturn/Chiron sensitivities and the specific named misfire aspect with orb.),
+    "childProtection": string (1-2 sentences. What the child may DO instead of showing vulnerability — sharp words, cold logic, withdrawal, sarcasm, attack language, shutdown, debating the accusation, walking away. Calibrated to this specific child's Mars/Mercury/Moon pattern. Use "may"/"might".),
+    "whatHelpsInTheMoment": [string, ...3-5 concrete parent moves, verb-first, simple enough to remember when activated. Examples: "Use fewer words", "Set a clear, short boundary", "Do not argue the accusation", "Step away for 60 seconds before responding", "Come back later when both nervous systems are calmer", "Lower your tone instead of matching theirs". FORBIDDEN: long therapy scripts, multi-sentence dialogue.],
+    "accountabilityNote": string (1 sentence. Make explicit that overwhelm may EXPLAIN the reaction but does NOT make hurtful, disrespectful, or attacking language acceptable. Do not excuse the behavior. Do not blame the parent for the child's words. Tone: clear, non-shaming, honest.)
   }
 }
 
