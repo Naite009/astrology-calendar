@@ -96,6 +96,15 @@ interface ReadingPayload {
     underneath: string;
     whatHelps: string[];
   };
+  connectionMisfire?: {
+    title: string;
+    framing: string;
+    parentIntent: string;
+    childExperience: string;
+    childProtection: string;
+    whatHelpsInTheMoment: string[];
+    accountabilityNote: string;
+  };
   whatAlreadyWorks: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
 }
 
