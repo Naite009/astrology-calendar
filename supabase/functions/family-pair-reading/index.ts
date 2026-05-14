@@ -323,6 +323,15 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — essence, sect
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into a single psychological explanation. State the parent behavior as a behavior. State the child adaptation as a behavior. State the group tendency as a tendency. Each stands on its own as something observable.
 - The parent should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
+- The reading must NOT over-weight tension, conflict, or dysfunction. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point between this parent and child — drawn from the same chart evidence (bridge aspects, shared element, supportive synastry, easy ruler chains, harmonious Moon/Venus/Jupiter contacts, shared sect, shared mode).
+- pressureProfile MUST be paired with repairProfile or with a working-dynamic line. Never present pressure without a corresponding strength.
+- whatMakesItWorse MUST be paired conceptually with respondsBestWhen — the parent should leave with both "what to avoid" AND "what already works" between them.
+- Examples of required pairing: instead of only "communication mismatch" → also "they connect easily through shared activity / humor / quiet side-by-side time"; instead of only "child escalates under pressure" → also "this child brings energy, leadership, or quick recovery once the heat drops".
+- FORBIDDEN overall tone: that the relationship is dysfunctional, that they don't understand each other, that everything is conflict-based, that the child is "too much" or the parent is "failing". 
+- REQUIRED overall tone: "this is complex, AND here is what is genuinely working between you, AND here is what to build on" — never "this is broken".
+- If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridge (a single trine, a shared sign, a Moon-Venus contact, a shared ruler) and name it as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
