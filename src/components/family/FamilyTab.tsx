@@ -1123,6 +1123,25 @@ const AiPairReadingView = ({
         </Card>
       )}
 
+      {reading.whatMakesItWorse && reading.whatMakesItWorse.length > 0 && (
+        <Card className="border-destructive/40">
+          <CardHeader className="pb-3 bg-destructive/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-destructive" />
+              What Makes It Worse
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Common parent behaviors that reliably escalate this child. Avoid these.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {reading.whatMakesItWorse.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
