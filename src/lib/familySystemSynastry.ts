@@ -335,7 +335,8 @@ export interface FamilySystemReadingResponse {
   siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
   /** @deprecated Replaced by static "What To Do When Things Escalate" playbook in UI. Field retained for backward compatibility with cached readings; new readings will not populate it. */
   householdInTheMoment?: { scenario: string; actions: string[] }[];
-  householdMakesItWorse?: string[]; // household-level patterns to avoid
+  /** @deprecated Replaced by static "When Pressure Builds" section computed client-side from chart data. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  householdMakesItWorse?: string[];
   error?: string;
 }
 
