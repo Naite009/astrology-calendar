@@ -1181,6 +1181,30 @@ const AiPairReadingView = ({
 const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResponse }) => {
   return (
     <div className="space-y-4">
+      {reading.atAGlance && reading.atAGlance.length > 0 && (
+        <Card className="border-primary/60 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              How This Family Works (At a Glance)
+            </CardTitle>
+            <CardDescription className="pt-1">
+              One plain-language line per family member. The entry point for the rest of the reading.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 text-sm">
+            <ul className="space-y-2">
+              {reading.atAGlance.map((m, i) => (
+                <li key={i} className="leading-snug">
+                  <span className="font-semibold">{m.name}</span>
+                  <span className="text-muted-foreground"> → {m.line}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {reading.whatAlreadyWorks && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
