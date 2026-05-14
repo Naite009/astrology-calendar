@@ -278,8 +278,11 @@ ${activationBlock}
 CROSS-CHART T-SQUARES (apex carries the household's pressure release point — recurring family pattern, not just one-off aspects):
 ${tsqBlock}
 
-HOUSEHOLD COMPOSITE CHART (circular midpoint of all members — the family's SHARED emotional center, treated as a single entity):
+HOUSEHOLD COMPOSITE CHART (light snapshot only — secondary, supporting tone, NEVER the primary lens):
 ${compositeBlock}
+
+PAIR COMPOSITES (carry MORE interpretive weight than the whole-family composite — use these to describe the tone of each specific relationship):
+${pairCompositeBlock}
 
 MOON ELEMENT BREAKDOWN: ${moonBreakdown}
 SUN ELEMENT BREAKDOWN: ${sunBreakdown}
