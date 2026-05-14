@@ -307,6 +307,14 @@ HUMAN CONTRADICTION RULE (hard requirement):
 - Do NOT reduce the child to a single adjective like "sensitive", "emotional", "creative", or "strong" without naming the tension or counter-current alongside it.
 - The contradiction must be grounded in this child's actual chart signatures, not pasted in as a generic phrase.
 
+REAL-TIME SCENARIO VALIDATION RULE (applies to "inTheMoment"):
+- Each scenario MUST be derived from THIS chart's actual evidence: a named parent-child cross-aspect, a high-weight pressure signature (Saturn / Chiron / Mars / Pluto / out-of-bounds Moon / retrograde Mercury or Mars), or a repeated pattern already named earlier in this reading (essence, sections, pressureProfile, repairProfile).
+- The scenario sentence MUST be writeable in this form: "When [observable behavior] (driven by [named placement or aspect with orb])". You do not have to print the parenthetical, but you MUST be able to. If you cannot, DO NOT include the scenario.
+- FORBIDDEN default scenarios that are not chart-supported: "one child shuts down, one gets loud", generic "why" question backlash, generic sibling escalation, generic transition meltdowns, generic teary-at-correction. These are only allowed if the chart explicitly supports them (e.g. Moon-Saturn hard contact for shutdown, Mars-Mercury hard for argument-back, hard Moon-Uranus for transition refusal).
+- If only ONE qualifying signature exists, return ONE scenario. If TWO exist, return TWO. Do NOT pad to 4. Accuracy over completeness. 2 real scenarios beats 4 generic ones.
+- If NO qualifying signature exists for in-the-moment escalation, return an empty array []. Do not invent.
+- Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
