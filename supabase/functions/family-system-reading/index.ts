@@ -188,6 +188,16 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdInTheMoment, householdMakesItWorse):
+- The reading must NOT over-weight tension, conflict, or dysfunction in this family. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point — drawn from the same chart evidence (bridge aspects in topBridges, shared placements, harmonious composite/pair-composite contacts, shared element or sect, supportive sibling synastry, easy ruler chains).
+- siblingPressurePoints MUST be balanced by an explicit strength sentence per child ("where this child contributes to the family", "what they bring that works"). 
+- whatEscalates MUST be paired with whatHelps. householdMakesItWorse MUST be paired conceptually with householdInTheMoment leverage — never leave the family with only "what's wrong".
+- childAdaptations entries: each child's "line" MUST include at least one observable strength this child brings (energy, leadership, attunement, humor, problem-solving, steadiness, creativity) tied to a named placement, alongside the adaptation pattern.
+- Examples of required pairing: instead of only "siblings escalate each other" → also "they share [named bridge aspect] and can co-regulate through play or movement"; instead of only "household runs hot under pressure" → also "the same fire energy gives the family momentum, recovery speed, and warmth on good days".
+- FORBIDDEN overall tone: that the family is dysfunctional, that no one understands each other, that everything is conflict-based, that the household is broken. 
+- REQUIRED overall tone: "this is complicated, AND here is what is genuinely working, AND here is what to build on" — the parent must finish the reading able to name both the friction AND the working ground.
+- If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridges (a single sibling trine, a shared Moon element across two members, a parent-child Venus/Jupiter contact, a supportive composite Sun) and name them as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
