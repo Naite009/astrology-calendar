@@ -239,14 +239,28 @@ Generate exactly one childAdaptations entry per CHILD (not per member; parents d
     const c = body.householdComposite ?? {};
     const compositeBlock = c && (c.Sun || c.Moon)
       ? [`- Composite Sun: ${c.Sun?.sign ?? "?"} ${c.Sun?.degree ?? ""}°`,
-         `- Composite Moon: ${c.Moon?.sign ?? "?"} ${c.Moon?.degree ?? ""}° (HOUSEHOLD'S shared regulation style)`,
+         `- Composite Moon: ${c.Moon?.sign ?? "?"} ${c.Moon?.degree ?? ""}° (light snapshot of a possible shared tendency — supporting tone only)`,
          `- Composite Mercury: ${c.Mercury?.sign ?? "?"} ${c.Mercury?.degree ?? ""}°`,
          `- Composite Venus: ${c.Venus?.sign ?? "?"} ${c.Venus?.degree ?? ""}°`,
          `- Composite Mars: ${c.Mars?.sign ?? "?"} ${c.Mars?.degree ?? ""}°`,
-         `- Composite Saturn: ${c.Saturn?.sign ?? "?"} ${c.Saturn?.degree ?? ""}° (where the household enforces structure or shuts down)`,
+         `- Composite Saturn: ${c.Saturn?.sign ?? "?"} ${c.Saturn?.degree ?? ""}° (where the household tends to tighten or stall — supporting tone only)`,
          `- Composite Ascendant: ${c.Ascendant?.sign ?? "?"} ${c.Ascendant?.degree ?? ""}°`,
         ].join("\n")
       : "(no composite chart available)";
+
+    const pairCompositeBlock = (body.pairComposites ?? []).length
+      ? body.pairComposites!.map((pc) => {
+          const cc = pc.composite;
+          const bits: string[] = [];
+          if (cc.Sun) bits.push(`Sun ${cc.Sun.sign} ${cc.Sun.degree}°`);
+          if (cc.Moon) bits.push(`Moon ${cc.Moon.sign} ${cc.Moon.degree}°`);
+          if (cc.Mercury) bits.push(`Mercury ${cc.Mercury.sign} ${cc.Mercury.degree}°`);
+          if (cc.Venus) bits.push(`Venus ${cc.Venus.sign} ${cc.Venus.degree}°`);
+          if (cc.Mars) bits.push(`Mars ${cc.Mars.sign} ${cc.Mars.degree}°`);
+          if (cc.Saturn) bits.push(`Saturn ${cc.Saturn.sign} ${cc.Saturn.degree}°`);
+          return `- ${pc.pairType} composite (${pc.nameA} + ${pc.nameB}): ${bits.join(", ")}`;
+        }).join("\n")
+      : "(no pair composites available)";
 
     const userPrompt = `FAMILY MEMBERS: ${memberList}
 
