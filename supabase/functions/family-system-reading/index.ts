@@ -209,6 +209,17 @@ NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
 - Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the family engage" (cite the child's Mars or Sun placement), "The parent naturally creates structure and stability" (cite Saturn or earth emphasis), "There is an easy flow in one-on-one connection" (cite a parent-child trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
 - The user should recognize: "This is not just hard — there are things already working here."
 
+ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlreadyWorks, whatHelps, householdRegulationPattern, childAdaptations, siblingPressurePoints):
+- Do NOT convert astrological aspects into guaranteed positive or ideal outcomes. Every aspect is a RANGE of expression, not a fixed result.
+- Each strength, bridge, or harmonious contact must be stated as a POTENTIAL that can also distort, miss, or turn friction depending on mood, regulation, sect, hard aspects to the same body, or real-life context.
+- FORBIDDEN phrasing (assumes ideal expression is happening): "they connect easily through X", "they have productive conversations", "this child feels seen", "this creates trust", "this brings harmony", "this gives the family ease".
+- REQUIRED phrasing (range-based, observable): "may connect through X, but can also turn competitive or escalate when dysregulated", "can support structured conversations, but may also feel critical or hard to engage with", "can support feeling seen, but may not always land that way in practice", "tends to flow when everyone is regulated; under pressure it can flatten or go silent".
+- Always pair the ideal expression with the realistic distortion of the SAME aspect. Trines can go lazy or unused. Sextiles can be missed. Conjunctions can fuse and lose differentiation. Moon-Venus can also turn placating. Jupiter contacts can also inflate or skip accountability.
+- If real-life behavior (from user-provided context, repeated patterns, or hard aspects on the same body) contradicts the ideal expression, reflect the real-life version FIRST and the potential version second.
+- Prioritize observable behavior over textbook ideal interpretation. Astrology describes potential patterns — not guaranteed experiences.
+- This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
+
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
