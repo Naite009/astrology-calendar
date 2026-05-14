@@ -316,6 +316,15 @@ REAL-TIME SCENARIO VALIDATION RULE (applies to "inTheMoment"):
 - If NO qualifying signature exists for in-the-moment escalation, return an empty array []. Do not invent.
 - Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
 
+SCENARIO DERIVATION RULE (CRITICAL — applies to "inTheMoment", layered ON TOP OF the validation rule above):
+- inTheMoment scenarios MUST be derived from patterns ALREADY DESCRIBED earlier in THIS SAME pair reading: "essence", "sections", "pressureProfile", "repairProfile", "respondsBestWhen", and "whatMakesItWorse". Do NOT introduce a new behavior pattern in inTheMoment that was not already named upstream.
+- Process you MUST follow internally before writing any scenario: (1) identify the actual escalation patterns you already wrote in pressureProfile / sections / whatMakesItWorse for this specific pair, (2) select 2-4 of those patterns that are also chart-supported, (3) convert each into a real-time moment phrased as the parent would actually witness it, (4) write actions for THOSE exact moments.
+- FORBIDDEN: generic astrology assumptions ("Leo Moon = dramatic reaction", "Cancer Moon = retreats"), default tropes, any scenario not explicitly supported by an earlier section of this same reading.
+- If no clear pattern exists, REDUCE scenarios. Do not fabricate. An empty array is correct.
+- CONSISTENCY RULE (HARD): Scenarios must match how this child was characterized earlier. If essence/sections describe this child as escalating / loud / reactive, do NOT later describe them as withdrawing or shutting down in inTheMoment. If described as quiet / shutdown, do NOT later describe them as explosive. Internal contradiction across sections is INVALID OUTPUT.
+- Goal: every scenario should make the parent think "yes, that actually happens" and recognize it as the same pattern named earlier, not a new claim.
+
+
 NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
 - ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what the parent or child may DO or SHOW.
 - FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame spiral", "grief underneath", "fear of abandonment", "emotional wound running deep"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
