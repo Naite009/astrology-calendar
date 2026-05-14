@@ -333,6 +333,16 @@ STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressurePro
 - REQUIRED overall tone: "this is complex, AND here is what is genuinely working between you, AND here is what to build on" — never "this is broken".
 - If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridge (a single trine, a shared sign, a Moon-Venus contact, a shared ruler) and name it as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
 
+NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
+- This is a REQUIRED, standalone section. It must NOT be merged into other sections.
+- List 3-5 specific, concrete, observable strengths this parent and child already have as a pair.
+- Ground every claim in actual chart evidence: bridge aspects (trines, sextiles, conjunctions), shared element or sect, harmonious Moon/Venus/Jupiter contacts, easy ruler chains, shared sign emphasis.
+- Describe where this pair naturally connects or functions well.
+- FORBIDDEN: vague positivity like "loving relationship", "they care about each other", "strong bond".
+- REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern.
+- Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the parent engage" (cite the child's Mars or Sun placement), "There is an easy flow in one-on-one connection" (cite a trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
+- The user should recognize: "This is not just hard — there are things already working here."
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
