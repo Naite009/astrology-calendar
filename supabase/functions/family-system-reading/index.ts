@@ -174,14 +174,14 @@ Every sentence in the output must be traceable to one of these cards. If a claim
 
 16. OUTPUT IS SHORT, EVIDENCE-BASED, OBSERVATIONAL. Not a story. Not a myth. Not a personality essay. Forbidden phrases include but are not limited to: "buzzing household", "adventurous family", "vibrant home", "the oldest…", "the youngest…", "the middle child…", any sentence whose meaning depends only on an element or sign label, and any generic family goal that is not tied to a named placement. Keep each prose field tight. Cut filler. Cite at least one named placement or aspect per pressure point and per bridge.
 
-REAL-TIME SCENARIO VALIDATION RULE (applies to childAdaptations[].inTheMoment AND householdInTheMoment):
+REAL-TIME SCENARIO VALIDATION RULE (applies to childAdaptations[].inTheMoment (household-level scenarios are no longer generated)):
 - Each scenario MUST be derived from THIS family's actual chart evidence: a named parent-child or sibling cross-aspect from the friction/bridge lists, a high-weight pressure signature (Saturn / Chiron / Mars / Pluto / out-of-bounds Moon / retrograde Mercury or Mars), the household composite Moon or Saturn, a cross-chart T-square apex, or a pattern already named earlier in this reading.
 - The scenario MUST be writeable as "When [observable behavior] (driven by [named placement, aspect with orb, or composite signature])". You do not have to print the parenthetical, but if you cannot write it, DO NOT include the scenario.
 - FORBIDDEN default scenarios when not chart-supported: "one child shuts down while another gets loud", "voices stack on top of each other", generic "why" question backlash, generic transition meltdowns, generic dinner-table shutdowns, generic sibling escalation. These are only allowed when the chart explicitly supports them (e.g. one child's Moon-Saturn for shutdown PLUS another's Mars-Sun for loud reactivity, or a composite Moon square Saturn for stacked-voices overload).
 - If only ONE qualifying signature exists for a child or for the household, return ONE scenario. If TWO exist, return TWO. Do NOT pad to 4. If NONE exist, return an empty array []. Accuracy over completeness.
 - Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
 
-SCENARIO DERIVATION RULE (CRITICAL — applies to childAdaptations[].inTheMoment AND householdInTheMoment, layered ON TOP OF the validation rule above):
+SCENARIO DERIVATION RULE (CRITICAL — applies to childAdaptations[].inTheMoment (household-level scenarios are no longer generated), layered ON TOP OF the validation rule above):
 - inTheMoment scenarios MUST be derived from patterns ALREADY DESCRIBED earlier in THIS SAME reading: "whatEscalates" (per-member triggers), "childAdaptations[].line" (each child's regulation/adaptation style), "childAdaptations[].respondsBestWhen", and "childAdaptations[].whatMakesItWorse". Do NOT introduce a new behavior pattern in inTheMoment that was not already named upstream.
 - Process you MUST follow internally before writing any scenario: (1) identify the actual escalation patterns you already wrote in whatEscalates / childAdaptations.line / whatMakesItWorse for this family, (2) select 2-4 of those patterns that are also chart-supported, (3) convert each into a real-time moment phrased as the parent would actually witness it, (4) write actions for THOSE exact moments.
 - FORBIDDEN: generic astrology assumptions ("Leo Moon = dramatic reaction", "Cancer Moon = retreats to room"), default sibling tropes ("one shuts down, one escalates") unless that exact split was already established earlier in childAdaptations, any scenario not explicitly supported by an earlier section of this same reading.
@@ -191,7 +191,7 @@ SCENARIO DERIVATION RULE (CRITICAL — applies to childAdaptations[].inTheMoment
 - Goal: every scenario should make the parent think "yes, that actually happens" and recognize it as the same pattern named earlier, not a new claim.
 
 
-NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdInTheMoment, householdMakesItWorse):
+NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdMakesItWorse):
 - ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what each member may DO or SHOW.
 - FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame", "grief underneath", "fear of abandonment", "emotional wound"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
 - USE hedged behavioral language: "may tend to", "can show up as", "often responds by", "may lean toward", "tends to".
@@ -199,10 +199,10 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
-STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdInTheMoment, householdMakesItWorse):
+STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdMakesItWorse):
 - The reading must NOT over-weight tension, conflict, or dysfunction in this family. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point — drawn from the same chart evidence (bridge aspects in topBridges, shared placements, harmonious composite/pair-composite contacts, shared element or sect, supportive sibling synastry, easy ruler chains).
 - siblingPressurePoints MUST be balanced by an explicit strength sentence per child ("where this child contributes to the family", "what they bring that works"). 
-- whatEscalates MUST be paired with whatHelps. householdMakesItWorse MUST be paired conceptually with householdInTheMoment leverage — never leave the family with only "what's wrong".
+- whatEscalates MUST be paired with whatHelps. householdMakesItWorse MUST be paired conceptually with whatHelps — never leave the family with only "what's wrong".
 - childAdaptations entries: each child's "line" MUST include at least one observable strength this child brings (energy, leadership, attunement, humor, problem-solving, steadiness, creativity) tied to a named placement, alongside the adaptation pattern.
 - Examples of required pairing: instead of only "siblings escalate each other" → also "they share [named bridge aspect] and can co-regulate through play or movement"; instead of only "household runs hot under pressure" → also "the same fire energy gives the family momentum, recovery speed, and warmth on good days".
 - FORBIDDEN overall tone: that the family is dysfunctional, that no one understands each other, that everything is conflict-based, that the household is broken. 
