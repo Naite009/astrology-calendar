@@ -1142,6 +1142,25 @@ const AiPairReadingView = ({
         </Card>
       )}
 
+      {reading.whatAlreadyWorks && reading.whatAlreadyWorks.length > 0 && (
+        <Card className="border-emerald-500/40">
+          <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              What Already Works Between You
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Existing strengths and natural connection points in this relationship.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {reading.whatAlreadyWorks.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
