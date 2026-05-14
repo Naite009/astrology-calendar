@@ -172,6 +172,13 @@ Every sentence in the output must be traceable to one of these cards. If a claim
 
 16. OUTPUT IS SHORT, EVIDENCE-BASED, OBSERVATIONAL. Not a story. Not a myth. Not a personality essay. Forbidden phrases include but are not limited to: "buzzing household", "adventurous family", "vibrant home", "the oldest…", "the youngest…", "the middle child…", any sentence whose meaning depends only on an element or sign label, and any generic family goal that is not tied to a named placement. Keep each prose field tight. Cut filler. Cite at least one named placement or aspect per pressure point and per bridge.
 
+REAL-TIME SCENARIO VALIDATION RULE (applies to childAdaptations[].inTheMoment AND householdInTheMoment):
+- Each scenario MUST be derived from THIS family's actual chart evidence: a named parent-child or sibling cross-aspect from the friction/bridge lists, a high-weight pressure signature (Saturn / Chiron / Mars / Pluto / out-of-bounds Moon / retrograde Mercury or Mars), the household composite Moon or Saturn, a cross-chart T-square apex, or a pattern already named earlier in this reading.
+- The scenario MUST be writeable as "When [observable behavior] (driven by [named placement, aspect with orb, or composite signature])". You do not have to print the parenthetical, but if you cannot write it, DO NOT include the scenario.
+- FORBIDDEN default scenarios when not chart-supported: "one child shuts down while another gets loud", "voices stack on top of each other", generic "why" question backlash, generic transition meltdowns, generic dinner-table shutdowns, generic sibling escalation. These are only allowed when the chart explicitly supports them (e.g. one child's Moon-Saturn for shutdown PLUS another's Mars-Sun for loud reactivity, or a composite Moon square Saturn for stacked-voices overload).
+- If only ONE qualifying signature exists for a child or for the household, return ONE scenario. If TWO exist, return TWO. Do NOT pad to 4. If NONE exist, return an empty array []. Accuracy over completeness.
+- Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
