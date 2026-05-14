@@ -81,6 +81,7 @@ interface RequestBody {
   parentActivations?: ParentActivationGroup[];
   crossChartTSquares?: CrossChartTSquare[];
   householdComposite?: CompositeChart;
+  pairComposites?: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: CompositeChart }[];
 }
 
 interface ReadingPayload {
