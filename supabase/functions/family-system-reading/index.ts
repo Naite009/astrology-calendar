@@ -199,7 +199,7 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
-STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdMakesItWorse):
+STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps):
 - The reading must NOT over-weight tension, conflict, or dysfunction in this family. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point — drawn from the same chart evidence (bridge aspects in topBridges, shared placements, harmonious composite/pair-composite contacts, shared element or sect, supportive sibling synastry, easy ruler chains).
 - siblingPressurePoints MUST be balanced by an explicit strength sentence per child ("where this child contributes to the family", "what they bring that works"). 
 - whatEscalates MUST be paired with whatHelps. householdMakesItWorse MUST be paired conceptually with whatHelps — never leave the family with only "what's wrong".
