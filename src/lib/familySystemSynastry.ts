@@ -333,7 +333,8 @@ export interface FamilySystemReadingResponse {
   whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
   parentChildConnections?: { parent: string; child: string; body: string }[]; // REQUIRED: one entry per parent-child pair, no skipping (connection = emotionally impactful, not necessarily easy)
   siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
-  householdInTheMoment?: { scenario: string; actions: string[] }[]; // family-wide real-time interventions
+  /** @deprecated Replaced by static "What To Do When Things Escalate" playbook in UI. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  householdInTheMoment?: { scenario: string; actions: string[] }[];
   householdMakesItWorse?: string[]; // household-level patterns to avoid
   error?: string;
 }
