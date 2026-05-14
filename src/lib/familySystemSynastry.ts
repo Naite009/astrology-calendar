@@ -324,6 +324,7 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface FamilySystemReadingResponse {
+  atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member, top-of-report summary
   householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
   childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[]; // one per child
   siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
