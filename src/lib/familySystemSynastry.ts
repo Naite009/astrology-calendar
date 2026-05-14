@@ -375,6 +375,30 @@ export function buildFamilySystemPayload(
   const tsquares = crossChartTSquares(members.map((m) => ({ name: m.chart.name, chart: m.chart })));
   const composite = householdComposite(members);
 
+  // Pair composites (carry MORE interpretive weight than the whole-family composite).
+  // Compute for every parent-child pair and every sibling pair.
+  const pairComposites: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: ReturnType<typeof householdComposite> }[] = [];
+  for (const p of parents) {
+    for (const c of children) {
+      pairComposites.push({
+        pairType: "parent-child",
+        nameA: p.chart.name,
+        nameB: c.chart.name,
+        composite: householdComposite([p, c]),
+      });
+    }
+  }
+  for (let i = 0; i < children.length; i++) {
+    for (let j = i + 1; j < children.length; j++) {
+      pairComposites.push({
+        pairType: "sibling",
+        nameA: children[i].chart.name,
+        nameB: children[j].chart.name,
+        composite: householdComposite([children[i], children[j]]),
+      });
+    }
+  }
+
   return {
     members: members.map((m) => ({ name: m.chart.name, role: m.role })),
     memberSummaries: data.memberSummaries,
@@ -389,5 +413,6 @@ export function buildFamilySystemPayload(
     parentActivations,
     crossChartTSquares: tsquares,
     householdComposite: composite,
+    pairComposites,
   };
 }
