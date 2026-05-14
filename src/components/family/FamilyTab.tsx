@@ -1215,6 +1215,14 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
                     </div>
                   </div>
                 )}
+                {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-destructive">What Makes It Worse</div>
+                    <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 space-y-0.5">
+                      {c.whatMakesItWorse.map((w, wi) => <li key={wi}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
