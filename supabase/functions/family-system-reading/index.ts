@@ -81,6 +81,7 @@ interface RequestBody {
   parentActivations?: ParentActivationGroup[];
   crossChartTSquares?: CrossChartTSquare[];
   householdComposite?: CompositeChart;
+  pairComposites?: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: CompositeChart }[];
 }
 
 interface ReadingPayload {
@@ -238,14 +239,28 @@ Generate exactly one childAdaptations entry per CHILD (not per member; parents d
     const c = body.householdComposite ?? {};
     const compositeBlock = c && (c.Sun || c.Moon)
       ? [`- Composite Sun: ${c.Sun?.sign ?? "?"} ${c.Sun?.degree ?? ""}°`,
-         `- Composite Moon: ${c.Moon?.sign ?? "?"} ${c.Moon?.degree ?? ""}° (HOUSEHOLD'S shared regulation style)`,
+         `- Composite Moon: ${c.Moon?.sign ?? "?"} ${c.Moon?.degree ?? ""}° (light snapshot of a possible shared tendency — supporting tone only)`,
          `- Composite Mercury: ${c.Mercury?.sign ?? "?"} ${c.Mercury?.degree ?? ""}°`,
          `- Composite Venus: ${c.Venus?.sign ?? "?"} ${c.Venus?.degree ?? ""}°`,
          `- Composite Mars: ${c.Mars?.sign ?? "?"} ${c.Mars?.degree ?? ""}°`,
-         `- Composite Saturn: ${c.Saturn?.sign ?? "?"} ${c.Saturn?.degree ?? ""}° (where the household enforces structure or shuts down)`,
+         `- Composite Saturn: ${c.Saturn?.sign ?? "?"} ${c.Saturn?.degree ?? ""}° (where the household tends to tighten or stall — supporting tone only)`,
          `- Composite Ascendant: ${c.Ascendant?.sign ?? "?"} ${c.Ascendant?.degree ?? ""}°`,
         ].join("\n")
       : "(no composite chart available)";
+
+    const pairCompositeBlock = (body.pairComposites ?? []).length
+      ? body.pairComposites!.map((pc) => {
+          const cc = pc.composite;
+          const bits: string[] = [];
+          if (cc.Sun) bits.push(`Sun ${cc.Sun.sign} ${cc.Sun.degree}°`);
+          if (cc.Moon) bits.push(`Moon ${cc.Moon.sign} ${cc.Moon.degree}°`);
+          if (cc.Mercury) bits.push(`Mercury ${cc.Mercury.sign} ${cc.Mercury.degree}°`);
+          if (cc.Venus) bits.push(`Venus ${cc.Venus.sign} ${cc.Venus.degree}°`);
+          if (cc.Mars) bits.push(`Mars ${cc.Mars.sign} ${cc.Mars.degree}°`);
+          if (cc.Saturn) bits.push(`Saturn ${cc.Saturn.sign} ${cc.Saturn.degree}°`);
+          return `- ${pc.pairType} composite (${pc.nameA} + ${pc.nameB}): ${bits.join(", ")}`;
+        }).join("\n")
+      : "(no pair composites available)";
 
     const userPrompt = `FAMILY MEMBERS: ${memberList}
 
@@ -263,8 +278,11 @@ ${activationBlock}
 CROSS-CHART T-SQUARES (apex carries the household's pressure release point — recurring family pattern, not just one-off aspects):
 ${tsqBlock}
 
-HOUSEHOLD COMPOSITE CHART (circular midpoint of all members — the family's SHARED emotional center, treated as a single entity):
+HOUSEHOLD COMPOSITE CHART (light snapshot only — secondary, supporting tone, NEVER the primary lens):
 ${compositeBlock}
+
+PAIR COMPOSITES (carry MORE interpretive weight than the whole-family composite — use these to describe the tone of each specific relationship):
+${pairCompositeBlock}
 
 MOON ELEMENT BREAKDOWN: ${moonBreakdown}
 SUN ELEMENT BREAKDOWN: ${sunBreakdown}
@@ -288,12 +306,19 @@ EVIDENCE-CARD STEP (do this BEFORE writing any prose):
 1. Build a Parent Regulator card for each parent: Moon (with phase + sect), Mercury, Saturn, ASC/4th/10th rulers, retrograde flags, current profected house.
 2. Build a Child Adaptation card for EACH child: Moon (with phase + sect), Saturn/Chiron sensitivity, Mercury/Mars pressure, ASC/4th/10th rulers, retrograde flags, current profected house, strongest cross-aspects to each parent.
 3. Build a Sibling card from EXACT synastry aspects between siblings only (no birth-order assumptions).
-4. Build a Household Climate card using: composite Moon + composite Saturn + composite Ascendant + any cross-chart T-square apex + repeated patterns across 2+ member cards.
+4. Build a Household Climate card primarily from: repeated patterns observed across 2+ member cards, cross-chart T-square apex, parent-activation hits, and the dominant moon-element tally. The household composite Moon/Saturn/Ascendant may be added ONLY as a light supporting tone (see FAMILY COMPOSITE WEIGHTING RULE).
 Then write the JSON. Every claim must trace to one of those cards. If a card is empty, say so plainly rather than invent.
 
 INLINE CITATION RULE (HARD): Every sentence in householdRegulationPattern, childAdaptations.line, siblingPressurePoints.body, whatEscalates.body, and whatHelps MUST trace to a specific named placement, Moon phase, sect, profected house, ruler chain link, retrograde flag, parent-activation hit, cross-chart T-square apex, composite-chart placement, or named cross-aspect from the data. Inline citation in parentheses preferred (e.g. "(composite Moon in Capricorn)" or "(Lauren's Saturn square Max's Sun, 1.8°)"). A claim with no astrological source MUST be deleted.
 
-HOUSEHOLD COMPOSITE USAGE (HARD): householdRegulationPattern MUST cite the composite Moon AND composite Saturn at least once. The composite chart describes the family AS ONE ENTITY — its Moon is the household's shared regulation style, its Saturn is where the household enforces structure or collectively shuts down.
+FAMILY COMPOSITE WEIGHTING RULE (HARD):
+- The whole-family (household) composite is a LIGHT SNAPSHOT and SECONDARY supporting tone only. It is NEVER the primary lens.
+- PRIMARY interpretation MUST come from: parent-child synastry, sibling synastry, each child's own Moon / Saturn / Chiron / Mercury / Mars patterns, parent activation hits, and repeated household regulation patterns observed across 2+ member cards.
+- The household composite may be cited at most ONCE in householdRegulationPattern, and ONLY with hedged language: "may add a shared tendency toward…", "as a light supporting tone…", "may color the household with…". 
+- FORBIDDEN absolutist phrasings about the household composite: "this defines the family", "this means the family is [trait]", "the family IS [sign-flavored adjective]", "the household's shared regulation style is X" stated as fact. If you write any of these, DELETE the sentence.
+- If a household composite signature contradicts the synastry / individual chart evidence, the synastry and individual evidence WIN. Do not force-fit the composite.
+- PAIR COMPOSITES (parent-child, sibling) carry MORE interpretive weight than the household composite. When describing the tone of a specific relationship in childAdaptations, siblingPressurePoints, or whatHelps, prefer citing that pair's composite (e.g. "Lauren + Max composite Moon in [sign]") over the household composite. Same hedged language still applies ("may add a shared tone of…").
+- Do NOT cite the household composite in childAdaptations, siblingPressurePoints, or whatEscalates entries. Those sections are about individuals and pair dynamics, not the family-as-one-entity.
 
 T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
 
