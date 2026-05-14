@@ -475,6 +475,35 @@ OUTPUT FORMAT for pressureProfile:
 - "whatTheParentMayNotice": 3-5 short observable behaviors (e.g. "smart but hesitant", "strong defense but avoids shooting", "freezes when watched", "passes responsibility quickly", "gets upset after correction").
 - "whatHelps": 3-5 short supportive responses, verbs first (e.g. "praise effort before outcome", "reduce public correction", "give one simple instruction at a time", "practice pressure moments privately first", "name the fear without shaming it", "build confidence through safe repetition").
 
+CONNECTION MISFIRE TRANSLATION MODULE — "When Connection Misfires" (only fill if recipient is a child; otherwise empty strings/arrays):
+
+Purpose: Explain why a parent and child may genuinely care about each other but still experience the relationship as tense, distant, hostile, or disconnected. Translate astrology into a real interaction misfire pattern, not into a romanticized bond.
+
+CONNECTION MISFIRE TRIGGERS — only fill connectionMisfire fields if at least ONE of these qualifying signatures is present in the cross-aspects or the child's chart (with valid degree-based orb — Sun/Moon ≤10°, Mercury/Venus/Mars ≤6°, Jupiter/Saturn ≤6°, Uranus/Neptune/Pluto ≤5°, Chiron ≤4°). Same-sign is NOT an aspect:
+- parent Mercury hard aspect (conjunction, opposition, square, tight quincunx) child Moon
+- parent Sun hard aspect child Moon
+- parent Saturn hard aspect child Sun, Moon, or Mercury
+- parent Chiron hard aspect child Sun or Moon
+- child Cancer or Pisces Moon under pressure (hard aspect from any malefic or outer planet)
+- child Aquarius emphasis or Mercury under emotional stress (Mercury hard aspect Saturn / Chiron / Pluto, or Mercury in detriment under hard contact)
+- child Saturn or Chiron pressure signatures (Saturn or Chiron hard aspect personal planet in child's own chart)
+
+If NO qualifying signatures are present, return "" for every string field and [] for whatHelpsInTheMoment. DO NOT fabricate a misfire.
+
+REQUIRED OUTPUT (when triggered) — must follow this exact narrative arc, in this order:
+1. parentIntent — what the parent is TRYING to do (explain, reason, make things fair, protect, set limits)
+2. childExperience — how the child may EXPERIENCE that intent (pressure, control, not being emotionally understood, being cornered)
+3. childProtection — what the child may DO instead of showing vulnerability (sharp words, cold logic, withdrawal, sarcasm, attack language to push the parent away)
+4. whatHelpsInTheMoment — fewer words, clear boundary, do not argue the accusation, come back later when nervous systems are calmer
+5. accountabilityNote — overwhelm may EXPLAIN the reaction but does NOT make hurtful or disrespectful language acceptable
+
+HARD HONESTY RULES (CRITICAL):
+- DO NOT claim there is connection if the user may not feel connection in real life. When trigger signatures are heavy, framing MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment."
+- DO NOT romanticize the bond. No "deeply connected souls", "secret love language", "underneath it all they adore each other".
+- DO NOT excuse disrespectful behavior. Make explicit in accountabilityNote that the child's overwhelm explains but does not justify hurtful language.
+- DO NOT shame or blame the parent. The tone is "here is the misfire pattern", not "you are doing it wrong".
+- Goal the parent should feel: "I understand the misfire now without being told the relationship is better than it actually feels."
+
 FINAL RULE: Always translate astrology into parenting behavior. Never end on "this child has Saturn opposite Sun." End on what to DO and what the child NEEDS.
 
 REPAIR PROFILE — "What Repair Requires for This Child" (only fill if ${body.toName} is the child in this pair; otherwise return empty strings/arrays):
