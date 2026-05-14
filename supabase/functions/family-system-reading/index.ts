@@ -408,6 +408,14 @@ FAMILY COMPOSITE WEIGHTING RULE (HARD):
 
 T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
 
+ASPECT STRUCTURE VALIDATION RULE (CRITICAL — applies to T-square, Grand Trine, Grand Cross, Yod, Stellium, Mystic Rectangle, Kite, and ANY named configuration):
+- You may ONLY label a structure (e.g. "T-square", "Grand Trine", "Yod", "Grand Cross", "stellium", "mystic rectangle", "kite") if it appears EXPLICITLY in the deterministic data blocks above (CROSS-CHART T-SQUARES list, or a configuration block we explicitly provided). The deterministic detector has already validated degree-based orbs (opposition within orb AND third planet squaring BOTH ends within orb for T-squares).
+- You may NEVER infer a configuration from sign occupancy alone. Three planets in cardinal signs is NOT a T-square. Three planets in fire signs is NOT a Grand Trine. Same-sign placement is NOT an aspect.
+- If the CROSS-CHART T-SQUARES block is empty, you MUST NOT label any pattern as a T-square. You MUST NOT assign an "apex". You MUST NOT attribute "pressure release", "absorbs the household's emotional fallout", or any psychological meaning that depends on apex structure.
+- If degrees do not support a named structure, describe the situation honestly as "multiple tensions between these placements" or "several friction aspects clustering between [people]" — never as a configuration.
+- Do NOT assign psychological meaning that requires a valid configuration (e.g. apex "carrying" or "absorbing" pressure, Grand Trine "ease pattern", Yod "fated finger") unless that exact configuration is mathematically valid and listed in the deterministic blocks above.
+- Goal: prevent false structural claims that mislead interpretation. When in doubt, describe the raw aspects, not the structure.
+
 PROFECTION USAGE: Each childAdaptations.line MUST mention this child's current profected-house theme in at least one sentence ("this year for [name] is a [house] profection — [theme]").
 
 WHAT-HELPS CHECKLIST (the whatHelps field will be rejected if it fails any of these):
