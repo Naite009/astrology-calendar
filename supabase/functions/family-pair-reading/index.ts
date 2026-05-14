@@ -96,6 +96,15 @@ interface ReadingPayload {
     underneath: string;
     whatHelps: string[];
   };
+  connectionMisfire?: {
+    title: string;
+    framing: string;
+    parentIntent: string;
+    childExperience: string;
+    childProtection: string;
+    whatHelpsInTheMoment: string[];
+    accountabilityNote: string;
+  };
   whatAlreadyWorks: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
 }
 
@@ -419,6 +428,15 @@ JSON SCHEMA:
     "misread": string (1-2 sentences describing how this child's behavior may APPEAR to the parent on the outside, in plain parenting language. If no qualifying nervous-system signatures, return ""),
     "underneath": string (1-2 sentences describing what the child may actually be experiencing internally. Use "may"/"might"/"can". If empty, return ""),
     "whatHelps": [string, ...2-4 concrete parenting responses, verbs first. If empty, return []]
+  },
+  "connectionMisfire": {
+    "title": "When Connection Misfires",
+    "framing": string (1-2 sentences. Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
+    "parentIntent": string (1-2 sentences. What the parent is TRYING to do — explain, reason, make things fair, protect, teach, set limits. Anchor to the parent's own Mercury/Sun/Saturn/Chiron pattern shown in the cross-aspects.),
+    "childExperience": string (1-2 sentences. How the child may EXPERIENCE that intent — as pressure, control, being unseen emotionally, being cornered, being judged. Anchor to the child's Moon/Mercury/Saturn/Chiron sensitivities and the specific named misfire aspect with orb.),
+    "childProtection": string (1-2 sentences. What the child may DO instead of showing vulnerability — sharp words, cold logic, withdrawal, sarcasm, attack language, shutdown, debating the accusation, walking away. Calibrated to this specific child's Mars/Mercury/Moon pattern. Use "may"/"might".),
+    "whatHelpsInTheMoment": [string, ...3-5 concrete parent moves, verb-first, simple enough to remember when activated. Examples: "Use fewer words", "Set a clear, short boundary", "Do not argue the accusation", "Step away for 60 seconds before responding", "Come back later when both nervous systems are calmer", "Lower your tone instead of matching theirs". FORBIDDEN: long therapy scripts, multi-sentence dialogue.],
+    "accountabilityNote": string (1 sentence. Make explicit that overwhelm may EXPLAIN the reaction but does NOT make hurtful, disrespectful, or attacking language acceptable. Do not excuse the behavior. Do not blame the parent for the child's words. Tone: clear, non-shaming, honest.)
   }
 }
 
@@ -456,6 +474,35 @@ OUTPUT FORMAT for pressureProfile:
 - "plainEnglish": Translate to likely behavior, age-calibrated, using "may"/"might"/"can".
 - "whatTheParentMayNotice": 3-5 short observable behaviors (e.g. "smart but hesitant", "strong defense but avoids shooting", "freezes when watched", "passes responsibility quickly", "gets upset after correction").
 - "whatHelps": 3-5 short supportive responses, verbs first (e.g. "praise effort before outcome", "reduce public correction", "give one simple instruction at a time", "practice pressure moments privately first", "name the fear without shaming it", "build confidence through safe repetition").
+
+CONNECTION MISFIRE TRANSLATION MODULE — "When Connection Misfires" (only fill if recipient is a child; otherwise empty strings/arrays):
+
+Purpose: Explain why a parent and child may genuinely care about each other but still experience the relationship as tense, distant, hostile, or disconnected. Translate astrology into a real interaction misfire pattern, not into a romanticized bond.
+
+CONNECTION MISFIRE TRIGGERS — only fill connectionMisfire fields if at least ONE of these qualifying signatures is present in the cross-aspects or the child's chart (with valid degree-based orb — Sun/Moon ≤10°, Mercury/Venus/Mars ≤6°, Jupiter/Saturn ≤6°, Uranus/Neptune/Pluto ≤5°, Chiron ≤4°). Same-sign is NOT an aspect:
+- parent Mercury hard aspect (conjunction, opposition, square, tight quincunx) child Moon
+- parent Sun hard aspect child Moon
+- parent Saturn hard aspect child Sun, Moon, or Mercury
+- parent Chiron hard aspect child Sun or Moon
+- child Cancer or Pisces Moon under pressure (hard aspect from any malefic or outer planet)
+- child Aquarius emphasis or Mercury under emotional stress (Mercury hard aspect Saturn / Chiron / Pluto, or Mercury in detriment under hard contact)
+- child Saturn or Chiron pressure signatures (Saturn or Chiron hard aspect personal planet in child's own chart)
+
+If NO qualifying signatures are present, return "" for every string field and [] for whatHelpsInTheMoment. DO NOT fabricate a misfire.
+
+REQUIRED OUTPUT (when triggered) — must follow this exact narrative arc, in this order:
+1. parentIntent — what the parent is TRYING to do (explain, reason, make things fair, protect, set limits)
+2. childExperience — how the child may EXPERIENCE that intent (pressure, control, not being emotionally understood, being cornered)
+3. childProtection — what the child may DO instead of showing vulnerability (sharp words, cold logic, withdrawal, sarcasm, attack language to push the parent away)
+4. whatHelpsInTheMoment — fewer words, clear boundary, do not argue the accusation, come back later when nervous systems are calmer
+5. accountabilityNote — overwhelm may EXPLAIN the reaction but does NOT make hurtful or disrespectful language acceptable
+
+HARD HONESTY RULES (CRITICAL):
+- DO NOT claim there is connection if the user may not feel connection in real life. When trigger signatures are heavy, framing MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment."
+- DO NOT romanticize the bond. No "deeply connected souls", "secret love language", "underneath it all they adore each other".
+- DO NOT excuse disrespectful behavior. Make explicit in accountabilityNote that the child's overwhelm explains but does not justify hurtful language.
+- DO NOT shame or blame the parent. The tone is "here is the misfire pattern", not "you are doing it wrong".
+- Goal the parent should feel: "I understand the misfire now without being told the relationship is better than it actually feels."
 
 FINAL RULE: Always translate astrology into parenting behavior. Never end on "this child has Saturn opposite Sun." End on what to DO and what the child NEEDS.
 
@@ -581,7 +628,7 @@ THIS YEAR FOR THIS CHILD: At least ONE sentence in essence MUST reference the cu
 
 PARENT ACTIVATION SECTION: If the PARENT ACTIVATION MAP above contains any hits, the perceptionTranslation.whatHelps array MUST include one item directed AT THE PARENT (not the child) describing a regulation move for the parent (e.g. "When his anger lands on your Chiron, step out for 60 seconds and breathe before responding").
 
-Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Only fill pressureProfile, perceptionTranslation, and repairProfile if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those three objects.`;
+Write the reading. One section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

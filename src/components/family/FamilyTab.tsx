@@ -934,6 +934,73 @@ const AiPairReadingView = ({
           </Card>
         )}
 
+      {reading.connectionMisfire &&
+        (reading.connectionMisfire.framing?.trim() ||
+          reading.connectionMisfire.parentIntent?.trim() ||
+          reading.connectionMisfire.childExperience?.trim() ||
+          reading.connectionMisfire.childProtection?.trim() ||
+          reading.connectionMisfire.whatHelpsInTheMoment?.length > 0) && (
+          <Card className="border-amber-500/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                {reading.connectionMisfire.title || "When Connection Misfires"}
+              </CardTitle>
+              <CardDescription className="pt-1">
+                Why care can exist while the relationship still feels tense, distant, or hostile in the moment.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {reading.connectionMisfire.framing?.trim() && (
+                <p className="italic text-muted-foreground">{reading.connectionMisfire.framing}</p>
+              )}
+              {reading.connectionMisfire.parentIntent?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What you may be trying to do
+                  </div>
+                  <p>{reading.connectionMisfire.parentIntent}</p>
+                </div>
+              )}
+              {reading.connectionMisfire.childExperience?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    How your child may experience it
+                  </div>
+                  <p>{reading.connectionMisfire.childExperience}</p>
+                </div>
+              )}
+              {reading.connectionMisfire.childProtection?.trim() && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What they may do instead of showing vulnerability
+                  </div>
+                  <p>{reading.connectionMisfire.childProtection}</p>
+                </div>
+              )}
+              {reading.connectionMisfire.whatHelpsInTheMoment?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    What helps in the moment
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.connectionMisfire.whatHelpsInTheMoment.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {reading.connectionMisfire.accountabilityNote?.trim() && (
+                <div className="border-l-2 border-amber-500/60 pl-3">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Important
+                  </div>
+                  <p className="text-muted-foreground">{reading.connectionMisfire.accountabilityNote}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
       {reading.repairProfile &&
         (reading.repairProfile.plainEnglish?.trim() ||
           reading.repairProfile.whatHelps?.length > 0) && (

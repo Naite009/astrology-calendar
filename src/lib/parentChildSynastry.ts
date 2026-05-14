@@ -449,6 +449,15 @@ export interface PairReadingResponse {
   pressureProfile?: PressureProfile | null;
   perceptionTranslation?: PerceptionTranslation | null;
   repairProfile?: RepairProfile | null;
+  connectionMisfire?: {
+    title: string;
+    framing: string; // hard-rule honesty: "care exists, but connection may be hard to access in the moment" when applicable
+    parentIntent: string; // what the parent is trying to do
+    childExperience: string; // how the child may experience it
+    childProtection: string; // what the child may do instead of showing vulnerability
+    whatHelpsInTheMoment: string[]; // 3-5 concrete parent moves
+    accountabilityNote: string; // overwhelm explains the reaction but does not make hurtful language acceptable
+  } | null;
   ageYears: number | null;
   aspectsUsed: number;
   overallIntensity?: "mild" | "moderate" | "strong" | "dominant";
