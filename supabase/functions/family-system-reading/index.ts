@@ -199,6 +199,16 @@ STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, ch
 - REQUIRED overall tone: "this is complicated, AND here is what is genuinely working, AND here is what to build on" — the parent must finish the reading able to name both the friction AND the working ground.
 - If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridges (a single sibling trine, a shared Moon element across two members, a parent-child Venus/Jupiter contact, a supportive composite Sun) and name them as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
 
+NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
+- This is a REQUIRED, standalone section. It must NOT be merged into other sections.
+- List 3-5 specific, concrete, observable strengths this family already has.
+- Ground every claim in actual chart evidence: bridge aspects from topBridges, shared placements, shared element or sect, harmonious composite contacts, supportive sibling synastry, easy ruler chains.
+- Describe where the family naturally connects or functions well.
+- FORBIDDEN: vague positivity like "loving family", "caring household", "they love each other".
+- REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern.
+- Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the family engage" (cite the child's Mars or Sun placement), "The parent naturally creates structure and stability" (cite Saturn or earth emphasis), "There is an easy flow in one-on-one connection" (cite a parent-child trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
+- The user should recognize: "This is not just hard — there are things already working here."
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
