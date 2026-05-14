@@ -1477,21 +1477,24 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
         </CardContent>
       </Card>
 
-      {reading.householdMakesItWorse && reading.householdMakesItWorse.length > 0 && (
-        <Card className="border-destructive/40">
-          <CardHeader className="pb-3 bg-destructive/10 rounded-t-lg">
+      {selectedMembers.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-destructive" />
-              What Makes It Worse (Household)
+              <Sparkles className="h-4 w-4 text-primary" />
+              When Pressure Builds
             </CardTitle>
             <CardDescription className="pt-1">
-              Common household-level patterns that reliably escalate the whole system. Avoid these.
+              How each person tends to behave when the household feels stressful.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 text-sm">
-            <ul className="list-disc list-inside space-y-1">
-              {reading.householdMakesItWorse.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
+          <CardContent className="pt-4 space-y-2 text-sm">
+            {selectedMembers.map((m) => (
+              <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
+                <span className="font-semibold">{m.chart.name}</span>
+                {" "}→ when pressure builds, {buildPressurePattern(m.chart)}
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
