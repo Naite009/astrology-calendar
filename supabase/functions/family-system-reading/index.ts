@@ -238,8 +238,21 @@ RELATIONSHIP COVERAGE RULE (CRITICAL — applies to parentChildConnections AND c
 - Do NOT imply lack of connection by omission. Skipping a relationship creates the false impression "there is no bond here." Every parent must see themselves in relationship with EACH child, not just the easiest ones to describe.
 - 3-5 sentences per pair. Plain English. Inline citation of the named aspect(s) used.
 
+TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
+- This is the entry point of the entire reading. Every family member (parents AND children) MUST get exactly ONE simple line describing their core behavioral pattern.
+- Format per entry: { "name": "<member name>", "line": "<one sentence>" }. One sentence per person. Plain English. Observable behavior only.
+- HARD FORBIDDEN: any astrology term (no "Moon", no sign names, no house numbers, no aspect words, no element words like "fire/water"). No symbolic or abstract language ("emotional climate", "undercurrent", "shadow", "energy", "essence", "vibration"). No therapy phrasing.
+- REQUIRED: each line describes what this person actually DOES in family life. Pattern: "<NAME> → <core behavior>, especially when <trigger or context>". Examples (style guide, do not copy verbatim): "Lauren → prefers calm, fairness, and time to think before reacting", "Ben → feels deeply and can become overwhelmed or intense under pressure", "Max → needs to feel seen and can become bigger or louder when ignored", "Ike → acts quickly and directly, especially when blocked or frustrated".
+- The line MUST be derived from this person's strongest signatures (Moon/Mars/Mercury/Saturn/Chiron pattern, sect, current profected house) but NEVER name them. Translate the astrology into plain behavior the parent will instantly recognize: "yes, that's exactly right".
+- Generate one entry per family member, in the order they appear in the input (parents first, then children).
+- This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
+  "atAGlance": [
+    { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern in the family. NO astrology terms, NO sign/Moon/house/aspect words, NO abstract language. Observable behavior only. Format suggestion: "<NAME> → <what they do>, especially when <context>". Must feel immediately recognizable.) }
+    // generate exactly one entry per family member, in input order (parents first, then children). NEVER skip a member.
+  ],
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
   "whatAlreadyWorks": string (REQUIRED. One short paragraph, 4-6 sentences. List 3-5 specific, concrete, observable strengths this family already has. Ground every claim in actual chart evidence: bridge aspects from topBridges, shared placements, shared element or sect, harmonious composite contacts, supportive sibling synastry, easy ruler chains. Describe where the family naturally connects or functions well. FORBIDDEN: vague positivity like "loving family" or "caring household". REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern. The user should recognize: "This is not just hard — there are things already working here."),
   "parentChildConnections": [
