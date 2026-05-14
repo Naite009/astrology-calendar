@@ -1477,7 +1477,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </CardContent>
       </Card>
 
-      {selectedMembers.length > 0 && (
+      {members.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1489,7 +1489,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-sm">
-            {selectedMembers.map((m) => (
+            {members.map((m) => (
               <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
                 <span className="font-semibold">{m.chart.name}</span>
                 {" "}→ when pressure builds, {buildPressurePattern(m.chart)}
