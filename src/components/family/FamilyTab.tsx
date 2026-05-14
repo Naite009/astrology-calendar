@@ -1246,7 +1246,7 @@ const AiPairReadingView = ({
   );
 };
 
-const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResponse }) => {
+const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemReadingResponse; members: { chart: NatalChart; role: FamilyRole }[] }) => {
   return (
     <div className="space-y-4">
       {reading.atAGlance && reading.atAGlance.length > 0 && (
