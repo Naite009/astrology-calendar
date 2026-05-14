@@ -180,6 +180,14 @@ REAL-TIME SCENARIO VALIDATION RULE (applies to childAdaptations[].inTheMoment AN
 - If only ONE qualifying signature exists for a child or for the household, return ONE scenario. If TWO exist, return TWO. Do NOT pad to 4. If NONE exist, return an empty array []. Accuracy over completeness.
 - Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
 
+NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps, householdInTheMoment, householdMakesItWorse):
+- ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what each member may DO or SHOW.
+- FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame", "grief underneath", "fear of abandonment", "emotional wound"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
+- USE hedged behavioral language: "may tend to", "can show up as", "often responds by", "may lean toward", "tends to".
+- AVOID causal narrative verbs that complete a psychological story: "this means", "this creates", "this results in", "this leads to", "this stems from", "this is rooted in".
+- SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
+- The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
