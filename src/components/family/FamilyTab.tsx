@@ -1247,7 +1247,7 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
               Parent–Child Connections
             </CardTitle>
             <CardDescription className="pt-1">
-              Every parent ↔ child pair, honestly described — what can work and what can feel difficult.
+              Every parent ↔ child pair, honestly described. Connection here means emotionally impactful, not necessarily easy — what can work and what can feel hard.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 text-sm">
@@ -1255,6 +1255,28 @@ const FamilySystemReadingView = ({ reading }: { reading: FamilySystemReadingResp
               <div key={i} className="border-l-2 border-primary/40 pl-3">
                 <div className="font-semibold">{pc.parent} ↔ {pc.child}</div>
                 <p className="text-muted-foreground whitespace-pre-line">{pc.body}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.siblingConnections && reading.siblingConnections.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Sibling ↔ Sibling Connections
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Every sibling pair, honestly described. Tense or frustrating bonds are still significant connections, not absent ones.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {reading.siblingConnections.map((sc, i) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                <div className="font-semibold">{sc.siblingA} ↔ {sc.siblingB}</div>
+                <p className="text-muted-foreground whitespace-pre-line">{sc.body}</p>
               </div>
             ))}
           </CardContent>
