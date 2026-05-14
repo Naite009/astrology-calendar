@@ -92,6 +92,7 @@ interface ReadingPayload {
   pressurePoints: { headline: string; body: string }[];
   bridges: { headline: string; body: string }[];
   practice: string;
+  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
 }
 
 function fmtAspect(a: CrossAspect): string {

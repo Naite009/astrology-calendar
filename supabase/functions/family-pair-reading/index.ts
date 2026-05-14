@@ -96,6 +96,7 @@ interface ReadingPayload {
     underneath: string;
     whatHelps: string[];
   };
+  whatAlreadyWorks: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
 }
 
 function ageStage(years: number | null | undefined): string {
