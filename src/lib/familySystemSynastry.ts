@@ -422,3 +422,36 @@ export function buildFamilySystemPayload(
     pairComposites,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic "When Pressure Builds" pattern generator (client-side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildPressurePattern(chart: NatalChart): string {
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  // Mars = primary action under pressure; fall back to Moon (emotional reactivity), then Mercury
+  const sign = planets.Mars?.sign || planets.Moon?.sign || planets.Mercury?.sign;
+  if (!sign) return "may become quieter or more self-contained";
+
+  // Fire
+  if (sign === "Aries") return "may act quickly, push back, or resist direction";
+  if (sign === "Leo") return "may become more expressive or noticeable";
+  if (sign === "Sagittarius") return "may speak directly or pull away to get space";
+
+  // Water
+  if (sign === "Cancer") return "may become quiet or focused on safety";
+  if (sign === "Scorpio") return "may become intense, reactive, or hard to read";
+  if (sign === "Pisces") return "may withdraw or become overwhelmed by the noise";
+
+  // Air
+  if (sign === "Gemini") return "may talk faster or intellectualize the situation";
+  if (sign === "Libra") return "may try to restore calm or step back to think things through";
+  if (sign === "Aquarius") return "may detach and observe before responding";
+
+  // Earth
+  if (sign === "Taurus") return "may slow down and hold their ground";
+  if (sign === "Virgo") return "may try to fix the problem or organize the situation";
+  if (sign === "Capricorn") return "may become more focused on fixing things or getting them done";
+
+  return "may become quieter or more self-contained";
+}
