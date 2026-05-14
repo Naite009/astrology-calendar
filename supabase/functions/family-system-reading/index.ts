@@ -220,6 +220,14 @@ ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlready
 - This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
 
 
+RELATIONSHIP COVERAGE RULE (CRITICAL — applies to parentChildConnections AND childAdaptations AND siblingPressurePoints):
+- The system MUST NOT skip any primary relationship. Every parent must have a connection entry with EVERY child (Parent ↔ Child 1, Parent ↔ Child 2, Parent ↔ Child 3, etc.). Generate one parentChildConnections entry per (parent, child) pair — if there are 1 parent and 3 children, return 3 entries; 2 parents and 3 children → 6 entries.
+- Do NOT select only the "clean" or "positive" or easy-to-summarize relationships. If a pair is complex, sensitive, sparse on bridge aspects, or dominated by friction, it MUST still be included.
+- For EACH pair entry: describe the dynamic honestly, and include BOTH (a) what can work in this pair (cite an actual bridge aspect, shared element/sect, harmonious contact, or shared placement), AND (b) what can feel difficult in this pair (cite an actual friction aspect, hard contact, or signature mismatch). Apply the ASPECT REALITY RULE — every "what can work" line must be range-based, not guaranteed.
+- If a pair has very few aspects, say so plainly ("few direct contacts; the connection is quieter and less reactive in either direction") rather than omit. Sparse contact is itself information; absence is NOT permission to skip.
+- Do NOT imply lack of connection by omission. Skipping a relationship creates the false impression "there is no bond here." Every parent must see themselves in relationship with EACH child, not just the easiest ones to describe.
+- 3-5 sentences per pair. Plain English. Inline citation of the named aspect(s) used.
+
 JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
 {
   "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
