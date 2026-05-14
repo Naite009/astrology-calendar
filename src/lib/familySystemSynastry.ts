@@ -325,11 +325,12 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 
 export interface FamilySystemReadingResponse {
   householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
-  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[] }[]; // one per child
+  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[]; // one per child
   siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
   whatHelps: string; // realistic, low-pressure practices for THIS family
   householdInTheMoment?: { scenario: string; actions: string[] }[]; // family-wide real-time interventions
+  householdMakesItWorse?: string[]; // household-level patterns to avoid
   error?: string;
 }
 
