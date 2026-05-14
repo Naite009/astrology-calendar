@@ -311,7 +311,14 @@ Then write the JSON. Every claim must trace to one of those cards. If a card is 
 
 INLINE CITATION RULE (HARD): Every sentence in householdRegulationPattern, childAdaptations.line, siblingPressurePoints.body, whatEscalates.body, and whatHelps MUST trace to a specific named placement, Moon phase, sect, profected house, ruler chain link, retrograde flag, parent-activation hit, cross-chart T-square apex, composite-chart placement, or named cross-aspect from the data. Inline citation in parentheses preferred (e.g. "(composite Moon in Capricorn)" or "(Lauren's Saturn square Max's Sun, 1.8°)"). A claim with no astrological source MUST be deleted.
 
-HOUSEHOLD COMPOSITE USAGE (HARD): householdRegulationPattern MUST cite the composite Moon AND composite Saturn at least once. The composite chart describes the family AS ONE ENTITY — its Moon is the household's shared regulation style, its Saturn is where the household enforces structure or collectively shuts down.
+FAMILY COMPOSITE WEIGHTING RULE (HARD):
+- The whole-family (household) composite is a LIGHT SNAPSHOT and SECONDARY supporting tone only. It is NEVER the primary lens.
+- PRIMARY interpretation MUST come from: parent-child synastry, sibling synastry, each child's own Moon / Saturn / Chiron / Mercury / Mars patterns, parent activation hits, and repeated household regulation patterns observed across 2+ member cards.
+- The household composite may be cited at most ONCE in householdRegulationPattern, and ONLY with hedged language: "may add a shared tendency toward…", "as a light supporting tone…", "may color the household with…". 
+- FORBIDDEN absolutist phrasings about the household composite: "this defines the family", "this means the family is [trait]", "the family IS [sign-flavored adjective]", "the household's shared regulation style is X" stated as fact. If you write any of these, DELETE the sentence.
+- If a household composite signature contradicts the synastry / individual chart evidence, the synastry and individual evidence WIN. Do not force-fit the composite.
+- PAIR COMPOSITES (parent-child, sibling) carry MORE interpretive weight than the household composite. When describing the tone of a specific relationship in childAdaptations, siblingPressurePoints, or whatHelps, prefer citing that pair's composite (e.g. "Lauren + Max composite Moon in [sign]") over the household composite. Same hedged language still applies ("may add a shared tone of…").
+- Do NOT cite the household composite in childAdaptations, siblingPressurePoints, or whatEscalates entries. Those sections are about individuals and pair dynamics, not the family-as-one-entity.
 
 T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
 
