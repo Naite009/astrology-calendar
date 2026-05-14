@@ -577,7 +577,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       )}
 
       {systemReading && (
-        <FamilySystemReadingView reading={systemReading} />
+        <FamilySystemReadingView reading={systemReading} members={selectedMembers} />
       )}
 
       <Card>
