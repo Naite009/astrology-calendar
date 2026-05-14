@@ -315,6 +315,14 @@ REAL-TIME SCENARIO VALIDATION RULE (applies to "inTheMoment"):
 - If NO qualifying signature exists for in-the-moment escalation, return an empty array []. Do not invent.
 - Every scenario must pass: "Would this realistically happen in THIS family based on the chart?" If not, omit it.
 
+NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
+- ALLOWED: tendencies, patterns, observable behaviors, interaction styles, what the parent or child may DO or SHOW.
+- FORBIDDEN: inferred internal emotional states the parent cannot directly see ("anxiety", "suppressed feelings", "shame spiral", "grief underneath", "fear of abandonment", "emotional wound running deep"), hidden narratives ("unspoken tension", "emotional undercurrent", "silent resentment building", "carrying the family's pain"), and any conclusion that cannot be observed from the outside.
+- USE hedged behavioral language: "may tend to", "can show up as", "often responds by", "may lean toward", "tends to", "is more likely to".
+- AVOID causal narrative verbs that complete a psychological story: "this means", "this creates", "this results in", "this leads to", "this stems from", "this is rooted in", "this comes from a place of".
+- SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into a single psychological explanation. State the parent behavior as a behavior. State the child adaptation as a behavior. State the group tendency as a tendency. Each stands on its own as something observable.
+- The parent should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
