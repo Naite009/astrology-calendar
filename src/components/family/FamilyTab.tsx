@@ -49,6 +49,10 @@ function PairBlock({
   bridge,
   friction,
   interactionPattern,
+  dynamic,
+  whatCanFeelHard,
+  whatHelps,
+  patternType,
   note,
   legacyBody,
 }: {
@@ -59,6 +63,10 @@ function PairBlock({
   bridge?: any;
   friction?: any;
   interactionPattern?: any;
+  dynamic?: string | null;
+  whatCanFeelHard?: string | null;
+  whatHelps?: string | null;
+  patternType?: string | null;
   note?: string | null;
   legacyBody?: string;
 }) {
@@ -98,11 +106,43 @@ function PairBlock({
   const safeNote = note && !DEAD_NOTE_RE.test(note) ? note : null;
 
   const hasAnything =
-    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody;
+    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody || dynamic || whatCanFeelHard || whatHelps;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
-      <div className="font-semibold">{title}</div>
+      <div className="font-semibold flex items-center gap-2 flex-wrap">
+        <span>{title}</span>
+        {patternType && (
+          <Badge variant="outline" className="text-[10px] capitalize font-normal">
+            {patternType}
+          </Badge>
+        )}
+      </div>
+
+      {dynamic && (
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">The Dynamic</div>
+          <p className="whitespace-pre-line">{dynamic}</p>
+        </div>
+      )}
+
+      {whatCanFeelHard && (
+        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2">
+          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            What Can Feel Hard
+          </div>
+          <p className="text-amber-900 dark:text-amber-200">{whatCanFeelHard}</p>
+        </div>
+      )}
+
+      {whatHelps && (
+        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2">
+          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            What Helps
+          </div>
+          <p className="text-emerald-900 dark:text-emerald-200">{whatHelps}</p>
+        </div>
+      )}
 
       {compShared && (
         <div>
@@ -1443,6 +1483,36 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
+      {Array.isArray((reading as any).parentRegulationCenter) && (reading as any).parentRegulationCenter.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Home className="h-4 w-4 text-primary" />
+              The Parent as the Regulation Center
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Whichever way a parent regulates (or doesn't) sets the household's emotional baseline. This is what that looks like in real life.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {(reading as any).parentRegulationCenter.map((p: any, i: number) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                <div className="font-semibold">{p.name}</div>
+                {p.body && <p className="text-muted-foreground">{p.body}</p>}
+                {p.whatThisMeansInRealLife && (
+                  <p>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">
+                      In Real Life
+                    </span>
+                    {p.whatThisMeansInRealLife}
+                  </p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
@@ -1525,6 +1595,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 bridge={pc.bridge}
                 friction={pc.friction}
                 interactionPattern={(pc as any).interactionPattern}
+                dynamic={(pc as any).dynamic}
+                whatCanFeelHard={(pc as any).whatCanFeelHard}
+                whatHelps={(pc as any).whatHelps}
                 note={pc.note}
                 legacyBody={(pc as unknown as { body?: string }).body}
               />
@@ -1555,6 +1628,10 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 bridge={sc.bridge}
                 friction={sc.friction}
                 interactionPattern={(sc as any).interactionPattern}
+                dynamic={(sc as any).dynamic}
+                whatCanFeelHard={(sc as any).whatCanFeelHard}
+                whatHelps={(sc as any).whatHelps}
+                patternType={(sc as any).patternType}
                 note={sc.note}
                 legacyBody={(sc as unknown as { body?: string }).body}
               />
@@ -1568,24 +1645,45 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardHeader className="pb-3">
             <CardTitle className="text-base">How Each Child Adapts</CardTitle>
             <CardDescription>
-              Each child's regulation style based on Moon, Saturn/Chiron sensitivity, Mercury/Mars pattern, and parent-child synastry.
+              Each child's regulation style, what they respond best to, and what makes it worse.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {reading.childAdaptations.map((c, i) => (
-              <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{c.name}</div>
-                <p className="text-muted-foreground">{c.line}</p>
-                {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-destructive">What Makes It Worse</div>
-                    <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 space-y-0.5">
-                      {c.whatMakesItWorse.map((w, wi) => <li key={wi}>{w}</li>)}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+          <CardContent className="space-y-4 text-sm">
+            {reading.childAdaptations.map((c, i) => {
+              const adaptation = (c as any).adaptation || c.line;
+              const respondsBest = (c as any).respondsBestWhen;
+              const respondsBestList = Array.isArray(respondsBest)
+                ? respondsBest
+                : respondsBest
+                ? [respondsBest]
+                : [];
+              return (
+                <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-2">
+                  <div className="font-semibold">{c.name}</div>
+                  {adaptation && <p className="whitespace-pre-line">{adaptation}</p>}
+                  {respondsBestList.length > 0 && (
+                    <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2">
+                      <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        Responds Best When
+                      </div>
+                      <ul className="list-disc list-inside text-emerald-900 dark:text-emerald-200 mt-1 space-y-0.5">
+                        {respondsBestList.map((r: string, ri: number) => <li key={ri}>{r}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
+                    <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2">
+                      <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        What Makes It Worse
+                      </div>
+                      <ul className="list-disc list-inside text-amber-900 dark:text-amber-200 mt-1 space-y-0.5">
+                        {c.whatMakesItWorse.map((w, wi) => <li key={wi}>{w}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
@@ -1684,6 +1782,77 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               ));
             })()}
+          </CardContent>
+        </Card>
+      )}
+
+      {Array.isArray((reading as any).whatHelpsWholeFamily) && (reading as any).whatHelpsWholeFamily.length > 0 && (
+        <Card className="border-emerald-500/40">
+          <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              What Helps the Whole Family
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Concrete practices tuned to this specific family's pattern.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-2 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {(reading as any).whatHelpsWholeFamily.map((w: string, i: number) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+            {(reading as any).whatHelpsRationale && (
+              <p className="text-xs text-muted-foreground italic border-t border-border pt-2 mt-2">
+                {(reading as any).whatHelpsRationale}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {Array.isArray((reading as any).whatToAvoid) && (reading as any).whatToAvoid.length > 0 && (
+        <Card className="border-amber-500/40">
+          <CardHeader className="pb-3 bg-amber-500/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-600" />
+              What to Avoid
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Things that consistently make this family's pattern worse.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {(reading as any).whatToAvoid.map((w: string, i: number) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {(reading as any).bestFamilyPractice && Array.isArray((reading as any).bestFamilyPractice.steps) && (reading as any).bestFamilyPractice.steps.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Best Family Practice
+            </CardTitle>
+            <CardDescription className="pt-1">
+              A short, repeatable sequence for this family. Not a meeting — a rhythm.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {(reading as any).bestFamilyPractice.sequence && (
+              <p className="font-semibold">{(reading as any).bestFamilyPractice.sequence}</p>
+            )}
+            <ol className="list-decimal list-inside space-y-1">
+              {(reading as any).bestFamilyPractice.steps.map((s: string, i: number) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       )}
