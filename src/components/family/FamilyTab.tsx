@@ -28,6 +28,7 @@ import {
   buildFamilySystemPayload,
   FamilySystemReadingResponse,
   buildPressurePattern,
+  buildPressurePatternsForGroup,
 } from "@/lib/familySystemSynastry";
 
 interface FamilyMember {
