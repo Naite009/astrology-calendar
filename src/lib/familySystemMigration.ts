@@ -84,5 +84,21 @@ export function migrateFamilySystemReading(
       );
     }
   }
+  // Coerce whatAlreadyWorks into an array of {pair, line} objects (legacy was string[] or non-array).
+  const waw = out.whatAlreadyWorks;
+  if (waw && !Array.isArray(waw)) {
+    out.whatAlreadyWorks = [];
+  } else if (Array.isArray(waw)) {
+    out.whatAlreadyWorks = waw
+      .map((item) => {
+        if (typeof item === "string") return { pair: "", line: item };
+        if (item && typeof item === "object") {
+          const o = item as Record<string, unknown>;
+          return { pair: String(o.pair ?? ""), line: String(o.line ?? "") };
+        }
+        return null;
+      })
+      .filter((x) => x && (x as any).line);
+  }
   return out as unknown as FamilySystemReadingResponse;
 }
