@@ -387,9 +387,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       );
       if (error) throw error;
       if ((resp as any)?.error) throw new Error((resp as any).error);
-      setSystemReading(resp as FamilySystemReadingResponse);
+      const migrated = migrateFamilySystemReading(resp);
+      setSystemReading(migrated);
       const label = selectedMembers.map((s) => s.chart.name).join(", ");
-      await saveReading("system", key, label, resp);
+      await saveReading("system", key, label, migrated);
     } catch (e: any) {
       console.error("[FamilyTab] system reading failed", e);
       toast.error(e?.message || "Could not generate family reading. Please try again.");
