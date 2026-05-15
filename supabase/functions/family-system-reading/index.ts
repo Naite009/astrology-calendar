@@ -84,15 +84,20 @@ interface RequestBody {
   pairComposites?: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: CompositeChart }[];
 }
 
+interface PairConnectionEntry {
+  composite?: string;
+  bridge?: string;
+  friction?: string;
+  note?: string;
+}
+
 interface ReadingPayload {
-  familyEssence: string;
-  rolesNarrative: { name: string; line: string }[];
-  emotionalClimate: string;
-  whereEveryoneMeets: string;
-  pressurePoints: { headline: string; body: string }[];
-  bridges: { headline: string; body: string }[];
-  practice: string;
-  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
+  atAGlance?: { name: string; line: string }[];
+  whatAlreadyWorks?: { pair: string; line: string }[];
+  parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
+  siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
+  childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
+  whatEscalates?: { name: string; body: string }[];
 }
 
 function fmtAspect(a: CrossAspect): string {
