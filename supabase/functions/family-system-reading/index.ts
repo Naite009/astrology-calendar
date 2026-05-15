@@ -86,11 +86,21 @@ interface RequestBody {
   pairComposites?: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: CompositeChart }[];
 }
 
+interface PairCompositeBlock {
+  shared: string;
+  feelsLikeForA: string | null;
+  feelsLikeForB: string | null;
+}
+interface PairAspectBlock {
+  aspect: string;
+  forA: string | null;
+  forB: string | null;
+}
 interface PairConnectionEntry {
-  composite?: string;
-  bridge?: string;
-  friction?: string;
-  note?: string;
+  composite?: PairCompositeBlock | string | null;
+  bridge?: PairAspectBlock | string | null;
+  friction?: PairAspectBlock | string | null;
+  note?: string | null;
 }
 
 interface ReadingPayload {
