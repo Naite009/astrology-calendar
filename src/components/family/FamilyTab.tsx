@@ -1278,7 +1278,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
-      {reading.whatAlreadyWorks && reading.whatAlreadyWorks.length > 0 && (
+      {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1290,12 +1290,16 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-sm">
-            {reading.whatAlreadyWorks.map((w, i) => (
-              <div key={i} className="border-l-2 border-emerald-500/40 pl-3">
-                <div className="font-semibold">{w.pair}</div>
-                <p className="text-muted-foreground">{w.line}</p>
-              </div>
-            ))}
+            {reading.whatAlreadyWorks.map((w: any, i: number) => {
+              const pair = typeof w === "object" && w ? (w.pair ?? "") : "";
+              const line = typeof w === "string" ? w : (w?.line ?? "");
+              return (
+                <div key={i} className="border-l-2 border-emerald-500/40 pl-3">
+                  {pair && <div className="font-semibold">{pair}</div>}
+                  <p className="text-muted-foreground">{line}</p>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
