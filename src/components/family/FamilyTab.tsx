@@ -32,6 +32,7 @@ import {
   buildRespondsBestForGroup,
   buildHouseholdResetLine,
 } from "@/lib/familySystemSynastry";
+import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
 interface FamilyMember {
   id: string;
