@@ -540,6 +540,17 @@ If any answer is wrong, rewrite before returning.`;
     };
     payload = scrub(payload) as ReadingPayload;
 
+    // Migrate any legacy fields the AI might still emit and strip forbidden keys.
+    const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
+    payload = sanitized.payload as unknown as ReadingPayload;
+    if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
+      console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
+    }
+    const shape = validatePairShape(payload as unknown as Record<string, unknown>);
+    if (!shape.ok) {
+      console.error("[family-system-reading] pair shape invalid after sanitize", shape.errors);
+    }
+
     return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
