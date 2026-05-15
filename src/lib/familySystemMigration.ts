@@ -84,5 +84,5 @@ export function migrateFamilySystemReading(
       );
     }
   }
-  return out as FamilySystemReadingResponse;
+  return out as unknown as FamilySystemReadingResponse;
 }
