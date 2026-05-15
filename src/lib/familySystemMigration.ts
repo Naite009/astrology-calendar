@@ -84,6 +84,19 @@ function normalizeAspect(v: unknown) {
   return undefined;
 }
 
+const DEAD_NOTE_RE = /no tight aspects|no significant connection|no meaningful aspects|limited connection/i;
+
+function normalizeInteractionPattern(v: unknown) {
+  if (v == null) return v;
+  if (typeof v !== "object" || Array.isArray(v)) return undefined;
+  const o = v as Record<string, unknown>;
+  const forA = typeof o.forA === "string" ? o.forA.trim() : "";
+  const forB = typeof o.forB === "string" ? o.forB.trim() : "";
+  const why = typeof o.why === "string" ? o.why.trim() : "";
+  if (!forA && !forB && !why) return null;
+  return { forA, forB, why };
+}
+
 function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(entry)) {
@@ -112,8 +125,18 @@ function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
     if (f === undefined) delete out.friction;
     else out.friction = f;
   }
-  if ("note" in out && (typeof out.note !== "string" || !out.note.trim())) {
-    out.note = null;
+  if ("interactionPattern" in out) {
+    const ip = normalizeInteractionPattern(out.interactionPattern);
+    if (ip === undefined) delete out.interactionPattern;
+    else out.interactionPattern = ip;
+  }
+  if ("note" in out) {
+    if (typeof out.note !== "string" || !out.note.trim()) {
+      out.note = null;
+    } else if (DEAD_NOTE_RE.test(out.note as string)) {
+      // Banned dead-end note ("No tight aspects..."), drop silently.
+      out.note = null;
+    }
   }
   return out;
 }
