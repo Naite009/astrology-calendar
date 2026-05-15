@@ -295,45 +295,71 @@ NO CONFIGURATION VOCABULARY (HARD BAN):
 - If multiple tensions cluster, describe them as "two tight tensions between these placements" or "several friction aspects between these people". Never name a configuration.
 - Do NOT assign psychological roles (container, mirror, absorber) based on configurations or sign emphasis.
 
+ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, friction, and whatAlreadyWorks):
+- Every composite, bridge, friction, and what-works entry MUST split into what each specific person experiences in their role. NEVER describe a pair tone in the abstract.
+- Parent–child pairs: forA = parental behavior (steering, correcting, fixing, pressuring, regulating, withdrawing). forB = child behavior at their developmental stage (defending, shutting down, escalating, going quiet, seeking space).
+- Sibling pairs: forA is ALWAYS the older sibling (siblingA), forB is ALWAYS the younger (siblingB), for stable labeling across all sibling pairs (1st↔2nd, 1st↔3rd, 2nd↔3rd). Birth order is a label only — actual behavior MUST come from the chart, not from birth-order stereotypes.
+- forA and forB MUST be observably distinct sentences. If they collapse into the same meaning, REWRITE.
+- If the chart gives no clear initiator between two siblings, still write two distinct lines describing the same dynamic from each sibling's side.
+- FORBIDDEN without an immediate who-feels-what translation: "this relationship feels X", "the bond is X", "there is a shared sense of X", "weighty", "intense", "serious vibe", "heavy energy".
+
 JSON SCHEMA (return exactly this shape):
 {
   "atAGlance": [
-    { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern. NO astrology terms. Format: "<NAME> → <what they do>, especially when <context>".) }
+    { "name": "MemberName", "line": string }
   ],
   "whatAlreadyWorks": [
-    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only, RANGE-BASED per ASPECT EXPRESSION RANGE RULE — must include a "can ... but can also ..." style hedge so the line is not stated as a guaranteed outcome. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
+    {
+      "pair": "Name A + Name B",
+      "aspect": string (cite the real ≤4° orb bridge aspect: "[A]'s [Planet] [aspect] [B]'s [Planet] (orb °)"),
+      "forA": string (range-based: what Person A — parent or older sibling — tends to do/feel),
+      "forB": string (range-based: what Person B — child or younger sibling — tends to do/feel; MUST differ from forA)
+    }
+    // Only pairs with a real ≤4° personal-planet bridge. [] if none.
   ],
   "parentChildConnections": [
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES, framed as a RANGE of expression — e.g. "the pair composite Sun in Capricorn can show up as steady, task-focused connection, but can also feel formal or distant when neither is regulated". If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
-      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): can show up as [behavioral effect], but can also [realistic distortion of the SAME aspect]". Must include the range marker. If none, set null or omit.),
-      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format and same range requirement: "can show up as [friction behavior], though it can also [growth/translation version of the same aspect]". If none, set null or omit.),
-      "note": string OR null (Set ONLY when both bridge and friction are absent. Exactly: "No tight aspects between personal planets in this pair.")
+      "composite": {
+        "shared": string (REQUIRED. ONE sentence naming this pair's composite tone, range-based, no advice. If composite data is sparse: "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+        "feelsLikeForA": string (REQUIRED. How the parent tends to experience that tone in observable behavior. Range-based.),
+        "feelsLikeForB": string (REQUIRED. How the child tends to experience that tone, observable behavior at their developmental stage. Range-based. MUST be distinct from feelsLikeForA.)
+      },
+      "bridge": {
+        "aspect": string ("[Parent's Planet] [aspect] [Child's Planet] (orb °)"),
+        "forA": string (range-based: what the parent tends to do/initiate),
+        "forB": string (range-based: what the child tends to do/feel; MUST differ from forA)
+      } OR null,
+      "friction": {
+        "aspect": string,
+        "forA": string,
+        "forB": string
+      } OR null,
+      "note": string OR null (Set ONLY when both bridge and friction are null. Exactly: "No tight aspects between personal planets in this pair.")
     }
-    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip.
   ],
   "siblingConnections": [
     {
-      "siblingA": "ChildName",
-      "siblingB": "ChildName",
-      "composite": string (REQUIRED, same format and same range requirement as parentChildConnections.composite),
-      "bridge": string OR null (same rules and same range requirement),
-      "friction": string OR null (same rules and same range requirement),
-      "note": string OR null (same rules)
+      "siblingA": "OlderChildName",
+      "siblingB": "YoungerChildName",
+      "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
+      "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
+      "friction": { "aspect": string, "forA": string, "forB": string } OR null,
+      "note": string OR null
     }
-    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
+    // EXACTLY one entry per unique sibling pair. siblingA = older, siblingB = younger.
   ],
   "childAdaptations": [
-    { "name": "ChildName", "line": string (3-4 sentences, regulation/adaptation style anchored to Moon/Saturn/Chiron/Mercury/Mars and named parent-child cross-aspects. NO birth-order labels.), "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child, verb-first, concrete.] }
+    { "name": "ChildName", "line": string, "whatMakesItWorse": [string, ...] }
   ],
   "whatEscalates": [
-    { "name": "MemberName", "body": string (2-4 sentences, written from THIS person's perspective, anchored to their own placements and named cross-aspects.) }
+    { "name": "MemberName", "body": string }
   ]
 }
 
-Generate atAGlance EXACTLY one per family member. Generate parentChildConnections EXACTLY one per (parent, child) pair (sparse pairs use the "note" field, never skip). Generate siblingConnections EXACTLY one per unique sibling pair, [] if 0-1 children. Generate childAdaptations exactly one per child. Generate whatEscalates exactly one per family member. whatAlreadyWorks MAY be [] when no tight personal-planet bridges exist — that is honest. DO NOT generate householdRegulationPattern, whatHelps, siblingPressurePoints, householdInTheMoment, householdMakesItWorse, familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, bridges, practice, respondsBestWhen, or inTheMoment — those fields are removed.`;
+Generate atAGlance EXACTLY one per family member. Generate parentChildConnections EXACTLY one per (parent, child) pair. Generate siblingConnections EXACTLY one per unique sibling pair, [] if 0-1 children. Generate childAdaptations exactly one per child. Generate whatEscalates exactly one per family member. whatAlreadyWorks MAY be []. DO NOT generate householdRegulationPattern, whatHelps, siblingPressurePoints, householdInTheMoment, householdMakesItWorse, familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, bridges, practice, respondsBestWhen, or inTheMoment.`;
 
 
 
