@@ -374,6 +374,23 @@ RELATIONSHIP COMPLETENESS RULE — HARD STOP (this is the most important rule in
   • wider-orb cross-aspects (5–8°), explicitly cited as "wider contact" — never as a tight bridge or friction
 - The Dual Expression Rule and Role-Aware Rule still apply to interactionPattern: forA and forB MUST be observably distinct, behavioral, and range-based (positive AND challenging expression in the same line).
 
+NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the output, with no exceptions):
+- The output is OBSERVATIONAL, not prescriptive. It describes patterns, tendencies, and what the system naturally does. It does NOT give instructions, scripts, protocols, or behavioral homework.
+- FORBIDDEN across every field (atAGlance, parentRegulationCenter, childAdaptations, parentChildConnections.dynamic, siblingConnections.dynamic, whatEscalates, whatHelpsWholeFamily, whatToAvoid, bestFamilyPractice, respondsBestWhen, whatMakesItWorse, whatHelpsRationale):
+  • Step-by-step instructions ("First do X, then do Y", "Step 1...Step 2...", any numbered or arrow-separated sequence like "Pause → Regulate → Reconnect").
+  • Scripts or quoted dialogue ("Say 'I hear you'", "Try saying...", "Ask them: ___").
+  • Therapy protocols (pause/regulate/repair sequences, co-regulation drills, emotion-coaching frameworks, repair scripts).
+  • Behavioral prescriptions ("Do this", "Don't do that", "Avoid X", "Make sure to Y", "Practice Z", "Implement ___").
+  • Invented example actions ("child punches a pillow", "parent takes three deep breaths", "they go for a walk together") unless the chart literally evidences that specific behavior.
+  • Imperative verbs as guidance: "do", "don't", "avoid", "try", "make sure", "schedule", "implement", "use", "practice", "start", "stop", "create", "establish", "set up".
+- ALLOWED instead:
+  • Pattern descriptions ("This family tends to ___").
+  • Tendencies ("___ usually shows up as ___", "things tend to ___ when ___").
+  • What the system naturally does ("The household runs more smoothly when ___", "Under pressure, this group tends to ___").
+  • What tends to help or not help, DESCRIBED as conditions, never instructed ("Things tend to settle when ___ is present", "Friction tends to rise when ___ is absent").
+- REPLACEMENT pattern (apply every time you would have written a prescription): "Do this → then do this" REWRITE AS "This family tends to function better when ___" or "Things tend to go more smoothly when ___" or "Reconnection tends to happen when ___".
+- If a sentence could appear in a parenting manual as advice, REWRITE it as an observation about this specific family's pattern. If you cannot rewrite it observationally, DELETE it.
+
 PAIR RANGE FORMAT — HARD STOP (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 - Every `dynamic` field MUST be written as a structured range block, NOT a flowing paragraph. The block MUST contain these exact labeled parts, in this order, separated by newlines (\n). Use these literal labels, no markdown, no bullets:
     Shared Pattern: <1-2 plain-English lines naming the underlying pattern between these two people. Anchored to named placements / cross-aspects. NO verdicts.>
@@ -445,13 +462,13 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     { "pair": "Name A + Name B", "aspect": string, "forA": string, "forB": string }
     // Only pairs with a real ≤4° personal-planet bridge. [] if none.
   ],
-  "whatEscalates": [ { "name": "MemberName", "body": string } ],
-  "whatHelpsWholeFamily": [string, ...] (REQUIRED. 5–8 concrete practices tied to THIS family's chart signature, not generic parenting advice.),
-  "whatHelpsRationale": string (REQUIRED. ONE sentence explaining why these specifically — cite dominant element / sect / age mix.),
-  "whatToAvoid": [string, ...] (REQUIRED. 5–8 concrete things to STOP doing in THIS family.),
+  "whatEscalates": [ { "name": "MemberName", "body": string (observational description of what tends to escalate this person — NOT instructions or scripts) } ],
+  "whatHelpsWholeFamily": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions under which this family tends to function better. Phrase as "This family tends to ___ when ___" or "Things go more smoothly when ___". NEVER as commands, scripts, step-by-step instructions, or therapy protocols.),
+  "whatHelpsRationale": string (REQUIRED. ONE sentence explaining why these conditions specifically — cite dominant element / sect / age mix.),
+  "whatToAvoid": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions or patterns that tend to make things harder in THIS family. Phrase as "Things tend to get harder when ___" or "This family struggles when ___". NEVER as commands like "Don't do X" or "Avoid Y".),
   "bestFamilyPractice": {
-    "sequence": string (REQUIRED. Short named sequence — default: "Pause → Separate → Regulate → Reconnect one-on-one"),
-    "steps": [string, ...] (REQUIRED. 3–5 short bullets describing what each step looks like for THIS family.)
+    "sequence": string (REQUIRED. A short OBSERVATIONAL description of the conditions under which this family tends to reset and reconnect best. NOT a sequence of steps. NOT a protocol. Example phrasing: "This family tends to reset best when there's space before talking, regulation before reconnection, and one-on-one contact instead of group processing." NEVER use arrows, "→", "Step 1", "Step 2", or imperative verbs.),
+    "steps": [string, ...] (REQUIRED. 3–5 OBSERVATIONAL bullets describing CONDITIONS that tend to help this family reset — NOT actions to perform. Phrase each as "Things tend to settle when ___" or "Reconnection tends to happen when ___". NEVER as "Do X" or "Then do Y".)
   }
 }
 
