@@ -1,6 +1,8 @@
 // Family System Reading — integrated, group-level reading for 2+ family members.
 // All deterministic data is computed on the client. AI writes only prose.
 
+import { sanitizeReadingPayload, validatePairShape } from "./sanitize.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -537,6 +539,17 @@ If any answer is wrong, rewrite before returning.`;
       return s;
     };
     payload = scrub(payload) as ReadingPayload;
+
+    // Migrate any legacy fields the AI might still emit and strip forbidden keys.
+    const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
+    payload = sanitized.payload as unknown as ReadingPayload;
+    if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
+      console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
+    }
+    const shape = validatePairShape(payload as unknown as Record<string, unknown>);
+    if (!shape.ok) {
+      console.error("[family-system-reading] pair shape invalid after sanitize", shape.errors);
+    }
 
     return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

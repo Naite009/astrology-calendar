@@ -32,6 +32,7 @@ import {
   buildRespondsBestForGroup,
   buildHouseholdResetLine,
 } from "@/lib/familySystemSynastry";
+import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
 interface FamilyMember {
   id: string;
@@ -352,7 +353,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     const found = savedReadings.find(
       (r) => r.reading_type === "system" && r.cache_key === key,
     );
-    setSystemReading(found ? (found.payload as FamilySystemReadingResponse) : null);
+    setSystemReading(found ? migrateFamilySystemReading(found.payload) : null);
   }, [selectedMembers, savedReadings]);
 
   const generateSystemReading = async (force = false) => {
@@ -366,7 +367,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         (r) => r.reading_type === "system" && r.cache_key === key,
       );
       if (cached) {
-        setSystemReading(cached.payload as FamilySystemReadingResponse);
+        setSystemReading(migrateFamilySystemReading(cached.payload));
         toast.success("Loaded from history");
         return;
       }
@@ -386,9 +387,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       );
       if (error) throw error;
       if ((resp as any)?.error) throw new Error((resp as any).error);
-      setSystemReading(resp as FamilySystemReadingResponse);
+      const migrated = migrateFamilySystemReading(resp);
+      setSystemReading(migrated);
       const label = selectedMembers.map((s) => s.chart.name).join(", ");
-      await saveReading("system", key, label, resp);
+      await saveReading("system", key, label, migrated);
     } catch (e: any) {
       console.error("[FamilyTab] system reading failed", e);
       toast.error(e?.message || "Could not generate family reading. Please try again.");
