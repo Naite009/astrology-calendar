@@ -226,15 +226,16 @@ NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
 - Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the family engage" (cite the child's Mars or Sun placement), "The parent naturally creates structure and stability" (cite Saturn or earth emphasis), "There is an easy flow in one-on-one connection" (cite a parent-child trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
 - The user should recognize: "This is not just hard — there are things already working here."
 
-ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlreadyWorks, whatHelps, householdRegulationPattern, childAdaptations, siblingPressurePoints):
-- Do NOT convert astrological aspects into guaranteed positive or ideal outcomes. Every aspect is a RANGE of expression, not a fixed result.
-- Each strength, bridge, or harmonious contact must be stated as a POTENTIAL that can also distort, miss, or turn friction depending on mood, regulation, sect, hard aspects to the same body, or real-life context.
-- FORBIDDEN phrasing (assumes ideal expression is happening): "they connect easily through X", "they have productive conversations", "this child feels seen", "this creates trust", "this brings harmony", "this gives the family ease".
-- REQUIRED phrasing (range-based, observable): "may connect through X, but can also turn competitive or escalate when dysregulated", "can support structured conversations, but may also feel critical or hard to engage with", "can support feeling seen, but may not always land that way in practice", "tends to flow when everyone is regulated; under pressure it can flatten or go silent".
-- Always pair the ideal expression with the realistic distortion of the SAME aspect. Trines can go lazy or unused. Sextiles can be missed. Conjunctions can fuse and lose differentiation. Moon-Venus can also turn placating. Jupiter contacts can also inflate or skip accountability.
+ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, whatAlreadyWorks, parentChildConnections.composite/bridge/friction, siblingConnections.composite/bridge/friction, childAdaptations.line, whatEscalates.body):
+- Do NOT present any aspect, composite, or shared placement as a guaranteed positive OR negative outcome. Every aspect is a RANGE of expression, never a fixed result.
+- HARD STOP: every sentence that references an aspect, composite, or placement-driven dynamic MUST contain a range marker. Acceptable range markers include: "can show up as ... but can also ...", "may ... though it can also ...", "tends to ... but doesn't always ...", "at its best ... at its hardest ...", "on a good day ... on a hard day ...", "sometimes ... and other times ...".
+- FORBIDDEN phrasings (assume one fixed outcome): "they connect through X", "this creates warmth", "this brings harmony", "this child feels seen", "this gives the family ease", "they have productive conversations", "they clash", "this is where it goes wrong", "this damages the bond".
+- REQUIRED phrasings (range-based): "this can show up as connection through shared activity, but can also turn competitive or escalate depending on mood and regulation", "can create moments of warmth, but may not always feel consistent in practice", "can support feeling seen, but may not always land that way", "tends to flow when everyone is regulated; under pressure it can flatten or go silent".
+- Always allow MULTIPLE expressions of the same aspect. Trines can flow OR go lazy/unused. Sextiles can support OR be missed entirely. Conjunctions can fuse OR lose differentiation. Moon-Venus can be tender OR placating. Jupiter contacts can expand OR inflate and skip accountability. Squares can grind OR drive growth. Oppositions can polarize OR teach balance.
+- Do NOT assume the best-case version is what's actually happening in this family. If the user's lived experience contradicts the ideal version, the output must STILL feel valid — that is why the range framing is mandatory.
 - If real-life behavior (from user-provided context, repeated patterns, or hard aspects on the same body) contradicts the ideal expression, reflect the real-life version FIRST and the potential version second.
-- Prioritize observable behavior over textbook ideal interpretation. Astrology describes potential patterns — not guaranteed experiences.
-- This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
+- This rule overrides any pull toward clean, reassuring, or tidy language. A line stated without its range is INVALID OUTPUT and must be rewritten before returning.
+- Goal: astrology describes potential patterns, not guaranteed experiences. The parent should never read a line and think "but that's not actually how it goes for us" and feel the reading is wrong — the range framing keeps every line honest.
 
 
 RELATIONSHIP COVERAGE RULE (CRITICAL — applies to parentChildConnections AND childAdaptations AND siblingPressurePoints):
@@ -290,29 +291,29 @@ JSON SCHEMA (return exactly this shape):
     { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern. NO astrology terms. Format: "<NAME> → <what they do>, especially when <context>".) }
   ],
   "whatAlreadyWorks": [
-    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
+    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only, RANGE-BASED per ASPECT EXPRESSION RANGE RULE — must include a "can ... but can also ..." style hedge so the line is not stated as a guaranteed outcome. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
   ],
   "parentChildConnections": [
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES. If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
-      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): [behavioral effect, no real-world activity]". If none, set null or omit.),
-      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format. If none, set null or omit.),
+      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES, framed as a RANGE of expression — e.g. "the pair composite Sun in Capricorn can show up as steady, task-focused connection, but can also feel formal or distant when neither is regulated". If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): can show up as [behavioral effect], but can also [realistic distortion of the SAME aspect]". Must include the range marker. If none, set null or omit.),
+      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format and same range requirement: "can show up as [friction behavior], though it can also [growth/translation version of the same aspect]". If none, set null or omit.),
       "note": string OR null (Set ONLY when both bridge and friction are absent. Exactly: "No tight aspects between personal planets in this pair.")
     }
-    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum.
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
   ],
   "siblingConnections": [
     {
       "siblingA": "ChildName",
       "siblingB": "ChildName",
-      "composite": string (REQUIRED, same format),
-      "bridge": string OR null (same rules),
-      "friction": string OR null (same rules),
+      "composite": string (REQUIRED, same format and same range requirement as parentChildConnections.composite),
+      "bridge": string OR null (same rules and same range requirement),
+      "friction": string OR null (same rules and same range requirement),
       "note": string OR null (same rules)
     }
-    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children.
+    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
   ],
   "childAdaptations": [
     { "name": "ChildName", "line": string (3-4 sentences, regulation/adaptation style anchored to Moon/Saturn/Chiron/Mercury/Mars and named parent-child cross-aspects. NO birth-order labels.), "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child, verb-first, concrete.] }
