@@ -105,7 +105,7 @@ interface PairConnectionEntry {
 
 interface ReadingPayload {
   atAGlance?: { name: string; line: string }[];
-  whatAlreadyWorks?: { pair: string; line: string }[];
+  whatAlreadyWorks?: { pair: string; aspect?: string | null; forA?: string | null; forB?: string | null }[];
   parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
