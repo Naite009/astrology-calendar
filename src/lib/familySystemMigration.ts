@@ -1,10 +1,7 @@
 // Client-side mirror of supabase/functions/family-system-reading/sanitize.ts.
-// Used to migrate older cached readings (which may still contain legacy
-// `body` paragraphs on pair entries, or removed top-level fields) into the
-// new {composite, bridge, friction, note} pair shape before render.
-//
-// Keep this file's logic in sync with the edge-function copy. Both are
-// covered by Deno tests in supabase/functions/family-system-reading/.
+// Migrates older cached readings (legacy `body` paragraphs, plain-string
+// composite/bridge/friction, removed top-level fields) into the new role-aware
+// pair shape before render. Keep in sync with the edge-function copy.
 
 import type { FamilySystemReadingResponse } from "./familySystemSynastry";
 
@@ -46,6 +43,47 @@ function splitLegacyBody(body: string): { composite: string; note?: string } {
   return rest ? { composite: first, note: rest } : { composite: first };
 }
 
+function liftCompositeString(s: string) {
+  return { shared: s.trim(), feelsLikeForA: null, feelsLikeForB: null };
+}
+function liftAspectString(s: string) {
+  return { aspect: s.trim(), forA: null, forB: null };
+}
+
+function normalizeComposite(v: unknown) {
+  if (v == null) return v;
+  if (typeof v === "string") {
+    const t = v.trim();
+    return t ? liftCompositeString(t) : null;
+  }
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return {
+      shared: typeof o.shared === "string" ? o.shared : "",
+      feelsLikeForA: typeof o.feelsLikeForA === "string" && o.feelsLikeForA.trim() ? o.feelsLikeForA : null,
+      feelsLikeForB: typeof o.feelsLikeForB === "string" && o.feelsLikeForB.trim() ? o.feelsLikeForB : null,
+    };
+  }
+  return undefined;
+}
+
+function normalizeAspect(v: unknown) {
+  if (v == null) return v;
+  if (typeof v === "string") {
+    const t = v.trim();
+    return t ? liftAspectString(t) : null;
+  }
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return {
+      aspect: typeof o.aspect === "string" ? o.aspect : "",
+      forA: typeof o.forA === "string" && o.forA.trim() ? o.forA : null,
+      forB: typeof o.forB === "string" && o.forB.trim() ? o.forB : null,
+    };
+  }
+  return undefined;
+}
+
 function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(entry)) {
@@ -56,8 +94,26 @@ function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
   const body = entry.body;
   if (!hasNew && typeof body === "string" && body.trim()) {
     const { composite, note } = splitLegacyBody(body);
-    if (composite) out.composite = composite;
+    if (composite) out.composite = liftCompositeString(composite);
     if (note) out.note = note;
+  }
+  if ("composite" in out) {
+    const c = normalizeComposite(out.composite);
+    if (c === undefined) delete out.composite;
+    else out.composite = c;
+  }
+  if ("bridge" in out) {
+    const b = normalizeAspect(out.bridge);
+    if (b === undefined) delete out.bridge;
+    else out.bridge = b;
+  }
+  if ("friction" in out) {
+    const f = normalizeAspect(out.friction);
+    if (f === undefined) delete out.friction;
+    else out.friction = f;
+  }
+  if ("note" in out && (typeof out.note !== "string" || !out.note.trim())) {
+    out.note = null;
   }
   return out;
 }
@@ -84,21 +140,34 @@ export function migrateFamilySystemReading(
       );
     }
   }
-  // Coerce whatAlreadyWorks into an array of {pair, line} objects (legacy was string[] or non-array).
+  // whatAlreadyWorks: lift legacy { pair, line } and string entries into role-aware shape.
   const waw = out.whatAlreadyWorks;
   if (waw && !Array.isArray(waw)) {
     out.whatAlreadyWorks = [];
   } else if (Array.isArray(waw)) {
     out.whatAlreadyWorks = waw
-      .map((item) => {
-        if (typeof item === "string") return { pair: "", line: item };
-        if (item && typeof item === "object") {
+      .map((item: unknown) => {
+        if (!item) return null;
+        if (typeof item === "string") {
+          return { pair: "", aspect: null, forA: null, forB: null, line: item };
+        }
+        if (typeof item === "object") {
           const o = item as Record<string, unknown>;
-          return { pair: String(o.pair ?? ""), line: String(o.line ?? "") };
+          const aspect = typeof o.aspect === "string" ? o.aspect : null;
+          const forA = typeof o.forA === "string" && o.forA.trim() ? o.forA : null;
+          const forB = typeof o.forB === "string" && o.forB.trim() ? o.forB : null;
+          const legacyLine = typeof o.line === "string" ? o.line : null;
+          return {
+            pair: String(o.pair ?? ""),
+            aspect: aspect ?? (legacyLine && !forA && !forB ? legacyLine : null),
+            forA,
+            forB,
+            line: legacyLine,
+          };
         }
         return null;
       })
-      .filter((x) => x && (x as any).line);
+      .filter((x: unknown) => !!x);
   }
   return out as unknown as FamilySystemReadingResponse;
 }
