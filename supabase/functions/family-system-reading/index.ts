@@ -268,7 +268,59 @@ TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - Generate one entry per family member, in the order they appear in the input (parents first, then children).
 - This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
 
-JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
+EVIDENCE GATE — HARD STOP (applies to whatAlreadyWorks, parentChildConnections, siblingConnections):
+- Before writing any line about a pair, you MUST cite the specific aspect from the synastry data with both planets and the orb. If you cannot cite it, you may not write the line. No exceptions.
+- "What works" lines may ONLY appear when there is a tight (≤4° orb) bridge aspect (trine, sextile, conjunction) between PERSONAL planets (Sun, Moon, Mercury, Venus, Mars) of the two people in that pair. If no such aspect exists for a pair, omit that pair from whatAlreadyWorks entirely.
+- Friction lines may ONLY appear when there is a tight (≤5° orb) friction aspect (square, opposition) between two named planets in that pair.
+- Bridge lines may ONLY appear when there is a tight (≤5° orb) trine, sextile, or conjunction between two named planets in that pair.
+- Composite line is the only line allowed without a synastry aspect — it cites the pair composite directly.
+- FORBIDDEN phrasings (these claim real-world activities you cannot know): "bond through sports", "connect over [activity]", "productive conversations", "shared interest in", "they enjoy", "they like to", "they spend time", anything naming a real-world activity, hobby, or topic.
+- ALLOWED phrasings: behavioral tendencies only ("easier to sit in the same room", "less friction when neither is rushed", "can hear each other when the volume stays low", "tends to clash when both are tired").
+
+NO CONFIGURATION VOCABULARY (HARD BAN):
+- You may NOT use the words: T-square, Grand Trine, Yod, Grand Cross, Mystic Rectangle, Kite, Stellium, apex, "carries the family's pressure", "absorbs the household", "emotional container", "regulator-of", "mirror for", "absorbs emotional fallout".
+- If multiple tensions cluster, describe them as "two tight tensions between these placements" or "several friction aspects between these people". Never name a configuration.
+- Do NOT assign psychological roles (container, mirror, absorber) based on configurations or sign emphasis.
+
+JSON SCHEMA (return exactly this shape):
+{
+  "atAGlance": [
+    { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern. NO astrology terms. Format: "<NAME> → <what they do>, especially when <context>".) }
+  ],
+  "whatAlreadyWorks": [
+    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
+  ],
+  "parentChildConnections": [
+    {
+      "parent": "ParentName",
+      "child": "ChildName",
+      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES. If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): [behavioral effect, no real-world activity]". If none, set null or omit.),
+      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format. If none, set null or omit.),
+      "note": string OR null (Set ONLY when both bridge and friction are absent. Exactly: "No tight aspects between personal planets in this pair.")
+    }
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum.
+  ],
+  "siblingConnections": [
+    {
+      "siblingA": "ChildName",
+      "siblingB": "ChildName",
+      "composite": string (REQUIRED, same format),
+      "bridge": string OR null (same rules),
+      "friction": string OR null (same rules),
+      "note": string OR null (same rules)
+    }
+    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children.
+  ],
+  "childAdaptations": [
+    { "name": "ChildName", "line": string (3-4 sentences, regulation/adaptation style anchored to Moon/Saturn/Chiron/Mercury/Mars and named parent-child cross-aspects. NO birth-order labels.), "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child, verb-first, concrete.] }
+  ],
+  "whatEscalates": [
+    { "name": "MemberName", "body": string (2-4 sentences, written from THIS person's perspective, anchored to their own placements and named cross-aspects.) }
+  ]
+}
+
+Generate atAGlance EXACTLY one per family member. Generate parentChildConnections EXACTLY one per (parent, child) pair (sparse pairs use the "note" field, never skip). Generate siblingConnections EXACTLY one per unique sibling pair, [] if 0-1 children. Generate childAdaptations exactly one per child. Generate whatEscalates exactly one per family member. whatAlreadyWorks MAY be [] when no tight personal-planet bridges exist — that is honest. DO NOT generate householdRegulationPattern, whatHelps, siblingPressurePoints, householdInTheMoment, householdMakesItWorse, familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, bridges, practice, respondsBestWhen, or inTheMoment — those fields are removed.`;
 {
   "atAGlance": [
     { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern in the family. NO astrology terms, NO sign/Moon/house/aspect words, NO abstract language. Observable behavior only. Format suggestion: "<NAME> → <what they do>, especially when <context>". Must feel immediately recognizable.) }
