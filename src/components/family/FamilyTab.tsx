@@ -367,7 +367,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         (r) => r.reading_type === "system" && r.cache_key === key,
       );
       if (cached) {
-        setSystemReading(cached.payload as FamilySystemReadingResponse);
+        setSystemReading(migrateFamilySystemReading(cached.payload));
         toast.success("Loaded from history");
         return;
       }
