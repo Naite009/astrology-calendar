@@ -21,10 +21,17 @@ export interface PairAspectBlock {
   forB: string | null;
 }
 
+export interface InteractionPatternBlock {
+  forA: string;
+  forB: string;
+  why: string;
+}
+
 export type PairEntry = {
   composite?: PairCompositeBlock | string | null;
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
+  interactionPattern?: InteractionPatternBlock | null;
   note?: string | null;
   // legacy
   body?: string;
@@ -35,6 +42,7 @@ export const ALLOWED_PAIR_KEYS = new Set([
   "composite",
   "bridge",
   "friction",
+  "interactionPattern",
   "note",
   "parent",
   "child",
