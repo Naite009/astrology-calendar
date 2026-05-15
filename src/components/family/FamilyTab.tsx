@@ -1785,6 +1785,77 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           </CardContent>
         </Card>
       )}
+
+      {Array.isArray((reading as any).whatHelpsWholeFamily) && (reading as any).whatHelpsWholeFamily.length > 0 && (
+        <Card className="border-emerald-500/40">
+          <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              What Helps the Whole Family
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Concrete practices tuned to this specific family's pattern.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-2 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {(reading as any).whatHelpsWholeFamily.map((w: string, i: number) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+            {(reading as any).whatHelpsRationale && (
+              <p className="text-xs text-muted-foreground italic border-t border-border pt-2 mt-2">
+                {(reading as any).whatHelpsRationale}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {Array.isArray((reading as any).whatToAvoid) && (reading as any).whatToAvoid.length > 0 && (
+        <Card className="border-amber-500/40">
+          <CardHeader className="pb-3 bg-amber-500/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-600" />
+              What to Avoid
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Things that consistently make this family's pattern worse.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 text-sm">
+            <ul className="list-disc list-inside space-y-1">
+              {(reading as any).whatToAvoid.map((w: string, i: number) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {(reading as any).bestFamilyPractice && Array.isArray((reading as any).bestFamilyPractice.steps) && (reading as any).bestFamilyPractice.steps.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Best Family Practice
+            </CardTitle>
+            <CardDescription className="pt-1">
+              A short, repeatable sequence for this family. Not a meeting — a rhythm.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {(reading as any).bestFamilyPractice.sequence && (
+              <p className="font-semibold">{(reading as any).bestFamilyPractice.sequence}</p>
+            )}
+            <ol className="list-decimal list-inside space-y-1">
+              {(reading as any).bestFamilyPractice.steps.map((s: string, i: number) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
