@@ -360,20 +360,21 @@ export interface FamilySystemReadingResponse {
   childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[];
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
   /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
-  whatAlreadyWorks?: { pair: string; line: string }[];
-  /** REQUIRED for every parent↔child pair. New 3-line structure (no story essays). */
+  /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
+  whatAlreadyWorks?: WhatAlreadyWorksEntry[];
+  /** REQUIRED for every parent↔child pair. Role-aware structure. */
   parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
-  /** REQUIRED for every unique sibling pair. Same 3-line structure. */
+  /** REQUIRED for every unique sibling pair. siblingA = older, siblingB = younger. */
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   /** @deprecated kept for back-compat; ignored on render. */
   householdRegulationPattern?: string;
-  /** @deprecated kept for back-compat; ignored on render. */
+  /** @deprecated */
   whatHelps?: string;
-  /** @deprecated kept for back-compat; ignored on render. */
+  /** @deprecated */
   siblingPressurePoints?: { name: string; body: string }[];
-  /** @deprecated kept for back-compat; ignored on render. */
+  /** @deprecated */
   householdInTheMoment?: { scenario: string; actions: string[] }[];
-  /** @deprecated kept for back-compat; ignored on render. */
+  /** @deprecated */
   householdMakesItWorse?: string[];
   error?: string;
 }
