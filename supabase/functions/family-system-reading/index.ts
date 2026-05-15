@@ -291,29 +291,29 @@ JSON SCHEMA (return exactly this shape):
     { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern. NO astrology terms. Format: "<NAME> → <what they do>, especially when <context>".) }
   ],
   "whatAlreadyWorks": [
-    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
+    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only, RANGE-BASED per ASPECT EXPRESSION RANGE RULE — must include a "can ... but can also ..." style hedge so the line is not stated as a guaranteed outcome. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
   ],
   "parentChildConnections": [
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES. If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
-      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): [behavioral effect, no real-world activity]". If none, set null or omit.),
-      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format. If none, set null or omit.),
+      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES, framed as a RANGE of expression — e.g. "the pair composite Sun in Capricorn can show up as steady, task-focused connection, but can also feel formal or distant when neither is regulated". If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): can show up as [behavioral effect], but can also [realistic distortion of the SAME aspect]". Must include the range marker. If none, set null or omit.),
+      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format and same range requirement: "can show up as [friction behavior], though it can also [growth/translation version of the same aspect]". If none, set null or omit.),
       "note": string OR null (Set ONLY when both bridge and friction are absent. Exactly: "No tight aspects between personal planets in this pair.")
     }
-    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum.
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
   ],
   "siblingConnections": [
     {
       "siblingA": "ChildName",
       "siblingB": "ChildName",
-      "composite": string (REQUIRED, same format),
-      "bridge": string OR null (same rules),
-      "friction": string OR null (same rules),
+      "composite": string (REQUIRED, same format and same range requirement as parentChildConnections.composite),
+      "bridge": string OR null (same rules and same range requirement),
+      "friction": string OR null (same rules and same range requirement),
       "note": string OR null (same rules)
     }
-    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children.
+    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children. Every non-null line must follow the ASPECT EXPRESSION RANGE RULE.
   ],
   "childAdaptations": [
     { "name": "ChildName", "line": string (3-4 sentences, regulation/adaptation style anchored to Moon/Saturn/Chiron/Mercury/Mars and named parent-child cross-aspects. NO birth-order labels.), "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child, verb-first, concrete.] }
