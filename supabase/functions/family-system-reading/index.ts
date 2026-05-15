@@ -84,15 +84,20 @@ interface RequestBody {
   pairComposites?: { pairType: "parent-child" | "sibling"; nameA: string; nameB: string; composite: CompositeChart }[];
 }
 
+interface PairConnectionEntry {
+  composite?: string;
+  bridge?: string;
+  friction?: string;
+  note?: string;
+}
+
 interface ReadingPayload {
-  familyEssence: string;
-  rolesNarrative: { name: string; line: string }[];
-  emotionalClimate: string;
-  whereEveryoneMeets: string;
-  pressurePoints: { headline: string; body: string }[];
-  bridges: { headline: string; body: string }[];
-  practice: string;
-  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
+  atAGlance?: { name: string; line: string }[];
+  whatAlreadyWorks?: { pair: string; line: string }[];
+  parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
+  siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
+  childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
+  whatEscalates?: { name: string; body: string }[];
 }
 
 function fmtAspect(a: CrossAspect): string {
@@ -263,34 +268,61 @@ TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - Generate one entry per family member, in the order they appear in the input (parents first, then children).
 - This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
 
-JSON SCHEMA (return exactly this shape, NEW SECTION STRUCTURE):
+EVIDENCE GATE — HARD STOP (applies to whatAlreadyWorks, parentChildConnections, siblingConnections):
+- Before writing any line about a pair, you MUST cite the specific aspect from the synastry data with both planets and the orb. If you cannot cite it, you may not write the line. No exceptions.
+- "What works" lines may ONLY appear when there is a tight (≤4° orb) bridge aspect (trine, sextile, conjunction) between PERSONAL planets (Sun, Moon, Mercury, Venus, Mars) of the two people in that pair. If no such aspect exists for a pair, omit that pair from whatAlreadyWorks entirely.
+- Friction lines may ONLY appear when there is a tight (≤5° orb) friction aspect (square, opposition) between two named planets in that pair.
+- Bridge lines may ONLY appear when there is a tight (≤5° orb) trine, sextile, or conjunction between two named planets in that pair.
+- Composite line is the only line allowed without a synastry aspect — it cites the pair composite directly.
+- FORBIDDEN phrasings (these claim real-world activities you cannot know): "bond through sports", "connect over [activity]", "productive conversations", "shared interest in", "they enjoy", "they like to", "they spend time", anything naming a real-world activity, hobby, or topic.
+- ALLOWED phrasings: behavioral tendencies only ("easier to sit in the same room", "less friction when neither is rushed", "can hear each other when the volume stays low", "tends to clash when both are tired").
+
+NO CONFIGURATION VOCABULARY (HARD BAN):
+- You may NOT use the words: T-square, Grand Trine, Yod, Grand Cross, Mystic Rectangle, Kite, Stellium, apex, "carries the family's pressure", "absorbs the household", "emotional container", "regulator-of", "mirror for", "absorbs emotional fallout".
+- If multiple tensions cluster, describe them as "two tight tensions between these placements" or "several friction aspects between these people". Never name a configuration.
+- Do NOT assign psychological roles (container, mirror, absorber) based on configurations or sign emphasis.
+
+JSON SCHEMA (return exactly this shape):
 {
   "atAGlance": [
-    { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern in the family. NO astrology terms, NO sign/Moon/house/aspect words, NO abstract language. Observable behavior only. Format suggestion: "<NAME> → <what they do>, especially when <context>". Must feel immediately recognizable.) }
-    // generate exactly one entry per family member, in input order (parents first, then children). NEVER skip a member.
+    { "name": "MemberName", "line": string (REQUIRED. One plain-English sentence describing this person's core behavioral pattern. NO astrology terms. Format: "<NAME> → <what they do>, especially when <context>".) }
   ],
-  "householdRegulationPattern": string (one short paragraph, 4-6 sentences. Describe how the parent(s) set the emotional tone, conflict style, and repair pattern of the household. Anchor every claim to specific parent placements: their Moon (sign + element), Mercury (communication style), Saturn (where they enforce structure or shut down), and any 4th- or 10th-house emphasis. If two parents are present, briefly contrast how each one sets tone. Do NOT describe children here. Do NOT use sign or element stereotypes; translate behaviorally.),
-  "whatAlreadyWorks": string (REQUIRED. One short paragraph, 4-6 sentences. List 3-5 specific, concrete, observable strengths this family already has. Ground every claim in actual chart evidence: bridge aspects from topBridges, shared placements, shared element or sect, harmonious composite contacts, supportive sibling synastry, easy ruler chains. Describe where the family naturally connects or functions well. FORBIDDEN: vague positivity like "loving family" or "caring household". REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern. The user should recognize: "This is not just hard — there are things already working here."),
+  "whatAlreadyWorks": [
+    { "pair": "Name A + Name B", "line": string (one short sentence, behavioral only. ONLY include pairs with a real ≤4° orb bridge aspect between personal planets. Cite the exact aspect inline. If no qualifying pair exists, return [] — do NOT invent.) }
+  ],
   "parentChildConnections": [
-    { "parent": "ParentName", "child": "ChildName", "body": string (3-5 sentences. REQUIRED for EVERY parent-child pair in the family — no skipping, even if the pair is tense, frustrating, inconsistent, or hard to describe positively. CONNECTION DEFINITION (CRITICAL): "connection" here does NOT mean easy, smooth, positive, or harmonious — it means emotionally impactful, activating, influential, and meaningful in real life. A tense or frustrating bond is still a connection and MUST be acknowledged. PAIR COMPOSITE RULE (HARD REQUIREMENT — UNIVERSAL ACROSS ALL PAIRS): every parentChildConnections entry MUST cite this specific pair's composite chart from PAIR COMPOSITES at least once (e.g. "Lauren + Ben composite Sun in Capricorn", "Lauren + Max composite Moon in [sign]", "Lauren + Ike composite Mars in [sign]"), then briefly explain in plain English what that composite signature means for the relationship's shared tone. Do this for EVERY pair, not just one — if you cite composite Sun for one child, cite the corresponding composite signature (Sun, Moon, Venus, Mars, or Ascendant) for EVERY other parent-child pair so coverage is consistent. If a pair's composite is genuinely empty or absent in the data, say so plainly in one sentence ("the pair composite for this relationship is sparse") rather than skipping the requirement silently. After the composite line, cite the strongest named synastry aspects between them (bridges AND friction). Include BOTH (a) what can work in this specific pair, AND (b) what can feel difficult — apply the ASPECT REALITY RULE so "what works" is stated as a range, not a guarantee. If the pair has mostly friction, lead with something like "this is one of the most emotionally significant bonds in the system, even when it feels intense or frustrating" rather than implying no connection. Plain English, observable behavior, inline citation of the aspect(s) used. NO therapy phrasing. NO symbolic astrology.) }
+    {
+      "parent": "ParentName",
+      "child": "ChildName",
+      "composite": string (REQUIRED. ONE sentence naming this pair's composite signature from PAIR COMPOSITES. If composite data is sparse, write "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+      "bridge": string OR null (ONE sentence ONLY if a ≤5° orb bridge aspect exists. Format: "[Parent's Planet] [aspect] [Child's Planet] (orb °): [behavioral effect, no real-world activity]". If none, set null or omit.),
+      "friction": string OR null (ONE sentence ONLY if a ≤5° orb friction aspect exists. Same format. If none, set null or omit.),
+      "note": string OR null (Set ONLY when both bridge and friction are absent. Exactly: "No tight aspects between personal planets in this pair.")
+    }
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. NEVER write paragraphs. Three lines maximum.
   ],
   "siblingConnections": [
-    { "siblingA": "ChildName", "siblingB": "ChildName", "body": string (3-5 sentences. REQUIRED for EVERY unique sibling-pair in the family — for C children, generate C*(C-1)/2 entries (e.g. 3 children → 3 pairs). NEVER skip a pair, even if tense, frustrating, inconsistent, or hard to describe positively. Apply the SAME CONNECTION DEFINITION as parentChildConnections: connection = emotionally impactful, activating, influential, meaningful — NOT easy or harmonious. PAIR COMPOSITE RULE (HARD REQUIREMENT — UNIVERSAL ACROSS ALL PAIRS): every siblingConnections entry MUST cite this specific sibling pair's composite chart from PAIR COMPOSITES at least once and explain in plain English what that composite signature means for their shared tone. Apply this for EVERY sibling pair, not just one. If a pair's composite is genuinely sparse, say so plainly. After the composite line, cite the strongest named sibling-to-sibling synastry aspects (bridges AND friction). Include BOTH (a) what can work between them AND (b) what can feel hard. Apply the ASPECT REALITY RULE. If the pair is mostly friction, name that honestly while still framing it as one of the most significant bonds in the system, not as "no connection". Plain English, observable behavior, inline aspect citations. NO therapy phrasing. NO symbolic astrology. If only one child in the family, return [].) }
+    {
+      "siblingA": "ChildName",
+      "siblingB": "ChildName",
+      "composite": string (REQUIRED, same format),
+      "bridge": string OR null (same rules),
+      "friction": string OR null (same rules),
+      "note": string OR null (same rules)
+    }
+    // EXACTLY one entry per unique sibling pair. Return [] if 0 or 1 children.
   ],
   "childAdaptations": [
-    { "name": "ChildName", "line": string (3-4 sentences. For THIS specific child, describe their regulation and adaptation style based on: their Moon (sign + element), Saturn or Chiron sensitivities, Mercury/Mars pressure pattern, and the strongest named cross-aspects between THIS child and EACH parent. Reference age or developmental stage when relevant: young children absorb, adolescents differentiate, adult children reinterpret. NO birth-order labels. NO generic sibling archetypes. Each child's line MUST cite at least one named placement and at least one named parent-child synastry aspect. HARD REQUIREMENT: Every entry MUST end with one concrete sentence beginning "Responds best to…" or "Responds best when…" that tells the parent what to DO differently. The "responds best" line must match THIS child's specific signatures, not be generic.), "respondsBestWhen": [string, string, ...4-6 short behavioral leverage points for THIS child (no leading "Responds best", just the condition itself, e.g. "given choices instead of commands", "corrected privately instead of publicly", "allowed processing time before answering", "pressure is lowered before discussion", "connection happens side-by-side"). Each item MUST be a concrete, observable interaction the parent can actually do. FORBIDDEN symbolic wording: "needs freedom", "craves validation", "values harmony", "wants to be seen", "seeks adventure".], "inTheMoment": [ { "scenario": string (one short, concrete escalation moment THIS child has, plain parent language, calibrated to this child's Moon/Mars/Mercury/Saturn pattern), "actions": [string, ...2-4 immediate de-escalation actions, verbs first, simple enough to remember when stressed. FORBIDDEN: long therapy scripts, multi-sentence dialogue, anything requiring a fully calm parent. Each action must work on a hard day.] } ...generate 0-4 scenarios per child, ONLY those backed by the chart per the REAL-TIME SCENARIO VALIDATION RULE; return [] if none qualify; do not pad ], "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child because they reliably escalate this child's dysregulation. Verb-first, concrete, calibrated to this child's Moon/Mercury/Mars/Saturn/Chiron pattern and the parent-child synastry aspects. Examples: "asking 'why did you do that?' when they're already overwhelmed", "stacking multiple instructions at once", "correcting in front of siblings", "matching their volume", "pushing for an answer instead of giving processing time", "lecturing during escalation". FORBIDDEN: vague language, therapy phrasing, symbolic astrology. Parent should think "oh… I do that… and that's making it worse."] }
-  ],
-  "siblingPressurePoints": [
-    { "name": "ChildName", "body": string (one short paragraph per child, written from THIS child's perspective. Describe how THIS child experiences each of their siblings, one sibling at a time, in the order they appear in the family. For each sibling: name the sibling, cite the EXACT sibling-to-sibling synastry aspect from the friction/bridge lists (e.g. "Ben's Mercury opposite Max's Moon"), and describe how that aspect FEELS for the child whose section this is (not for the sibling). What does the other sibling DO that lands hard, soothes, or confuses THIS child? What might THIS child misread the sibling as doing? Plain English, observational, 2-3 sentences per sibling relationship. NO birth-order stereotypes. If there are no exact synastry aspects between this child and a particular sibling, say so plainly in one sentence rather than invent. Generate exactly one entry per CHILD in the family, in the order children appear in the input.) }
+    { "name": "ChildName", "line": string (3-4 sentences, regulation/adaptation style anchored to Moon/Saturn/Chiron/Mercury/Mars and named parent-child cross-aspects. NO birth-order labels.), "whatMakesItWorse": [string, ...3-5 specific parent behaviors to AVOID with THIS child, verb-first, concrete.] }
   ],
   "whatEscalates": [
-    { "name": "MemberName", "body": string (one short paragraph per family member, written from THIS person's perspective. Describe (a) what specifically escalates THIS person (what tips them into dysregulation, shutdown, withdrawal, louder behavior, defensiveness, or overstimulation) and (b) how THIS person, once activated, then affects the rest of the household. Anchor every claim to THIS person's own named placements (Moon, Mercury, Mars, Saturn, Chiron, 4th/8th/12th house) and to specific named cross-aspects from the friction/bridge lists between them and other family members. Do NOT mix two people's placements as the cause and then suddenly describe a third person's reaction inside the same paragraph; stay with one perspective per entry. 2-4 sentences. Plain English, observational. Generate exactly one entry per FAMILY MEMBER (parents and children, in the order they appear in the input).) }
-  ],
-  "whatHelps": string (one short paragraph, 4-6 sentences. Realistic, low-pressure practices that fit THIS family's nervous systems. MUST: (a) open by naming a specific repeated signature you are targeting; (b) describe what the parent(s) initiate and hold, with each child meeting it at their own level; (c) be concrete actions a parent can do in real life this week, not abstract principles; (d) reference at least one named placement or aspect. Forbidden: weekly emotional sharing circles unless group-processing aspects clearly support it, public praise rituals by default, generic goals like "everyone wants to get along".),
-  // householdInTheMoment REMOVED — replaced by a static "What To Do When Things Escalate" playbook rendered client-side. Do NOT generate scenario-based household interventions.
-  // householdMakesItWorse REMOVED — replaced by a static "When Pressure Builds" section computed client-side from chart data. Do NOT generate household-level patterns to avoid.
+    { "name": "MemberName", "body": string (2-4 sentences, written from THIS person's perspective, anchored to their own placements and named cross-aspects.) }
+  ]
+}
 
-Generate atAGlance with EXACTLY one entry per family member (parents AND children, in input order — parents first, then children). NEVER skip a member; this is the entry-point summary. Generate exactly one childAdaptations entry per CHILD (not per member; parents do not get an entry here). Generate exactly one siblingPressurePoints entry per CHILD, in the same order as childAdaptations, written from THAT child's perspective covering each of their siblings (skip if only one child in the family — return an empty array). Generate exactly one whatEscalates entry per FAMILY MEMBER (parents and children together), in the order they appear in the input, written from THAT person's perspective. Generate parentChildConnections with EXACTLY one entry per (parent, child) pair — for P parents and C children, return P×C entries, in the order parents appear then children appear; NEVER skip a pair, even if tense, frustrating, or sparse. Generate siblingConnections with EXACTLY one entry per UNIQUE sibling pair — for C children, return C*(C-1)/2 entries (e.g. 3 children → 3 pairs: A↔B, A↔C, B↔C); NEVER skip a pair, even if tense or frustrating; return [] only if there is one or zero children. If a section has no real evidence, return an empty array or a one-sentence honest note rather than inventing filler — but atAGlance, parentChildConnections, and siblingConnections (when 2+ children) are the EXCEPTIONS: they must always be fully populated per the CONNECTION DEFINITION RULE.`;
+Generate atAGlance EXACTLY one per family member. Generate parentChildConnections EXACTLY one per (parent, child) pair (sparse pairs use the "note" field, never skip). Generate siblingConnections EXACTLY one per unique sibling pair, [] if 0-1 children. Generate childAdaptations exactly one per child. Generate whatEscalates exactly one per family member. whatAlreadyWorks MAY be [] when no tight personal-planet bridges exist — that is honest. DO NOT generate householdRegulationPattern, whatHelps, siblingPressurePoints, householdInTheMoment, householdMakesItWorse, familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, bridges, practice, respondsBestWhen, or inTheMoment — those fields are removed.`;
+
+
 
     const parents = body.members.filter((m) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(m.role));
     const children = body.members.filter((m) => /child|son|daughter|stepchild|kid/i.test(m.role));
@@ -364,8 +396,7 @@ ${memberCtxBlock}
 PARENT ACTIVATION MAP (where each child's chart triggers each parent's Chiron/Saturn — describes what gets stirred IN THE PARENT, not the child):
 ${activationBlock}
 
-CROSS-CHART T-SQUARES (apex carries the household's pressure release point — recurring family pattern, not just one-off aspects):
-${tsqBlock}
+// (cross-chart configuration data intentionally omitted — see NO CONFIGURATION VOCABULARY rule)
 
 HOUSEHOLD COMPOSITE CHART (light snapshot only — secondary, supporting tone, NEVER the primary lens):
 ${compositeBlock}
@@ -409,7 +440,8 @@ FAMILY COMPOSITE WEIGHTING RULE (HARD):
 - PAIR COMPOSITES (parent-child, sibling) carry MORE interpretive weight than the household composite. When describing the tone of a specific relationship in childAdaptations, siblingPressurePoints, or whatHelps, prefer citing that pair's composite (e.g. "Lauren + Max composite Moon in [sign]") over the household composite. Same hedged language still applies ("may add a shared tone of…").
 - Do NOT cite the household composite in childAdaptations, siblingPressurePoints, or whatEscalates entries. Those sections are about individuals and pair dynamics, not the family-as-one-entity.
 
-T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
+
+
 
 ASPECT STRUCTURE VALIDATION RULE (CRITICAL — applies to T-square, Grand Trine, Grand Cross, Yod, Stellium, Mystic Rectangle, Kite, and ANY named configuration):
 - You may ONLY label a structure (e.g. "T-square", "Grand Trine", "Yod", "Grand Cross", "stellium", "mystic rectangle", "kite") if it appears EXPLICITLY in the deterministic data blocks above (CROSS-CHART T-SQUARES list, or a configuration block we explicitly provided). The deterministic detector has already validated degree-based orbs (opposition within orb AND third planet squaring BOTH ends within orb for T-squares).

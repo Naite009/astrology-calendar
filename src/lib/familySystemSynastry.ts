@@ -323,19 +323,33 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 // AI payload + response types
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** New 3-line structured pair connection (composite tone + optional bridge + optional friction). */
+export interface PairConnectionEntry {
+  composite?: string; // 1 sentence naming this pair's composite signature + plain-language tone
+  bridge?: string;    // strongest tight (≤5° orb) bridge aspect between personal planets, behavioral effect
+  friction?: string;  // strongest tight (≤5° orb) friction aspect between personal planets, behavioral effect
+  note?: string;      // honest one-liner if no qualifying aspects exist
+}
+
 export interface FamilySystemReadingResponse {
-  atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member, top-of-report summary
-  householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
-  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[]; // one per child
-  siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
+  atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member
+  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[];
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
-  whatHelps: string; // realistic, low-pressure practices for THIS family
-  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
-  parentChildConnections?: { parent: string; child: string; body: string }[]; // REQUIRED: one entry per parent-child pair, no skipping (connection = emotionally impactful, not necessarily easy)
-  siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
-  /** @deprecated Replaced by static "What To Do When Things Escalate" playbook in UI. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
+  whatAlreadyWorks?: { pair: string; line: string }[];
+  /** REQUIRED for every parent↔child pair. New 3-line structure (no story essays). */
+  parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
+  /** REQUIRED for every unique sibling pair. Same 3-line structure. */
+  siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
+  /** @deprecated kept for back-compat; ignored on render. */
+  householdRegulationPattern?: string;
+  /** @deprecated kept for back-compat; ignored on render. */
+  whatHelps?: string;
+  /** @deprecated kept for back-compat; ignored on render. */
+  siblingPressurePoints?: { name: string; body: string }[];
+  /** @deprecated kept for back-compat; ignored on render. */
   householdInTheMoment?: { scenario: string; actions: string[] }[];
-  /** @deprecated Replaced by static "When Pressure Builds" section computed client-side from chart data. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  /** @deprecated kept for back-compat; ignored on render. */
   householdMakesItWorse?: string[];
   error?: string;
 }
@@ -530,3 +544,97 @@ export function buildPressurePatternsForGroup(
   return out;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic "Responds Best To" line per member (no AI, no scenarios).
+// One line per person describing the conditions they handle best, derived from
+// Moon sign primarily, with Mars/Mercury tiebreakers to keep every line unique.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RESPONDS_BEST_BY_MOON: Record<string, string> = {
+  Aries: "responds best to short, direct requests and being given a way to move",
+  Leo: "responds best to being acknowledged first, then asked",
+  Sagittarius: "responds best to being given a reason and room to choose",
+  Cancer: "responds best to a soft tone and a private check-in, not a public one",
+  Scorpio: "responds best to honesty, no surprises, and time to come back on their own",
+  Pisces: "responds best to lower volume, fewer transitions, and one thing at a time",
+  Gemini: "responds best to talking it through and being asked, not told",
+  Libra: "responds best to fairness, choices, and time to think before answering",
+  Aquarius: "responds best to space, logic, and not being pushed for emotion on demand",
+  Taurus: "responds best to slower pacing and warning before a change",
+  Virgo: "responds best to clear instructions, a reason, and a private correction",
+  Capricorn: "responds best to being trusted with the task and not micromanaged",
+};
+
+const MARS_RESPONDS_MOD: Record<string, string> = {
+  Aries: ", and to physical movement before talking",
+  Leo: ", and to being given the lead on something visible",
+  Sagittarius: ", and to being outside or moving",
+  Cancer: ", and to food, comfort, or a quiet room",
+  Scorpio: ", and to one trusted person, not a group",
+  Pisces: ", and to quiet sensory input",
+  Gemini: ", and to a question instead of a command",
+  Libra: ", and to being asked their opinion",
+  Aquarius: ", and to being left alone briefly first",
+  Taurus: ", and to a hands-on task",
+  Virgo: ", and to a clear next step",
+  Capricorn: ", and to a defined goal",
+};
+
+export function buildRespondsBestForGroup(
+  members: { id: string; chart: NatalChart }[]
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  const used = new Set<string>();
+
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const moon = planets.Moon?.sign;
+    const base = (moon && RESPONDS_BEST_BY_MOON[moon]) || "responds best to a calm tone and one thing at a time";
+    let line = base;
+
+    if (used.has(line)) {
+      const mars = planets.Mars?.sign;
+      const mod = mars ? MARS_RESPONDS_MOD[mars] : undefined;
+      if (mod) line = `${base}${mod}`;
+    }
+    if (used.has(line)) {
+      const merc = planets.Mercury?.sign;
+      const mod = merc ? MERCURY_TONE[merc] : undefined;
+      if (mod) line = `${line} ${mod}`;
+    }
+    used.add(line);
+    out[m.id] = line;
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic household reset line from Moon-element tally.
+// One sentence. No advice, no scenarios.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildHouseholdResetLine(
+  members: { chart: NatalChart }[]
+): string | null {
+  if (!members.length) return null;
+  const tally = { fire: 0, earth: 0, air: 0, water: 0 };
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const el = elementOf(planets.Moon?.sign);
+    if (el) tally[el]++;
+  }
+  const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+  const [topEl, topN] = sorted[0];
+  if (topN === 0) return null;
+
+  const need: Record<string, string> = {
+    water: "quiet, lower volume, and time alone to reset",
+    fire: "movement, physical outlet, and space to discharge",
+    earth: "structure, predictable routine, and food before discussion",
+    air: "talking it through, fewer interruptions, and room to think out loud",
+  };
+
+  const counts = `${tally.water} water, ${tally.fire} fire, ${tally.earth} earth, ${tally.air} air`;
+  return `Moons in this household: ${counts}. The group resets fastest with ${need[topEl]}.`;
+}
