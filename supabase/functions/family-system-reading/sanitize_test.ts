@@ -93,7 +93,13 @@ Deno.test("sanitizeReadingPayload migrates legacy body in pair arrays", () => {
   assert(pc.composite.shared);
 });
 
-Deno.test("validatePairShape passes on new role-aware object shape", () => {
+const VALID_IP = {
+  forA: "Lauren tends to lean toward fixing or steering, especially under stress.",
+  forB: "Ben can experience that as pressure on a hard day, or as care on a calmer one.",
+  why: "Lauren's Capricorn Moon meeting Ben's Pisces Moon — earth-water emotional style mismatch.",
+};
+
+Deno.test("validatePairShape passes on new role-aware object shape with interactionPattern", () => {
   const ok = validatePairShape({
     parentChildConnections: [
       {
@@ -106,6 +112,7 @@ Deno.test("validatePairShape passes on new role-aware object shape", () => {
         },
         bridge: null,
         friction: { aspect: "Lauren's Mars square Ben's Sun (2°)", forA: "Lauren may push.", forB: "Ben may pull away." },
+        interactionPattern: VALID_IP,
         note: null,
       },
     ],
@@ -115,10 +122,41 @@ Deno.test("validatePairShape passes on new role-aware object shape", () => {
   assert(ok.ok);
 });
 
+Deno.test("validatePairShape fails when interactionPattern is missing", () => {
+  const res = validatePairShape({
+    parentChildConnections: [
+      {
+        parent: "Lauren",
+        child: "Ben",
+        composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
+        bridge: null,
+        friction: null,
+      },
+    ],
+  });
+  assert(!res.ok);
+  assert(res.errors.some((e) => e.includes("interactionPattern missing")));
+});
+
+Deno.test("validatePairShape flags identical interactionPattern forA/forB", () => {
+  const res = validatePairShape({
+    parentChildConnections: [
+      {
+        parent: "Lauren",
+        child: "Ben",
+        composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
+        interactionPattern: { forA: "Same line.", forB: "Same line.", why: "ok" },
+      },
+    ],
+  });
+  assert(!res.ok);
+  assert(res.errors.some((e) => e.includes("interactionPattern forA and forB are identical")));
+});
+
 Deno.test("validatePairShape fails when composite is a plain string (legacy)", () => {
   const res = validatePairShape({
     parentChildConnections: [
-      { parent: "Lauren", child: "Ben", composite: "Just a sentence" },
+      { parent: "Lauren", child: "Ben", composite: "Just a sentence", interactionPattern: VALID_IP },
     ],
   });
   assert(!res.ok);
@@ -133,6 +171,7 @@ Deno.test("validatePairShape flags identical forA and forB on bridge", () => {
         child: "Ben",
         composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
         bridge: { aspect: "Lauren's Venus trine Ben's Moon (1°)", forA: "Same line.", forB: "Same line." },
+        interactionPattern: VALID_IP,
       },
     ],
   });
@@ -143,14 +182,26 @@ Deno.test("validatePairShape flags identical forA and forB on bridge", () => {
 Deno.test("validatePairShape fails when legacy body present", () => {
   const res = validatePairShape({
     parentChildConnections: [
-      { parent: "Lauren", child: "Max", composite: { shared: "ok", feelsLikeForA: null, feelsLikeForB: null }, body: "should not be here" },
+      { parent: "Lauren", child: "Max", composite: { shared: "ok", feelsLikeForA: null, feelsLikeForB: null }, body: "should not be here", interactionPattern: VALID_IP },
     ],
   });
   assert(!res.ok);
   assert(res.errors.some((e) => e.includes('"body"')));
 });
 
-Deno.test("sanitize output of legacy payload passes validatePairShape", () => {
+Deno.test("sanitizer drops banned 'no tight aspects' note", () => {
+  const out: any = migratePairEntry({
+    parent: "Lauren",
+    child: "Ben",
+    composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
+    note: "No tight aspects between personal planets in this pair.",
+  });
+  assertEquals(out.note, null);
+});
+
+Deno.test("sanitize output of legacy payload (without interactionPattern) flags missing IP", () => {
+  // Legacy payloads will fail strict validation now — by design — so the UI
+  // can show a regenerate hint instead of a dead "no aspects" line.
   const messy = {
     parentChildConnections: [
       { parent: "A", child: "B", body: "Legacy. Two sentences." },
@@ -163,5 +214,6 @@ Deno.test("sanitize output of legacy payload passes validatePairShape", () => {
   };
   const { payload } = sanitizeReadingPayload(messy);
   const v = validatePairShape(payload as any);
-  assertEquals(v.errors, []);
+  assert(!v.ok);
+  assert(v.errors.some((e) => e.includes("interactionPattern missing")));
 });
