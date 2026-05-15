@@ -351,8 +351,27 @@ export interface PairConnectionEntry {
   friction?: PairAspectBlock | string | null;
   /** REQUIRED on freshly-generated readings; may be absent on legacy cached payloads. */
   interactionPattern?: InteractionPatternBlock | null;
+  /** NEW: range-based dynamic paragraph for the pair (3rd grade plain English, both sides of the range). */
+  dynamic?: string | null;
+  /** NEW: one to two sentences naming how this pair commonly breaks. */
+  whatCanFeelHard?: string | null;
+  /** NEW: one concrete sentence of what changes the dynamic for the better. */
+  whatHelps?: string | null;
+  /** NEW (sibling pairs only): one of the allowed pattern types. */
+  patternType?: SiblingPatternType | null;
   note?: string | null;
 }
+
+/** Allowed sibling pattern types — fixed allow-list, validated server-side. */
+export const SIBLING_PATTERN_TYPES = [
+  "translation problem",
+  "pacing friction",
+  "competition risk",
+  "quiet co-regulation",
+  "mirror match",
+  "role split",
+] as const;
+export type SiblingPatternType = typeof SIBLING_PATTERN_TYPES[number];
 
 /** Role-aware "what already works" entry. */
 export interface WhatAlreadyWorksEntry {
@@ -364,20 +383,54 @@ export interface WhatAlreadyWorksEntry {
   line?: string | null;
 }
 
+/** NEW: Parent-as-Regulation-Center block, one per parent. */
+export interface ParentRegulationCenter {
+  name: string;
+  body: string;
+  whatThisMeansInRealLife: string;
+}
+
+/** NEW: Per-child adaptation block (richer than the legacy line). */
+export interface ChildAdaptationBlock {
+  name: string;
+  /** Legacy single-line summary, still accepted. */
+  line?: string;
+  /** NEW: paragraph describing how this child adapts to the family system. */
+  adaptation?: string;
+  /** NEW: one concrete sentence of what works for this child. */
+  respondsBestWhen?: string | string[];
+  whatMakesItWorse?: string[];
+  inTheMoment?: { scenario: string; actions: string[] }[];
+}
+
+/** NEW: Best Family Practice — short, repeatable sequence, NOT a meeting. */
+export interface BestFamilyPractice {
+  sequence: string;
+  steps: string[];
+}
+
 export interface FamilySystemReadingResponse {
   atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member
-  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[];
+  /** NEW Section 2 — required, one entry per parent. */
+  parentRegulationCenter?: ParentRegulationCenter[];
+  childAdaptations: ChildAdaptationBlock[];
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
-  /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
   /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
   whatAlreadyWorks?: WhatAlreadyWorksEntry[];
   /** REQUIRED for every parent↔child pair. Role-aware structure. */
   parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
   /** REQUIRED for every unique sibling pair. siblingA = older, siblingB = younger. */
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
+  /** NEW Section 6 — concrete practices for THIS family. */
+  whatHelpsWholeFamily?: string[];
+  whatHelpsRationale?: string;
+  /** NEW Section 7 — concrete things to stop doing in THIS family. */
+  whatToAvoid?: string[];
+  /** NEW Section 8 — short repeatable practice sequence. */
+  bestFamilyPractice?: BestFamilyPractice;
   /** @deprecated kept for back-compat; ignored on render. */
   householdRegulationPattern?: string;
-  /** @deprecated */
+  /** @deprecated NOTE: legacy top-level essay — current `whatHelpsWholeFamily` array replaces it. */
   whatHelps?: string;
   /** @deprecated */
   siblingPressurePoints?: { name: string; body: string }[];

@@ -1,13 +1,6 @@
 // Pure sanitizer + migrator for the family-system-reading payload.
 // No Deno-specific imports — safe to load from tests and (with a parallel
 // copy in src/lib/familySystemMigration.ts) the client.
-//
-// Jobs:
-//  1) Migrate legacy cached pair entries (with a `body` paragraph or plain-string
-//     composite/bridge/friction) to the new role-aware object shape.
-//  2) Strip forbidden / deprecated top-level fields and forbidden pair keys.
-//  3) Validate the new shape (composite/bridge/friction are objects, identical
-//     forA/forB are flagged, no legacy fields remain).
 
 export interface PairCompositeBlock {
   shared: string;
@@ -32,17 +25,34 @@ export type PairEntry = {
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
   interactionPattern?: InteractionPatternBlock | null;
+  dynamic?: string | null;
+  whatCanFeelHard?: string | null;
+  whatHelps?: string | null;
+  patternType?: string | null;
   note?: string | null;
   // legacy
   body?: string;
   [k: string]: unknown;
 };
 
+export const SIBLING_PATTERN_TYPES = new Set([
+  "translation problem",
+  "pacing friction",
+  "competition risk",
+  "quiet co-regulation",
+  "mirror match",
+  "role split",
+]);
+
 export const ALLOWED_PAIR_KEYS = new Set([
   "composite",
   "bridge",
   "friction",
   "interactionPattern",
+  "dynamic",
+  "whatCanFeelHard",
+  "whatHelps",
+  "patternType",
   "note",
   "parent",
   "child",
@@ -50,11 +60,13 @@ export const ALLOWED_PAIR_KEYS = new Set([
   "siblingB",
 ]);
 
+// Legacy/forbidden pair-only keys. NOTE: `whatHelps` and `respondsBestWhen` are
+// NO LONGER forbidden as pair keys — `whatHelps` is now a per-pair field, and
+// `respondsBestWhen` lives on childAdaptations (still forbidden inside pairs).
 export const FORBIDDEN_PAIR_KEYS = new Set([
   "body",
   "respondsBestWhen",
   "inTheMoment",
-  "whatHelps",
   "scenario",
   "scenarios",
   "story",
@@ -62,6 +74,9 @@ export const FORBIDDEN_PAIR_KEYS = new Set([
   "paragraph",
 ]);
 
+// Legacy top-level keys we strip on sanitize. NOTE: top-level `whatHelps`
+// (essay form) is removed — Section 6 now uses `whatHelpsWholeFamily` (array)
+// and `whatHelpsRationale` (one sentence).
 export const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
   "householdRegulationPattern",
   "whatHelps",
@@ -79,6 +94,20 @@ export const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
 
 const SENTENCE_SPLIT_RE = /(?<=[.!?])\s+/;
 
+/** Range markers — at least one must appear in dynamic / interactionPattern / bridge / friction text. */
+export const RANGE_MARKER_RE =
+  /(can show up as[\s\S]+?but can also|may[\s\S]+?though it can also|at its best[\s\S]+?on a hard day|sometimes[\s\S]+?and other times|tends to[\s\S]+?but doesn'?t always|on a good day[\s\S]+?on a hard day|at its best[\s\S]+?on a hard day|under stress)/i;
+
+/** Verdict phrases — banned in pair text (single-outcome claims). */
+export const VERDICT_PHRASE_RES: RegExp[] = [
+  /\bthis (creates|brings|gives|results in|leads to)\b/i,
+  /\bthis is where it goes wrong\b/i,
+  /\bthis damages\b/i,
+  /\bstrong bond\b/i,
+  /\bthey connect easily\b/i,
+  /\bthey clash\b/i,
+];
+
 /** Split a legacy paragraph into a composite-tone first sentence and a note. */
 export function splitLegacyBody(body: string): { composite: string; note?: string } {
   const cleaned = body.replace(/\s+/g, " ").trim();
@@ -89,12 +118,9 @@ export function splitLegacyBody(body: string): { composite: string; note?: strin
   return rest ? { composite: first, note: rest } : { composite: first };
 }
 
-/** Lift a legacy plain-string composite into the new object shape. */
 function liftCompositeString(s: string): PairCompositeBlock {
   return { shared: s.trim(), feelsLikeForA: null, feelsLikeForB: null };
 }
-
-/** Lift a legacy plain-string bridge/friction into the new object shape. */
 function liftAspectString(s: string): PairAspectBlock {
   return { aspect: s.trim(), forA: null, forB: null };
 }
@@ -146,6 +172,12 @@ function normalizeInteractionPattern(v: unknown): InteractionPatternBlock | null
   return { forA, forB, why };
 }
 
+function normalizeStr(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t ? t : null;
+}
+
 /** Migrate one pair entry: legacy `body` → composite/note, lift legacy strings, drop forbidden keys. */
 export function migratePairEntry<T extends PairEntry>(entry: T): T {
   const out: PairEntry = {};
@@ -154,16 +186,14 @@ export function migratePairEntry<T extends PairEntry>(entry: T): T {
     out[k] = v;
   }
 
-  const hasNew = !!(entry.composite || entry.bridge || entry.friction || entry.note);
+  const hasNew = !!(entry.composite || entry.bridge || entry.friction || entry.note || entry.dynamic);
 
-  // legacy body → composite shared + note
   if (!hasNew && typeof entry.body === "string" && entry.body.trim()) {
     const { composite, note } = splitLegacyBody(entry.body);
     if (composite) out.composite = liftCompositeString(composite);
     if (note) out.note = note;
   }
 
-  // Normalize composite / bridge / friction (string → object lift, object → cleaned)
   if ("composite" in out) {
     const c = normalizeComposite(out.composite);
     if (c === undefined) delete out.composite;
@@ -184,11 +214,17 @@ export function migratePairEntry<T extends PairEntry>(entry: T): T {
     if (ip === undefined) delete out.interactionPattern;
     else out.interactionPattern = ip;
   }
+  if ("dynamic" in out) out.dynamic = normalizeStr(out.dynamic);
+  if ("whatCanFeelHard" in out) out.whatCanFeelHard = normalizeStr(out.whatCanFeelHard);
+  if ("whatHelps" in out) out.whatHelps = normalizeStr(out.whatHelps);
+  if ("patternType" in out) {
+    const p = normalizeStr(out.patternType);
+    out.patternType = p && SIBLING_PATTERN_TYPES.has(p.toLowerCase()) ? p.toLowerCase() : null;
+  }
   if ("note" in out) {
     if (typeof out.note !== "string" || !out.note.trim()) {
       out.note = null;
     } else if (DEAD_NOTE_RE.test(out.note)) {
-      // Dead-end "no aspects" note is now banned; drop silently.
       out.note = null;
     }
   }
@@ -203,7 +239,6 @@ export interface SanitizeResult<T> {
   droppedPairKeys: string[];
 }
 
-/** Sanitize a full reading payload and migrate legacy pair shapes. */
 export function sanitizeReadingPayload<T extends Record<string, unknown>>(input: T): SanitizeResult<T> {
   const droppedTopLevel: string[] = [];
   const droppedPairKeys = new Set<string>();
@@ -234,7 +269,7 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
     });
   }
 
-  // whatAlreadyWorks: lift legacy { pair, line } into { pair, aspect, forA, forB }
+  // whatAlreadyWorks: lift legacy { pair, line } into role-aware shape.
   const waw = out.whatAlreadyWorks;
   if (Array.isArray(waw)) {
     out.whatAlreadyWorks = waw
@@ -272,9 +307,26 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
   };
 }
 
-/** True iff every pair entry conforms to the new shape (objects, no legacy keys, distinct perspectives). */
+/** Returns true if the line contains at least one allowed range marker. */
+export function hasRangeMarker(s: string | null | undefined): boolean {
+  if (!s || typeof s !== "string") return false;
+  return RANGE_MARKER_RE.test(s);
+}
+
+/** Returns the first matching verdict phrase, or null. */
+export function firstVerdictPhrase(s: string | null | undefined): string | null {
+  if (!s || typeof s !== "string") return null;
+  for (const re of VERDICT_PHRASE_RES) {
+    const m = s.match(re);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+/** Validates the new pair shape + Section 4/5/6/7/8 requirements. */
 export function validatePairShape(payload: Record<string, unknown>): { ok: boolean; errors: string[] } {
   const errors: string[] = [];
+
   for (const field of ["parentChildConnections", "siblingConnections"] as const) {
     const arr = payload[field];
     if (arr === undefined || arr === null) continue;
@@ -293,7 +345,8 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
           errors.push(`${field}[${i}] has forbidden key "${k}"`);
         }
       }
-      // composite must be an object (or null) — string composites are legacy and rejected here
+
+      // composite: object only
       if (entry.composite != null) {
         if (typeof entry.composite !== "object" || Array.isArray(entry.composite)) {
           errors.push(`${field}[${i}].composite must be an object with shared/feelsLikeForA/feelsLikeForB`);
@@ -312,6 +365,7 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
           }
         }
       }
+
       for (const key of ["bridge", "friction"] as const) {
         const v = entry[key];
         if (v == null) continue;
@@ -331,8 +385,15 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
         ) {
           errors.push(`${field}[${i}].${key} forA and forB are identical`);
         }
+        // Verdict-phrase scan on bridge/friction text
+        for (const sideKey of ["forA", "forB"] as const) {
+          const side = b[sideKey];
+          const v = firstVerdictPhrase(typeof side === "string" ? side : null);
+          if (v) errors.push(`${field}[${i}].${key}.${sideKey} contains verdict phrase: "${v}"`);
+        }
       }
-      // interactionPattern is REQUIRED on every pair, regardless of bridge/friction.
+
+      // interactionPattern REQUIRED
       const ip = entry.interactionPattern;
       if (ip == null) {
         errors.push(`${field}[${i}].interactionPattern missing (required for every pair)`);
@@ -357,8 +418,106 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
         ) {
           errors.push(`${field}[${i}].interactionPattern forA and forB are identical`);
         }
+        // Range marker REQUIRED on interactionPattern.forA + forB
+        for (const sideKey of ["forA", "forB"] as const) {
+          const side = p[sideKey];
+          const text = typeof side === "string" ? side : "";
+          if (text && !hasRangeMarker(text)) {
+            errors.push(`${field}[${i}].interactionPattern.${sideKey} missing range marker (e.g. "can show up as ... but can also ...")`);
+          }
+          const v = firstVerdictPhrase(text);
+          if (v) errors.push(`${field}[${i}].interactionPattern.${sideKey} contains verdict phrase: "${v}"`);
+        }
+      }
+
+      // dynamic, whatCanFeelHard, whatHelps — REQUIRED on every pair
+      for (const reqKey of ["dynamic", "whatCanFeelHard", "whatHelps"] as const) {
+        const v = entry[reqKey];
+        if (typeof v !== "string" || !v.trim()) {
+          errors.push(`${field}[${i}].${reqKey} missing (required)`);
+        }
+      }
+      // dynamic must be range-based
+      if (typeof entry.dynamic === "string" && entry.dynamic.trim() && !hasRangeMarker(entry.dynamic)) {
+        errors.push(`${field}[${i}].dynamic missing range marker`);
+      }
+      for (const k of ["dynamic", "whatCanFeelHard", "whatHelps"] as const) {
+        const v = firstVerdictPhrase(typeof entry[k] === "string" ? (entry[k] as string) : null);
+        if (v) errors.push(`${field}[${i}].${k} contains verdict phrase: "${v}"`);
+      }
+
+      // sibling pairs need a valid patternType from the allow-list
+      if (field === "siblingConnections") {
+        const pt = entry.patternType;
+        if (typeof pt !== "string" || !pt.trim()) {
+          errors.push(`${field}[${i}].patternType missing (sibling pairs require a labeled pattern type)`);
+        } else if (!SIBLING_PATTERN_TYPES.has(pt.toLowerCase())) {
+          errors.push(`${field}[${i}].patternType "${pt}" not in allow-list`);
+        }
       }
     });
   }
+
+  // Section 2: parentRegulationCenter shape
+  const prc = payload.parentRegulationCenter;
+  if (prc !== undefined && prc !== null) {
+    if (!Array.isArray(prc)) {
+      errors.push("parentRegulationCenter must be an array");
+    } else {
+      prc.forEach((raw, i) => {
+        if (!raw || typeof raw !== "object") {
+          errors.push(`parentRegulationCenter[${i}] not an object`);
+          return;
+        }
+        const o = raw as Record<string, unknown>;
+        if (typeof o.name !== "string" || !o.name.trim()) errors.push(`parentRegulationCenter[${i}].name missing`);
+        if (typeof o.body !== "string" || !o.body.trim()) errors.push(`parentRegulationCenter[${i}].body missing`);
+        if (typeof o.whatThisMeansInRealLife !== "string" || !o.whatThisMeansInRealLife.trim()) {
+          errors.push(`parentRegulationCenter[${i}].whatThisMeansInRealLife missing`);
+        }
+      });
+    }
+  }
+
+  // Section 3: childAdaptations need respondsBestWhen (string OR non-empty array)
+  const ca = payload.childAdaptations;
+  if (Array.isArray(ca)) {
+    ca.forEach((raw, i) => {
+      if (!raw || typeof raw !== "object") return;
+      const o = raw as Record<string, unknown>;
+      const rbw = o.respondsBestWhen;
+      const hasRbw =
+        (typeof rbw === "string" && rbw.trim()) ||
+        (Array.isArray(rbw) && rbw.some((x) => typeof x === "string" && x.trim()));
+      if (!hasRbw) errors.push(`childAdaptations[${i}].respondsBestWhen missing (required)`);
+      const adaptOrLine =
+        (typeof o.adaptation === "string" && o.adaptation.trim()) ||
+        (typeof o.line === "string" && o.line.trim());
+      if (!adaptOrLine) errors.push(`childAdaptations[${i}].adaptation (or legacy line) missing`);
+    });
+  }
+
+  // Section 6/7/8
+  if (payload.whatHelpsWholeFamily !== undefined && !Array.isArray(payload.whatHelpsWholeFamily)) {
+    errors.push("whatHelpsWholeFamily must be an array of strings");
+  }
+  if (payload.whatToAvoid !== undefined && !Array.isArray(payload.whatToAvoid)) {
+    errors.push("whatToAvoid must be an array of strings");
+  }
+  const bfp = payload.bestFamilyPractice;
+  if (bfp !== undefined && bfp !== null) {
+    if (typeof bfp !== "object" || Array.isArray(bfp)) {
+      errors.push("bestFamilyPractice must be an object");
+    } else {
+      const o = bfp as Record<string, unknown>;
+      if (typeof o.sequence !== "string" || !o.sequence.trim()) {
+        errors.push("bestFamilyPractice.sequence missing");
+      }
+      if (!Array.isArray(o.steps) || o.steps.length === 0) {
+        errors.push("bestFamilyPractice.steps must be a non-empty array");
+      }
+    }
+  }
+
   return { ok: errors.length === 0, errors };
 }
