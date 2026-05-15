@@ -1489,12 +1489,17 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-sm">
-            {members.map((m) => (
-              <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
-                <span className="font-semibold">{m.chart.name}</span>
-                {" "}→ when pressure builds, {buildPressurePattern(m.chart)}
-              </div>
-            ))}
+            {(() => {
+              const patterns = buildPressurePatternsForGroup(
+                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+              );
+              return members.map((m) => (
+                <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
+                  <span className="font-semibold">{m.chart.name}</span>
+                  {" "}→ when pressure builds, {patterns[m.chart.id]}
+                </div>
+              ));
+            })()}
           </CardContent>
         </Card>
       )}
