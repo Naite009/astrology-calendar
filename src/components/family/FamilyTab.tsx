@@ -1554,6 +1554,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 composite={sc.composite}
                 bridge={sc.bridge}
                 friction={sc.friction}
+                interactionPattern={(sc as any).interactionPattern}
                 note={sc.note}
                 legacyBody={(sc as unknown as { body?: string }).body}
               />
