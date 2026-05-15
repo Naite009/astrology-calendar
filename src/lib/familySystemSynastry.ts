@@ -425,33 +425,108 @@ export function buildFamilySystemPayload(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deterministic "When Pressure Builds" pattern generator (client-side)
+// Each member must get a DISTINCT, non-interchangeable behavioral line.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function buildPressurePattern(chart: NatalChart): string {
+const PRESSURE_BY_SIGN: Record<string, string> = {
+  Aries: "may act fast, push back, or resist direction",
+  Leo: "may get louder and take up more space to be seen",
+  Sagittarius: "may speak bluntly or bolt to get room to breathe",
+  Cancer: "may pull inward and protect what feels safe",
+  Scorpio: "may go quiet and intense, watching before reacting",
+  Pisces: "may drift, get overwhelmed, or disappear into their own world",
+  Gemini: "may talk faster, argue points, and try to outthink the moment",
+  Libra: "may try to smooth things over or step back to weigh sides",
+  Aquarius: "may detach, observe coolly, and refuse to be pushed",
+  Taurus: "may dig in, slow everything down, and refuse to be moved",
+  Virgo: "may try to fix it, list the problems, or critique the chaos",
+  Capricorn: "may shut down emotion and switch into get-it-done mode",
+};
+
+const MOON_TONE: Record<string, string> = {
+  Aries: "with a sharp emotional edge",
+  Leo: "with feelings showing on their face",
+  Sagittarius: "while needing physical space",
+  Cancer: "while clearly hurt underneath",
+  Scorpio: "while quietly tracking everything",
+  Pisces: "while overwhelmed by the noise",
+  Gemini: "while narrating their reaction out loud",
+  Libra: "while trying not to upset anyone",
+  Aquarius: "while going emotionally flat",
+  Taurus: "while needing time to settle",
+  Virgo: "while replaying what went wrong",
+  Capricorn: "while holding it in until later",
+};
+
+const MERCURY_TONE: Record<string, string> = {
+  Aries: "and answering before thinking",
+  Leo: "and announcing how they feel",
+  Sagittarius: "and saying the unfiltered version",
+  Cancer: "and going quiet mid-sentence",
+  Scorpio: "and refusing to explain themselves",
+  Pisces: "and losing the words altogether",
+  Gemini: "and arguing every point in real time",
+  Libra: "and choosing words carefully",
+  Aquarius: "and answering in short, clipped lines",
+  Taurus: "and refusing to be rushed for an answer",
+  Virgo: "and pointing out exactly what's wrong",
+  Capricorn: "and shutting the conversation down",
+};
+
+function basePressureLine(chart: NatalChart): string {
   const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
-  // Mars = primary action under pressure; fall back to Moon (emotional reactivity), then Mercury
   const sign = planets.Mars?.sign || planets.Moon?.sign || planets.Mercury?.sign;
-  if (!sign) return "may become quieter or more self-contained";
-
-  // Fire
-  if (sign === "Aries") return "may act quickly, push back, or resist direction";
-  if (sign === "Leo") return "may become more expressive or noticeable";
-  if (sign === "Sagittarius") return "may speak directly or pull away to get space";
-
-  // Water
-  if (sign === "Cancer") return "may become quiet or focused on safety";
-  if (sign === "Scorpio") return "may become intense, reactive, or hard to read";
-  if (sign === "Pisces") return "may withdraw or become overwhelmed by the noise";
-
-  // Air
-  if (sign === "Gemini") return "may talk faster or intellectualize the situation";
-  if (sign === "Libra") return "may try to restore calm or step back to think things through";
-  if (sign === "Aquarius") return "may detach and observe before responding";
-
-  // Earth
-  if (sign === "Taurus") return "may slow down and hold their ground";
-  if (sign === "Virgo") return "may try to fix the problem or organize the situation";
-  if (sign === "Capricorn") return "may become more focused on fixing things or getting them done";
-
-  return "may become quieter or more self-contained";
+  if (!sign) return "may go quieter and pull inward until things settle";
+  return PRESSURE_BY_SIGN[sign] || "may go quieter and pull inward until things settle";
 }
+
+export function buildPressurePattern(chart: NatalChart): string {
+  return basePressureLine(chart);
+}
+
+/**
+ * Group-aware version: guarantees each member's pressure line is DISTINCT from
+ * every other member's. When two members share a Mars sign, the second is
+ * differentiated using their Moon (then Mercury, then Sun) as a tiebreaker.
+ */
+export function buildPressurePatternsForGroup(
+  members: { id: string; chart: NatalChart }[]
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  const used = new Set<string>();
+
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const base = basePressureLine(m.chart);
+    let line = base;
+
+    if (used.has(line)) {
+      const moonSign = planets.Moon?.sign;
+      const moonMod = moonSign ? MOON_TONE[moonSign] : undefined;
+      if (moonMod) line = `${base} ${moonMod}`;
+    }
+    if (used.has(line)) {
+      const mercSign = planets.Mercury?.sign;
+      const mercMod = mercSign ? MERCURY_TONE[mercSign] : undefined;
+      if (mercMod) line = `${base} ${mercMod}`;
+    }
+    if (used.has(line)) {
+      const moonSign = planets.Moon?.sign;
+      const mercSign = planets.Mercury?.sign;
+      const moonMod = moonSign ? MOON_TONE[moonSign] : "";
+      const mercMod = mercSign ? MERCURY_TONE[mercSign] : "";
+      const combined = `${base} ${moonMod} ${mercMod}`.replace(/\s+/g, " ").trim();
+      if (combined && !used.has(combined)) line = combined;
+    }
+    if (used.has(line)) {
+      const sunSign = planets.Sun?.sign;
+      if (sunSign) line = `${line} (showing up in their own ${sunSign} way)`;
+    }
+
+    used.add(line);
+    out[m.id] = line;
+  }
+
+  return out;
+}
+
