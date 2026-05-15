@@ -1274,7 +1274,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
-      {reading.whatAlreadyWorks && (
+      {reading.whatAlreadyWorks && reading.whatAlreadyWorks.length > 0 && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1282,50 +1282,67 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               What Already Works In This Family
             </CardTitle>
             <CardDescription className="pt-1">
-              Existing strengths, connections, and natural regulation patterns.
+              Only listed when there is a real, tight bridge aspect between personal planets in a specific pair. Empty here is honest, not a gap.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 text-sm">
-            <p>{reading.whatAlreadyWorks}</p>
+          <CardContent className="pt-4 space-y-2 text-sm">
+            {reading.whatAlreadyWorks.map((w, i) => (
+              <div key={i} className="border-l-2 border-emerald-500/40 pl-3">
+                <div className="font-semibold">{w.pair}</div>
+                <p className="text-muted-foreground">{w.line}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
 
-      {reading.householdRegulationPattern && (
-        <Card className="border-primary/40">
-          <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Home className="h-4 w-4 text-primary" />
-              Household Regulation Pattern
-            </CardTitle>
-            <CardDescription className="pt-1">
-              How the parent or caregiver sets the emotional tone, conflict style, and repair pattern.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4 text-sm">
-            <p>{reading.householdRegulationPattern}</p>
-          </CardContent>
-        </Card>
-      )}
+      {(() => {
+        const resetLine = buildHouseholdResetLine(members);
+        if (!resetLine) return null;
+        return (
+          <Card className="border-primary/40">
+            <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Home className="h-4 w-4 text-primary" />
+                How This Household Resets
+              </CardTitle>
+              <CardDescription className="pt-1">
+                One observation drawn directly from the Moon element tally across the group.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4 text-sm">
+              <p>{resetLine}</p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {reading.parentChildConnections && reading.parentChildConnections.length > 0 && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              Parent–Child Connections
+              Parent ↔ Child Connections
             </CardTitle>
             <CardDescription className="pt-1">
-              Every parent ↔ child pair, honestly described. Connection here means emotionally impactful, not necessarily easy — what can work and what can feel hard.
+              Three lines per pair: the composite tone, the strongest real bridge, the strongest real friction. No story, no invented dynamics.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 text-sm">
-            {reading.parentChildConnections.map((pc, i) => (
-              <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{pc.parent} ↔ {pc.child}</div>
-                <p className="text-muted-foreground whitespace-pre-line">{pc.body}</p>
-              </div>
-            ))}
+            {reading.parentChildConnections.map((pc, i) => {
+              const legacy = (pc as unknown as { body?: string }).body;
+              const hasNew = pc.composite || pc.bridge || pc.friction || pc.note;
+              return (
+                <div key={i} className="border-l-2 border-primary/40 pl-3">
+                  <div className="font-semibold">{pc.parent} ↔ {pc.child}</div>
+                  {pc.composite && <p className="text-muted-foreground mt-1">{pc.composite}</p>}
+                  {pc.bridge && <p className="text-emerald-700 dark:text-emerald-400 mt-1"><span className="font-medium">Bridge:</span> {pc.bridge}</p>}
+                  {pc.friction && <p className="text-amber-700 dark:text-amber-400 mt-1"><span className="font-medium">Friction:</span> {pc.friction}</p>}
+                  {pc.note && <p className="text-muted-foreground italic mt-1">{pc.note}</p>}
+                  {legacy && !hasNew && <p className="text-muted-foreground whitespace-pre-line mt-1">{legacy}</p>}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
@@ -1338,16 +1355,24 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               Sibling ↔ Sibling Connections
             </CardTitle>
             <CardDescription className="pt-1">
-              Every sibling pair, honestly described. Tense or frustrating bonds are still significant connections, not absent ones.
+              Same three-line structure as parent–child pairs.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 text-sm">
-            {reading.siblingConnections.map((sc, i) => (
-              <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{sc.siblingA} ↔ {sc.siblingB}</div>
-                <p className="text-muted-foreground whitespace-pre-line">{sc.body}</p>
-              </div>
-            ))}
+            {reading.siblingConnections.map((sc, i) => {
+              const legacy = (sc as unknown as { body?: string }).body;
+              const hasNew = sc.composite || sc.bridge || sc.friction || sc.note;
+              return (
+                <div key={i} className="border-l-2 border-primary/40 pl-3">
+                  <div className="font-semibold">{sc.siblingA} ↔ {sc.siblingB}</div>
+                  {sc.composite && <p className="text-muted-foreground mt-1">{sc.composite}</p>}
+                  {sc.bridge && <p className="text-emerald-700 dark:text-emerald-400 mt-1"><span className="font-medium">Bridge:</span> {sc.bridge}</p>}
+                  {sc.friction && <p className="text-amber-700 dark:text-amber-400 mt-1"><span className="font-medium">Friction:</span> {sc.friction}</p>}
+                  {sc.note && <p className="text-muted-foreground italic mt-1">{sc.note}</p>}
+                  {legacy && !hasNew && <p className="text-muted-foreground whitespace-pre-line mt-1">{legacy}</p>}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
@@ -1365,29 +1390,6 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               <div key={i} className="border-l-2 border-primary/40 pl-3">
                 <div className="font-semibold">{c.name}</div>
                 <p className="text-muted-foreground">{c.line}</p>
-                {c.respondsBestWhen && c.respondsBestWhen.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">Responds Best When</div>
-                    <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 space-y-0.5">
-                      {c.respondsBestWhen.map((r, ri) => <li key={ri}>{r}</li>)}
-                    </ul>
-                  </div>
-                )}
-                {c.inTheMoment && c.inTheMoment.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">What To Do In The Moment</div>
-                    <div className="space-y-2 mt-1">
-                      {c.inTheMoment.map((m, mi) => (
-                        <div key={mi}>
-                          <div className="text-xs font-medium">{m.scenario}</div>
-                          <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-                            {m.actions.map((a, ai) => <li key={ai}>{a}</li>)}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
                   <div className="mt-2">
                     <div className="text-xs font-semibold uppercase tracking-wide text-destructive">What Makes It Worse</div>
@@ -1402,27 +1404,10 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
-      {reading.siblingPressurePoints?.length > 0 && (
+      {reading.whatEscalates && reading.whatEscalates.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Sibling Pressure Points</CardTitle>
-            <CardDescription>How each child experiences their siblings, from their own perspective. Based on exact synastry between siblings only.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            {reading.siblingPressurePoints.map((p, i) => (
-              <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{p.name}</div>
-                <p className="text-muted-foreground whitespace-pre-line">{p.body}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {reading.whatEscalates?.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">What Escalates the Household</CardTitle>
+            <CardTitle className="text-base">What Escalates Each Person</CardTitle>
             <CardDescription>How each family member experiences and contributes to escalation, from their own perspective.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
@@ -1436,17 +1421,29 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
-      {reading.whatHelps && (
+      {members.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              What Actually Helps This Family
+              What Each Person Responds Best To
             </CardTitle>
-            <CardDescription>Realistic, low-pressure practices that fit this family's nervous systems.</CardDescription>
+            <CardDescription className="pt-1">
+              One line per person, computed deterministically from each chart. No AI, no advice essays.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm">{reading.whatHelps}</p>
+          <CardContent className="pt-4 space-y-2 text-sm">
+            {(() => {
+              const lines = buildRespondsBestForGroup(
+                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+              );
+              return members.map((m) => (
+                <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
+                  <span className="font-semibold">{m.chart.name}</span>
+                  {" "}→ {lines[m.chart.id]}
+                </div>
+              ));
+            })()}
           </CardContent>
         </Card>
       )}
