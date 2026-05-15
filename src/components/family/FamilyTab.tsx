@@ -353,7 +353,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
     const found = savedReadings.find(
       (r) => r.reading_type === "system" && r.cache_key === key,
     );
-    setSystemReading(found ? (found.payload as FamilySystemReadingResponse) : null);
+    setSystemReading(found ? migrateFamilySystemReading(found.payload) : null);
   }, [selectedMembers, savedReadings]);
 
   const generateSystemReading = async (force = false) => {
