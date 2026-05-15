@@ -332,6 +332,32 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
           errors.push(`${field}[${i}].${key} forA and forB are identical`);
         }
       }
+      // interactionPattern is REQUIRED on every pair, regardless of bridge/friction.
+      const ip = entry.interactionPattern;
+      if (ip == null) {
+        errors.push(`${field}[${i}].interactionPattern missing (required for every pair)`);
+      } else if (typeof ip !== "object" || Array.isArray(ip)) {
+        errors.push(`${field}[${i}].interactionPattern must be an object with forA/forB/why`);
+      } else {
+        const p = ip as Record<string, unknown>;
+        if (typeof p.forA !== "string" || !p.forA.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.forA missing`);
+        }
+        if (typeof p.forB !== "string" || !p.forB.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.forB missing`);
+        }
+        if (typeof p.why !== "string" || !p.why.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.why missing`);
+        }
+        if (
+          typeof p.forA === "string" &&
+          typeof p.forB === "string" &&
+          p.forA.trim() &&
+          p.forA.trim().toLowerCase() === p.forB.trim().toLowerCase()
+        ) {
+          errors.push(`${field}[${i}].interactionPattern forA and forB are identical`);
+        }
+      }
     });
   }
   return { ok: errors.length === 0, errors };
