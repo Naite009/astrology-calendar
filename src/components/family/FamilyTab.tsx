@@ -105,8 +105,25 @@ function PairBlock({
   const DEAD_NOTE_RE = /no tight aspects|no significant connection|no meaningful aspects|limited connection/i;
   const safeNote = note && !DEAD_NOTE_RE.test(note) ? note : null;
 
+  // STRUCTURED RANGE FORMAT: the `dynamic` field IS the entire pair output.
+  // We deliberately do NOT render "The Dynamic" / "What Helps" / "What Can Feel Hard" /
+  // "Why" / interactionPattern / composite / bridge / friction sub-blocks anymore.
+  // Everything the user needs (Shared Pattern + At its best / More commonly / Under stress
+  // + Where connection can happen) lives inside `dynamic` as plain pre-line text.
+  const rangeBlock = dynamic && dynamic.trim().length > 0 ? dynamic : null;
+
+  // Validate the three required expression levels are present. If any is missing,
+  // we fall back to legacy fields so the user still sees SOMETHING, but flag it.
+  const hasAllThreeLevels =
+    !!rangeBlock &&
+    /at its best/i.test(rangeBlock) &&
+    /more commonly/i.test(rangeBlock) &&
+    /under stress/i.test(rangeBlock);
+
+  const showLegacyFallback = !rangeBlock;
+
   const hasAnything =
-    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody || dynamic || whatCanFeelHard || whatHelps;
+    rangeBlock || compShared || bridgeAspect || frictionAspect || safeNote || legacyBody;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
@@ -119,112 +136,22 @@ function PairBlock({
         )}
       </div>
 
-      {dynamic && (
+      {rangeBlock && (
         <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">The Dynamic</div>
-          <p className="whitespace-pre-line">{dynamic}</p>
-        </div>
-      )}
-
-      {whatCanFeelHard && (
-        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2">
-          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            What Can Feel Hard
-          </div>
-          <p className="text-amber-900 dark:text-amber-200">{whatCanFeelHard}</p>
-        </div>
-      )}
-
-      {whatHelps && (
-        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2">
-          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-            What Helps
-          </div>
-          <p className="text-emerald-900 dark:text-emerald-200">{whatHelps}</p>
-        </div>
-      )}
-
-      {compShared && (
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Shared tone</div>
-          <p className="text-muted-foreground">{compShared}</p>
-        </div>
-      )}
-      {compForA && (
-        <p>
-          <span className="font-medium">What {nameA} tends to feel:</span> {compForA}
-        </p>
-      )}
-      {compForB && (
-        <p>
-          <span className="font-medium">What {nameB} tends to feel:</span> {compForB}
-        </p>
-      )}
-
-      {hasInteractionPattern && (
-        <div className="rounded-md bg-muted/40 border border-border p-2 space-y-1">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">
-            How this shows up day to day
-          </div>
-          {ipForA && (
-            <p>
-              <span className="font-medium">{nameA}:</span> {ipForA}
-            </p>
-          )}
-          {ipForB && (
-            <p>
-              <span className="font-medium">{nameB}:</span> {ipForB}
-            </p>
-          )}
-          {ipWhy && (
-            <p className="text-xs text-muted-foreground italic">Why: {ipWhy}</p>
-          )}
-        </div>
-      )}
-
-      {bridgeAspect && (
-        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2 space-y-1">
-          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-            Where connection can happen
-          </div>
-          <p className="text-emerald-800 dark:text-emerald-300">{bridgeAspect}</p>
-          {bridgeForA && (
-            <p>
-              <span className="font-medium">For {nameA}:</span> {bridgeForA}
-            </p>
-          )}
-          {bridgeForB && (
-            <p>
-              <span className="font-medium">For {nameB}:</span> {bridgeForB}
+          <p className="whitespace-pre-line leading-relaxed">{rangeBlock}</p>
+          {!hasAllThreeLevels && (
+            <p className="text-xs italic text-muted-foreground mt-2">
+              This reading is missing one or more expression levels (At its best / More commonly / Under stress). Regenerate for a complete range.
             </p>
           )}
         </div>
       )}
 
-      {frictionAspect && (
-        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2 space-y-1">
-          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            Where it can feel hard
-          </div>
-          <p className="text-amber-800 dark:text-amber-300">{frictionAspect}</p>
-          {frictionForA && (
-            <p>
-              <span className="font-medium">For {nameA}:</span> {frictionForA}
-            </p>
-          )}
-          {frictionForB && (
-            <p>
-              <span className="font-medium">For {nameB}:</span> {frictionForB}
-            </p>
-          )}
-        </div>
-      )}
-
-      {safeNote && !bridgeAspect && !frictionAspect && (
+      {showLegacyFallback && safeNote && (
         <p className="text-muted-foreground italic">{safeNote}</p>
       )}
 
-      {legacyBody && !compShared && !bridgeAspect && !frictionAspect && (
+      {showLegacyFallback && legacyBody && (
         <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
       )}
 
