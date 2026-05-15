@@ -396,8 +396,7 @@ ${memberCtxBlock}
 PARENT ACTIVATION MAP (where each child's chart triggers each parent's Chiron/Saturn — describes what gets stirred IN THE PARENT, not the child):
 ${activationBlock}
 
-CROSS-CHART T-SQUARES (apex carries the household's pressure release point — recurring family pattern, not just one-off aspects):
-${tsqBlock}
+// (cross-chart configuration data intentionally omitted — see NO CONFIGURATION VOCABULARY rule)
 
 HOUSEHOLD COMPOSITE CHART (light snapshot only — secondary, supporting tone, NEVER the primary lens):
 ${compositeBlock}
