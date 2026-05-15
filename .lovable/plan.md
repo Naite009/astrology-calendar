@@ -1,71 +1,107 @@
-# Family System Reading
+## Diagnosis
 
-## What you'll get
+ChatGPT's review confirms a clear pattern: the deterministic, behavior-only sections (At a Glance, How Each Child Adapts, When Pressure Builds, What To Do When Things Escalate) are working. The AI-narrative sections (What Already Works, Parent–Child Connections, Household Regulation, What Actually Helps) are inventing structure, idealizing bonds, and overfitting to fake configurations.
 
-A new flow on the Parent/Child tab that replaces the dropdown-driven pair selector as the primary action:
+The fix is not "better prompting." It is **removing the AI's permission to narrate connection** in places where it has been hallucinating, and replacing those with deterministic, evidence-bound output — the same pattern that made the working sections trustworthy.
 
-1. **Checkboxes beside each family member** in the "My Family" list.
-2. **"Generate Family Reading" button directly under the list** with a count of selected members ("3 selected").
-3. **One integrated reading** showing how the whole selected group functions as a unit, not a series of one-on-one pairings.
-4. The existing pair reading (one-to-one) stays available below as a secondary option for when you want to zoom into a single relationship.
+## What changes
 
-## How the integrated reading is structured
+### 1. Kill the hallucination sources outright
 
-The combined reading needs to do something a pair reading cannot: show emergent family-system patterns. Here is the proposed structure of the output card stack:
+- **Remove all configuration labeling from prompts** (T-square, Grand Trine, Yod, apex, stellium-as-driver). Even with the validation rule added last round, the AI keeps reaching for these. The cleanest fix: strip the vocabulary entirely from the family-system prompts. If a real opposition+square exists, it gets described as "two tight tensions converging on [planet]" — never named.
+- **Remove "composite as driver" language.** Composite stays as a one-line tone tag per pair (already required), but it can no longer be cited as the *cause* of any dynamic.
 
-1. **Family Essence** — 3 sentences naming the overall character of this group (e.g., "An emotionally heavy household with two fire-Moon kids and a water-Moon parent…")
-2. **Roles in the System** — for each selected member, one line on the role they play in the group dynamic (the regulator, the spark, the peacemaker, the truth-teller, etc.)
-3. **The Emotional Climate** — what it actually feels like to live in this household day-to-day, derived from a Moon-cluster analysis (count of fire/earth/air/water Moons, dominant element).
-4. **Where Everyone Meets** — shared aspects, repeated signs, and stelliums across multiple charts (e.g., "Three of you have Mars in fire signs — conflict in this house is fast and loud.")
-5. **Pressure Points** — the 2–3 cross-aspects most likely to create friction in the group, named by who is doing what to whom.
-6. **Bridges** — the 2–3 cross-aspects most likely to provide ease and repair in the group.
-7. **One Practice for the Whole Family** — a single concrete action the group can do together for the next 90 days.
+### 2. Rewrite "What Already Works" as evidence-gated
 
-Pair-level cards (Soul Contract, Moon Bridge, Where Your Contracts Meet) remain on the one-to-one pair reading. The integrated reading focuses on group-level patterns.
+Currently the AI is free to invent positive bonds. New rule:
 
-## UI changes
+- For each pair, the AI may only cite a "what works" line if there is a **named, tight (≤4° orb) bridge aspect** between personal planets (Sun/Moon/Mercury/Venus/Mars) in that specific pair's synastry data.
+- If no qualifying aspect exists, the pair is omitted from this section. No filler.
+- Forbidden phrasings: "bond through [activity]", "connect over [topic]", "productive conversations", "shared interest in" — anything that names a real-world activity the AI cannot know.
+- Allowed phrasings: behavioral tendencies only ("easier to sit in the same room", "less friction when tired", "can hear each other when neither is rushed").
 
-- Each row in "My Family" gets a checkbox on the left.
-- "Select all" / "Clear" links above the list.
-- New action bar under the list: `[Generate Family Reading]  3 of 4 selected` — disabled until 2+ are checked.
-- A new results panel renders below "My Family" when the reading is ready, with the 7 cards above.
-- The existing "Pair Reading" card below is renamed to **"Zoom in: One-on-One Reading"** so it is clearly the optional deep-dive, not the main flow.
+### 3. Rebuild "Parent–Child Connections" as a 3-line structure (no story)
 
-## Technical plan
+Each pair gets exactly three lines, in this order:
 
-A short technical section for context — feel free to skip.
+1. **Composite tone** (one sentence, already required): "The pair composite is [Sun/Moon/Asc] in [sign] — [one plain-language tone descriptor]."
+2. **The strongest real bridge** (if any, ≤5° orb): "[Parent planet] [aspect] [child planet] — [behavioral effect, no scenario]."
+3. **The strongest real friction** (if any, ≤5° orb): "[Parent planet] [aspect] [child planet] — [behavioral effect, no scenario]."
 
-```text
-src/lib/familySystemSynastry.ts   (new)
-  - buildFamilySystem(members[], charts[])
-      → returns deterministic system data:
-        - moonElementBreakdown
-        - sharedSigns / repeated placements
-        - all pairwise cross-aspects (parent↔child, sibling↔sibling, parent↔parent)
-        - top friction aspects (squares/oppositions, tightest orbs)
-        - top bridge aspects (trines/sextiles/conjunctions, tightest orbs)
-        - role assignments per member (rule-based: heaviest Saturn = anchor,
-          tightest Moon-Sun = regulator, most personal planets in fire = spark, etc.)
+If no qualifying bridge or friction exists, that line is omitted with a single honest sentence: "No tight aspects between personal planets in this pair." No paragraph essays. No "container," "absorbs," "mirror," "regulator-of" language.
 
-supabase/functions/family-system-reading/index.ts   (new edge function)
-  - takes the deterministic system data
-  - returns the 7-card narrative payload
-  - same voice rules as family-pair-reading: plain English, no jargon, no em dashes,
-    behavioral language only
+### 4. Remove "What Actually Helps"
 
-src/components/family/FamilyTab.tsx   (edit)
-  - add `selectedIds: Set<string>` state
-  - add checkbox column + select all/clear
-  - add Generate Family Reading button + loading state
-  - render new <FamilySystemReadingView /> when result arrives
-  - rename pair section heading and move it below
+This section is built on synthesizing the AI's own (often invented) reading. Replace with a deterministic **"What Each Person Responds Best To"** block, one line per member, built client-side from the same Mars/Moon/Mercury logic already used for "When Pressure Builds." No AI involvement.
+
+### 5. Remove "Household Regulation Pattern" as a narrative section
+
+Replace with a single deterministic line built from Moon-element tally: "[N] water moons, [N] fire moons — this household needs [calm/space/movement/structure] to reset." Nothing more.
+
+### 6. Lock differentiation across all per-member sections
+
+Extend the existing group-aware deduplication (currently in `buildPressurePatternsForGroup`) to:
+- "How Each Child Adapts" lines
+- "What Each Person Responds Best To" lines
+- "At a Glance" per-person lines
+
+Same tiebreaker: if two members share the primary signature, append a Moon or Mercury modifier until every line is unique. Done client-side, deterministic, no AI.
+
+### 7. Tighten the "What Already Works" + "Parent–Child Connections" prompt with hard gates
+
+Add to the prompt, in the same style as the asteroid data gate:
+
+```
+EVIDENCE GATE — HARD STOP
+Before writing any line about a pair, you must cite the specific aspect from
+the synastry data with both planets and the orb. If you cannot cite it,
+you may not write the line. No exceptions. No softening with composite alone.
+No reaching for sign-based or house-based reasoning.
 ```
 
-No changes to existing pair-reading code, edge function, or aspect interpretation library. The new system reading is additive.
+## Sections after this pass
 
-## What I need from you before building
+| Section | Source | Status |
+|---|---|---|
+| At a Glance | deterministic + dedup | keep, extend dedup |
+| How Each Child Adapts | deterministic + dedup | keep, extend dedup |
+| What Already Works | AI, evidence-gated, may be empty | rewrite |
+| Parent–Child Connections | AI, 3-line structured, evidence-gated | rewrite |
+| Sibling Connections | same 3-line structure as P–C | rewrite |
+| When Pressure Builds | deterministic | keep as-is |
+| What Each Person Responds Best To | deterministic (new, replaces "What Actually Helps") | new |
+| When Things Escalate | deterministic conditional actions | keep as-is |
+| Household reset line | deterministic one-liner (replaces Regulation Pattern) | new |
 
-1. **Confirm the 7-section structure above** or tell me what to add, drop, or rename.
-2. **Role labels** — okay with my list (anchor, spark, peacemaker, regulator, truth-teller, mirror, wildcard) or want different ones?
-3. **Selection minimum** — 2+ members (any combo), or require at least one parent + one child?
-4. **Should the existing pair reading stay**, or do you want it removed entirely once the family reading exists?
+Removed: "What Already Works" filler, "Household Regulation Pattern" narrative, "What Actually Helps", any T-square/apex/Grand Trine vocabulary.
+
+## Technical scope
+
+```text
+supabase/functions/family-system-reading/index.ts
+  - strip config-naming vocabulary from prompt + JSON schema
+  - rewrite parentChildConnections + siblingConnections schema to {composite, bridge?, friction?}
+  - add EVIDENCE GATE block
+  - rewrite whatAlreadyWorks as evidence-gated array (may be empty)
+  - drop householdRegulation, whatActuallyHelps from schema
+
+src/lib/familySystemSynastry.ts
+  - extend buildPressurePatternsForGroup pattern to:
+      buildAdaptationsForGroup, buildRespondsBestForGroup, buildAtAGlanceForGroup
+  - add buildHouseholdResetLine(members) — Moon-element tally → one sentence
+
+src/components/family/FamilyTab.tsx
+  - render new 3-line pair structure
+  - render "What Each Person Responds Best To" from deterministic helper
+  - render household reset one-liner
+  - remove householdRegulation + whatActuallyHelps cards
+  - "What Already Works" renders only non-empty entries; if empty, hide section
+```
+
+No DB changes. No new edge functions.
+
+## Open questions before I build
+
+1. **"What Already Works" when empty across all pairs** — hide the whole section, or show a single honest line ("No tight bridge aspects between personal planets in this family")?
+2. **Sibling Connections** — same 3-line structure as Parent–Child, or do you want siblings collapsed into one "How the kids interact" deterministic block instead of per-pair?
+3. **Composite tone line** — keep it on every pair (per your earlier request for consistency), or only when it adds something the bridge/friction lines don't already say?
