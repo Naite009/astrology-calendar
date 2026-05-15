@@ -544,3 +544,97 @@ export function buildPressurePatternsForGroup(
   return out;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic "Responds Best To" line per member (no AI, no scenarios).
+// One line per person describing the conditions they handle best, derived from
+// Moon sign primarily, with Mars/Mercury tiebreakers to keep every line unique.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RESPONDS_BEST_BY_MOON: Record<string, string> = {
+  Aries: "responds best to short, direct requests and being given a way to move",
+  Leo: "responds best to being acknowledged first, then asked",
+  Sagittarius: "responds best to being given a reason and room to choose",
+  Cancer: "responds best to a soft tone and a private check-in, not a public one",
+  Scorpio: "responds best to honesty, no surprises, and time to come back on their own",
+  Pisces: "responds best to lower volume, fewer transitions, and one thing at a time",
+  Gemini: "responds best to talking it through and being asked, not told",
+  Libra: "responds best to fairness, choices, and time to think before answering",
+  Aquarius: "responds best to space, logic, and not being pushed for emotion on demand",
+  Taurus: "responds best to slower pacing and warning before a change",
+  Virgo: "responds best to clear instructions, a reason, and a private correction",
+  Capricorn: "responds best to being trusted with the task and not micromanaged",
+};
+
+const MARS_RESPONDS_MOD: Record<string, string> = {
+  Aries: ", and to physical movement before talking",
+  Leo: ", and to being given the lead on something visible",
+  Sagittarius: ", and to being outside or moving",
+  Cancer: ", and to food, comfort, or a quiet room",
+  Scorpio: ", and to one trusted person, not a group",
+  Pisces: ", and to quiet sensory input",
+  Gemini: ", and to a question instead of a command",
+  Libra: ", and to being asked their opinion",
+  Aquarius: ", and to being left alone briefly first",
+  Taurus: ", and to a hands-on task",
+  Virgo: ", and to a clear next step",
+  Capricorn: ", and to a defined goal",
+};
+
+export function buildRespondsBestForGroup(
+  members: { id: string; chart: NatalChart }[]
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  const used = new Set<string>();
+
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const moon = planets.Moon?.sign;
+    const base = (moon && RESPONDS_BEST_BY_MOON[moon]) || "responds best to a calm tone and one thing at a time";
+    let line = base;
+
+    if (used.has(line)) {
+      const mars = planets.Mars?.sign;
+      const mod = mars ? MARS_RESPONDS_MOD[mars] : undefined;
+      if (mod) line = `${base}${mod}`;
+    }
+    if (used.has(line)) {
+      const merc = planets.Mercury?.sign;
+      const mod = merc ? MERCURY_TONE[merc] : undefined;
+      if (mod) line = `${line} ${mod}`;
+    }
+    used.add(line);
+    out[m.id] = line;
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic household reset line from Moon-element tally.
+// One sentence. No advice, no scenarios.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildHouseholdResetLine(
+  members: { chart: NatalChart }[]
+): string | null {
+  if (!members.length) return null;
+  const tally = { fire: 0, earth: 0, air: 0, water: 0 };
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const el = elementOf(planets.Moon?.sign);
+    if (el) tally[el]++;
+  }
+  const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+  const [topEl, topN] = sorted[0];
+  if (topN === 0) return null;
+
+  const need: Record<string, string> = {
+    water: "quiet, lower volume, and time alone to reset",
+    fire: "movement, physical outlet, and space to discharge",
+    earth: "structure, predictable routine, and food before discussion",
+    air: "talking it through, fewer interruptions, and room to think out loud",
+  };
+
+  const counts = `${tally.water} water, ${tally.fire} fire, ${tally.earth} earth, ${tally.air} air`;
+  return `Moons in this household: ${counts}. The group resets fastest with ${need[topEl]}.`;
+}
