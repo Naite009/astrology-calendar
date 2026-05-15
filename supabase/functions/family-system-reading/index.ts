@@ -423,7 +423,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED — pick the BEST fit from the allow-list),
-      "dynamic": string (REQUIRED. Range-based paragraph.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". For siblings, the "Where connection can happen" line MUST acknowledge that activity/shared interests can connect OR escalate. See PAIR RANGE FORMAT rule above.),
       "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
       "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
       "friction": { "aspect": string, "forA": string, "forB": string } OR null,
