@@ -15,29 +15,49 @@ Deno.test("splitLegacyBody splits multi-sentence body", () => {
   assertEquals(note, "They tend to clash when tired.");
 });
 
-Deno.test("migratePairEntry promotes legacy body to composite/note", () => {
-  const out: Record<string, unknown> = migratePairEntry({
+Deno.test("migratePairEntry promotes legacy body to composite object + note", () => {
+  const out: any = migratePairEntry({
     parent: "Lauren",
     child: "Max",
     body: "Composite Moon in Pisces. Easier when neither is rushed.",
   });
   assertEquals(out.body, undefined);
-  assertEquals(out.composite, "Composite Moon in Pisces.");
+  assertEquals(out.composite.shared, "Composite Moon in Pisces.");
+  assertEquals(out.composite.feelsLikeForA, null);
+  assertEquals(out.composite.feelsLikeForB, null);
   assertEquals(out.note, "Easier when neither is rushed.");
-  assertEquals(out.parent, "Lauren");
 });
 
-Deno.test("migratePairEntry preserves new shape and drops body if both present", () => {
-  const out = migratePairEntry({
+Deno.test("migratePairEntry lifts legacy string composite/bridge/friction into objects", () => {
+  const out: any = migratePairEntry({
     parent: "Lauren",
     child: "Max",
     composite: "Composite Sun in Capricorn — steady, slow.",
     bridge: "Lauren's Venus trine Max's Moon (1.2°): easier in low-volume moments.",
-    body: "old story essay that should disappear",
+    friction: "Lauren's Mars square Max's Sun (2°): edges spike when tired.",
   });
-  assertEquals(out.body, undefined);
-  assertEquals(out.composite, "Composite Sun in Capricorn — steady, slow.");
-  assert(out.bridge?.includes("trine"));
+  assertEquals(out.composite.shared, "Composite Sun in Capricorn — steady, slow.");
+  assertEquals(out.composite.feelsLikeForA, null);
+  assertEquals(out.bridge.aspect.includes("trine"), true);
+  assertEquals(out.bridge.forA, null);
+  assertEquals(out.friction.forB, null);
+});
+
+Deno.test("migratePairEntry preserves new object shape", () => {
+  const out: any = migratePairEntry({
+    parent: "Lauren",
+    child: "Ben",
+    composite: {
+      shared: "Pair composite Sun in Capricorn — steady but heavy.",
+      feelsLikeForA: "Lauren tends to feel responsible for fixing things.",
+      feelsLikeForB: "Ben can experience the same moments as pressure.",
+    },
+    bridge: null,
+    friction: { aspect: "Lauren's Mars square Ben's Sun (2°)", forA: "Lauren may push.", forB: "Ben may pull away." },
+  });
+  assertEquals(out.composite.feelsLikeForA, "Lauren tends to feel responsible for fixing things.");
+  assertEquals(out.bridge, null);
+  assertEquals(out.friction.forB, "Ben may pull away.");
 });
 
 Deno.test("sanitizeReadingPayload strips forbidden top-level keys", () => {
@@ -45,39 +65,24 @@ Deno.test("sanitizeReadingPayload strips forbidden top-level keys", () => {
     atAGlance: [{ name: "Lauren", line: "stays calm" }],
     householdRegulationPattern: "x",
     whatHelps: "y",
-    siblingPressurePoints: [{ name: "Max", body: "z" }],
     familyEssence: "essay",
     parentChildConnections: [],
   };
   const { payload, droppedTopLevel } = sanitizeReadingPayload(input);
-  for (const k of [
-    "householdRegulationPattern",
-    "whatHelps",
-    "siblingPressurePoints",
-    "familyEssence",
-  ]) {
-    assert(droppedTopLevel.includes(k), `expected ${k} dropped`);
+  for (const k of ["householdRegulationPattern", "whatHelps", "familyEssence"]) {
+    assert(droppedTopLevel.includes(k));
     assert(!(k in payload));
     assert(FORBIDDEN_TOP_LEVEL_KEYS.has(k));
   }
-  assertEquals((payload as any).atAGlance.length, 1);
 });
 
 Deno.test("sanitizeReadingPayload migrates legacy body in pair arrays", () => {
   const input = {
     parentChildConnections: [
-      {
-        parent: "Lauren",
-        child: "Max",
-        body: "Composite Moon in Pisces. They clash when tired.",
-      },
+      { parent: "Lauren", child: "Max", body: "Composite Moon in Pisces. They clash when tired." },
     ],
     siblingConnections: [
-      {
-        siblingA: "Max",
-        siblingB: "Ike",
-        body: "Old paragraph essay describing dynamics.",
-      },
+      { siblingA: "Max", siblingB: "Ike", body: "Old paragraph essay." },
     ],
   };
   const { payload, migratedPairs, droppedPairKeys } = sanitizeReadingPayload(input);
@@ -85,21 +90,22 @@ Deno.test("sanitizeReadingPayload migrates legacy body in pair arrays", () => {
   assert(droppedPairKeys.includes("body"));
   const pc: any = (payload as any).parentChildConnections[0];
   assertEquals(pc.body, undefined);
-  assert(pc.composite);
-  const sc: any = (payload as any).siblingConnections[0];
-  assertEquals(sc.body, undefined);
-  assert(sc.composite);
+  assert(pc.composite.shared);
 });
 
-Deno.test("validatePairShape passes on new shape", () => {
+Deno.test("validatePairShape passes on new role-aware object shape", () => {
   const ok = validatePairShape({
     parentChildConnections: [
       {
         parent: "Lauren",
-        child: "Max",
-        composite: "Composite Sun in Capricorn.",
+        child: "Ben",
+        composite: {
+          shared: "Pair composite Sun in Capricorn — steady but heavy.",
+          feelsLikeForA: "Lauren may feel responsible for steering.",
+          feelsLikeForB: "Ben can experience that as pressure.",
+        },
         bridge: null,
-        friction: "Lauren's Mars square Max's Sun (2°): edges spike when tired.",
+        friction: { aspect: "Lauren's Mars square Ben's Sun (2°)", forA: "Lauren may push.", forB: "Ben may pull away." },
         note: null,
       },
     ],
@@ -109,26 +115,46 @@ Deno.test("validatePairShape passes on new shape", () => {
   assert(ok.ok);
 });
 
-Deno.test("validatePairShape fails when legacy body present", () => {
+Deno.test("validatePairShape fails when composite is a plain string (legacy)", () => {
+  const res = validatePairShape({
+    parentChildConnections: [
+      { parent: "Lauren", child: "Ben", composite: "Just a sentence" },
+    ],
+  });
+  assert(!res.ok);
+  assert(res.errors.some((e) => e.includes("composite must be an object")));
+});
+
+Deno.test("validatePairShape flags identical forA and forB on bridge", () => {
   const res = validatePairShape({
     parentChildConnections: [
       {
         parent: "Lauren",
-        child: "Max",
-        composite: "ok",
-        body: "should not be here",
+        child: "Ben",
+        composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
+        bridge: { aspect: "Lauren's Venus trine Ben's Moon (1°)", forA: "Same line.", forB: "Same line." },
       },
+    ],
+  });
+  assert(!res.ok);
+  assert(res.errors.some((e) => e.includes("forA and forB are identical")));
+});
+
+Deno.test("validatePairShape fails when legacy body present", () => {
+  const res = validatePairShape({
+    parentChildConnections: [
+      { parent: "Lauren", child: "Max", composite: { shared: "ok", feelsLikeForA: null, feelsLikeForB: null }, body: "should not be here" },
     ],
   });
   assert(!res.ok);
   assert(res.errors.some((e) => e.includes('"body"')));
 });
 
-Deno.test("sanitize output always passes validatePairShape", () => {
+Deno.test("sanitize output of legacy payload passes validatePairShape", () => {
   const messy = {
     parentChildConnections: [
-      { parent: "A", child: "B", body: "Legacy. Two sentences.", respondsBestWhen: ["x"] },
-      { parent: "A", child: "C", composite: "ok", inTheMoment: [{ scenario: "x", actions: [] }] },
+      { parent: "A", child: "B", body: "Legacy. Two sentences." },
+      { parent: "A", child: "C", composite: "old plain string composite" },
     ],
     siblingConnections: [
       { siblingA: "B", siblingB: "C", body: "Legacy paragraph." },
