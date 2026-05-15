@@ -49,6 +49,10 @@ function PairBlock({
   bridge,
   friction,
   interactionPattern,
+  dynamic,
+  whatCanFeelHard,
+  whatHelps,
+  patternType,
   note,
   legacyBody,
 }: {
@@ -59,6 +63,10 @@ function PairBlock({
   bridge?: any;
   friction?: any;
   interactionPattern?: any;
+  dynamic?: string | null;
+  whatCanFeelHard?: string | null;
+  whatHelps?: string | null;
+  patternType?: string | null;
   note?: string | null;
   legacyBody?: string;
 }) {
