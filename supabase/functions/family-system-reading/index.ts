@@ -238,6 +238,14 @@ RELATIONSHIP COVERAGE RULE (CRITICAL — applies to parentChildConnections AND c
 - Do NOT imply lack of connection by omission. Skipping a relationship creates the false impression "there is no bond here." Every parent must see themselves in relationship with EACH child, not just the easiest ones to describe.
 - 3-5 sentences per pair. Plain English. Inline citation of the named aspect(s) used.
 
+DISTINCT PATTERN RULE (CRITICAL — applies to atAGlance, childAdaptations.line, and childAdaptations.respondsBestWhen):
+- Across the children in this family, EACH child MUST have a clearly distinct, non-interchangeable behavioral pattern. Two children may NOT share the same description, the same verbs, or the same trigger phrasing.
+- Before finalizing, internally compare each child's atAGlance line, childAdaptations.line, and respondsBestWhen items against every other child's. If any two are similar (overlapping verbs like "observes", "processes", "withdraws", "reacts", or vague near-synonyms), REWRITE until the contrast is unmistakable.
+- Each description must answer: "What makes THIS child different from the others?" Use contrasting axes drawn from the actual chart: outward vs inward, fast vs slow, loud vs quiet, push vs withdraw, leads vs follows, talks first vs thinks first, escalates vs shuts down, asks questions vs gives answers.
+- FORBIDDEN: identical phrasing across siblings, vague overlap ("observes", "processes", "feels things deeply" applied to more than one child), interchangeable descriptions where you could swap the names and the lines would still read true.
+- REQUIRED: specific, contrasting behavior. If two children share a Moon element or Mars sign, you MUST differentiate them using a SECONDARY signature (Mercury, Saturn, Ascendant, dominant element, profected house, age/stage) and surface that contrast in the output. Each child should feel unmistakably unique and recognizable.
+- This rule overrides any temptation to use stock phrasing. A reading where two children sound the same is INVALID OUTPUT.
+
 CONNECTION DEFINITION RULE (CRITICAL — applies to parentChildConnections AND siblingConnections):
 - "Connection" does NOT mean easy, smooth, positive, or harmonious. Connection means EMOTIONALLY IMPACTFUL, activating, influential, and meaningful in real life.
 - Every primary relationship MUST be included: every parent↔child pair AND every sibling↔sibling pair. NEVER skip a pair because it is tense, frustrating, inconsistent, or hard to describe positively.
