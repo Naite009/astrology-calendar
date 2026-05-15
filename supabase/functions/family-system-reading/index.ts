@@ -374,6 +374,21 @@ RELATIONSHIP COMPLETENESS RULE — HARD STOP (this is the most important rule in
   • wider-orb cross-aspects (5–8°), explicitly cited as "wider contact" — never as a tight bridge or friction
 - The Dual Expression Rule and Role-Aware Rule still apply to interactionPattern: forA and forB MUST be observably distinct, behavioral, and range-based (positive AND challenging expression in the same line).
 
+PAIR RANGE FORMAT — HARD STOP (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
+- Every `dynamic` field MUST be written as a structured range block, NOT a flowing paragraph. The block MUST contain these exact labeled parts, in this order, separated by newlines (\n). Use these literal labels, no markdown, no bullets:
+    Shared Pattern: <1-2 plain-English lines naming the underlying pattern between these two people. Anchored to named placements / cross-aspects. NO verdicts.>
+    At its best: <one concrete sentence — what this pair looks like on a good, regulated day.>
+    More commonly: <one concrete sentence — the everyday, neutral expression. What actually happens most of the time.>
+    Under stress: <one concrete sentence — how it distorts when one or both are tired, activated, or overwhelmed. NOT catastrophic, just real.>
+    Where connection can happen: <one CONDITIONAL sentence using "can", "may", or "when ___, ___". NEVER guaranteed. NEVER "they connect through X". Use phrasings like "Connection can happen when…", "There's room for connection if…", "This pair can meet through ___, though it isn't automatic."
+- The three expression levels (At its best / More commonly / Under stress) MUST be observably DIFFERENT from each other. If two of them could be swapped without changing meaning, REWRITE.
+- "Where connection can happen" is CONDITIONAL, never a promise. FORBIDDEN: "they bond over", "they connect through", "this creates closeness", "they always", "they naturally". REQUIRED markers: "can", "may", "when…then…", "if…", "there's room for".
+- For SIBLINGS specifically: do NOT assume bonding. Shared activity, shared humor, shared interests can CONNECT them OR ESCALATE them depending on regulation. The "Where connection can happen" line for siblings must acknowledge this two-way possibility (e.g. "Shared play can connect them when both are regulated, or escalate fast when one is tired.").
+- For SIBLINGS: each sibling pair's block MUST be clearly differentiated from every other sibling pair in this family — no overlapping Shared Pattern, no interchangeable expression levels. If you could swap the names between two sibling blocks and they'd still read true, REWRITE.
+- The block MUST remain accurate across different real families. If a parent reads "Under stress" and says "that's not us, but At its best is" — the block is still VALID because it offered a range. If only one level is written and they don't recognize it, the block FAILS. Range is the protection.
+- This format REPLACES any flowing paragraph version of `dynamic`. Do NOT also include a separate prose paragraph. The five labeled lines ARE the dynamic field.
+- The Dual Expression Rule, Role-Aware Rule, and "no verdict verbs" rule still apply WITHIN each line of the block.
+
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
 {
   "atAGlance": [ { "name": "MemberName", "line": string } ],
@@ -393,7 +408,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. Range-based paragraph describing how the relationship actually shows up. MUST contain a range marker.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". See PAIR RANGE FORMAT rule above.),
       "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
       "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
       "friction": { "aspect": string, "forA": string, "forB": string } OR null,
@@ -408,7 +423,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED — pick the BEST fit from the allow-list),
-      "dynamic": string (REQUIRED. Range-based paragraph.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". For siblings, the "Where connection can happen" line MUST acknowledge that activity/shared interests can connect OR escalate. See PAIR RANGE FORMAT rule above.),
       "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
       "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
       "friction": { "aspect": string, "forA": string, "forB": string } OR null,
