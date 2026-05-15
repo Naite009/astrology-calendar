@@ -323,19 +323,33 @@ export function buildFamilySystem(members: FamilyMemberInput[]): FamilySystemDat
 // AI payload + response types
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** New 3-line structured pair connection (composite tone + optional bridge + optional friction). */
+export interface PairConnectionEntry {
+  composite?: string; // 1 sentence naming this pair's composite signature + plain-language tone
+  bridge?: string;    // strongest tight (≤5° orb) bridge aspect between personal planets, behavioral effect
+  friction?: string;  // strongest tight (≤5° orb) friction aspect between personal planets, behavioral effect
+  note?: string;      // honest one-liner if no qualifying aspects exist
+}
+
 export interface FamilySystemReadingResponse {
-  atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member, top-of-report summary
-  householdRegulationPattern: string; // how parent(s) set tone, conflict style, repair pattern
-  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[]; // one per child
-  siblingPressurePoints: { name: string; body: string }[]; // one per child, written from that child's perspective
+  atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member
+  childAdaptations: { name: string; line: string; respondsBestWhen?: string[]; inTheMoment?: { scenario: string; actions: string[] }[]; whatMakesItWorse?: string[] }[];
   whatEscalates: { name: string; body: string }[]; // one per family member, written from their perspective
-  whatHelps: string; // realistic, low-pressure practices for THIS family
-  whatAlreadyWorks: string; // REQUIRED: 3-5 specific strengths grounded in chart evidence
-  parentChildConnections?: { parent: string; child: string; body: string }[]; // REQUIRED: one entry per parent-child pair, no skipping (connection = emotionally impactful, not necessarily easy)
-  siblingConnections?: { siblingA: string; siblingB: string; body: string }[]; // REQUIRED: one entry per unique sibling pair (C*(C-1)/2 entries), no skipping
-  /** @deprecated Replaced by static "What To Do When Things Escalate" playbook in UI. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  /** Evidence-gated. May be empty. Each entry must cite a real tight bridge aspect. */
+  whatAlreadyWorks?: { pair: string; line: string }[];
+  /** REQUIRED for every parent↔child pair. New 3-line structure (no story essays). */
+  parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
+  /** REQUIRED for every unique sibling pair. Same 3-line structure. */
+  siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
+  /** @deprecated kept for back-compat; ignored on render. */
+  householdRegulationPattern?: string;
+  /** @deprecated kept for back-compat; ignored on render. */
+  whatHelps?: string;
+  /** @deprecated kept for back-compat; ignored on render. */
+  siblingPressurePoints?: { name: string; body: string }[];
+  /** @deprecated kept for back-compat; ignored on render. */
   householdInTheMoment?: { scenario: string; actions: string[] }[];
-  /** @deprecated Replaced by static "When Pressure Builds" section computed client-side from chart data. Field retained for backward compatibility with cached readings; new readings will not populate it. */
+  /** @deprecated kept for back-compat; ignored on render. */
   householdMakesItWorse?: string[];
   error?: string;
 }
