@@ -34,6 +34,132 @@ import {
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
+/**
+ * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
+ * 3-perspective composite block plus per-person bridge and friction lines.
+ * Tolerant of legacy cached readings: a legacy plain-string composite/bridge/
+ * friction is treated as the "shared" or "aspect" line, with no per-person
+ * sub-lines invented.
+ */
+function PairBlock({
+  title,
+  nameA,
+  nameB,
+  composite,
+  bridge,
+  friction,
+  note,
+  legacyBody,
+}: {
+  title: string;
+  nameA: string;
+  nameB: string;
+  composite?: any;
+  bridge?: any;
+  friction?: any;
+  note?: string | null;
+  legacyBody?: string;
+}) {
+  const compShared =
+    typeof composite === "string"
+      ? composite
+      : composite && typeof composite === "object"
+      ? composite.shared
+      : null;
+  const compForA = composite && typeof composite === "object" ? composite.feelsLikeForA : null;
+  const compForB = composite && typeof composite === "object" ? composite.feelsLikeForB : null;
+
+  const bridgeAspect =
+    typeof bridge === "string" ? bridge : bridge && typeof bridge === "object" ? bridge.aspect : null;
+  const bridgeForA = bridge && typeof bridge === "object" ? bridge.forA : null;
+  const bridgeForB = bridge && typeof bridge === "object" ? bridge.forB : null;
+
+  const frictionAspect =
+    typeof friction === "string"
+      ? friction
+      : friction && typeof friction === "object"
+      ? friction.aspect
+      : null;
+  const frictionForA = friction && typeof friction === "object" ? friction.forA : null;
+  const frictionForB = friction && typeof friction === "object" ? friction.forB : null;
+
+  const hasAnything =
+    compShared || compForA || compForB || bridgeAspect || frictionAspect || note || legacyBody;
+
+  return (
+    <div className="border-l-2 border-primary/40 pl-3 space-y-2">
+      <div className="font-semibold">{title}</div>
+
+      {compShared && (
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Shared tone</div>
+          <p className="text-muted-foreground">{compShared}</p>
+        </div>
+      )}
+      {compForA && (
+        <p>
+          <span className="font-medium">What {nameA} tends to feel:</span> {compForA}
+        </p>
+      )}
+      {compForB && (
+        <p>
+          <span className="font-medium">What {nameB} tends to feel:</span> {compForB}
+        </p>
+      )}
+
+      {bridgeAspect && (
+        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2 space-y-1">
+          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            Where connection can happen
+          </div>
+          <p className="text-emerald-800 dark:text-emerald-300">{bridgeAspect}</p>
+          {bridgeForA && (
+            <p>
+              <span className="font-medium">For {nameA}:</span> {bridgeForA}
+            </p>
+          )}
+          {bridgeForB && (
+            <p>
+              <span className="font-medium">For {nameB}:</span> {bridgeForB}
+            </p>
+          )}
+        </div>
+      )}
+
+      {frictionAspect && (
+        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2 space-y-1">
+          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Where it can feel hard
+          </div>
+          <p className="text-amber-800 dark:text-amber-300">{frictionAspect}</p>
+          {frictionForA && (
+            <p>
+              <span className="font-medium">For {nameA}:</span> {frictionForA}
+            </p>
+          )}
+          {frictionForB && (
+            <p>
+              <span className="font-medium">For {nameB}:</span> {frictionForB}
+            </p>
+          )}
+        </div>
+      )}
+
+      {note && !bridgeAspect && !frictionAspect && (
+        <p className="text-muted-foreground italic">{note}</p>
+      )}
+
+      {legacyBody && !compShared && !bridgeAspect && !frictionAspect && (
+        <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
+      )}
+
+      {!hasAnything && (
+        <p className="text-muted-foreground italic">No tight aspects between personal planets in this pair.</p>
+      )}
+    </div>
+  );
+}
+
 interface FamilyMember {
   id: string;
   member_chart_id: string;
