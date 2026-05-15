@@ -311,6 +311,21 @@ DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, f
 - Do NOT assume the positive version is the active one in this family. The user's lived experience may match either side; both must be available in the text so the line stays valid no matter which side they recognize.
 - This rule overrides any pull toward clean or reassuring summaries. Both sides MUST be present in every forA and every forB string before returning.
 
+RELATIONSHIP COMPLETENESS RULE — HARD STOP (this is the most important rule in this prompt):
+- Aspect density does NOT equal relationship importance. The most emotionally loaded parent-child relationships are often the LOW-aspect ones. Do NOT confuse "few tight aspects" with "no connection".
+- EVERY parent-child pair AND every sibling pair MUST receive a full block of comparable length. If one pair gets four sentences across composite + bridge + friction, every other pair MUST also receive roughly four sentences of substantive content. If pair lengths differ by more than ~30%, REWRITE the short ones until they match.
+- It is FORBIDDEN to leave any pair with only a composite line plus a "no tight aspects" note. The phrase "No tight aspects between personal planets in this pair" is BANNED. The phrase "no significant connection", "no meaningful aspects", "limited connection", and any equivalent dismissal are BANNED.
+- For EVERY pair, you MUST fill in the new required field "interactionPattern" (defined in the JSON schema below). interactionPattern is REQUIRED whether or not bridge/friction exist. It describes how the relationship actually shows up in real life, sourced from each person's individual chart, NOT from synastry aspects.
+- Allowed evidence sources for interactionPattern (use any combination):
+  • each person's Moon sign + element (emotional style and what they need to feel safe)
+  • each person's Mercury sign + aspects (how they communicate, listen, and miss each other)
+  • each person's Mars sign + aspects (how each person handles activation, friction, and frustration)
+  • element / modality mismatches between the two charts (fire vs water, fixed vs mutable, etc.)
+  • sect difference (day-chart vs night-chart parent meeting day or night chart child)
+  • the child's developmental stage paired with the parent's regulation style
+  • wider-orb cross-aspects (5–8°), explicitly cited as "wider contact" — never as a tight bridge or friction
+- The Dual Expression Rule and Role-Aware Rule still apply to interactionPattern: forA and forB MUST be observably distinct, behavioral, and range-based (positive AND challenging expression in the same line).
+
 JSON SCHEMA (return exactly this shape):
 {
   "atAGlance": [
@@ -330,7 +345,7 @@ JSON SCHEMA (return exactly this shape):
       "parent": "ParentName",
       "child": "ChildName",
       "composite": {
-        "shared": string (REQUIRED. ONE sentence naming this pair's composite tone, range-based, no advice. If composite data is sparse: "The pair composite for [A] + [B] is sparse — no strong shared tone signature."),
+        "shared": string (REQUIRED. ONE sentence naming this pair's composite tone, range-based, no advice. If composite data is sparse, describe the sparse tone behaviorally — DO NOT use the banned "no tight aspects" phrasing.),
         "feelsLikeForA": string (REQUIRED. How the parent tends to experience that tone in observable behavior. Range-based.),
         "feelsLikeForB": string (REQUIRED. How the child tends to experience that tone, observable behavior at their developmental stage. Range-based. MUST be distinct from feelsLikeForA.)
       },
@@ -344,9 +359,13 @@ JSON SCHEMA (return exactly this shape):
         "forA": string,
         "forB": string
       } OR null,
-      "note": string OR null (Set ONLY when both bridge and friction are null. Exactly: "No tight aspects between personal planets in this pair.")
+      "interactionPattern": {
+        "forA": string (REQUIRED. How the parent tends to approach this child day to day, behavioral, range-based, sourced from the parent's Moon/Mercury/Mars and style differences with the child — NOT from a synastry aspect.),
+        "forB": string (REQUIRED. How the child tends to experience the parent day to day, behavioral, range-based, at their developmental stage. MUST differ from forA.),
+        "why": string (REQUIRED. ONE sentence naming the specific individual placements the pattern is sourced from — e.g. "Parent's Moon in Capricorn meeting child's Moon in Pisces; Mercury element mismatch (earth vs water).")
+      }
     }
-    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip.
+    // EXACTLY one entry per (parent, child) pair, in input order. NEVER skip. interactionPattern is REQUIRED on EVERY entry, regardless of bridge/friction.
   ],
   "siblingConnections": [
     {
@@ -355,9 +374,13 @@ JSON SCHEMA (return exactly this shape):
       "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
       "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
       "friction": { "aspect": string, "forA": string, "forB": string } OR null,
-      "note": string OR null
+      "interactionPattern": {
+        "forA": string (REQUIRED. How the older sibling tends to approach the younger, behavioral, range-based, sourced from the older sibling's Moon/Mercury/Mars and style differences.),
+        "forB": string (REQUIRED. How the younger sibling tends to experience the older. MUST differ from forA.),
+        "why": string (REQUIRED. ONE sentence naming the individual placements that source the pattern.)
+      }
     }
-    // EXACTLY one entry per unique sibling pair. siblingA = older, siblingB = younger.
+    // EXACTLY one entry per unique sibling pair. siblingA = older, siblingB = younger. interactionPattern is REQUIRED on EVERY entry.
   ],
   "childAdaptations": [
     { "name": "ChildName", "line": string, "whatMakesItWorse": [string, ...] }
@@ -568,6 +591,8 @@ If any answer is wrong, rewrite before returning.`;
       /\bneeds? freedom\b/gi, /\bcraves? validation\b/gi, /\bvalues? harmony\b/gi,
       /\bseeks? adventure\b/gi, /\bwants? to be seen\b/gi, /\byearns? for\b/gi,
       /\bsoul[- ]chosen\b/gi, /\bdivine\b/gi, /\bsacred\b/gi,
+      /\bno tight aspects?\b[^.]*\./gi, /\bno significant connection\b[^.]*\.?/gi,
+      /\bno meaningful aspects?\b[^.]*\.?/gi, /\blimited connection\b[^.]*\.?/gi,
     ];
     const scrub = (s: unknown): unknown => {
       if (typeof s === "string") {

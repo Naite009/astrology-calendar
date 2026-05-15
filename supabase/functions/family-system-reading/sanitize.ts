@@ -21,10 +21,17 @@ export interface PairAspectBlock {
   forB: string | null;
 }
 
+export interface InteractionPatternBlock {
+  forA: string;
+  forB: string;
+  why: string;
+}
+
 export type PairEntry = {
   composite?: PairCompositeBlock | string | null;
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
+  interactionPattern?: InteractionPatternBlock | null;
   note?: string | null;
   // legacy
   body?: string;
@@ -35,6 +42,7 @@ export const ALLOWED_PAIR_KEYS = new Set([
   "composite",
   "bridge",
   "friction",
+  "interactionPattern",
   "note",
   "parent",
   "child",
@@ -125,6 +133,19 @@ function normalizeAspect(v: unknown): PairAspectBlock | null | undefined {
   return undefined;
 }
 
+const DEAD_NOTE_RE = /no tight aspects|no significant connection|no meaningful aspects|limited connection/i;
+
+function normalizeInteractionPattern(v: unknown): InteractionPatternBlock | null | undefined {
+  if (v == null) return v as null | undefined;
+  if (typeof v !== "object" || Array.isArray(v)) return undefined;
+  const o = v as Record<string, unknown>;
+  const forA = typeof o.forA === "string" ? o.forA.trim() : "";
+  const forB = typeof o.forB === "string" ? o.forB.trim() : "";
+  const why = typeof o.why === "string" ? o.why.trim() : "";
+  if (!forA && !forB && !why) return null;
+  return { forA, forB, why };
+}
+
 /** Migrate one pair entry: legacy `body` → composite/note, lift legacy strings, drop forbidden keys. */
 export function migratePairEntry<T extends PairEntry>(entry: T): T {
   const out: PairEntry = {};
@@ -158,8 +179,18 @@ export function migratePairEntry<T extends PairEntry>(entry: T): T {
     if (f === undefined) delete out.friction;
     else out.friction = f;
   }
+  if ("interactionPattern" in out) {
+    const ip = normalizeInteractionPattern(out.interactionPattern);
+    if (ip === undefined) delete out.interactionPattern;
+    else out.interactionPattern = ip;
+  }
   if ("note" in out) {
-    if (typeof out.note !== "string" || !out.note.trim()) out.note = null;
+    if (typeof out.note !== "string" || !out.note.trim()) {
+      out.note = null;
+    } else if (DEAD_NOTE_RE.test(out.note)) {
+      // Dead-end "no aspects" note is now banned; drop silently.
+      out.note = null;
+    }
   }
 
   return out as T;
@@ -299,6 +330,32 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
           b.forA.trim().toLowerCase() === b.forB.trim().toLowerCase()
         ) {
           errors.push(`${field}[${i}].${key} forA and forB are identical`);
+        }
+      }
+      // interactionPattern is REQUIRED on every pair, regardless of bridge/friction.
+      const ip = entry.interactionPattern;
+      if (ip == null) {
+        errors.push(`${field}[${i}].interactionPattern missing (required for every pair)`);
+      } else if (typeof ip !== "object" || Array.isArray(ip)) {
+        errors.push(`${field}[${i}].interactionPattern must be an object with forA/forB/why`);
+      } else {
+        const p = ip as Record<string, unknown>;
+        if (typeof p.forA !== "string" || !p.forA.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.forA missing`);
+        }
+        if (typeof p.forB !== "string" || !p.forB.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.forB missing`);
+        }
+        if (typeof p.why !== "string" || !p.why.trim()) {
+          errors.push(`${field}[${i}].interactionPattern.why missing`);
+        }
+        if (
+          typeof p.forA === "string" &&
+          typeof p.forB === "string" &&
+          p.forA.trim() &&
+          p.forA.trim().toLowerCase() === p.forB.trim().toLowerCase()
+        ) {
+          errors.push(`${field}[${i}].interactionPattern forA and forB are identical`);
         }
       }
     });

@@ -337,11 +337,20 @@ export interface PairAspectBlock {
   forB: string | null;                 // what Person B does/feels in response (range-based)
 }
 
+/** Always-on real-life interaction pattern, sourced from individual charts (NOT a synastry aspect). */
+export interface InteractionPatternBlock {
+  forA: string;     // how Person A approaches Person B day to day, behavioral, range-based
+  forB: string;     // how Person B experiences Person A day to day, behavioral, range-based
+  why: string;      // one sentence naming the individual placements that source the pattern
+}
+
 /** Role-aware pair connection. Legacy strings still accepted for cached readings. */
 export interface PairConnectionEntry {
   composite?: PairCompositeBlock | string | null;
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
+  /** REQUIRED on freshly-generated readings; may be absent on legacy cached payloads. */
+  interactionPattern?: InteractionPatternBlock | null;
   note?: string | null;
 }
 

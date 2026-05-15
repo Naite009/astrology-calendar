@@ -48,6 +48,7 @@ function PairBlock({
   composite,
   bridge,
   friction,
+  interactionPattern,
   note,
   legacyBody,
 }: {
@@ -57,6 +58,7 @@ function PairBlock({
   composite?: any;
   bridge?: any;
   friction?: any;
+  interactionPattern?: any;
   note?: string | null;
   legacyBody?: string;
 }) {
@@ -83,8 +85,20 @@ function PairBlock({
   const frictionForA = friction && typeof friction === "object" ? friction.forA : null;
   const frictionForB = friction && typeof friction === "object" ? friction.forB : null;
 
+  const ipForA =
+    interactionPattern && typeof interactionPattern === "object" ? interactionPattern.forA : null;
+  const ipForB =
+    interactionPattern && typeof interactionPattern === "object" ? interactionPattern.forB : null;
+  const ipWhy =
+    interactionPattern && typeof interactionPattern === "object" ? interactionPattern.why : null;
+  const hasInteractionPattern = !!(ipForA || ipForB || ipWhy);
+
+  // Legacy "no tight aspects" filler is deprecated and should never render.
+  const DEAD_NOTE_RE = /no tight aspects|no significant connection|no meaningful aspects|limited connection/i;
+  const safeNote = note && !DEAD_NOTE_RE.test(note) ? note : null;
+
   const hasAnything =
-    compShared || compForA || compForB || bridgeAspect || frictionAspect || note || legacyBody;
+    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
@@ -105,6 +119,27 @@ function PairBlock({
         <p>
           <span className="font-medium">What {nameB} tends to feel:</span> {compForB}
         </p>
+      )}
+
+      {hasInteractionPattern && (
+        <div className="rounded-md bg-muted/40 border border-border p-2 space-y-1">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            How this shows up day to day
+          </div>
+          {ipForA && (
+            <p>
+              <span className="font-medium">{nameA}:</span> {ipForA}
+            </p>
+          )}
+          {ipForB && (
+            <p>
+              <span className="font-medium">{nameB}:</span> {ipForB}
+            </p>
+          )}
+          {ipWhy && (
+            <p className="text-xs text-muted-foreground italic">Why: {ipWhy}</p>
+          )}
+        </div>
       )}
 
       {bridgeAspect && (
@@ -145,8 +180,8 @@ function PairBlock({
         </div>
       )}
 
-      {note && !bridgeAspect && !frictionAspect && (
-        <p className="text-muted-foreground italic">{note}</p>
+      {safeNote && !bridgeAspect && !frictionAspect && (
+        <p className="text-muted-foreground italic">{safeNote}</p>
       )}
 
       {legacyBody && !compShared && !bridgeAspect && !frictionAspect && (
@@ -154,7 +189,9 @@ function PairBlock({
       )}
 
       {!hasAnything && (
-        <p className="text-muted-foreground italic">No tight aspects between personal planets in this pair.</p>
+        <p className="text-muted-foreground italic">
+          Regenerate this reading to see how this relationship shows up day to day.
+        </p>
       )}
     </div>
   );
@@ -1487,6 +1524,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 composite={pc.composite}
                 bridge={pc.bridge}
                 friction={pc.friction}
+                interactionPattern={(pc as any).interactionPattern}
                 note={pc.note}
                 legacyBody={(pc as unknown as { body?: string }).body}
               />
@@ -1516,6 +1554,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 composite={sc.composite}
                 bridge={sc.bridge}
                 friction={sc.friction}
+                interactionPattern={(sc as any).interactionPattern}
                 note={sc.note}
                 legacyBody={(sc as unknown as { body?: string }).body}
               />
