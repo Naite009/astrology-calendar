@@ -1,6 +1,8 @@
 // Family System Reading — integrated, group-level reading for 2+ family members.
 // All deterministic data is computed on the client. AI writes only prose.
 
+import { sanitizeReadingPayload, validatePairShape } from "./sanitize.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
