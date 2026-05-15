@@ -445,13 +445,13 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     { "pair": "Name A + Name B", "aspect": string, "forA": string, "forB": string }
     // Only pairs with a real ≤4° personal-planet bridge. [] if none.
   ],
-  "whatEscalates": [ { "name": "MemberName", "body": string } ],
-  "whatHelpsWholeFamily": [string, ...] (REQUIRED. 5–8 concrete practices tied to THIS family's chart signature, not generic parenting advice.),
-  "whatHelpsRationale": string (REQUIRED. ONE sentence explaining why these specifically — cite dominant element / sect / age mix.),
-  "whatToAvoid": [string, ...] (REQUIRED. 5–8 concrete things to STOP doing in THIS family.),
+  "whatEscalates": [ { "name": "MemberName", "body": string (observational description of what tends to escalate this person — NOT instructions or scripts) } ],
+  "whatHelpsWholeFamily": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions under which this family tends to function better. Phrase as "This family tends to ___ when ___" or "Things go more smoothly when ___". NEVER as commands, scripts, step-by-step instructions, or therapy protocols.),
+  "whatHelpsRationale": string (REQUIRED. ONE sentence explaining why these conditions specifically — cite dominant element / sect / age mix.),
+  "whatToAvoid": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions or patterns that tend to make things harder in THIS family. Phrase as "Things tend to get harder when ___" or "This family struggles when ___". NEVER as commands like "Don't do X" or "Avoid Y".),
   "bestFamilyPractice": {
-    "sequence": string (REQUIRED. Short named sequence — default: "Pause → Separate → Regulate → Reconnect one-on-one"),
-    "steps": [string, ...] (REQUIRED. 3–5 short bullets describing what each step looks like for THIS family.)
+    "sequence": string (REQUIRED. A short OBSERVATIONAL description of the conditions under which this family tends to reset and reconnect best. NOT a sequence of steps. NOT a protocol. Example phrasing: "This family tends to reset best when there's space before talking, regulation before reconnection, and one-on-one contact instead of group processing." NEVER use arrows, "→", "Step 1", "Step 2", or imperative verbs.),
+    "steps": [string, ...] (REQUIRED. 3–5 OBSERVATIONAL bullets describing CONDITIONS that tend to help this family reset — NOT actions to perform. Phrase each as "Things tend to settle when ___" or "Reconnection tends to happen when ___". NEVER as "Do X" or "Then do Y".)
   }
 }
 
