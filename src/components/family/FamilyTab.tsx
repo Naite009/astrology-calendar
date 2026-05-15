@@ -1524,6 +1524,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 composite={pc.composite}
                 bridge={pc.bridge}
                 friction={pc.friction}
+                interactionPattern={(pc as any).interactionPattern}
                 note={pc.note}
                 legacyBody={(pc as unknown as { body?: string }).body}
               />
