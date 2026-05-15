@@ -409,6 +409,18 @@ export function buildFamilySystemPayload(
 
   const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
   const children = members.filter((m) => m.role === "child" || m.role === "sibling");
+
+  // Sort siblings by birthDate ASC so older→younger ordering is stable across pairs.
+  // forA / siblingA = older sibling, forB / siblingB = younger sibling.
+  const childrenByAge = [...children].sort((a, b) => {
+    const da = a.chart.birthDate || "";
+    const db = b.chart.birthDate || "";
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da.localeCompare(db); // ISO YYYY-MM-DD string compare = chronological
+  });
+
   const parentActivations = parents.flatMap((p) =>
     children.map((c) => ({
       parentName: p.chart.name,
@@ -433,13 +445,13 @@ export function buildFamilySystemPayload(
       });
     }
   }
-  for (let i = 0; i < children.length; i++) {
-    for (let j = i + 1; j < children.length; j++) {
+  for (let i = 0; i < childrenByAge.length; i++) {
+    for (let j = i + 1; j < childrenByAge.length; j++) {
       pairComposites.push({
         pairType: "sibling",
-        nameA: children[i].chart.name,
-        nameB: children[j].chart.name,
-        composite: householdComposite([children[i], children[j]]),
+        nameA: childrenByAge[i].chart.name, // older
+        nameB: childrenByAge[j].chart.name, // younger
+        composite: householdComposite([childrenByAge[i], childrenByAge[j]]),
       });
     }
   }
