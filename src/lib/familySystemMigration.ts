@@ -20,16 +20,27 @@ const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
   "practice",
 ]);
 
+// `whatHelps` and `respondsBestWhen` are no longer forbidden as pair keys —
+// `whatHelps` is now a per-pair field (Section 4/5), and `respondsBestWhen`
+// lives on childAdaptations (still forbidden inside pair entries).
 const FORBIDDEN_PAIR_KEYS = new Set([
   "body",
   "respondsBestWhen",
   "inTheMoment",
-  "whatHelps",
   "scenario",
   "scenarios",
   "story",
   "essay",
   "paragraph",
+]);
+
+const SIBLING_PATTERN_TYPES = new Set([
+  "translation problem",
+  "pacing friction",
+  "competition risk",
+  "quiet co-regulation",
+  "mirror match",
+  "role split",
 ]);
 
 const SENTENCE_SPLIT_RE = /(?<=[.!?])\s+/;
