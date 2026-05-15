@@ -408,7 +408,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. Range-based paragraph describing how the relationship actually shows up. MUST contain a range marker.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". See PAIR RANGE FORMAT rule above.),
       "composite": { "shared": string, "feelsLikeForA": string, "feelsLikeForB": string },
       "bridge": { "aspect": string, "forA": string, "forB": string } OR null,
       "friction": { "aspect": string, "forA": string, "forB": string } OR null,
