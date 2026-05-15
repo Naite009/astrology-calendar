@@ -1598,6 +1598,10 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 bridge={sc.bridge}
                 friction={sc.friction}
                 interactionPattern={(sc as any).interactionPattern}
+                dynamic={(sc as any).dynamic}
+                whatCanFeelHard={(sc as any).whatCanFeelHard}
+                whatHelps={(sc as any).whatHelps}
+                patternType={(sc as any).patternType}
                 note={sc.note}
                 legacyBody={(sc as unknown as { body?: string }).body}
               />
@@ -1611,24 +1615,45 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardHeader className="pb-3">
             <CardTitle className="text-base">How Each Child Adapts</CardTitle>
             <CardDescription>
-              Each child's regulation style based on Moon, Saturn/Chiron sensitivity, Mercury/Mars pattern, and parent-child synastry.
+              Each child's regulation style, what they respond best to, and what makes it worse.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {reading.childAdaptations.map((c, i) => (
-              <div key={i} className="border-l-2 border-primary/40 pl-3">
-                <div className="font-semibold">{c.name}</div>
-                <p className="text-muted-foreground">{c.line}</p>
-                {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-destructive">What Makes It Worse</div>
-                    <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 space-y-0.5">
-                      {c.whatMakesItWorse.map((w, wi) => <li key={wi}>{w}</li>)}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+          <CardContent className="space-y-4 text-sm">
+            {reading.childAdaptations.map((c, i) => {
+              const adaptation = (c as any).adaptation || c.line;
+              const respondsBest = (c as any).respondsBestWhen;
+              const respondsBestList = Array.isArray(respondsBest)
+                ? respondsBest
+                : respondsBest
+                ? [respondsBest]
+                : [];
+              return (
+                <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-2">
+                  <div className="font-semibold">{c.name}</div>
+                  {adaptation && <p className="whitespace-pre-line">{adaptation}</p>}
+                  {respondsBestList.length > 0 && (
+                    <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2">
+                      <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        Responds Best When
+                      </div>
+                      <ul className="list-disc list-inside text-emerald-900 dark:text-emerald-200 mt-1 space-y-0.5">
+                        {respondsBestList.map((r: string, ri: number) => <li key={ri}>{r}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {c.whatMakesItWorse && c.whatMakesItWorse.length > 0 && (
+                    <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2">
+                      <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        What Makes It Worse
+                      </div>
+                      <ul className="list-disc list-inside text-amber-900 dark:text-amber-200 mt-1 space-y-0.5">
+                        {c.whatMakesItWorse.map((w, wi) => <li key={wi}>{w}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
