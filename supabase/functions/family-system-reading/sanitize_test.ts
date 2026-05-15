@@ -16,7 +16,7 @@ Deno.test("splitLegacyBody splits multi-sentence body", () => {
 });
 
 Deno.test("migratePairEntry promotes legacy body to composite/note", () => {
-  const out = migratePairEntry({
+  const out: Record<string, unknown> = migratePairEntry({
     parent: "Lauren",
     child: "Max",
     body: "Composite Moon in Pisces. Easier when neither is rushed.",
