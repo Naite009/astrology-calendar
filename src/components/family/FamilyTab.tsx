@@ -106,11 +106,43 @@ function PairBlock({
   const safeNote = note && !DEAD_NOTE_RE.test(note) ? note : null;
 
   const hasAnything =
-    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody;
+    compShared || compForA || compForB || bridgeAspect || frictionAspect || hasInteractionPattern || safeNote || legacyBody || dynamic || whatCanFeelHard || whatHelps;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
-      <div className="font-semibold">{title}</div>
+      <div className="font-semibold flex items-center gap-2 flex-wrap">
+        <span>{title}</span>
+        {patternType && (
+          <Badge variant="outline" className="text-[10px] capitalize font-normal">
+            {patternType}
+          </Badge>
+        )}
+      </div>
+
+      {dynamic && (
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">The Dynamic</div>
+          <p className="whitespace-pre-line">{dynamic}</p>
+        </div>
+      )}
+
+      {whatCanFeelHard && (
+        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2">
+          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            What Can Feel Hard
+          </div>
+          <p className="text-amber-900 dark:text-amber-200">{whatCanFeelHard}</p>
+        </div>
+      )}
+
+      {whatHelps && (
+        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2">
+          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            What Helps
+          </div>
+          <p className="text-emerald-900 dark:text-emerald-200">{whatHelps}</p>
+        </div>
+      )}
 
       {compShared && (
         <div>
