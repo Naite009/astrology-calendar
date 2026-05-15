@@ -2,16 +2,29 @@
 // No Deno-specific imports — safe to load from tests and (with a parallel
 // copy in src/lib/familySystemMigration.ts) the client.
 //
-// Two jobs:
-//  1) Migrate legacy cached pair entries (with a `body` paragraph) to the
-//     new {composite, bridge, friction, note} shape.
-//  2) Strip forbidden / deprecated top-level fields the AI sometimes still
-//     emits, and strip forbidden keys from every pair entry.
+// Jobs:
+//  1) Migrate legacy cached pair entries (with a `body` paragraph or plain-string
+//     composite/bridge/friction) to the new role-aware object shape.
+//  2) Strip forbidden / deprecated top-level fields and forbidden pair keys.
+//  3) Validate the new shape (composite/bridge/friction are objects, identical
+//     forA/forB are flagged, no legacy fields remain).
+
+export interface PairCompositeBlock {
+  shared: string;
+  feelsLikeForA: string | null;
+  feelsLikeForB: string | null;
+}
+
+export interface PairAspectBlock {
+  aspect: string;
+  forA: string | null;
+  forB: string | null;
+}
 
 export type PairEntry = {
-  composite?: string | null;
-  bridge?: string | null;
-  friction?: string | null;
+  composite?: PairCompositeBlock | string | null;
+  bridge?: PairAspectBlock | string | null;
+  friction?: PairAspectBlock | string | null;
   note?: string | null;
   // legacy
   body?: string;
@@ -23,7 +36,6 @@ export const ALLOWED_PAIR_KEYS = new Set([
   "bridge",
   "friction",
   "note",
-  // identity keys preserved by callers
   "parent",
   "child",
   "siblingA",
@@ -69,19 +81,87 @@ export function splitLegacyBody(body: string): { composite: string; note?: strin
   return rest ? { composite: first, note: rest } : { composite: first };
 }
 
-/** Migrate one pair entry: legacy `body` → composite/note, drop forbidden keys. */
+/** Lift a legacy plain-string composite into the new object shape. */
+function liftCompositeString(s: string): PairCompositeBlock {
+  return { shared: s.trim(), feelsLikeForA: null, feelsLikeForB: null };
+}
+
+/** Lift a legacy plain-string bridge/friction into the new object shape. */
+function liftAspectString(s: string): PairAspectBlock {
+  return { aspect: s.trim(), forA: null, forB: null };
+}
+
+function normalizeComposite(v: unknown): PairCompositeBlock | null | undefined {
+  if (v == null) return v as null | undefined;
+  if (typeof v === "string") {
+    const t = v.trim();
+    return t ? liftCompositeString(t) : null;
+  }
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return {
+      shared: typeof o.shared === "string" ? o.shared : "",
+      feelsLikeForA: typeof o.feelsLikeForA === "string" && o.feelsLikeForA.trim() ? o.feelsLikeForA : null,
+      feelsLikeForB: typeof o.feelsLikeForB === "string" && o.feelsLikeForB.trim() ? o.feelsLikeForB : null,
+    };
+  }
+  return undefined;
+}
+
+function normalizeAspect(v: unknown): PairAspectBlock | null | undefined {
+  if (v == null) return v as null | undefined;
+  if (typeof v === "string") {
+    const t = v.trim();
+    return t ? liftAspectString(t) : null;
+  }
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return {
+      aspect: typeof o.aspect === "string" ? o.aspect : "",
+      forA: typeof o.forA === "string" && o.forA.trim() ? o.forA : null,
+      forB: typeof o.forB === "string" && o.forB.trim() ? o.forB : null,
+    };
+  }
+  return undefined;
+}
+
+/** Migrate one pair entry: legacy `body` → composite/note, lift legacy strings, drop forbidden keys. */
 export function migratePairEntry<T extends PairEntry>(entry: T): T {
   const out: PairEntry = {};
   for (const [k, v] of Object.entries(entry)) {
     if (FORBIDDEN_PAIR_KEYS.has(k)) continue;
     out[k] = v;
   }
+
   const hasNew = !!(entry.composite || entry.bridge || entry.friction || entry.note);
+
+  // legacy body → composite shared + note
   if (!hasNew && typeof entry.body === "string" && entry.body.trim()) {
     const { composite, note } = splitLegacyBody(entry.body);
-    if (composite) out.composite = composite;
+    if (composite) out.composite = liftCompositeString(composite);
     if (note) out.note = note;
   }
+
+  // Normalize composite / bridge / friction (string → object lift, object → cleaned)
+  if ("composite" in out) {
+    const c = normalizeComposite(out.composite);
+    if (c === undefined) delete out.composite;
+    else out.composite = c;
+  }
+  if ("bridge" in out) {
+    const b = normalizeAspect(out.bridge);
+    if (b === undefined) delete out.bridge;
+    else out.bridge = b;
+  }
+  if ("friction" in out) {
+    const f = normalizeAspect(out.friction);
+    if (f === undefined) delete out.friction;
+    else out.friction = f;
+  }
+  if ("note" in out) {
+    if (typeof out.note !== "string" || !out.note.trim()) out.note = null;
+  }
+
   return out as T;
 }
 
@@ -123,6 +203,36 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
     });
   }
 
+  // whatAlreadyWorks: lift legacy { pair, line } into { pair, aspect, forA, forB }
+  const waw = out.whatAlreadyWorks;
+  if (Array.isArray(waw)) {
+    out.whatAlreadyWorks = waw
+      .map((item: unknown) => {
+        if (!item) return null;
+        if (typeof item === "string") {
+          return { pair: "", aspect: null, forA: null, forB: null, line: item };
+        }
+        if (typeof item === "object") {
+          const o = item as Record<string, unknown>;
+          const aspect = typeof o.aspect === "string" ? o.aspect : null;
+          const forA = typeof o.forA === "string" && o.forA.trim() ? o.forA : null;
+          const forB = typeof o.forB === "string" && o.forB.trim() ? o.forB : null;
+          const legacyLine = typeof o.line === "string" ? o.line : null;
+          return {
+            pair: String(o.pair ?? ""),
+            aspect: aspect ?? (legacyLine && !forA && !forB ? legacyLine : null),
+            forA,
+            forB,
+            line: legacyLine,
+          };
+        }
+        return null;
+      })
+      .filter((x: unknown) => !!x);
+  } else if (waw != null) {
+    out.whatAlreadyWorks = [];
+  }
+
   return {
     payload: out as T,
     droppedTopLevel,
@@ -131,7 +241,7 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
   };
 }
 
-/** True iff every pair entry conforms to the new shape (no `body`, identity + allowed keys only). */
+/** True iff every pair entry conforms to the new shape (objects, no legacy keys, distinct perspectives). */
 export function validatePairShape(payload: Record<string, unknown>): { ok: boolean; errors: string[] } {
   const errors: string[] = [];
   for (const field of ["parentChildConnections", "siblingConnections"] as const) {
@@ -150,6 +260,45 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
       for (const k of Object.keys(entry)) {
         if (!ALLOWED_PAIR_KEYS.has(k)) {
           errors.push(`${field}[${i}] has forbidden key "${k}"`);
+        }
+      }
+      // composite must be an object (or null) — string composites are legacy and rejected here
+      if (entry.composite != null) {
+        if (typeof entry.composite !== "object" || Array.isArray(entry.composite)) {
+          errors.push(`${field}[${i}].composite must be an object with shared/feelsLikeForA/feelsLikeForB`);
+        } else {
+          const c = entry.composite as Record<string, unknown>;
+          if (typeof c.shared !== "string" || !c.shared.trim()) {
+            errors.push(`${field}[${i}].composite.shared missing`);
+          }
+          if (
+            typeof c.feelsLikeForA === "string" &&
+            typeof c.feelsLikeForB === "string" &&
+            c.feelsLikeForA.trim() &&
+            c.feelsLikeForA.trim().toLowerCase() === c.feelsLikeForB.trim().toLowerCase()
+          ) {
+            errors.push(`${field}[${i}].composite feelsLikeForA and feelsLikeForB are identical`);
+          }
+        }
+      }
+      for (const key of ["bridge", "friction"] as const) {
+        const v = entry[key];
+        if (v == null) continue;
+        if (typeof v !== "object" || Array.isArray(v)) {
+          errors.push(`${field}[${i}].${key} must be an object with aspect/forA/forB`);
+          continue;
+        }
+        const b = v as Record<string, unknown>;
+        if (typeof b.aspect !== "string" || !b.aspect.trim()) {
+          errors.push(`${field}[${i}].${key}.aspect missing`);
+        }
+        if (
+          typeof b.forA === "string" &&
+          typeof b.forB === "string" &&
+          b.forA.trim() &&
+          b.forA.trim().toLowerCase() === b.forB.trim().toLowerCase()
+        ) {
+          errors.push(`${field}[${i}].${key} forA and forB are identical`);
         }
       }
     });

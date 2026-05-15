@@ -34,6 +34,132 @@ import {
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
+/**
+ * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
+ * 3-perspective composite block plus per-person bridge and friction lines.
+ * Tolerant of legacy cached readings: a legacy plain-string composite/bridge/
+ * friction is treated as the "shared" or "aspect" line, with no per-person
+ * sub-lines invented.
+ */
+function PairBlock({
+  title,
+  nameA,
+  nameB,
+  composite,
+  bridge,
+  friction,
+  note,
+  legacyBody,
+}: {
+  title: string;
+  nameA: string;
+  nameB: string;
+  composite?: any;
+  bridge?: any;
+  friction?: any;
+  note?: string | null;
+  legacyBody?: string;
+}) {
+  const compShared =
+    typeof composite === "string"
+      ? composite
+      : composite && typeof composite === "object"
+      ? composite.shared
+      : null;
+  const compForA = composite && typeof composite === "object" ? composite.feelsLikeForA : null;
+  const compForB = composite && typeof composite === "object" ? composite.feelsLikeForB : null;
+
+  const bridgeAspect =
+    typeof bridge === "string" ? bridge : bridge && typeof bridge === "object" ? bridge.aspect : null;
+  const bridgeForA = bridge && typeof bridge === "object" ? bridge.forA : null;
+  const bridgeForB = bridge && typeof bridge === "object" ? bridge.forB : null;
+
+  const frictionAspect =
+    typeof friction === "string"
+      ? friction
+      : friction && typeof friction === "object"
+      ? friction.aspect
+      : null;
+  const frictionForA = friction && typeof friction === "object" ? friction.forA : null;
+  const frictionForB = friction && typeof friction === "object" ? friction.forB : null;
+
+  const hasAnything =
+    compShared || compForA || compForB || bridgeAspect || frictionAspect || note || legacyBody;
+
+  return (
+    <div className="border-l-2 border-primary/40 pl-3 space-y-2">
+      <div className="font-semibold">{title}</div>
+
+      {compShared && (
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Shared tone</div>
+          <p className="text-muted-foreground">{compShared}</p>
+        </div>
+      )}
+      {compForA && (
+        <p>
+          <span className="font-medium">What {nameA} tends to feel:</span> {compForA}
+        </p>
+      )}
+      {compForB && (
+        <p>
+          <span className="font-medium">What {nameB} tends to feel:</span> {compForB}
+        </p>
+      )}
+
+      {bridgeAspect && (
+        <div className="rounded-md bg-emerald-500/5 border border-emerald-500/30 p-2 space-y-1">
+          <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            Where connection can happen
+          </div>
+          <p className="text-emerald-800 dark:text-emerald-300">{bridgeAspect}</p>
+          {bridgeForA && (
+            <p>
+              <span className="font-medium">For {nameA}:</span> {bridgeForA}
+            </p>
+          )}
+          {bridgeForB && (
+            <p>
+              <span className="font-medium">For {nameB}:</span> {bridgeForB}
+            </p>
+          )}
+        </div>
+      )}
+
+      {frictionAspect && (
+        <div className="rounded-md bg-amber-500/5 border border-amber-500/30 p-2 space-y-1">
+          <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Where it can feel hard
+          </div>
+          <p className="text-amber-800 dark:text-amber-300">{frictionAspect}</p>
+          {frictionForA && (
+            <p>
+              <span className="font-medium">For {nameA}:</span> {frictionForA}
+            </p>
+          )}
+          {frictionForB && (
+            <p>
+              <span className="font-medium">For {nameB}:</span> {frictionForB}
+            </p>
+          )}
+        </div>
+      )}
+
+      {note && !bridgeAspect && !frictionAspect && (
+        <p className="text-muted-foreground italic">{note}</p>
+      )}
+
+      {legacyBody && !compShared && !bridgeAspect && !frictionAspect && (
+        <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
+      )}
+
+      {!hasAnything && (
+        <p className="text-muted-foreground italic">No tight aspects between personal planets in this pair.</p>
+      )}
+    </div>
+  );
+}
+
 interface FamilyMember {
   id: string;
   member_chart_id: string;
@@ -1288,17 +1414,30 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               What Already Works In This Family
             </CardTitle>
             <CardDescription className="pt-1">
-              Only listed when there is a real, tight bridge aspect between personal planets in a specific pair. Empty here is honest, not a gap.
+              Only listed when there is a real, tight bridge aspect between personal planets in a specific pair. Each line is split by who feels it, in their role.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-2 text-sm">
+          <CardContent className="pt-4 space-y-3 text-sm">
             {reading.whatAlreadyWorks.map((w: any, i: number) => {
-              const pair = typeof w === "object" && w ? (w.pair ?? "") : "";
-              const line = typeof w === "string" ? w : (w?.line ?? "");
+              const pair = w?.pair ?? "";
+              const aspect = w?.aspect ?? null;
+              const forA = w?.forA ?? null;
+              const forB = w?.forB ?? null;
+              const legacyLine = w?.line ?? null;
+              const [labelA, labelB] = String(pair).split(/\s*[+↔]\s*/);
               return (
                 <div key={i} className="border-l-2 border-emerald-500/40 pl-3">
                   {pair && <div className="font-semibold">{pair}</div>}
-                  <p className="text-muted-foreground">{line}</p>
+                  {aspect && <p className="text-muted-foreground mt-1">{aspect}</p>}
+                  {forA && (
+                    <p className="mt-1"><span className="font-medium">For {labelA || "Person A"}:</span> {forA}</p>
+                  )}
+                  {forB && (
+                    <p className="mt-1"><span className="font-medium">For {labelB || "Person B"}:</span> {forB}</p>
+                  )}
+                  {!aspect && !forA && !forB && legacyLine && (
+                    <p className="text-muted-foreground mt-1">{legacyLine}</p>
+                  )}
                 </div>
               );
             })}
@@ -1335,24 +1474,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               Parent ↔ Child Connections
             </CardTitle>
             <CardDescription className="pt-1">
-              Three lines per pair: the composite tone, the strongest real bridge, the strongest real friction. No story, no invented dynamics.
+              Each pair has a shared tone plus what it tends to feel like for each person in their role. Bridge and friction also split into per-person behavior.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-3 text-sm">
-            {reading.parentChildConnections.map((pc, i) => {
-              const legacy = (pc as unknown as { body?: string }).body;
-              const hasNew = pc.composite || pc.bridge || pc.friction || pc.note;
-              return (
-                <div key={i} className="border-l-2 border-primary/40 pl-3">
-                  <div className="font-semibold">{pc.parent} ↔ {pc.child}</div>
-                  {pc.composite && <p className="text-muted-foreground mt-1">{pc.composite}</p>}
-                  {pc.bridge && <p className="text-emerald-700 dark:text-emerald-400 mt-1"><span className="font-medium">Bridge:</span> {pc.bridge}</p>}
-                  {pc.friction && <p className="text-amber-700 dark:text-amber-400 mt-1"><span className="font-medium">Friction:</span> {pc.friction}</p>}
-                  {pc.note && <p className="text-muted-foreground italic mt-1">{pc.note}</p>}
-                  {legacy && !hasNew && <p className="text-muted-foreground whitespace-pre-line mt-1">{legacy}</p>}
-                </div>
-              );
-            })}
+          <CardContent className="pt-4 space-y-4 text-sm">
+            {reading.parentChildConnections.map((pc, i) => (
+              <PairBlock
+                key={i}
+                title={`${pc.parent} ↔ ${pc.child}`}
+                nameA={pc.parent}
+                nameB={pc.child}
+                composite={pc.composite}
+                bridge={pc.bridge}
+                friction={pc.friction}
+                note={pc.note}
+                legacyBody={(pc as unknown as { body?: string }).body}
+              />
+            ))}
           </CardContent>
         </Card>
       )}
@@ -1365,24 +1503,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               Sibling ↔ Sibling Connections
             </CardTitle>
             <CardDescription className="pt-1">
-              Same three-line structure as parent–child pairs.
+              Older sibling first. Same shared-tone-plus-per-person structure as parent–child pairs.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-3 text-sm">
-            {reading.siblingConnections.map((sc, i) => {
-              const legacy = (sc as unknown as { body?: string }).body;
-              const hasNew = sc.composite || sc.bridge || sc.friction || sc.note;
-              return (
-                <div key={i} className="border-l-2 border-primary/40 pl-3">
-                  <div className="font-semibold">{sc.siblingA} ↔ {sc.siblingB}</div>
-                  {sc.composite && <p className="text-muted-foreground mt-1">{sc.composite}</p>}
-                  {sc.bridge && <p className="text-emerald-700 dark:text-emerald-400 mt-1"><span className="font-medium">Bridge:</span> {sc.bridge}</p>}
-                  {sc.friction && <p className="text-amber-700 dark:text-amber-400 mt-1"><span className="font-medium">Friction:</span> {sc.friction}</p>}
-                  {sc.note && <p className="text-muted-foreground italic mt-1">{sc.note}</p>}
-                  {legacy && !hasNew && <p className="text-muted-foreground whitespace-pre-line mt-1">{legacy}</p>}
-                </div>
-              );
-            })}
+          <CardContent className="pt-4 space-y-4 text-sm">
+            {reading.siblingConnections.map((sc, i) => (
+              <PairBlock
+                key={i}
+                title={`${sc.siblingA} ↔ ${sc.siblingB}`}
+                nameA={sc.siblingA}
+                nameB={sc.siblingB}
+                composite={sc.composite}
+                bridge={sc.bridge}
+                friction={sc.friction}
+                note={sc.note}
+                legacyBody={(sc as unknown as { body?: string }).body}
+              />
+            ))}
           </CardContent>
         </Card>
       )}
