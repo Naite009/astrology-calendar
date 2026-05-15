@@ -389,6 +389,14 @@ PAIR RANGE FORMAT — HARD STOP (applies to EVERY parentChildConnections[].dynam
 - This format REPLACES any flowing paragraph version of `dynamic`. Do NOT also include a separate prose paragraph. The five labeled lines ARE the dynamic field.
 - The Dual Expression Rule, Role-Aware Rule, and "no verdict verbs" rule still apply WITHIN each line of the block.
 
+PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
+- The `dynamic` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
+- For EVERY parentChildConnections[] and siblingConnections[] entry, you MUST set ALL of these fields to empty values: composite = null, bridge = null, friction = null, interactionPattern = null, whatCanFeelHard = "", whatHelps = "". They are deprecated. Do NOT populate them. They will be ignored.
+- The structured block inside `dynamic` MUST contain ALL THREE expression levels (At its best / More commonly / Under stress). If even one level is missing, the output is INVALID and you MUST regenerate the block before returning.
+- FORBIDDEN labels anywhere in `dynamic` or in any other field: "The Dynamic", "What Helps", "What Can Feel Hard", "Why", "How this shows up day to day", "Shared tone", "What ___ tends to feel". The ONLY allowed labels inside `dynamic` are the five PAIR RANGE FORMAT labels.
+- FORBIDDEN content: long paragraphs, storytelling blocks, therapy-style explanations, narrative interpretation, "because of ___ this means ___" reasoning chains. Keep every line tight (1–2 sentences max).
+- Each person across the family MUST remain behaviorally distinct. No two pair blocks (parent-child OR sibling) may contain duplicate or interchangeable behavioral descriptions. If swapping names leaves the lines still true, REWRITE.
+
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
 {
   "atAGlance": [ { "name": "MemberName", "line": string } ],
