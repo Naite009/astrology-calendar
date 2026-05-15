@@ -440,7 +440,8 @@ FAMILY COMPOSITE WEIGHTING RULE (HARD):
 - PAIR COMPOSITES (parent-child, sibling) carry MORE interpretive weight than the household composite. When describing the tone of a specific relationship in childAdaptations, siblingPressurePoints, or whatHelps, prefer citing that pair's composite (e.g. "Lauren + Max composite Moon in [sign]") over the household composite. Same hedged language still applies ("may add a shared tone of…").
 - Do NOT cite the household composite in childAdaptations, siblingPressurePoints, or whatEscalates entries. Those sections are about individuals and pair dynamics, not the family-as-one-entity.
 
-T-SQUARE USAGE: If the CROSS-CHART T-SQUARES block is non-empty, whatEscalates and/or whatHelps MUST reference the apex by name (the apex person carries the household's pressure release).
+
+
 
 ASPECT STRUCTURE VALIDATION RULE (CRITICAL — applies to T-square, Grand Trine, Grand Cross, Yod, Stellium, Mystic Rectangle, Kite, and ANY named configuration):
 - You may ONLY label a structure (e.g. "T-square", "Grand Trine", "Yod", "Grand Cross", "stellium", "mystic rectangle", "kite") if it appears EXPLICITLY in the deterministic data blocks above (CROSS-CHART T-SQUARES list, or a configuration block we explicitly provided). The deterministic detector has already validated degree-based orbs (opposition within orb AND third planet squaring BOTH ends within orb for T-squares).
