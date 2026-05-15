@@ -1215,7 +1215,7 @@ const AiPairReadingView = ({
         </Card>
       )}
 
-      {reading.whatAlreadyWorks && reading.whatAlreadyWorks.length > 0 && (
+      {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1228,7 +1228,9 @@ const AiPairReadingView = ({
           </CardHeader>
           <CardContent className="pt-4 text-sm">
             <ul className="list-disc list-inside space-y-1">
-              {reading.whatAlreadyWorks.map((item, i) => <li key={i}>{item}</li>)}
+              {reading.whatAlreadyWorks.map((item: any, i: number) => (
+                <li key={i}>{typeof item === "string" ? item : (item?.line ?? "")}</li>
+              ))}
             </ul>
           </CardContent>
         </Card>
