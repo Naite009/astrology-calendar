@@ -303,6 +303,14 @@ ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, frictio
 - If the chart gives no clear initiator between two siblings, still write two distinct lines describing the same dynamic from each sibling's side.
 - FORBIDDEN without an immediate who-feels-what translation: "this relationship feels X", "the bond is X", "there is a shared sense of X", "weighty", "intense", "serious vibe", "heavy energy".
 
+DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, friction.forA, friction.forB, and whatAlreadyWorks.forA/forB):
+- Every bridge AND friction line MUST contain BOTH a connective/positive expression AND a challenging/distorted expression of the same aspect. No single-outcome interpretation. This applies to bridges too — a bridge aspect is still a RANGE, never a guaranteed positive.
+- Required phrasing patterns: "can show up as [connective expression], but can also [challenging expression] depending on mood and regulation", "may [positive], though it can also [distorted] when [trigger]", "at its best [connective]; on a hard day [challenging]", "sometimes [positive] and other times [distorted]".
+- A bridge line that only describes connection (e.g. "this creates connection through shared activity") is INVALID. Rewrite as: "can show up as connection through shared activity, but can also turn competitive or escalate depending on mood and regulation."
+- A friction line that only describes difficulty without naming the connective version is INVALID. Rewrite to include both sides.
+- Do NOT assume the positive version is the active one in this family. The user's lived experience may match either side; both must be available in the text so the line stays valid no matter which side they recognize.
+- This rule overrides any pull toward clean or reassuring summaries. Both sides MUST be present in every forA and every forB string before returning.
+
 JSON SCHEMA (return exactly this shape):
 {
   "atAGlance": [
