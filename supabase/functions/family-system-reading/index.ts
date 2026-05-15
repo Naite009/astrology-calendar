@@ -591,6 +591,8 @@ If any answer is wrong, rewrite before returning.`;
       /\bneeds? freedom\b/gi, /\bcraves? validation\b/gi, /\bvalues? harmony\b/gi,
       /\bseeks? adventure\b/gi, /\bwants? to be seen\b/gi, /\byearns? for\b/gi,
       /\bsoul[- ]chosen\b/gi, /\bdivine\b/gi, /\bsacred\b/gi,
+      /\bno tight aspects?\b[^.]*\./gi, /\bno significant connection\b[^.]*\.?/gi,
+      /\bno meaningful aspects?\b[^.]*\.?/gi, /\blimited connection\b[^.]*\.?/gi,
     ];
     const scrub = (s: unknown): unknown => {
       if (typeof s === "string") {
