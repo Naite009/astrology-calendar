@@ -108,13 +108,19 @@ function normalizeInteractionPattern(v: unknown) {
   return { forA, forB, why };
 }
 
+function normalizeStr(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t ? t : null;
+}
+
 function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(entry)) {
     if (FORBIDDEN_PAIR_KEYS.has(k)) continue;
     out[k] = v;
   }
-  const hasNew = !!(entry.composite || entry.bridge || entry.friction || entry.note);
+  const hasNew = !!(entry.composite || entry.bridge || entry.friction || entry.note || entry.dynamic);
   const body = entry.body;
   if (!hasNew && typeof body === "string" && body.trim()) {
     const { composite, note } = splitLegacyBody(body);
@@ -141,11 +147,17 @@ function migratePair(entry: Record<string, unknown>): Record<string, unknown> {
     if (ip === undefined) delete out.interactionPattern;
     else out.interactionPattern = ip;
   }
+  if ("dynamic" in out) out.dynamic = normalizeStr(out.dynamic);
+  if ("whatCanFeelHard" in out) out.whatCanFeelHard = normalizeStr(out.whatCanFeelHard);
+  if ("whatHelps" in out) out.whatHelps = normalizeStr(out.whatHelps);
+  if ("patternType" in out) {
+    const p = normalizeStr(out.patternType);
+    out.patternType = p && SIBLING_PATTERN_TYPES.has(p.toLowerCase()) ? p.toLowerCase() : null;
+  }
   if ("note" in out) {
     if (typeof out.note !== "string" || !out.note.trim()) {
       out.note = null;
     } else if (DEAD_NOTE_RE.test(out.note as string)) {
-      // Banned dead-end note ("No tight aspects..."), drop silently.
       out.note = null;
     }
   }
