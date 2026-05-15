@@ -1483,6 +1483,36 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
+      {Array.isArray((reading as any).parentRegulationCenter) && (reading as any).parentRegulationCenter.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Home className="h-4 w-4 text-primary" />
+              The Parent as the Regulation Center
+            </CardTitle>
+            <CardDescription className="pt-1">
+              Whichever way a parent regulates (or doesn't) sets the household's emotional baseline. This is what that looks like in real life.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3 text-sm">
+            {(reading as any).parentRegulationCenter.map((p: any, i: number) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                <div className="font-semibold">{p.name}</div>
+                {p.body && <p className="text-muted-foreground">{p.body}</p>}
+                {p.whatThisMeansInRealLife && (
+                  <p>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">
+                      In Real Life
+                    </span>
+                    {p.whatThisMeansInRealLife}
+                  </p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
