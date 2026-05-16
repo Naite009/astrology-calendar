@@ -440,6 +440,19 @@ Examples:
   RIGHT: "Ike moves on impulse and regulates through action, so being stopped feels like pressure, which makes him push harder."
 BANNED openings for child-description sentences: "He is…", "She tends to…", "This child can be…", "[Name] often…", any sentence that starts with a trait or behavior. Start with the internal process, then the consequence. If a sentence describes a child's behavior without naming the internal process that produced it, REWRITE before emitting. The parent must finish each section thinking "this is WHY my child does this," not just "this is WHAT my child does."
 
+DECISION LAYER RULE (applies to EVERY child-description field — atAGlance.line, parentChildConnections.dynamic, siblingConnections.dynamic, whatEscalates.body, childMechanisms[].inRealLife / underStress, and any other child-facing description anywhere in the output):
+Every line that describes a behavior MUST name the internal DECISION the child is making in that moment — what the child is choosing to do on purpose, even when it looks reactive — and WHY that choice makes sense to them from the inside. Do not stop at feeling or behavior. Each line must answer: "What is the child doing on purpose in that moment, even if it looks reactive?"
+Required shape:
+  behavior + "because" + the child's internal logic for choosing it (the choice that, to them, is the easiest / safest / most effective path in that moment).
+Examples:
+  WRONG: "He feels overwhelmed and shuts down."
+  RIGHT: "He shuts down because saying nothing is easier than trying to explain something that isn't organized into words yet."
+  WRONG: "He gets loud when ignored."
+  RIGHT: "He gets louder because increasing intensity is how he tries to be felt when softer signals don't land."
+  WRONG: "He gets impatient when slowed down."
+  RIGHT: "He pushes back because stopping feels like losing momentum and control, and momentum is how he regulates."
+BANNED: any description that ends at the feeling or the behavior with no "because" / "so that" / "in order to" clause naming the child's internal choice. If a sentence describes a reaction without naming the purpose behind it, REWRITE. The parent must finish reading thinking "that makes sense why they do that," not just "that is what they do."
+
 PAIR COVERAGE RULE (HARD):
 - Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
 - Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
