@@ -695,7 +695,7 @@ ${frictionLines}
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
 
-Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
+Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above. Do not write whatAlreadyWorks or any "What Already Works" section. Every child listed above, including Ben when present, must appear in parentChildConnections and siblingConnections where applicable.
 
 EVIDENCE-CARD STEP (do this BEFORE writing any prose):
 1. Build a Parent Regulator card for each parent: Moon (with phase + sect), Mercury, Saturn, ASC/4th/10th rulers, retrograde flags, current profected house.
