@@ -15,6 +15,7 @@ const corsHeaders = {
 
 interface SkyBody {
   recipientLabel?: string;
+  userSituation?: string;
   dateLabel: string;
   transitingPlanets: Array<{ name: string; sign: string; degree: number; retrograde?: boolean }>;
   moon: {
