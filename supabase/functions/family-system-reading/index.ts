@@ -399,7 +399,7 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 
 PAIR TELEGRAPH FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 
-The `dynamic` field MUST be a string containing EXACTLY this skeleton, filled in:
+The \`dynamic\` field MUST be a string containing EXACTLY this skeleton, filled in:
 
 Shared Pattern:
 <2-4 words, noun phrase, no sentence>
@@ -458,9 +458,9 @@ CHILD DIFFERENTIATION CONTRACT — HARD LOCK:
 GOAL: Snapshot. Telegraph. Instantly recognizable. Not explained. Not taught. Not advised.
 
 PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
-- The `dynamic` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
+- The \`dynamic\` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
 - For EVERY parentChildConnections[] and siblingConnections[] entry, you MUST set ALL of these fields to empty values: composite = null, bridge = null, friction = null, interactionPattern = null, whatCanFeelHard = "", whatHelps = "". They are deprecated.
-- FORBIDDEN labels anywhere in `dynamic`: "The Dynamic", "What Helps", "What Can Feel Hard", "Why", "Shared tone". The ONLY allowed labels are the six PAIR ULTRA-COMPACT FORMAT labels above.
+- FORBIDDEN labels anywhere in \`dynamic\`: "The Dynamic", "What Helps", "What Can Feel Hard", "Why", "Shared tone". The ONLY allowed labels are the six PAIR ULTRA-COMPACT FORMAT labels above.
 
 LENGTH & CLARITY — HARD LIMIT (applies to EVERY non-pair field):
 - No paragraph longer than 2 sentences. Anywhere.
