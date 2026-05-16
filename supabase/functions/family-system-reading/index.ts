@@ -818,6 +818,8 @@ If any answer is wrong, rewrite before returning.`;
     // Migrate any legacy fields the AI might still emit and strip forbidden keys.
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
     payload = sanitized.payload as unknown as ReadingPayload;
+    delete (payload as unknown as Record<string, unknown>).whatAlreadyWorks;
+    ensurePairCoverage(payload, body.members);
     if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
       console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
     }
@@ -828,6 +830,7 @@ If any answer is wrong, rewrite before returning.`;
 
     // HARD STRIP: forbidden sections must never reach the client.
     const p = payload as unknown as Record<string, unknown>;
+    delete p.whatAlreadyWorks;
     delete p.childAdaptations;
     delete p.whatHelpsWholeFamily;
     delete p.whatHelpsRationale;
