@@ -377,6 +377,31 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+MECHANISM PORTRAIT RULE (applies to childMechanisms array — this is the highest-priority section):
+Goal: Produce a cognitive-emotional model of EACH child, not an astrology description. The parent must finish reading and think "that is exactly how his system works."
+Required 6-part shape per child (the schema enforces it; these rules govern the content):
+  (a) corePattern: 2 placements in most cases, max 3 only if a third placement is genuinely driving the tension. Pick placements that create the loudest internal contradiction (typically Moon + one of Mercury, Sun, Mars, Saturn, or Ascendant). Never two harmonious placements.
+  (b) "does": describes an INTERNAL MECHANISM, not a trait. Use verbs like processes, absorbs, scans, defends, regulates, organizes, releases, routes, holds. NEVER adjectives like sensitive, creative, fiery, intense.
+  (c) theConflict: names the gap as a structural mismatch. Pattern: "feels like X but has to [verb] like Y" or "wants A but is wired for B". Must name what happens first vs later.
+  (d) inRealLife: a parent-recognizable scene the parent has already lived (asking "what's wrong", giving an instruction, correcting in public, ending screen time). No abstract description.
+  (e) underStress: BOTH placements amplify at once. Placement 1 gets louder AND placement 2 defends harder. Show the loop, not a single reaction.
+  (f) whatThisIsNot: ONE short sentence only. Three to five things it is NOT, separated by commas. No explanation, no therapy language, no "because" clause.
+BANNED: zodiac shorthand without mechanism, single-line summaries, "this means he is…" closures, any sentence that could be cut without losing the mechanism, generic trait words.
+
+MECHANISM DIFFERENTIATION RULE (CRITICAL for multi-child families):
+Each child's mechanism MUST be clearly different from every sibling's. Across siblings, the set of mechanisms must vary on at least TWO of these axes:
+  - internal timing (fast vs slow — does the feeling/reaction land instantly or build over time)
+  - processing style (internal vs external — does it stay inside the body or move outward through words/action)
+  - reaction pattern (withdraw vs push vs perform vs negotiate)
+Before emitting, internally compare every child's theConflict sentence against every other child's. If any two could be swapped without anyone noticing, REWRITE the second one until the contrast is unmistakable. No template reuse. No two children with "the same conflict worded differently".
+
+Example of the required shape (Cancer Moon + Aquarius Mercury child):
+  corePattern: [{placement: "Cancer Moon", does: "feels everything immediately and personally; reactions are fast and body-based, not verbal"}, {placement: "Aquarius Mercury", does: "processes through detachment and logic; wants to step back, does not naturally name feelings"}]
+  theConflict: "He feels like Cancer but has to explain like Aquarius. Feeling hits first, fast and unclear. Thinking arrives later, cool and removed."
+  inRealLife: "When you ask 'what's wrong?' the feeling is loud but not organized yet, and his brain is wired to respond with clean logic, so he literally has nothing usable to say. You get 'nothing,' silence, or a cold factual answer."
+  underStress: "The feeling gets stronger (Cancer) while the mind defends harder (Aquarius). He either shuts down or becomes sharp and dismissive."
+  whatThisIsNot: "Not coldness, not avoidance, not disrespect."
+
 DEPTH RULE — NO SINGLE TRAITS (applies to every person described, including all family members):
 Never describe any person with a single trait, attribute, or one-line summary. Every person-description MUST contain all three of the following, woven into the sentence(s):
   (1) What they tend to do (the visible behavior / pull)
@@ -605,6 +630,20 @@ LENGTH & CLARITY — HARD LIMIT (applies to EVERY non-pair field):
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
 {
   "atAGlance": [ { "name": "MemberName", "line": string } ],
+  "childMechanisms": [
+    {
+      "name": "ChildName",
+      "corePattern": [
+        { "placement": string (e.g. "Cancer Moon"), "does": string (INTERNAL MECHANISM using verbs like processes, absorbs, scans, defends, regulates — never adjectives) }
+        // 2 entries normally, max 3 only if a third is genuinely driving the tension
+      ],
+      "theConflict": string (1-3 short sentences naming the structural mismatch using "feels like X but has to [verb] like Y" or "wants A but is wired for B"; must name what happens first vs later),
+      "inRealLife": string (2-3 sentences describing a specific parent-recognizable scene the parent has already lived; no abstract description),
+      "underStress": string (1-2 sentences showing BOTH placements amplifying at once — placement 1 louder AND placement 2 defending harder),
+      "whatThisIsNot": string (ONE short sentence only, 3-5 things it is NOT separated by commas, no explanation)
+    }
+    // EXACTLY one entry per child in the family. Each child's mechanism MUST differ from siblings on at least 2 axes (timing, processing style, reaction pattern). See MECHANISM DIFFERENTIATION RULE.
+  ],
   "parentRegulationCenter": [
     { "name": "ParentName", "body": string, "whatThisMeansInRealLife": string }
     // ONE entry per parent. body = range-based paragraph naming how this parent sets the tone AND how it breaks under stress. whatThisMeansInRealLife = ONE practical sentence.
@@ -641,7 +680,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
   "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ]
 }
 
-ALLOWED OUTPUT SECTIONS ONLY: atAGlance, parentRegulationCenter, parentChildConnections, siblingConnections, whatEscalates. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
+ALLOWED OUTPUT SECTIONS ONLY: atAGlance, childMechanisms, parentRegulationCenter, parentChildConnections, siblingConnections, whatEscalates. childMechanisms is the highest-priority section and MUST be produced FIRST, with EXACTLY one entry per child, following the MECHANISM PORTRAIT RULE and MECHANISM DIFFERENTIATION RULE. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
 
 DO NOT GENERATE — HARD BAN (these sections have been REMOVED from the product entirely):
 - childAdaptations entries (return [] only)
