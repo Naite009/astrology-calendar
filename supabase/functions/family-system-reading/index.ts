@@ -493,6 +493,15 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 
 PAIR CLEAN FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 
+PROFESSIONAL PAIR SYNTHESIS RULE:
+- Each pair must be written from that pair's actual evidence card, not from a generic parent-regulation summary.
+- Do not repeat Lauren's baseline in every pair. "Lauren gets quiet", "Lauren needs time to think", "pressure builds", and "without time to think" may not be reused as the main explanation across multiple pairs.
+- Parent-child blocks must make the CHILD the differentiator. Lauren ↔ Ben, Lauren ↔ Max, and Lauren ↔ Ike must feel like three different relationships, not Lauren plus three names.
+- Sibling blocks must come from sibling evidence only. Do not recycle parent-child wording.
+- If two pair blocks share the same pattern label, verbs, or stress sequence, rewrite one before returning.
+- Professional astrology means: exact chart evidence underneath, plain English on the page. No generic parenting phrases.
+- Every pair must include one visible detail that could only belong to that pair: speed, tone, volume, timing, sensitivity, competitiveness, correction style, humor, body movement, privacy, or recovery pattern.
+
 The \`dynamic\` field MUST be a string containing EXACTLY this skeleton, filled in. Use these literal labels on their own lines, with the content beneath each label:
 
 Shared Pattern:
