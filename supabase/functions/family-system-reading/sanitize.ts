@@ -393,67 +393,13 @@ export function validatePairShape(payload: Record<string, unknown>): { ok: boole
         }
       }
 
-      // interactionPattern REQUIRED
-      const ip = entry.interactionPattern;
-      if (ip == null) {
-        errors.push(`${field}[${i}].interactionPattern missing (required for every pair)`);
-      } else if (typeof ip !== "object" || Array.isArray(ip)) {
-        errors.push(`${field}[${i}].interactionPattern must be an object with forA/forB/why`);
+      // TELEGRAPH FORMAT — dynamic is the entire pair output.
+      const dyn = entry.dynamic;
+      if (typeof dyn !== "string" || !dyn.trim()) {
+        errors.push(`${field}[${i}].dynamic missing (required)`);
       } else {
-        const p = ip as Record<string, unknown>;
-        if (typeof p.forA !== "string" || !p.forA.trim()) {
-          errors.push(`${field}[${i}].interactionPattern.forA missing`);
-        }
-        if (typeof p.forB !== "string" || !p.forB.trim()) {
-          errors.push(`${field}[${i}].interactionPattern.forB missing`);
-        }
-        if (typeof p.why !== "string" || !p.why.trim()) {
-          errors.push(`${field}[${i}].interactionPattern.why missing`);
-        }
-        if (
-          typeof p.forA === "string" &&
-          typeof p.forB === "string" &&
-          p.forA.trim() &&
-          p.forA.trim().toLowerCase() === p.forB.trim().toLowerCase()
-        ) {
-          errors.push(`${field}[${i}].interactionPattern forA and forB are identical`);
-        }
-        // Range marker REQUIRED on interactionPattern.forA + forB
-        for (const sideKey of ["forA", "forB"] as const) {
-          const side = p[sideKey];
-          const text = typeof side === "string" ? side : "";
-          if (text && !hasRangeMarker(text)) {
-            errors.push(`${field}[${i}].interactionPattern.${sideKey} missing range marker (e.g. "can show up as ... but can also ...")`);
-          }
-          const v = firstVerdictPhrase(text);
-          if (v) errors.push(`${field}[${i}].interactionPattern.${sideKey} contains verdict phrase: "${v}"`);
-        }
-      }
-
-      // dynamic, whatCanFeelHard, whatHelps — REQUIRED on every pair
-      for (const reqKey of ["dynamic", "whatCanFeelHard", "whatHelps"] as const) {
-        const v = entry[reqKey];
-        if (typeof v !== "string" || !v.trim()) {
-          errors.push(`${field}[${i}].${reqKey} missing (required)`);
-        }
-      }
-      // dynamic must be range-based
-      if (typeof entry.dynamic === "string" && entry.dynamic.trim() && !hasRangeMarker(entry.dynamic)) {
-        errors.push(`${field}[${i}].dynamic missing range marker`);
-      }
-      for (const k of ["dynamic", "whatCanFeelHard", "whatHelps"] as const) {
-        const v = firstVerdictPhrase(typeof entry[k] === "string" ? (entry[k] as string) : null);
-        if (v) errors.push(`${field}[${i}].${k} contains verdict phrase: "${v}"`);
-      }
-
-      // sibling pairs need a valid patternType from the allow-list
-      if (field === "siblingConnections") {
-        const pt = entry.patternType;
-        if (typeof pt !== "string" || !pt.trim()) {
-          errors.push(`${field}[${i}].patternType missing (sibling pairs require a labeled pattern type)`);
-        } else if (!SIBLING_PATTERN_TYPES.has(pt.toLowerCase())) {
-          errors.push(`${field}[${i}].patternType "${pt}" not in allow-list`);
-        }
+        const telegraphErrors = validateTelegraphDynamic(dyn);
+        for (const e of telegraphErrors) errors.push(`${field}[${i}].dynamic ${e}`);
       }
     });
   }
