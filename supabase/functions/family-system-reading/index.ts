@@ -119,6 +119,22 @@ interface ReadingPayload {
 const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
 const isChildRole = (role: string) => /child|son|daughter|stepchild|kid/i.test(role);
 const normalizePairName = (name: unknown) => String(name ?? "").trim().toLowerCase();
+const pairKey = (a: string, b: string) => [normalizePairName(a), normalizePairName(b)].sort().join("|");
+
+function aspectTouchesPair(a: CrossAspect, nameA: string, nameB: string): boolean {
+  return pairKey(a.fromName, a.toName) === pairKey(nameA, nameB);
+}
+
+function formatCompositeBits(c: CompositeChart): string {
+  const bits: string[] = [];
+  if (c.Sun) bits.push(`Sun ${c.Sun.sign} ${c.Sun.degree}°`);
+  if (c.Moon) bits.push(`Moon ${c.Moon.sign} ${c.Moon.degree}°`);
+  if (c.Mercury) bits.push(`Mercury ${c.Mercury.sign} ${c.Mercury.degree}°`);
+  if (c.Venus) bits.push(`Venus ${c.Venus.sign} ${c.Venus.degree}°`);
+  if (c.Mars) bits.push(`Mars ${c.Mars.sign} ${c.Mars.degree}°`);
+  if (c.Saturn) bits.push(`Saturn ${c.Saturn.sign} ${c.Saturn.degree}°`);
+  return bits.join(", ") || "no composite details";
+}
 
 function fallbackPairDynamic(nameA: string, nameB: string): string {
   return `Shared Pattern:
