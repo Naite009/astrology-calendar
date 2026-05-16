@@ -575,6 +575,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   // explain it?" Uses only live sky data, no natal placements.
   const [skyTodayLoading, setSkyTodayLoading] = useState(false);
   const [skyTodaySituation, setSkyTodaySituation] = useState("");
+  const [skyReading, setSkyReading] = useState<{ text: string; dateLabel: string; situation?: string } | null>(null);
   const handleSkyToday = useCallback(async (userSituation?: string) => {
     if (skyTodayLoading) return;
     setSkyTodayLoading(true);
