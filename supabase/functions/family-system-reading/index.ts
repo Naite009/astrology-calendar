@@ -414,6 +414,24 @@ PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChil
 - FORBIDDEN content: long paragraphs, storytelling blocks, therapy-style explanations, narrative interpretation, "because of ___ this means ___" reasoning chains. Keep every line tight (1–2 sentences max).
 - Each person across the family MUST remain behaviorally distinct. No two pair blocks (parent-child OR sibling) may contain duplicate or interchangeable behavioral descriptions. If swapping names leaves the lines still true, REWRITE.
 
+LENGTH & CLARITY — HARD LIMIT (applies to EVERY field in the output, no exceptions):
+- No paragraph longer than 2 sentences. Anywhere.
+- No non-pair section (atAGlance line, parentRegulationCenter entry, whatAlreadyWorks entry, whatEscalates entry) longer than 6 lines TOTAL.
+- No pair `dynamic` block longer than 8 lines TOTAL across all five labels combined.
+- PAIR FORMAT LIMITS (count each as visible lines, not internal sentences):
+    Shared Pattern: max 2 lines.
+    At its best: 1–2 sentences, one line preferred.
+    More commonly: 1–2 sentences, one line preferred.
+    Under stress: 1–2 sentences, one line preferred.
+    Where connection can happen: 1 line, max.
+- parentRegulationCenter: body = max 2 sentences. whatThisMeansInRealLife = exactly 1 sentence.
+- whatEscalates[].body = 1–2 short lines per person. No more.
+- atAGlance[].line = ONE sentence. Always.
+- FORBIDDEN style: long explanations, repeated ideas reworded, multiple examples in one line, storytelling, filler hedges stacked ("this can sometimes show up as… though it may also… and at times…"). Use ONE hedge per sentence max.
+- Direct, plain, no fluff, no over-explaining. The user must understand each section in under 10 seconds.
+- If a sentence can be cut without losing meaning, CUT IT. If two sentences say the same thing, KEEP ONE.
+
+
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
 {
   "atAGlance": [ { "name": "MemberName", "line": string } ],
