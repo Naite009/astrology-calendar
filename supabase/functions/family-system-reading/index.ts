@@ -455,7 +455,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED),
-      "dynamic": string (REQUIRED. Same PAIR RANGE FORMAT as parent-child. For siblings, "Where connection can happen" MUST acknowledge that activity/shared interests can connect OR escalate.),
+      "dynamic": string (REQUIRED. Same PAIR ULTRA-COMPACT FORMAT as parent-child. Each line MAX 12 words. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
       "composite": null,
       "bridge": null,
       "friction": null,
