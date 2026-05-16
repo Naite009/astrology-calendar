@@ -20,6 +20,8 @@ import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { buildAskValidationFactsBlock } from "@/lib/askValidationFacts";
+import { findActiveFixedStarsToday, findFixedStarActivations } from "@/lib/fixedStars";
+import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
@@ -922,7 +924,64 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       } catch {}
 
-      // --- PRE-COMPUTED JUPITER RETURN WINDOW (deterministic — never let AI guess) ---
+      // --- DAILY WEATHER EXTRAS (fixed stars, VOC Moon, Moon phase) ---
+      // Injected so the "Today's Weather" general reading can cite catalogued
+      // fixed-star contacts, Void-of-Course windows, and Moon phase without
+      // the AI having to guess any of it.
+      try {
+        const ZODIAC_FS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+        const absLon = (p: any): number | null => {
+          if (!p) return null;
+          const signName = p.signName || signGlyphMap[p.sign] || p.sign;
+          const idx = ZODIAC_FS.indexOf(signName);
+          if (idx < 0) return null;
+          return (idx * 30 + (p.degree || 0) + (p.minutes || 0) / 60) % 360;
+        };
+        const transitLon: Record<string, number> = {};
+        Object.entries(nowPlanets).forEach(([k, v]: [string, any]) => {
+          const lon = absLon(v);
+          if (lon != null) transitLon[k.charAt(0).toUpperCase() + k.slice(1)] = lon;
+        });
+
+        // Natal fixed-star activations (lifetime — anchor)
+        const natalStarHits = findFixedStarActivations(chart);
+        if (natalStarHits.length > 0) {
+          context += "\n--- NATAL FIXED STAR CONTACTS (lifetime) ---\n";
+          for (const h of natalStarHits.slice(0, 8)) {
+            context += `- ${h.star} conjunct natal ${h.point} (orb ${h.orb.toFixed(2)}°) — ${h.interpretation}\n`;
+          }
+        }
+
+        // Fixed stars triggered TODAY by transiting planets within 1° of the
+        // natal points the stars already touch.
+        const activeStars = findActiveFixedStarsToday(chart, transitLon);
+        if (activeStars.length > 0) {
+          context += "\n--- FIXED STARS ACTIVE TODAY (transit-triggered) ---\n";
+          context += "CITE these by name in any daily-weather reading. These are rare contacts the user would not catch on their own.\n";
+          for (const h of activeStars) {
+            context += `- ${h.star} on natal ${h.point} triggered by transiting ${h.triggeredBy} — ${h.interpretation}\n`;
+          }
+        }
+
+        // Void-of-Course Moon status for today
+        try {
+          const voc = getVOCMoonDetails(now);
+          context += "\n--- MOON PHASE / VOID-OF-COURSE STATUS (today) ---\n";
+          if (voc.currentMoonSign) context += `- Moon sign: ${voc.currentMoonSign}\n`;
+          if (voc.isVOC) {
+            const startStr = voc.start ? voc.start.toISOString() : 'earlier';
+            const endStr = voc.end ? voc.end.toISOString() : 'unknown';
+            context += `- Moon is VOID OF COURSE today. Window: ${startStr} → ${endStr}. Currently VOC: ${voc.isCurrentlyVOC ? 'YES' : 'no'}.\n`;
+            context += "  Use this to explain a sudden urge to turn around, abandon a plan, or feel that nothing initiated now will land — that is the VOC signature.\n";
+            if (voc.moonEntersSign) context += `- Moon next enters ${voc.moonEntersSign} at end of VOC.\n`;
+          } else {
+            context += "- Moon is NOT void of course today.\n";
+          }
+          if (voc.lastAspect) {
+            context += `- Last Moon aspect: ${voc.lastAspect.aspectName} ${voc.lastAspect.planet}\n`;
+          }
+        } catch {}
+      } catch {}
       // Jupiter returns to natal position every ~12 years and is the single
       // most significant wealth/expansion window in the chart. We compute the
       // exact next return date(s) and a ±2-month opportunity window so the AI
