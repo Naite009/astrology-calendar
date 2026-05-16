@@ -100,16 +100,94 @@ interface PairConnectionEntry {
   composite?: PairCompositeBlock | string | null;
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
+  dynamic?: string | null;
+  interactionPattern?: unknown;
+  whatCanFeelHard?: string | null;
+  whatHelps?: string | null;
+  patternType?: string | null;
   note?: string | null;
 }
 
 interface ReadingPayload {
   atAGlance?: { name: string; line: string }[];
-  whatAlreadyWorks?: { pair: string; aspect?: string | null; forA?: string | null; forB?: string | null }[];
   parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
   whatEscalates?: { name: string; body: string }[];
+}
+
+const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
+const isChildRole = (role: string) => /child|son|daughter|stepchild|kid/i.test(role);
+const normalizePairName = (name: unknown) => String(name ?? "").trim().toLowerCase();
+
+function fallbackPairDynamic(nameA: string, nameB: string): string {
+  return `Shared Pattern:
+Different pacing — ${nameA} reaches for clarity, ${nameB} needs room to respond.
+How this can show up:
+At its best:
+One stays simple. The other has space to stay present.
+More commonly:
+One explains more. The other pulls away or pushes back.
+Under stress:
+One tries harder. The other shuts down or gets sharp. Both feel missed.
+Where connection can happen:
+Short, low-pressure moments without a goal.`;
+}
+
+function ensurePairCoverage(payload: ReadingPayload, members: RequestBody["members"]): void {
+  const parents = members.filter((m) => isParentRole(m.role));
+  const children = members.filter((m) => isChildRole(m.role));
+
+  if (parents.length && children.length) {
+    const existing = new Set((payload.parentChildConnections ?? []).map((p) => `${normalizePairName(p.parent)}|${normalizePairName(p.child)}`));
+    const complete = [...(payload.parentChildConnections ?? [])];
+    for (const parent of parents) {
+      for (const child of children) {
+        const key = `${normalizePairName(parent.name)}|${normalizePairName(child.name)}`;
+        if (existing.has(key)) continue;
+        complete.push({
+          parent: parent.name,
+          child: child.name,
+          dynamic: fallbackPairDynamic(parent.name, child.name),
+          composite: null,
+          bridge: null,
+          friction: null,
+          interactionPattern: null,
+          whatCanFeelHard: "",
+          whatHelps: "",
+        });
+        existing.add(key);
+      }
+    }
+    payload.parentChildConnections = complete;
+  }
+
+  if (children.length > 1) {
+    const existing = new Set((payload.siblingConnections ?? []).map((p) => `${normalizePairName(p.siblingA)}|${normalizePairName(p.siblingB)}`));
+    const complete = [...(payload.siblingConnections ?? [])];
+    for (let i = 0; i < children.length; i += 1) {
+      for (let j = i + 1; j < children.length; j += 1) {
+        const older = children[i];
+        const younger = children[j];
+        const key = `${normalizePairName(older.name)}|${normalizePairName(younger.name)}`;
+        if (existing.has(key)) continue;
+        complete.push({
+          siblingA: older.name,
+          siblingB: younger.name,
+          patternType: "pacing friction",
+          dynamic: fallbackPairDynamic(older.name, younger.name),
+          composite: null,
+          bridge: null,
+          friction: null,
+          interactionPattern: null,
+          whatCanFeelHard: "",
+          whatHelps: "",
+        });
+        existing.add(key);
+      }
+    }
+    payload.siblingConnections = complete;
+  }
 }
 
 function fmtAspect(a: CrossAspect): string {
