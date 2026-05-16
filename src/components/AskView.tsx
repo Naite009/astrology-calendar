@@ -538,6 +538,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   }, [userNatalChart, savedCharts]);
 
   useEffect(() => {
+    if (activeChartId === "general") return;
     const chartExists =
       activeChartId === "user"
         ? Boolean(userNatalChart)
