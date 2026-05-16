@@ -575,6 +575,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   // explain it?" Uses only live sky data, no natal placements.
   const [skyTodayLoading, setSkyTodayLoading] = useState(false);
   const [skyTodaySituation, setSkyTodaySituation] = useState("");
+  const [skyReading, setSkyReading] = useState<{ text: string; dateLabel: string; situation?: string } | null>(null);
   const handleSkyToday = useCallback(async (userSituation?: string) => {
     if (skyTodayLoading) return;
     setSkyTodayLoading(true);
@@ -675,26 +676,19 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         notableFixedStars,
       };
 
-      // Show the user prompt immediately so it feels like a chat message.
-      const userEntry: ChatEntry = {
-        role: 'user',
-        content: userSituation?.trim()
-          ? `🌤️ Today's Cosmic Weather — "${userSituation.trim()}" — ${payload.dateLabel}`
-          : `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
-      };
-      setEntries((prev) => [...prev, userEntry]);
-
       const { data, error } = await supabase.functions.invoke('ask-sky-today', { body: payload });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const text = (data?.text || '').trim();
       if (!text) throw new Error('Empty response');
 
-      const assistantEntry: ChatEntry = { role: 'assistant', content: text };
-      setEntries((prev) => {
-        const next = [...prev, assistantEntry];
-        saveActiveChat(activeChartId, next);
-        return next;
+      // IMPORTANT: do NOT push into the chart's chat thread. The Cosmic
+      // Weather is chart-independent and must not pollute Lauren's (or any
+      // other person's) saved conversation.
+      setSkyReading({
+        text,
+        dateLabel: payload.dateLabel,
+        situation: userSituation?.trim() || undefined,
       });
     } catch (e: any) {
       console.error('[handleSkyToday]', e);
@@ -702,7 +696,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       setSkyTodayLoading(false);
     }
-  }, [skyTodayLoading, activeChartId]);
+  }, [skyTodayLoading]);
 
   const upsertConversationSnapshot = useCallback((nextEntries: ChatEntry[], chartId: string, chartName: string) => {
     if (!nextEntries.some(entry => entry.role === "assistant")) return;
@@ -2656,6 +2650,30 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             )}
             Read the Sky Right Now
           </Button>
+
+          {skyReading && (
+            <div className="mt-2 rounded-md border border-amber-300/40 bg-background/60 p-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="text-xs text-muted-foreground">
+                  {skyReading.dateLabel}
+                  {skyReading.situation && (
+                    <span className="block italic mt-0.5">"{skyReading.situation}"</span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSkyReading(null)}
+                  className="h-7 px-2 text-muted-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-light prose-h2:text-base prose-h2:mt-4 prose-h2:mb-2 prose-p:my-2">
+                <ReactMarkdown>{skyReading.text}</ReactMarkdown>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -2840,41 +2858,50 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           )}
 
+          {/* Quick Topics — always visible so users can pick Relationship,
+              Career, Where Should I Live, etc. even after the chat already
+              has entries. */}
+          {selectedChart && (() => {
+            const matchingSR = findMatchingSolarReturn(
+              solarReturnCharts,
+              selectedChart,
+              activeChartId,
+            );
+            return (
+              <details className="rounded-md border border-border bg-muted/30" open={entries.length === 0}>
+                <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-foreground">
+                  Reading topics for {selectedChart.name}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (Relationship, Career, Where to Live, Health, Timing…)
+                  </span>
+                </summary>
+                <div className="p-3 pt-1">
+                  <AskQuickTopics
+                    onSelect={handleQuickTopic}
+                    chartName={selectedChart.name || "Unknown"}
+                    birthDate={selectedChart.birthDate || "unknown date"}
+                    birthTime={selectedChart.birthTime || "unknown time"}
+                    birthLocation={selectedChart.birthLocation || "unknown location"}
+                    currentLocation={matchingSR?.solarReturnLocation || undefined}
+                    childChartOptions={savedCharts
+                      .filter(c => c.id !== activeChartId && !!c.birthDate)
+                      .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
+                    disabled={isLoading}
+                  />
+                </div>
+              </details>
+            );
+          })()}
+
           {/* Messages */}
           <ScrollArea className="h-[500px] pr-4" ref={scrollRef}>
             <div className="space-y-4">
               {entries.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-8 text-center space-y-5">
-                  <div>
-                    <Sparkles className="h-10 w-10 text-muted-foreground/30 mb-3 mx-auto" />
-                    <p className="text-muted-foreground mb-1">
-                      Ask any question about {selectedChart?.name || "the chart"}
-                    </p>
-                    <p className="text-sm text-muted-foreground/70 max-w-md mx-auto">
-                      Or choose a topic for a comprehensive reading:
-                    </p>
-                  </div>
-                  {selectedChart && (() => {
-                    const matchingSR = findMatchingSolarReturn(
-                      solarReturnCharts,
-                      selectedChart,
-                      activeChartId,
-                    );
-                    return (
-                      <AskQuickTopics
-                        onSelect={handleQuickTopic}
-                        chartName={selectedChart.name || "Unknown"}
-                        birthDate={selectedChart.birthDate || "unknown date"}
-                        birthTime={selectedChart.birthTime || "unknown time"}
-                        birthLocation={selectedChart.birthLocation || "unknown location"}
-                        currentLocation={matchingSR?.solarReturnLocation || undefined}
-                        childChartOptions={savedCharts
-                          .filter(c => c.id !== activeChartId && !!c.birthDate)
-                          .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
-                        disabled={isLoading}
-                      />
-                    );
-                  })()}
+                <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+                  <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto" />
+                  <p className="text-muted-foreground">
+                    Ask any question about {selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.
+                  </p>
                 </div>
               )}
 
