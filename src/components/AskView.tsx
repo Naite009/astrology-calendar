@@ -676,26 +676,19 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         notableFixedStars,
       };
 
-      // Show the user prompt immediately so it feels like a chat message.
-      const userEntry: ChatEntry = {
-        role: 'user',
-        content: userSituation?.trim()
-          ? `🌤️ Today's Cosmic Weather — "${userSituation.trim()}" — ${payload.dateLabel}`
-          : `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
-      };
-      setEntries((prev) => [...prev, userEntry]);
-
       const { data, error } = await supabase.functions.invoke('ask-sky-today', { body: payload });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const text = (data?.text || '').trim();
       if (!text) throw new Error('Empty response');
 
-      const assistantEntry: ChatEntry = { role: 'assistant', content: text };
-      setEntries((prev) => {
-        const next = [...prev, assistantEntry];
-        saveActiveChat(activeChartId, next);
-        return next;
+      // IMPORTANT: do NOT push into the chart's chat thread. The Cosmic
+      // Weather is chart-independent and must not pollute Lauren's (or any
+      // other person's) saved conversation.
+      setSkyReading({
+        text,
+        dateLabel: payload.dateLabel,
+        situation: userSituation?.trim() || undefined,
       });
     } catch (e: any) {
       console.error('[handleSkyToday]', e);
@@ -703,7 +696,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } finally {
       setSkyTodayLoading(false);
     }
-  }, [skyTodayLoading, activeChartId]);
+  }, [skyTodayLoading]);
 
   const upsertConversationSnapshot = useCallback((nextEntries: ChatEntry[], chartId: string, chartName: string) => {
     if (!nextEntries.some(entry => entry.role === "assistant")) return;
