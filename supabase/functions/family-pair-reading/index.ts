@@ -342,6 +342,18 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — essence, sect
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into a single psychological explanation. State the parent behavior as a behavior. State the child adaptation as a behavior. State the group tendency as a tendency. Each stands on its own as something observable.
 - The parent should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+DEPTH RULE — NO SINGLE TRAITS (applies to every person described, including parent and child):
+Never describe any person with a single trait, attribute, or one-line summary. Every person-description MUST contain all three of the following, woven into the sentence(s):
+  (1) What they tend to do (the visible behavior / pull)
+  (2) What they avoid, resist, or struggle with
+  (3) The internal contradiction or tension that (1) and (2) create
+Examples of the required shape:
+  - WRONG: "This child needs to be seen."
+  - RIGHT: "This child needs to be seen, but can feel exposed or criticized when attention turns corrective — so he keeps performing and then quietly resents the audience he asked for."
+  - WRONG: "She is emotional."
+  - RIGHT: "She feels things deeply but does not show it directly, which can come out as distance or sharp responses — and then she is frustrated that no one noticed what she never actually said."
+Banned moves: zodiac shorthand ("Libra = fair", "Aries = fast"), single-clause personality labels, surface compliments with no friction, type-style summaries. Every person must read as a specific, layered, slightly uncomfortable-because-true human — never a category. If a sentence describes a person and contains no internal contradiction, rewrite it before emitting.
+
 STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
 - The reading must NOT over-weight tension, conflict, or dysfunction. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point between this parent and child — drawn from the same chart evidence (bridge aspects, shared element, supportive synastry, easy ruler chains, harmonious Moon/Venus/Jupiter contacts, shared sect, shared mode).
 - pressureProfile MUST be paired with repairProfile or with a working-dynamic line. Never present pressure without a corresponding strength.
