@@ -119,6 +119,22 @@ interface ReadingPayload {
 const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
 const isChildRole = (role: string) => /child|son|daughter|stepchild|kid/i.test(role);
 const normalizePairName = (name: unknown) => String(name ?? "").trim().toLowerCase();
+const pairKey = (a: string, b: string) => [normalizePairName(a), normalizePairName(b)].sort().join("|");
+
+function aspectTouchesPair(a: CrossAspect, nameA: string, nameB: string): boolean {
+  return pairKey(a.fromName, a.toName) === pairKey(nameA, nameB);
+}
+
+function formatCompositeBits(c: CompositeChart): string {
+  const bits: string[] = [];
+  if (c.Sun) bits.push(`Sun ${c.Sun.sign} ${c.Sun.degree}°`);
+  if (c.Moon) bits.push(`Moon ${c.Moon.sign} ${c.Moon.degree}°`);
+  if (c.Mercury) bits.push(`Mercury ${c.Mercury.sign} ${c.Mercury.degree}°`);
+  if (c.Venus) bits.push(`Venus ${c.Venus.sign} ${c.Venus.degree}°`);
+  if (c.Mars) bits.push(`Mars ${c.Mars.sign} ${c.Mars.degree}°`);
+  if (c.Saturn) bits.push(`Saturn ${c.Saturn.sign} ${c.Saturn.degree}°`);
+  return bits.join(", ") || "no composite details";
+}
 
 function fallbackPairDynamic(nameA: string, nameB: string): string {
   return `Shared Pattern:
@@ -229,8 +245,27 @@ Deno.serve(async (req) => {
       .map((r) => `- ${r.name} (${r.role}): ${r.systemRole} — ${r.reason}`)
       .join("\n");
 
+    const parents = body.members.filter((m) => isParentRole(m.role));
+    const children = body.members.filter((m) => isChildRole(m.role));
     const frictionLines = body.topFriction.map(fmtAspect).join("\n") || "(none significant)";
     const bridgeLines = body.topBridges.map(fmtAspect).join("\n") || "(none significant)";
+    const parentChildEvidence = parents.length && children.length
+      ? parents.flatMap((parent) => children.map((child) => {
+          const bridges = body.topBridges.filter((a) => aspectTouchesPair(a, parent.name, child.name)).map(fmtAspect);
+          const frictions = body.topFriction.filter((a) => aspectTouchesPair(a, parent.name, child.name)).map(fmtAspect);
+          const composites = (body.pairComposites ?? []).filter((pc) => aspectTouchesPair({ fromName: pc.nameA, toName: pc.nameB, fromPlanet: "", toPlanet: "", aspect: "", symbol: "", orb: 0 }, parent.name, child.name)).map((pc) => formatCompositeBits(pc.composite));
+          const activations = (body.parentActivations ?? []).filter((g) => normalizePairName(g.parentName) === normalizePairName(parent.name) && normalizePairName(g.childName) === normalizePairName(child.name)).flatMap((g) => g.hits.map((h) => `${g.parentName}'s ${h.parentPlanet} ${h.symbol} ${g.childName}'s ${h.childPlanet}: ${h.parentTrigger}`));
+          return `PAIR ${parent.name} ↔ ${child.name}\nParent-child evidence to use:\n- Bridge aspects: ${bridges.join("; ") || "none listed"}\n- Friction aspects: ${frictions.join("; ") || "none listed"}\n- Pair composite: ${composites.join("; ") || "none listed"}\n- Parent activation: ${activations.join("; ") || "none listed"}`;
+        })).join("\n\n")
+      : "(no parent-child pairs)";
+    const siblingEvidence = children.length > 1
+      ? children.flatMap((older, i) => children.slice(i + 1).map((younger) => {
+          const bridges = body.topBridges.filter((a) => aspectTouchesPair(a, older.name, younger.name)).map(fmtAspect);
+          const frictions = body.topFriction.filter((a) => aspectTouchesPair(a, older.name, younger.name)).map(fmtAspect);
+          const composites = (body.pairComposites ?? []).filter((pc) => aspectTouchesPair({ fromName: pc.nameA, toName: pc.nameB, fromPlanet: "", toPlanet: "", aspect: "", symbol: "", orb: 0 }, older.name, younger.name)).map((pc) => formatCompositeBits(pc.composite));
+          return `PAIR ${older.name} ↔ ${younger.name}\nSibling evidence to use:\n- Bridge aspects: ${bridges.join("; ") || "none listed"}\n- Friction aspects: ${frictions.join("; ") || "none listed"}\n- Pair composite: ${composites.join("; ") || "none listed"}`;
+        })).join("\n\n")
+      : "(no sibling pairs)";
 
     const systemPrompt = `You are an experienced family astrologer writing a single integrated reading about how a whole family functions as one system. Not pair by pair. The whole group as a unit.
 
@@ -458,6 +493,15 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 
 PAIR CLEAN FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 
+PROFESSIONAL PAIR SYNTHESIS RULE:
+- Each pair must be written from that pair's actual evidence card, not from a generic parent-regulation summary.
+- Do not repeat Lauren's baseline in every pair. "Lauren gets quiet", "Lauren needs time to think", "pressure builds", and "without time to think" may not be reused as the main explanation across multiple pairs.
+- Parent-child blocks must make the CHILD the differentiator. Lauren ↔ Ben, Lauren ↔ Max, and Lauren ↔ Ike must feel like three different relationships, not Lauren plus three names.
+- Sibling blocks must come from sibling evidence only. Do not recycle parent-child wording.
+- If two pair blocks share the same pattern label, verbs, or stress sequence, rewrite one before returning.
+- Professional astrology means: exact chart evidence underneath, plain English on the page. No generic parenting phrases.
+- Every pair must include one visible detail that could only belong to that pair: speed, tone, volume, timing, sensitivity, competitiveness, correction style, humor, body movement, privacy, or recovery pattern.
+
 The \`dynamic\` field MUST be a string containing EXACTLY this skeleton, filled in. Use these literal labels on their own lines, with the content beneath each label:
 
 Shared Pattern:
@@ -526,6 +570,8 @@ CHILD DIFFERENTIATION CONTRACT — HARD LOCK:
 - Each child MUST differ on at least: SPEED (fast/slow), EXPRESSION (internal/external), REACTION (push/withdraw).
 - Name-swap test: if swapping names leaves the lines still true across two children, REWRITE.
 - No two pair blocks may share the same verbs or interchangeable descriptions.
+- Repeated parent phrases are forbidden across pair blocks: "needs time to think", "gets quiet", "feels pressured", "pressure builds", "pulls back", "shuts down". Use them once at most, only if the specific pair evidence requires it.
+- Build a private verb bank before writing: each child gets different action verbs. Ben, Max, and Ike cannot all "pull back", "push", "shut down", or "get louder".
 
 GOAL: Clean. Recognizable. Plain. Not explained. Not taught. Not advised.
 
@@ -599,8 +645,6 @@ If you generate any of these, the output is INVALID and will be stripped.`;
 
 
 
-    const parents = body.members.filter((m) => isParentRole(m.role));
-    const children = body.members.filter((m) => isChildRole(m.role));
     const hierarchyLine = parents.length && children.length
       ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
       : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
@@ -694,6 +738,12 @@ ${frictionLines}
 
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
+
+PAIR-SPECIFIC EVIDENCE CARDS (use these first for parentChildConnections and siblingConnections):
+${parentChildEvidence}
+
+SIBLING-SPECIFIC EVIDENCE CARDS (use these only for siblingConnections):
+${siblingEvidence}
 
 Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above. Do not write whatAlreadyWorks or any "What Already Works" section. Every child listed above, including Ben when present, must appear in parentChildConnections and siblingConnections where applicable.
 
