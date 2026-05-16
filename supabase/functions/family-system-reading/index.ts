@@ -556,7 +556,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. MUST follow the PAIR ULTRA-COMPACT FORMAT exactly: six newline-separated lines — "Shared Pattern:", "How this can show up:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". Each line MAX 12 words. This is the ONLY visible content for this pair.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR CLEAN FORMAT exactly. This is the ONLY visible content for this pair.),
       "composite": null,
       "bridge": null,
       "friction": null,
@@ -571,7 +571,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED),
-      "dynamic": string (REQUIRED. Same PAIR ULTRA-COMPACT FORMAT as parent-child. Each line MAX 12 words. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
+      "dynamic": string (REQUIRED. Same PAIR CLEAN FORMAT as parent-child. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
       "composite": null,
       "bridge": null,
       "friction": null,
