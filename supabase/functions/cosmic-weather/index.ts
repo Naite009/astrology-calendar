@@ -355,6 +355,20 @@ PRACTICAL VOC GUIDANCE: During VOC, avoid starting new projects, making major pu
     // Get the greeting from the request (falls back to generic if not provided)
     const greeting = reqGreeting || 'Hello';
     const timeOfDay = reqTimeOfDay || 'day';
+
+    // Derive the actual day-of-week and full date string from the incoming `date`
+    // (formatted like "Saturday, May 16, 2026"). NEVER let the AI guess the day.
+    let todayDayName = '';
+    let todayFullDate = '';
+    if (dateMatch) {
+      todayDayName = dateMatch[1];
+      todayFullDate = `${dateMatch[1]}, ${dateMatch[2]} ${dateMatch[3]}, ${dateMatch[4]}`;
+    } else if (typeof date === 'string') {
+      todayFullDate = date;
+    }
+    const openingLine = todayFullDate
+      ? `${greeting}! Today is ${todayFullDate} and the Moon is in [sign] all day.`
+      : `${greeting}! Today is [day] and the Moon is in [sign] all day.`;
     
     const voicePrompts: Record<string, string> = {
       // TARA VOGEL - Luminary Parenting style: warm, conversational, always looking ahead
