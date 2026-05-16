@@ -99,6 +99,22 @@ interface BuildArgs {
 }
 
 /**
+ * Safely convert a value to an ISO string. Returns '' if the value can't be
+ * parsed as a Date (e.g. a display string like "5:30 PM EDT").
+ */
+function safeIso(iso: string | undefined, fallback: string | undefined): string {
+  if (iso) {
+    const d = new Date(iso);
+    if (!isNaN(d.getTime())) return d.toISOString();
+  }
+  if (fallback) {
+    const d = new Date(fallback);
+    if (!isNaN(d.getTime())) return d.toISOString();
+  }
+  return '';
+}
+
+/**
  * Build the master 24h event list. Pure function — does no AI work.
  */
 export function buildEvents24h(args: BuildArgs): TimedEvent[] {
@@ -111,7 +127,7 @@ export function buildEvents24h(args: BuildArgs): TimedEvent[] {
   if (args.moonSignChange) {
     out.push({
       kind: 'sign_ingress',
-      iso: args.moonSignChange.iso || new Date(args.moonSignChange.time).toISOString(),
+      iso: safeIso(args.moonSignChange.iso, args.moonSignChange.time),
       localTime: args.moonSignChange.time,
       description: `Moon enters ${args.moonSignChange.toSign}`,
       planet: 'Moon',
@@ -125,7 +141,7 @@ export function buildEvents24h(args: BuildArgs): TimedEvent[] {
     if (!c.ingressTime) continue;
     out.push({
       kind: 'sign_ingress',
-      iso: c.ingressIso || new Date(c.ingressTime).toISOString(),
+      iso: safeIso(c.ingressIso, c.ingressTime),
       localTime: c.ingressTime,
       description: `${c.planet} enters ${c.nextSign}`,
       planet: c.planet,
@@ -138,7 +154,7 @@ export function buildEvents24h(args: BuildArgs): TimedEvent[] {
   if (args.exactLunarPhase?.time && args.exactLunarPhase.type) {
     out.push({
       kind: 'lunar_phase',
-      iso: args.exactLunarPhase.iso || new Date(args.exactLunarPhase.time).toISOString(),
+      iso: safeIso(args.exactLunarPhase.iso, args.exactLunarPhase.time),
       localTime: args.exactLunarPhase.time,
       description: args.exactLunarPhase.name || args.exactLunarPhase.type,
       phaseName: args.exactLunarPhase.type,
