@@ -342,33 +342,15 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
-STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps):
-- The reading must NOT over-weight tension, conflict, or dysfunction in this family. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point — drawn from the same chart evidence (bridge aspects in topBridges, shared placements, harmonious composite/pair-composite contacts, shared element or sect, supportive sibling synastry, easy ruler chains).
-- siblingPressurePoints MUST be balanced by an explicit strength sentence per child ("where this child contributes to the family", "what they bring that works"). 
-- whatEscalates MUST be paired with whatHelps — never leave the family with only "what's wrong".
-- childAdaptations entries: each child's "line" MUST include at least one observable strength this child brings (energy, leadership, attunement, humor, problem-solving, steadiness, creativity) tied to a named placement, alongside the adaptation pattern.
-- Examples of required pairing: instead of only "siblings escalate each other" → also "they share [named bridge aspect] and can co-regulate through play or movement"; instead of only "household runs hot under pressure" → also "the same fire energy gives the family momentum, recovery speed, and warmth on good days".
-- FORBIDDEN overall tone: that the family is dysfunctional, that no one understands each other, that everything is conflict-based, that the household is broken. 
-- REQUIRED overall tone: "this is complicated, AND here is what is genuinely working, AND here is what to build on" — the parent must finish the reading able to name both the friction AND the working ground.
-- If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridges (a single sibling trine, a shared Moon element across two members, a parent-child Venus/Jupiter contact, a supportive composite Sun) and name them as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
-
-NATURAL STRENGTHS — FULL COVERAGE REQUIRED (applies to whatAlreadyWorks field):
-- This section MUST include EVERY primary pair in the family — every parent↔child pair AND every sibling↔sibling pair. NO PAIR MAY BE OMITTED for any reason. Omission reads as "there is no connection here" and is unacceptable.
-- If 2 parents and 3 children → 6 parent-child pairs + 3 sibling pairs = 9 entries minimum. If 1 parent and 3 children → 3 + 3 = 6 entries. Count the pairs and confirm every one appears before returning.
-- For EACH pair, find the strongest available connective evidence in this order and use whichever exists:
-    1. Tight (≤4°) bridge aspect between personal planets (Sun, Moon, Mercury, Venus, Mars) — cite it.
-    2. Wider (5–8°) bridge aspect between personal planets — cite as "wider contact".
-    3. Tight bridge involving social/outer planets (Jupiter, Saturn, Chiron) to a personal planet — cite it.
-    4. Shared element, shared modality, shared sect, or shared Moon/Sun sign — cite it.
-    5. Pair composite tone (composite Sun/Moon/Venus/Jupiter sign or element) — cite it.
-    6. Easy ruler chain (one person's chart ruler well-placed relative to the other) — cite it.
-- If a pair has NONE of the above, state honestly: "Few direct contacts here. The connection runs quieter, with less automatic pull in either direction — it shows up through proximity and shared family rhythm rather than instant resonance." Then still list the pair. Never skip.
-- Every entry MUST be range-based (per ASPECT EXPRESSION RANGE RULE). No guaranteed positives.
-- FORBIDDEN: vague positivity ("loving family", "caring household"). Each line must cite a specific placement, aspect, shared signature, or honest "few contacts" note.
-- The user must read this section and see EVERY relationship named. No parent, no child, no sibling pair left out.
+PAIR COVERAGE RULE (HARD):
+- Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
+- Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
+- EVERY child must appear in every relevant pair block. Ben must never be skipped when Ben is in the family members list.
+- If a pair is difficult, quiet, sparse, or hard to summarize, still write the full pair block. Never omit the pair.
+- Count the expected pairs before returning: parents × children, plus every sibling combination.
 
 
-ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, whatAlreadyWorks, parentChildConnections.composite/bridge/friction, siblingConnections.composite/bridge/friction, childAdaptations.line, whatEscalates.body):
+ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, parentChildConnections.dynamic, siblingConnections.dynamic, whatEscalates.body):
 - Do NOT present any aspect, composite, or shared placement as a guaranteed positive OR negative outcome. Every aspect is a RANGE of expression, never a fixed result.
 - HARD STOP: every sentence that references an aspect, composite, or placement-driven dynamic MUST contain a range marker. Acceptable range markers include: "can show up as ... but can also ...", "may ... though it can also ...", "tends to ... but doesn't always ...", "at its best ... at its hardest ...", "on a good day ... on a hard day ...", "sometimes ... and other times ...".
 - FORBIDDEN phrasings (assume one fixed outcome): "they connect through X", "this creates warmth", "this brings harmony", "this child feels seen", "this gives the family ease", "they have productive conversations", "they clash", "this is where it goes wrong", "this damages the bond".
