@@ -403,6 +403,25 @@ Examples:
   RIGHT: "He pushes back because stopping feels like losing momentum and control, and momentum is how he regulates."
 BANNED: any description that ends at the feeling or the behavior with no "because" / "so that" / "in order to" clause naming the child's internal choice. If a sentence describes a reaction without naming the purpose behind it, REWRITE. The parent must finish reading thinking "that makes sense why they do that," not just "that is what they do."
 
+WHAT THIS CHILD NEEDS FROM YOU RULE (applies to whatThisChildNeedsFromYou field — Layer 3 parent-alignment recognition):
+This section is RECOGNITION, not instruction. It translates the child's wiring into the kind of parent this specific child needs the user to be. The parent must read it and think "this fits MY child," not "this is parenting advice."
+SHAPE: opener is exactly "This child needs a parent who...". lines is EXACTLY 3 entries (optional 4th only when a specific named friction like Chiron contact, retrograde Mercury, or Moon-Pluto demands it, tagged "specificFriction"). Each line ≤ 14 words, verb-first, completing the opener (e.g. "does not force clarity before they are ready").
+SLOT REQUIREMENTS — one line per tiedTo slot, in this order:
+  1) tiedTo: "processing" → translate childMechanism.corePattern into ONE quality the parent must embody so the child's internal processing can complete (e.g. "does not force clarity before they are ready").
+  2) tiedTo: "stuckPoint" → translate childMechanism.theConflict into ONE quality that prevents the parent from misreading the stuck moment (e.g. "understands that silence does not mean nothing is wrong").
+  3) tiedTo: "pressure" → translate childMechanism.underStress into ONE quality that keeps the parent steady when the child amplifies (e.g. "stays steady when their volume rises instead of matching it").
+HARD RULES:
+- Mechanism mapping is mandatory. Each line must map to a specific element of childMechanism (a corePattern entry, theConflict, or underStress). If you cannot point to the source element, REWRITE.
+- "Because otherwise what happens?" test: each line must implicitly answer this. If removing the line costs the parent nothing specific to THIS child, REWRITE.
+- Genericity test (HARD): strip the child's chart context and re-read the 3 lines. If they still work for any child, the section is INVALID.
+- Recognition, not instruction. BANNED openings/phrases: "do this", "try", "make sure to", "remember to", "ask", "use", "give", "provide", numbered steps, scripts, "tips".
+- BANNED therapy language: "hold space", "attune", "co-regulate", "honor their feelings", "validate their inner world", "meet them where they are", "create a safe container", "be present with".
+- BANNED generic parenting advice: "be patient", "listen actively", "set clear boundaries", "be consistent", "stay calm", "model the behavior", "lead by example".
+- No "because" clauses in the line itself. The mechanism is upstream; these are recognition lines, not explanations.
+
+DEPENDENCY GATE (CRITICAL — whatThisChildNeedsFromYou is GATED on a valid childMechanism):
+Generation order: produce childMechanism FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means", "this creates")? If BOTH are present → emit the 3 mechanism-mapped lines. If EITHER is missing → emit whatThisChildNeedsFromYou: null. Do NOT fall back to generic parenting language. A null section is correct behavior when the mechanism is weak; a generic section is INVALID OUTPUT.
+
 STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
 - The reading must NOT over-weight tension, conflict, or dysfunction. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point between this parent and child — drawn from the same chart evidence (bridge aspects, shared element, supportive synastry, easy ruler chains, harmonious Moon/Venus/Jupiter contacts, shared sect, shared mode).
 - pressureProfile MUST be paired with repairProfile or with a working-dynamic line. Never present pressure without a corresponding strength.
