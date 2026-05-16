@@ -3025,7 +3025,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask any custom question about the chart..."
+              placeholder={activeChartId === "general"
+                ? "What's going on? e.g. 'I was driving to dinner and suddenly felt I had to turn around.' Leave blank to just read today's sky."
+                : "Ask any custom question about the chart..."}
               className="min-h-[60px] resize-none"
               disabled={isLoading}
             />
@@ -3042,7 +3044,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!input.trim()}
+                disabled={activeChartId === "general" ? false : !input.trim()}
                 className="shrink-0"
                 size="icon"
               >
@@ -3051,9 +3053,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             )}
           </div>
 
-          {!selectedChart && (
+          {activeChartId !== "general" && !selectedChart && (
             <p className="text-xs text-destructive">
-              No chart selected. Add a chart in the Charts tab for personalized answers.
+              No chart selected. Add a chart in the Charts tab, or choose <span className="font-medium">General</span> above to ask without a chart.
             </p>
           )}
         </CardContent>
