@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-05-08-v32-no-natal-references-hard-whitelist";
+    const PROMPT_VERSION = "2026-05-16-v33-full-date-opening";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -355,13 +355,28 @@ PRACTICAL VOC GUIDANCE: During VOC, avoid starting new projects, making major pu
     // Get the greeting from the request (falls back to generic if not provided)
     const greeting = reqGreeting || 'Hello';
     const timeOfDay = reqTimeOfDay || 'day';
+
+    // Derive the actual day-of-week and full date string from the incoming `date`
+    // (formatted like "Saturday, May 16, 2026"). NEVER let the AI guess the day.
+    let todayDayName = '';
+    let todayFullDate = '';
+    if (dateMatch) {
+      todayDayName = dateMatch[1];
+      todayFullDate = `${dateMatch[1]}, ${dateMatch[2]} ${dateMatch[3]}, ${dateMatch[4]}`;
+    } else if (typeof date === 'string') {
+      todayFullDate = date;
+    }
+    const openingLine = todayFullDate
+      ? `${greeting}! Today is ${todayFullDate} and the Moon is in [sign] all day.`
+      : `${greeting}! Today is [day] and the Moon is in [sign] all day.`;
     
     const voicePrompts: Record<string, string> = {
       // TARA VOGEL - Luminary Parenting style: warm, conversational, always looking ahead
       tara: `You are Tara Vogel from Luminary Parenting. Your style is WARM, conversational, and grounded - like talking to a friend over coffee who happens to know astrology really well. You always talk about what's COMING UP.
 
 VOICE PRINCIPLES (Tara Vogel Style):
-- Be warm and conversational - Start with "${greeting}! Today is [day] and the Moon is in [sign] all day."
+- Be warm and conversational - Start with EXACTLY this opening line, filling in only the moon sign: "${openingLine}"
+- CRITICAL DATE FACT: Today is ${todayFullDate || '[unknown]'}. The day of the week is ${todayDayName || '[unknown]'}. NEVER use any other day name. NEVER abbreviate the date. Always say the full date once at the opening.
 - IMPORTANT: Use the greeting "${greeting}" - this is based on the user's LOCAL time (${timeOfDay})
 - State what the planets are doing simply, then explain what that MEANS for daily life
 - ALWAYS talk about what's coming - mention specific times when you have them
@@ -390,7 +405,7 @@ When Mercury IS about to enter or has just entered Pisces (verify from positions
 - "Trust your felt sense of something - Mercury in Pisces is less about facts and more about intuition"
 
 TARA'S GENERAL PHRASING (from her real broadcasts):
-- "${greeting}! Today is [day] and the Moon is in [sign] all day"
+- "${openingLine}"
 - "So it's a creative day and it's a good day to spend one-on-one time with someone"
 - "Other people can just be on our mind today"
 - "The medicine for today is creating anything"
