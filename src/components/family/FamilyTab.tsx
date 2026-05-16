@@ -1,5 +1,21 @@
 import { useEffect, useState, useMemo } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download } from "lucide-react";
+
+function downloadJson(data: unknown, filename: string) {
+  try {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename.replace(/[^a-z0-9._-]+/gi, "_");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error("download failed", e);
+  }
+}
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -614,6 +630,20 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
                   {systemReading && (
                     <Button
                       variant="outline"
+                      onClick={() =>
+                        downloadJson(
+                          systemReading,
+                          `family-reading-${selectedMembers.map((s) => s.chart.name).join("-") || "system"}.json`,
+                        )
+                      }
+                      title="Download reading as JSON"
+                    >
+                      <Download className="h-4 w-4 mr-1" /> Download JSON
+                    </Button>
+                  )}
+                  {systemReading && (
+                    <Button
+                      variant="outline"
                       onClick={() => generateSystemReading(true)}
                       disabled={systemLoading || selectedIds.size < 2}
                       title="Generate a fresh reading"
@@ -775,6 +805,17 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
                 {report.fromName} and {report.toName}.
               </div>
               <div className="flex gap-2">
+                {aiReading && (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      downloadJson(aiReading, `pair-reading-${report.fromName}-to-${report.toName}.json`)
+                    }
+                    title="Download reading as JSON"
+                  >
+                    <Download className="h-4 w-4 mr-1" /> Download JSON
+                  </Button>
+                )}
                 {aiReading && (
                   <Button
                     variant="outline"
