@@ -397,27 +397,31 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 - REPLACEMENT pattern (apply every time you would have written a prescription): "Do this → then do this" REWRITE AS "This family tends to function better when ___" or "Things tend to go more smoothly when ___" or "Reconnection tends to happen when ___".
 - If a sentence could appear in a parenting manual as advice, REWRITE it as an observation about this specific family's pattern. If you cannot rewrite it observationally, DELETE it.
 
-PAIR ULTRA-COMPACT FORMAT — HARD LOCK (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
-- Every `dynamic` field MUST follow EXACTLY this format, no deviation, no extra lines, no markdown, no bullets. Use these literal labels separated by newlines (\n):
-    Shared Pattern: <ONE short line, MAX 12 words. Names the underlying pattern. NO verdicts.>
+PAIR ULTRA-COMPACT FORMAT — NON-NEGOTIABLE CONTRACT (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
+- Every `dynamic` field MUST follow EXACTLY this format. No deviation. No extra lines. No markdown. No bullets. Use these literal labels separated by newlines (\n):
+    Shared Pattern: <ONE line, MAX 10 words. No explanation. No verdict.>
     How this can show up:
-    At its best: <ONE short sentence, MAX 12 words. Observable behavior only.>
-    More commonly: <ONE short sentence, MAX 12 words. Observable behavior only.>
-    Under stress: <ONE short sentence, MAX 12 words. Observable behavior only.>
-    Where connection can happen: <ONE short line, MAX 12 words. Conditional ("can", "may", "when…"). Never guaranteed.>
-- HARD LIMITS (NO EXCEPTIONS):
-    • No sentence longer than 12 words. Count them.
-    • No paragraph format. One line per label. Period.
-    • No extra lines, no extra labels, no preamble, no closing line.
-    • No explanations, no examples, no reasoning chains, no "because…".
-    • No filler phrases.
-- FORBIDDEN WORDING anywhere in the block: "this can sometimes show up as", "this dynamic often", "tends to revolve around", "in real life", "because of ___ this means ___", "they bond over", "they connect through", "this creates closeness", "they always", "they naturally". Any explanatory language → REWRITE.
-- The three expression levels (At its best / More commonly / Under stress) MUST be observably DIFFERENT. If two could be swapped, REWRITE.
-- "Where connection can happen" is CONDITIONAL. REQUIRED markers: "can", "may", "when…", "if…".
-- For SIBLINGS: do NOT assume bonding. "Where connection can happen" must acknowledge shared activity can connect OR escalate (e.g. "Shared play can connect them when both are regulated.").
-- For SIBLINGS: each pair block MUST be distinct from every other sibling pair. If names could be swapped between two blocks and read true, REWRITE.
-- STYLE: direct, blunt, simple, observable behavior only. Snapshot, not report.
-- FAIL CONDITION: if output exceeds limits OR adds explanation → reject the entire `dynamic` field and regenerate before returning.
+    At its best: <ONE sentence, MAX 12 words. Observable behavior only.>
+    More commonly: <ONE sentence, MAX 12 words. Observable behavior only.>
+    Under stress: <ONE sentence, MAX 12 words. Observable behavior only.>
+    Where connection can happen: <ONE line, MAX 10 words. Conditional ("can", "may", "when…").>
+- HARD RULES (any violation = AUTO-REJECT the dynamic field, regenerate before returning):
+    • NO paragraphs. NO explanations. NO examples. NO stories. NO reasoning chains.
+    • NO astrology terms anywhere (no sign names, planet names, aspect words, house numbers, element words).
+    • NO extra sections or lines beyond the six labels above.
+    • Any sentence over its word limit → REWRITE.
+    • Missing any of the three levels (At its best / More commonly / Under stress) → REWRITE.
+- FORBIDDEN PHRASES anywhere in the block: "this tends to", "this dynamic", "this can sometimes show up as", "tends to revolve around", "in real life", "because of ___ this means ___", "they bond over", "they connect through", "this creates closeness", "they always", "they naturally". Any explanatory language → REWRITE.
+- The three expression levels MUST be observably DIFFERENT. If two could be swapped, REWRITE.
+- "Where connection can happen" is CONDITIONAL. REQUIRED markers: "can", "may", "when…", "if…". Never guaranteed.
+- For SIBLINGS: do NOT assume bonding. "Where connection can happen" must acknowledge shared activity can connect OR escalate.
+
+CHILD DIFFERENTIATION CONTRACT — HARD LOCK (applies across ALL children in both parentChildConnections and siblingConnections):
+- Each child MUST differ from every other child on at least these axes: SPEED (fast vs slow), EXPRESSION (internal vs external), REACTION (push vs withdraw).
+- Before returning, compare every child's behavioral descriptions across all pair blocks. If any two children share the same behavior, the same verbs, or interchangeable descriptions → REGENERATE the duplicate blocks until each child is unmistakably distinct.
+- No two pair blocks (parent-child OR sibling) may contain duplicate behavioral descriptions. Name-swap test: if swapping names leaves the lines still true, REWRITE.
+
+GOAL: Snapshot, not report. Instantly recognizable. Not explained. Not taught. Not advised. FAIL CONDITION: any sentence over limit, any paragraph, any missing level, any repeated behavior, any astrology language, any explanatory phrase → reject and regenerate.
 
 PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
 - The `dynamic` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
