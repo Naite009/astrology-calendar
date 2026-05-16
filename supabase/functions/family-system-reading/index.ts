@@ -414,6 +414,21 @@ Examples of the required shape:
   - RIGHT: "Ben feels things deeply but does not show it directly, which can come out as distance or sharp responses — and then he is frustrated that no one noticed what he never actually said."
 Banned moves: zodiac shorthand ("Libra = fair", "Aries = fast"), single-clause personality labels, surface compliments with no friction, type-style summaries. Every person must read as a specific, layered, slightly uncomfortable-because-true human — never a category. If a sentence describes a person and contains no internal contradiction, rewrite it before emitting.
 
+MECHANISM-FIRST DESCRIPTION RULE (applies to EVERY field that describes a child — atAGlance.line, parentChildConnections.dynamic, siblingConnections.dynamic, whatEscalates.body, and any other child-facing description anywhere in the output):
+Every child-description sentence MUST follow internal-process → behavior order, not behavior → description. The childMechanisms entry you produced first for each child is the source of truth; every later description of that child must echo that same mechanism.
+Required shape, every time:
+  (1) what happens FIRST internally (the mechanism — feeling lands, system scans, body braces, logic engages)
+  (2) WHY that creates the behavior (the gap, the timing mismatch, the wiring)
+  (3) what the parent or sibling EXPERIENCES because of that (the silence, the loud reaction, the cold answer, the shut door)
+Examples:
+  WRONG: "Ben senses the emotional tone but says nothing."
+  RIGHT: "Ben feels the emotional tone immediately, but the feeling isn't organized into words yet, so when you ask he says 'nothing'."
+  WRONG: "Max needs to be seen and gets loud."
+  RIGHT: "Max expresses quickly to be seen, but becomes sensitive to how he is received, so if he feels ignored or corrected he gets louder."
+  WRONG: "Ike acts quickly and gets frustrated when told to wait."
+  RIGHT: "Ike moves on impulse and regulates through action, so being stopped feels like pressure, which makes him push harder."
+BANNED openings for child-description sentences: "He is…", "She tends to…", "This child can be…", "[Name] often…", any sentence that starts with a trait or behavior. Start with the internal process, then the consequence. If a sentence describes a child's behavior without naming the internal process that produced it, REWRITE before emitting. The parent must finish each section thinking "this is WHY my child does this," not just "this is WHAT my child does."
+
 PAIR COVERAGE RULE (HARD):
 - Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
 - Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
