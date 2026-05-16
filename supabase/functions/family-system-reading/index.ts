@@ -570,6 +570,8 @@ CHILD DIFFERENTIATION CONTRACT — HARD LOCK:
 - Each child MUST differ on at least: SPEED (fast/slow), EXPRESSION (internal/external), REACTION (push/withdraw).
 - Name-swap test: if swapping names leaves the lines still true across two children, REWRITE.
 - No two pair blocks may share the same verbs or interchangeable descriptions.
+- Repeated parent phrases are forbidden across pair blocks: "needs time to think", "gets quiet", "feels pressured", "pressure builds", "pulls back", "shuts down". Use them once at most, only if the specific pair evidence requires it.
+- Build a private verb bank before writing: each child gets different action verbs. Ben, Max, and Ike cannot all "pull back", "push", "shut down", or "get louder".
 
 GOAL: Clean. Recognizable. Plain. Not explained. Not taught. Not advised.
 
