@@ -87,7 +87,7 @@ One honest paragraph weaving the Moon status + the tightest aspects + anything r
 End there. No closing summary. No meta sentences.`;
 
     const situationBlock = body.userSituation && body.userSituation.trim()
-      ? `\n\nWHAT THE PERSON IS EXPERIENCING (answer this directly in The Headline and Why Today Might Feel Off):\n"${body.userSituation.trim()}"\n`
+      ? `\n\nWHAT THE PERSON IS EXPERIENCING (answer this directly in the opening paragraph and in Why Today Might Feel Off):\n"${body.userSituation.trim()}"\n`
       : "";
 
     const userPrompt = `Date and time: ${body.dateLabel}
