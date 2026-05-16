@@ -618,7 +618,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const phase = (positions as any).moonPhase || { name: 'Unknown', illumination: 0 };
 
       // Sky-to-sky tightest aspects right now
-      const dailyAspects = calculateDailyAspects(now)
+      const dailyAspects = calculateDailyAspects(positions)
         .sort((a: any, b: any) => parseFloat(a.orb) - parseFloat(b.orb))
         .slice(0, 5)
         .map((a: any) => ({
