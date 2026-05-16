@@ -217,8 +217,10 @@ Deno.serve(async (req) => {
     let body: RequestBody;
     try {
       const raw = await req.text();
+      console.log("[family-system-reading] body length:", raw?.length ?? 0, "method:", req.method);
       body = raw ? (JSON.parse(raw) as RequestBody) : ({} as RequestBody);
-    } catch (_e) {
+    } catch (e) {
+      console.error("[family-system-reading] JSON parse failed:", e);
       return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
