@@ -2620,6 +2620,44 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   return (
     <div className="space-y-6">
+      {/* Standalone Cosmic Weather — no natal chart needed */}
+      <Card className="border-amber-300/40 bg-amber-50/30">
+        <CardHeader className="pb-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+              <CloudSun className="h-5 w-5 text-amber-700" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-lg">Today's Cosmic Weather (General)</CardTitle>
+              <CardDescription>
+                No chart needed. Use this when you (or a friend) just feel "off" and want to know what the sky is actually doing right now. Optionally describe what happened, like "driving to dinner, sudden dread, turned around," and the reading will speak to it directly using the live Moon, Void-of-Course windows, tightest aspects, and any fixed-star contacts overhead.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={skyTodaySituation}
+            onChange={(e) => setSkyTodaySituation(e.target.value)}
+            placeholder="Optional: what just happened or how do you feel? (e.g. 'going out to dinner, suddenly turned around to come home')"
+            rows={3}
+            disabled={skyTodayLoading}
+          />
+          <Button
+            onClick={() => handleSkyToday(skyTodaySituation)}
+            disabled={skyTodayLoading}
+            className="w-full sm:w-auto"
+          >
+            {skyTodayLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CloudSun className="h-4 w-4 mr-2" />
+            )}
+            Read the Sky Right Now
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
