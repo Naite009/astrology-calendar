@@ -2635,21 +2635,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSkyToday}
-                disabled={skyTodayLoading}
-                className="mr-2"
-                title="Read the live sky right now — no natal chart required. Use when a friend calls asking why she suddenly feels off."
-              >
-                {skyTodayLoading ? (
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                ) : (
-                  <CloudSun className="h-4 w-4 mr-1" />
-                )}
-                Today's Cosmic Weather
-              </Button>
+              {/* Cosmic Weather moved to its own standalone card above */}
               {canDownload && (
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1">
