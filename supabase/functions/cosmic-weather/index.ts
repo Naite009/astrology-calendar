@@ -405,7 +405,7 @@ When Mercury IS about to enter or has just entered Pisces (verify from positions
 - "Trust your felt sense of something - Mercury in Pisces is less about facts and more about intuition"
 
 TARA'S GENERAL PHRASING (from her real broadcasts):
-- "${greeting}! Today is [day] and the Moon is in [sign] all day"
+- "${openingLine}"
 - "So it's a creative day and it's a good day to spend one-on-one time with someone"
 - "Other people can just be on our mind today"
 - "The medicine for today is creating anything"
