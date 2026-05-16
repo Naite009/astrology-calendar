@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, mercuryEphemerisVerification, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde, vocMoonData, aspectMeaningsText, moonDispositorChain, events24h, events24hPrompt } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, mercuryEphemerisVerification, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde, vocMoonData, aspectMeaningsText, moonDispositorChain, events24h, events24hPrompt, personalChartContext, recipientName } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, forceRegenerate, userTimezone, userTzAbbr, mercuryRetrogradeInfo, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -973,10 +973,35 @@ CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
 6. **NEVER override provided data** - The user's natal chart has been calculated precisely. Trust the data given, do not recalculate.
 ` : '';
 
+    // When the caller passes personalChartContext, this reading IS personalized for a
+    // specific person. Override the collective-only natal lockout from the base system
+    // prompt and instruct the model to weave the person's chart into every section.
+    const personalContextAddendum = personalChartContext ? `
+
+================ PERSONALIZED READING MODE ================
+The reader for THIS reading is ${recipientName || 'the user'}. Their full natal chart is provided in the user message under "PERSONAL CHART CONTEXT".
+
+OVERRIDE: The earlier "NEVER REFERENCE THE READER'S NATAL CHART" rule does NOT apply to this reading. You DO have their chart. You ARE expected to reference it. You MUST personalize every section.
+
+HOW TO PERSONALIZE (non-negotiable):
+- Replace "people may feel...", "we...", "society..." framing with "you...", "${recipientName || 'you'}...".
+- For each section of the reading, name AT LEAST ONE specific contact between today's sky and their natal chart: which house the transiting Moon is in for THEM, which natal planet today's tightest aspect is hitting, which natal house the New/Full Moon falls in for THEM, etc.
+- Use the [HOUSE X] tags exactly as given. Do not infer houses from signs.
+- Use exact degrees and minutes from their chart.
+- "What to Focus On" must list 3-5 items that reference THEIR specific placements or transit-to-natal contacts, not generic collective advice.
+- "Planetary Day Practice" must tie the day's ruler to a real placement in their chart (e.g. "Saturday is ruled by Saturn — your natal Saturn is at X° Y in your Zth house, so today's discipline lands on...").
+- Do NOT pad with generic horoscope filler. If a transit isn't actually hitting their chart tightly, say "nothing major hitting your chart from this right now" rather than inventing contact.
+================ END PERSONALIZED MODE ================
+` : '';
+
     // Master pre-calculated 24h event timeline. The AI is forbidden to use any
     // time not present in this block.
     const events24hBlock = events24hPrompt
       ? `\n\n========================================\n${events24hPrompt}\n========================================\n`
+      : '';
+
+    const personalContextBlock = personalChartContext
+      ? `\n\n================ PERSONAL CHART CONTEXT (use this to personalize every section) ================\n${personalChartContext}\n================ END PERSONAL CHART CONTEXT ================\n`
       : '';
 
     // Use custom prompt if provided, otherwise use the default daily prompt
@@ -985,7 +1010,7 @@ ${events24hBlock}
 ${planetText}
 ${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
 CRITICAL: The day of the week is "${date?.split(',')[0]?.trim() || 'unknown'}". Use this EXACT day name throughout your response — in greetings, Planetary Day Practice, and everywhere else.
-${events24hBlock}
+${personalContextBlock}${events24hBlock}
 
 ${bodyTerminologyRule}
 
@@ -1049,7 +1074,7 @@ CRITICAL INSTRUCTIONS:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt + personalizedSystemAddendum + refBlock },
+          { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
           { role: "user", content: userPrompt },
         ],
       }),
@@ -1244,7 +1269,7 @@ CRITICAL INSTRUCTIONS:
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
-              { role: "system", content: systemPrompt + personalizedSystemAddendum + refBlock },
+              { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
               { role: "user", content: userPrompt + correctionInstruction },
             ],
           }),
