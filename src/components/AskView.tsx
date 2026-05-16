@@ -2312,7 +2312,118 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
-  const handleSubmit = () => handleSubmitDirect();
+  const handleGeneralSubmit = async (question: string) => {
+    if (!question.trim() && !skyTodayLoading) {
+      // allow empty → just read sky
+    }
+    if (skyTodayLoading) return;
+    const q = question.trim();
+    // Archive any previous thread and start fresh so only this Q+A shows.
+    if (entries.some(e => e.role === "assistant") && selectedChart) {
+      upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "General");
+    }
+    const userEntry: ChatEntry = { role: "user", content: q || "Read today's sky right now." };
+    setEntries([userEntry]);
+    setInput("");
+    setSkyTodayLoading(true);
+    setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    try {
+      const now = new Date();
+      const positions = getPlanetaryPositions(now);
+      const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const glyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const PLANET_BODIES: Record<string, any> = {
+        mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
+        jupiter: Astronomy.Body.Jupiter, saturn: Astronomy.Body.Saturn, uranus: Astronomy.Body.Uranus,
+        neptune: Astronomy.Body.Neptune, pluto: Astronomy.Body.Pluto,
+      };
+      const transitingPlanets: Array<{ name: string; sign: string; degree: number; retrograde?: boolean }> = [];
+      const planetAbsLon: Record<string, number> = {};
+      const planetOrder = ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+      planetOrder.forEach((k) => {
+        const v: any = (positions as any)[k];
+        if (!v) return;
+        const sign = v.signName || glyphMap[v.sign] || v.sign || 'Unknown';
+        const deg = typeof v.degree === 'number' ? v.degree : 0;
+        const min = typeof v.minutes === 'number' ? v.minutes : 0;
+        let retro = false;
+        const body = PLANET_BODIES[k];
+        if (body) { try { retro = isPlanetRetrograde(body, now); } catch {} }
+        transitingPlanets.push({
+          name: k.charAt(0).toUpperCase() + k.slice(1),
+          sign, degree: parseFloat((deg + min / 60).toFixed(2)), retrograde: retro,
+        });
+        const idx = ZODIAC.indexOf(sign);
+        if (idx >= 0) planetAbsLon[k.charAt(0).toUpperCase() + k.slice(1)] = (idx * 30 + deg + min / 60) % 360;
+      });
+      const voc = getVOCMoonDetails(now);
+      const moon = positions.moon;
+      const moonSign = moon?.signName || glyphMap[moon?.sign] || moon?.sign || 'Unknown';
+      const phase = (positions as any).moonPhase || { name: 'Unknown', illumination: 0 };
+      const dailyAspects = calculateDailyAspects(positions)
+        .sort((a: any, b: any) => parseFloat(a.orb) - parseFloat(b.orb))
+        .slice(0, 5)
+        .map((a: any) => ({ p1: a.planet1, aspect: a.aspect, p2: a.planet2, orb: parseFloat(a.orb), applying: a.applying }));
+      const yearsSinceJ2000 = (now.getFullYear() - 2000) + 0.5;
+      const precession = (yearsSinceJ2000 * 50.29) / 3600;
+      const notableFixedStars: Array<{ star: string; conjunctPlanet: string; orb: number; meaning: string }> = [];
+      for (const star of FIXED_STARS) {
+        const sLon = (star.j2000Lon + precession) % 360;
+        for (const [planet, pLon] of Object.entries(planetAbsLon)) {
+          let diff = Math.abs(sLon - pLon);
+          if (diff > 180) diff = 360 - diff;
+          if (diff <= 1.0) notableFixedStars.push({ star: star.name, conjunctPlanet: planet, orb: parseFloat(diff.toFixed(2)), meaning: star.theme });
+        }
+      }
+      const payload = {
+        userSituation: q || undefined,
+        dateLabel: now.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+        transitingPlanets,
+        moon: {
+          sign: moonSign, phase: phase.name || 'Unknown',
+          illumination: typeof phase.illumination === 'number' ? Math.round(phase.illumination) : undefined,
+          isVOC: voc.isVOC, isCurrentlyVOC: voc.isCurrentlyVOC,
+          vocStart: voc.start ? voc.start.toISOString() : null,
+          vocEnd: voc.end ? voc.end.toISOString() : null,
+          moonEntersSign: voc.moonEntersSign || null,
+          lastAspect: voc.lastAspect ? { planet: voc.lastAspect.planet, aspect: voc.lastAspect.aspectName } : null,
+        },
+        dailyAspects, notableFixedStars,
+      };
+      const { data, error } = await supabase.functions.invoke('ask-sky-today', { body: payload });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const text = (data?.text || '').trim();
+      if (!text) throw new Error('Empty response');
+      setEntries([userEntry, { role: "assistant", content: text }]);
+    } catch (e: any) {
+      console.error('[handleGeneralSubmit]', e);
+      toast.error(e?.message || "Could not read the sky right now.");
+    } finally {
+      setSkyTodayLoading(false);
+      setIsLoading(false);
+      setLoadingStartedAt(null);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (activeChartId === "general") {
+      handleGeneralSubmit(input);
+      return;
+    }
+    // Auto-clear: starting a new question wipes the prior visible thread so
+    // only the new question + answer is shown. Old threads stay in History.
+    if (entries.some(e => e.role === "assistant")) {
+      if (selectedChart) {
+        upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "Unknown");
+      }
+      clearThreadId(activeChartId);
+      writeActiveJobId(activeChartId, null);
+      setEntries([]);
+    }
+    handleSubmitDirect();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
