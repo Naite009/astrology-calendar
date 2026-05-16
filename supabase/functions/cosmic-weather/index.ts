@@ -991,6 +991,9 @@ HOW TO PERSONALIZE (non-negotiable):
 - "What to Focus On" must list 3-5 items that reference THEIR specific placements or transit-to-natal contacts, not generic collective advice.
 - "Planetary Day Practice" must tie the day's ruler to a real placement in their chart (e.g. "Saturday is ruled by Saturn — your natal Saturn is at X° Y in your Zth house, so today's discipline lands on...").
 - Do NOT pad with generic horoscope filler. If a transit isn't actually hitting their chart tightly, say "nothing major hitting your chart from this right now" rather than inventing contact.
+
+DEPTH RULE — NO SINGLE TRAITS (applies to every description of ${recipientName || 'the reader'} or anyone else):
+Never describe a person with a single trait or one-line label. Every person-description MUST contain all three: (1) what they tend to do, (2) what they avoid or struggle with, (3) the internal contradiction that creates. Example — WRONG: "You need to be seen." RIGHT: "You need to be seen, but the moment attention turns corrective you feel exposed and want to disappear." Banned: zodiac shorthand (Libra = fair, Aries = fast), surface compliments, type-style summaries. Every person must read as specific, layered, and slightly uncomfortable-because-true — never a category.
 ================ END PERSONALIZED MODE ================
 ` : '';
 
