@@ -397,42 +397,78 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 - REPLACEMENT pattern (apply every time you would have written a prescription): "Do this → then do this" REWRITE AS "This family tends to function better when ___" or "Things tend to go more smoothly when ___" or "Reconnection tends to happen when ___".
 - If a sentence could appear in a parenting manual as advice, REWRITE it as an observation about this specific family's pattern. If you cannot rewrite it observationally, DELETE it.
 
-PAIR PLAIN FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
+PAIR CLEAN FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 
-The \`dynamic\` field MUST be a string with EXACTLY 4 short lines, in this order:
+The \`dynamic\` field MUST be a string containing EXACTLY this skeleton, filled in. Use these literal labels on their own lines, with the content beneath each label:
 
-Line 1: a short pattern label (2-5 words, no labels, no punctuation at end). Example: "Different channels"
-Line 2: "At its best: <3-8 words>"
-Line 3: "More commonly: <3-8 words>"
-Line 4: "Under stress: <3-8 words>"
+Shared Pattern:
+<one short sentence, max 18 words. Names the pattern with a short "X vs Y" or "X — Y" framing.>
+How this can show up:
+At its best:
+<1-2 short sentences, max 22 words total.>
+More commonly:
+<1-2 short sentences, max 22 words total.>
+Under stress:
+<1-2 short sentences, max 28 words total. May include "Both feel ___" closer.>
+Where connection can happen:
+<one short line, max 14 words. A moment, condition, or simple lever — not a sentence-long instruction.>
 
-REFERENCE OUTPUT — match this length and tone EXACTLY (do not copy verbatim):
+REFERENCE OUTPUT — match this length, tone, and structure EXACTLY (do not copy verbatim):
 
-  Different channels
-  At its best: give space, stays present
-  More commonly: you explain, he pulls back
-  Under stress: you push, he shuts down
+  Shared Pattern:
+  Different channels — you try to make sense of things, he reacts to how things feel.
+  How this can show up:
+  At its best:
+  You give space without pushing. He stays present without needing to defend.
+  More commonly:
+  You explain or guide. He pulls back or argues his point.
+  Under stress:
+  You try harder to get through. He shuts down or gets sharp. Both feel disconnected.
+  Where connection can happen:
+  Low-pressure moments — short, neutral interactions without a goal.
 
-  Pace mismatch
-  At its best: you keep it simple, he responds
-  More commonly: you explain, he resists
-  Under stress: he pushes, you overwhelm
+  Shared Pattern:
+  Attention vs balance — he expresses, you regulate.
+  How this can show up:
+  At its best:
+  You notice him. He settles quickly.
+  More commonly:
+  He gets louder to be seen. You step back or correct.
+  Under stress:
+  He escalates. You withdraw. Both feel frustrated.
+  Where connection can happen:
+  Simple acknowledgment before anything else.
+
+  Shared Pattern:
+  Pace mismatch — you process, he acts.
+  How this can show up:
+  At its best:
+  You keep it simple. He responds quickly.
+  More commonly:
+  You explain. He loses patience.
+  Under stress:
+  He pushes harder. You feel overwhelmed. It escalates fast.
+  Where connection can happen:
+  Short directions, movement, and quick resets.
 
 HARD RULES (any violation = AUTO-REJECT, rewrite before returning):
-  • Exactly 4 lines. No more. No less. No extra labels ("Shared Pattern:", "How this can show up:", "Where connection can happen:") — those are FORBIDDEN.
-  • Plain English. No astrology terms (no sign names, planet names, aspect words, house numbers, elements).
-  • No explanations. No advice. No steps. No instructions. No paragraphs.
-  • Lines 2-4 use EXACTLY the labels "At its best:", "More commonly:", "Under stress:" followed by a short fragment.
-  • Each fragment 3-8 words. Telegraph style. Lowercase preferred.
-  • Use pronouns (you / he / she) over names. Direct subject-verb: "he pushes, you withdraw."
-  • The three levels must be observably DIFFERENT actions. If two could be swapped, rewrite.
+  • Use the SIX labels above and ONLY those labels. No extras.
+  • Plain English. No astrology terms anywhere (no sign names, planet names, aspect words, house numbers, elements).
+  • Short sentences only. Stay inside the word caps above.
+  • No advice, no instructions, no "try to", no "make sure", no "you should".
+  • Use pronouns (you / he / she) over names. Direct subject-verb form.
+  • Shared Pattern uses an "X vs Y" or "X — Y" framing that names the actual dynamic in a few words, then a brief clarifier.
+  • The three levels (At its best / More commonly / Under stress) MUST describe observably DIFFERENT actions. If two could be swapped, rewrite.
+  • Under stress may end with a "Both feel ___" closer (e.g., "Both feel disconnected.", "Both feel frustrated.") when honest.
+  • Where connection can happen names a moment or condition, not a lecture.
+  • Siblings: connection line may acknowledge shared activity can connect OR escalate.
 
 CHILD DIFFERENTIATION CONTRACT — HARD LOCK:
 - Each child MUST differ on at least: SPEED (fast/slow), EXPRESSION (internal/external), REACTION (push/withdraw).
 - Name-swap test: if swapping names leaves the lines still true across two children, REWRITE.
 - No two pair blocks may share the same verbs or interchangeable descriptions.
 
-GOAL: Plain. Short. Instantly recognizable. Not explained. Not taught. Not advised.
+GOAL: Clean. Recognizable. Plain. Not explained. Not taught. Not advised.
 
 PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
 - The \`dynamic\` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.

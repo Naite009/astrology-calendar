@@ -108,50 +108,64 @@ export const VERDICT_PHRASE_RES: RegExp[] = [
   /\bthey clash\b/i,
 ];
 
-/** Plain 4-line pair format: pattern label + three observable levels. */
-const LEVEL_LABELS = ["At its best:", "More commonly:", "Under stress:"] as const;
-const FORBIDDEN_LABELS = [
-  "shared pattern:",
-  "how this can show up:",
-  "where connection can happen:",
-];
+/** Clean 6-label pair format: Shared Pattern + How this can show up + 3 levels + Where connection can happen. */
+const PAIR_LABELS_IN_ORDER = [
+  { label: "Shared Pattern:", maxWords: 20, hasContent: true },
+  { label: "How this can show up:", maxWords: 0, hasContent: false }, // header only
+  { label: "At its best:", maxWords: 25, hasContent: true },
+  { label: "More commonly:", maxWords: 25, hasContent: true },
+  { label: "Under stress:", maxWords: 32, hasContent: true },
+  { label: "Where connection can happen:", maxWords: 18, hasContent: true },
+] as const;
 
 export function validateTelegraphDynamic(text: string): string[] {
   const errors: string[] = [];
-  const rawLines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text.split(/\r?\n/).map((l) => l.trim());
 
-  // Forbidden labels
-  for (const f of FORBIDDEN_LABELS) {
-    if (rawLines.some((l) => l.toLowerCase().startsWith(f))) {
-      errors.push(`contains forbidden label "${f}"`);
+  // Find each label's line index in order.
+  let cursor = 0;
+  const indices: number[] = [];
+  for (const spec of PAIR_LABELS_IN_ORDER) {
+    const idx = lines.findIndex(
+      (l, i) => i >= cursor && l.toLowerCase().startsWith(spec.label.toLowerCase()),
+    );
+    if (idx === -1) {
+      errors.push(`missing label "${spec.label}"`);
+      indices.push(-1);
+      continue;
     }
+    indices.push(idx);
+    cursor = idx + 1;
   }
 
-  if (rawLines.length !== 4) {
-    errors.push(`must be exactly 4 lines, got ${rawLines.length}`);
-    return errors;
-  }
-
-  // Line 1: pattern label, 2-5 words, no level label
-  const pattern = rawLines[0];
-  if (LEVEL_LABELS.some((l) => pattern.toLowerCase().startsWith(l.toLowerCase()))) {
-    errors.push(`line 1 must be a pattern label, not a level line`);
-  } else {
-    const wc = pattern.split(/\s+/).filter(Boolean).length;
-    if (wc < 2 || wc > 5) errors.push(`line 1 pattern has ${wc} words (allowed 2-5): "${pattern}"`);
-  }
-
-  // Lines 2-4: exact labels in order
-  LEVEL_LABELS.forEach((label, i) => {
-    const line = rawLines[i + 1] ?? "";
-    if (!line.toLowerCase().startsWith(label.toLowerCase())) {
-      errors.push(`line ${i + 2} must start with "${label}", got "${line}"`);
+  // Word-count check for content labels.
+  PAIR_LABELS_IN_ORDER.forEach((spec, i) => {
+    if (!spec.hasContent) return;
+    const idx = indices[i];
+    if (idx === -1) return;
+    const afterInline = lines[idx].slice(spec.label.length).trim();
+    let value = afterInline;
+    if (!value) {
+      // Content is on subsequent lines until the next known label or blank gap end.
+      const collected: string[] = [];
+      const nextLabelIdx = indices.slice(i + 1).find((n) => n !== -1) ?? lines.length;
+      for (let j = idx + 1; j < nextLabelIdx; j++) {
+        const ln = lines[j];
+        if (!ln) {
+          if (collected.length) break;
+          continue;
+        }
+        collected.push(ln);
+      }
+      value = collected.join(" ").trim();
+    }
+    if (!value) {
+      errors.push(`"${spec.label}" has no content`);
       return;
     }
-    const value = line.slice(label.length).trim();
     const wc = value.split(/\s+/).filter(Boolean).length;
-    if (wc < 2 || wc > 10) {
-      errors.push(`"${label}" has ${wc} words (allowed 2-10): "${value}"`);
+    if (wc > spec.maxWords) {
+      errors.push(`"${spec.label}" has ${wc} words (max ${spec.maxWords}): "${value.slice(0, 80)}..."`);
     }
   });
 
