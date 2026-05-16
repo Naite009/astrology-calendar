@@ -93,26 +93,31 @@ Deno.test("sanitizeReadingPayload migrates legacy body in pair arrays", () => {
   assert(pc.composite.shared);
 });
 
-const VALID_IP = {
-  forA: "Lauren tends to lean toward fixing or steering, especially under stress.",
-  forB: "Ben can experience that as pressure on a hard day, or as care on a calmer one.",
-  why: "Lauren's Capricorn Moon meeting Ben's Pisces Moon — earth-water emotional style mismatch.",
-};
+const VALID_DYNAMIC = `Shared Pattern:
+Different channels — you explain, he reacts to tone.
+How this can show up:
+At its best:
+You give space without pushing. He stays present.
+More commonly:
+You explain or guide. He pulls back.
+Under stress:
+You try harder. He shuts down. Both feel disconnected.
+Where connection can happen:
+Low-pressure moments without a goal.`;
 
-Deno.test("validatePairShape passes on new role-aware object shape with interactionPattern", () => {
+Deno.test("validatePairShape passes on clean dynamic-only pair shape", () => {
   const ok = validatePairShape({
     parentChildConnections: [
       {
         parent: "Lauren",
         child: "Ben",
-        composite: {
-          shared: "Pair composite Sun in Capricorn — steady but heavy.",
-          feelsLikeForA: "Lauren may feel responsible for steering.",
-          feelsLikeForB: "Ben can experience that as pressure.",
-        },
+        dynamic: VALID_DYNAMIC,
+        composite: null,
         bridge: null,
-        friction: { aspect: "Lauren's Mars square Ben's Sun (2°)", forA: "Lauren may push.", forB: "Ben may pull away." },
-        interactionPattern: VALID_IP,
+        friction: null,
+        interactionPattern: null,
+        whatCanFeelHard: "",
+        whatHelps: "",
         note: null,
       },
     ],
@@ -122,7 +127,7 @@ Deno.test("validatePairShape passes on new role-aware object shape with interact
   assert(ok.ok);
 });
 
-Deno.test("validatePairShape fails when interactionPattern is missing", () => {
+Deno.test("validatePairShape fails when dynamic is missing", () => {
   const res = validatePairShape({
     parentChildConnections: [
       {
@@ -135,22 +140,25 @@ Deno.test("validatePairShape fails when interactionPattern is missing", () => {
     ],
   });
   assert(!res.ok);
-  assert(res.errors.some((e) => e.includes("interactionPattern missing")));
+  assert(res.errors.some((e) => e.includes("dynamic missing")));
 });
 
-Deno.test("validatePairShape flags identical interactionPattern forA/forB", () => {
+Deno.test("validatePairShape flags malformed dynamic text", () => {
   const res = validatePairShape({
     parentChildConnections: [
       {
         parent: "Lauren",
         child: "Ben",
-        composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
-        interactionPattern: { forA: "Same line.", forB: "Same line.", why: "ok" },
+        dynamic: "Shared Pattern:\nToo short",
+        composite: null,
+        bridge: null,
+        friction: null,
+        interactionPattern: null,
       },
     ],
   });
   assert(!res.ok);
-  assert(res.errors.some((e) => e.includes("interactionPattern forA and forB are identical")));
+  assert(res.errors.some((e) => e.includes("missing label")));
 });
 
 Deno.test("validatePairShape fails when composite is a plain string (legacy)", () => {
