@@ -377,6 +377,18 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+DEPTH RULE — NO SINGLE TRAITS (applies to every person described, including all family members):
+Never describe any person with a single trait, attribute, or one-line summary. Every person-description MUST contain all three of the following, woven into the sentence(s):
+  (1) What they tend to do (the visible behavior / pull)
+  (2) What they avoid, resist, or struggle with
+  (3) The internal contradiction or tension that (1) and (2) create
+Examples of the required shape:
+  - WRONG: "Max needs to be seen."
+  - RIGHT: "Max needs to be seen, but can feel exposed or criticized when attention turns corrective — so he keeps performing and then quietly resents the audience he asked for."
+  - WRONG: "Ben is emotional."
+  - RIGHT: "Ben feels things deeply but does not show it directly, which can come out as distance or sharp responses — and then he is frustrated that no one noticed what he never actually said."
+Banned moves: zodiac shorthand ("Libra = fair", "Aries = fast"), single-clause personality labels, surface compliments with no friction, type-style summaries. Every person must read as a specific, layered, slightly uncomfortable-because-true human — never a category. If a sentence describes a person and contains no internal contradiction, rewrite it before emitting.
+
 PAIR COVERAGE RULE (HARD):
 - Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
 - Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
