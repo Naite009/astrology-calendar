@@ -471,8 +471,8 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     }
   ],
   "whatAlreadyWorks": [
-    { "pair": "Name A + Name B", "aspect": string, "forA": string, "forB": string }
-    // Only pairs with a real ≤4° personal-planet bridge. [] if none.
+    { "pair": "Name A + Name B", "aspect": string (cite the strongest available evidence: tight personal-planet bridge, OR wider contact, OR shared element/sect, OR composite tone, OR "few direct contacts"), "forA": string (range-based, what this can look like for person A), "forB": string (range-based, what this can look like for person B) }
+    // REQUIRED: include EVERY parent↔child pair AND every sibling↔sibling pair. NEVER omit a pair. If no tight aspect, use wider contact / shared signature / composite / honest "few contacts" note — but still list the pair.
   ],
   "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ]
 }
