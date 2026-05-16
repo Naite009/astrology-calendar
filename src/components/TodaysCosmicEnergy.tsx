@@ -682,6 +682,84 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       });
       const events24hPrompt = eventsToPromptBlock(events24h);
 
+      // Build personalized chart context so the reading is FOR this person, not generic.
+      // Pass natal planet placements (with their actual house numbers from cusps), the
+      // current Moon's house in their chart, and the top transit-to-natal contacts.
+      let personalChartContext: string | undefined;
+      const chartForPersonal = selectedChart || userNatalChart || null;
+      if (chartForPersonal) {
+        try {
+          // Override Ascendant from houseCusps.house1 to avoid 180° flip bug
+          const correctedPlanets: any = { ...chartForPersonal.planets };
+          const h1 = chartForPersonal.houseCusps?.house1;
+          if (h1?.sign && correctedPlanets.Ascendant) {
+            correctedPlanets.Ascendant = { ...correctedPlanets.Ascendant, sign: h1.sign, degree: h1.degree, minutes: h1.minutes || 0 };
+          }
+          const natalPlanetsWithHouses = Object.entries(correctedPlanets)
+            .filter(([_, d]: any) => d?.sign && d?.degree !== undefined)
+            .map(([name, d]: any) => {
+              const h = name === 'Ascendant' ? 1 : getNatalPlanetHouse(name, chartForPersonal);
+              const houseLabel = h ? ` [HOUSE ${h}]` : '';
+              const deg = d.degree ?? 0;
+              const min = d.minutes ?? 0;
+              return `${name}: ${deg}°${min > 0 ? min.toString().padStart(2, '0') + "'" : ''} ${d.sign}${houseLabel}`;
+            })
+            .join('\n');
+
+          const natalHouseCusps = chartForPersonal.houseCusps
+            ? Object.entries(chartForPersonal.houseCusps)
+                .filter(([k]) => k.startsWith('house'))
+                .sort((a, b) => parseInt(a[0].replace('house','')) - parseInt(b[0].replace('house','')))
+                .map(([k, d]: any) => {
+                  const n = k.replace('house','');
+                  return `House ${n} cusp: ${d.degree}°${d.minutes ? d.minutes.toString().padStart(2,'0') + "'" : ''} ${d.sign}`;
+                }).join('\n')
+            : '';
+
+          const moonSignName = planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown';
+          const moonDeg = planets.moon?.degree ?? 0;
+          const moonHouseForUser = getTransitPlanetHouse(moonSignName, moonDeg, chartForPersonal);
+
+          // Top transit-to-natal contacts right now (tightest orbs to personal points first)
+          const allTransits = calculateTransitAspects(now, planetPositions as any, chartForPersonal);
+          const NATAL_PRIORITY: Record<string, number> = {
+            Sun: 100, Moon: 98, Ascendant: 95, MC: 90, IC: 85, Descendant: 80,
+            Mercury: 55, Venus: 55, Mars: 55, Jupiter: 40, Saturn: 40,
+            Uranus: 30, Neptune: 30, Pluto: 30,
+          };
+          const topTransits = [...allTransits]
+            .filter(t => parseFloat(t.orb) < 5)
+            .sort((a, b) => {
+              if (a.isExact && !b.isExact) return -1;
+              if (!a.isExact && b.isExact) return 1;
+              const np = (NATAL_PRIORITY[b.natalPlanet] || 10) - (NATAL_PRIORITY[a.natalPlanet] || 10);
+              if (np !== 0) return np;
+              return parseFloat(a.orb) - parseFloat(b.orb);
+            })
+            .slice(0, 10)
+            .map(t => {
+              const h = getNatalPlanetHouse(t.natalPlanet, chartForPersonal);
+              return `Transit ${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}${h ? ` (H${h})` : ''} — orb ${t.orb}°${t.isExact ? ' EXACT' : ''}`;
+            })
+            .join('\n');
+
+          personalChartContext = `RECIPIENT: ${chartForPersonal.name}
+
+THEIR NATAL CHART (use the [HOUSE X] tags exactly — do NOT infer house from sign):
+${natalPlanetsWithHouses}
+
+THEIR HOUSE CUSPS:
+${natalHouseCusps}
+
+TRANSITING MOON RIGHT NOW: ${moonDeg.toFixed(1)}° ${moonSignName}${moonHouseForUser ? ` — falls in THEIR ${moonHouseForUser}${moonHouseForUser === 1 ? 'st' : moonHouseForUser === 2 ? 'nd' : moonHouseForUser === 3 ? 'rd' : 'th'} house` : ''}
+
+TODAY'S TIGHTEST TRANSITS TO ${chartForPersonal.name.toUpperCase()}'S NATAL CHART:
+${topTransits || 'None within 5° orb right now. Say so honestly rather than invent contacts.'}`;
+        } catch (e) {
+          console.warn('[CosmicWeather] could not build personalChartContext', e);
+        }
+      }
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
@@ -691,6 +769,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           userTimezone,
           userTzAbbr,
           forceRegenerate: forceRefresh,
+          personalChartContext,
+          recipientName: chartForPersonal?.name,
           moonPhase: (() => {
             // Avoid labeling adjacent days as "New Moon"/"Full Moon" when the exact phase isn't today
             const exactPhaseToday = getExactLunarPhase(now);
