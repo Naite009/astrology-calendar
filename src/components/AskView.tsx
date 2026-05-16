@@ -2834,8 +2834,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <button className="w-full flex items-center justify-between gap-2 rounded-sm border border-border bg-card px-3 py-2.5 text-left hover:border-primary/40 transition-colors">
                   <div className="flex items-center gap-2 min-w-0">
                     {activeChartId === "user" && <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />}
-                    <span className="text-sm font-medium text-foreground truncate">{selectedChart?.name || "Select a chart"}</span>
-                    {selectedChart?.birthDate && (
+                    {activeChartId === "general" && <CloudSun className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />}
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {activeChartId === "general" ? "General — no chart, live sky only" : (selectedChart?.name || "Select a chart")}
+                    </span>
+                    {activeChartId !== "general" && selectedChart?.birthDate && (
                       <span className="text-xs text-muted-foreground flex-shrink-0">{displayBirthDate(selectedChart?.birthDate)}</span>
                     )}
                   </div>
