@@ -18,6 +18,13 @@ const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
   "pressurePoints",
   "bridges",
   "practice",
+  // Hard-removed in the final spec: no child-adaptation, no advice, no protocols.
+  "childAdaptations",
+  "whatHelpsWholeFamily",
+  "whatHelpsRationale",
+  "whatToAvoid",
+  "bestFamilyPractice",
+  "inTheMoment",
 ]);
 
 // `whatHelps` and `respondsBestWhen` are no longer forbidden as pair keys —
