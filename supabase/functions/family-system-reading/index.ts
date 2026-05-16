@@ -630,6 +630,20 @@ LENGTH & CLARITY — HARD LIMIT (applies to EVERY non-pair field):
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
 {
   "atAGlance": [ { "name": "MemberName", "line": string } ],
+  "childMechanisms": [
+    {
+      "name": "ChildName",
+      "corePattern": [
+        { "placement": string (e.g. "Cancer Moon"), "does": string (INTERNAL MECHANISM using verbs like processes, absorbs, scans, defends, regulates — never adjectives) }
+        // 2 entries normally, max 3 only if a third is genuinely driving the tension
+      ],
+      "theConflict": string (1-3 short sentences naming the structural mismatch using "feels like X but has to [verb] like Y" or "wants A but is wired for B"; must name what happens first vs later),
+      "inRealLife": string (2-3 sentences describing a specific parent-recognizable scene the parent has already lived; no abstract description),
+      "underStress": string (1-2 sentences showing BOTH placements amplifying at once — placement 1 louder AND placement 2 defending harder),
+      "whatThisIsNot": string (ONE short sentence only, 3-5 things it is NOT separated by commas, no explanation)
+    }
+    // EXACTLY one entry per child in the family. Each child's mechanism MUST differ from siblings on at least 2 axes (timing, processing style, reaction pattern). See MECHANISM DIFFERENTIATION RULE.
+  ],
   "parentRegulationCenter": [
     { "name": "ParentName", "body": string, "whatThisMeansInRealLife": string }
     // ONE entry per parent. body = range-based paragraph naming how this parent sets the tone AND how it breaks under stress. whatThisMeansInRealLife = ONE practical sentence.
