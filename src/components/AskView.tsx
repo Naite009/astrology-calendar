@@ -574,7 +574,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   // don't have her chart but what is the sky doing RIGHT NOW that could
   // explain it?" Uses only live sky data, no natal placements.
   const [skyTodayLoading, setSkyTodayLoading] = useState(false);
-  const handleSkyToday = useCallback(async () => {
+  const [skyTodaySituation, setSkyTodaySituation] = useState("");
+  const handleSkyToday = useCallback(async (userSituation?: string) => {
     if (skyTodayLoading) return;
     setSkyTodayLoading(true);
     try {
@@ -651,6 +652,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
 
       const payload = {
+        userSituation: userSituation?.trim() || undefined,
         dateLabel: now.toLocaleString('en-US', {
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
           hour: 'numeric', minute: '2-digit',
@@ -676,7 +678,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Show the user prompt immediately so it feels like a chat message.
       const userEntry: ChatEntry = {
         role: 'user',
-        content: `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
+        content: userSituation?.trim()
+          ? `🌤️ Today's Cosmic Weather — "${userSituation.trim()}" — ${payload.dateLabel}`
+          : `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
       };
       setEntries((prev) => [...prev, userEntry]);
 
@@ -2617,6 +2621,44 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   return (
     <div className="space-y-6">
+      {/* Standalone Cosmic Weather — no natal chart needed */}
+      <Card className="border-amber-300/40 bg-amber-50/30">
+        <CardHeader className="pb-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+              <CloudSun className="h-5 w-5 text-amber-700" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-lg">Today's Cosmic Weather (General)</CardTitle>
+              <CardDescription>
+                No chart needed. Use this when you (or a friend) just feel "off" and want to know what the sky is actually doing right now. Optionally describe what happened, like "driving to dinner, sudden dread, turned around," and the reading will speak to it directly using the live Moon, Void-of-Course windows, tightest aspects, and any fixed-star contacts overhead.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={skyTodaySituation}
+            onChange={(e) => setSkyTodaySituation(e.target.value)}
+            placeholder="Optional: what just happened or how do you feel? (e.g. 'going out to dinner, suddenly turned around to come home')"
+            rows={3}
+            disabled={skyTodayLoading}
+          />
+          <Button
+            onClick={() => handleSkyToday(skyTodaySituation)}
+            disabled={skyTodayLoading}
+            className="w-full sm:w-auto"
+          >
+            {skyTodayLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CloudSun className="h-4 w-4 mr-2" />
+            )}
+            Read the Sky Right Now
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -2632,21 +2674,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSkyToday}
-                disabled={skyTodayLoading}
-                className="mr-2"
-                title="Read the live sky right now — no natal chart required. Use when a friend calls asking why she suddenly feels off."
-              >
-                {skyTodayLoading ? (
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                ) : (
-                  <CloudSun className="h-4 w-4 mr-1" />
-                )}
-                Today's Cosmic Weather
-              </Button>
+              {/* Cosmic Weather moved to its own standalone card above */}
               {canDownload && (
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1">

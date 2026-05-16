@@ -15,6 +15,7 @@ const corsHeaders = {
 
 interface SkyBody {
   recipientLabel?: string;
+  userSituation?: string;
   dateLabel: string;
   transitingPlanets: Array<{ name: string; sign: string; degree: number; retrograde?: boolean }>;
   moon: {
@@ -86,8 +87,12 @@ One honest paragraph weaving the Moon status + the tightest aspects + anything r
 
 End there. No closing summary. No meta sentences.`;
 
-    const userPrompt = `Date and time: ${body.dateLabel}
+    const situationBlock = body.userSituation && body.userSituation.trim()
+      ? `\n\nWHAT THE PERSON IS EXPERIENCING (answer this directly in The Headline and Why Today Might Feel Off):\n"${body.userSituation.trim()}"\n`
+      : "";
 
+    const userPrompt = `Date and time: ${body.dateLabel}
+${situationBlock}
 SKY DATA (pre-computed, authoritative — cite only from this):
 ${skyJSON}
 
