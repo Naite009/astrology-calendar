@@ -78,6 +78,7 @@ export const FORBIDDEN_PAIR_KEYS = new Set([
 // (essay form) is removed — Section 6 now uses `whatHelpsWholeFamily` (array)
 // and `whatHelpsRationale` (one sentence).
 export const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
+  "whatAlreadyWorks",
   "householdRegulationPattern",
   "whatHelps",
   "siblingPressurePoints",
@@ -333,7 +334,7 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
     });
   }
 
-  // whatAlreadyWorks: lift legacy { pair, line } into role-aware shape.
+  // whatAlreadyWorks is forbidden and stripped before this point.
   const waw = out.whatAlreadyWorks;
   if (Array.isArray(waw)) {
     out.whatAlreadyWorks = waw
