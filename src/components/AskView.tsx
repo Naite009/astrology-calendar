@@ -2871,8 +2871,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                         {entry.reading ? (
                           <ReadingRenderer reading={entry.reading} onRegenerate={regenerateLastAnswer} />
                         ) : (
-                          <div className="rounded-lg px-4 py-3 bg-muted">
-                            <p className="text-sm whitespace-pre-wrap">{entry.content}</p>
+                          <div className="rounded-lg px-4 py-3 bg-muted prose prose-sm dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-light prose-h2:text-base prose-h2:mt-4 prose-h2:mb-2 prose-p:my-2">
+                            <ReactMarkdown>{entry.content}</ReactMarkdown>
                           </div>
                         )}
                       </div>
