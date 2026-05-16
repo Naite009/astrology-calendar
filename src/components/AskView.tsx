@@ -24,6 +24,10 @@ import { findActiveFixedStarsToday, findFixedStarActivations } from "@/lib/fixed
 import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
+import ReactMarkdown from "react-markdown";
+import { calculateDailyAspects } from "@/lib/astrology";
+import { FIXED_STARS } from "@/lib/fixedStars";
+import { CloudSun } from "lucide-react";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
 import { AskReplayDialog } from "@/components/AskReplayDialog";
@@ -564,6 +568,137 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     return savedCharts.find(c => c.id === activeChartId) || userNatalChart;
   };
   const selectedChart = getSelectedChart();
+
+  // ── TODAY'S COSMIC WEATHER (chart-independent) ────────────────────
+  // Quick button for "a friend just called and asked why she feels off — I
+  // don't have her chart but what is the sky doing RIGHT NOW that could
+  // explain it?" Uses only live sky data, no natal placements.
+  const [skyTodayLoading, setSkyTodayLoading] = useState(false);
+  const handleSkyToday = useCallback(async () => {
+    if (skyTodayLoading) return;
+    setSkyTodayLoading(true);
+    try {
+      const now = new Date();
+      const positions = getPlanetaryPositions(now);
+
+      const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const glyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const PLANET_BODIES: Record<string, any> = {
+        mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
+        jupiter: Astronomy.Body.Jupiter, saturn: Astronomy.Body.Saturn, uranus: Astronomy.Body.Uranus,
+        neptune: Astronomy.Body.Neptune, pluto: Astronomy.Body.Pluto,
+      };
+
+      const transitingPlanets: Array<{ name: string; sign: string; degree: number; retrograde?: boolean }> = [];
+      const planetAbsLon: Record<string, number> = {};
+      const planetOrder = ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+      planetOrder.forEach((k) => {
+        const v: any = (positions as any)[k];
+        if (!v) return;
+        const sign = v.signName || glyphMap[v.sign] || v.sign || 'Unknown';
+        const deg = typeof v.degree === 'number' ? v.degree : 0;
+        const min = typeof v.minutes === 'number' ? v.minutes : 0;
+        let retro = false;
+        const body = PLANET_BODIES[k];
+        if (body) { try { retro = isPlanetRetrograde(body, now); } catch {} }
+        transitingPlanets.push({
+          name: k.charAt(0).toUpperCase() + k.slice(1),
+          sign,
+          degree: parseFloat((deg + min / 60).toFixed(2)),
+          retrograde: retro,
+        });
+        const idx = ZODIAC.indexOf(sign);
+        if (idx >= 0) planetAbsLon[k.charAt(0).toUpperCase() + k.slice(1)] = (idx * 30 + deg + min / 60) % 360;
+      });
+
+      // Void-of-Course Moon
+      const voc = getVOCMoonDetails(now);
+      const moon = positions.moon;
+      const moonSign = moon?.signName || glyphMap[moon?.sign] || moon?.sign || 'Unknown';
+      const phase = (positions as any).moonPhase || { name: 'Unknown', illumination: 0 };
+
+      // Sky-to-sky tightest aspects right now
+      const dailyAspects = calculateDailyAspects(positions)
+        .sort((a: any, b: any) => parseFloat(a.orb) - parseFloat(b.orb))
+        .slice(0, 5)
+        .map((a: any) => ({
+          p1: a.planet1,
+          aspect: a.aspect,
+          p2: a.planet2,
+          orb: parseFloat(a.orb),
+          applying: a.applying,
+        }));
+
+      // Notable fixed-star contacts overhead RIGHT NOW (transiting planet
+      // sitting within 1° of a catalogued star, with simple precession).
+      const yearsSinceJ2000 = (now.getFullYear() - 2000) + 0.5;
+      const precession = (yearsSinceJ2000 * 50.29) / 3600; // degrees
+      const notableFixedStars: Array<{ star: string; conjunctPlanet: string; orb: number; meaning: string }> = [];
+      for (const star of FIXED_STARS) {
+        const sLon = (star.j2000Lon + precession) % 360;
+        for (const [planet, pLon] of Object.entries(planetAbsLon)) {
+          let diff = Math.abs(sLon - pLon);
+          if (diff > 180) diff = 360 - diff;
+          if (diff <= 1.0) {
+            notableFixedStars.push({
+              star: star.name,
+              conjunctPlanet: planet,
+              orb: parseFloat(diff.toFixed(2)),
+              meaning: star.theme,
+            });
+          }
+        }
+      }
+
+      const payload = {
+        dateLabel: now.toLocaleString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          hour: 'numeric', minute: '2-digit',
+        }),
+        transitingPlanets,
+        moon: {
+          sign: moonSign,
+          phase: phase.name || 'Unknown',
+          illumination: typeof phase.illumination === 'number' ? Math.round(phase.illumination) : undefined,
+          isVOC: voc.isVOC,
+          isCurrentlyVOC: voc.isCurrentlyVOC,
+          vocStart: voc.start ? voc.start.toISOString() : null,
+          vocEnd: voc.end ? voc.end.toISOString() : null,
+          moonEntersSign: voc.moonEntersSign || null,
+          lastAspect: voc.lastAspect
+            ? { planet: voc.lastAspect.planet, aspect: voc.lastAspect.aspectName }
+            : null,
+        },
+        dailyAspects,
+        notableFixedStars,
+      };
+
+      // Show the user prompt immediately so it feels like a chat message.
+      const userEntry: ChatEntry = {
+        role: 'user',
+        content: `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
+      };
+      setEntries((prev) => [...prev, userEntry]);
+
+      const { data, error } = await supabase.functions.invoke('ask-sky-today', { body: payload });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const text = (data?.text || '').trim();
+      if (!text) throw new Error('Empty response');
+
+      const assistantEntry: ChatEntry = { role: 'assistant', content: text };
+      setEntries((prev) => {
+        const next = [...prev, assistantEntry];
+        saveActiveChat(activeChartId, next);
+        return next;
+      });
+    } catch (e: any) {
+      console.error('[handleSkyToday]', e);
+      toast.error(e?.message || "Could not read the sky right now.");
+    } finally {
+      setSkyTodayLoading(false);
+    }
+  }, [skyTodayLoading, activeChartId]);
 
   const upsertConversationSnapshot = useCallback((nextEntries: ChatEntry[], chartId: string, chartName: string) => {
     if (!nextEntries.some(entry => entry.role === "assistant")) return;
@@ -2497,6 +2632,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSkyToday}
+                disabled={skyTodayLoading}
+                className="mr-2"
+                title="Read the live sky right now — no natal chart required. Use when a friend calls asking why she suddenly feels off."
+              >
+                {skyTodayLoading ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <CloudSun className="h-4 w-4 mr-1" />
+                )}
+                Today's Cosmic Weather
+              </Button>
               {canDownload && (
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1">
@@ -2721,8 +2871,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                         {entry.reading ? (
                           <ReadingRenderer reading={entry.reading} onRegenerate={regenerateLastAnswer} />
                         ) : (
-                          <div className="rounded-lg px-4 py-3 bg-muted">
-                            <p className="text-sm whitespace-pre-wrap">{entry.content}</p>
+                          <div className="rounded-lg px-4 py-3 bg-muted prose prose-sm dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-light prose-h2:text-base prose-h2:mt-4 prose-h2:mb-2 prose-p:my-2">
+                            <ReactMarkdown>{entry.content}</ReactMarkdown>
                           </div>
                         )}
                       </div>
