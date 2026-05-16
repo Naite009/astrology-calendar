@@ -2858,41 +2858,50 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           )}
 
+          {/* Quick Topics — always visible so users can pick Relationship,
+              Career, Where Should I Live, etc. even after the chat already
+              has entries. */}
+          {selectedChart && (() => {
+            const matchingSR = findMatchingSolarReturn(
+              solarReturnCharts,
+              selectedChart,
+              activeChartId,
+            );
+            return (
+              <details className="rounded-md border border-border bg-muted/30" open={entries.length === 0}>
+                <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-foreground">
+                  Reading topics for {selectedChart.name}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (Relationship, Career, Where to Live, Health, Timing…)
+                  </span>
+                </summary>
+                <div className="p-3 pt-1">
+                  <AskQuickTopics
+                    onSelect={handleQuickTopic}
+                    chartName={selectedChart.name || "Unknown"}
+                    birthDate={selectedChart.birthDate || "unknown date"}
+                    birthTime={selectedChart.birthTime || "unknown time"}
+                    birthLocation={selectedChart.birthLocation || "unknown location"}
+                    currentLocation={matchingSR?.solarReturnLocation || undefined}
+                    childChartOptions={savedCharts
+                      .filter(c => c.id !== activeChartId && !!c.birthDate)
+                      .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
+                    disabled={isLoading}
+                  />
+                </div>
+              </details>
+            );
+          })()}
+
           {/* Messages */}
           <ScrollArea className="h-[500px] pr-4" ref={scrollRef}>
             <div className="space-y-4">
               {entries.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-8 text-center space-y-5">
-                  <div>
-                    <Sparkles className="h-10 w-10 text-muted-foreground/30 mb-3 mx-auto" />
-                    <p className="text-muted-foreground mb-1">
-                      Ask any question about {selectedChart?.name || "the chart"}
-                    </p>
-                    <p className="text-sm text-muted-foreground/70 max-w-md mx-auto">
-                      Or choose a topic for a comprehensive reading:
-                    </p>
-                  </div>
-                  {selectedChart && (() => {
-                    const matchingSR = findMatchingSolarReturn(
-                      solarReturnCharts,
-                      selectedChart,
-                      activeChartId,
-                    );
-                    return (
-                      <AskQuickTopics
-                        onSelect={handleQuickTopic}
-                        chartName={selectedChart.name || "Unknown"}
-                        birthDate={selectedChart.birthDate || "unknown date"}
-                        birthTime={selectedChart.birthTime || "unknown time"}
-                        birthLocation={selectedChart.birthLocation || "unknown location"}
-                        currentLocation={matchingSR?.solarReturnLocation || undefined}
-                        childChartOptions={savedCharts
-                          .filter(c => c.id !== activeChartId && !!c.birthDate)
-                          .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
-                        disabled={isLoading}
-                      />
-                    );
-                  })()}
+                <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+                  <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto" />
+                  <p className="text-muted-foreground">
+                    Ask any question about {selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.
+                  </p>
                 </div>
               )}
 
