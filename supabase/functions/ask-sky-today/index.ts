@@ -65,16 +65,15 @@ VOICE RULES (NON-NEGOTIABLE):
 - Do NOT invent data. Only cite what appears in the SKY DATA block below.
 
 OUTPUT FORMAT (markdown):
-Use these exact headings, in this order. Skip any heading that has no real signal and say briefly why.
+Open with ONE short paragraph (no heading) that directly answers what the person is feeling or asking. Plain prose. Do NOT write "The Headline" or any header before this opening. Just speak.
 
-## The Headline
-One or two sentences naming the single most-relevant thing in the sky right now and the kind of mood or behavior it tends to produce.
+Then use these exact headings, in this order. Skip any heading that has no real signal and say briefly why.
 
 ## The Moon Right Now
 Moon sign, phase, and Void-of-Course status. If VOC, explain it in plain words and name the exact window. Say what the VOC tends to feel like (sudden urge to bail, nothing landing, abandoning plans, turning around). If not VOC, name the next aspect the Moon is making and what tone that sets.
 
 ## Today's Tightest Aspects
-The 1 to 3 tightest sky-to-sky aspects right now from the SKY DATA. For each: name the two planets and the aspect, the orb, and ONE concrete real-life scenario the pairing tends to produce collectively (e.g., "Mars square Saturn at 0°42' tends to feel like hitting a wall when you push — short tempers, traffic, things not moving").
+The 1 to 3 tightest sky-to-sky aspects right now from the SKY DATA. For each: name the two planets and the aspect, the orb, and ONE concrete real-life scenario the pairing tends to produce collectively (e.g., "Mars square Saturn at 0°42' tends to feel like hitting a wall when you push, short tempers, traffic, things not moving").
 
 ## Anything Rare Overhead
 Cite any fixed star contact, station, exact eclipse degree, or 0°/29° placement from the SKY DATA. If nothing rare, write one short line: "Nothing unusual overhead right now."
@@ -83,12 +82,12 @@ Cite any fixed star contact, station, exact eclipse degree, or 0°/29° placemen
 One honest paragraph weaving the Moon status + the tightest aspects + anything rare into a real answer to "why does the day feel like this." Specific to TODAY, not generic horoscope language.
 
 ## What to Do With the Rest of the Day
-3 to 5 short, concrete moves calibrated to what is actually live. Examples: "if the Moon is void until 6:14pm, do not sign or send anything important — reschedule"; "with Mars square Saturn this tight, eat before any hard conversation and skip the impulse purchase."
+3 to 5 short, concrete moves calibrated to what is actually live. Examples: "if the Moon is void until 6:14pm, do not sign or send anything important, reschedule"; "with Mars square Saturn this tight, eat before any hard conversation and skip the impulse purchase."
 
 End there. No closing summary. No meta sentences.`;
 
     const situationBlock = body.userSituation && body.userSituation.trim()
-      ? `\n\nWHAT THE PERSON IS EXPERIENCING (answer this directly in The Headline and Why Today Might Feel Off):\n"${body.userSituation.trim()}"\n`
+      ? `\n\nWHAT THE PERSON IS EXPERIENCING (answer this directly in the opening paragraph and in Why Today Might Feel Off):\n"${body.userSituation.trim()}"\n`
       : "";
 
     const userPrompt = `Date and time: ${body.dateLabel}
