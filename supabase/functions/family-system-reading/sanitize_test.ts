@@ -164,7 +164,7 @@ Deno.test("validatePairShape flags malformed dynamic text", () => {
 Deno.test("validatePairShape fails when composite is a plain string (legacy)", () => {
   const res = validatePairShape({
     parentChildConnections: [
-      { parent: "Lauren", child: "Ben", composite: "Just a sentence", interactionPattern: VALID_IP },
+      { parent: "Lauren", child: "Ben", dynamic: VALID_DYNAMIC, composite: "Just a sentence", interactionPattern: null },
     ],
   });
   assert(!res.ok);
@@ -177,9 +177,10 @@ Deno.test("validatePairShape flags identical forA and forB on bridge", () => {
       {
         parent: "Lauren",
         child: "Ben",
+        dynamic: VALID_DYNAMIC,
         composite: { shared: "ok", feelsLikeForA: "a", feelsLikeForB: "b" },
         bridge: { aspect: "Lauren's Venus trine Ben's Moon (1°)", forA: "Same line.", forB: "Same line." },
-        interactionPattern: VALID_IP,
+        interactionPattern: null,
       },
     ],
   });
@@ -190,7 +191,7 @@ Deno.test("validatePairShape flags identical forA and forB on bridge", () => {
 Deno.test("validatePairShape fails when legacy body present", () => {
   const res = validatePairShape({
     parentChildConnections: [
-      { parent: "Lauren", child: "Max", composite: { shared: "ok", feelsLikeForA: null, feelsLikeForB: null }, body: "should not be here", interactionPattern: VALID_IP },
+      { parent: "Lauren", child: "Max", dynamic: VALID_DYNAMIC, composite: { shared: "ok", feelsLikeForA: null, feelsLikeForB: null }, body: "should not be here", interactionPattern: null },
     ],
   });
   assert(!res.ok);
@@ -207,7 +208,7 @@ Deno.test("sanitizer drops banned 'no tight aspects' note", () => {
   assertEquals(out.note, null);
 });
 
-Deno.test("sanitize output of legacy payload (without interactionPattern) flags missing IP", () => {
+Deno.test("sanitize output of legacy payload flags missing dynamic", () => {
   // Legacy payloads will fail strict validation now — by design — so the UI
   // can show a regenerate hint instead of a dead "no aspects" line.
   const messy = {
@@ -223,5 +224,5 @@ Deno.test("sanitize output of legacy payload (without interactionPattern) flags 
   const { payload } = sanitizeReadingPayload(messy);
   const v = validatePairShape(payload as any);
   assert(!v.ok);
-  assert(v.errors.some((e) => e.includes("interactionPattern missing")));
+  assert(v.errors.some((e) => e.includes("dynamic missing")));
 });
