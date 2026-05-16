@@ -108,36 +108,53 @@ export const VERDICT_PHRASE_RES: RegExp[] = [
   /\bthey clash\b/i,
 ];
 
-/** Telegraph format: exactly six labeled lines, strict word counts. */
-const TELEGRAPH_LABELS = [
-  { label: "Shared Pattern:", min: 1, max: 5 },
-  { label: "How this can show up:", min: 0, max: 0 }, // header line only
-  { label: "At its best:", min: 2, max: 8 },
-  { label: "More commonly:", min: 2, max: 8 },
-  { label: "Under stress:", min: 2, max: 8 },
-  { label: "Where connection can happen:", min: 1, max: 7 },
+/** Plain 4-line pair format: pattern label + three observable levels. */
+const LEVEL_LABELS = ["At its best:", "More commonly:", "Under stress:"] as const;
+const FORBIDDEN_LABELS = [
+  "shared pattern:",
+  "how this can show up:",
+  "where connection can happen:",
 ];
 
 export function validateTelegraphDynamic(text: string): string[] {
   const errors: string[] = [];
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  for (const spec of TELEGRAPH_LABELS) {
-    const idx = lines.findIndex((l) => l.toLowerCase().startsWith(spec.label.toLowerCase()));
-    if (idx === -1) {
-      errors.push(`missing label "${spec.label}"`);
-      continue;
-    }
-    if (spec.max === 0) continue; // header-only
-    const after = lines[idx].slice(spec.label.length).trim();
-    const value = after || lines[idx + 1] || "";
-    const wordCount = value.split(/\s+/).filter(Boolean).length;
-    if (wordCount < spec.min || wordCount > spec.max) {
-      errors.push(`"${spec.label}" has ${wordCount} words (allowed ${spec.min}-${spec.max}): "${value}"`);
-    }
-    if (/\.\s|\.$/.test(value) && value.split(/[.!?]/).filter((s) => s.trim()).length > 1) {
-      errors.push(`"${spec.label}" must be a single fragment, not multiple sentences`);
+  const rawLines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+  // Forbidden labels
+  for (const f of FORBIDDEN_LABELS) {
+    if (rawLines.some((l) => l.toLowerCase().startsWith(f))) {
+      errors.push(`contains forbidden label "${f}"`);
     }
   }
+
+  if (rawLines.length !== 4) {
+    errors.push(`must be exactly 4 lines, got ${rawLines.length}`);
+    return errors;
+  }
+
+  // Line 1: pattern label, 2-5 words, no level label
+  const pattern = rawLines[0];
+  if (LEVEL_LABELS.some((l) => pattern.toLowerCase().startsWith(l.toLowerCase()))) {
+    errors.push(`line 1 must be a pattern label, not a level line`);
+  } else {
+    const wc = pattern.split(/\s+/).filter(Boolean).length;
+    if (wc < 2 || wc > 5) errors.push(`line 1 pattern has ${wc} words (allowed 2-5): "${pattern}"`);
+  }
+
+  // Lines 2-4: exact labels in order
+  LEVEL_LABELS.forEach((label, i) => {
+    const line = rawLines[i + 1] ?? "";
+    if (!line.toLowerCase().startsWith(label.toLowerCase())) {
+      errors.push(`line ${i + 2} must start with "${label}", got "${line}"`);
+      return;
+    }
+    const value = line.slice(label.length).trim();
+    const wc = value.split(/\s+/).filter(Boolean).length;
+    if (wc < 2 || wc > 10) {
+      errors.push(`"${label}" has ${wc} words (allowed 2-10): "${value}"`);
+    }
+  });
+
   return errors;
 }
 

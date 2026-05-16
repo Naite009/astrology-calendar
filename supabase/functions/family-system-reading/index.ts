@@ -397,65 +397,42 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 - REPLACEMENT pattern (apply every time you would have written a prescription): "Do this → then do this" REWRITE AS "This family tends to function better when ___" or "Things tend to go more smoothly when ___" or "Reconnection tends to happen when ___".
 - If a sentence could appear in a parenting manual as advice, REWRITE it as an observation about this specific family's pattern. If you cannot rewrite it observationally, DELETE it.
 
-PAIR TELEGRAPH FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
+PAIR PLAIN FORMAT — COPY THIS EXACT STYLE (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
 
-The \`dynamic\` field MUST be a string containing EXACTLY this skeleton, filled in:
+The \`dynamic\` field MUST be a string with EXACTLY 4 short lines, in this order:
 
-Shared Pattern:
-<2-4 words, noun phrase, no sentence>
-How this can show up:
-At its best:
-<3-7 words, telegraph fragment, no period needed>
-More commonly:
-<3-7 words, telegraph fragment>
-Under stress:
-<3-7 words, telegraph fragment>
-Where connection can happen:
-<2-6 words, a moment or condition>
+Line 1: a short pattern label (2-5 words, no labels, no punctuation at end). Example: "Different channels"
+Line 2: "At its best: <3-8 words>"
+Line 3: "More commonly: <3-8 words>"
+Line 4: "Under stress: <3-8 words>"
 
 REFERENCE OUTPUT — match this length and tone EXACTLY (do not copy verbatim):
 
-  Shared Pattern:
   Different channels
-  How this can show up:
-  At its best:
-  Give space, stays present
-  More commonly:
-  You explain, he pulls back
-  Under stress:
-  You push, he shuts down
-  Where connection can happen:
-  Low-pressure moments
+  At its best: give space, stays present
+  More commonly: you explain, he pulls back
+  Under stress: you push, he shuts down
 
-  Shared Pattern:
   Pace mismatch
-  How this can show up:
-  At its best:
-  You keep it simple, he responds
-  More commonly:
-  You explain, he resists
-  Under stress:
-  He pushes, you overwhelm
-  Where connection can happen:
-  Short, direct interactions
+  At its best: you keep it simple, he responds
+  More commonly: you explain, he resists
+  Under stress: he pushes, you overwhelm
 
 HARD RULES (any violation = AUTO-REJECT, rewrite before returning):
-  • Telegraph fragments only. No complete sentences. No subordinate clauses. No "this", "the", "that" as filler.
-  • Shared Pattern = 2-4 words. A label.
-  • Each level (At its best / More commonly / Under stress) = 3-7 words. COUNT them.
-  • Where connection can happen = 2-6 words. A moment or condition.
-  • Use the SIX labels above and nothing else. No extra lines, no explanations, no examples, no hedges ("can", "may", "tends to", "sometimes") inside the level fragments.
-  • No astrology terms anywhere (no sign names, planet names, aspect words, house numbers, elements).
-  • Use pronouns (you / he / she) over names. Direct subject-verb: "He pushes, you withdraw."
+  • Exactly 4 lines. No more. No less. No extra labels ("Shared Pattern:", "How this can show up:", "Where connection can happen:") — those are FORBIDDEN.
+  • Plain English. No astrology terms (no sign names, planet names, aspect words, house numbers, elements).
+  • No explanations. No advice. No steps. No instructions. No paragraphs.
+  • Lines 2-4 use EXACTLY the labels "At its best:", "More commonly:", "Under stress:" followed by a short fragment.
+  • Each fragment 3-8 words. Telegraph style. Lowercase preferred.
+  • Use pronouns (you / he / she) over names. Direct subject-verb: "he pushes, you withdraw."
   • The three levels must be observably DIFFERENT actions. If two could be swapped, rewrite.
-  • Siblings: connection line may acknowledge shared activity can connect OR escalate (e.g. "Low-volume play").
 
 CHILD DIFFERENTIATION CONTRACT — HARD LOCK:
 - Each child MUST differ on at least: SPEED (fast/slow), EXPRESSION (internal/external), REACTION (push/withdraw).
 - Name-swap test: if swapping names leaves the lines still true across two children, REWRITE.
 - No two pair blocks may share the same verbs or interchangeable descriptions.
 
-GOAL: Snapshot. Telegraph. Instantly recognizable. Not explained. Not taught. Not advised.
+GOAL: Plain. Short. Instantly recognizable. Not explained. Not taught. Not advised.
 
 PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
 - The \`dynamic\` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
