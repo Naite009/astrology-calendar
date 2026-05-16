@@ -677,7 +677,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Show the user prompt immediately so it feels like a chat message.
       const userEntry: ChatEntry = {
         role: 'user',
-        content: `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
+        content: userSituation?.trim()
+          ? `🌤️ Today's Cosmic Weather — "${userSituation.trim()}" — ${payload.dateLabel}`
+          : `🌤️ Today's Cosmic Weather (no chart) — ${payload.dateLabel}`,
       };
       setEntries((prev) => [...prev, userEntry]);
 
