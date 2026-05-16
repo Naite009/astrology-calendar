@@ -24,6 +24,10 @@ import { findActiveFixedStarsToday, findFixedStarActivations } from "@/lib/fixed
 import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
+import ReactMarkdown from "react-markdown";
+import { calculateDailyAspects } from "@/lib/astrology";
+import { FIXED_STARS } from "@/lib/fixedStars";
+import { CloudSun } from "lucide-react";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
 import { runAskJob, pollAskJob, readActiveJobId, writeActiveJobId, normalizeAskResult } from "@/lib/askJobClient";
 import { AskReplayDialog } from "@/components/AskReplayDialog";
