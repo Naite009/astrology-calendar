@@ -476,6 +476,15 @@ JSON SCHEMA:
     "underStress": string (1-2 sentences showing BOTH placements amplifying at once — placement 1 louder AND placement 2 defending harder),
     "whatThisIsNot": string (ONE short sentence only, 3-5 things it is NOT separated by commas, no explanation, no "because" clause)
   },
+  "whatThisChildNeedsFromYou": {
+    "opener": "This child needs a parent who...",
+    "lines": [
+      { "text": string (≤14 words, verb-first, completes the opener; recognition not instruction; maps to childMechanism.corePattern), "tiedTo": "processing" },
+      { "text": string (≤14 words, verb-first; maps to childMechanism.theConflict), "tiedTo": "stuckPoint" },
+      { "text": string (≤14 words, verb-first; maps to childMechanism.underStress), "tiedTo": "pressure" }
+      // Optional 4th entry with tiedTo: "specificFriction" ONLY when a named friction (Chiron contact, retrograde Mercury, Moon-Pluto) demands it.
+    ]
+  } | null (see DEPENDENCY GATE — emit null if childMechanism is missing a clear internal conflict OR cause→effect; never fall back to generic parenting language),
   "sections": [
     {
       "heading": "FROM_NAME's PLANET ASPECT TO_NAME's PLANET" (use the actual names and aspect word, e.g. "Lauren's Mercury square Ben's Moon"),
