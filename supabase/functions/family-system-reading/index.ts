@@ -391,45 +391,41 @@ NO THERAPY / NO PRESCRIPTION RULE — HARD STOP (applies to EVERY field in the o
 - REPLACEMENT pattern (apply every time you would have written a prescription): "Do this → then do this" REWRITE AS "This family tends to function better when ___" or "Things tend to go more smoothly when ___" or "Reconnection tends to happen when ___".
 - If a sentence could appear in a parenting manual as advice, REWRITE it as an observation about this specific family's pattern. If you cannot rewrite it observationally, DELETE it.
 
-PAIR RANGE FORMAT — HARD STOP (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
-- Every `dynamic` field MUST be written as a structured range block, NOT a flowing paragraph. The block MUST contain these exact labeled parts, in this order, separated by newlines (\n). Use these literal labels, no markdown, no bullets:
-    Shared Pattern: <1-2 plain-English lines naming the underlying pattern between these two people. Anchored to named placements / cross-aspects. NO verdicts.>
-    At its best: <one concrete sentence — what this pair looks like on a good, regulated day.>
-    More commonly: <one concrete sentence — the everyday, neutral expression. What actually happens most of the time.>
-    Under stress: <one concrete sentence — how it distorts when one or both are tired, activated, or overwhelmed. NOT catastrophic, just real.>
-    Where connection can happen: <one CONDITIONAL sentence using "can", "may", or "when ___, ___". NEVER guaranteed. NEVER "they connect through X". Use phrasings like "Connection can happen when…", "There's room for connection if…", "This pair can meet through ___, though it isn't automatic."
-- The three expression levels (At its best / More commonly / Under stress) MUST be observably DIFFERENT from each other. If two of them could be swapped without changing meaning, REWRITE.
-- "Where connection can happen" is CONDITIONAL, never a promise. FORBIDDEN: "they bond over", "they connect through", "this creates closeness", "they always", "they naturally". REQUIRED markers: "can", "may", "when…then…", "if…", "there's room for".
-- For SIBLINGS specifically: do NOT assume bonding. Shared activity, shared humor, shared interests can CONNECT them OR ESCALATE them depending on regulation. The "Where connection can happen" line for siblings must acknowledge this two-way possibility (e.g. "Shared play can connect them when both are regulated, or escalate fast when one is tired.").
-- For SIBLINGS: each sibling pair's block MUST be clearly differentiated from every other sibling pair in this family — no overlapping Shared Pattern, no interchangeable expression levels. If you could swap the names between two sibling blocks and they'd still read true, REWRITE.
-- The block MUST remain accurate across different real families. If a parent reads "Under stress" and says "that's not us, but At its best is" — the block is still VALID because it offered a range. If only one level is written and they don't recognize it, the block FAILS. Range is the protection.
-- This format REPLACES any flowing paragraph version of `dynamic`. Do NOT also include a separate prose paragraph. The five labeled lines ARE the dynamic field.
-- The Dual Expression Rule, Role-Aware Rule, and "no verdict verbs" rule still apply WITHIN each line of the block.
+PAIR ULTRA-COMPACT FORMAT — HARD LOCK (applies to EVERY parentChildConnections[].dynamic AND siblingConnections[].dynamic):
+- Every `dynamic` field MUST follow EXACTLY this format, no deviation, no extra lines, no markdown, no bullets. Use these literal labels separated by newlines (\n):
+    Shared Pattern: <ONE short line, MAX 12 words. Names the underlying pattern. NO verdicts.>
+    How this can show up:
+    At its best: <ONE short sentence, MAX 12 words. Observable behavior only.>
+    More commonly: <ONE short sentence, MAX 12 words. Observable behavior only.>
+    Under stress: <ONE short sentence, MAX 12 words. Observable behavior only.>
+    Where connection can happen: <ONE short line, MAX 12 words. Conditional ("can", "may", "when…"). Never guaranteed.>
+- HARD LIMITS (NO EXCEPTIONS):
+    • No sentence longer than 12 words. Count them.
+    • No paragraph format. One line per label. Period.
+    • No extra lines, no extra labels, no preamble, no closing line.
+    • No explanations, no examples, no reasoning chains, no "because…".
+    • No filler phrases.
+- FORBIDDEN WORDING anywhere in the block: "this can sometimes show up as", "this dynamic often", "tends to revolve around", "in real life", "because of ___ this means ___", "they bond over", "they connect through", "this creates closeness", "they always", "they naturally". Any explanatory language → REWRITE.
+- The three expression levels (At its best / More commonly / Under stress) MUST be observably DIFFERENT. If two could be swapped, REWRITE.
+- "Where connection can happen" is CONDITIONAL. REQUIRED markers: "can", "may", "when…", "if…".
+- For SIBLINGS: do NOT assume bonding. "Where connection can happen" must acknowledge shared activity can connect OR escalate (e.g. "Shared play can connect them when both are regulated.").
+- For SIBLINGS: each pair block MUST be distinct from every other sibling pair. If names could be swapped between two blocks and read true, REWRITE.
+- STYLE: direct, blunt, simple, observable behavior only. Snapshot, not report.
+- FAIL CONDITION: if output exceeds limits OR adds explanation → reject the entire `dynamic` field and regenerate before returning.
 
 PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChildConnections AND siblingConnections):
 - The `dynamic` field IS the ENTIRE pair output. NOTHING ELSE renders. Do NOT write a separate "The Dynamic" paragraph, "What Helps" line, "What Can Feel Hard" line, "Why" explanation, composite tone block, bridge block, friction block, or interactionPattern block as visible prose.
-- For EVERY parentChildConnections[] and siblingConnections[] entry, you MUST set ALL of these fields to empty values: composite = null, bridge = null, friction = null, interactionPattern = null, whatCanFeelHard = "", whatHelps = "". They are deprecated. Do NOT populate them. They will be ignored.
-- The structured block inside `dynamic` MUST contain ALL THREE expression levels (At its best / More commonly / Under stress). If even one level is missing, the output is INVALID and you MUST regenerate the block before returning.
-- FORBIDDEN labels anywhere in `dynamic` or in any other field: "The Dynamic", "What Helps", "What Can Feel Hard", "Why", "How this shows up day to day", "Shared tone", "What ___ tends to feel". The ONLY allowed labels inside `dynamic` are the five PAIR RANGE FORMAT labels.
-- FORBIDDEN content: long paragraphs, storytelling blocks, therapy-style explanations, narrative interpretation, "because of ___ this means ___" reasoning chains. Keep every line tight (1–2 sentences max).
-- Each person across the family MUST remain behaviorally distinct. No two pair blocks (parent-child OR sibling) may contain duplicate or interchangeable behavioral descriptions. If swapping names leaves the lines still true, REWRITE.
+- For EVERY parentChildConnections[] and siblingConnections[] entry, you MUST set ALL of these fields to empty values: composite = null, bridge = null, friction = null, interactionPattern = null, whatCanFeelHard = "", whatHelps = "". They are deprecated.
+- FORBIDDEN labels anywhere in `dynamic`: "The Dynamic", "What Helps", "What Can Feel Hard", "Why", "Shared tone". The ONLY allowed labels are the six PAIR ULTRA-COMPACT FORMAT labels above.
 
-LENGTH & CLARITY — HARD LIMIT (applies to EVERY field in the output, no exceptions):
+LENGTH & CLARITY — HARD LIMIT (applies to EVERY non-pair field):
 - No paragraph longer than 2 sentences. Anywhere.
 - No non-pair section (atAGlance line, parentRegulationCenter entry, whatAlreadyWorks entry, whatEscalates entry) longer than 6 lines TOTAL.
-- No pair `dynamic` block longer than 8 lines TOTAL across all five labels combined.
-- PAIR FORMAT LIMITS (count each as visible lines, not internal sentences):
-    Shared Pattern: max 2 lines.
-    At its best: 1–2 sentences, one line preferred.
-    More commonly: 1–2 sentences, one line preferred.
-    Under stress: 1–2 sentences, one line preferred.
-    Where connection can happen: 1 line, max.
 - parentRegulationCenter: body = max 2 sentences. whatThisMeansInRealLife = exactly 1 sentence.
 - whatEscalates[].body = 1–2 short lines per person. No more.
 - atAGlance[].line = ONE sentence. Always.
-- FORBIDDEN style: long explanations, repeated ideas reworded, multiple examples in one line, storytelling, filler hedges stacked ("this can sometimes show up as… though it may also… and at times…"). Use ONE hedge per sentence max.
-- Direct, plain, no fluff, no over-explaining. The user must understand each section in under 10 seconds.
-- If a sentence can be cut without losing meaning, CUT IT. If two sentences say the same thing, KEEP ONE.
+- Direct, plain, no fluff. The user must understand each section in under 10 seconds.
+- If a sentence can be cut without losing meaning, CUT IT.
 
 
 JSON SCHEMA (return exactly this shape — all 8 sections required where applicable):
@@ -444,7 +440,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". ALL THREE expression levels REQUIRED. This is the ONLY visible content for this pair.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR ULTRA-COMPACT FORMAT exactly: six newline-separated lines — "Shared Pattern:", "How this can show up:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". Each line MAX 12 words. This is the ONLY visible content for this pair.),
       "composite": null,
       "bridge": null,
       "friction": null,
@@ -459,7 +455,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED),
-      "dynamic": string (REQUIRED. Same PAIR RANGE FORMAT as parent-child. For siblings, "Where connection can happen" MUST acknowledge that activity/shared interests can connect OR escalate.),
+      "dynamic": string (REQUIRED. Same PAIR ULTRA-COMPACT FORMAT as parent-child. Each line MAX 12 words. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
       "composite": null,
       "bridge": null,
       "friction": null,
