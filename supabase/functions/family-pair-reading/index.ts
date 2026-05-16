@@ -371,6 +371,21 @@ Examples of the required shape:
   - RIGHT: "She feels things deeply but does not show it directly, which can come out as distance or sharp responses — and then she is frustrated that no one noticed what she never actually said."
 Banned moves: zodiac shorthand ("Libra = fair", "Aries = fast"), single-clause personality labels, surface compliments with no friction, type-style summaries. Every person must read as a specific, layered, slightly uncomfortable-because-true human — never a category. If a sentence describes a person and contains no internal contradiction, rewrite it before emitting.
 
+MECHANISM-FIRST DESCRIPTION RULE (applies to EVERY field that describes the child — essence, sections.howItLands, sections.blindSpot, pressureProfile.plainEnglish, perceptionTranslation.misread, perceptionTranslation.underneath, repairProfile.plainEnglish, moonBridge.translation, inTheMoment.scenario, connectionMisfire.childExperience, connectionMisfire.childProtection):
+Every child-description sentence MUST follow internal-process → behavior order, not behavior → description. The childMechanism you produced first is the source of truth; every later description must echo that same mechanism.
+Required shape, every time:
+  (1) what happens FIRST internally (the mechanism — feeling lands, system scans, body braces, logic engages)
+  (2) WHY that creates the behavior (the gap, the timing mismatch, the wiring)
+  (3) what the parent EXPERIENCES because of that (the silence, the loud reaction, the cold answer, the shut door)
+Examples:
+  WRONG: "Ben senses the emotional tone but says nothing."
+  RIGHT: "Ben feels the emotional tone immediately, but the feeling isn't organized into words yet, so when you ask he says 'nothing'."
+  WRONG: "Max needs to be seen and gets loud."
+  RIGHT: "Max expresses quickly to be seen, but becomes sensitive to how he is received, so if he feels ignored or corrected he gets louder."
+  WRONG: "Ike acts quickly and gets frustrated when told to wait."
+  RIGHT: "Ike moves on impulse and regulates through action, so being stopped feels like pressure, which makes him push harder."
+BANNED openings: "He is…", "She tends to…", "This child can be…", "[Name] often…", any sentence that starts with a trait or behavior. Start with the internal process, then the consequence. If a sentence describes the child's behavior without naming the internal process that produced it, REWRITE before emitting. The parent must finish each section thinking "this is WHY my child does this," not just "this is WHAT my child does."
+
 STRENGTH BALANCE RULE (applies to EVERY field — essence, sections, pressureProfile, repairProfile, perceptionTranslation, respondsBestWhen, inTheMoment, whatMakesItWorse, moonBridge, practice, soulContract):
 - The reading must NOT over-weight tension, conflict, or dysfunction. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point between this parent and child — drawn from the same chart evidence (bridge aspects, shared element, supportive synastry, easy ruler chains, harmonious Moon/Venus/Jupiter contacts, shared sect, shared mode).
 - pressureProfile MUST be paired with repairProfile or with a working-dynamic line. Never present pressure without a corresponding strength.
