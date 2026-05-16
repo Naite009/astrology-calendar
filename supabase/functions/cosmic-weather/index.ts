@@ -892,6 +892,9 @@ For example:
 - Mercury at 28° Aquarius = "Mercury is about to enter Pisces in the coming days"
 - Mercury at 2° Pisces = "Mercury just entered Pisces" (only if it's at an early degree)
 
+CRITICAL CORRECTION — MARS INTO TAURUS:
+When Mars is at late degrees of Aries and about to enter Taurus, you MUST say "Mars moves into Taurus." Mars in Taurus is slow, steady, and persistent. Do NOT confuse Mars with Mercury. Do NOT describe Mars in Aries as "slow and steady."
+
 ALWAYS INCLUDE SPECIFIC DATES (THIS IS A TEACHING APP):
 - What's happening LATER TODAY with SPECIFIC TIME if known
 - What's coming THIS WEEKEND with the actual dates (e.g., "February 8-9")
