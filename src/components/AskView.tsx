@@ -651,6 +651,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
 
       const payload = {
+        userSituation: userSituation?.trim() || undefined,
         dateLabel: now.toLocaleString('en-US', {
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
           hour: 'numeric', minute: '2-digit',
