@@ -214,7 +214,16 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const body = (await req.json()) as RequestBody;
+    let body: RequestBody;
+    try {
+      const raw = await req.text();
+      body = raw ? (JSON.parse(raw) as RequestBody) : ({} as RequestBody);
+    } catch (_e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (!Array.isArray(body?.members) || body.members.length < 2) {
       return new Response(JSON.stringify({ error: "Need at least 2 members" }), {
         status: 400,
