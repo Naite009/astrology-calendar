@@ -1,74 +1,113 @@
+## The 3 questions the build must answer (per child)
 
-## Goal
+Tara-Vogel-style parenting astrology readings answer three questions. Current engine answers 1 and 2 well. Question 3 is missing in *recognition* form.
 
-Match the depth of the Ben / Max / Ike example. Current readings have many fields (essence, sections, pressureProfile, etc.) but no single field forces the AI to walk through the **mechanism**:
+1. **How does this child actually work?** (wiring / mechanism, not traits)
+   Already covered: `childMechanism`, `essence`, `sections.howItLands`, `atAGlance`, MECHANISM-FIRST + DECISION LAYER rules.
+2. **Where do they struggle / get stuck?** (friction points in the design)
+   Already covered: `pressureProfile`, `perceptionTranslation`, `whatEscalates`, `inTheMoment`, `connectionMisfire`, `whatMakesItWorse`.
+3. **What does this child need from me, specifically?** (translation of the wiring into parent alignment)
+   **MISSING.** Closest fields (`respondsBestWhen`, `whatHelps`, `practice`) are instruction-shaped. None give the parent the recognition moment "this is the kind of parent my child needs me to be."
 
-> placement A does X · placement B does Y · the gap between X and Y · how that gap shows up in real life · how it amplifies under stress · what this is not
+## What to add: `whatThisChildNeedsFromYou` (Layer 3)
 
-That arc is what makes the ChatGPT version feel surgical. We will add it as a required, schema-enforced section.
+A required, schema-locked section per child in BOTH edge functions. Generated **FROM** the child's `childMechanism` — not freestyle.
 
-## Approach
-
-Add a required `childMechanism` object to both family edge functions. Schema-locking it is more reliable than another paragraph of prose instructions.
-
-### New object shape
+### Shape
 
 ```text
-childMechanism: {
-  corePattern: [
-    { placement: "Cancer Moon",      does: "feels everything immediately and personally; reactions are fast and body-based, not verbal" },
-    { placement: "Aquarius Mercury", does: "processes through detachment and logic; wants to step back, does not naturally name feelings" }
-    // optional 3rd entry ONLY if the real driving tension requires it (e.g. Moon vs Saturn AND Mercury)
-  ],
-  theConflict: "He feels like Cancer but has to explain like Aquarius. Feeling hits first (fast, intense, unclear); thinking arrives later (cool, removed). Logic is available before emotional language is.",
-  inRealLife: "When you ask 'what's wrong?' the feeling is loud but not organized yet, and his brain is wired to respond with clean logic, so he literally has nothing usable to say. You get 'nothing,' silence, or a cold factual answer.",
-  underStress: "Feeling gets stronger (Cancer) while the mind defends harder (Aquarius). He either shuts down or becomes sharp and dismissive.",
-  whatThisIsNot: "Not coldness, not avoidance, not disrespect."
-}
+whatThisChildNeedsFromYou: {
+  opener: "This child needs a parent who...",
+  lines: [
+    { text: string, tiedTo: "processing" },   // how they process internally
+    { text: string, tiedTo: "stuckPoint" },   // where they get stuck
+    { text: string, tiedTo: "pressure" }      // how they react under pressure
+  ]
+} | null
 ```
 
-### Prompt rules added next to the schema
+- Exactly 3 lines, one per `tiedTo` slot, in this order. Optional 4th line only for a specific named friction (Chiron contact, retrograde Mercury, Moon-Pluto), tagged `tiedTo: "specificFriction"`.
+- Each line ≤ 14 words, verb-first, completing "…a parent who [verb]".
+- Each line traceable to a mechanism element already named upstream.
 
-1. **`corePattern` length: 2 placements in most cases, max 3 only when a third is genuinely driving the tension.** Pick the placements that create the loudest internal contradiction (typically Moon + one of Mercury / Sun / Mars / Saturn / Ascendant). Never two harmonious placements.
-2. **`does` describes an internal mechanism, not a trait.** Verbs like *processes, absorbs, scans, defends, regulates, organizes, releases*. Never adjectives like *sensitive, creative, fiery*.
-3. **`theConflict` names the gap as a structural mismatch**, using the pattern "feels like X but has to [verb] like Y" or "wants A but is wired for B".
-4. **`inRealLife` is a parent-recognizable scene** the parent has already lived (asking "what's wrong", giving an instruction, correcting in public, ending screen time). No abstract description.
-5. **`underStress` must show both placements amplifying at once** — the Cancer feeling gets louder AND the Aquarius defense gets harder. Both, not one.
-6. **`whatThisIsNot` is ONE short sentence only.** Three to five things it is not, separated by commas. No explanation, no therapy language, no "because" clause. If it grows past one sentence it becomes preachy and gets cut.
-7. **MECHANISM DIFFERENTIATION RULE (system reading, multi-child)**: Each child must have a clearly different mechanism. Across siblings, the set of mechanisms must vary on at least two of these axes:
-   - internal timing (fast vs slow)
-   - processing style (internal vs external)
-   - reaction pattern (withdraw vs push vs perform vs negotiate)
-   If two children's `theConflict` sentences could be swapped without anyone noticing, rewrite the second one. No template reuse.
-8. **Banned**: zodiac shorthand without mechanism, single-line summaries, "this means he is …" closures, any sentence that could be cut without losing the mechanism.
+### Hard rules (added next to existing MECHANISM / DECISION blocks)
+
+1. **Mechanism mapping is mandatory.** Each line must map to a specific element of `childMechanism` (corePattern entry, theConflict, or underStress). If the model can't point to the source, REWRITE.
+2. **"Because otherwise what happens?" test.** Each line must implicitly answer this. If removing the line costs the parent nothing specific to *this* child, REWRITE.
+3. **Genericity test (HARD).** Strip the child's chart context. Re-read the 3 lines. If they still work for any child, the section is INVALID. Deterministic backstop enforces this with a banned-phrase regex.
+4. **Recognition, not instruction.** No "do this", "try this", "make sure to", "remember to", numbered steps, scripts, or "tips". Phrased as a quality the parent must embody, not an action to perform.
+5. **No therapy language.** Banned: "hold space", "attune", "co-regulate", "honor their feelings", "validate their inner world", "meet them where they are", "create a safe container", "be present with".
+6. **No generic parenting advice.** Banned: "be patient", "listen actively", "set clear boundaries", "be consistent", "stay calm", "model the behavior", "lead by example".
+7. **No "because" clauses in the line itself.** The mechanism is upstream. These lines are recognition, not explanation.
+
+### Slot prompts
+
+- **`processing` line** → translate `childMechanism.corePattern` into one quality the parent must embody so the child's internal processing can complete. (e.g. "does not force clarity before they are ready")
+- **`stuckPoint` line** → translate `childMechanism.theConflict` into one quality that prevents the parent from misreading the stuck moment. (e.g. "understands that silence does not mean nothing is wrong")
+- **`pressure` line** → translate `childMechanism.underStress` into one quality that keeps the parent steady when the child amplifies. (e.g. "stays steady when their volume rises instead of matching it")
+
+### DEPENDENCY GATE (CRITICAL — added per latest feedback)
+
+**`whatThisChildNeedsFromYou` can only be generated AFTER a valid `childMechanism` exists for the same child.**
+
+A `childMechanism` is "valid" only if it contains BOTH:
+
+- a clear **internal conflict** in `theConflict` (a structural mismatch phrased as "feels like X but has to Y" or "wants A but is wired for B"), AND
+- a **cause → effect** explanation in `inRealLife` AND in `underStress` (the wiring producing the observable behavior in a parent-recognizable scene).
+
+If either is missing, the model MUST emit `whatThisChildNeedsFromYou: null` and skip the section. Do NOT fall back to generic parenting language. The UI will simply not render the block in that case.
+
+Generation order enforced in the prompt and verified deterministically:
+
+1. Emit `childMechanism`.
+2. Run validator (`isChildMechanismValid()` in sanitize.ts) that checks `theConflict` for the conflict pattern and `inRealLife`/`underStress` for cause→effect markers ("so", "because", "which makes", "which means", "this creates").
+3. If invalid → set `whatThisChildNeedsFromYou = null`, log `_validation_log: needs_section_blocked_weak_mechanism`, move on.
+4. If valid → emit the 3 mechanism-mapped lines.
+
+This guarantees the section never appears unless there is real mechanism content to translate from.
 
 ### Where it goes
 
 - **`supabase/functions/family-pair-reading/index.ts`**
-  - Add `childMechanism` to the JSON schema (between `essence` and `sections`).
-  - Add a dedicated **MECHANISM PORTRAIT RULE** block to the system prompt, right after the existing DEPTH RULE. Include all 8 sub-rules above.
-  - Update the closing "Write the reading" instruction to require `childMechanism` first.
-  - When the recipient is the parent (not a child), still emit `childMechanism` for the child being analyzed.
+  - Add `whatThisChildNeedsFromYou` to `ReadingPayload` and JSON schema, right after `childMechanism`, before `essence`.
+  - Add `WHAT THIS CHILD NEEDS FROM YOU RULE` block in the system prompt immediately after `DECISION LAYER RULE`. Include the 7 rules + 3 slot prompts + the DEPENDENCY GATE.
 
 - **`supabase/functions/family-system-reading/index.ts`**
-  - Add a `childMechanisms` array (one entry per child) to the schema.
-  - Reuse the same MECHANISM PORTRAIT RULE block, and explicitly include the **MECHANISM DIFFERENTIATION RULE** at the end with a sibling-comparison checklist the AI must run before emitting.
-  - Leave `childMechanisms: []` as a safe default in sanitize logic.
+  - Add `whatEachChildNeedsFromYou: { childName: string; opener: string; lines: {...}[] }[]` (or null per child), generated AFTER `childMechanisms` and mapped per child.
+  - Reuse the same rule block + DEPENDENCY GATE applied per child.
+  - Add a **DIFFERENTIATION RULE**: across children, the lines must not be swappable. If swapping child A's lines into child B's block still reads true, REWRITE.
 
-- **No UI rendering yet.** Schema-first so the data exists; a "Mechanism" card on the reading display can come in a follow-up once we see real output.
+### Sanitize + deterministic backstop
 
-### Validation / testing
+- Both sanitize files: default to safe empty shapes; allow `null` to flow through to the UI.
+- `isChildMechanismValid(childMechanism)` enforces the dependency gate server-side; if invalid, force the section to `null` regardless of what the model emitted.
+- `validateNeedsLines()` runs banned-phrase regex (therapy phrases, generic-parenting phrases, leading action verbs like "ask", "use", "try", "give", "provide"). Drop offending lines; if fewer than 3 remain, force the whole section to `null` and log `_validation_log: needs_section_underfilled`.
 
-1. Deploy both edge functions.
-2. Run one pair reading against a known child profile (e.g. Cancer Moon + Aquarius Mercury) via `curl_edge_functions` and inspect `childMechanism` for the six-part shape and the one-sentence `whatThisIsNot`.
-3. Run one system reading with 2–3 kids; confirm one mechanism per child, each picks a different driving tension, and the differentiation rule is visibly met (timing / processing / reaction axes differ).
-4. If the AI flattens any field into a single trait, or two siblings sound interchangeable, tighten the prompt with one more forbidden-phrase example and redeploy.
+### UI (flagged, NOT in this change)
 
-### Memory update
+Quiet centered block on the reading display when present; nothing rendered when null.
 
-After verification, add `mem://features/family-readings/mechanism-portrait`: *every family reading must produce a 6-part mechanism portrait per child (two placements with internal mechanism, the structural conflict, a real-life scene, under-stress amplification, and a one-sentence "what this is not" reframe). In system readings, every child's mechanism must differ from siblings on at least two axes: timing, processing style, reaction pattern.*
+```text
+What [Child]'s Wiring Asks of You
+
+This child needs a parent who…
+  · does not force clarity before they are ready
+  · understands that silence does not mean nothing is wrong
+  · stays steady when their volume rises
+```
+
+### Verification
+
+1. Deploy both functions.
+2. Run a pair reading with a strong mechanism case (e.g. Cancer Moon + Aquarius Mercury) → confirm 3 mechanism-mapped lines, all slots filled, genericity test passes.
+3. Run a pair reading with a deliberately weak mechanism case (sparse chart data) → confirm `whatThisChildNeedsFromYou` is `null` and `_validation_log` records `needs_section_blocked_weak_mechanism`.
+4. Run a system reading with 2–3 children → confirm one block per child (or null where mechanism is weak), and the differentiation rule holds.
+
+### Memory update (after verification)
+
+Add `mem://features/family-readings/parent-alignment`: every family reading may include a `whatThisChildNeedsFromYou` block of exactly 3 mechanism-mapped recognition lines (processing / stuckPoint / pressure), each tied to a placement named in `childMechanism`. The section is GATED on a valid mechanism (clear internal conflict + cause→effect); if the mechanism is weak, the section is null, never filled with generic parenting language. Differentiated across siblings in system readings.
 
 ## Out of scope
 
-- No UI changes yet.
-- No changes to ask-astrology or cosmic-weather (the depth rule is already in place; we can port the mechanism portrait there in a follow-up if you want it for relationship/Ask readings too).
+- No UI rendering in this pass (schema + prompt only).
+- No changes to ask-astrology, cosmic-weather, or solar-return readings.
