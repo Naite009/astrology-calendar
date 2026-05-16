@@ -37,6 +37,50 @@ const today = () => new Date().toLocaleDateString("en-US", { year: "numeric", mo
 
 export const QUICK_TOPICS: QuickTopic[] = [
   {
+    id: "daily_weather",
+    label: "🌤️ Today's Weather",
+    icon: <CloudSun className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `Using the full natal chart for ${name} (born ${date} at ${time} in ${loc}) AND every piece of CURRENT SKY data in the chart context, give a professional "Today's Weather" reading for ${today()}. The "question_type" in your JSON output MUST be exactly "general".
+
+PURPOSE: Explain why TODAY feels the way it feels — including odd, unexplained shifts ("why did I suddenly feel anxious and turn around to come home," "why did everyone seem off," "why did this small thing land so hard"). The user is not an astrologer; they cannot see fixed stars, void-of-course Moon, exact transit orbs, or which transiting planet just stationed. You can. Surface what they cannot pick up on their own.
+
+WHAT YOU MUST USE FROM THE CHART CONTEXT (do not invent — only cite what is actually present):
+- CURRENT TRANSITS block (today's transiting planets by sign + degree, with retrograde flags)
+- ACTIVE TRANSIT ASPECTS TO NATAL CHART block (every transit-to-natal aspect with exact orb)
+- MOON PHASE / VOID-OF-COURSE STATUS block (Moon sign, phase, whether it is VOC right now, when the VOC ends)
+- FIXED STARS ACTIVE TODAY block (any catalogued fixed star a transiting planet is triggering — these are rare; cite by name and explain the flavor in plain language)
+- NATAL FIXED STAR CONTACTS block (lifetime star contacts, only mention if today's transits are lighting them up)
+- Any pre-computed return windows, eclipses, Saturn/Jupiter cycles already in context
+- Validation facts block (placements are authoritative)
+
+VOICE RULES (NON-NEGOTIABLE):
+- Second person, conversational, plain English. The user could be reading this on their phone in a parking lot deciding whether to turn the car around.
+- Behavior-first: open every section with what the day FEELS LIKE or what tends to HAPPEN, then name the placement that is causing it. Never lead with jargon.
+- Translate every astrological signal into a real-life moment (e.g., "you may suddenly want to cancel plans, retreat, or feel like nothing you start will land — that is the Moon going void of course at 2:14pm").
+- If something rare is happening (fixed star contact, station, exact eclipse degree, outer planet at 0° or 29°), say so explicitly and explain why it matters today.
+- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal", "activation" (say "this transit" instead), "calling" as a noun, "energy" as a vague catch-all.
+- Do NOT pad. If only 3 things are actually live today, give 3. Do not invent a fourth.
+- NEVER write meta sentences like "let's dive in" or "this reading will explore..."
+- If the Moon is void of course right now, the FIRST narrative section must be about it. That is the single most likely explanation for "why did I suddenly feel anxious and turn around."
+
+Use this EXACT section order — skip any section that has no real signal in the chart context (state briefly why if you skip).
+
+SECTION 1: THE MOON RIGHT NOW — Moon's current sign, phase, and whether it is void of course. If VOC, explain in plain language: "the Moon has finished its aspects in [sign] and is drifting until it enters [next sign] around [time]. Things started now tend not to land. A sudden 'I should just go home' feeling is normal under this." If not VOC, name the next aspect the Moon will make and what tone it sets for the next several hours.
+
+SECTION 2: TODAY'S BIGGEST TRANSIT TO YOUR CHART — Pick the 1–2 tightest transit-to-natal aspects (smallest orb) from the ACTIVE TRANSIT ASPECTS block. For each: name the transiting planet, the natal planet/point, the aspect, the exact orb, and ONE concrete real-life scenario it tends to produce. Translate, do not lecture.
+
+SECTION 3: ANY FIXED STAR ACTIVE TODAY — If the FIXED STARS ACTIVE TODAY block has entries, cite each by name (e.g., "transiting Sun is sitting on the fixed star Algol, which is conjunct your natal Mercury") and explain its flavor in plain words. If no fixed star is active, write one short sentence saying so and move on.
+
+SECTION 4: THE SLOWER PRESSURE UNDERNEATH — The one outer-planet (Saturn, Uranus, Neptune, Pluto, or Chiron) transit to a personal point (Sun/Moon/Mercury/Venus/Mars/Asc/MC) that is closest to exact. What it has been doing all month, and what makes today specifically loud.
+
+SECTION 5: WHY TODAY FELT THE WAY IT DID — One paragraph synthesis. Weave together the Moon status + the tightest transit + any fixed star + the slow pressure into one honest paragraph that answers: "if I felt anxious for no reason today, what is the chart actually saying?" Be specific to THIS chart on THIS day. No generic horoscope language.
+
+SECTION 6: WHAT TO DO WITH THE REST OF THE DAY — 3–5 short, concrete moves calibrated to what is actually live (e.g., "if the Moon is VOC until 6:14pm, do not sign or send anything important — reschedule"; "with Mars square your natal Moon at 0°48' orb, expect a short fuse around food/family — eat before any hard conversation"). Plain, doable, ungeneric.
+
+STRUCTURAL OUTPUT: Begin with a placement_table titled "Today's Sky" with rows for the most important transiting planets cited (sign + degree, retrograde noted). Then one narrative_section per SECTION above (titles: "The Moon Right Now", "Today's Biggest Transit to Your Chart", "Fixed Stars Active Today", "The Slower Pressure Underneath", "Why Today Felt the Way It Did", "What to Do With the Rest of the Day"). End with a summary_box titled "Today's Bottom Line" with items: "The Headline", "What to Lean Into", "What to Avoid Until Tomorrow".`,
+  },
+  {
     id: "natal",
     label: "🌟 Natal",
     icon: <Sparkles className="h-4 w-4" />,
