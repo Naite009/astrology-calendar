@@ -2862,6 +2862,16 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                   </div>
                 )}
                 <div className="max-h-[280px] overflow-y-auto">
+                  <button
+                    onClick={() => selectChart("general")}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/50 transition-colors border-b border-border ${activeChartId === "general" ? "bg-primary/5" : ""}`}
+                  >
+                    <CloudSun className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground truncate">General</div>
+                      <div className="text-[11px] text-muted-foreground truncate">No chart, today's live sky only</div>
+                    </div>
+                  </button>
                   {chartOptions.primary && (
                     <button
                       onClick={() => selectChart("user")}
