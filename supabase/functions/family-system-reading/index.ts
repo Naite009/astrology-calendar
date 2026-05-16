@@ -245,6 +245,8 @@ Deno.serve(async (req) => {
       .map((r) => `- ${r.name} (${r.role}): ${r.systemRole} — ${r.reason}`)
       .join("\n");
 
+    const parents = body.members.filter((m) => isParentRole(m.role));
+    const children = body.members.filter((m) => isChildRole(m.role));
     const frictionLines = body.topFriction.map(fmtAspect).join("\n") || "(none significant)";
     const bridgeLines = body.topBridges.map(fmtAspect).join("\n") || "(none significant)";
     const parentChildEvidence = parents.length && children.length
