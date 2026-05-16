@@ -2908,8 +2908,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </Popover>
           </div>
 
-          {/* Chart Context */}
-          {selectedChart && (
+          {/* General-mode helper */}
+          {activeChartId === "general" && (
+            <div className="rounded-md border border-amber-300/40 bg-amber-50/30 p-3 text-sm">
+              <p className="text-foreground">
+                <CloudSun className="inline h-4 w-4 text-amber-700 mr-1 -mt-0.5" />
+                <span className="font-medium">General mode.</span>{" "}
+                <span className="text-muted-foreground">
+                  Your question will be answered using only today's live sky (Moon, Void-of-Course, tightest aspects, fixed stars). No chart needed. Describe what just happened, or leave blank to just read today's sky.
+                </span>
+              </p>
+            </div>
+          )}
+
+          {/* Chart Context — hidden in general mode */}
+          {activeChartId !== "general" && selectedChart && (
             <div className="rounded-md bg-muted/50 p-3 text-sm">
               <p className="text-muted-foreground">
                 <span className="font-medium text-foreground">{selectedChart.name}</span>
@@ -2921,10 +2934,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           )}
 
-          {/* Quick Topics — always visible so users can pick Relationship,
-              Career, Where Should I Live, etc. even after the chat already
-              has entries. */}
-          {selectedChart && (() => {
+          {/* Quick Topics — chart-specific, hidden in general mode */}
+          {activeChartId !== "general" && selectedChart && (() => {
             const matchingSR = findMatchingSolarReturn(
               solarReturnCharts,
               selectedChart,
@@ -2961,7 +2972,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
                   <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto" />
                   <p className="text-muted-foreground">
-                    Ask any question about {selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.
+                    {activeChartId === "general"
+                      ? "Describe what's going on (or leave it blank) and click send to read today's sky."
+                      : `Ask any question about ${selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.`}
                   </p>
                 </div>
               )}
