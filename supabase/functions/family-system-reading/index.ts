@@ -440,7 +440,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". ALL THREE expression levels REQUIRED. This is the ONLY visible content for this pair.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR ULTRA-COMPACT FORMAT exactly: six newline-separated lines — "Shared Pattern:", "How this can show up:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". Each line MAX 12 words. This is the ONLY visible content for this pair.),
       "composite": null,
       "bridge": null,
       "friction": null,
