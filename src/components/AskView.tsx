@@ -20,6 +20,8 @@ import { formatDateMMDDYYYY, formatLocalDateKey } from "@/lib/localDate";
 import { generateAskPdf } from "@/lib/askPdfExport";
 import { validateAndPrepareReadingsForExport } from "@/lib/preExportValidator";
 import { buildAskValidationFactsBlock } from "@/lib/askValidationFacts";
+import { findActiveFixedStarsToday, findFixedStarActivations } from "@/lib/fixedStars";
+import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import { formatLocationTitleCase } from "@/lib/locationFormat";
 import { ReadingRenderer, StructuredReading } from "@/components/AskReadingRenderer";
 import { AskQuickTopics } from "@/components/AskQuickTopics";
