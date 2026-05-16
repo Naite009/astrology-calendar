@@ -948,7 +948,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         if (natalStarHits.length > 0) {
           context += "\n--- NATAL FIXED STAR CONTACTS (lifetime) ---\n";
           for (const h of natalStarHits.slice(0, 8)) {
-            context += `- ${h.star} conjunct natal ${h.point} (orb ${h.orb.toFixed(2)}°) — ${h.meaning}\n`;
+            context += `- ${h.star} conjunct natal ${h.point} (orb ${h.orb.toFixed(2)}°) — ${h.interpretation}\n`;
           }
         }
 
@@ -959,7 +959,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           context += "\n--- FIXED STARS ACTIVE TODAY (transit-triggered) ---\n";
           context += "CITE these by name in any daily-weather reading. These are rare contacts the user would not catch on their own.\n";
           for (const h of activeStars) {
-            context += `- ${h.star} on natal ${h.point} triggered by transiting ${h.triggeredBy} — ${h.meaning}\n`;
+            context += `- ${h.star} on natal ${h.point} triggered by transiting ${h.triggeredBy} — ${h.interpretation}\n`;
           }
         }
 
@@ -967,19 +967,18 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         try {
           const voc = getVOCMoonDetails(now);
           context += "\n--- MOON PHASE / VOID-OF-COURSE STATUS (today) ---\n";
-          context += `- Moon sign: ${voc.currentSign}\n`;
-          context += `- Moon phase: ${voc.moonPhase} (illumination ${Math.round(voc.illumination)}%)\n`;
+          if (voc.currentMoonSign) context += `- Moon sign: ${voc.currentMoonSign}\n`;
           if (voc.isVOC) {
-            context += `- Moon is VOID OF COURSE. Started ${voc.vocStart?.toISOString() || 'earlier'}, ends approximately ${voc.vocEnd?.toISOString() || 'unknown'}.\n`;
+            const startStr = voc.start ? voc.start.toISOString() : 'earlier';
+            const endStr = voc.end ? voc.end.toISOString() : 'unknown';
+            context += `- Moon is VOID OF COURSE today. Window: ${startStr} → ${endStr}. Currently VOC: ${voc.isCurrentlyVOC ? 'YES' : 'no'}.\n`;
             context += "  Use this to explain a sudden urge to turn around, abandon a plan, or feel that nothing initiated now will land — that is the VOC signature.\n";
+            if (voc.moonEntersSign) context += `- Moon next enters ${voc.moonEntersSign} at end of VOC.\n`;
           } else {
-            context += "- Moon is NOT void of course right now.\n";
+            context += "- Moon is NOT void of course today.\n";
           }
           if (voc.lastAspect) {
-            context += `- Last Moon aspect: ${voc.lastAspect.aspect} ${voc.lastAspect.planet}\n`;
-          }
-          if (voc.nextAspect) {
-            context += `- Next Moon aspect: ${voc.nextAspect.aspect} ${voc.nextAspect.planet}\n`;
+            context += `- Last Moon aspect: ${voc.lastAspect.aspectName} ${voc.lastAspect.planet}\n`;
           }
         } catch {}
       } catch {}
