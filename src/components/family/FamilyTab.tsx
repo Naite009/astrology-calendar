@@ -630,6 +630,20 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
                   {systemReading && (
                     <Button
                       variant="outline"
+                      onClick={() =>
+                        downloadJson(
+                          systemReading,
+                          `family-reading-${selectedMembers.map((s) => s.chart.name).join("-") || "system"}.json`,
+                        )
+                      }
+                      title="Download reading as JSON"
+                    >
+                      <Download className="h-4 w-4 mr-1" /> Download JSON
+                    </Button>
+                  )}
+                  {systemReading && (
+                    <Button
+                      variant="outline"
                       onClick={() => generateSystemReading(true)}
                       disabled={systemLoading || selectedIds.size < 2}
                       title="Generate a fresh reading"
