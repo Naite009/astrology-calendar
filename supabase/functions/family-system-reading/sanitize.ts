@@ -78,6 +78,7 @@ export const FORBIDDEN_PAIR_KEYS = new Set([
 // (essay form) is removed — Section 6 now uses `whatHelpsWholeFamily` (array)
 // and `whatHelpsRationale` (one sentence).
 export const FORBIDDEN_TOP_LEVEL_KEYS = new Set([
+  "whatAlreadyWorks",
   "householdRegulationPattern",
   "whatHelps",
   "siblingPressurePoints",
@@ -331,36 +332,6 @@ export function sanitizeReadingPayload<T extends Record<string, unknown>>(input:
       if (JSON.stringify(migrated) !== before) migratedPairs += 1;
       return migrated;
     });
-  }
-
-  // whatAlreadyWorks: lift legacy { pair, line } into role-aware shape.
-  const waw = out.whatAlreadyWorks;
-  if (Array.isArray(waw)) {
-    out.whatAlreadyWorks = waw
-      .map((item: unknown) => {
-        if (!item) return null;
-        if (typeof item === "string") {
-          return { pair: "", aspect: null, forA: null, forB: null, line: item };
-        }
-        if (typeof item === "object") {
-          const o = item as Record<string, unknown>;
-          const aspect = typeof o.aspect === "string" ? o.aspect : null;
-          const forA = typeof o.forA === "string" && o.forA.trim() ? o.forA : null;
-          const forB = typeof o.forB === "string" && o.forB.trim() ? o.forB : null;
-          const legacyLine = typeof o.line === "string" ? o.line : null;
-          return {
-            pair: String(o.pair ?? ""),
-            aspect: aspect ?? (legacyLine && !forA && !forB ? legacyLine : null),
-            forA,
-            forB,
-            line: legacyLine,
-          };
-        }
-        return null;
-      })
-      .filter((x: unknown) => !!x);
-  } else if (waw != null) {
-    out.whatAlreadyWorks = [];
   }
 
   return {

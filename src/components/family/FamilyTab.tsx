@@ -1345,27 +1345,6 @@ const AiPairReadingView = ({
         </Card>
       )}
 
-      {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
-        <Card className="border-emerald-500/40">
-          <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-emerald-600" />
-              What Already Works Between You
-            </CardTitle>
-            <CardDescription className="pt-1">
-              Existing strengths and natural connection points in this relationship.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4 text-sm">
-            <ul className="list-disc list-inside space-y-1">
-              {reading.whatAlreadyWorks.map((item: any, i: number) => (
-                <li key={i}>{typeof item === "string" ? item : (item?.line ?? "")}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
       {reading.practice && (
         <Card>
           <CardHeader className="pb-3">
@@ -1436,45 +1415,6 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 )}
               </div>
             ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {Array.isArray(reading.whatAlreadyWorks) && reading.whatAlreadyWorks.length > 0 && (
-        <Card className="border-emerald-500/40">
-          <CardHeader className="pb-3 bg-emerald-500/10 rounded-t-lg">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-emerald-600" />
-              What Already Works In This Family
-            </CardTitle>
-            <CardDescription className="pt-1">
-              Only listed when there is a real, tight bridge aspect between personal planets in a specific pair. Each line is split by who feels it, in their role.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3 text-sm">
-            {reading.whatAlreadyWorks.map((w: any, i: number) => {
-              const pair = w?.pair ?? "";
-              const aspect = w?.aspect ?? null;
-              const forA = w?.forA ?? null;
-              const forB = w?.forB ?? null;
-              const legacyLine = w?.line ?? null;
-              const [labelA, labelB] = String(pair).split(/\s*[+↔]\s*/);
-              return (
-                <div key={i} className="border-l-2 border-emerald-500/40 pl-3">
-                  {pair && <div className="font-semibold">{pair}</div>}
-                  {aspect && <p className="text-muted-foreground mt-1">{aspect}</p>}
-                  {forA && (
-                    <p className="mt-1"><span className="font-medium">For {labelA || "Person A"}:</span> {forA}</p>
-                  )}
-                  {forB && (
-                    <p className="mt-1"><span className="font-medium">For {labelB || "Person B"}:</span> {forB}</p>
-                  )}
-                  {!aspect && !forA && !forB && legacyLine && (
-                    <p className="text-muted-foreground mt-1">{legacyLine}</p>
-                  )}
-                </div>
-              );
-            })}
           </CardContent>
         </Card>
       )}

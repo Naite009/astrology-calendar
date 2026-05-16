@@ -100,16 +100,94 @@ interface PairConnectionEntry {
   composite?: PairCompositeBlock | string | null;
   bridge?: PairAspectBlock | string | null;
   friction?: PairAspectBlock | string | null;
+  dynamic?: string | null;
+  interactionPattern?: unknown;
+  whatCanFeelHard?: string | null;
+  whatHelps?: string | null;
+  patternType?: string | null;
   note?: string | null;
 }
 
 interface ReadingPayload {
   atAGlance?: { name: string; line: string }[];
-  whatAlreadyWorks?: { pair: string; aspect?: string | null; forA?: string | null; forB?: string | null }[];
   parentChildConnections?: ({ parent: string; child: string } & PairConnectionEntry)[];
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
   whatEscalates?: { name: string; body: string }[];
+}
+
+const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
+const isChildRole = (role: string) => /child|son|daughter|stepchild|kid/i.test(role);
+const normalizePairName = (name: unknown) => String(name ?? "").trim().toLowerCase();
+
+function fallbackPairDynamic(nameA: string, nameB: string): string {
+  return `Shared Pattern:
+Different pacing — ${nameA} reaches for clarity, ${nameB} needs room to respond.
+How this can show up:
+At its best:
+One stays simple. The other has space to stay present.
+More commonly:
+One explains more. The other pulls away or pushes back.
+Under stress:
+One tries harder. The other shuts down or gets sharp. Both feel missed.
+Where connection can happen:
+Short, low-pressure moments without a goal.`;
+}
+
+function ensurePairCoverage(payload: ReadingPayload, members: RequestBody["members"]): void {
+  const parents = members.filter((m) => isParentRole(m.role));
+  const children = members.filter((m) => isChildRole(m.role));
+
+  if (parents.length && children.length) {
+    const existing = new Set((payload.parentChildConnections ?? []).map((p) => `${normalizePairName(p.parent)}|${normalizePairName(p.child)}`));
+    const complete = [...(payload.parentChildConnections ?? [])];
+    for (const parent of parents) {
+      for (const child of children) {
+        const key = `${normalizePairName(parent.name)}|${normalizePairName(child.name)}`;
+        if (existing.has(key)) continue;
+        complete.push({
+          parent: parent.name,
+          child: child.name,
+          dynamic: fallbackPairDynamic(parent.name, child.name),
+          composite: null,
+          bridge: null,
+          friction: null,
+          interactionPattern: null,
+          whatCanFeelHard: "",
+          whatHelps: "",
+        });
+        existing.add(key);
+      }
+    }
+    payload.parentChildConnections = complete;
+  }
+
+  if (children.length > 1) {
+    const existing = new Set((payload.siblingConnections ?? []).map((p) => `${normalizePairName(p.siblingA)}|${normalizePairName(p.siblingB)}`));
+    const complete = [...(payload.siblingConnections ?? [])];
+    for (let i = 0; i < children.length; i += 1) {
+      for (let j = i + 1; j < children.length; j += 1) {
+        const older = children[i];
+        const younger = children[j];
+        const key = `${normalizePairName(older.name)}|${normalizePairName(younger.name)}`;
+        if (existing.has(key)) continue;
+        complete.push({
+          siblingA: older.name,
+          siblingB: younger.name,
+          patternType: "pacing friction",
+          dynamic: fallbackPairDynamic(older.name, younger.name),
+          composite: null,
+          bridge: null,
+          friction: null,
+          interactionPattern: null,
+          whatCanFeelHard: "",
+          whatHelps: "",
+        });
+        existing.add(key);
+      }
+    }
+    payload.siblingConnections = complete;
+  }
 }
 
 function fmtAspect(a: CrossAspect): string {
@@ -264,33 +342,15 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — householdRegu
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into one psychological explanation. State parent behavior as behavior. State child adaptation as behavior. State group tendency as tendency. Each stands on its own as observable.
 - The user should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
-STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, childAdaptations, siblingPressurePoints, whatEscalates, whatHelps):
-- The reading must NOT over-weight tension, conflict, or dysfunction in this family. For every pressure point, friction, or struggle named, you MUST also name at least one corresponding strength, working dynamic, or natural connection point — drawn from the same chart evidence (bridge aspects in topBridges, shared placements, harmonious composite/pair-composite contacts, shared element or sect, supportive sibling synastry, easy ruler chains).
-- siblingPressurePoints MUST be balanced by an explicit strength sentence per child ("where this child contributes to the family", "what they bring that works"). 
-- whatEscalates MUST be paired with whatHelps — never leave the family with only "what's wrong".
-- childAdaptations entries: each child's "line" MUST include at least one observable strength this child brings (energy, leadership, attunement, humor, problem-solving, steadiness, creativity) tied to a named placement, alongside the adaptation pattern.
-- Examples of required pairing: instead of only "siblings escalate each other" → also "they share [named bridge aspect] and can co-regulate through play or movement"; instead of only "household runs hot under pressure" → also "the same fire energy gives the family momentum, recovery speed, and warmth on good days".
-- FORBIDDEN overall tone: that the family is dysfunctional, that no one understands each other, that everything is conflict-based, that the household is broken. 
-- REQUIRED overall tone: "this is complicated, AND here is what is genuinely working, AND here is what to build on" — the parent must finish the reading able to name both the friction AND the working ground.
-- If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridges (a single sibling trine, a shared Moon element across two members, a parent-child Venus/Jupiter contact, a supportive composite Sun) and name them as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
-
-NATURAL STRENGTHS — FULL COVERAGE REQUIRED (applies to whatAlreadyWorks field):
-- This section MUST include EVERY primary pair in the family — every parent↔child pair AND every sibling↔sibling pair. NO PAIR MAY BE OMITTED for any reason. Omission reads as "there is no connection here" and is unacceptable.
-- If 2 parents and 3 children → 6 parent-child pairs + 3 sibling pairs = 9 entries minimum. If 1 parent and 3 children → 3 + 3 = 6 entries. Count the pairs and confirm every one appears before returning.
-- For EACH pair, find the strongest available connective evidence in this order and use whichever exists:
-    1. Tight (≤4°) bridge aspect between personal planets (Sun, Moon, Mercury, Venus, Mars) — cite it.
-    2. Wider (5–8°) bridge aspect between personal planets — cite as "wider contact".
-    3. Tight bridge involving social/outer planets (Jupiter, Saturn, Chiron) to a personal planet — cite it.
-    4. Shared element, shared modality, shared sect, or shared Moon/Sun sign — cite it.
-    5. Pair composite tone (composite Sun/Moon/Venus/Jupiter sign or element) — cite it.
-    6. Easy ruler chain (one person's chart ruler well-placed relative to the other) — cite it.
-- If a pair has NONE of the above, state honestly: "Few direct contacts here. The connection runs quieter, with less automatic pull in either direction — it shows up through proximity and shared family rhythm rather than instant resonance." Then still list the pair. Never skip.
-- Every entry MUST be range-based (per ASPECT EXPRESSION RANGE RULE). No guaranteed positives.
-- FORBIDDEN: vague positivity ("loving family", "caring household"). Each line must cite a specific placement, aspect, shared signature, or honest "few contacts" note.
-- The user must read this section and see EVERY relationship named. No parent, no child, no sibling pair left out.
+PAIR COVERAGE RULE (HARD):
+- Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
+- Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
+- EVERY child must appear in every relevant pair block. Ben must never be skipped when Ben is in the family members list.
+- If a pair is difficult, quiet, sparse, or hard to summarize, still write the full pair block. Never omit the pair.
+- Count the expected pairs before returning: parents × children, plus every sibling combination.
 
 
-ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, whatAlreadyWorks, parentChildConnections.composite/bridge/friction, siblingConnections.composite/bridge/friction, childAdaptations.line, whatEscalates.body):
+ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, parentChildConnections.dynamic, siblingConnections.dynamic, whatEscalates.body):
 - Do NOT present any aspect, composite, or shared placement as a guaranteed positive OR negative outcome. Every aspect is a RANGE of expression, never a fixed result.
 - HARD STOP: every sentence that references an aspect, composite, or placement-driven dynamic MUST contain a range marker. Acceptable range markers include: "can show up as ... but can also ...", "may ... though it can also ...", "tends to ... but doesn't always ...", "at its best ... at its hardest ...", "on a good day ... on a hard day ...", "sometimes ... and other times ...".
 - FORBIDDEN phrasings (assume one fixed outcome): "they connect through X", "this creates warmth", "this brings harmony", "this child feels seen", "this gives the family ease", "they have productive conversations", "they clash", "this is where it goes wrong", "this damages the bond".
@@ -335,9 +395,8 @@ TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - Generate one entry per family member, in the order they appear in the input (parents first, then children).
 - This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
 
-EVIDENCE GATE — HARD STOP (applies to whatAlreadyWorks, parentChildConnections, siblingConnections):
+EVIDENCE GATE — HARD STOP (applies to parentChildConnections and siblingConnections):
 - Before writing any line about a pair, you MUST cite the specific aspect, shared signature, or composite tone you are drawing from. If you cannot cite anything, state "few direct contacts" plainly — but you may NEVER omit the pair.
-- "What works" lines in whatAlreadyWorks MUST appear for EVERY pair (see NATURAL STRENGTHS FULL COVERAGE rule above). Use tight personal-planet bridges first; fall back to wider contacts, shared element/sect, composite tone, or ruler chains; if none exist, name the quietness honestly. NEVER omit a pair from whatAlreadyWorks.
 - Friction lines may ONLY appear when there is a tight (≤5° orb) friction aspect (square, opposition) between two named planets in that pair.
 - Bridge lines may ONLY appear when there is a tight (≤5° orb) trine, sextile, or conjunction between two named planets in that pair.
 - Composite line is the only line allowed without a synastry aspect — it cites the pair composite directly.
@@ -349,7 +408,7 @@ NO CONFIGURATION VOCABULARY (HARD BAN):
 - If multiple tensions cluster, describe them as "two tight tensions between these placements" or "several friction aspects between these people". Never name a configuration.
 - Do NOT assign psychological roles (container, mirror, absorber) based on configurations or sign emphasis.
 
-ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, friction, and whatAlreadyWorks):
+ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, friction, and dynamic pair text):
 - Every composite, bridge, friction, and what-works entry MUST split into what each specific person experiences in their role. NEVER describe a pair tone in the abstract.
 - Parent–child pairs: forA = parental behavior (steering, correcting, fixing, pressuring, regulating, withdrawing). forB = child behavior at their developmental stage (defending, shutting down, escalating, going quiet, seeking space).
 - Sibling pairs: forA is ALWAYS the older sibling (siblingA), forB is ALWAYS the younger (siblingB), for stable labeling across all sibling pairs (1st↔2nd, 1st↔3rd, 2nd↔3rd). Birth order is a label only — actual behavior MUST come from the chart, not from birth-order stereotypes.
@@ -357,7 +416,7 @@ ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, frictio
 - If the chart gives no clear initiator between two siblings, still write two distinct lines describing the same dynamic from each sibling's side.
 - FORBIDDEN without an immediate who-feels-what translation: "this relationship feels X", "the bond is X", "there is a shared sense of X", "weighty", "intense", "serious vibe", "heavy energy".
 
-DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, friction.forA, friction.forB, and whatAlreadyWorks.forA/forB):
+DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, friction.forA, friction.forB, and dynamic pair text):
 - Every bridge AND friction line MUST contain BOTH a connective/positive expression AND a challenging/distorted expression of the same aspect. No single-outcome interpretation. This applies to bridges too — a bridge aspect is still a RANGE, never a guaranteed positive.
 - Required phrasing patterns: "can show up as [connective expression], but can also [challenging expression] depending on mood and regulation", "may [positive], though it can also [distorted] when [trigger]", "at its best [connective]; on a hard day [challenging]", "sometimes [positive] and other times [distorted]".
 - A bridge line that only describes connection (e.g. "this creates connection through shared activity") is INVALID. Rewrite as: "can show up as connection through shared activity, but can also turn competitive or escalate depending on mood and regulation."
@@ -477,7 +536,7 @@ PAIR OUTPUT EXCLUSIVITY — HARD STOP (overrides every prior rule for parentChil
 
 LENGTH & CLARITY — HARD LIMIT (applies to EVERY non-pair field):
 - No paragraph longer than 2 sentences. Anywhere.
-- No non-pair section (atAGlance line, parentRegulationCenter entry, whatAlreadyWorks entry, whatEscalates entry) longer than 6 lines TOTAL.
+- No non-pair section (atAGlance line, parentRegulationCenter entry, whatEscalates entry) longer than 6 lines TOTAL.
 - parentRegulationCenter: body = max 2 sentences. whatThisMeansInRealLife = exactly 1 sentence.
 - whatEscalates[].body = 1–2 short lines per person. No more.
 - atAGlance[].line = ONE sentence. Always.
@@ -497,7 +556,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     {
       "parent": "ParentName",
       "child": "ChildName",
-      "dynamic": string (REQUIRED. MUST follow the PAIR ULTRA-COMPACT FORMAT exactly: six newline-separated lines — "Shared Pattern:", "How this can show up:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". Each line MAX 12 words. This is the ONLY visible content for this pair.),
+      "dynamic": string (REQUIRED. MUST follow the PAIR CLEAN FORMAT exactly. This is the ONLY visible content for this pair.),
       "composite": null,
       "bridge": null,
       "friction": null,
@@ -512,7 +571,7 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
       "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED),
-      "dynamic": string (REQUIRED. Same PAIR ULTRA-COMPACT FORMAT as parent-child. Each line MAX 12 words. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
+      "dynamic": string (REQUIRED. Same PAIR CLEAN FORMAT as parent-child. For siblings, "Where connection can happen" MUST acknowledge that shared activity can connect OR escalate.),
       "composite": null,
       "bridge": null,
       "friction": null,
@@ -521,17 +580,14 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "whatHelps": ""
     }
   ],
-  "whatAlreadyWorks": [
-    { "pair": "Name A + Name B", "aspect": string (cite the strongest available evidence: tight personal-planet bridge, OR wider contact, OR shared element/sect, OR composite tone, OR "few direct contacts"), "forA": string (range-based, what this can look like for person A), "forB": string (range-based, what this can look like for person B) }
-    // REQUIRED: include EVERY parent↔child pair AND every sibling↔sibling pair. NEVER omit a pair. If no tight aspect, use wider contact / shared signature / composite / honest "few contacts" note — but still list the pair.
-  ],
   "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ]
 }
 
-ALLOWED OUTPUT SECTIONS ONLY: atAGlance, parentRegulationCenter, whatAlreadyWorks, parentChildConnections, siblingConnections, whatEscalates. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
+ALLOWED OUTPUT SECTIONS ONLY: atAGlance, parentRegulationCenter, parentChildConnections, siblingConnections, whatEscalates. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
 
 DO NOT GENERATE — HARD BAN (these sections have been REMOVED from the product entirely):
 - childAdaptations entries (return [] only)
+- whatAlreadyWorks, "What Already Works", or any standalone strengths/works section
 - whatHelpsWholeFamily / whatHelpsRationale
 - whatToAvoid
 - bestFamilyPractice (no sequences, no steps, no "Pause → Separate → Regulate → Reconnect")
@@ -543,8 +599,8 @@ If you generate any of these, the output is INVALID and will be stripped.`;
 
 
 
-    const parents = body.members.filter((m) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(m.role));
-    const children = body.members.filter((m) => /child|son|daughter|stepchild|kid/i.test(m.role));
+    const parents = body.members.filter((m) => isParentRole(m.role));
+    const children = body.members.filter((m) => isChildRole(m.role));
     const hierarchyLine = parents.length && children.length
       ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
       : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
@@ -639,7 +695,7 @@ ${frictionLines}
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
 
-Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above.
+Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above. Do not write whatAlreadyWorks or any "What Already Works" section. Every child listed above, including Ben when present, must appear in parentChildConnections and siblingConnections where applicable.
 
 EVIDENCE-CARD STEP (do this BEFORE writing any prose):
 1. Build a Parent Regulator card for each parent: Moon (with phase + sect), Mercury, Saturn, ASC/4th/10th rulers, retrograde flags, current profected house.
@@ -762,6 +818,8 @@ If any answer is wrong, rewrite before returning.`;
     // Migrate any legacy fields the AI might still emit and strip forbidden keys.
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
     payload = sanitized.payload as unknown as ReadingPayload;
+    delete (payload as unknown as Record<string, unknown>).whatAlreadyWorks;
+    ensurePairCoverage(payload, body.members);
     if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
       console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
     }
@@ -772,6 +830,7 @@ If any answer is wrong, rewrite before returning.`;
 
     // HARD STRIP: forbidden sections must never reach the client.
     const p = payload as unknown as Record<string, unknown>;
+    delete p.whatAlreadyWorks;
     delete p.childAdaptations;
     delete p.whatHelpsWholeFamily;
     delete p.whatHelpsRationale;
