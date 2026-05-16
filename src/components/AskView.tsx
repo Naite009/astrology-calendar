@@ -538,6 +538,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
   }, [userNatalChart, savedCharts]);
 
   useEffect(() => {
+    if (activeChartId === "general") return;
     const chartExists =
       activeChartId === "user"
         ? Boolean(userNatalChart)
@@ -2311,7 +2312,118 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     }
   };
 
-  const handleSubmit = () => handleSubmitDirect();
+  const handleGeneralSubmit = async (question: string) => {
+    if (!question.trim() && !skyTodayLoading) {
+      // allow empty → just read sky
+    }
+    if (skyTodayLoading) return;
+    const q = question.trim();
+    // Archive any previous thread and start fresh so only this Q+A shows.
+    if (entries.some(e => e.role === "assistant") && selectedChart) {
+      upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "General");
+    }
+    const userEntry: ChatEntry = { role: "user", content: q || "Read today's sky right now." };
+    setEntries([userEntry]);
+    setInput("");
+    setSkyTodayLoading(true);
+    setIsLoading(true);
+    setLoadingStartedAt(Date.now());
+    try {
+      const now = new Date();
+      const positions = getPlanetaryPositions(now);
+      const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const glyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const PLANET_BODIES: Record<string, any> = {
+        mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
+        jupiter: Astronomy.Body.Jupiter, saturn: Astronomy.Body.Saturn, uranus: Astronomy.Body.Uranus,
+        neptune: Astronomy.Body.Neptune, pluto: Astronomy.Body.Pluto,
+      };
+      const transitingPlanets: Array<{ name: string; sign: string; degree: number; retrograde?: boolean }> = [];
+      const planetAbsLon: Record<string, number> = {};
+      const planetOrder = ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+      planetOrder.forEach((k) => {
+        const v: any = (positions as any)[k];
+        if (!v) return;
+        const sign = v.signName || glyphMap[v.sign] || v.sign || 'Unknown';
+        const deg = typeof v.degree === 'number' ? v.degree : 0;
+        const min = typeof v.minutes === 'number' ? v.minutes : 0;
+        let retro = false;
+        const body = PLANET_BODIES[k];
+        if (body) { try { retro = isPlanetRetrograde(body, now); } catch {} }
+        transitingPlanets.push({
+          name: k.charAt(0).toUpperCase() + k.slice(1),
+          sign, degree: parseFloat((deg + min / 60).toFixed(2)), retrograde: retro,
+        });
+        const idx = ZODIAC.indexOf(sign);
+        if (idx >= 0) planetAbsLon[k.charAt(0).toUpperCase() + k.slice(1)] = (idx * 30 + deg + min / 60) % 360;
+      });
+      const voc = getVOCMoonDetails(now);
+      const moon = positions.moon;
+      const moonSign = moon?.signName || glyphMap[moon?.sign] || moon?.sign || 'Unknown';
+      const phase = (positions as any).moonPhase || { name: 'Unknown', illumination: 0 };
+      const dailyAspects = calculateDailyAspects(positions)
+        .sort((a: any, b: any) => parseFloat(a.orb) - parseFloat(b.orb))
+        .slice(0, 5)
+        .map((a: any) => ({ p1: a.planet1, aspect: a.aspect, p2: a.planet2, orb: parseFloat(a.orb), applying: a.applying }));
+      const yearsSinceJ2000 = (now.getFullYear() - 2000) + 0.5;
+      const precession = (yearsSinceJ2000 * 50.29) / 3600;
+      const notableFixedStars: Array<{ star: string; conjunctPlanet: string; orb: number; meaning: string }> = [];
+      for (const star of FIXED_STARS) {
+        const sLon = (star.j2000Lon + precession) % 360;
+        for (const [planet, pLon] of Object.entries(planetAbsLon)) {
+          let diff = Math.abs(sLon - pLon);
+          if (diff > 180) diff = 360 - diff;
+          if (diff <= 1.0) notableFixedStars.push({ star: star.name, conjunctPlanet: planet, orb: parseFloat(diff.toFixed(2)), meaning: star.theme });
+        }
+      }
+      const payload = {
+        userSituation: q || undefined,
+        dateLabel: now.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+        transitingPlanets,
+        moon: {
+          sign: moonSign, phase: phase.name || 'Unknown',
+          illumination: typeof phase.illumination === 'number' ? Math.round(phase.illumination) : undefined,
+          isVOC: voc.isVOC, isCurrentlyVOC: voc.isCurrentlyVOC,
+          vocStart: voc.start ? voc.start.toISOString() : null,
+          vocEnd: voc.end ? voc.end.toISOString() : null,
+          moonEntersSign: voc.moonEntersSign || null,
+          lastAspect: voc.lastAspect ? { planet: voc.lastAspect.planet, aspect: voc.lastAspect.aspectName } : null,
+        },
+        dailyAspects, notableFixedStars,
+      };
+      const { data, error } = await supabase.functions.invoke('ask-sky-today', { body: payload });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const text = (data?.text || '').trim();
+      if (!text) throw new Error('Empty response');
+      setEntries([userEntry, { role: "assistant", content: text }]);
+    } catch (e: any) {
+      console.error('[handleGeneralSubmit]', e);
+      toast.error(e?.message || "Could not read the sky right now.");
+    } finally {
+      setSkyTodayLoading(false);
+      setIsLoading(false);
+      setLoadingStartedAt(null);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (activeChartId === "general") {
+      handleGeneralSubmit(input);
+      return;
+    }
+    // Auto-clear: starting a new question wipes the prior visible thread so
+    // only the new question + answer is shown. Old threads stay in History.
+    if (entries.some(e => e.role === "assistant")) {
+      if (selectedChart) {
+        upsertConversationSnapshot(entries, activeChartId, selectedChart.name || "Unknown");
+      }
+      clearThreadId(activeChartId);
+      writeActiveJobId(activeChartId, null);
+      setEntries([]);
+    }
+    handleSubmitDirect();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -2615,68 +2727,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   return (
     <div className="space-y-6">
-      {/* Standalone Cosmic Weather — no natal chart needed */}
-      <Card className="border-amber-300/40 bg-amber-50/30">
-        <CardHeader className="pb-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
-              <CloudSun className="h-5 w-5 text-amber-700" />
-            </div>
-            <div className="flex-1">
-              <CardTitle className="text-lg">Today's Cosmic Weather (General)</CardTitle>
-              <CardDescription>
-                No chart needed. Use this when you (or a friend) just feel "off" and want to know what the sky is actually doing right now. Optionally describe what happened, like "driving to dinner, sudden dread, turned around," and the reading will speak to it directly using the live Moon, Void-of-Course windows, tightest aspects, and any fixed-star contacts overhead.
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Textarea
-            value={skyTodaySituation}
-            onChange={(e) => setSkyTodaySituation(e.target.value)}
-            placeholder="Optional: what just happened or how do you feel? (e.g. 'going out to dinner, suddenly turned around to come home')"
-            rows={3}
-            disabled={skyTodayLoading}
-          />
-          <Button
-            onClick={() => handleSkyToday(skyTodaySituation)}
-            disabled={skyTodayLoading}
-            className="w-full sm:w-auto"
-          >
-            {skyTodayLoading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <CloudSun className="h-4 w-4 mr-2" />
-            )}
-            Read the Sky Right Now
-          </Button>
-
-          {skyReading && (
-            <div className="mt-2 rounded-md border border-amber-300/40 bg-background/60 p-4">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="text-xs text-muted-foreground">
-                  {skyReading.dateLabel}
-                  {skyReading.situation && (
-                    <span className="block italic mt-0.5">"{skyReading.situation}"</span>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSkyReading(null)}
-                  className="h-7 px-2 text-muted-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-light prose-h2:text-base prose-h2:mt-4 prose-h2:mb-2 prose-p:my-2">
-                <ReactMarkdown>{skyReading.text}</ReactMarkdown>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -2685,9 +2735,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">Ask About the Reading</CardTitle>
+                <CardTitle className="text-lg">Ask a Question</CardTitle>
                 <CardDescription>
-                  Ask interpretive questions about {selectedChart?.name || "the chart"}
+                  Ask about a specific chart, or choose <span className="font-medium text-foreground">General</span> for a no-chart reading of what the sky is doing right now.
                 </CardDescription>
               </div>
             </div>
@@ -2784,8 +2834,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <button className="w-full flex items-center justify-between gap-2 rounded-sm border border-border bg-card px-3 py-2.5 text-left hover:border-primary/40 transition-colors">
                   <div className="flex items-center gap-2 min-w-0">
                     {activeChartId === "user" && <Star className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-primary" />}
-                    <span className="text-sm font-medium text-foreground truncate">{selectedChart?.name || "Select a chart"}</span>
-                    {selectedChart?.birthDate && (
+                    {activeChartId === "general" && <CloudSun className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />}
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {activeChartId === "general" ? "General — no chart, live sky only" : (selectedChart?.name || "Select a chart")}
+                    </span>
+                    {activeChartId !== "general" && selectedChart?.birthDate && (
                       <span className="text-xs text-muted-foreground flex-shrink-0">{displayBirthDate(selectedChart?.birthDate)}</span>
                     )}
                   </div>
@@ -2809,6 +2862,16 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                   </div>
                 )}
                 <div className="max-h-[280px] overflow-y-auto">
+                  <button
+                    onClick={() => selectChart("general")}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/50 transition-colors border-b border-border ${activeChartId === "general" ? "bg-primary/5" : ""}`}
+                  >
+                    <CloudSun className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground truncate">General</div>
+                      <div className="text-[11px] text-muted-foreground truncate">No chart, today's live sky only</div>
+                    </div>
+                  </button>
                   {chartOptions.primary && (
                     <button
                       onClick={() => selectChart("user")}
@@ -2845,8 +2908,21 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </Popover>
           </div>
 
-          {/* Chart Context */}
-          {selectedChart && (
+          {/* General-mode helper */}
+          {activeChartId === "general" && (
+            <div className="rounded-md border border-amber-300/40 bg-amber-50/30 p-3 text-sm">
+              <p className="text-foreground">
+                <CloudSun className="inline h-4 w-4 text-amber-700 mr-1 -mt-0.5" />
+                <span className="font-medium">General mode.</span>{" "}
+                <span className="text-muted-foreground">
+                  Your question will be answered using only today's live sky (Moon, Void-of-Course, tightest aspects, fixed stars). No chart needed. Describe what just happened, or leave blank to just read today's sky.
+                </span>
+              </p>
+            </div>
+          )}
+
+          {/* Chart Context — hidden in general mode */}
+          {activeChartId !== "general" && selectedChart && (
             <div className="rounded-md bg-muted/50 p-3 text-sm">
               <p className="text-muted-foreground">
                 <span className="font-medium text-foreground">{selectedChart.name}</span>
@@ -2858,10 +2934,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             </div>
           )}
 
-          {/* Quick Topics — always visible so users can pick Relationship,
-              Career, Where Should I Live, etc. even after the chat already
-              has entries. */}
-          {selectedChart && (() => {
+          {/* Quick Topics — chart-specific, hidden in general mode */}
+          {activeChartId !== "general" && selectedChart && (() => {
             const matchingSR = findMatchingSolarReturn(
               solarReturnCharts,
               selectedChart,
@@ -2898,7 +2972,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
                 <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
                   <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto" />
                   <p className="text-muted-foreground">
-                    Ask any question about {selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.
+                    {activeChartId === "general"
+                      ? "Describe what's going on (or leave it blank) and click send to read today's sky."
+                      : `Ask any question about ${selectedChart?.name || "the chart"}, or open the topics above for a comprehensive reading.`}
                   </p>
                 </div>
               )}
@@ -2949,7 +3025,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask any custom question about the chart..."
+              placeholder={activeChartId === "general"
+                ? "What's going on? e.g. 'I was driving to dinner and suddenly felt I had to turn around.' Leave blank to just read today's sky."
+                : "Ask any custom question about the chart..."}
               className="min-h-[60px] resize-none"
               disabled={isLoading}
             />
@@ -2966,7 +3044,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!input.trim()}
+                disabled={activeChartId === "general" ? false : !input.trim()}
                 className="shrink-0"
                 size="icon"
               >
@@ -2975,9 +3053,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             )}
           </div>
 
-          {!selectedChart && (
+          {activeChartId !== "general" && !selectedChart && (
             <p className="text-xs text-destructive">
-              No chart selected. Add a chart in the Charts tab for personalized answers.
+              No chart selected. Add a chart in the Charts tab, or choose <span className="font-medium">General</span> above to ask without a chart.
             </p>
           )}
         </CardContent>
