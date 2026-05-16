@@ -699,6 +699,17 @@ If any answer is wrong, rewrite before returning.`;
       console.error("[family-system-reading] pair shape invalid after sanitize", shape.errors);
     }
 
+    // HARD STRIP: forbidden sections must never reach the client.
+    const p = payload as unknown as Record<string, unknown>;
+    delete p.childAdaptations;
+    delete p.whatHelpsWholeFamily;
+    delete p.whatHelpsRationale;
+    delete p.whatToAvoid;
+    delete p.bestFamilyPractice;
+    delete p.practice;
+    delete p.inTheMoment;
+    delete p.householdInTheMoment;
+
     return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
