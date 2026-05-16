@@ -247,6 +247,23 @@ Deno.serve(async (req) => {
 
     const frictionLines = body.topFriction.map(fmtAspect).join("\n") || "(none significant)";
     const bridgeLines = body.topBridges.map(fmtAspect).join("\n") || "(none significant)";
+    const parentChildEvidence = parents.length && children.length
+      ? parents.flatMap((parent) => children.map((child) => {
+          const bridges = body.topBridges.filter((a) => aspectTouchesPair(a, parent.name, child.name)).map(fmtAspect);
+          const frictions = body.topFriction.filter((a) => aspectTouchesPair(a, parent.name, child.name)).map(fmtAspect);
+          const composites = (body.pairComposites ?? []).filter((pc) => aspectTouchesPair({ fromName: pc.nameA, toName: pc.nameB, fromPlanet: "", toPlanet: "", aspect: "", symbol: "", orb: 0 }, parent.name, child.name)).map((pc) => formatCompositeBits(pc.composite));
+          const activations = (body.parentActivations ?? []).filter((g) => normalizePairName(g.parentName) === normalizePairName(parent.name) && normalizePairName(g.childName) === normalizePairName(child.name)).flatMap((g) => g.hits.map((h) => `${g.parentName}'s ${h.parentPlanet} ${h.symbol} ${g.childName}'s ${h.childPlanet}: ${h.parentTrigger}`));
+          return `PAIR ${parent.name} ↔ ${child.name}\nParent-child evidence to use:\n- Bridge aspects: ${bridges.join("; ") || "none listed"}\n- Friction aspects: ${frictions.join("; ") || "none listed"}\n- Pair composite: ${composites.join("; ") || "none listed"}\n- Parent activation: ${activations.join("; ") || "none listed"}`;
+        })).join("\n\n")
+      : "(no parent-child pairs)";
+    const siblingEvidence = children.length > 1
+      ? children.flatMap((older, i) => children.slice(i + 1).map((younger) => {
+          const bridges = body.topBridges.filter((a) => aspectTouchesPair(a, older.name, younger.name)).map(fmtAspect);
+          const frictions = body.topFriction.filter((a) => aspectTouchesPair(a, older.name, younger.name)).map(fmtAspect);
+          const composites = (body.pairComposites ?? []).filter((pc) => aspectTouchesPair({ fromName: pc.nameA, toName: pc.nameB, fromPlanet: "", toPlanet: "", aspect: "", symbol: "", orb: 0 }, older.name, younger.name)).map((pc) => formatCompositeBits(pc.composite));
+          return `PAIR ${older.name} ↔ ${younger.name}\nSibling evidence to use:\n- Bridge aspects: ${bridges.join("; ") || "none listed"}\n- Friction aspects: ${frictions.join("; ") || "none listed"}\n- Pair composite: ${composites.join("; ") || "none listed"}`;
+        })).join("\n\n")
+      : "(no sibling pairs)";
 
     const systemPrompt = `You are an experienced family astrologer writing a single integrated reading about how a whole family functions as one system. Not pair by pair. The whole group as a unit.
 
