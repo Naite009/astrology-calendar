@@ -739,6 +739,12 @@ ${frictionLines}
 TIGHTEST BRIDGE ASPECTS (trines, sextiles, conjunctions, tightest first):
 ${bridgeLines}
 
+PAIR-SPECIFIC EVIDENCE CARDS (use these first for parentChildConnections and siblingConnections):
+${parentChildEvidence}
+
+SIBLING-SPECIFIC EVIDENCE CARDS (use these only for siblingConnections):
+${siblingEvidence}
+
 Write the integrated family reading. Follow the schema exactly. Use the actual names and placements from the data. Do not invent aspects or placements that are not listed above. Do not write whatAlreadyWorks or any "What Already Works" section. Every child listed above, including Ben when present, must appear in parentChildConnections and siblingConnections where applicable.
 
 EVIDENCE-CARD STEP (do this BEFORE writing any prose):
