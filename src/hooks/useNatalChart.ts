@@ -147,6 +147,27 @@ const safeParseJSON = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
+// Normalize Ascendant from houseCusps.house1 (source of truth).
+// Fixes Asc/Desc sign-flip bugs where OCR or imports stored the Descendant
+// in planets.Ascendant. house1 is always the true Ascendant.
+const normalizeAscendantFromHouse1 = <T extends NatalChart | null>(chart: T): T => {
+  if (!chart || !chart.planets) return chart;
+  const h1 = chart.houseCusps?.house1;
+  if (!h1?.sign) return chart;
+  const asc = chart.planets.Ascendant;
+  if (asc && asc.sign === h1.sign) return chart;
+  const corrected: NatalPlanetPosition = {
+    sign: h1.sign,
+    degree: h1.degree ?? 0,
+    minutes: h1.minutes ?? 0,
+    seconds: (asc as any)?.seconds ?? 0,
+  };
+  if (asc?.sign && asc.sign !== h1.sign) {
+    console.warn(`[NatalChart] Corrected Ascendant for "${chart.name}": planets.Ascendant was "${asc.sign}" but houseCusps.house1 is "${h1.sign}". Using house1.`);
+  }
+  return { ...chart, planets: { ...chart.planets, Ascendant: corrected } } as T;
+};
+
 // Validate chart data is not corrupt
 const isValidChart = (chart: NatalChart | null): boolean => {
   if (!chart) return false;
