@@ -643,36 +643,9 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
         </p>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
-        {/* AI Personalized Reading Button */}
-        <div className="space-y-4">
-          <Button 
-            onClick={generatePersonalizedReading}
-            disabled={isLoadingAI}
-            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-          >
-            {isLoadingAI ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Consulting the stars for {chart.name}...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Get AI Personalized Reading
-              </>
-            )}
-          </Button>
-
-          {/* AI Reading Display */}
-          {aiReading && (
-            <div className="p-4 rounded-lg bg-background/50 border border-primary/20">
-              <div 
-                className="prose prose-sm max-w-none text-foreground"
-                dangerouslySetInnerHTML={{ __html: formatReading(aiReading) }}
-              />
-            </div>
-          )}
-        </div>
+        {/* AI personalized reading removed — the main Cosmic Weather reading below
+            covers the same ground and has Export/Share/Email. This panel now only
+            shows the structured personal data (Moon in house, aspects, transits). */}
 
         {/* Moon in House */}
         {moonHouse && (
