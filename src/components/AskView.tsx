@@ -2650,6 +2650,30 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             )}
             Read the Sky Right Now
           </Button>
+
+          {skyReading && (
+            <div className="mt-2 rounded-md border border-amber-300/40 bg-background/60 p-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="text-xs text-muted-foreground">
+                  {skyReading.dateLabel}
+                  {skyReading.situation && (
+                    <span className="block italic mt-0.5">"{skyReading.situation}"</span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSkyReading(null)}
+                  className="h-7 px-2 text-muted-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-light prose-h2:text-base prose-h2:mt-4 prose-h2:mb-2 prose-p:my-2">
+                <ReactMarkdown>{skyReading.text}</ReactMarkdown>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
