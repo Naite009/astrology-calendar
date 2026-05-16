@@ -634,8 +634,6 @@ If you generate any of these, the output is INVALID and will be stripped.`;
 
 
 
-    const parents = body.members.filter((m) => isParentRole(m.role));
-    const children = body.members.filter((m) => isChildRole(m.role));
     const hierarchyLine = parents.length && children.length
       ? `PARENTS (lead, set tone, hold container): ${parents.map((p) => p.name).join(", ")}\nCHILDREN (respond, participate at their level): ${children.map((c) => c.name).join(", ")}`
       : `(no clear parent/child split in this group; treat as adult family members but still honor any age or role differences listed)`;
