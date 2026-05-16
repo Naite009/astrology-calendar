@@ -342,6 +342,23 @@ NO PSYCHOLOGICAL STORY COMPLETION RULE (applies to EVERY field — essence, sect
 - SEPARATE clearly. Do NOT blend parent behavior, child adaptation, and group tendencies into a single psychological explanation. State the parent behavior as a behavior. State the child adaptation as a behavior. State the group tendency as a tendency. Each stands on its own as something observable.
 - The parent should RECOGNIZE the behavior immediately, not have to decode an emotional story to find themselves in it.
 
+MECHANISM PORTRAIT RULE (applies to childMechanism field — this is the highest-priority section):
+Goal: Produce a cognitive-emotional model of THIS child, not an astrology description. The parent must finish reading it and think "that is exactly how his system works."
+Required 6-part shape (the schema enforces it; these rules govern the content):
+  (a) corePattern: 2 placements in most cases, max 3 only if a third is genuinely driving the tension. Pick placements that create the loudest internal contradiction (typically Moon + one of Mercury, Sun, Mars, Saturn, or Ascendant). Never two harmonious placements.
+  (b) "does": describes an INTERNAL MECHANISM, not a trait. Use verbs like processes, absorbs, scans, defends, regulates, organizes, releases, routes, holds. NEVER adjectives like sensitive, creative, fiery, intense.
+  (c) theConflict: names the gap as a structural mismatch. Use the pattern "feels like X but has to [verb] like Y" or "wants A but is wired for B". Must name the timing/order problem (what happens first vs what happens later).
+  (d) inRealLife: a parent-recognizable scene the parent has already lived (asking "what's wrong", giving an instruction, correcting in public, ending screen time, being late, getting a no). NO abstract description. The parent should recognize the exact moment.
+  (e) underStress: BOTH placements amplify at once. Placement 1 gets louder AND placement 2 defends harder. Both, not one. Show the loop, not a single reaction.
+  (f) whatThisIsNot: ONE short sentence only. Three to five things it is NOT, separated by commas. No explanation, no therapy language, no "because" clause. If it grows past one sentence, cut it.
+BANNED in childMechanism: zodiac shorthand without mechanism, single-line summaries, "this means he is…" closures, any sentence that could be cut without losing the mechanism, generic trait words.
+Example of the required output shape (Cancer Moon + Aquarius Mercury):
+  corePattern: [{placement: "Cancer Moon", does: "feels everything immediately and personally; reactions are fast and body-based, not verbal"}, {placement: "Aquarius Mercury", does: "processes through detachment and logic; wants to step back and analyze, does not naturally name feelings"}]
+  theConflict: "He feels like Cancer but has to explain like Aquarius. Feeling hits first, fast and unclear. Thinking arrives later, cool and removed. Logic is available before emotional language is."
+  inRealLife: "When you ask 'what's wrong?' the feeling is loud but not organized yet, and his brain is wired to respond with clean logic, so he literally has nothing usable to say. You get 'nothing,' silence, or a cold factual answer."
+  underStress: "The feeling gets stronger (Cancer) while the mind defends harder (Aquarius). He either shuts down or becomes sharp and dismissive."
+  whatThisIsNot: "Not coldness, not avoidance, not disrespect."
+
 DEPTH RULE — NO SINGLE TRAITS (applies to every person described, including parent and child):
 Never describe any person with a single trait, attribute, or one-line summary. Every person-description MUST contain all three of the following, woven into the sentence(s):
   (1) What they tend to do (the visible behavior / pull)
