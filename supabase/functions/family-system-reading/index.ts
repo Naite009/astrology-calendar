@@ -395,9 +395,8 @@ TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - Generate one entry per family member, in the order they appear in the input (parents first, then children).
 - This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
 
-EVIDENCE GATE — HARD STOP (applies to whatAlreadyWorks, parentChildConnections, siblingConnections):
+EVIDENCE GATE — HARD STOP (applies to parentChildConnections and siblingConnections):
 - Before writing any line about a pair, you MUST cite the specific aspect, shared signature, or composite tone you are drawing from. If you cannot cite anything, state "few direct contacts" plainly — but you may NEVER omit the pair.
-- "What works" lines in whatAlreadyWorks MUST appear for EVERY pair (see NATURAL STRENGTHS FULL COVERAGE rule above). Use tight personal-planet bridges first; fall back to wider contacts, shared element/sect, composite tone, or ruler chains; if none exist, name the quietness honestly. NEVER omit a pair from whatAlreadyWorks.
 - Friction lines may ONLY appear when there is a tight (≤5° orb) friction aspect (square, opposition) between two named planets in that pair.
 - Bridge lines may ONLY appear when there is a tight (≤5° orb) trine, sextile, or conjunction between two named planets in that pair.
 - Composite line is the only line allowed without a synastry aspect — it cites the pair composite directly.
@@ -409,7 +408,7 @@ NO CONFIGURATION VOCABULARY (HARD BAN):
 - If multiple tensions cluster, describe them as "two tight tensions between these placements" or "several friction aspects between these people". Never name a configuration.
 - Do NOT assign psychological roles (container, mirror, absorber) based on configurations or sign emphasis.
 
-ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, friction, and whatAlreadyWorks):
+ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, friction, and dynamic pair text):
 - Every composite, bridge, friction, and what-works entry MUST split into what each specific person experiences in their role. NEVER describe a pair tone in the abstract.
 - Parent–child pairs: forA = parental behavior (steering, correcting, fixing, pressuring, regulating, withdrawing). forB = child behavior at their developmental stage (defending, shutting down, escalating, going quiet, seeking space).
 - Sibling pairs: forA is ALWAYS the older sibling (siblingA), forB is ALWAYS the younger (siblingB), for stable labeling across all sibling pairs (1st↔2nd, 1st↔3rd, 2nd↔3rd). Birth order is a label only — actual behavior MUST come from the chart, not from birth-order stereotypes.
@@ -417,7 +416,7 @@ ROLE-AWARE TRANSLATION RULE — HARD STOP (applies to composite, bridge, frictio
 - If the chart gives no clear initiator between two siblings, still write two distinct lines describing the same dynamic from each sibling's side.
 - FORBIDDEN without an immediate who-feels-what translation: "this relationship feels X", "the bond is X", "there is a shared sense of X", "weighty", "intense", "serious vibe", "heavy energy".
 
-DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, friction.forA, friction.forB, and whatAlreadyWorks.forA/forB):
+DUAL EXPRESSION RULE — HARD STOP (applies to EVERY bridge.forA, bridge.forB, friction.forA, friction.forB, and dynamic pair text):
 - Every bridge AND friction line MUST contain BOTH a connective/positive expression AND a challenging/distorted expression of the same aspect. No single-outcome interpretation. This applies to bridges too — a bridge aspect is still a RANGE, never a guaranteed positive.
 - Required phrasing patterns: "can show up as [connective expression], but can also [challenging expression] depending on mood and regulation", "may [positive], though it can also [distorted] when [trigger]", "at its best [connective]; on a hard day [challenging]", "sometimes [positive] and other times [distorted]".
 - A bridge line that only describes connection (e.g. "this creates connection through shared activity") is INVALID. Rewrite as: "can show up as connection through shared activity, but can also turn competitive or escalate depending on mood and regulation."
