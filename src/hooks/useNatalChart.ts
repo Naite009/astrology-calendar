@@ -395,7 +395,9 @@ export const useNatalChart = () => {
   }, [selectedChartForTiming, savedCharts, userNatalChart]);
 
   const replaceSavedCharts = (charts: NatalChart[]) => {
-    const validCharts = charts.filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'));
+    const validCharts = charts
+      .filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'))
+      .map((c) => normalizeAscendantFromHouse1(c));
     saveWithRollingBackups('savedCharts', validCharts);
     setSavedCharts(validCharts);
   };
@@ -407,8 +409,9 @@ export const useNatalChart = () => {
       return;
     }
 
-    saveWithRollingBackups('userNatalChart', chart);
-    setUserNatalChart(chart);
+    const normalized = normalizeAscendantFromHouse1(chart);
+    saveWithRollingBackups('userNatalChart', normalized);
+    setUserNatalChart(normalized);
   };
 
   const addChart = (chart: NatalChart) => {
