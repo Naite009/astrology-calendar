@@ -1743,10 +1743,7 @@ Keep the tone professional, insightful, and practically applicable.`,
               )}
 
               {/* DAILY VIEW - Main Content Card */}
-              {/* When a chart is selected, the personalized PersonalizedTransitsPanel (above)
-                  and YourWeatherToday (below) replace this general/cached card to avoid
-                  showing two Cosmic Weather readings on the same page. */}
-              {viewMode === 'daily' && !selectedChart && (
+              {viewMode === 'daily' && (
                 <Card className="border-primary/20 shadow-lg">
                   <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
                     <div className="flex items-center justify-between flex-wrap gap-2">

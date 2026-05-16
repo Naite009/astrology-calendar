@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-05-16-v34-mars-taurus-correction";
+    const PROMPT_VERSION = "2026-05-16-v33-full-date-opening";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -891,9 +891,6 @@ CRITICAL: Check the ACTUAL planet positions provided in the data to determine wh
 For example:
 - Mercury at 28° Aquarius = "Mercury is about to enter Pisces in the coming days"
 - Mercury at 2° Pisces = "Mercury just entered Pisces" (only if it's at an early degree)
-
-CRITICAL CORRECTION — MARS INTO TAURUS:
-When Mars is at late degrees of Aries and about to enter Taurus, you MUST say "Mars moves into Taurus." Mars in Taurus is slow, steady, and persistent. Do NOT confuse Mars with Mercury. Do NOT describe Mars in Aries as "slow and steady."
 
 ALWAYS INCLUDE SPECIFIC DATES (THIS IS A TEACHING APP):
 - What's happening LATER TODAY with SPECIFIC TIME if known
