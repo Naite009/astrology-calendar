@@ -106,6 +106,10 @@ interface ReadingPayload {
     accountabilityNote: string;
   };
   whatAlreadyWorks: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
+  whatThisChildNeedsFromYou?: {
+    opener: string;
+    lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
+  } | null;
 }
 
 function ageStage(years: number | null | undefined): string {
