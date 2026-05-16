@@ -274,15 +274,21 @@ STRENGTH BALANCE RULE (applies to EVERY field — householdRegulationPattern, ch
 - REQUIRED overall tone: "this is complicated, AND here is what is genuinely working, AND here is what to build on" — the parent must finish the reading able to name both the friction AND the working ground.
 - If the chart is weighted heavily toward friction, you MUST still surface the smallest available bridges (a single sibling trine, a shared Moon element across two members, a parent-child Venus/Jupiter contact, a supportive composite Sun) and name them as real working ground. Do not fabricate strengths, but do not omit the ones that exist.
 
-NATURAL STRENGTHS REQUIRED SECTION (applies to whatAlreadyWorks field):
-- This is a REQUIRED, standalone section. It must NOT be merged into other sections.
-- List 3-5 specific, concrete, observable strengths this family already has.
-- Ground every claim in actual chart evidence: bridge aspects from topBridges, shared placements, shared element or sect, harmonious composite contacts, supportive sibling synastry, easy ruler chains.
-- Describe where the family naturally connects or functions well.
-- FORBIDDEN: vague positivity like "loving family", "caring household", "they love each other".
-- REQUIRED: each strength must be tied to a named placement, aspect, or shared pattern.
-- Examples: "These two connect easily through shared activity" (cite the bridge aspect), "This child brings energy that helps the family engage" (cite the child's Mars or Sun placement), "The parent naturally creates structure and stability" (cite Saturn or earth emphasis), "There is an easy flow in one-on-one connection" (cite a parent-child trine or sextile), "Humor or activity helps reset tension quickly" (cite Jupiter or Mercury contact).
-- The user should recognize: "This is not just hard — there are things already working here."
+NATURAL STRENGTHS — FULL COVERAGE REQUIRED (applies to whatAlreadyWorks field):
+- This section MUST include EVERY primary pair in the family — every parent↔child pair AND every sibling↔sibling pair. NO PAIR MAY BE OMITTED for any reason. Omission reads as "there is no connection here" and is unacceptable.
+- If 2 parents and 3 children → 6 parent-child pairs + 3 sibling pairs = 9 entries minimum. If 1 parent and 3 children → 3 + 3 = 6 entries. Count the pairs and confirm every one appears before returning.
+- For EACH pair, find the strongest available connective evidence in this order and use whichever exists:
+    1. Tight (≤4°) bridge aspect between personal planets (Sun, Moon, Mercury, Venus, Mars) — cite it.
+    2. Wider (5–8°) bridge aspect between personal planets — cite as "wider contact".
+    3. Tight bridge involving social/outer planets (Jupiter, Saturn, Chiron) to a personal planet — cite it.
+    4. Shared element, shared modality, shared sect, or shared Moon/Sun sign — cite it.
+    5. Pair composite tone (composite Sun/Moon/Venus/Jupiter sign or element) — cite it.
+    6. Easy ruler chain (one person's chart ruler well-placed relative to the other) — cite it.
+- If a pair has NONE of the above, state honestly: "Few direct contacts here. The connection runs quieter, with less automatic pull in either direction — it shows up through proximity and shared family rhythm rather than instant resonance." Then still list the pair. Never skip.
+- Every entry MUST be range-based (per ASPECT EXPRESSION RANGE RULE). No guaranteed positives.
+- FORBIDDEN: vague positivity ("loving family", "caring household"). Each line must cite a specific placement, aspect, shared signature, or honest "few contacts" note.
+- The user must read this section and see EVERY relationship named. No parent, no child, no sibling pair left out.
+
 
 ASPECT EXPRESSION RANGE RULE (CRITICAL — applies to EVERY field that references an aspect, composite, bridge, friction, shared placement, or behavioral pattern: atAGlance, whatAlreadyWorks, parentChildConnections.composite/bridge/friction, siblingConnections.composite/bridge/friction, childAdaptations.line, whatEscalates.body):
 - Do NOT present any aspect, composite, or shared placement as a guaranteed positive OR negative outcome. Every aspect is a RANGE of expression, never a fixed result.
