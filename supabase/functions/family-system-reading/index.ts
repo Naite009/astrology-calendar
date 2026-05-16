@@ -421,58 +421,54 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
     { "name": "ParentName", "body": string, "whatThisMeansInRealLife": string }
     // ONE entry per parent. body = range-based paragraph naming how this parent sets the tone AND how it breaks under stress. whatThisMeansInRealLife = ONE practical sentence.
   ],
-  "childAdaptations": [
-    {
-      "name": "ChildName",
-      "adaptation": string (REQUIRED. Paragraph: how THIS child adapts to THIS family system. Range-based. Must reference at least one named placement.),
-      "respondsBestWhen": string (REQUIRED. ONE concrete sentence of what actually works for this child.),
-      "whatMakesItWorse": [string, ...]
-    }
-  ],
+  "childAdaptations": [] (DEPRECATED — always return empty array. Per-child adaptation sections are no longer rendered.),
   "parentChildConnections": [
     {
       "parent": "ParentName",
       "child": "ChildName",
       "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". ALL THREE expression levels REQUIRED. This is the ONLY visible content for this pair.),
-      "composite": null (DEPRECATED — always null),
-      "bridge": null (DEPRECATED — always null),
-      "friction": null (DEPRECATED — always null),
-      "interactionPattern": null (DEPRECATED — always null),
-      "whatCanFeelHard": "" (DEPRECATED — always empty string),
-      "whatHelps": "" (DEPRECATED — always empty string)
+      "composite": null,
+      "bridge": null,
+      "friction": null,
+      "interactionPattern": null,
+      "whatCanFeelHard": "",
+      "whatHelps": ""
     }
-    // EXACTLY one per (parent, child) pair, in input order. NEVER skip. Only `dynamic` is read; all other fields are deprecated and MUST be null/empty.
+    // EXACTLY one per (parent, child) pair, in input order. NEVER skip.
   ],
   "siblingConnections": [
     {
       "siblingA": "OlderChildName",
       "siblingB": "YoungerChildName",
-      "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED — pick the BEST fit from the allow-list),
-      "dynamic": string (REQUIRED. MUST follow the PAIR RANGE FORMAT exactly: five newline-separated labeled lines — "Shared Pattern:", "At its best:", "More commonly:", "Under stress:", "Where connection can happen:". ALL THREE expression levels REQUIRED. For siblings, the "Where connection can happen" line MUST acknowledge that activity/shared interests can connect OR escalate. This is the ONLY visible content for this pair.),
-      "composite": null (DEPRECATED — always null),
-      "bridge": null (DEPRECATED — always null),
-      "friction": null (DEPRECATED — always null),
-      "interactionPattern": null (DEPRECATED — always null),
-      "whatCanFeelHard": "" (DEPRECATED — always empty string),
-      "whatHelps": "" (DEPRECATED — always empty string)
+      "patternType": one of ["translation problem", "pacing friction", "competition risk", "quiet co-regulation", "mirror match", "role split"] (REQUIRED),
+      "dynamic": string (REQUIRED. Same PAIR RANGE FORMAT as parent-child. For siblings, "Where connection can happen" MUST acknowledge that activity/shared interests can connect OR escalate.),
+      "composite": null,
+      "bridge": null,
+      "friction": null,
+      "interactionPattern": null,
+      "whatCanFeelHard": "",
+      "whatHelps": ""
     }
-    // EXACTLY one per unique sibling pair. siblingA = older, siblingB = younger. Each sibling pair's `dynamic` MUST be visibly differentiated from every other sibling pair.
   ],
   "whatAlreadyWorks": [
     { "pair": "Name A + Name B", "aspect": string, "forA": string, "forB": string }
     // Only pairs with a real ≤4° personal-planet bridge. [] if none.
   ],
-  "whatEscalates": [ { "name": "MemberName", "body": string (observational description of what tends to escalate this person — NOT instructions or scripts) } ],
-  "whatHelpsWholeFamily": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions under which this family tends to function better. Phrase as "This family tends to ___ when ___" or "Things go more smoothly when ___". NEVER as commands, scripts, step-by-step instructions, or therapy protocols.),
-  "whatHelpsRationale": string (REQUIRED. ONE sentence explaining why these conditions specifically — cite dominant element / sect / age mix.),
-  "whatToAvoid": [string, ...] (REQUIRED. 5–8 OBSERVATIONAL statements about conditions or patterns that tend to make things harder in THIS family. Phrase as "Things tend to get harder when ___" or "This family struggles when ___". NEVER as commands like "Don't do X" or "Avoid Y".),
-  "bestFamilyPractice": {
-    "sequence": string (REQUIRED. A short OBSERVATIONAL description of the conditions under which this family tends to reset and reconnect best. NOT a sequence of steps. NOT a protocol. Example phrasing: "This family tends to reset best when there's space before talking, regulation before reconnection, and one-on-one contact instead of group processing." NEVER use arrows, "→", "Step 1", "Step 2", or imperative verbs.),
-    "steps": [string, ...] (REQUIRED. 3–5 OBSERVATIONAL bullets describing CONDITIONS that tend to help this family reset — NOT actions to perform. Phrase each as "Things tend to settle when ___" or "Reconnection tends to happen when ___". NEVER as "Do X" or "Then do Y".)
-  }
+  "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ]
 }
 
-Generate ALL 8 sections. atAGlance EXACTLY one per family member. parentRegulationCenter EXACTLY one per parent. childAdaptations EXACTLY one per child. parentChildConnections EXACTLY one per (parent, child) pair. siblingConnections EXACTLY one per unique sibling pair, [] if 0-1 children. whatEscalates EXACTLY one per family member. whatAlreadyWorks MAY be []. whatHelpsWholeFamily, whatToAvoid, and bestFamilyPractice are REQUIRED. DO NOT generate householdRegulationPattern, whatHelps (legacy essay), siblingPressurePoints, householdInTheMoment, householdMakesItWorse, familyEssence, rolesNarrative, emotionalClimate, whereEveryoneMeets, pressurePoints, bridges, practice, or inTheMoment.`;
+ALLOWED OUTPUT SECTIONS ONLY: atAGlance, parentRegulationCenter, whatAlreadyWorks, parentChildConnections, siblingConnections, whatEscalates. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
+
+DO NOT GENERATE — HARD BAN (these sections have been REMOVED from the product entirely):
+- childAdaptations entries (return [] only)
+- whatHelpsWholeFamily / whatHelpsRationale
+- whatToAvoid
+- bestFamilyPractice (no sequences, no steps, no "Pause → Separate → Regulate → Reconnect")
+- ANY step-by-step sequence anywhere in the output (no arrows, no "Step 1/2/3", no numbered protocols)
+- ANY scripts or quoted dialogue ("say this", "try saying")
+- ANY invented behavioral examples ("sits quietly with a drink", "punches a pillow", "goes for a walk")
+- ANY therapy/repair/co-regulation language anywhere
+If you generate any of these, the output is INVALID and will be stripped.`;
 
 
 
