@@ -2868,28 +2868,26 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               activeChartId,
             );
             return (
-              <details className="rounded-md border border-border bg-muted/30" open={entries.length === 0}>
-                <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-foreground">
+              <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                <div className="text-sm font-medium text-foreground px-1">
                   Reading topics for {selectedChart.name}
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">
                     (Relationship, Career, Where to Live, Health, Timing…)
                   </span>
-                </summary>
-                <div className="p-3 pt-1">
-                  <AskQuickTopics
-                    onSelect={handleQuickTopic}
-                    chartName={selectedChart.name || "Unknown"}
-                    birthDate={selectedChart.birthDate || "unknown date"}
-                    birthTime={selectedChart.birthTime || "unknown time"}
-                    birthLocation={selectedChart.birthLocation || "unknown location"}
-                    currentLocation={matchingSR?.solarReturnLocation || undefined}
-                    childChartOptions={savedCharts
-                      .filter(c => c.id !== activeChartId && !!c.birthDate)
-                      .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
-                    disabled={isLoading}
-                  />
                 </div>
-              </details>
+                <AskQuickTopics
+                  onSelect={handleQuickTopic}
+                  chartName={selectedChart.name || "Unknown"}
+                  birthDate={selectedChart.birthDate || "unknown date"}
+                  birthTime={selectedChart.birthTime || "unknown time"}
+                  birthLocation={selectedChart.birthLocation || "unknown location"}
+                  currentLocation={matchingSR?.solarReturnLocation || undefined}
+                  childChartOptions={savedCharts
+                    .filter(c => c.id !== activeChartId && !!c.birthDate)
+                    .map(c => ({ id: c.id, name: c.name || "Unnamed" }))}
+                  disabled={isLoading}
+                />
+              </div>
             );
           })()}
 
