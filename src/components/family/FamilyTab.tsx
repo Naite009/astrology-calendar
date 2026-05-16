@@ -1532,7 +1532,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               What Each Person Responds Best To
             </CardTitle>
             <CardDescription className="pt-1">
-              One line per person, computed deterministically from each chart. No AI, no advice essays.
+              One line per person, woven from Moon (what feels safe), Venus (what feels like love), Mercury (how they want to be talked to), Mars (how they recover), Saturn-to-luminary (what cuts), and day-vs-night chart. Deterministic, no AI.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-sm">

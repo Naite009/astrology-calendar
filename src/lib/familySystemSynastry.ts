@@ -645,66 +645,182 @@ export function buildPressurePatternsForGroup(
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Deterministic "Responds Best To" line per member (no AI, no scenarios).
-// One line per person describing the conditions they handle best, derived from
-// Moon sign primarily, with Mars/Mercury tiebreakers to keep every line unique.
+// Deterministic "Responds Best To" line per member.
+// LAYERED evidence: Moon (emotional safety) + Venus (what feels like love) +
+// Mercury (how to talk to them) + Mars (recovery / defense) + Saturn hard-aspect
+// to luminaries (what to NOT do first) + Sect (day-led vs night-led approach).
+// One short line per person. No astrology terms in output. Each person unique
+// by construction because the signature mix differs.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const RESPONDS_BEST_BY_MOON: Record<string, string> = {
-  Aries: "responds best to short, direct requests and being given a way to move",
-  Leo: "responds best to being acknowledged first, then asked",
-  Sagittarius: "responds best to being given a reason and room to choose",
-  Cancer: "responds best to a soft tone and a private check-in, not a public one",
-  Scorpio: "responds best to honesty, no surprises, and time to come back on their own",
-  Pisces: "responds best to lower volume, fewer transitions, and one thing at a time",
-  Gemini: "responds best to talking it through and being asked, not told",
-  Libra: "responds best to fairness, choices, and time to think before answering",
-  Aquarius: "responds best to space, logic, and not being pushed for emotion on demand",
-  Taurus: "responds best to slower pacing and warning before a change",
-  Virgo: "responds best to clear instructions, a reason, and a private correction",
-  Capricorn: "responds best to being trusted with the task and not micromanaged",
+// Lead clause: emotional safety currency (Moon).
+const MOON_LEAD: Record<string, string> = {
+  Aries: "short, direct requests and a way to move",
+  Leo: "being acknowledged first, then asked",
+  Sagittarius: "a real reason and room to choose",
+  Cancer: "a soft tone and a private check-in",
+  Scorpio: "honesty, no surprises, and space to come back on their own",
+  Pisces: "lower volume and one thing at a time",
+  Gemini: "talking it through, not being told",
+  Libra: "fairness and a minute to think before answering",
+  Aquarius: "space, logic, and not being pushed for emotion on demand",
+  Taurus: "slower pacing and warning before a change",
+  Virgo: "clear instructions and a private correction",
+  Capricorn: "being trusted with the task and not micromanaged",
 };
 
-const MARS_RESPONDS_MOD: Record<string, string> = {
-  Aries: ", and to physical movement before talking",
-  Leo: ", and to being given the lead on something visible",
-  Sagittarius: ", and to being outside or moving",
-  Cancer: ", and to food, comfort, or a quiet room",
-  Scorpio: ", and to one trusted person, not a group",
-  Pisces: ", and to quiet sensory input",
-  Gemini: ", and to a question instead of a command",
-  Libra: ", and to being asked their opinion",
-  Aquarius: ", and to being left alone briefly first",
-  Taurus: ", and to a hands-on task",
-  Virgo: ", and to a clear next step",
-  Capricorn: ", and to a defined goal",
+// What feels like love / respect (Venus). Not the same as emotional safety.
+const VENUS_LOVE: Record<string, string> = {
+  Aries: "being chosen first",
+  Taurus: "consistency and physical comfort",
+  Gemini: "being asked questions about themselves",
+  Cancer: "small acts of care without being asked",
+  Leo: "being noticed out loud",
+  Virgo: "small specific things done right",
+  Libra: "feeling like the relationship is fair",
+  Scorpio: "loyalty and undivided attention",
+  Sagittarius: "shared honesty and freedom inside the bond",
+  Capricorn: "showing up reliably over time",
+  Aquarius: "being respected as their own person",
+  Pisces: "feeling deeply understood without explaining",
 };
+
+// How to phrase things so they actually land (Mercury).
+const MERCURY_DELIVERY: Record<string, string> = {
+  Aries: "say it short and direct",
+  Taurus: "say it calmly and don't rush the answer",
+  Gemini: "ask, don't tell",
+  Cancer: "soften the tone before the content",
+  Leo: "lead with what they did right",
+  Virgo: "give a reason and a clear next step",
+  Libra: "offer a choice between two options",
+  Scorpio: "be straight, no hint or implication",
+  Sagittarius: "keep it big-picture, skip the lecture",
+  Capricorn: "be matter-of-fact, not emotional",
+  Aquarius: "use logic, not pressure",
+  Pisces: "use fewer words and a gentler tone",
+};
+
+// Recovery / defense currency (Mars) — what helps them come back.
+const MARS_RECOVERY: Record<string, string> = {
+  Aries: "movement before talking",
+  Taurus: "a snack and a slower pace",
+  Gemini: "a question that lets them think out loud",
+  Cancer: "a quiet room and food",
+  Leo: "being given something visible to lead",
+  Virgo: "a clear next step",
+  Libra: "being asked their opinion",
+  Scorpio: "one trusted person, not a group",
+  Sagittarius: "fresh air and room to move",
+  Capricorn: "a defined goal",
+  Aquarius: "being left alone briefly first",
+  Pisces: "lower stimulation and one thing at a time",
+};
+
+// Signs in hard aspect (conjunction/square/opposition) by sign relationship.
+const SIGN_INDEX: Record<string, number> = {
+  Aries: 0, Taurus: 1, Gemini: 2, Cancer: 3, Leo: 4, Virgo: 5,
+  Libra: 6, Scorpio: 7, Sagittarius: 8, Capricorn: 9, Aquarius: 10, Pisces: 11,
+};
+
+function absLon(p?: NatalPlanetPosition): number | null {
+  if (!p || !p.sign) return null;
+  const i = SIGN_INDEX[p.sign];
+  if (i == null) return null;
+  return i * 30 + (p.degree ?? 0) + ((p.minutes ?? 0) / 60);
+}
+
+function hardAspectOrb(a?: NatalPlanetPosition, b?: NatalPlanetPosition): number | null {
+  const la = absLon(a), lb = absLon(b);
+  if (la == null || lb == null) return null;
+  let diff = Math.abs(la - lb) % 360;
+  if (diff > 180) diff = 360 - diff;
+  // Conjunction (0), square (90), opposition (180)
+  const targets = [0, 90, 180];
+  let best = Infinity;
+  for (const t of targets) {
+    const d = Math.abs(diff - t);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
+// Returns a "what to avoid" caveat if Saturn hard-aspects Sun or Moon within 7°.
+function saturnLuminaryCaveat(planets: Record<string, NatalPlanetPosition | undefined>): string | null {
+  const sat = planets.Saturn;
+  if (!sat) return null;
+  const toSun = hardAspectOrb(sat, planets.Sun);
+  const toMoon = hardAspectOrb(sat, planets.Moon);
+  const tight = Math.min(toSun ?? 99, toMoon ?? 99);
+  if (tight > 7) return null;
+  // Hits Moon → criticism cuts; hits Sun → being judged on performance cuts.
+  if ((toMoon ?? 99) <= (toSun ?? 99)) return "without being criticized first";
+  return "without being made to prove themselves first";
+}
+
+function sectOpener(chart: NatalChart): string | null {
+  const s = sectOfChart(chart);
+  if (!s) return null;
+  return s.sect === "day"
+    ? "clear leadership and fairness up front"
+    : "softening and timing before the content";
+}
+
+// Pick the strongest 1-2 secondary currencies (avoid stacking ones that say
+// almost the same thing as the Moon lead, to keep the line tight).
+function pickSecondaries(
+  planets: Record<string, NatalPlanetPosition | undefined>,
+  used: Set<string>
+): string[] {
+  const candidates: string[] = [];
+  const venus = planets.Venus?.sign;
+  const merc = planets.Mercury?.sign;
+  const mars = planets.Mars?.sign;
+  if (venus && VENUS_LOVE[venus]) candidates.push(`feeling loved through ${VENUS_LOVE[venus]}`);
+  if (merc && MERCURY_DELIVERY[merc]) candidates.push(`hearing it when you ${MERCURY_DELIVERY[merc]}`);
+  if (mars && MARS_RECOVERY[mars]) candidates.push(`recovering through ${MARS_RECOVERY[mars]}`);
+  // Prefer two unused-looking fragments so siblings sound different.
+  const fresh = candidates.filter((c) => !Array.from(used).some((u) => u.includes(c)));
+  const ordered = fresh.length ? fresh : candidates;
+  return ordered.slice(0, 2);
+}
 
 export function buildRespondsBestForGroup(
   members: { id: string; chart: NatalChart }[]
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const used = new Set<string>();
+  const usedFragments = new Set<string>();
 
   for (const m of members) {
     const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
     const moon = planets.Moon?.sign;
-    const base = (moon && RESPONDS_BEST_BY_MOON[moon]) || "responds best to a calm tone and one thing at a time";
-    let line = base;
+    const lead = (moon && MOON_LEAD[moon]) || "a calm tone and one thing at a time";
 
+    const opener = sectOpener(m.chart);
+    const secondaries = pickSecondaries(planets, usedFragments);
+    const caveat = saturnLuminaryCaveat(planets);
+
+    // Compose: "responds best to <lead>" + optional sect opener merged + secondaries + caveat
+    const parts: string[] = [`responds best to ${lead}`];
+    if (opener && !lead.includes(opener.split(" ")[0])) parts[0] = `responds best to ${lead}, plus ${opener}`;
+    if (secondaries.length) parts.push(secondaries.join(", and "));
+    if (caveat) parts.push(caveat);
+
+    let line = parts.join(", ").replace(/\s+/g, " ").trim();
+
+    // Uniqueness safety: if this line collides exactly, append Sun-sign style note.
     if (used.has(line)) {
-      const mars = planets.Mars?.sign;
-      const mod = mars ? MARS_RESPONDS_MOD[mars] : undefined;
-      if (mod) line = `${base}${mod}`;
+      const sun = planets.Sun?.sign;
+      if (sun) line = `${line} (in their own ${sun} way)`;
     }
-    if (used.has(line)) {
-      const merc = planets.Mercury?.sign;
-      const mod = merc ? MERCURY_TONE[merc] : undefined;
-      if (mod) line = `${line} ${mod}`;
-    }
+
     used.add(line);
+    secondaries.forEach((s) => usedFragments.add(s));
+    if (opener) usedFragments.add(opener);
     out[m.id] = line;
   }
+
   return out;
 }
 
