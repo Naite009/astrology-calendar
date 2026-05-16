@@ -336,8 +336,8 @@ TOP-LEVEL FAMILY PATTERN SUMMARY (REQUIRED — applies to atAGlance field):
 - This summary must be CONSISTENT with everything later in the reading. If atAGlance says a child "acts quickly and directly", later sections must NOT describe them as withdrawing/quiet. Same consistency rule as SCENARIO DERIVATION RULE.
 
 EVIDENCE GATE — HARD STOP (applies to whatAlreadyWorks, parentChildConnections, siblingConnections):
-- Before writing any line about a pair, you MUST cite the specific aspect from the synastry data with both planets and the orb. If you cannot cite it, you may not write the line. No exceptions.
-- "What works" lines may ONLY appear when there is a tight (≤4° orb) bridge aspect (trine, sextile, conjunction) between PERSONAL planets (Sun, Moon, Mercury, Venus, Mars) of the two people in that pair. If no such aspect exists for a pair, omit that pair from whatAlreadyWorks entirely.
+- Before writing any line about a pair, you MUST cite the specific aspect, shared signature, or composite tone you are drawing from. If you cannot cite anything, state "few direct contacts" plainly — but you may NEVER omit the pair.
+- "What works" lines in whatAlreadyWorks MUST appear for EVERY pair (see NATURAL STRENGTHS FULL COVERAGE rule above). Use tight personal-planet bridges first; fall back to wider contacts, shared element/sect, composite tone, or ruler chains; if none exist, name the quietness honestly. NEVER omit a pair from whatAlreadyWorks.
 - Friction lines may ONLY appear when there is a tight (≤5° orb) friction aspect (square, opposition) between two named planets in that pair.
 - Bridge lines may ONLY appear when there is a tight (≤5° orb) trine, sextile, or conjunction between two named planets in that pair.
 - Composite line is the only line allowed without a synastry aspect — it cites the pair composite directly.
