@@ -415,6 +415,16 @@ JSON SCHEMA:
 {
   "essence": [string, ...3-5 items, each one sentence headlining the most important dynamic in plain English, no jargon],
   "ageNote": string (1-2 sentences naming the developmental stage and how it shapes the reading),
+  "childMechanism": {
+    "corePattern": [
+      { "placement": string (e.g. "Cancer Moon"), "does": string (one clause describing the INTERNAL MECHANISM using verbs like processes, absorbs, scans, defends, regulates, organizes — never adjectives) }
+      // 2 entries normally, max 3 only if a third placement is genuinely driving the tension
+    ],
+    "theConflict": string (1-3 short sentences naming the structural mismatch using the pattern "feels like X but has to [verb] like Y" or "wants A but is wired for B"; must name what happens first vs later),
+    "inRealLife": string (2-3 sentences describing a specific parent-recognizable scene the parent has already lived; no abstract description),
+    "underStress": string (1-2 sentences showing BOTH placements amplifying at once — placement 1 louder AND placement 2 defending harder),
+    "whatThisIsNot": string (ONE short sentence only, 3-5 things it is NOT separated by commas, no explanation, no "because" clause)
+  },
   "sections": [
     {
       "heading": "FROM_NAME's PLANET ASPECT TO_NAME's PLANET" (use the actual names and aspect word, e.g. "Lauren's Mercury square Ben's Moon"),
