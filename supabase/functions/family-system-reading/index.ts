@@ -487,6 +487,13 @@ Required 6-part shape per child (the schema enforces it; these rules govern the 
   (f) whatThisIsNot: ONE short sentence only. Three to five things it is NOT, separated by commas. No explanation, no therapy language, no "because" clause.
 BANNED: zodiac shorthand without mechanism, single-line summaries, "this means he is…" closures, any sentence that could be cut without losing the mechanism, generic trait words.
 
+CONTRAST PORTRAIT RULE (HARD — applies to childMechanisms[].does, atAGlance.line, and every child-description sentence):
+Every child must be described BY CONTRAST: one thing they are quick/natural at, AND one thing they protect, avoid, or guard, AND what happens under pressure with the internal reason.
+Required pattern: "Quick/natural with [domain], but protective around [domain]. Under pressure, [reaction] happens because [internal reason]."
+- A single-trait label is INVALID. "Fast thinker" → "quick with ideas, but protective around emotional accuracy." "Sensitive" → "quick to register emotional tone, but protective around showing vulnerability." "Impulsive" → "quick to act, but protective around being controlled or slowed down." "Attention-seeking" → "quick to express, but protective around feeling unseen or corrected."
+- Every important sentence MUST include cause→effect. "He shuts down" is INVALID. "He shuts down because pressure makes it harder to find the right words" is the minimum.
+- The parent must finish the description thinking "this explains my child," NOT "this labels my child." If a sentence labels without contrast, REWRITE.
+
 MECHANISM DIFFERENTIATION RULE (CRITICAL for multi-child families):
 Each child's mechanism MUST be clearly different from every sibling's. Across siblings, the set of mechanisms must vary on at least TWO of these axes:
   - internal timing (fast vs slow — does the feeling/reaction land instantly or build over time)
