@@ -2352,14 +2352,20 @@ export interface FamilyWeb {
   nodalDestiny: NodalDestiny[];
   sunDevelopmentalTasks: SunDevelopmentalTask[];
   missionStatement: FamilyMissionStatement | null;
+  parentalShadows: ParentalShadow[];
+  profectionYearMates: ProfectionYearMate[];
+  headline: FamilyHeadline | null;
 }
 
 export function buildFamilyWeb(
   members: { chart: NatalChart; role: FamilyRole }[],
 ): FamilyWeb {
+  const bridges = findBridgeMembers(members);
+  const profectionAlignment = findProfectionAlignment(members);
+  const missionStatement = computeFamilyMissionStatement(members);
   return {
     elementalVoid: computeElementalVoid(members),
-    bridges: findBridgeMembers(members),
+    bridges,
     triangulation: findTriangulations(members),
     mirrors: findInheritedSignatures(members),
     dashboard: buildRegulationDashboard(members),
@@ -2368,9 +2374,12 @@ export function buildFamilyWeb(
     tsquareCompletions: findTSquareCompletions(members),
     generationalGaps: findGenerationalGaps(members),
     houseOverlays: findHouseOverlays(members),
-    profectionAlignment: findProfectionAlignment(members),
+    profectionAlignment,
     nodalDestiny: findNodalDestiny(members),
     sunDevelopmentalTasks: findSunDevelopmentalTasks(members),
-    missionStatement: computeFamilyMissionStatement(members),
+    missionStatement,
+    parentalShadows: findParentalShadows(members),
+    profectionYearMates: findProfectionYearMates(profectionAlignment, members),
+    headline: computeFamilyHeadline(members, missionStatement, bridges),
   };
 }
