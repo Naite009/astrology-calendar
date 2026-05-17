@@ -1540,24 +1540,44 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4 text-sm">
-            {reading.siblingConnections.map((sc, i) => (
-              <PairBlock
-                key={i}
-                title={`${sc.siblingA} ↔ ${sc.siblingB}`}
-                nameA={sc.siblingA}
-                nameB={sc.siblingB}
-                composite={sc.composite}
-                bridge={sc.bridge}
-                friction={sc.friction}
-                interactionPattern={(sc as any).interactionPattern}
-                dynamic={(sc as any).dynamic}
-                whatCanFeelHard={(sc as any).whatCanFeelHard}
-                whatHelps={(sc as any).whatHelps}
-                patternType={(sc as any).patternType}
-                note={sc.note}
-                legacyBody={(sc as unknown as { body?: string }).body}
-              />
-            ))}
+            {reading.siblingConnections.map((sc, i) => {
+              const a = members.find((m) => m.chart.name === sc.siblingA)?.chart;
+              const b = members.find((m) => m.chart.name === sc.siblingB)?.chart;
+              const reset = a && b ? computeSiblingResetMode(a, b) : null;
+              return (
+                <div key={i} className="space-y-2">
+                  <PairBlock
+                    title={`${sc.siblingA} ↔ ${sc.siblingB}`}
+                    nameA={sc.siblingA}
+                    nameB={sc.siblingB}
+                    composite={sc.composite}
+                    bridge={sc.bridge}
+                    friction={sc.friction}
+                    interactionPattern={(sc as any).interactionPattern}
+                    dynamic={(sc as any).dynamic}
+                    whatCanFeelHard={(sc as any).whatCanFeelHard}
+                    whatHelps={(sc as any).whatHelps}
+                    patternType={(sc as any).patternType}
+                    note={sc.note}
+                    legacyBody={(sc as unknown as { body?: string }).body}
+                  />
+                  {reset && (
+                    <div className="ml-3 border-l-2 border-amber-500/60 pl-3 py-2 bg-amber-500/5 rounded-r-md space-y-1">
+                      <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                        When {sc.siblingA} & {sc.siblingB} clash
+                        {reset.sharedElements.length > 0 && (
+                          <span className="ml-1 font-normal opacity-70">
+                            · shared {reset.sharedElements.join(" + ")}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm"><span className="font-semibold">✓ Do this:</span> {reset.doThis}</p>
+                      <p className="text-sm text-muted-foreground"><span className="font-semibold">✗ Avoid:</span> {reset.dontDoThis}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
