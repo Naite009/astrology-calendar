@@ -1223,12 +1223,16 @@ Keep the tone professional, insightful, and practically applicable.`,
       const voc = getVOCMoonDetails(new Date());
       setVocInfo(voc);
       
-      // Only auto-fetch on first open if no cache exists for the current voice
-      // This prevents auto-fetching when switching voices
+      // Do NOT auto-generate. User must explicitly choose voice + chart, then click Generate.
+      // Only load from cache if present for the current voice.
       const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
       const cached = localStorage.getItem(cacheKey);
-      if (!cosmicData && !cached) {
-        fetchCosmicWeather(false);
+      if (!cosmicData && cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setCosmicData(parsed);
+          setLastFetched(parsed.generatedAt || null);
+        } catch {}
       }
     }
   }, [isOpen]); // Only depend on isOpen, not voiceStyle
@@ -1504,9 +1508,8 @@ Keep the tone professional, insightful, and practically applicable.`,
                         value={voiceStyle}
                         onValueChange={(value: typeof voiceStyle) => {
                           setVoiceStyle(value);
-                          setCosmicData(null);
-                          // Pass the new voice directly to avoid race condition
-                          fetchCosmicWeather(true, undefined, value);
+                          // Don't auto-generate — wait for user to click Generate.
+                          // The cache-load effect on voiceStyle will swap in cached content if it exists.
                         }}
                       >
                         <SelectTrigger className="w-[220px] bg-background">
@@ -1576,6 +1579,38 @@ Keep the tone professional, insightful, and practically applicable.`,
                     )}
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Generate Reading button — only after voice + chart are chosen */}
+              {viewMode === 'daily' && (
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Button
+                    onClick={() => {
+                      setCosmicData(null);
+                      fetchCosmicWeather(true);
+                    }}
+                    disabled={isLoading}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        {cosmicData ? 'Regenerate Reading' : 'Generate Reading'}
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedChart
+                      ? `Will be written in ${voiceStyle === 'tara' ? 'Tara Vogel' : voiceStyle}'s voice, personalized for ${selectedChart.name}.`
+                      : `Will be written in ${voiceStyle === 'tara' ? 'Tara Vogel' : voiceStyle}'s voice (general — pick a chart above to personalize).`}
+                  </p>
+                </div>
               )}
 
               {/* Personalized Transits Panel */}
