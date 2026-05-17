@@ -1676,6 +1676,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           elementalVoid, bridges, triangulation, mirrors, dashboard,
           twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
           houseOverlays, profectionAlignment, nodalDestiny,
+          sunDevelopmentalTasks, missionStatement,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1690,7 +1691,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           generationalGaps.length > 0 ||
           houseOverlays.length > 0 ||
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
-          nodalDestiny.length > 0;
+          nodalDestiny.length > 0 ||
+          sunDevelopmentalTasks.length > 0 ||
+          !!missionStatement;
         if (!anyContent) return null;
         return (
           <Card className="border-primary/60 bg-primary/5">
