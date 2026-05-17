@@ -1585,21 +1585,30 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               What Each Person Responds Best To
             </CardTitle>
             <CardDescription className="pt-1">
-              One line per person, woven from Moon (what feels safe), Venus (what feels like love), Mercury (how they want to be talked to), Mars (how they recover), Saturn-to-luminary (what cuts), and day-vs-night chart. Deterministic, no AI.
+              Labeled micro-lines per person — Moon (safety), Venus (love), Mercury (how they hear you), Mars (reset), Saturn-to-luminary (what cuts). Deterministic, no AI.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-2 text-sm">
+          <CardContent className="pt-4 space-y-4 text-sm">
             {(() => {
-              const lines = buildRespondsBestForGroup(
+              const profiles = buildRespondsBestProfileForGroup(
                 members.map((m) => ({ id: m.chart.id, chart: m.chart })),
-                reading
               );
-              return members.map((m) => (
-                <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
-                  <span className="font-semibold">{m.chart.name}</span>
-                  {" "}→ {lines[m.chart.id]}
-                </div>
-              ));
+              return members.map((m) => {
+                const p = profiles[m.chart.id];
+                if (!p) return null;
+                return (
+                  <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                    <div className="font-semibold">{m.chart.name}</div>
+                    <div><span className="text-muted-foreground">☽ What feels safe:</span> {p.whatFeelsSafe}</div>
+                    <div><span className="text-muted-foreground">♀ What feels like love:</span> {p.whatFeelsLikeLove}</div>
+                    <div><span className="text-muted-foreground">☿ How they hear you:</span> {p.howTheyHearYou}</div>
+                    <div><span className="text-muted-foreground">♂ How they reset:</span> {p.howTheyReset}</div>
+                    {p.whatCuts && (
+                      <div><span className="text-muted-foreground">♄ What cuts:</span> {p.whatCuts}</div>
+                    )}
+                  </div>
+                );
+              });
             })()}
           </CardContent>
         </Card>
