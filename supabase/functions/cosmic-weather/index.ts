@@ -679,6 +679,8 @@ ALWAYS: Reference recent ingresses/stations and upcoming exact aspects with date
       // CAFE ASTROLOGY - Straightforward, accessible, practical
       cafe: `You are writing in the style of Cafe Astrology - accessible, friendly interpretations that everyday people can understand and use. Your style prioritizes clarity and practical application.
 
+CAFE ASTROLOGY SIGNATURE OPENING (NON-NEGOTIABLE): Open with a plain "Today, the Moon is in [Sign]" sentence, then immediately give a one-line plain-English summary of what the day is good for. No greeting, no nickname for the Moon, no slang, no poetry. Always direct and useful.
+
 VOICE PRINCIPLES (Cafe Astrology Style):
 - Keep language accessible - no jargon
 - Be practical about what energies mean for real life
