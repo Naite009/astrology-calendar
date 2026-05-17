@@ -1906,6 +1906,128 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                   ))}
                 </div>
               )}
+
+              {houseOverlays.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">House Overlays (Hellenistic)</div>
+                  <p className="text-xs text-muted-foreground">
+                    Where each person's Sun, Mars, Saturn, and Jupiter land inside other members' houses. Flags hidden impact (6/8/12) and visibility/support (angular: 1/4/7/10).
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="text-left text-muted-foreground border-b border-border">
+                          <th className="py-1 pr-3">From</th>
+                          <th className="py-1 pr-3">Planet</th>
+                          <th className="py-1 pr-3">Into</th>
+                          <th className="py-1 pr-3">House</th>
+                          <th className="py-1">Effect</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {houseOverlays.map((o, i) => (
+                          <Fragment key={i}>
+                            <tr className="border-b border-border/50 align-top">
+                              <td className="py-2 pr-3 font-medium">{o.fromName}</td>
+                              <td className="py-2 pr-3">{o.fromPlanet}{o.fromSign ? ` in ${o.fromSign}` : ""}</td>
+                              <td className="py-2 pr-3 font-medium">{o.toName}</td>
+                              <td className="py-2 pr-3">{o.house}</td>
+                              <td className="py-2">
+                                <Badge variant="outline" className={`text-[10px] font-normal ${o.category === "hidden" ? "border-amber-500/50" : "border-primary/50"}`}>
+                                  {o.label}
+                                </Badge>
+                              </td>
+                            </tr>
+                            <tr className="border-b border-border/50">
+                              <td colSpan={5} className="py-1 pl-3 italic text-muted-foreground text-xs">
+                                {o.note}
+                              </td>
+                            </tr>
+                          </Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {profectionAlignment && profectionAlignment.perMember.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Current Family Focus (Profections)</div>
+                  <p className="text-xs text-muted-foreground">
+                    Each member's active house this year. Same house = synergy. Squared or opposed houses = priority clash.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="text-left text-muted-foreground border-b border-border">
+                          <th className="py-1 pr-3">Person</th>
+                          <th className="py-1 pr-3">Age</th>
+                          <th className="py-1 pr-3">Active house</th>
+                          <th className="py-1">This year's focus</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {profectionAlignment.perMember.map((p, i) => (
+                          <tr key={i} className="border-b border-border/50">
+                            <td className="py-2 pr-3 font-medium">{p.name}</td>
+                            <td className="py-2 pr-3">{p.age}</td>
+                            <td className="py-2 pr-3">{p.house}</td>
+                            <td className="py-2 text-muted-foreground">{p.theme}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {profectionAlignment.synergies.length > 0 && (
+                    <div className="space-y-1 pt-2">
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Synergy</div>
+                      {profectionAlignment.synergies.map((s, i) => (
+                        <div key={i} className="border-l-2 border-primary/40 pl-3">
+                          <p>{s.note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {profectionAlignment.clashes.length > 0 && (
+                    <div className="space-y-1 pt-2">
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Priority Clashes</div>
+                      {profectionAlignment.clashes.map((c, i) => (
+                        <div key={i} className="border-l-2 border-amber-500/50 pl-3">
+                          <div className="font-medium">
+                            {c.memberA} ({ordinalShort(c.houseA)}) {c.relation === "square" ? "□" : "☍"} {c.memberB} ({ordinalShort(c.houseB)})
+                          </div>
+                          <p className="text-muted-foreground">{c.note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {nodalDestiny.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Nodal Destiny</div>
+                  <p className="text-xs text-muted-foreground">
+                    A member's Sun or Moon sitting on another member's lunar nodes. North Node = The Teacher (where you're growing). South Node = The Comfort Zone (familiar, but the old pattern).
+                  </p>
+                  {nodalDestiny.map((n, i) => (
+                    <div
+                      key={i}
+                      className={`border-l-2 pl-3 ${n.nodeType === "North" ? "border-primary/60" : "border-amber-500/50"}`}
+                    >
+                      <div className="font-medium flex items-center gap-2 flex-wrap">
+                        <span>{n.contactorName}'s {n.contactorPlanet} ↔ {n.ownerName}'s {n.nodeType} Node</span>
+                        <Badge variant="outline" className="text-[10px] font-normal">
+                          {n.role}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">orb {n.orb.toFixed(2)}°</span>
+                      </div>
+                      <p className="text-muted-foreground">{n.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         );
