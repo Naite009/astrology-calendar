@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, Fragment } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download, Star, Cloud, Trophy } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download, Star, Cloud, Trophy, Zap, Brain, Activity, Compass, Thermometer } from "lucide-react";
 
 function downloadJson(data: unknown, filename: string) {
   try {
