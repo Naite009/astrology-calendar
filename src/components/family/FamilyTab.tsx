@@ -1814,6 +1814,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
+              {elementalVoid.missingElement && (
                 <div className="space-y-1">
                   <div className="font-semibold">
                     {elementalVoid.surrogate ? "Natural Surrogate" : "Elemental Void"}
