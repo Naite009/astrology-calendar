@@ -2485,6 +2485,9 @@ export interface FamilyWeb {
   parentalShadows: ParentalShadow[];
   profectionYearMates: ProfectionYearMate[];
   headline: FamilyHeadline | null;
+  siblingLenses: SiblingLens[];
+  groupedGenerationalGaps: GroupedGenerationalGap[];
+  siblingSoulMissions: SiblingSoulMission[];
 }
 
 export function buildFamilyWeb(
@@ -2493,6 +2496,8 @@ export function buildFamilyWeb(
   const bridges = findBridgeMembers(members);
   const profectionAlignment = findProfectionAlignment(members);
   const missionStatement = computeFamilyMissionStatement(members);
+  const generationalGaps = findGenerationalGaps(members);
+  const nodalDestiny = findNodalDestiny(members);
   return {
     elementalVoid: computeElementalVoid(members),
     bridges,
@@ -2502,14 +2507,17 @@ export function buildFamilyWeb(
     twelfthHouseMirrors: findTwelfthHouseMirrors(members),
     midpointHotspots: findMidpointHotspots(members),
     tsquareCompletions: findTSquareCompletions(members),
-    generationalGaps: findGenerationalGaps(members),
+    generationalGaps,
     houseOverlays: findHouseOverlays(members),
     profectionAlignment,
-    nodalDestiny: findNodalDestiny(members),
+    nodalDestiny,
     sunDevelopmentalTasks: findSunDevelopmentalTasks(members),
     missionStatement,
     parentalShadows: findParentalShadows(members),
     profectionYearMates: findProfectionYearMates(profectionAlignment, members),
     headline: computeFamilyHeadline(members, missionStatement, bridges),
+    siblingLenses: findSiblingLenses(members),
+    groupedGenerationalGaps: groupGenerationalGaps(generationalGaps),
+    siblingSoulMissions: findSiblingSoulMissions(nodalDestiny, members),
   };
 }
