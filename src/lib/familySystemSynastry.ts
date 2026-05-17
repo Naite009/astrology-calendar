@@ -1517,6 +1517,323 @@ export function computeSiblingResetMode(
   };
 }
 
+// ── Section 6: Karmic Custodian — 12th-House Mirror ───────────────────────────
+export interface TwelfthHouseMirror {
+  parent: string;
+  child: string;
+  childPlanet: string;
+  text: string;
+}
+
+const TWELFTH_HOUSE_TEXT: Record<string, (parent: string, child: string) => string> = {
+  Sun: (_p, c) => `${c} reflects the part of yourself you keep private. Be honest about what you want, so they don't carry the unspoken version.`,
+  Moon: (_p, c) => `When you're carrying unspoken stress, ${c} gets restless or clingy. They feel it before you name it.`,
+  Mercury: (_p, c) => `${c} voices thoughts you haven't said out loud. If they ask blunt questions, it's your own held-back words coming through them.`,
+  Venus: (_p, c) => `${c} picks up on relationship tension you're avoiding. Acknowledge it directly so they don't have to mirror it.`,
+  Mars: (_p, c) => `${c} acts out anger you're sitting on. Name your own frustration first; their reactivity will drop.`,
+};
+
+export function findTwelfthHouseMirrors(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): TwelfthHouseMirror[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child");
+  const out: TwelfthHouseMirror[] = [];
+
+  for (const p of parents) {
+    if (!p.chart.houseCusps) continue;
+    for (const c of children) {
+      for (const planetName of ["Sun", "Moon", "Mercury", "Venus", "Mars"]) {
+        const planet = (c.chart.planets as any)[planetName] as NatalPlanetPosition | undefined;
+        if (!planet?.sign) continue;
+        const house = houseOfPlanet(p.chart, planet);
+        if (house !== 12) continue;
+        const textFn = TWELFTH_HOUSE_TEXT[planetName];
+        if (!textFn) continue;
+        out.push({
+          parent: p.chart.name,
+          child: c.chart.name,
+          childPlanet: planetName,
+          text: textFn(p.chart.name, c.chart.name),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+// ── Section 7: Midpoint Hotspots ──────────────────────────────────────────────
+export interface MidpointHotspot {
+  parentA: string;
+  parentB: string;
+  parentPlanetA: string;
+  parentPlanetB: string;
+  midpointSign: string;
+  midpointDegree: number; // 0..30
+  midpointMinutes: number; // 0..60
+  activator: string;
+  activatorPlanet: string;
+  orb: number;
+  interpretation: string;
+}
+
+const MIDPOINT_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Ascendant"] as const;
+const MIDPOINT_ORB = 1.5;
+
+function midpointInterpretation(planetA: string, planetB: string, child: string): string {
+  const key = [planetA, planetB].sort().join("/");
+  const map: Record<string, string> = {
+    "Mars/Sun": `${child} activates your shared drive. They feel most secure when you two are moving toward a goal together.`,
+    "Moon/Sun": `${child} sits on your relationship's emotional center. Your mood as a couple sets theirs.`,
+    "Mars/Saturn": `${child} triggers your shared frustration and discipline knot. Tighten the rules together, or they'll exploit the gap.`,
+    "Mars/Venus": `${child} activates the spark between you two. They thrive when you two are affectionate in front of them.`,
+    "Saturn/Sun": `${child} carries your shared sense of duty. Don't over-task them.`,
+    "Mercury/Sun": `${child} echoes your shared conversation style. They will speak the way you two speak to each other.`,
+    "Moon/Venus": `${child} amplifies the warmth or coolness between you two. Affection between parents is felt directly by them.`,
+    "Mars/Moon": `${child} sits on the emotional friction point. Unresolved tension between you two lands in their nervous system.`,
+  };
+  return map[key]
+    || `${child} sits on the midpoint of your ${planetA}/${planetB} energy. When you two are aligned around that theme, they amplify it.`;
+}
+
+export function findMidpointHotspots(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): MidpointHotspot[] {
+  const parents = members.filter((m) => m.role === "parent");
+  if (parents.length < 2) return [];
+  const others = members.filter((m) => !parents.includes(m));
+  if (others.length === 0) return [];
+
+  const hotspots: MidpointHotspot[] = [];
+
+  for (let i = 0; i < parents.length; i++) {
+    for (let j = i + 1; j < parents.length; j++) {
+      const pA = parents[i];
+      const pB = parents[j];
+      for (const planetA of MIDPOINT_PLANETS) {
+        const posA = (pA.chart.planets as any)[planetA] as NatalPlanetPosition | undefined;
+        const aAbs = toAbs(posA);
+        if (aAbs == null) continue;
+        for (const planetB of MIDPOINT_PLANETS) {
+          const posB = (pB.chart.planets as any)[planetB] as NatalPlanetPosition | undefined;
+          const bAbs = toAbs(posB);
+          if (bAbs == null) continue;
+
+          // Two midpoint axes: short-arc midpoint and its opposition
+          let mid = (aAbs + bAbs) / 2;
+          // Pick the shorter-arc midpoint
+          if (Math.abs(aAbs - bAbs) > 180) mid = (mid + 180) % 360;
+          mid = ((mid % 360) + 360) % 360;
+          const midOpp = (mid + 180) % 360;
+
+          for (const m of others) {
+            for (const aPlanet of MIDPOINT_PLANETS) {
+              const aPos = (m.chart.planets as any)[aPlanet] as NatalPlanetPosition | undefined;
+              const aPosAbs = toAbs(aPos);
+              if (aPosAbs == null) continue;
+              for (const axis of [mid, midOpp]) {
+                let diff = Math.abs(aPosAbs - axis);
+                if (diff > 180) diff = 360 - diff;
+                if (diff <= MIDPOINT_ORB) {
+                  const signIdx = Math.floor(axis / 30);
+                  const deg = axis - signIdx * 30;
+                  const degree = Math.floor(deg);
+                  const minutes = Math.round((deg - degree) * 60);
+                  hotspots.push({
+                    parentA: pA.chart.name,
+                    parentB: pB.chart.name,
+                    parentPlanetA: planetA,
+                    parentPlanetB: planetB,
+                    midpointSign: ZODIAC_SIGNS[signIdx],
+                    midpointDegree: degree,
+                    midpointMinutes: minutes,
+                    activator: m.chart.name,
+                    activatorPlanet: aPlanet,
+                    orb: Math.round(diff * 100) / 100,
+                    interpretation: midpointInterpretation(planetA, planetB, m.chart.name),
+                  });
+                  break; // don't double-count both axes
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Dedupe (parentA, parentB, planetA, planetB, activator, activatorPlanet) keeping tightest orb
+  const dedup = new Map<string, MidpointHotspot>();
+  for (const h of hotspots) {
+    const sortedPlanets = [h.parentPlanetA, h.parentPlanetB].sort();
+    const key = `${h.parentA}|${h.parentB}|${sortedPlanets.join("/")}|${h.activator}|${h.activatorPlanet}`;
+    const prev = dedup.get(key);
+    if (!prev || h.orb < prev.orb) dedup.set(key, h);
+  }
+
+  return Array.from(dedup.values())
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 8);
+}
+
+// ── Section 8: T-Square Completion (Missing Leg) ──────────────────────────────
+export interface TSquareCompletion {
+  parent: string;
+  child: string;
+  parentPlanetA: string;
+  parentPlanetB: string;
+  childPlanet: string;
+  apexSign: string;
+  apexDegree: number;
+  orb: number;
+  text: string;
+}
+
+const TSQUARE_PARENT_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"] as const;
+const TSQUARE_CHILD_PLANETS = ["Sun", "Moon", "Mars", "Ascendant"] as const;
+const SQUARE_ORB = 6;
+const APEX_ORB = 3;
+
+export function findTSquareCompletions(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): TSquareCompletion[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child");
+  const out: TSquareCompletion[] = [];
+
+  for (const p of parents) {
+    // Find squares within parent's natal chart
+    const squares: { a: string; b: string; aAbs: number; bAbs: number }[] = [];
+    for (let i = 0; i < TSQUARE_PARENT_PLANETS.length; i++) {
+      for (let j = i + 1; j < TSQUARE_PARENT_PLANETS.length; j++) {
+        const pa = (p.chart.planets as any)[TSQUARE_PARENT_PLANETS[i]] as NatalPlanetPosition | undefined;
+        const pb = (p.chart.planets as any)[TSQUARE_PARENT_PLANETS[j]] as NatalPlanetPosition | undefined;
+        const aAbs = toAbs(pa);
+        const bAbs = toAbs(pb);
+        if (aAbs == null || bAbs == null) continue;
+        let diff = Math.abs(aAbs - bAbs);
+        if (diff > 180) diff = 360 - diff;
+        if (Math.abs(diff - 90) <= SQUARE_ORB) {
+          squares.push({ a: TSQUARE_PARENT_PLANETS[i], b: TSQUARE_PARENT_PLANETS[j], aAbs, bAbs });
+        }
+      }
+    }
+    if (!squares.length) continue;
+
+    for (const c of children) {
+      let best: TSquareCompletion | null = null;
+      for (const sq of squares) {
+        // Two apex points: 90° from each planet, picking the points that are
+        // ~90° from BOTH simultaneously (i.e., the midpoint of the long arc
+        // and its opposition).
+        const longMidpoint = ((sq.aAbs + sq.bAbs) / 2 + 90) % 360;
+        const apex1 = ((longMidpoint % 360) + 360) % 360;
+        const apex2 = (apex1 + 180) % 360;
+
+        for (const cPlanetName of TSQUARE_CHILD_PLANETS) {
+          const cPos = (c.chart.planets as any)[cPlanetName] as NatalPlanetPosition | undefined;
+          const cAbs = toAbs(cPos);
+          if (cAbs == null) continue;
+          for (const apex of [apex1, apex2]) {
+            let diff = Math.abs(cAbs - apex);
+            if (diff > 180) diff = 360 - diff;
+            if (diff <= APEX_ORB) {
+              const signIdx = Math.floor(apex / 30);
+              const apexDeg = apex - signIdx * 30;
+              const apexSign = ZODIAC_SIGNS[signIdx];
+              const entry: TSquareCompletion = {
+                parent: p.chart.name,
+                child: c.chart.name,
+                parentPlanetA: sq.a,
+                parentPlanetB: sq.b,
+                childPlanet: cPlanetName,
+                apexSign,
+                apexDegree: Math.round(apexDeg * 10) / 10,
+                orb: Math.round(diff * 100) / 100,
+                text: `${c.chart.name}'s ${cPlanetName} at ${Math.round(apexDeg)}° ${apexSign} completes your ${sq.a}/${sq.b} square. They don't just push your buttons, their existence is the catalyst that forces the growth this square has been demanding from you.`,
+              };
+              if (!best || entry.orb < best.orb) best = entry;
+            }
+          }
+        }
+      }
+      if (best) out.push(best);
+    }
+  }
+  return out;
+}
+
+// ── Section 9: Generational Outer-Planet Gap ──────────────────────────────────
+export interface GenerationalGap {
+  parent: string;
+  child: string;
+  planet: "Uranus" | "Neptune" | "Pluto";
+  parentSign: string;
+  childSign: string;
+  text: string;
+}
+
+const GENERATIONAL_LOOKUP: Record<string, (parent: string, child: string) => string> = {
+  // Pluto
+  "Pluto:Virgo>Libra": (_, c) => `You value efficiency and self-improvement (Pluto in Virgo); ${c}'s generation values balance and partnership. Their refusal to grind feels lazy to you, it's actually their generation's correction.`,
+  "Pluto:Virgo>Scorpio": (_, c) => `You value useful work and discretion; ${c}'s generation values intensity and exposure. Their dramatic depth isn't excess, it's their generational currency.`,
+  "Pluto:Libra>Scorpio": (_, c) => `You value harmony and partnership; ${c}'s generation values raw truth. Their intensity will feel like aggression to you, it's their generation's refusal of niceness.`,
+  "Pluto:Scorpio>Sagittarius": (_, c) => `You value depth and privacy (Pluto in Scorpio); ${c}'s generation values bluntness and freedom. Their oversharing isn't disrespect, it's their generation's mission to refuse secrecy.`,
+  "Pluto:Scorpio>Capricorn": (_, c) => `You value emotional intensity; ${c}'s generation values structure and legitimacy. Their pragmatism will feel cold, it's their generation's rebuild after collapse.`,
+  "Pluto:Sagittarius>Capricorn": (_, c) => `You value freedom and big-picture truth; ${c}'s generation values structure and authority. Their seriousness isn't joyless, it's their generation's job to rebuild what yours questioned.`,
+  "Pluto:Sagittarius>Aquarius": (_, c) => `You value belief and expansion; ${c}'s generation values systems and collective change. Their detachment isn't apathy, it's their generation's lens.`,
+  "Pluto:Capricorn>Aquarius": (_, c) => `You value hierarchy and proven structure (Pluto in Capricorn); ${c}'s generation values systems-breaking and collective rights. Their disregard for authority isn't rudeness, it's their generation's mission.`,
+  "Pluto:Capricorn>Pisces": (_, c) => `You value structure and earned status; ${c}'s generation values dissolution and collective feeling. Their boundary-blurring will feel undisciplined, it's their generation's softening.`,
+  // Neptune
+  "Neptune:Sagittarius>Capricorn": (_, c) => `You dream of expansion and meaning (Neptune in Sagittarius); ${c}'s generation dreams of legitimate structure. They romanticize what you wanted to escape.`,
+  "Neptune:Capricorn>Aquarius": (_, c) => `You dream of solid structures (Neptune in Capricorn); ${c}'s generation dreams of digital collectives. Their online life isn't escapism to them, it's where their idealism lives.`,
+  "Neptune:Aquarius>Pisces": (_, c) => `You dream in systems and ideals (Neptune in Aquarius); ${c}'s generation dreams in feeling and merger. Their emotional flooding isn't drama, it's their native language.`,
+  "Neptune:Pisces>Aries": (_, c) => `You dream of merging and dissolving (Neptune in Pisces); ${c}'s generation dreams of distinct selves. Their assertion isn't selfish, it's a corrective to the blur.`,
+  // Uranus
+  "Uranus:Sagittarius>Capricorn": (_, c) => `You rebel through ideas and travel; ${c}'s generation rebels through restructuring institutions. Their seriousness is the new disruption.`,
+  "Uranus:Capricorn>Aquarius": (_, c) => `You rebel by rebuilding structures; ${c}'s generation rebels by inventing new networks. Their tech-native instincts aren't a phase.`,
+  "Uranus:Aquarius>Pisces": (_, c) => `You rebel through systems and ideals; ${c}'s generation rebels through dissolving the boundaries of identity itself.`,
+  "Uranus:Pisces>Aries": (_, c) => `You rebel through dissolution and art; ${c}'s generation rebels through direct, individual action. Their bluntness is the rebellion you didn't make.`,
+  "Uranus:Aries>Taurus": (_, c) => `You rebel through speed and disruption; ${c}'s generation rebels through stubborn embodiment and resource refusal. Their slowness is the new rebellion.`,
+};
+
+export function findGenerationalGaps(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): GenerationalGap[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child");
+  const out: GenerationalGap[] = [];
+  const seen = new Set<string>();
+
+  for (const p of parents) {
+    for (const c of children) {
+      for (const planet of ["Uranus", "Neptune", "Pluto"] as const) {
+        const pSign = (p.chart.planets as any)[planet]?.sign as string | undefined;
+        const cSign = (c.chart.planets as any)[planet]?.sign as string | undefined;
+        if (!pSign || !cSign || pSign === cSign) continue;
+        const key = `${p.chart.name}|${c.chart.name}|${planet}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const lookupKey = `${planet}:${pSign}>${cSign}`;
+        const reverseKey = `${planet}:${cSign}>${pSign}`;
+        const fn = GENERATIONAL_LOOKUP[lookupKey] || GENERATIONAL_LOOKUP[reverseKey];
+        const text = fn
+          ? fn(p.chart.name, c.chart.name)
+          : `${planet} ${pSign} (you) vs ${planet} ${cSign} (${c.chart.name}): different generational values. The friction is generational, not personal.`;
+        out.push({
+          parent: p.chart.name,
+          child: c.chart.name,
+          planet,
+          parentSign: pSign,
+          childSign: cSign,
+          text,
+        });
+      }
+    }
+  }
+  return out;
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
@@ -1524,6 +1841,10 @@ export interface FamilyWeb {
   triangulation: TriangulationResult;
   mirrors: FamilyMirror[];
   dashboard: RegulationRow[];
+  twelfthHouseMirrors: TwelfthHouseMirror[];
+  midpointHotspots: MidpointHotspot[];
+  tsquareCompletions: TSquareCompletion[];
+  generationalGaps: GenerationalGap[];
 }
 
 export function buildFamilyWeb(
@@ -1535,5 +1856,9 @@ export function buildFamilyWeb(
     triangulation: findTriangulations(members),
     mirrors: findInheritedSignatures(members),
     dashboard: buildRegulationDashboard(members),
+    twelfthHouseMirrors: findTwelfthHouseMirrors(members),
+    midpointHotspots: findMidpointHotspots(members),
+    tsquareCompletions: findTSquareCompletions(members),
+    generationalGaps: findGenerationalGaps(members),
   };
 }
