@@ -2279,7 +2279,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               {hasTechnicalContent && (
                 <details className="rounded-md border border-dashed border-border bg-background/40 group">
                   <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
-                    <span>🔭 Astrology Nerd Corner — Technical Deep Dive</span>
+                    <span>🔭 View Full Astrological Blueprint</span>
                     <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
                     <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
                   </summary>
