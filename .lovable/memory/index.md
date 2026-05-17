@@ -33,6 +33,7 @@ Updated: now
 - [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
 - [Family Parent Alignment](mem://features/family-readings/parent-alignment) — Layer 3 "What This Child Needs From You" recognition lines, gated on valid childMechanism; invalid mechanisms trigger repair before response
 - [Family No Generic Fallbacks](mem://features/family-readings/no-generic-fallbacks) — family-system-reading bans templated pair `dynamic`; generic-phrase scrub + Jaccard detector force server-side repair before UI response
+- [Family Web](mem://features/family-readings/family-web) — Deterministic collision layer: elemental void+surrogate, shadow-bridge (fire=physical, not verbal), modality gridlock/start-war/drift, family mirrors, regulation dashboard with Saturn-wall sensitivity notes
 - [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
 - [Chart Lord Activation](mem://features/astrology/chart-lord-activation-system) — Binary search tracking of outer planet transits to the Sect Light
 - [Local Date Logic](mem://features/astrology/local-date-logic-standard) — formatLocalDateKey and parseLocalDate prevent timezone drift

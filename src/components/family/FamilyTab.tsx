@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Fragment } from "react";
 import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download } from "lucide-react";
 
 function downloadJson(data: unknown, filename: string) {
@@ -47,6 +47,7 @@ import {
   buildRespondsBestForGroup,
   buildRespondsBestProfileForGroup,
   buildHouseholdResetLine,
+  buildFamilyWeb,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
@@ -293,7 +294,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v5-contrast:${sel
+    `system-pipeline-v6-web:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1641,6 +1642,150 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           </CardContent>
         </Card>
       )}
+
+      {members.length >= 2 && (() => {
+        const web = buildFamilyWeb(members);
+        const { elementalVoid, bridges, triangulation, mirrors, dashboard } = web;
+        const anyContent =
+          elementalVoid.missingElement ||
+          bridges.length > 0 ||
+          triangulation.triangles.length > 0 ||
+          triangulation.modalityPattern ||
+          mirrors.length > 0 ||
+          dashboard.length > 0;
+        if (!anyContent) return null;
+        return (
+          <Card className="border-primary/60 bg-primary/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                The Family Feedback Loop
+              </CardTitle>
+              <CardDescription className="pt-1">
+                How members collide, gridlock, mirror, and surrogate for each other. Deterministic, computed from the charts.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-2 space-y-5 text-sm">
+              {elementalVoid.missingElement && (
+                <div className="space-y-1">
+                  <div className="font-semibold">
+                    {elementalVoid.surrogate ? "Natural Surrogate" : "Elemental Void"}
+                    {" — "}
+                    <span className="capitalize">{elementalVoid.missingElement}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Tally: {elementalVoid.counts.fire} fire, {elementalVoid.counts.earth} earth, {elementalVoid.counts.air} air, {elementalVoid.counts.water} water (Sun, Moon, Mercury, Venus, Mars).
+                  </div>
+                  {elementalVoid.surrogate ? (
+                    <p>
+                      <span className="font-medium">{elementalVoid.surrogate.name}</span> is the natural surrogate: {elementalVoid.surrogate.why}. The element is technically missing but this person carries the function.
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground">{elementalVoid.impact}</p>
+                  )}
+                  {elementalVoid.anchorSuggestion && (
+                    <p><span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">Add</span>{elementalVoid.anchorSuggestion}</p>
+                  )}
+                </div>
+              )}
+
+              {triangulation.modalityPattern && (
+                <div className="rounded-md border border-primary/40 p-3 space-y-1 bg-background/50">
+                  <div className="font-semibold">
+                    {triangulation.modalityPattern.label}
+                    {" — "}
+                    <span className="capitalize">{triangulation.modalityPattern.dominant}</span> pile-up ({triangulation.modalityPattern.count})
+                  </div>
+                  <p>{triangulation.modalityPattern.intervention}</p>
+                </div>
+              )}
+
+              {bridges.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Bridge Members</div>
+                  {bridges.map((b, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                      <div>
+                        <span className="font-medium">{b.clashingPair[0]} ↔ {b.clashingPair[1]}</span>
+                        <span className="text-muted-foreground"> — {b.clashReason}</span>
+                      </div>
+                      <div>Bridge: <span className="font-medium">{b.bridge}</span> ({b.sharedElementWithA}/{b.sharedElementWithB})</div>
+                      <p className="text-muted-foreground">{b.howToUse}</p>
+                      {b.withdrawalCaveat && (
+                        <p className="text-xs italic text-muted-foreground">⚠ {b.withdrawalCaveat}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {triangulation.triangles.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Triangulation</div>
+                  {triangulation.triangles.map((t, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                      <p>{t.sequence}</p>
+                      <p className="text-muted-foreground">
+                        <span className="text-xs uppercase tracking-wider mr-2">Circuit breaker</span>
+                        {t.intervention}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {mirrors.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Family Mirrors (Inherited Signatures)</div>
+                  {mirrors.map((m, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
+                      <span className="text-muted-foreground">{m.sameTeamMessage}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {dashboard.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Regulation Dashboard</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="text-left text-muted-foreground border-b border-border">
+                          <th className="py-1 pr-3">Person</th>
+                          <th className="py-1 pr-3">Triggered by</th>
+                          <th className="py-1 pr-3">Stress reaction</th>
+                          <th className="py-1">Circuit breaker</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dashboard.map((row, i) => (
+                          <Fragment key={i}>
+                            <tr className="border-b border-border/50 align-top">
+                              <td className="py-2 pr-3 font-medium">{row.name}</td>
+                              <td className="py-2 pr-3">{row.triggeredBy}</td>
+                              <td className="py-2 pr-3">{row.stressReaction}</td>
+                              <td className="py-2">{row.circuitBreaker}</td>
+                            </tr>
+                            {row.sensitivityNotes && row.sensitivityNotes.map((s, j) => (
+                              <tr key={`${i}-${j}`} className="border-b border-border/50">
+                                <td colSpan={4} className="py-1 pl-3 italic text-muted-foreground text-xs">
+                                  ⚠ Sensitivity ({s.aboutChild}): {s.note}
+                                </td>
+                              </tr>
+                            ))}
+                          </Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
     </div>
   );

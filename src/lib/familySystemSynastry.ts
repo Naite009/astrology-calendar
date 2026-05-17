@@ -944,3 +944,528 @@ export function buildHouseholdResetLine(
   const counts = `${tally.water} water, ${tally.fire} fire, ${tally.earth} earth, ${tally.air} air`;
   return `Moons in this household: ${counts}. The group resets fastest with ${need[topEl]}.`;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE FAMILY WEB — collision-layer (deterministic, no AI)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type Element = "fire" | "earth" | "air" | "water";
+type Modality = "cardinal" | "fixed" | "mutable";
+
+const CARDINAL = new Set(["Aries", "Cancer", "Libra", "Capricorn"]);
+const FIXED = new Set(["Taurus", "Leo", "Scorpio", "Aquarius"]);
+const MUTABLE = new Set(["Gemini", "Virgo", "Sagittarius", "Pisces"]);
+
+function modalityOf(sign?: string): Modality | null {
+  if (!sign) return null;
+  if (CARDINAL.has(sign)) return "cardinal";
+  if (FIXED.has(sign)) return "fixed";
+  if (MUTABLE.has(sign)) return "mutable";
+  return null;
+}
+
+function cuspAbs(c?: { sign: string; degree: number; minutes?: number }): number | null {
+  if (!c?.sign) return null;
+  const idx = ZODIAC_SIGNS.indexOf(c.sign);
+  if (idx < 0) return null;
+  return idx * 30 + (c.degree ?? 0) + ((c.minutes ?? 0) / 60);
+}
+
+/** Returns 1..12 for planet's house, or null if cusps missing. */
+function houseOfPlanet(chart: NatalChart, planet: NatalPlanetPosition | undefined): number | null {
+  if (!planet?.sign || !chart.houseCusps) return null;
+  const pAbs = toAbs(planet);
+  if (pAbs == null) return null;
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = (chart.houseCusps as any)[`house${i}`];
+    const v = cuspAbs(c);
+    if (v == null) return null;
+    cusps.push(v);
+  }
+  for (let i = 0; i < 12; i++) {
+    const start = cusps[i];
+    const end = cusps[(i + 1) % 12];
+    // Handle wraparound across 0° Aries
+    const inside = start < end
+      ? pAbs >= start && pAbs < end
+      : pAbs >= start || pAbs < end;
+    if (inside) return i + 1;
+  }
+  return null;
+}
+
+// ── Section 1: Elemental Void + Natural Surrogate ─────────────────────────────
+const VOID_ELEMENT_HOUSES: Record<Element, number[]> = {
+  earth: [2, 6, 10],
+  water: [4, 8, 12],
+  fire: [1, 5, 9],
+  air: [3, 7, 11],
+};
+
+const VOID_RISINGS: Record<Element, Set<string>> = {
+  earth: new Set(["Taurus", "Virgo", "Capricorn"]),
+  water: new Set(["Cancer", "Scorpio", "Pisces"]),
+  fire: new Set(["Aries", "Leo", "Sagittarius"]),
+  air: new Set(["Gemini", "Libra", "Aquarius"]),
+};
+
+const VOID_IMPACT: Record<Element, string> = {
+  earth: "No natural anchor. When things get chaotic, no one inherently slows down or gets practical.",
+  water: "No natural feeler. Emotional weather can go unnoticed until someone breaks.",
+  fire: "No natural spark. The household can stall, miss momentum, avoid risk.",
+  air: "No natural translator. Feelings stay unspoken and assumptions pile up.",
+};
+
+const VOID_ANCHOR: Record<Element, string> = {
+  earth: "Add a physical anchor — a literal timer, a chore order, food before discussion.",
+  water: "Add a feeling check — one shared sentence about how today landed, named out loud.",
+  fire: "Add a starter — one person assigned to launch the day, the meal, the plan.",
+  air: "Add a naming step — short, plain words about what just happened before reacting.",
+};
+
+export interface ElementalVoid {
+  missingElement: Element | null;
+  counts: { fire: number; earth: number; air: number; water: number };
+  impact: string | null;
+  anchorSuggestion: string | null;
+  surrogate: { name: string; why: string } | null;
+}
+
+export function computeElementalVoid(
+  members: { chart: NatalChart }[],
+): ElementalVoid {
+  const counts = { fire: 0, earth: 0, air: 0, water: 0 };
+  // Tally Sun/Moon/Mercury/Venus/Mars elements across the family
+  for (const m of members) {
+    const p = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    for (const name of ["Sun", "Moon", "Mercury", "Venus", "Mars"]) {
+      const el = elementOf(p[name]?.sign);
+      if (el) counts[el]++;
+    }
+  }
+
+  const sorted = (Object.entries(counts) as [Element, number][]).sort((a, b) => a[1] - b[1]);
+  const [missing, missingCount] = sorted[0];
+  // Threshold: 0 or (1 and family >= 3 members)
+  const isVoid = missingCount === 0 || (missingCount <= 1 && members.length >= 3);
+  if (!isVoid) {
+    return { missingElement: null, counts, impact: null, anchorSuggestion: null, surrogate: null };
+  }
+
+  // Find surrogate
+  let surrogate: { name: string; why: string } | null = null;
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const rising = planets.Ascendant?.sign;
+    if (rising && VOID_RISINGS[missing].has(rising)) {
+      surrogate = { name: m.chart.name, why: `${rising} rising acts as the family's ${missing}` };
+      break;
+    }
+    // Planet in natural house of that element
+    for (const pname of ["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn"]) {
+      const pl = planets[pname];
+      if (!pl) continue;
+      const h = houseOfPlanet(m.chart, pl);
+      if (h && VOID_ELEMENT_HOUSES[missing].includes(h)) {
+        surrogate = { name: m.chart.name, why: `${pname} in the ${h}th house carries the missing ${missing} function` };
+        break;
+      }
+    }
+    if (surrogate) break;
+    // Strong Saturn for missing earth
+    if (missing === "earth") {
+      const sat = planets.Saturn;
+      if (sat?.sign && ["Capricorn", "Aquarius"].includes(sat.sign)) {
+        surrogate = { name: m.chart.name, why: `Saturn in ${sat.sign} acts as the family's earth` };
+        break;
+      }
+    }
+  }
+
+  return {
+    missingElement: missing,
+    counts,
+    impact: VOID_IMPACT[missing],
+    anchorSuggestion: VOID_ANCHOR[missing],
+    surrogate,
+  };
+}
+
+// ── Section 2: Bridge Members + Shadow Bridge ─────────────────────────────────
+export type BridgeType = "fire-redirect" | "water-soothe" | "air-translate" | "earth-anchor";
+
+export interface BridgeMember {
+  clashingPair: [string, string];
+  clashReason: string;
+  bridge: string;
+  sharedElementWithA: Element;
+  sharedElementWithB: Element;
+  bridgeType: BridgeType;
+  howToUse: string;
+  withdrawalCaveat?: string;
+}
+
+function dominantElements(chart: NatalChart): Element[] {
+  const tally = { fire: 0, earth: 0, air: 0, water: 0 };
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  for (const n of ["Sun", "Moon", "Mercury", "Venus", "Mars", "Ascendant"]) {
+    const el = elementOf(planets[n]?.sign);
+    if (el) tally[el]++;
+  }
+  return (Object.entries(tally) as [Element, number][])
+    .filter(([, n]) => n >= 1)
+    .sort((a, b) => b[1] - a[1])
+    .map(([e]) => e);
+}
+
+function elementClash(a: Element, b: Element): string | null {
+  // Classic incompatibilities
+  if ((a === "fire" && b === "water") || (a === "water" && b === "fire")) return "fire dries water; water smothers fire";
+  if ((a === "air" && b === "earth") || (a === "earth" && b === "air")) return "earth ignores air's ideas; air destabilizes earth's routine";
+  return null;
+}
+
+const BRIDGE_HOWTO: Record<BridgeType, string> = {
+  "fire-redirect": "Physical redirection. Move bodies — walk, drive, cook side by side. Do NOT mediate verbally; the fire bridge accidentally fans the conflict if it sits and talks.",
+  "water-soothe": "Soft tone, slower pace. The water bridge soothes by lowering volume and naming feelings without fixing.",
+  "air-translate": "Name what's happening out loud, in plain words. The air bridge translates one side's behavior for the other.",
+  "earth-anchor": "Anchor through a practical task. The earth bridge gets everyone doing something concrete — a chore, food, a routine — so the conflict has somewhere to go.",
+};
+
+export function findBridgeMembers(
+  members: { chart: NatalChart }[],
+): BridgeMember[] {
+  if (members.length < 3) return [];
+  const out: BridgeMember[] = [];
+  const memberDom = members.map((m) => ({ name: m.chart.name, dom: dominantElements(m.chart), chart: m.chart }));
+
+  for (let i = 0; i < memberDom.length; i++) {
+    for (let j = i + 1; j < memberDom.length; j++) {
+      const a = memberDom[i];
+      const b = memberDom[j];
+      if (!a.dom.length || !b.dom.length) continue;
+      const elA = a.dom[0];
+      const elB = b.dom[0];
+      const reason = elementClash(elA, elB);
+      if (!reason) continue;
+
+      // Find a bridge: third member who shares an element with both
+      for (let k = 0; k < memberDom.length; k++) {
+        if (k === i || k === j) continue;
+        const c = memberDom[k];
+        const shareA = c.dom.find((e) => e === elA);
+        const shareB = c.dom.find((e) => e === elB);
+        if (!shareA || !shareB) continue;
+
+        // Determine bridge type from the bridge's dominant element OR Mars sign
+        const mars = (c.chart.planets as any).Mars?.sign;
+        const marsEl = elementOf(mars);
+        const bridgeEl = c.dom[0];
+        let bridgeType: BridgeType;
+        if (bridgeEl === "fire" || marsEl === "fire" || (mars && ["Aries"].includes(mars))) {
+          bridgeType = "fire-redirect";
+        } else if (bridgeEl === "water") {
+          bridgeType = "water-soothe";
+        } else if (bridgeEl === "air") {
+          bridgeType = "air-translate";
+        } else {
+          bridgeType = "earth-anchor";
+        }
+
+        const withdrawalCaveat = bridgeType === "fire-redirect"
+          ? "If the bridge starts mediating verbally, the heat rises. Keep the bridge active, not seated."
+          : undefined;
+
+        out.push({
+          clashingPair: [a.name, b.name],
+          clashReason: reason,
+          bridge: c.name,
+          sharedElementWithA: shareA,
+          sharedElementWithB: shareB,
+          bridgeType,
+          howToUse: BRIDGE_HOWTO[bridgeType],
+          withdrawalCaveat,
+        });
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+// ── Section 3: Triangulation + Modality Gridlock ──────────────────────────────
+export interface ModalityPattern {
+  dominant: Modality;
+  count: number;
+  label: "GRIDLOCK" | "START-WAR" | "DRIFT";
+  intervention: string;
+}
+
+export interface Triangulation {
+  loud: string;
+  quiet: string;
+  amplifier: string;
+  sequence: string;
+  intervention: string;
+}
+
+const MODALITY_LABELS: Record<Modality, ModalityPattern["label"]> = {
+  fixed: "GRIDLOCK",
+  cardinal: "START-WAR",
+  mutable: "DRIFT",
+};
+
+const MODALITY_INTERVENTIONS: Record<Modality, string> = {
+  fixed: "Introduce a Mutable choice — offer two options instead of one demand. Nothing moves under a single ultimatum.",
+  cardinal: "Everyone wants to lead the moment. Assign turns out loud: who decides this one, who decides the next.",
+  mutable: "The plan keeps changing. One person must hold the frame and refuse to renegotiate mid-stream.",
+};
+
+function isLoud(chart: NatalChart): boolean {
+  const p = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  const fire = [p.Sun?.sign, p.Moon?.sign, p.Mars?.sign, p.Ascendant?.sign].filter((s) => s && FIRE.has(s)).length;
+  const air = [p.Mercury?.sign].filter((s) => s && AIR.has(s)).length;
+  return fire >= 2 || (fire >= 1 && air >= 1);
+}
+function isQuiet(chart: NatalChart): boolean {
+  const p = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  const water = [p.Sun?.sign, p.Moon?.sign, p.Mercury?.sign, p.Ascendant?.sign].filter((s) => s && WATER.has(s)).length;
+  const earth = [p.Sun?.sign, p.Moon?.sign].filter((s) => s && EARTH.has(s)).length;
+  return water >= 2 || (water >= 1 && earth >= 1);
+}
+
+export interface TriangulationResult {
+  triangles: Triangulation[];
+  modalityPattern: ModalityPattern | null;
+}
+
+export function findTriangulations(
+  members: { chart: NatalChart }[],
+): TriangulationResult {
+  const triangles: Triangulation[] = [];
+
+  if (members.length >= 3) {
+    const louds = members.filter((m) => isLoud(m.chart));
+    const quiets = members.filter((m) => isQuiet(m.chart));
+    for (const L of louds) {
+      for (const Q of quiets) {
+        if (L.chart.id === Q.chart.id) continue;
+        // Find an amplifier: another loud member (not L or Q)
+        const amp = louds.find((m) => m.chart.id !== L.chart.id && m.chart.id !== Q.chart.id);
+        if (!amp) continue;
+        triangles.push({
+          loud: L.chart.name,
+          quiet: Q.chart.name,
+          amplifier: amp.chart.name,
+          sequence: `${L.chart.name} pushes → ${amp.chart.name} echoes or escalates → ${Q.chart.name} withdraws further.`,
+          intervention: `Pull ${amp.chart.name} aside first. Without the amplifier, ${L.chart.name} runs out of fuel and ${Q.chart.name} can re-enter.`,
+        });
+        break;
+      }
+    }
+  }
+
+  // Modality pile-up across Sun + Moon + Mars + Rising of every member
+  const tally = { cardinal: 0, fixed: 0, mutable: 0 };
+  for (const m of members) {
+    const p = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    for (const n of ["Sun", "Moon", "Mars", "Ascendant"]) {
+      const mod = modalityOf(p[n]?.sign);
+      if (mod) tally[mod]++;
+    }
+  }
+  let modalityPattern: ModalityPattern | null = null;
+  const total = tally.cardinal + tally.fixed + tally.mutable;
+  const threshold = Math.max(3, Math.ceil(total * 0.5));
+  const dom = (Object.entries(tally) as [Modality, number][]).sort((a, b) => b[1] - a[1])[0];
+  if (dom && dom[1] >= threshold) {
+    modalityPattern = {
+      dominant: dom[0],
+      count: dom[1],
+      label: MODALITY_LABELS[dom[0]],
+      intervention: MODALITY_INTERVENTIONS[dom[0]],
+    };
+  }
+
+  return { triangles: triangles.slice(0, 3), modalityPattern };
+}
+
+// ── Section 4: Inherited Signatures (Family Mirrors) ──────────────────────────
+export interface FamilyMirror {
+  parent: string;
+  child: string;
+  mirroredPlacement: string;
+  sameTeamMessage: string;
+}
+
+export function findInheritedSignatures(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): FamilyMirror[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child" || m.role === "sibling");
+  const out: FamilyMirror[] = [];
+  const checks: { key: string; label: string }[] = [
+    { key: "Sun", label: "Sun" },
+    { key: "Moon", label: "Moon" },
+    { key: "Mercury", label: "Mercury" },
+    { key: "Venus", label: "Venus" },
+    { key: "Mars", label: "Mars" },
+    { key: "Ascendant", label: "Rising" },
+  ];
+  for (const p of parents) {
+    for (const c of children) {
+      const pp = p.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+      const cp = c.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+      // Exact sign match
+      for (const ck of checks) {
+        const ps = pp[ck.key]?.sign;
+        const cs = cp[ck.key]?.sign;
+        if (ps && cs && ps === cs) {
+          out.push({
+            parent: p.chart.name,
+            child: c.chart.name,
+            mirroredPlacement: `Both ${ck.label} in ${ps}`,
+            sameTeamMessage: `Same team, different volume. When you collide here, you're colliding with a part of yourself.`,
+          });
+          break;
+        }
+      }
+      // Element match on luminary (only if no exact match found for this pair)
+      if (!out.some((m) => m.parent === p.chart.name && m.child === c.chart.name)) {
+        for (const lum of ["Sun", "Moon"]) {
+          const ps = pp[lum]?.sign;
+          const cs = cp[lum]?.sign;
+          if (ps && cs && ps !== cs && elementOf(ps) && elementOf(ps) === elementOf(cs)) {
+            out.push({
+              parent: p.chart.name,
+              child: c.chart.name,
+              mirroredPlacement: `${lum}s in the same element (${elementOf(ps)})`,
+              sameTeamMessage: `Same emotional climate, different style. The friction is method, not values.`,
+            });
+            break;
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+// ── Section 5: Regulation Dashboard + Saturn Wall ─────────────────────────────
+export interface RegulationRow {
+  name: string;
+  role: FamilyRole;
+  triggeredBy: string;
+  stressReaction: string;
+  circuitBreaker: string;
+  sensitivityNotes?: { aboutChild: string; note: string }[];
+}
+
+const MERCURY_TRIGGER: Record<string, string> = {
+  Aries: "interruptions and slow explanations",
+  Taurus: "being rushed or talked over",
+  Gemini: "vague answers and dead-air silence",
+  Cancer: "sharp tones and public correction",
+  Leo: "being dismissed or upstaged",
+  Virgo: "imprecision and surprise changes",
+  Libra: "open conflict and forced sides",
+  Scorpio: "feeling watched or interrogated",
+  Sagittarius: "small rules and micromanaging",
+  Capricorn: "emotional flooding without a plan",
+  Aquarius: "pressure to perform feelings on cue",
+  Pisces: "blunt logic without acknowledgment",
+};
+
+const MARS_REACTION: Record<string, string> = {
+  Aries: "snaps, then moves away fast",
+  Taurus: "digs in, refuses to budge",
+  Gemini: "argues sideways, keeps changing the point",
+  Cancer: "retreats and goes silent",
+  Leo: "performs anger loudly, then sulks",
+  Virgo: "criticizes details to discharge",
+  Libra: "withdraws politely, stores resentment",
+  Scorpio: "goes cold, watches, waits",
+  Sagittarius: "blurts the truth, then leaves the room",
+  Capricorn: "shuts down and lectures",
+  Aquarius: "detaches, observes coolly",
+  Pisces: "dissolves, cries, or disappears",
+};
+
+const MARS_BREAKER: Record<string, string> = {
+  Aries: "short physical outlet — walk, push-ups, anything bodily",
+  Taurus: "food and a long pause before re-engaging",
+  Gemini: "switch topic or environment, then come back",
+  Cancer: "private space and a soft re-entry",
+  Leo: "acknowledgment first, problem-solving second",
+  Virgo: "one concrete next step, not a discussion",
+  Libra: "name the conflict gently, don't avoid it",
+  Scorpio: "honesty without an audience",
+  Sagittarius: "movement and open air, not a closed room",
+  Capricorn: "structure and a clear timeline",
+  Aquarius: "logic and space, not pleading",
+  Pisces: "low stimulation, music, water",
+};
+
+export function buildRegulationDashboard(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): RegulationRow[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child" || m.role === "sibling");
+
+  const rows: RegulationRow[] = members.map((m) => {
+    const p = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const merc = p.Mercury?.sign;
+    const mars = p.Mars?.sign;
+    return {
+      name: m.chart.name,
+      role: m.role,
+      triggeredBy: (merc && MERCURY_TRIGGER[merc]) || "abrupt shifts and unclear expectations",
+      stressReaction: (mars && MARS_REACTION[mars]) || "withdraws and waits it out",
+      circuitBreaker: (mars && MARS_BREAKER[mars]) || "lower stimulation and a slower pace",
+    };
+  });
+
+  // Saturn Wall: child's Saturn matches parent's Sun or Moon sign
+  for (const c of children) {
+    const cSat = (c.chart.planets as any).Saturn?.sign;
+    if (!cSat) continue;
+    for (const par of parents) {
+      const pp = par.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+      const hits: string[] = [];
+      if (pp.Sun?.sign === cSat) hits.push("Sun");
+      if (pp.Moon?.sign === cSat) hits.push("Moon");
+      if (!hits.length) continue;
+      const row = rows.find((r) => r.name === par.chart.name);
+      if (!row) continue;
+      row.sensitivityNotes = row.sensitivityNotes ?? [];
+      row.sensitivityNotes.push({
+        aboutChild: c.chart.name,
+        note: `${c.chart.name}'s Saturn sits on your ${hits.join(" and ")} (${cSat}). Their silence will feel personal. It is their boundary forming, not rejection of you.`,
+      });
+    }
+  }
+
+  return rows;
+}
+
+// ── Master bundle ─────────────────────────────────────────────────────────────
+export interface FamilyWeb {
+  elementalVoid: ElementalVoid;
+  bridges: BridgeMember[];
+  triangulation: TriangulationResult;
+  mirrors: FamilyMirror[];
+  dashboard: RegulationRow[];
+}
+
+export function buildFamilyWeb(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): FamilyWeb {
+  return {
+    elementalVoid: computeElementalVoid(members),
+    bridges: findBridgeMembers(members),
+    triangulation: findTriangulations(members),
+    mirrors: findInheritedSignatures(members),
+    dashboard: buildRegulationDashboard(members),
+  };
+}
