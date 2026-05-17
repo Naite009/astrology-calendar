@@ -809,7 +809,7 @@ function sectOpener(chart: NatalChart): string | null {
   if (!s) return null;
   return s.sect === "day"
     ? "clear leadership and fairness up front"
-    : "softening and timing before the content";
+    : "the right moment before a serious ask";
 }
 
 // Pick the strongest 1-2 secondary currencies (avoid stacking ones that say
@@ -828,7 +828,7 @@ function pickSecondaries(
   // Prefer two unused-looking fragments so siblings sound different.
   const fresh = candidates.filter((c) => !Array.from(used).some((u) => u.includes(c)));
   const ordered = fresh.length ? fresh : candidates;
-  return ordered.slice(0, 2);
+  return ordered.slice(0, 1);
 }
 
 export function buildRespondsBestForGroup(
