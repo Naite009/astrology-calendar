@@ -47,6 +47,7 @@ import {
   buildRespondsBestForGroup,
   buildRespondsBestProfileForGroup,
   buildHouseholdResetLine,
+  buildFamilyWeb,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
@@ -293,7 +294,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v5-contrast:${sel
+    `system-pipeline-v6-web:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
