@@ -67,6 +67,20 @@ function marsDoDont(marsSign?: string): DoDont {
       return { dont: "Don't try to logic them out of it in the moment.", doThis: "Do slow down and offer one simple, doable next step." };
   }
 }
+const PROFECTION_MISSION: Record<number, string> = {
+  1: "Reclaiming Self",
+  2: "Building Security",
+  3: "Daily Communication",
+  4: "Tending Home & Family",
+  5: "Creative Expression",
+  6: "Resetting Routines",
+  7: "Deepening Partnership",
+  8: "Transformation & Trust",
+  9: "Expanding Vision",
+  10: "Public Calling",
+  11: "Community & Future",
+  12: "Rest & Reflection",
+};
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
