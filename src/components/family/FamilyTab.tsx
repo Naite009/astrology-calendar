@@ -1940,7 +1940,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                               </tr>
                             ))}
                           </Fragment>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
