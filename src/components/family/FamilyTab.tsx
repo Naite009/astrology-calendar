@@ -1860,9 +1860,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
               {twelfthHouseMirrors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">12th-House Mirrors (Karmic Custodian)</div>
+                  <div className="font-semibold">12th-House Mirrors (Stress = Reflection)</div>
                   <p className="text-xs text-muted-foreground">
-                    A child's planet falling in a parent's 12th house means the child senses what the parent hasn't named.
+                    When a child's planet falls in a parent's 12th house, the child's "stress behaviors" are a real-time reflection of the parent's unexpressed subconscious. Name your own state out loud first; the behavior softens.
                   </p>
                   {twelfthHouseMirrors.map((m, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
