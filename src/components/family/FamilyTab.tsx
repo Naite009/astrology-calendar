@@ -1666,14 +1666,21 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
       {members.length >= 2 && (() => {
         const web = buildFamilyWeb(members);
-        const { elementalVoid, bridges, triangulation, mirrors, dashboard } = web;
+        const {
+          elementalVoid, bridges, triangulation, mirrors, dashboard,
+          twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
+        } = web;
         const anyContent =
           elementalVoid.missingElement ||
           bridges.length > 0 ||
           triangulation.triangles.length > 0 ||
           triangulation.modalityPattern ||
           mirrors.length > 0 ||
-          dashboard.length > 0;
+          dashboard.length > 0 ||
+          twelfthHouseMirrors.length > 0 ||
+          midpointHotspots.length > 0 ||
+          tsquareCompletions.length > 0 ||
+          generationalGaps.length > 0;
         if (!anyContent) return null;
         return (
           <Card className="border-primary/60 bg-primary/5">
