@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, Fragment } from "react";
-import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download } from "lucide-react";
+import { Users, Plus, Trash2, ArrowRight, ArrowLeftRight, Heart, Sparkles, Loader2, Home, History, RotateCw, Download, Star, Cloud, Trophy } from "lucide-react";
 
 function downloadJson(data: unknown, filename: string) {
   try {
@@ -301,7 +301,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v9-reframe:${sel
+    `system-pipeline-v10-headline:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1677,6 +1677,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
           houseOverlays, profectionAlignment, nodalDestiny,
           sunDevelopmentalTasks, missionStatement,
+          parentalShadows, profectionYearMates, headline,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1693,8 +1694,15 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
           nodalDestiny.length > 0 ||
           sunDevelopmentalTasks.length > 0 ||
-          !!missionStatement;
+          parentalShadows.length > 0 ||
+          !!missionStatement ||
+          !!headline;
         if (!anyContent) return null;
+        const yearMatesByParent = new Map<string, typeof profectionYearMates>();
+        for (const ym of profectionYearMates) {
+          if (!yearMatesByParent.has(ym.parent)) yearMatesByParent.set(ym.parent, []);
+          yearMatesByParent.get(ym.parent)!.push(ym);
+        }
         return (
           <Card className="border-primary/60 bg-primary/5">
             <CardHeader className="pb-3">
@@ -1707,6 +1715,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
+              {headline && (
+                <div className="rounded-md border-2 border-primary bg-primary/10 p-3 space-y-1">
+                  <div className="text-xs uppercase tracking-wider text-primary font-semibold">So What? — The Headline</div>
+                  <p className="font-semibold leading-relaxed text-base">{headline.sentence}</p>
+                </div>
+              )}
+
               {missionStatement && (
                 <div className="rounded-md border border-primary/50 bg-background/60 p-3 space-y-1">
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">Family Mission Statement</div>
@@ -1970,15 +1985,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       <tbody>
                         {houseOverlays.map((o, i) => (
                           <Fragment key={i}>
-                            <tr className="border-b border-border/50 align-top">
+                            <tr className={`border-b border-border/50 align-top ${o.category === "hidden" ? "bg-purple-500/5" : "bg-emerald-500/5"}`}>
                               <td className="py-2 pr-3 font-medium">{o.fromName}</td>
                               <td className="py-2 pr-3">{o.fromPlanet}{o.fromSign ? ` in ${o.fromSign}` : ""}</td>
                               <td className="py-2 pr-3 font-medium">{o.toName}</td>
                               <td className="py-2 pr-3">{o.house}</td>
                               <td className="py-2">
-                                <Badge variant="outline" className={`text-[10px] font-normal ${o.category === "hidden" ? "border-amber-500/50" : "border-primary/50"}`}>
-                                  {o.label}
-                                </Badge>
+                                {o.category === "hidden" ? (
+                                  <Badge variant="outline" className="text-[10px] font-normal border-purple-500/60 text-purple-600 dark:text-purple-400 gap-1">
+                                    <Cloud className="h-3 w-3" />
+                                    The Work — Hidden Impact
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                    <Star className="h-3 w-3" />
+                                    The Lift — Visibility / Support
+                                  </Badge>
+                                )}
                               </td>
                             </tr>
                             <tr className="border-b border-border/50">
@@ -1991,6 +2014,26 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
+
+              {parentalShadows.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold flex items-center gap-2">
+                    <Cloud className="h-4 w-4 text-purple-500" />
+                    Parental Shadow (Parent's Planet in Child's 12th)
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The flip side of the 12th-House Mirror. When a parent's planet lands in a child's 12th house, the parent's unspoken energy lives inside the child's subconscious. When they seem reactive, check your own internal stress levels — they might be mirroring what you haven't said yet.
+                  </p>
+                  {parentalShadows.map((s, i) => (
+                    <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r">
+                      <div className="font-medium">
+                        {s.parent}'s {s.parentPlanet} → {s.child}'s 12th
+                      </div>
+                      <p className="text-muted-foreground">{s.text}</p>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -2011,14 +2054,27 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                         </tr>
                       </thead>
                       <tbody>
-                        {profectionAlignment.perMember.map((p, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-2 pr-3 font-medium">{p.name}</td>
-                            <td className="py-2 pr-3">{p.age}</td>
-                            <td className="py-2 pr-3">{p.house}</td>
-                            <td className="py-2 text-muted-foreground">{p.theme}</td>
-                          </tr>
-                        ))}
+                        {profectionAlignment.perMember.map((p, i) => {
+                          const mates = yearMatesByParent.get(p.name) ?? [];
+                          return (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-2 pr-3 font-medium">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span>{p.name}</span>
+                                  {mates.map((ym, j) => (
+                                    <Badge key={j} variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                      <Trophy className="h-3 w-3" />
+                                      Year-Mate: {ym.mate}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="py-2 pr-3">{p.age}</td>
+                              <td className="py-2 pr-3">{p.house}</td>
+                              <td className="py-2 text-muted-foreground">{p.theme}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

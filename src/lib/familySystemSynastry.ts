@@ -2182,6 +2182,160 @@ export function computeFamilyMissionStatement(
   };
 }
 
+// ── Section 15: Parental Shadow (Parent planet in Child's 12th) ───────────────
+export interface ParentalShadow {
+  parent: string;
+  child: string;
+  parentPlanet: string;
+  text: string;
+}
+
+const PARENTAL_SHADOW_TEXT: Record<string, (parent: string, child: string) => string> = {
+  Sun: (p, c) => `${p}'s identity lands in ${c}'s 12th — your sense of self can feel loud to ${c}'s subconscious. When ${c} seems reactive or withdrawn, check your own internal state first; they may be mirroring what you haven't said yet.`,
+  Moon: (p, c) => `${p}'s mood lands in ${c}'s 12th — your unspoken emotional weather hits ${c}'s nervous system before words. Name your own state out loud ("I'm tense, not about you") so ${c} doesn't carry it.`,
+  Mercury: (p, c) => `${p}'s thoughts land in ${c}'s 12th — what you don't say still reaches ${c}. If ${c} suddenly seems anxious or shut down, say the held-back sentence yourself.`,
+  Venus: (p, c) => `${p}'s relational tension lands in ${c}'s 12th — your unspoken disappointment or longing seeps into ${c}'s sense of being loved. Acknowledge it explicitly so ${c} doesn't absorb it as their fault.`,
+  Mars: (p, c) => `${p}'s anger lands in ${c}'s 12th — your suppressed frustration becomes ${c}'s background tension. Name your own irritation out loud and ${c}'s reactivity drops.`,
+  Saturn: (p, c) => `${p}'s pressure lands in ${c}'s 12th — your invisible standards become ${c}'s ambient self-doubt. Make your expectations explicit; the silent version is heavier.`,
+};
+
+export function findParentalShadows(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): ParentalShadow[] {
+  const parents = members.filter((m) => m.role === "parent" || m.role === "grandparent");
+  const children = members.filter((m) => m.role === "child");
+  const out: ParentalShadow[] = [];
+  for (const c of children) {
+    if (!c.chart.houseCusps) continue;
+    for (const p of parents) {
+      for (const planetName of ["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn"]) {
+        const planet = (p.chart.planets as any)[planetName] as NatalPlanetPosition | undefined;
+        if (!planet?.sign) continue;
+        const house = houseOfPlanet(c.chart, planet);
+        if (house !== 12) continue;
+        const fn = PARENTAL_SHADOW_TEXT[planetName];
+        if (!fn) continue;
+        out.push({
+          parent: p.chart.name,
+          child: c.chart.name,
+          parentPlanet: planetName,
+          text: fn(p.chart.name, c.chart.name),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+// ── Section 16: Profection Year-Mates (Current MVP) ───────────────────────────
+export interface ProfectionYearMate {
+  parent: string;
+  mate: string;
+  house: number;
+  theme: string;
+}
+
+export function findProfectionYearMates(
+  alignment: ProfectionAlignment | null,
+  members: { chart: NatalChart; role: FamilyRole }[],
+): ProfectionYearMate[] {
+  if (!alignment) return [];
+  const roleByName = new Map(members.map((m) => [m.chart.name, m.role]));
+  const out: ProfectionYearMate[] = [];
+  const seen = new Set<string>();
+  for (const a of alignment.perMember) {
+    const aRole = roleByName.get(a.name);
+    if (aRole !== "parent" && aRole !== "grandparent") continue;
+    for (const b of alignment.perMember) {
+      if (a.name === b.name) continue;
+      if (a.house !== b.house) continue;
+      const key = `${a.name}|${b.name}|${a.house}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ parent: a.name, mate: b.name, house: a.house, theme: a.theme });
+    }
+  }
+  return out;
+}
+
+// ── Section 17: "So What?" Family Headline ────────────────────────────────────
+export interface FamilyHeadline {
+  sentence: string;
+}
+
+const ELEMENT_HOUSEHOLD_FOCUS: Record<string, string> = {
+  fire: "individual growth and forward motion",
+  earth: "stability, work, and the physical world",
+  air: "ideas, conversation, and social connection",
+  water: "emotional bonding and felt safety",
+};
+
+function dominantElementForMember(
+  m: { chart: NatalChart; role: FamilyRole },
+): "fire" | "earth" | "air" | "water" | null {
+  const counts = { fire: 0, earth: 0, air: 0, water: 0 };
+  const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  for (const pn of ["Sun", "Moon", "Mercury", "Venus", "Mars"]) {
+    const el = elementOf(planets[pn]?.sign);
+    if (el) counts[el]++;
+  }
+  const rising = (m.chart as any).ascendant?.sign;
+  const rEl = elementOf(rising);
+  if (rEl) counts[rEl] += 2;
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return sorted[0][1] > 0 ? (sorted[0][0] as any) : null;
+}
+
+export function computeFamilyHeadline(
+  members: { chart: NatalChart; role: FamilyRole }[],
+  mission: FamilyMissionStatement | null,
+  bridges: BridgeMember[],
+): FamilyHeadline | null {
+  if (!mission?.dominantElement) return null;
+  const dom = mission.dominantElement;
+
+  // Grounding: a member with strongest earth signature; fall back to fixed-modality parent
+  let grounding: string | null = null;
+  let groundingScore = -1;
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    let earthScore = 0;
+    for (const pn of ["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn"]) {
+      if (elementOf(planets[pn]?.sign) === "earth") earthScore++;
+    }
+    if (m.role === "parent" || m.role === "grandparent") earthScore += 0.5;
+    if (earthScore > groundingScore) {
+      groundingScore = earthScore;
+      grounding = m.chart.name;
+    }
+  }
+
+  // Spark: prefer a child who is a fire bridge; else child with dominant fire; else first bridge
+  let spark: string | null = null;
+  const fireBridge = bridges.find((b) => b.bridgeType === "fire-redirect");
+  if (fireBridge) spark = fireBridge.bridge;
+  if (!spark) {
+    const children = members.filter((m) => m.role === "child");
+    const fireChild = children.find((c) => dominantElementForMember(c) === "fire");
+    if (fireChild) spark = fireChild.chart.name;
+  }
+  if (!spark && bridges[0]) spark = bridges[0].bridge;
+
+  const focus = ELEMENT_HOUSEHOLD_FOCUS[dom] ?? "their shared work";
+  const groundingClause =
+    grounding && grounding !== spark
+      ? `, where ${grounding} provides the grounding`
+      : "";
+  const sparkClause = spark
+    ? `${groundingClause ? " and " : ", where "}${spark} acts as the developmental spark`
+    : "";
+
+  const sentence =
+    `This is a ${dom}-heavy household focused on ${focus}${groundingClause}${sparkClause}.`;
+
+  return { sentence };
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
@@ -2198,14 +2352,20 @@ export interface FamilyWeb {
   nodalDestiny: NodalDestiny[];
   sunDevelopmentalTasks: SunDevelopmentalTask[];
   missionStatement: FamilyMissionStatement | null;
+  parentalShadows: ParentalShadow[];
+  profectionYearMates: ProfectionYearMate[];
+  headline: FamilyHeadline | null;
 }
 
 export function buildFamilyWeb(
   members: { chart: NatalChart; role: FamilyRole }[],
 ): FamilyWeb {
+  const bridges = findBridgeMembers(members);
+  const profectionAlignment = findProfectionAlignment(members);
+  const missionStatement = computeFamilyMissionStatement(members);
   return {
     elementalVoid: computeElementalVoid(members),
-    bridges: findBridgeMembers(members),
+    bridges,
     triangulation: findTriangulations(members),
     mirrors: findInheritedSignatures(members),
     dashboard: buildRegulationDashboard(members),
@@ -2214,9 +2374,12 @@ export function buildFamilyWeb(
     tsquareCompletions: findTSquareCompletions(members),
     generationalGaps: findGenerationalGaps(members),
     houseOverlays: findHouseOverlays(members),
-    profectionAlignment: findProfectionAlignment(members),
+    profectionAlignment,
     nodalDestiny: findNodalDestiny(members),
     sunDevelopmentalTasks: findSunDevelopmentalTasks(members),
-    missionStatement: computeFamilyMissionStatement(members),
+    missionStatement,
+    parentalShadows: findParentalShadows(members),
+    profectionYearMates: findProfectionYearMates(profectionAlignment, members),
+    headline: computeFamilyHeadline(members, missionStatement, bridges),
   };
 }
