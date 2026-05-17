@@ -55,6 +55,7 @@ import {
   buildHouseholdResetLine,
   buildFamilyWeb,
   computeSiblingResetMode,
+  marsHouseCategory,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
@@ -301,7 +302,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v10-headline:${sel
+    `system-pipeline-v11-architecture:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1546,44 +1547,73 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4 text-sm">
-            {reading.siblingConnections.map((sc, i) => {
-              const a = members.find((m) => m.chart.name === sc.siblingA)?.chart;
-              const b = members.find((m) => m.chart.name === sc.siblingB)?.chart;
-              const reset = a && b ? computeSiblingResetMode(a, b) : null;
-              return (
-                <div key={i} className="space-y-2">
-                  <PairBlock
-                    title={`${sc.siblingA} ↔ ${sc.siblingB}`}
-                    nameA={sc.siblingA}
-                    nameB={sc.siblingB}
-                    composite={sc.composite}
-                    bridge={sc.bridge}
-                    friction={sc.friction}
-                    interactionPattern={(sc as any).interactionPattern}
-                    dynamic={(sc as any).dynamic}
-                    whatCanFeelHard={(sc as any).whatCanFeelHard}
-                    whatHelps={(sc as any).whatHelps}
-                    patternType={(sc as any).patternType}
-                    note={sc.note}
-                    legacyBody={(sc as unknown as { body?: string }).body}
-                  />
-                  {reset && (
-                    <div className="ml-3 border-l-2 border-amber-500/60 pl-3 py-2 bg-amber-500/5 rounded-r-md space-y-1">
-                      <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-                        When {sc.siblingA} & {sc.siblingB} clash
-                        {reset.sharedElements.length > 0 && (
-                          <span className="ml-1 font-normal opacity-70">
-                            · shared {reset.sharedElements.join(" + ")}
-                          </span>
-                        )}
+            {(() => {
+              const siblingWeb = buildFamilyWeb(members);
+              const missionsByPair = new Map<string, typeof siblingWeb.siblingSoulMissions>();
+              for (const m of siblingWeb.siblingSoulMissions) {
+                const k1 = `${m.teacherChild}|${m.studentChild}`;
+                const k2 = `${m.studentChild}|${m.teacherChild}`;
+                if (!missionsByPair.has(k1)) missionsByPair.set(k1, []);
+                if (!missionsByPair.has(k2)) missionsByPair.set(k2, []);
+                missionsByPair.get(k1)!.push(m);
+                if (k1 !== k2) missionsByPair.get(k2)!.push(m);
+              }
+              return reading.siblingConnections!.map((sc, i) => {
+                const a = members.find((m) => m.chart.name === sc.siblingA)?.chart;
+                const b = members.find((m) => m.chart.name === sc.siblingB)?.chart;
+                const reset = a && b ? computeSiblingResetMode(a, b) : null;
+                const pairMissions = missionsByPair.get(`${sc.siblingA}|${sc.siblingB}`) ?? [];
+                return (
+                  <div key={i} className="space-y-2">
+                    <PairBlock
+                      title={`${sc.siblingA} ↔ ${sc.siblingB}`}
+                      nameA={sc.siblingA}
+                      nameB={sc.siblingB}
+                      composite={sc.composite}
+                      bridge={sc.bridge}
+                      friction={sc.friction}
+                      interactionPattern={(sc as any).interactionPattern}
+                      dynamic={(sc as any).dynamic}
+                      whatCanFeelHard={(sc as any).whatCanFeelHard}
+                      whatHelps={(sc as any).whatHelps}
+                      patternType={(sc as any).patternType}
+                      note={sc.note}
+                      legacyBody={(sc as unknown as { body?: string }).body}
+                    />
+                    {pairMissions.map((m, mi) => (
+                      <div
+                        key={mi}
+                        className={`ml-3 border-l-4 pl-3 py-2 rounded-r-md space-y-1 ${
+                          m.nodeType === "North"
+                            ? "border-emerald-500 bg-emerald-500/5"
+                            : "border-purple-500 bg-purple-500/5"
+                        }`}
+                      >
+                        <div className={`font-bold text-sm ${m.nodeType === "North" ? "text-emerald-700 dark:text-emerald-400" : "text-purple-700 dark:text-purple-400"}`}>
+                          ★ {m.headline}
+                        </div>
+                        <p className="text-sm">{m.body}</p>
+                        <p className="text-xs text-muted-foreground italic">orb {m.orb.toFixed(2)}° · {m.contactorPlanet} on {m.nodeType} Node</p>
                       </div>
-                      <p className="text-sm"><span className="font-semibold">✓ Do this:</span> {reset.doThis}</p>
-                      <p className="text-sm text-muted-foreground"><span className="font-semibold">✗ Avoid:</span> {reset.dontDoThis}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    ))}
+                    {reset && (
+                      <div className="ml-3 border-l-2 border-amber-500/60 pl-3 py-2 bg-amber-500/5 rounded-r-md space-y-1">
+                        <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                          When {sc.siblingA} & {sc.siblingB} meet a developmental invitation
+                          {reset.sharedElements.length > 0 && (
+                            <span className="ml-1 font-normal opacity-70">
+                              · shared {reset.sharedElements.join(" + ")}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm"><span className="font-semibold">✓ Do this:</span> {reset.doThis}</p>
+                        <p className="text-sm text-muted-foreground"><span className="font-semibold">✗ Avoid:</span> {reset.dontDoThis}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
           </CardContent>
         </Card>
       )}
@@ -1674,10 +1704,11 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         const web = buildFamilyWeb(members);
         const {
           elementalVoid, bridges, triangulation, mirrors, dashboard,
-          twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
+          twelfthHouseMirrors, midpointHotspots, tsquareCompletions,
           houseOverlays, profectionAlignment, nodalDestiny,
           sunDevelopmentalTasks, missionStatement,
           parentalShadows, profectionYearMates, headline,
+          siblingLenses, groupedGenerationalGaps, siblingSoulMissions,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1689,12 +1720,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           twelfthHouseMirrors.length > 0 ||
           midpointHotspots.length > 0 ||
           tsquareCompletions.length > 0 ||
-          generationalGaps.length > 0 ||
+          groupedGenerationalGaps.length > 0 ||
           houseOverlays.length > 0 ||
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
           nodalDestiny.length > 0 ||
           sunDevelopmentalTasks.length > 0 ||
           parentalShadows.length > 0 ||
+          siblingLenses.length > 0 ||
           !!missionStatement ||
           !!headline;
         if (!anyContent) return null;
@@ -1703,6 +1735,15 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           if (!yearMatesByParent.has(ym.parent)) yearMatesByParent.set(ym.parent, []);
           yearMatesByParent.get(ym.parent)!.push(ym);
         }
+        // Filter out child↔child nodal destinies (now rendered inside Sibling Connections)
+        const parentChildNodal = nodalDestiny.filter((n) => {
+          const ownerRole = members.find((m) => m.chart.name === n.ownerName)?.role;
+          const contRole = members.find((m) => m.chart.name === n.contactorName)?.role;
+          const isChild = (r?: string) => r === "child" || r === "sibling";
+          return !(isChild(ownerRole) && isChild(contRole));
+        });
+        const marsCatByName = new Map<string, ReturnType<typeof marsHouseCategory>>();
+        for (const m of members) marsCatByName.set(m.chart.name, marsHouseCategory(m.chart));
         return (
           <Card className="border-primary/60 bg-primary/5">
             <CardHeader className="pb-3">
@@ -1751,6 +1792,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       <p className="text-xs italic text-muted-foreground">
                         Instead of calling them "{t.insteadOf}", name the practice.
                       </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {siblingLenses.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">The Sibling Lens (3rd-House Cusp)</div>
+                  <p className="text-xs text-muted-foreground">
+                    How each child instinctively perceives their brothers and sisters, based on the sign on their 3rd-House cusp.
+                  </p>
+                  {siblingLenses.map((s, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <div className="font-medium">
+                        {s.child} <span className="text-muted-foreground font-normal">· 3rd in {s.cuspSign}</span>
+                      </div>
+                      <p className="text-muted-foreground">{s.lens}</p>
                     </div>
                   ))}
                 </div>
@@ -1850,10 +1908,26 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                         </tr>
                       </thead>
                       <tbody>
-                        {dashboard.map((row, i) => (
+                        {dashboard.map((row, i) => {
+                          const cat = marsCatByName.get(row.name);
+                          return (
                           <Fragment key={i}>
                             <tr className="border-b border-border/50 align-top">
-                              <td className="py-2 pr-3 font-medium">{row.name}</td>
+                              <td className="py-2 pr-3 font-medium">
+                                <div className="flex items-center gap-1.5">
+                                  {cat === "angular" && (
+                                    <span title="Angular Mars (1/4/7/10) — The Lift: stress is visible and actionable">
+                                      <Star className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500" />
+                                    </span>
+                                  )}
+                                  {(cat === "succedent" || cat === "cadent") && (
+                                    <span title="Succedent/Cadent Mars (6/8/12 etc.) — Hidden Impact: stress goes underground first">
+                                      <Cloud className="h-3.5 w-3.5 text-purple-500" />
+                                    </span>
+                                  )}
+                                  <span>{row.name}</span>
+                                </div>
+                              </td>
                               <td className="py-2 pr-3">{row.triggeredBy}</td>
                               <td className="py-2 pr-3">{row.stressReaction}</td>
                               <td className="py-2">{row.circuitBreaker}</td>
@@ -1866,7 +1940,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                               </tr>
                             ))}
                           </Fragment>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1948,18 +2023,16 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {generationalGaps.length > 0 && (
+              {groupedGenerationalGaps.length > 0 && (
                 <div className="space-y-2">
                   <div className="font-semibold">Generational Outer-Planet Gap</div>
                   <p className="text-xs text-muted-foreground">
-                    Different signs on Uranus, Neptune, and Pluto reveal where the friction is generational, not personal.
+                    Different signs on Uranus, Neptune, and Pluto. One paragraph per pair so it reads as a single developmental invitation, not a list.
                   </p>
-                  {generationalGaps.map((g, i) => (
+                  {groupedGenerationalGaps.map((g, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">
-                        {g.parent} ({g.planet} in {g.parentSign}) ↔ {g.child} ({g.planet} in {g.childSign})
-                      </div>
-                      <p className="text-muted-foreground">{g.text}</p>
+                      <div className="font-medium">{g.parent} ↔ {g.child}</div>
+                      <p className="text-muted-foreground">{g.paragraph}</p>
                     </div>
                   ))}
                 </div>
@@ -2090,7 +2163,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                   )}
                   {profectionAlignment.clashes.length > 0 && (
                     <div className="space-y-1 pt-2">
-                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Priority Clashes</div>
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Developmental Invitations</div>
                       {profectionAlignment.clashes.map((c, i) => (
                         <div key={i} className="border-l-2 border-amber-500/50 pl-3">
                           <div className="font-medium">
@@ -2104,13 +2177,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {nodalDestiny.length > 0 && (
+              {parentChildNodal.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Nodal Destiny</div>
+                  <div className="font-semibold">Nodal Destiny (Parent ↔ Child)</div>
                   <p className="text-xs text-muted-foreground">
-                    A member's Sun or Moon sitting on another member's lunar nodes. North Node = The Teacher (where you're growing). South Node = The Comfort Zone (familiar, but the old pattern).
+                    Parent or child Sun/Moon on another member's lunar nodes. North Node = The Teacher (where they're growing). South Node = The Comfort Zone (familiar, old pattern). Sibling-to-sibling Soul Missions appear inside the Sibling Connections card above.
                   </p>
-                  {nodalDestiny.map((n, i) => (
+                  {parentChildNodal.map((n, i) => (
                     <div
                       key={i}
                       className={`border-l-2 pl-3 ${n.nodeType === "North" ? "border-primary/60" : "border-amber-500/50"}`}

@@ -2336,6 +2336,136 @@ export function computeFamilyHeadline(
   return { sentence };
 }
 
+// ── Section 18: 3rd-House Sibling Lens ────────────────────────────────────────
+export interface SiblingLens {
+  child: string;
+  cuspSign: string;
+  lens: string;
+}
+
+const SIBLING_LENS: Record<string, string> = {
+  Aries: "perceives siblings as playmates and rivals. Communication is direct, fast, and physical; competition is the bonding language. Easily reads brothers as challengers to spar with, not partners to share with.",
+  Taurus: "perceives siblings as part of the steady comfort of home. Wants slow, predictable, sensory connection. Can feel pushed when a brother changes the pace or moves into their space and stuff.",
+  Gemini: "perceives siblings as fellow thinkers and conversational partners. Bonds through questions, jokes, and trading information. Goes quiet or wanders when the talk turns heavy.",
+  Cancer: "perceives siblings as emotional family, almost like extra parents or babies. Reads moods early. Will protect a brother fiercely, and feels every withdrawal personally.",
+  Leo: "perceives siblings as the audience and the co-stars. Wants to be seen, admired, and played with. Brother conflict often equals a feeling of being upstaged or unseen.",
+  Virgo: "perceives siblings as people to help, correct, and organize. Bonds through doing small, useful things together. Can sound critical when actually trying to care.",
+  Libra: "perceives siblings as partners to keep in fair balance. Tracks who got what, who spoke last, who was wronged. Conflict feels like a rupture of justice, not just a fight.",
+  Scorpio: "perceives siblings as deep, loyal bonds with hidden currents. Wants real, private connection or none. Senses every unspoken alliance and grudge.",
+  Sagittarius: "perceives siblings as fellow adventurers and idea-trading buddies. Bonds through movement, debate, and big questions. Bored fast by routine sibling negotiation.",
+  Capricorn: "perceives siblings through structure and roles (older, younger, responsible, baby). Takes the brother-relationship seriously, sometimes parentally. Can come off as bossy when actually organizing.",
+  Aquarius: "perceives siblings as fellow members of a small tribe with shared rules. Bonds through ideas, projects, and a sense of 'us vs. the rules.' Pulls away when emotions get sticky.",
+  Pisces: "perceives siblings as a source of emotional sensitivity and overwhelm. Absorbs their mood. Can feel flooded by a loud brother and dissolve, or merge so completely they lose their own preferences.",
+};
+
+export function findSiblingLenses(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): SiblingLens[] {
+  const children = members.filter((m) => m.role === "child" || m.role === "sibling");
+  if (children.length < 2) return [];
+  const out: SiblingLens[] = [];
+  for (const c of children) {
+    const cusp = (c.chart.houseCusps as any)?.house3;
+    const sign = cusp?.sign;
+    if (!sign || !SIBLING_LENS[sign]) continue;
+    out.push({
+      child: c.chart.name,
+      cuspSign: sign,
+      lens: `${c.chart.name} ${SIBLING_LENS[sign]}`,
+    });
+  }
+  return out;
+}
+
+// ── Section 19: Grouped Generational Gaps (one paragraph per parent↔child) ────
+export interface GroupedGenerationalGap {
+  parent: string;
+  child: string;
+  planets: { planet: string; parentSign: string; childSign: string }[];
+  paragraph: string;
+}
+
+export function groupGenerationalGaps(gaps: GenerationalGap[]): GroupedGenerationalGap[] {
+  const byPair = new Map<string, GenerationalGap[]>();
+  for (const g of gaps) {
+    const key = `${g.parent}|${g.child}`;
+    if (!byPair.has(key)) byPair.set(key, []);
+    byPair.get(key)!.push(g);
+  }
+  const out: GroupedGenerationalGap[] = [];
+  for (const list of byPair.values()) {
+    const parent = list[0].parent;
+    const child = list[0].child;
+    const planets = list.map((g) => ({ planet: g.planet, parentSign: g.parentSign, childSign: g.childSign }));
+    const planetList = planets
+      .map((p) => `${p.planet} (${p.parentSign} vs ${p.childSign})`)
+      .join(", ");
+    const intro = `${parent} and ${child} sit in different generational signatures on ${planetList}.`;
+    const detailLines = list.map((g) => g.text).join(" ");
+    const paragraph = `${intro} ${detailLines} Treat this as a developmental invitation, the friction is generational, not personal.`;
+    out.push({ parent, child, planets, paragraph });
+  }
+  return out;
+}
+
+// ── Section 20: Sibling Soul Missions (Nodal Destiny filtered to child↔child) ─
+export interface SiblingSoulMission {
+  teacherChild: string;
+  studentChild: string;
+  contactorPlanet: "Sun" | "Moon";
+  nodeType: "North" | "South";
+  orb: number;
+  headline: string;
+  body: string;
+}
+
+export function findSiblingSoulMissions(
+  nodal: NodalDestiny[],
+  members: { chart: NatalChart; role: FamilyRole }[],
+): SiblingSoulMission[] {
+  const childNames = new Set(
+    members.filter((m) => m.role === "child" || m.role === "sibling").map((m) => m.chart.name),
+  );
+  const out: SiblingSoulMission[] = [];
+  for (const n of nodal) {
+    if (!childNames.has(n.ownerName) || !childNames.has(n.contactorName)) continue;
+    if (n.nodeType === "North") {
+      out.push({
+        teacherChild: n.contactorName,
+        studentChild: n.ownerName,
+        contactorPlanet: n.contactorPlanet,
+        nodeType: "North",
+        orb: n.orb,
+        headline: `The Soul Mission: ${n.contactorName} is ${n.ownerName}'s Developmental Teacher.`,
+        body: `${n.contactorName}'s ${n.contactorPlanet} sits on ${n.ownerName}'s North Node. ${n.contactorName} embodies the direction ${n.ownerName} is here to grow toward. The friction between them is the stretch: ${n.contactorName} pulls ${n.ownerName} toward their future self, and ${n.ownerName}'s discomfort is the muscle being built. Treat disagreements as developmental invitations, not clashes.`,
+      });
+    } else {
+      out.push({
+        teacherChild: n.contactorName,
+        studentChild: n.ownerName,
+        contactorPlanet: n.contactorPlanet,
+        nodeType: "South",
+        orb: n.orb,
+        headline: `The Old Friend: ${n.contactorName} is ${n.ownerName}'s Comfort Zone.`,
+        body: `${n.contactorName}'s ${n.contactorPlanet} sits on ${n.ownerName}'s South Node. ${n.contactorName} feels deeply familiar to ${n.ownerName}, easy and known like an old friend. The shadow side: this pairing can loop into old patterns and keep ${n.ownerName} from stretching. Enjoy the ease, then make sure they each have separate growth edges too.`,
+      });
+    }
+  }
+  return out;
+}
+
+// ── Section 21: Mars House Category (for Regulation Dashboard markers) ────────
+export type HouseCategory = "angular" | "succedent" | "cadent" | null;
+
+export function marsHouseCategory(chart: NatalChart): HouseCategory {
+  const mars = (chart.planets as any).Mars as NatalPlanetPosition | undefined;
+  const h = houseOfPlanet(chart, mars);
+  if (h == null) return null;
+  if ([1, 4, 7, 10].includes(h)) return "angular";
+  if ([2, 5, 8, 11].includes(h)) return "succedent";
+  return "cadent";
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
@@ -2355,6 +2485,9 @@ export interface FamilyWeb {
   parentalShadows: ParentalShadow[];
   profectionYearMates: ProfectionYearMate[];
   headline: FamilyHeadline | null;
+  siblingLenses: SiblingLens[];
+  groupedGenerationalGaps: GroupedGenerationalGap[];
+  siblingSoulMissions: SiblingSoulMission[];
 }
 
 export function buildFamilyWeb(
@@ -2363,6 +2496,8 @@ export function buildFamilyWeb(
   const bridges = findBridgeMembers(members);
   const profectionAlignment = findProfectionAlignment(members);
   const missionStatement = computeFamilyMissionStatement(members);
+  const generationalGaps = findGenerationalGaps(members);
+  const nodalDestiny = findNodalDestiny(members);
   return {
     elementalVoid: computeElementalVoid(members),
     bridges,
@@ -2372,14 +2507,17 @@ export function buildFamilyWeb(
     twelfthHouseMirrors: findTwelfthHouseMirrors(members),
     midpointHotspots: findMidpointHotspots(members),
     tsquareCompletions: findTSquareCompletions(members),
-    generationalGaps: findGenerationalGaps(members),
+    generationalGaps,
     houseOverlays: findHouseOverlays(members),
     profectionAlignment,
-    nodalDestiny: findNodalDestiny(members),
+    nodalDestiny,
     sunDevelopmentalTasks: findSunDevelopmentalTasks(members),
     missionStatement,
     parentalShadows: findParentalShadows(members),
     profectionYearMates: findProfectionYearMates(profectionAlignment, members),
     headline: computeFamilyHeadline(members, missionStatement, bridges),
+    siblingLenses: findSiblingLenses(members),
+    groupedGenerationalGaps: groupGenerationalGaps(generationalGaps),
+    siblingSoulMissions: findSiblingSoulMissions(nodalDestiny, members),
   };
 }
