@@ -22,6 +22,51 @@ function ordinalShort(n: number): string {
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
+
+// --- UX helpers for the human-centric Family at a Glance refactor ---
+const SIGN_ORDER = [
+  "Aries","Taurus","Gemini","Cancer","Leo","Virgo",
+  "Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces",
+];
+const SIGN_ELEMENT: Record<string, "fire"|"earth"|"air"|"water"> = {
+  Aries:"fire", Leo:"fire", Sagittarius:"fire",
+  Taurus:"earth", Virgo:"earth", Capricorn:"earth",
+  Gemini:"air", Libra:"air", Aquarius:"air",
+  Cancer:"water", Scorpio:"water", Pisces:"water",
+};
+function planetLongitude(p?: { sign: string; degree: number; minutes: number; seconds?: number }): number | null {
+  if (!p) return null;
+  const i = SIGN_ORDER.indexOf(p.sign);
+  if (i < 0) return null;
+  return i * 30 + (p.degree || 0) + (p.minutes || 0) / 60 + ((p.seconds || 0) / 3600);
+}
+function moonPhaseLabel(sunLon: number, moonLon: number): string {
+  const a = (((moonLon - sunLon) % 360) + 360) % 360;
+  if (a < 45) return "New";
+  if (a < 90) return "Crescent";
+  if (a < 135) return "First Quarter";
+  if (a < 180) return "Gibbous";
+  if (a < 225) return "Full";
+  if (a < 270) return "Disseminating";
+  if (a < 315) return "Last Quarter";
+  return "Balsamic";
+}
+type DoDont = { dont: string; doThis: string };
+function marsDoDont(marsSign?: string): DoDont {
+  const el = marsSign ? SIGN_ELEMENT[marsSign] : undefined;
+  switch (el) {
+    case "fire":
+      return { dont: "Don't ask 'Why?' or pile on words mid-meltdown.", doThis: "Do offer a physical task: a walk, water, a quick errand." };
+    case "water":
+      return { dont: "Don't rush them out of the feeling or fix it fast.", doThis: "Do sit close, lower your voice, name the feeling out loud." };
+    case "air":
+      return { dont: "Don't grab, restrain, or escalate physically.", doThis: "Do let them talk it through; give them words to choose from." };
+    case "earth":
+      return { dont: "Don't surprise them or change the plan on the fly.", doThis: "Do offer something concrete: food, a chore, a clear next step." };
+    default:
+      return { dont: "Don't try to logic them out of it in the moment.", doThis: "Do slow down and offer one simple, doable next step." };
+  }
+}
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
