@@ -994,6 +994,69 @@ If any answer is wrong, rewrite before returning.`;
     };
     payload = scrub(payload) as ReadingPayload;
 
+    // ─── DEPENDENCY GATE per child: whatEachChildNeedsFromYou requires a valid childMechanisms entry ─────
+    const CONFLICT_PATTERNS_SYS = [
+      /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
+      /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
+      /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
+      /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
+    ];
+    const CAUSE_EFFECT_SYS = /\b(so|because|which makes|which means|this creates|so that|which is why)\b/i;
+    const BANNED_NEEDS_LINE_SYS = [
+      /\bhold\s+space\b/i, /\battune\b/i, /\bco[- ]?regulate\b/i,
+      /\bhonor\s+their\s+feelings\b/i, /\bvalidate\s+their\s+inner\b/i,
+      /\bmeet\s+them\s+where\s+they\s+are\b/i, /\bsafe\s+container\b/i,
+      /\bbe\s+present\s+with\b/i,
+      /\bbe\s+patient\b/i, /\blisten\s+actively\b/i, /\bset\s+clear\s+boundaries\b/i,
+      /\bbe\s+consistent\b/i, /\bstay\s+calm\b/i, /\bmodel\s+the\s+behavior\b/i,
+      /\blead\s+by\s+example\b/i,
+      /^\s*(ask|use|try|give|provide|do|make sure|remember|tell)\b/i,
+    ];
+    const pRec = payload as unknown as Record<string, unknown>;
+    const mechanisms = (pRec.childMechanisms as Array<Record<string, unknown>> | undefined) ?? [];
+    const needsArr = (pRec.whatEachChildNeedsFromYou as Array<Record<string, unknown>> | undefined) ?? [];
+    const sysValidationLog: string[] = [];
+    if (mechanisms.length > 0) {
+      const mechByName = new Map<string, { theConflict?: string; inRealLife?: string; underStress?: string }>();
+      for (const m of mechanisms) {
+        const n = String(m?.name ?? "").trim().toLowerCase();
+        if (n) mechByName.set(n, m as { theConflict?: string; inRealLife?: string; underStress?: string });
+      }
+      const gated = needsArr.map((entry) => {
+        const childName = String(entry?.childName ?? "").trim();
+        const cm = mechByName.get(childName.toLowerCase());
+        const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS_SYS.some((re) => re.test(cm.theConflict!));
+        const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
+          CAUSE_EFFECT_SYS.test(cm.inRealLife) && CAUSE_EFFECT_SYS.test(cm.underStress);
+        if (!conflictOk || !causeOk) {
+          sysValidationLog.push(`needs_blocked_weak_mechanism:${childName}`);
+          return { childName, opener: null, lines: null };
+        }
+        const lines = Array.isArray(entry?.lines) ? (entry.lines as Array<Record<string, unknown>>) : [];
+        const cleaned = lines.filter(
+          (l) => typeof l?.text === "string" && String(l.text).trim().length > 0 &&
+            !BANNED_NEEDS_LINE_SYS.some((re) => re.test(String(l.text))),
+        );
+        if (cleaned.length < 3) {
+          sysValidationLog.push(`needs_underfilled:${childName}`);
+          return { childName, opener: null, lines: null };
+        }
+        return {
+          childName,
+          opener: "This child needs a parent who...",
+          lines: cleaned.slice(0, 4),
+        };
+      });
+      pRec.whatEachChildNeedsFromYou = gated;
+    } else {
+      pRec.whatEachChildNeedsFromYou = [];
+    }
+    if (sysValidationLog.length) {
+      console.warn("[family-system-reading] needs section validation:", sysValidationLog);
+      pRec._validation_log = sysValidationLog;
+    }
+
+
     // Migrate any legacy fields the AI might still emit and strip forbidden keys.
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
     payload = sanitized.payload as unknown as ReadingPayload;
