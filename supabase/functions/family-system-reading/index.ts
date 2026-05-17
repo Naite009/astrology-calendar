@@ -1196,11 +1196,8 @@ If any answer is wrong, rewrite before returning.`;
     payload = processed.payload;
     const finalFailures = [...processed.shape.errors, ...processed.softFailures];
     if (finalFailures.length) {
-      console.error("[family-system-reading] shape/mechanism invalid after repair", finalFailures);
-      return new Response(JSON.stringify({ error: "Family reading did not pass validation. Please generate again." }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.warn("[family-system-reading] returning best-effort payload with residual validation warnings", finalFailures);
+      (payload as Record<string, unknown>)._validation_warnings = finalFailures;
     }
 
     // HARD STRIP: forbidden sections must never reach the client.
