@@ -126,6 +126,7 @@ function PairBlock({
   // Everything the user needs (Shared Pattern + At its best / More commonly / Under stress
   // + Where connection can happen) lives inside `dynamic` as plain pre-line text.
   const rangeBlock = dynamic && dynamic.trim().length > 0 ? dynamic : null;
+  if (!rangeBlock) return null;
 
   // Validate the three required expression levels are present. If any is missing,
   // we fall back to legacy fields so the user still sees SOMETHING, but flag it.
@@ -134,11 +135,6 @@ function PairBlock({
     /at its best/i.test(rangeBlock) &&
     /more commonly/i.test(rangeBlock) &&
     /under stress/i.test(rangeBlock);
-
-  const showLegacyFallback = !rangeBlock;
-
-  const hasAnything =
-    rangeBlock || compShared || bridgeAspect || frictionAspect || safeNote || legacyBody;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
@@ -162,15 +158,6 @@ function PairBlock({
         </div>
       )}
 
-      {showLegacyFallback && safeNote && (
-        <p className="text-muted-foreground italic">{safeNote}</p>
-      )}
-
-      {showLegacyFallback && legacyBody && (
-        <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
-      )}
-
-      {!hasAnything && null}
     </div>
   );
 }
