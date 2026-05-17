@@ -2177,13 +2177,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {nodalDestiny.length > 0 && (
+              {parentChildNodal.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Nodal Destiny</div>
+                  <div className="font-semibold">Nodal Destiny (Parent ↔ Child)</div>
                   <p className="text-xs text-muted-foreground">
-                    A member's Sun or Moon sitting on another member's lunar nodes. North Node = The Teacher (where you're growing). South Node = The Comfort Zone (familiar, but the old pattern).
+                    Parent or child Sun/Moon on another member's lunar nodes. North Node = The Teacher (where they're growing). South Node = The Comfort Zone (familiar, old pattern). Sibling-to-sibling Soul Missions appear inside the Sibling Connections card above.
                   </p>
-                  {nodalDestiny.map((n, i) => (
+                  {parentChildNodal.map((n, i) => (
                     <div
                       key={i}
                       className={`border-l-2 pl-3 ${n.nodeType === "North" ? "border-primary/60" : "border-amber-500/50"}`}
