@@ -1704,10 +1704,11 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         const web = buildFamilyWeb(members);
         const {
           elementalVoid, bridges, triangulation, mirrors, dashboard,
-          twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
+          twelfthHouseMirrors, midpointHotspots, tsquareCompletions,
           houseOverlays, profectionAlignment, nodalDestiny,
           sunDevelopmentalTasks, missionStatement,
           parentalShadows, profectionYearMates, headline,
+          siblingLenses, groupedGenerationalGaps, siblingSoulMissions,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1719,12 +1720,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           twelfthHouseMirrors.length > 0 ||
           midpointHotspots.length > 0 ||
           tsquareCompletions.length > 0 ||
-          generationalGaps.length > 0 ||
+          groupedGenerationalGaps.length > 0 ||
           houseOverlays.length > 0 ||
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
           nodalDestiny.length > 0 ||
           sunDevelopmentalTasks.length > 0 ||
           parentalShadows.length > 0 ||
+          siblingLenses.length > 0 ||
           !!missionStatement ||
           !!headline;
         if (!anyContent) return null;
@@ -1733,6 +1735,15 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           if (!yearMatesByParent.has(ym.parent)) yearMatesByParent.set(ym.parent, []);
           yearMatesByParent.get(ym.parent)!.push(ym);
         }
+        // Filter out child↔child nodal destinies (now rendered inside Sibling Connections)
+        const parentChildNodal = nodalDestiny.filter((n) => {
+          const ownerRole = members.find((m) => m.chart.name === n.ownerName)?.role;
+          const contRole = members.find((m) => m.chart.name === n.contactorName)?.role;
+          const isChild = (r?: string) => r === "child" || r === "sibling";
+          return !(isChild(ownerRole) && isChild(contRole));
+        });
+        const marsCatByName = new Map<string, ReturnType<typeof marsHouseCategory>>();
+        for (const m of members) marsCatByName.set(m.chart.name, marsHouseCategory(m.chart));
         return (
           <Card className="border-primary/60 bg-primary/5">
             <CardHeader className="pb-3">
