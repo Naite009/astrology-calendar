@@ -1624,7 +1624,8 @@ export function findMidpointHotspots(
           mid = ((mid % 360) + 360) % 360;
           const midOpp = (mid + 180) % 360;
 
-          for (const m of others) {
+          for (const m of members) {
+            if (m === pA || m === pB) continue;
             for (const aPlanet of MIDPOINT_PLANETS) {
               const aPos = (m.chart.planets as any)[aPlanet] as NatalPlanetPosition | undefined;
               const aPosAbs = toAbs(aPos);
