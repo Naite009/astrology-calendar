@@ -1547,44 +1547,73 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4 text-sm">
-            {reading.siblingConnections.map((sc, i) => {
-              const a = members.find((m) => m.chart.name === sc.siblingA)?.chart;
-              const b = members.find((m) => m.chart.name === sc.siblingB)?.chart;
-              const reset = a && b ? computeSiblingResetMode(a, b) : null;
-              return (
-                <div key={i} className="space-y-2">
-                  <PairBlock
-                    title={`${sc.siblingA} ↔ ${sc.siblingB}`}
-                    nameA={sc.siblingA}
-                    nameB={sc.siblingB}
-                    composite={sc.composite}
-                    bridge={sc.bridge}
-                    friction={sc.friction}
-                    interactionPattern={(sc as any).interactionPattern}
-                    dynamic={(sc as any).dynamic}
-                    whatCanFeelHard={(sc as any).whatCanFeelHard}
-                    whatHelps={(sc as any).whatHelps}
-                    patternType={(sc as any).patternType}
-                    note={sc.note}
-                    legacyBody={(sc as unknown as { body?: string }).body}
-                  />
-                  {reset && (
-                    <div className="ml-3 border-l-2 border-amber-500/60 pl-3 py-2 bg-amber-500/5 rounded-r-md space-y-1">
-                      <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-                        When {sc.siblingA} & {sc.siblingB} clash
-                        {reset.sharedElements.length > 0 && (
-                          <span className="ml-1 font-normal opacity-70">
-                            · shared {reset.sharedElements.join(" + ")}
-                          </span>
-                        )}
+            {(() => {
+              const siblingWeb = buildFamilyWeb(members);
+              const missionsByPair = new Map<string, typeof siblingWeb.siblingSoulMissions>();
+              for (const m of siblingWeb.siblingSoulMissions) {
+                const k1 = `${m.teacherChild}|${m.studentChild}`;
+                const k2 = `${m.studentChild}|${m.teacherChild}`;
+                if (!missionsByPair.has(k1)) missionsByPair.set(k1, []);
+                if (!missionsByPair.has(k2)) missionsByPair.set(k2, []);
+                missionsByPair.get(k1)!.push(m);
+                if (k1 !== k2) missionsByPair.get(k2)!.push(m);
+              }
+              return reading.siblingConnections!.map((sc, i) => {
+                const a = members.find((m) => m.chart.name === sc.siblingA)?.chart;
+                const b = members.find((m) => m.chart.name === sc.siblingB)?.chart;
+                const reset = a && b ? computeSiblingResetMode(a, b) : null;
+                const pairMissions = missionsByPair.get(`${sc.siblingA}|${sc.siblingB}`) ?? [];
+                return (
+                  <div key={i} className="space-y-2">
+                    <PairBlock
+                      title={`${sc.siblingA} ↔ ${sc.siblingB}`}
+                      nameA={sc.siblingA}
+                      nameB={sc.siblingB}
+                      composite={sc.composite}
+                      bridge={sc.bridge}
+                      friction={sc.friction}
+                      interactionPattern={(sc as any).interactionPattern}
+                      dynamic={(sc as any).dynamic}
+                      whatCanFeelHard={(sc as any).whatCanFeelHard}
+                      whatHelps={(sc as any).whatHelps}
+                      patternType={(sc as any).patternType}
+                      note={sc.note}
+                      legacyBody={(sc as unknown as { body?: string }).body}
+                    />
+                    {pairMissions.map((m, mi) => (
+                      <div
+                        key={mi}
+                        className={`ml-3 border-l-4 pl-3 py-2 rounded-r-md space-y-1 ${
+                          m.nodeType === "North"
+                            ? "border-emerald-500 bg-emerald-500/5"
+                            : "border-purple-500 bg-purple-500/5"
+                        }`}
+                      >
+                        <div className={`font-bold text-sm ${m.nodeType === "North" ? "text-emerald-700 dark:text-emerald-400" : "text-purple-700 dark:text-purple-400"}`}>
+                          ★ {m.headline}
+                        </div>
+                        <p className="text-sm">{m.body}</p>
+                        <p className="text-xs text-muted-foreground italic">orb {m.orb.toFixed(2)}° · {m.contactorPlanet} on {m.nodeType} Node</p>
                       </div>
-                      <p className="text-sm"><span className="font-semibold">✓ Do this:</span> {reset.doThis}</p>
-                      <p className="text-sm text-muted-foreground"><span className="font-semibold">✗ Avoid:</span> {reset.dontDoThis}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    ))}
+                    {reset && (
+                      <div className="ml-3 border-l-2 border-amber-500/60 pl-3 py-2 bg-amber-500/5 rounded-r-md space-y-1">
+                        <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                          When {sc.siblingA} & {sc.siblingB} meet a developmental invitation
+                          {reset.sharedElements.length > 0 && (
+                            <span className="ml-1 font-normal opacity-70">
+                              · shared {reset.sharedElements.join(" + ")}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm"><span className="font-semibold">✓ Do this:</span> {reset.doThis}</p>
+                        <p className="text-sm text-muted-foreground"><span className="font-semibold">✗ Avoid:</span> {reset.dontDoThis}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
           </CardContent>
         </Card>
       )}
