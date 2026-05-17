@@ -16,6 +16,12 @@ function downloadJson(data: unknown, filename: string) {
     console.error("download failed", e);
   }
 }
+
+function ordinalShort(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 import { NatalChart } from "@/hooks/useNatalChart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
