@@ -1989,18 +1989,16 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {generationalGaps.length > 0 && (
+              {groupedGenerationalGaps.length > 0 && (
                 <div className="space-y-2">
                   <div className="font-semibold">Generational Outer-Planet Gap</div>
                   <p className="text-xs text-muted-foreground">
-                    Different signs on Uranus, Neptune, and Pluto reveal where the friction is generational, not personal.
+                    Different signs on Uranus, Neptune, and Pluto. One paragraph per pair so it reads as a single developmental invitation, not a list.
                   </p>
-                  {generationalGaps.map((g, i) => (
+                  {groupedGenerationalGaps.map((g, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">
-                        {g.parent} ({g.planet} in {g.parentSign}) ↔ {g.child} ({g.planet} in {g.childSign})
-                      </div>
-                      <p className="text-muted-foreground">{g.text}</p>
+                      <div className="font-medium">{g.parent} ↔ {g.child}</div>
+                      <p className="text-muted-foreground">{g.paragraph}</p>
                     </div>
                   ))}
                 </div>
