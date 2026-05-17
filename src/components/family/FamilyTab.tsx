@@ -2163,7 +2163,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                   )}
                   {profectionAlignment.clashes.length > 0 && (
                     <div className="space-y-1 pt-2">
-                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Priority Clashes</div>
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Developmental Invitations</div>
                       {profectionAlignment.clashes.map((c, i) => (
                         <div key={i} className="border-l-2 border-amber-500/50 pl-3">
                           <div className="font-medium">
