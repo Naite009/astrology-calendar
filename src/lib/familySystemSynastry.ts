@@ -646,14 +646,16 @@ export function buildPressurePattern(chart: NatalChart): string {
  * differentiated using their Moon (then Mercury, then Sun) as a tiebreaker.
  */
 export function buildPressurePatternsForGroup(
-  members: { id: string; chart: NatalChart }[]
+  members: { id: string; chart: NatalChart }[],
+  reading?: FamilySystemReadingResponse,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const used = new Set<string>();
+  const mechanisms = mechanismByName(reading);
 
   for (const m of members) {
     const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
-    const base = basePressureLine(m.chart);
+    const base = conciseMechanismLine(mechanisms.get(m.chart.name.trim().toLowerCase())) || basePressureLine(m.chart);
     let line = base;
 
     if (used.has(line)) {
@@ -676,7 +678,8 @@ export function buildPressurePatternsForGroup(
     }
     if (used.has(line)) {
       const sunSign = planets.Sun?.sign;
-      if (sunSign) line = `${line} (showing up in their own ${sunSign} way)`;
+      const mercSign = planets.Mercury?.sign;
+      if (sunSign || mercSign) line = `${line}, filtered through ${mercSign || sunSign} timing`;
     }
 
     used.add(line);
