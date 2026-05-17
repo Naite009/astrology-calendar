@@ -2034,14 +2034,27 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                         </tr>
                       </thead>
                       <tbody>
-                        {profectionAlignment.perMember.map((p, i) => (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-2 pr-3 font-medium">{p.name}</td>
-                            <td className="py-2 pr-3">{p.age}</td>
-                            <td className="py-2 pr-3">{p.house}</td>
-                            <td className="py-2 text-muted-foreground">{p.theme}</td>
-                          </tr>
-                        ))}
+                        {profectionAlignment.perMember.map((p, i) => {
+                          const mates = yearMatesByParent.get(p.name) ?? [];
+                          return (
+                            <tr key={i} className="border-b border-border/50">
+                              <td className="py-2 pr-3 font-medium">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span>{p.name}</span>
+                                  {mates.map((ym, j) => (
+                                    <Badge key={j} variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                      <Trophy className="h-3 w-3" />
+                                      Year-Mate: {ym.mate}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="py-2 pr-3">{p.age}</td>
+                              <td className="py-2 pr-3">{p.house}</td>
+                              <td className="py-2 text-muted-foreground">{p.theme}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
