@@ -1793,7 +1793,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         const engineLine = headline?.sentence || missionStatement?.sentence || null;
         const topMission = siblingSoulMissions.find((s) => s.nodeType === "North") || siblingSoulMissions[0];
         const siblingMissionLine = topMission
-          ? `${topMission.contactorName} is ${topMission.ownerName}'s Developmental Teacher — friction here is growth, not a problem.`
+          ? `${topMission.teacherChild} is ${topMission.studentChild}'s Developmental Teacher — friction here is growth, not a problem.`
           : (() => {
               const n = parentChildNodal.find((x) => x.nodeType === "North");
               return n
