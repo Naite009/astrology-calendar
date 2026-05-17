@@ -1677,6 +1677,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
           houseOverlays, profectionAlignment, nodalDestiny,
           sunDevelopmentalTasks, missionStatement,
+          parentalShadows, profectionYearMates, headline,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1693,8 +1694,15 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
           nodalDestiny.length > 0 ||
           sunDevelopmentalTasks.length > 0 ||
-          !!missionStatement;
+          parentalShadows.length > 0 ||
+          !!missionStatement ||
+          !!headline;
         if (!anyContent) return null;
+        const yearMatesByParent = new Map<string, typeof profectionYearMates>();
+        for (const ym of profectionYearMates) {
+          if (!yearMatesByParent.has(ym.parent)) yearMatesByParent.set(ym.parent, []);
+          yearMatesByParent.get(ym.parent)!.push(ym);
+        }
         return (
           <Card className="border-primary/60 bg-primary/5">
             <CardHeader className="pb-3">
@@ -1707,6 +1715,13 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
+              {headline && (
+                <div className="rounded-md border-2 border-primary bg-primary/10 p-3 space-y-1">
+                  <div className="text-xs uppercase tracking-wider text-primary font-semibold">So What? — The Headline</div>
+                  <p className="font-semibold leading-relaxed text-base">{headline.sentence}</p>
+                </div>
+              )}
+
               {missionStatement && (
                 <div className="rounded-md border border-primary/50 bg-background/60 p-3 space-y-1">
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">Family Mission Statement</div>
