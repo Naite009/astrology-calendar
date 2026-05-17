@@ -1140,6 +1140,26 @@ If any answer is wrong, rewrite before returning.`;
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
     payload = sanitized.payload as unknown as ReadingPayload;
     delete (payload as unknown as Record<string, unknown>).whatAlreadyWorks;
+
+    // ─── ENFORCE PAIR UNIQUENESS BEFORE COVERAGE ─────────────────────────
+    // 1) Strip any generic-template `dynamic` the AI fell back to.
+    // 2) Null pairs whose `dynamic` is interchangeable with another pair's
+    //    (high shingle overlap after stripping the participants' names).
+    // After this, `ensurePairCoverage` will only ADD missing pair shells
+    // with `dynamic: null` — never with templated text.
+    const uniqLog: string[] = [];
+    if (Array.isArray((payload as any).parentChildConnections)) {
+      enforcePairUniqueness((payload as any).parentChildConnections as PairLike[], uniqLog, "pc");
+    }
+    if (Array.isArray((payload as any).siblingConnections)) {
+      enforcePairUniqueness((payload as any).siblingConnections as PairLike[], uniqLog, "sib");
+    }
+    if (uniqLog.length) {
+      console.warn("[family-system-reading] pair uniqueness:", uniqLog);
+      const existingLog = ((payload as unknown as Record<string, unknown>)._validation_log as string[]) ?? [];
+      (payload as unknown as Record<string, unknown>)._validation_log = [...existingLog, ...uniqLog];
+    }
+
     ensurePairCoverage(payload, body.members);
     if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
       console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
