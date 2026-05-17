@@ -1223,12 +1223,16 @@ Keep the tone professional, insightful, and practically applicable.`,
       const voc = getVOCMoonDetails(new Date());
       setVocInfo(voc);
       
-      // Only auto-fetch on first open if no cache exists for the current voice
-      // This prevents auto-fetching when switching voices
+      // Do NOT auto-generate. User must explicitly choose voice + chart, then click Generate.
+      // Only load from cache if present for the current voice.
       const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
       const cached = localStorage.getItem(cacheKey);
-      if (!cosmicData && !cached) {
-        fetchCosmicWeather(false);
+      if (!cosmicData && cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setCosmicData(parsed);
+          setLastFetched(parsed.generatedAt || null);
+        } catch {}
       }
     }
   }, [isOpen]); // Only depend on isOpen, not voiceStyle
