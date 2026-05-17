@@ -43,7 +43,6 @@ import {
   buildFamilySystem,
   buildFamilySystemPayload,
   FamilySystemReadingResponse,
-  buildPressurePattern,
   buildPressurePatternsForGroup,
   buildRespondsBestForGroup,
   buildHouseholdResetLine,
@@ -127,6 +126,7 @@ function PairBlock({
   // Everything the user needs (Shared Pattern + At its best / More commonly / Under stress
   // + Where connection can happen) lives inside `dynamic` as plain pre-line text.
   const rangeBlock = dynamic && dynamic.trim().length > 0 ? dynamic : null;
+  if (!rangeBlock) return null;
 
   // Validate the three required expression levels are present. If any is missing,
   // we fall back to legacy fields so the user still sees SOMETHING, but flag it.
@@ -135,11 +135,6 @@ function PairBlock({
     /at its best/i.test(rangeBlock) &&
     /more commonly/i.test(rangeBlock) &&
     /under stress/i.test(rangeBlock);
-
-  const showLegacyFallback = !rangeBlock;
-
-  const hasAnything =
-    rangeBlock || compShared || bridgeAspect || frictionAspect || safeNote || legacyBody;
 
   return (
     <div className="border-l-2 border-primary/40 pl-3 space-y-2">
@@ -163,19 +158,6 @@ function PairBlock({
         </div>
       )}
 
-      {showLegacyFallback && safeNote && (
-        <p className="text-muted-foreground italic">{safeNote}</p>
-      )}
-
-      {showLegacyFallback && legacyBody && (
-        <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
-      )}
-
-      {!hasAnything && (
-        <p className="text-muted-foreground italic">
-          Regenerate this reading to see how this relationship shows up day to day.
-        </p>
-      )}
     </div>
   );
 }
@@ -310,10 +292,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    sel
+    `system-pipeline-v4:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
-      .join("|");
+      .join("|")}`;
 
   // Load saved readings
   useEffect(() => {
@@ -1430,6 +1412,35 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
+      {Array.isArray((reading as any).childMechanisms) && (reading as any).childMechanisms.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              How Each Child Works Inside
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4 text-sm">
+            {(reading as any).childMechanisms.map((m: any, i: number) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-2">
+                <div className="font-semibold">{m.name}</div>
+                {Array.isArray(m.corePattern) && m.corePattern.length > 0 && (
+                  <ul className="space-y-1 text-muted-foreground">
+                    {m.corePattern.map((p: any, idx: number) => (
+                      <li key={idx}>{p.placement}: {p.does}</li>
+                    ))}
+                  </ul>
+                )}
+                {m.theConflict && <p>{m.theConflict}</p>}
+                {m.inRealLife && <p className="text-muted-foreground">{m.inRealLife}</p>}
+                {m.underStress && <p className="text-muted-foreground">{m.underStress}</p>}
+                {m.whatThisIsNot && <p className="text-xs italic text-muted-foreground">Not: {m.whatThisIsNot}</p>}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {Array.isArray((reading as any).parentRegulationCenter) && (reading as any).parentRegulationCenter.length > 0 && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
@@ -1579,7 +1590,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardContent className="pt-4 space-y-2 text-sm">
             {(() => {
               const lines = buildRespondsBestForGroup(
-                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+                members.map((m) => ({ id: m.chart.id, chart: m.chart })),
+                reading
               );
               return members.map((m) => (
                 <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
@@ -1606,7 +1618,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardContent className="pt-4 space-y-2 text-sm">
             {(() => {
               const patterns = buildPressurePatternsForGroup(
-                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+                members.map((m) => ({ id: m.chart.id, chart: m.chart })),
+                reading
               );
               return members.map((m) => (
                 <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">

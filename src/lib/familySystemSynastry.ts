@@ -411,6 +411,14 @@ export interface BestFamilyPractice {
 
 export interface FamilySystemReadingResponse {
   atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member
+  childMechanisms?: {
+    name: string;
+    corePattern?: { placement: string; does: string }[];
+    theConflict?: string;
+    inRealLife?: string;
+    underStress?: string;
+    whatThisIsNot?: string;
+  }[];
   /** NEW Section 2 — required, one entry per parent. */
   parentRegulationCenter?: ParentRegulationCenter[];
   childAdaptations: ChildAdaptationBlock[];
@@ -438,6 +446,11 @@ export interface FamilySystemReadingResponse {
   householdInTheMoment?: { scenario: string; actions: string[] }[];
   /** @deprecated */
   householdMakesItWorse?: string[];
+  whatEachChildNeedsFromYou?: ({
+    childName: string;
+    opener: string;
+    lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
+  } | { childName: string; opener: null; lines: null })[];
   error?: string;
 }
 
@@ -542,18 +555,18 @@ export function buildFamilySystemPayload(
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PRESSURE_BY_SIGN: Record<string, string> = {
-  Aries: "may act fast, push back, or resist direction",
-  Leo: "may get louder and take up more space to be seen",
-  Sagittarius: "may speak bluntly or bolt to get room to breathe",
-  Cancer: "may pull inward and protect what feels safe",
-  Scorpio: "may go quiet and intense, watching before reacting",
-  Pisces: "may drift, get overwhelmed, or disappear into their own world",
-  Gemini: "may talk faster, argue points, and try to outthink the moment",
-  Libra: "may try to smooth things over or step back to weigh sides",
-  Aquarius: "may detach, observe coolly, and refuse to be pushed",
-  Taurus: "may dig in, slow everything down, and refuse to be moved",
-  Virgo: "may try to fix it, list the problems, or critique the chaos",
-  Capricorn: "may shut down emotion and switch into get-it-done mode",
+  Aries: "impulse arrives before words, so waiting can feel like losing control",
+  Leo: "expression rises quickly, so being ignored can make the signal louder",
+  Sagittarius: "meaning has to stay wide, so tight control can trigger blunt escape",
+  Cancer: "feeling lands before language, so protection can look like pulling inward",
+  Scorpio: "trust has to be checked first, so pressure can make them go private",
+  Pisces: "noise enters all at once, so the system can flood before words form",
+  Gemini: "thoughts race ahead of feeling, so stress can turn into point-by-point arguing",
+  Libra: "both sides register at once, so conflict can stall the answer",
+  Aquarius: "logic takes over before feeling is available, so answers can go flat",
+  Taurus: "the body needs time to shift, so sudden pressure can become refusal",
+  Virgo: "the mind scans for errors first, so stress can become correction",
+  Capricorn: "control returns through function, so feeling can get packed away",
 };
 
 const MOON_TONE: Record<string, string> = {
@@ -586,6 +599,36 @@ const MERCURY_TONE: Record<string, string> = {
   Capricorn: "and shutting the conversation down",
 };
 
+type MechanismLike = NonNullable<FamilySystemReadingResponse["childMechanisms"]>[number];
+
+function mechanismByName(reading?: FamilySystemReadingResponse): Map<string, MechanismLike> {
+  const map = new Map<string, MechanismLike>();
+  for (const m of reading?.childMechanisms ?? []) {
+    const key = m?.name?.trim().toLowerCase();
+    if (key) map.set(key, m);
+  }
+  return map;
+}
+
+function firstCauseSentence(text?: string): string | null {
+  const hit = (text ?? "")
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .find((s) => /\b(so|because|which makes|which means|so that|which is why)\b/i.test(s));
+  return hit ? hit.replace(/\s+/g, " ") : null;
+}
+
+function conciseMechanismLine(m?: MechanismLike): string | null {
+  const source = firstCauseSentence(m?.underStress) || firstCauseSentence(m?.inRealLife);
+  if (!source) return null;
+  const cleaned = source
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\b(the feeling|feeling|the mind|his mind|her mind|their mind)\b/gi, (x) => x.toLowerCase())
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length > 170 ? `${cleaned.slice(0, 167).trim()}...` : cleaned;
+}
+
 function basePressureLine(chart: NatalChart): string {
   const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
   const sign = planets.Mars?.sign || planets.Moon?.sign || planets.Mercury?.sign;
@@ -603,14 +646,16 @@ export function buildPressurePattern(chart: NatalChart): string {
  * differentiated using their Moon (then Mercury, then Sun) as a tiebreaker.
  */
 export function buildPressurePatternsForGroup(
-  members: { id: string; chart: NatalChart }[]
+  members: { id: string; chart: NatalChart }[],
+  reading?: FamilySystemReadingResponse,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const used = new Set<string>();
+  const mechanisms = mechanismByName(reading);
 
   for (const m of members) {
     const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
-    const base = basePressureLine(m.chart);
+    const base = conciseMechanismLine(mechanisms.get(m.chart.name.trim().toLowerCase())) || basePressureLine(m.chart);
     let line = base;
 
     if (used.has(line)) {
@@ -633,7 +678,8 @@ export function buildPressurePatternsForGroup(
     }
     if (used.has(line)) {
       const sunSign = planets.Sun?.sign;
-      if (sunSign) line = `${line} (showing up in their own ${sunSign} way)`;
+      const mercSign = planets.Mercury?.sign;
+      if (sunSign || mercSign) line = `${line}, filtered through ${mercSign || sunSign} timing`;
     }
 
     used.add(line);
@@ -763,7 +809,7 @@ function sectOpener(chart: NatalChart): string | null {
   if (!s) return null;
   return s.sect === "day"
     ? "clear leadership and fairness up front"
-    : "softening and timing before the content";
+    : "the right moment before a serious ask";
 }
 
 // Pick the strongest 1-2 secondary currencies (avoid stacking ones that say
@@ -782,17 +828,29 @@ function pickSecondaries(
   // Prefer two unused-looking fragments so siblings sound different.
   const fresh = candidates.filter((c) => !Array.from(used).some((u) => u.includes(c)));
   const ordered = fresh.length ? fresh : candidates;
-  return ordered.slice(0, 2);
+  return ordered.slice(0, 1);
 }
 
 export function buildRespondsBestForGroup(
-  members: { id: string; chart: NatalChart }[]
+  members: { id: string; chart: NatalChart }[],
+  reading?: FamilySystemReadingResponse,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const used = new Set<string>();
   const usedFragments = new Set<string>();
+  const needsByName = new Map(
+    (reading?.whatEachChildNeedsFromYou ?? [])
+      .filter((entry) => entry.opener && Array.isArray(entry.lines) && entry.lines.length >= 3)
+      .map((entry) => [entry.childName.trim().toLowerCase(), entry.lines.map((l) => l.text.trim()).join("; ")]),
+  );
 
   for (const m of members) {
+    const mechanismMapped = needsByName.get(m.chart.name.trim().toLowerCase());
+    if (mechanismMapped) {
+      out[m.id] = mechanismMapped;
+      used.add(mechanismMapped);
+      continue;
+    }
     const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
     const moon = planets.Moon?.sign;
     const lead = (moon && MOON_LEAD[moon]) || "a calm tone and one thing at a time";
@@ -802,8 +860,8 @@ export function buildRespondsBestForGroup(
     const caveat = saturnLuminaryCaveat(planets);
 
     // Compose: "responds best to <lead>" + optional sect opener merged + secondaries + caveat
-    const parts: string[] = [`responds best to ${lead}`];
-    if (opener && !lead.includes(opener.split(" ")[0])) parts[0] = `responds best to ${lead}, plus ${opener}`;
+    const parts: string[] = [lead];
+    if (opener && !lead.includes(opener.split(" ")[0])) parts.push(opener);
     if (secondaries.length) parts.push(secondaries.join(", and "));
     if (caveat) parts.push(caveat);
 

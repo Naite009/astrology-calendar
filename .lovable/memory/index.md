@@ -31,8 +31,8 @@ Updated: now
 - [Gate Retrograde Contract](mem://architecture/ask-astrology/gate-retrograde-contract) — Replit gate treats RETROGRADE_STATE_MISMATCH and RETROGRADE_OMISSION as symmetric 422 regen triggers; no silent patches on either side
 - [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely
 - [Planetary Condition System](mem://features/chart-decoder/planetary-condition-system) — Strict traditional dignity rules, no modern assignments for planetary conditions
-- [Family Parent Alignment](mem://features/family-readings/parent-alignment) — Layer 3 "What This Child Needs From You" recognition lines, gated on valid childMechanism (conflict + cause→effect); emits null instead of generic parenting advice
-- [Family No Generic Fallbacks](mem://features/family-readings/no-generic-fallbacks) — family-system-reading bans templated pair `dynamic`; generic-phrase scrub + Jaccard interchangeability detector nulls offending pairs so UI prompts regenerate
+- [Family Parent Alignment](mem://features/family-readings/parent-alignment) — Layer 3 "What This Child Needs From You" recognition lines, gated on valid childMechanism; invalid mechanisms trigger repair before response
+- [Family No Generic Fallbacks](mem://features/family-readings/no-generic-fallbacks) — family-system-reading bans templated pair `dynamic`; generic-phrase scrub + Jaccard detector force server-side repair before UI response
 - [Big Three Night Chart Synthesis](mem://features/astrology/big-three-decan-night-chart-synthesis) — Night charts prioritize Moon as Chart Lord; decan rulers modify core sign
 - [Chart Lord Activation](mem://features/astrology/chart-lord-activation-system) — Binary search tracking of outer planet transits to the Sect Light
 - [Local Date Logic](mem://features/astrology/local-date-logic-standard) — formatLocalDateKey and parseLocalDate prevent timezone drift

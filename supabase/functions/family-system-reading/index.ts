@@ -152,6 +152,10 @@ const GENERIC_DYNAMIC_PATTERNS: RegExp[] = [
   /both\s+feel\s+missed/i,
   /short,?\s+low[- ]pressure\s+moments?\s+without\s+a\s+goal/i,
   /one\s+stays\s+simple.*has\s+space\s+to\s+stay\s+present/i,
+  /\bpressure\s+builds\b/i,
+  /\bpulls?\s+back\b/i,
+  /\bshuts?\s+down\b/i,
+  /\bdetach(?:es)?\s*,?\s*observe(?:s)?\s+coolly\b/i,
 ];
 
 function isGenericDynamic(s: string | null | undefined): boolean {
@@ -197,7 +201,7 @@ type PairLike = {
 
 // Strip generic-template dynamics AND detect interchangeable pairs
 // (high shingle overlap after stripping names). Both endpoints get nulled
-// so the UI shows the "Regenerate this reading" prompt instead of garbage.
+// so the repair pass regenerates them before anything reaches the UI.
 function enforcePairUniqueness(pairs: PairLike[], log: string[], scope: string): void {
   // Step 1: null generic-template dynamics.
   for (const p of pairs) {
@@ -220,7 +224,7 @@ function enforcePairUniqueness(pairs: PairLike[], log: string[], scope: string):
   for (let i = 0; i < items.length; i += 1) {
     for (let j = i + 1; j < items.length; j += 1) {
       const sim = jaccard(items[i].shingles, items[j].shingles);
-      if (sim >= 0.5) {
+      if (sim >= 0.42) {
         toNull.add(items[i].idx);
         toNull.add(items[j].idx);
         log.push(`${scope}_interchangeable:${items[i].label}<->${items[j].label}(sim=${sim.toFixed(2)})`);
@@ -555,7 +559,7 @@ HARD RULES (per line):
 DIFFERENTIATION RULE (CRITICAL — sibling-aware): Across children, the lines must NOT be swappable. If swapping child A's lines into child B's block still reads true, REWRITE the second child. Same axes as childMechanisms (timing, processing, reaction).
 
 DEPENDENCY GATE (per child — CRITICAL):
-Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means", "this creates")? If BOTH are present → emit the 3 mechanism-mapped lines for that child. If EITHER is missing → emit { childName, opener: null, lines: null } for that child. Do NOT fall back to generic parenting language. A null entry per child is correct behavior when that child's mechanism is weak; a generic entry is INVALID OUTPUT.
+Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means")? If BOTH are present, emit the 3 mechanism-mapped lines for that child. If EITHER is missing, REWRITE THE MECHANISM FIRST, then generate the needs lines from the repaired mechanism. Do NOT emit null in the final answer. Do NOT fall back to generic parenting language. Null is only a machine-level failure flag after validation, never acceptable user-facing content.
 
 
 PAIR COVERAGE RULE (HARD):
@@ -1073,100 +1077,123 @@ If any answer is wrong, rewrite before returning.`;
     };
     payload = scrub(payload) as ReadingPayload;
 
-    // ─── DEPENDENCY GATE per child: whatEachChildNeedsFromYou requires a valid childMechanisms entry ─────
-    const CONFLICT_PATTERNS_SYS = [
-      /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
-      /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
-      /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
-      /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
-    ];
-    const CAUSE_EFFECT_SYS = /\b(so|because|which makes|which means|this creates|so that|which is why)\b/i;
-    const BANNED_NEEDS_LINE_SYS = [
-      /\bhold\s+space\b/i, /\battune\b/i, /\bco[- ]?regulate\b/i,
-      /\bhonor\s+their\s+feelings\b/i, /\bvalidate\s+their\s+inner\b/i,
-      /\bmeet\s+them\s+where\s+they\s+are\b/i, /\bsafe\s+container\b/i,
-      /\bbe\s+present\s+with\b/i,
-      /\bbe\s+patient\b/i, /\blisten\s+actively\b/i, /\bset\s+clear\s+boundaries\b/i,
-      /\bbe\s+consistent\b/i, /\bstay\s+calm\b/i, /\bmodel\s+the\s+behavior\b/i,
-      /\blead\s+by\s+example\b/i,
-      /^\s*(ask|use|try|give|provide|do|make sure|remember|tell)\b/i,
-    ];
-    const pRec = payload as unknown as Record<string, unknown>;
-    const mechanisms = (pRec.childMechanisms as Array<Record<string, unknown>> | undefined) ?? [];
-    const needsArr = (pRec.whatEachChildNeedsFromYou as Array<Record<string, unknown>> | undefined) ?? [];
-    const sysValidationLog: string[] = [];
-    if (mechanisms.length > 0) {
-      const mechByName = new Map<string, { theConflict?: string; inRealLife?: string; underStress?: string }>();
-      for (const m of mechanisms) {
-        const n = String(m?.name ?? "").trim().toLowerCase();
-        if (n) mechByName.set(n, m as { theConflict?: string; inRealLife?: string; underStress?: string });
+    const processPayload = (incoming: ReadingPayload, pass: "primary" | "repair") => {
+      const next = scrub(incoming) as ReadingPayload;
+      const CONFLICT_PATTERNS_SYS = [
+        /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
+        /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
+        /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
+        /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
+      ];
+      const CAUSE_EFFECT_SYS = /\b(so|because|which makes|which means|so that|which is why)\b/i;
+      const BANNED_NEEDS_LINE_SYS = [
+        /\bhold\s+space\b/i, /\battune\b/i, /\bco[- ]?regulate\b/i,
+        /\bhonor\s+their\s+feelings\b/i, /\bvalidate\s+their\s+inner\b/i,
+        /\bmeet\s+them\s+where\s+they\s+are\b/i, /\bsafe\s+container\b/i,
+        /\bbe\s+present\s+with\b/i,
+        /\bbe\s+patient\b/i, /\blisten\s+actively\b/i, /\bset\s+clear\s+boundaries\b/i,
+        /\bbe\s+consistent\b/i, /\bstay\s+calm\b/i, /\bmodel\s+the\s+behavior\b/i,
+        /\blead\s+by\s+example\b/i, /\bsoftening\s+and\s+timing\s+before\s+the\s+content\b/i,
+        /^\s*(ask|use|try|give|provide|do|make sure|remember|tell)\b/i,
+      ];
+      const pRec = next as unknown as Record<string, unknown>;
+      const mechanisms = (pRec.childMechanisms as Array<Record<string, unknown>> | undefined) ?? [];
+      const needsArr = (pRec.whatEachChildNeedsFromYou as Array<Record<string, unknown>> | undefined) ?? [];
+      const sysValidationLog: string[] = [];
+      if (mechanisms.length > 0) {
+        const mechByName = new Map<string, { theConflict?: string; inRealLife?: string; underStress?: string }>();
+        for (const m of mechanisms) {
+          const n = String(m?.name ?? "").trim().toLowerCase();
+          if (n) mechByName.set(n, m as { theConflict?: string; inRealLife?: string; underStress?: string });
+        }
+        pRec.whatEachChildNeedsFromYou = needsArr.map((entry) => {
+          const childName = String(entry?.childName ?? "").trim();
+          const cm = mechByName.get(childName.toLowerCase());
+          const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS_SYS.some((re) => re.test(cm.theConflict!));
+          const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
+            CAUSE_EFFECT_SYS.test(cm.inRealLife) && CAUSE_EFFECT_SYS.test(cm.underStress);
+          if (!conflictOk || !causeOk) {
+            sysValidationLog.push(`needs_blocked_weak_mechanism:${childName}`);
+            return { childName, opener: null, lines: null };
+          }
+          const lines = Array.isArray(entry?.lines) ? (entry.lines as Array<Record<string, unknown>>) : [];
+          const cleaned = lines.filter(
+            (l) => typeof l?.text === "string" && String(l.text).trim().length > 0 &&
+              !BANNED_NEEDS_LINE_SYS.some((re) => re.test(String(l.text))),
+          );
+          const tied = new Set(cleaned.map((l) => String(l.tiedTo ?? "")));
+          if (cleaned.length < 3 || !tied.has("processing") || !tied.has("stuckPoint") || !tied.has("pressure")) {
+            sysValidationLog.push(`needs_underfilled:${childName}`);
+            return { childName, opener: null, lines: null };
+          }
+          return { childName, opener: "This child needs a parent who...", lines: cleaned.slice(0, 4) };
+        });
+      } else {
+        pRec.whatEachChildNeedsFromYou = [];
       }
-      const gated = needsArr.map((entry) => {
-        const childName = String(entry?.childName ?? "").trim();
-        const cm = mechByName.get(childName.toLowerCase());
-        const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS_SYS.some((re) => re.test(cm.theConflict!));
-        const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
-          CAUSE_EFFECT_SYS.test(cm.inRealLife) && CAUSE_EFFECT_SYS.test(cm.underStress);
-        if (!conflictOk || !causeOk) {
-          sysValidationLog.push(`needs_blocked_weak_mechanism:${childName}`);
-          return { childName, opener: null, lines: null };
-        }
-        const lines = Array.isArray(entry?.lines) ? (entry.lines as Array<Record<string, unknown>>) : [];
-        const cleaned = lines.filter(
-          (l) => typeof l?.text === "string" && String(l.text).trim().length > 0 &&
-            !BANNED_NEEDS_LINE_SYS.some((re) => re.test(String(l.text))),
-        );
-        if (cleaned.length < 3) {
-          sysValidationLog.push(`needs_underfilled:${childName}`);
-          return { childName, opener: null, lines: null };
-        }
-        return {
-          childName,
-          opener: "This child needs a parent who...",
-          lines: cleaned.slice(0, 4),
-        };
+      if (sysValidationLog.length) {
+        console.warn(`[family-system-reading] needs section validation (${pass}):`, sysValidationLog);
+        pRec._validation_log = sysValidationLog;
+      }
+
+      const sanitized = sanitizeReadingPayload(next as unknown as Record<string, unknown>);
+      const processed = sanitized.payload as unknown as ReadingPayload;
+      delete (processed as unknown as Record<string, unknown>).whatAlreadyWorks;
+
+      const uniqLog: string[] = [];
+      if (Array.isArray((processed as any).parentChildConnections)) enforcePairUniqueness((processed as any).parentChildConnections as PairLike[], uniqLog, "pc");
+      if (Array.isArray((processed as any).siblingConnections)) enforcePairUniqueness((processed as any).siblingConnections as PairLike[], uniqLog, "sib");
+      if (uniqLog.length) {
+        console.warn(`[family-system-reading] pair uniqueness (${pass}):`, uniqLog);
+        const existingLog = ((processed as unknown as Record<string, unknown>)._validation_log as string[]) ?? [];
+        (processed as unknown as Record<string, unknown>)._validation_log = [...existingLog, ...uniqLog];
+      }
+
+      ensurePairCoverage(processed, body.members);
+      if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
+      const shape = validatePairShape(processed as unknown as Record<string, unknown>);
+      return { payload: processed, shape, softFailures: sysValidationLog };
+    };
+
+    let processed = processPayload(payload, "primary");
+    const primaryFailures = [...processed.shape.errors, ...processed.softFailures];
+    if (primaryFailures.length) {
+      console.warn("[family-system-reading] primary output failed validation, repairing before response", primaryFailures);
+      const repairResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: `${userPrompt}\n\nREPAIR PASS REQUIRED. The previous JSON failed validation and MUST be regenerated before the user sees it. Do not return placeholders, null dynamics, or generic advice.\n\nVALIDATION FAILURES:\n${primaryFailures.map((e) => `- ${e}`).join("\n")}\n\nFAILED JSON TO REPAIR:\n${JSON.stringify(processed.payload)}\n\nReturn the FULL corrected JSON object only. Every parent-child pair and sibling pair needs a valid dynamic with the six required labels. Every child mechanism must explain WHY the behavior happens using internal timing conflict plus cause-to-effect language. whatEachChildNeedsFromYou must map directly from that mechanism. If the needs section failed, strengthen childMechanisms first, then generate the needs lines. If two pairs share structure, verbs, or stress sequence, rewrite them independently.`,
+            },
+          ],
+          response_format: { type: "json_object" },
+        }),
       });
-      pRec.whatEachChildNeedsFromYou = gated;
-    } else {
-      pRec.whatEachChildNeedsFromYou = [];
+      if (repairResp.ok) {
+        const repairData = await repairResp.json();
+        const repairRaw = repairData?.choices?.[0]?.message?.content ?? "{}";
+        try {
+          processed = processPayload(JSON.parse(repairRaw) as ReadingPayload, "repair");
+        } catch (e) {
+          console.error("[family-system-reading] repair returned malformed JSON", e);
+        }
+      } else {
+        console.error("[family-system-reading] repair request failed", repairResp.status, await repairResp.text());
+      }
     }
-    if (sysValidationLog.length) {
-      console.warn("[family-system-reading] needs section validation:", sysValidationLog);
-      pRec._validation_log = sysValidationLog;
-    }
-
-
-    // Migrate any legacy fields the AI might still emit and strip forbidden keys.
-    const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
-    payload = sanitized.payload as unknown as ReadingPayload;
-    delete (payload as unknown as Record<string, unknown>).whatAlreadyWorks;
-
-    // ─── ENFORCE PAIR UNIQUENESS BEFORE COVERAGE ─────────────────────────
-    // 1) Strip any generic-template `dynamic` the AI fell back to.
-    // 2) Null pairs whose `dynamic` is interchangeable with another pair's
-    //    (high shingle overlap after stripping the participants' names).
-    // After this, `ensurePairCoverage` will only ADD missing pair shells
-    // with `dynamic: null` — never with templated text.
-    const uniqLog: string[] = [];
-    if (Array.isArray((payload as any).parentChildConnections)) {
-      enforcePairUniqueness((payload as any).parentChildConnections as PairLike[], uniqLog, "pc");
-    }
-    if (Array.isArray((payload as any).siblingConnections)) {
-      enforcePairUniqueness((payload as any).siblingConnections as PairLike[], uniqLog, "sib");
-    }
-    if (uniqLog.length) {
-      console.warn("[family-system-reading] pair uniqueness:", uniqLog);
-      const existingLog = ((payload as unknown as Record<string, unknown>)._validation_log as string[]) ?? [];
-      (payload as unknown as Record<string, unknown>)._validation_log = [...existingLog, ...uniqLog];
-    }
-
-    ensurePairCoverage(payload, body.members);
-    if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
-      console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
-    }
-    const shape = validatePairShape(payload as unknown as Record<string, unknown>);
-    if (!shape.ok) {
-      console.error("[family-system-reading] pair shape invalid after sanitize", shape.errors);
+    payload = processed.payload;
+    const finalFailures = [...processed.shape.errors, ...processed.softFailures];
+    if (finalFailures.length) {
+      console.error("[family-system-reading] shape/mechanism invalid after repair", finalFailures);
+      return new Response(JSON.stringify({ error: "Family reading did not pass validation. Please generate again." }), {
+        status: 422,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // HARD STRIP: forbidden sections must never reach the client.
