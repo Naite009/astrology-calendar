@@ -411,6 +411,14 @@ export interface BestFamilyPractice {
 
 export interface FamilySystemReadingResponse {
   atAGlance?: { name: string; line: string }[]; // REQUIRED: one plain-language pattern line per family member
+  childMechanisms?: {
+    name: string;
+    corePattern?: { placement: string; does: string }[];
+    theConflict?: string;
+    inRealLife?: string;
+    underStress?: string;
+    whatThisIsNot?: string;
+  }[];
   /** NEW Section 2 — required, one entry per parent. */
   parentRegulationCenter?: ParentRegulationCenter[];
   childAdaptations: ChildAdaptationBlock[];
@@ -438,6 +446,11 @@ export interface FamilySystemReadingResponse {
   householdInTheMoment?: { scenario: string; actions: string[] }[];
   /** @deprecated */
   householdMakesItWorse?: string[];
+  whatEachChildNeedsFromYou?: ({
+    childName: string;
+    opener: string;
+    lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
+  } | { childName: string; opener: null; lines: null })[];
   error?: string;
 }
 
