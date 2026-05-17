@@ -1508,9 +1508,8 @@ Keep the tone professional, insightful, and practically applicable.`,
                         value={voiceStyle}
                         onValueChange={(value: typeof voiceStyle) => {
                           setVoiceStyle(value);
-                          setCosmicData(null);
-                          // Pass the new voice directly to avoid race condition
-                          fetchCosmicWeather(true, undefined, value);
+                          // Don't auto-generate — wait for user to click Generate.
+                          // The cache-load effect on voiceStyle will swap in cached content if it exists.
                         }}
                       >
                         <SelectTrigger className="w-[220px] bg-background">
