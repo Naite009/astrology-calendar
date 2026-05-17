@@ -1601,8 +1601,6 @@ export function findMidpointHotspots(
 ): MidpointHotspot[] {
   const parents = members.filter((m) => m.role === "parent");
   if (parents.length < 2) return [];
-  const others = members.filter((m) => !parents.includes(m));
-  if (others.length === 0) return [];
 
   const hotspots: MidpointHotspot[] = [];
 
