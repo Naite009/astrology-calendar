@@ -1908,10 +1908,26 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                         </tr>
                       </thead>
                       <tbody>
-                        {dashboard.map((row, i) => (
+                        {dashboard.map((row, i) => {
+                          const cat = marsCatByName.get(row.name);
+                          return (
                           <Fragment key={i}>
                             <tr className="border-b border-border/50 align-top">
-                              <td className="py-2 pr-3 font-medium">{row.name}</td>
+                              <td className="py-2 pr-3 font-medium">
+                                <div className="flex items-center gap-1.5">
+                                  {cat === "angular" && (
+                                    <span title="Angular Mars (1/4/7/10) — The Lift: stress is visible and actionable">
+                                      <Star className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500" />
+                                    </span>
+                                  )}
+                                  {(cat === "succedent" || cat === "cadent") && (
+                                    <span title="Succedent/Cadent Mars (6/8/12 etc.) — Hidden Impact: stress goes underground first">
+                                      <Cloud className="h-3.5 w-3.5 text-purple-500" />
+                                    </span>
+                                  )}
+                                  <span>{row.name}</span>
+                                </div>
+                              </td>
                               <td className="py-2 pr-3">{row.triggeredBy}</td>
                               <td className="py-2 pr-3">{row.stressReaction}</td>
                               <td className="py-2">{row.circuitBreaker}</td>
