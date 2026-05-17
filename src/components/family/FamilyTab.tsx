@@ -1412,6 +1412,35 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         </Card>
       )}
 
+      {Array.isArray((reading as any).childMechanisms) && (reading as any).childMechanisms.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              How Each Child Works Inside
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4 text-sm">
+            {(reading as any).childMechanisms.map((m: any, i: number) => (
+              <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-2">
+                <div className="font-semibold">{m.name}</div>
+                {Array.isArray(m.corePattern) && m.corePattern.length > 0 && (
+                  <ul className="space-y-1 text-muted-foreground">
+                    {m.corePattern.map((p: any, idx: number) => (
+                      <li key={idx}>{p.placement}: {p.does}</li>
+                    ))}
+                  </ul>
+                )}
+                {m.theConflict && <p>{m.theConflict}</p>}
+                {m.inRealLife && <p className="text-muted-foreground">{m.inRealLife}</p>}
+                {m.underStress && <p className="text-muted-foreground">{m.underStress}</p>}
+                {m.whatThisIsNot && <p className="text-xs italic text-muted-foreground">Not: {m.whatThisIsNot}</p>}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {Array.isArray((reading as any).parentRegulationCenter) && (reading as any).parentRegulationCenter.length > 0 && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
