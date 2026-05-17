@@ -599,6 +599,36 @@ const MERCURY_TONE: Record<string, string> = {
   Capricorn: "and shutting the conversation down",
 };
 
+type MechanismLike = NonNullable<FamilySystemReadingResponse["childMechanisms"]>[number];
+
+function mechanismByName(reading?: FamilySystemReadingResponse): Map<string, MechanismLike> {
+  const map = new Map<string, MechanismLike>();
+  for (const m of reading?.childMechanisms ?? []) {
+    const key = m?.name?.trim().toLowerCase();
+    if (key) map.set(key, m);
+  }
+  return map;
+}
+
+function firstCauseSentence(text?: string): string | null {
+  const hit = (text ?? "")
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .find((s) => /\b(so|because|which makes|which means|so that|which is why)\b/i.test(s));
+  return hit ? hit.replace(/\s+/g, " ") : null;
+}
+
+function conciseMechanismLine(m?: MechanismLike): string | null {
+  const source = firstCauseSentence(m?.underStress) || firstCauseSentence(m?.inRealLife);
+  if (!source) return null;
+  const cleaned = source
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\b(the feeling|feeling|the mind|his mind|her mind|their mind)\b/gi, (x) => x.toLowerCase())
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length > 170 ? `${cleaned.slice(0, 167).trim()}...` : cleaned;
+}
+
 function basePressureLine(chart: NatalChart): string {
   const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
   const sign = planets.Mars?.sign || planets.Moon?.sign || planets.Mercury?.sign;
