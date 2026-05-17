@@ -831,6 +831,39 @@ function pickSecondaries(
   return ordered.slice(0, 1);
 }
 
+export interface RespondsBestProfile {
+  whatFeelsSafe: string;       // Moon
+  whatFeelsLikeLove: string;   // Venus
+  howTheyHearYou: string;      // Mercury
+  howTheyReset: string;        // Mars
+  whatCuts?: string;           // Saturn hard-aspect to luminary (only if present)
+}
+
+// Returns labeled micro-lines per person. No blended sentence.
+// Each line is one specific, short condition mapped to one placement.
+export function buildRespondsBestProfileForGroup(
+  members: { id: string; chart: NatalChart }[],
+): Record<string, RespondsBestProfile> {
+  const out: Record<string, RespondsBestProfile> = {};
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    const moon = planets.Moon?.sign;
+    const venus = planets.Venus?.sign;
+    const merc = planets.Mercury?.sign;
+    const mars = planets.Mars?.sign;
+    const caveat = saturnLuminaryCaveat(planets);
+
+    out[m.id] = {
+      whatFeelsSafe: (moon && MOON_LEAD[moon]) || "a calm tone and one thing at a time",
+      whatFeelsLikeLove: (venus && VENUS_LOVE[venus]) || "consistent, specific care",
+      howTheyHearYou: (merc && MERCURY_DELIVERY[merc]) || "short, clear words without pressure",
+      howTheyReset: (mars && MARS_RECOVERY[mars]) || "lower stimulation and a short break",
+      ...(caveat ? { whatCuts: caveat.replace(/^without /, "being ") } : {}),
+    };
+  }
+  return out;
+}
+
 export function buildRespondsBestForGroup(
   members: { id: string; chart: NatalChart }[],
   reading?: FamilySystemReadingResponse,
