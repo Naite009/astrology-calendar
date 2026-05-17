@@ -1797,7 +1797,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {elementalVoid.missingElement && (
+              {siblingLenses.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">The Sibling Lens (3rd-House Cusp)</div>
+                  <p className="text-xs text-muted-foreground">
+                    How each child instinctively perceives their brothers and sisters, based on the sign on their 3rd-House cusp.
+                  </p>
+                  {siblingLenses.map((s, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <div className="font-medium">
+                        {s.child} <span className="text-muted-foreground font-normal">· 3rd in {s.cuspSign}</span>
+                      </div>
+                      <p className="text-muted-foreground">{s.lens}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
                 <div className="space-y-1">
                   <div className="font-semibold">
                     {elementalVoid.surrogate ? "Natural Surrogate" : "Elemental Void"}
