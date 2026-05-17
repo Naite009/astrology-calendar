@@ -555,7 +555,7 @@ HARD RULES (per line):
 DIFFERENTIATION RULE (CRITICAL — sibling-aware): Across children, the lines must NOT be swappable. If swapping child A's lines into child B's block still reads true, REWRITE the second child. Same axes as childMechanisms (timing, processing, reaction).
 
 DEPENDENCY GATE (per child — CRITICAL):
-Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means", "this creates")? If BOTH are present → emit the 3 mechanism-mapped lines for that child. If EITHER is missing → emit { childName, opener: null, lines: null } for that child. Do NOT fall back to generic parenting language. A null entry per child is correct behavior when that child's mechanism is weak; a generic entry is INVALID OUTPUT.
+Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means")? If BOTH are present, emit the 3 mechanism-mapped lines for that child. If EITHER is missing, REWRITE THE MECHANISM FIRST, then generate the needs lines from the repaired mechanism. Do NOT emit null in the final answer. Do NOT fall back to generic parenting language. Null is only a machine-level failure flag after validation, never acceptable user-facing content.
 
 
 PAIR COVERAGE RULE (HARD):
