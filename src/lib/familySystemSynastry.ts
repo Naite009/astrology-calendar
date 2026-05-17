@@ -555,18 +555,18 @@ export function buildFamilySystemPayload(
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PRESSURE_BY_SIGN: Record<string, string> = {
-  Aries: "may act fast, push back, or resist direction",
-  Leo: "may get louder and take up more space to be seen",
-  Sagittarius: "may speak bluntly or bolt to get room to breathe",
-  Cancer: "may pull inward and protect what feels safe",
-  Scorpio: "may go quiet and intense, watching before reacting",
-  Pisces: "may drift, get overwhelmed, or disappear into their own world",
-  Gemini: "may talk faster, argue points, and try to outthink the moment",
-  Libra: "may try to smooth things over or step back to weigh sides",
-  Aquarius: "may detach, observe coolly, and refuse to be pushed",
-  Taurus: "may dig in, slow everything down, and refuse to be moved",
-  Virgo: "may try to fix it, list the problems, or critique the chaos",
-  Capricorn: "may shut down emotion and switch into get-it-done mode",
+  Aries: "impulse arrives before words, so waiting can feel like losing control",
+  Leo: "expression rises quickly, so being ignored can make the signal louder",
+  Sagittarius: "meaning has to stay wide, so tight control can trigger blunt escape",
+  Cancer: "feeling lands before language, so protection can look like pulling inward",
+  Scorpio: "trust has to be checked first, so pressure can make them go private",
+  Pisces: "noise enters all at once, so the system can flood before words form",
+  Gemini: "thoughts race ahead of feeling, so stress can turn into point-by-point arguing",
+  Libra: "both sides register at once, so conflict can stall the answer",
+  Aquarius: "logic takes over before feeling is available, so answers can go flat",
+  Taurus: "the body needs time to shift, so sudden pressure can become refusal",
+  Virgo: "the mind scans for errors first, so stress can become correction",
+  Capricorn: "control returns through function, so feeling can get packed away",
 };
 
 const MOON_TONE: Record<string, string> = {
