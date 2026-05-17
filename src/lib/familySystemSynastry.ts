@@ -1257,7 +1257,7 @@ export function findTriangulations(
         triangles.push({
           loud: L.chart.name,
           quiet: Q.chart.name,
-          amplifier: amp.name ?? amp.chart.name,
+          amplifier: amp.chart.name,
           sequence: `${L.chart.name} pushes → ${amp.chart.name} echoes or escalates → ${Q.chart.name} withdraws further.`,
           intervention: `Pull ${amp.chart.name} aside first. Without the amplifier, ${L.chart.name} runs out of fuel and ${Q.chart.name} can re-enter.`,
         });
