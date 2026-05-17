@@ -1449,6 +1449,74 @@ export function buildRegulationDashboard(
   return rows;
 }
 
+// ── Sibling Shadow-Bridge reset mode ──────────────────────────────────────────
+// For a sibling pair, determine HOW to resolve conflict based on their shared
+// dominant element. Fire/Earth pairs should NEVER be sat down to talk — they
+// reset through action. Air pairs reset through naming. Water pairs reset
+// through soft tone and acknowledgment.
+export interface SiblingResetMode {
+  siblingA: string;
+  siblingB: string;
+  sharedElements: Element[];
+  mode: "action" | "naming" | "soothe" | "translate";
+  doThis: string;
+  dontDoThis: string;
+}
+
+export function computeSiblingResetMode(
+  chartA: NatalChart,
+  chartB: NatalChart,
+): SiblingResetMode {
+  const domA = new Set(dominantElements(chartA));
+  const domB = new Set(dominantElements(chartB));
+  const shared: Element[] = (["fire", "earth", "air", "water"] as Element[])
+    .filter((e) => domA.has(e) && domB.has(e));
+
+  const hasFire = shared.includes("fire");
+  const hasEarth = shared.includes("earth");
+  const hasAir = shared.includes("air");
+  const hasWater = shared.includes("water");
+
+  let mode: SiblingResetMode["mode"];
+  let doThis: string;
+  let dontDoThis: string;
+
+  if (hasFire && hasEarth) {
+    mode = "action";
+    doThis = `Hand ${chartA.name} and ${chartB.name} a physical project — a ball, a build, a chore that needs two people. They reset through doing, side by side.`;
+    dontDoThis = `Do NOT sit them down to talk it out. Words slow the fire and bore the earth; the conflict will reignite within minutes.`;
+  } else if (hasFire) {
+    mode = "action";
+    doThis = `Move their bodies — walk, run, throw, cook. ${chartA.name} and ${chartB.name} reset through movement, not conversation.`;
+    dontDoThis = `Do NOT sit them down for a talk. Shared fire heats up under verbal mediation; hand them a task instead.`;
+  } else if (hasEarth) {
+    mode = "action";
+    doThis = `Give them a concrete shared task — build, fix, finish something together. Doing resolves what talking can't.`;
+    dontDoThis = `Do NOT force a long emotional conversation. Earth resets through completion, not processing.`;
+  } else if (hasAir) {
+    mode = "naming";
+    doThis = `Name what just happened out loud, in plain words. ${chartA.name} and ${chartB.name} settle when the dynamic is articulated.`;
+    dontDoThis = `Do NOT demand they "just move on." Air needs the moment translated before it can drop it.`;
+  } else if (hasWater) {
+    mode = "soothe";
+    doThis = `Soft tone, lower volume, fewer words. Acknowledge the feeling before solving anything.`;
+    dontDoThis = `Do NOT push for an immediate fix or a logical explanation. Water resets through being met, not corrected.`;
+  } else {
+    mode = "translate";
+    doThis = `Translate between them: one needs words, the other needs movement (or quiet). Don't expect the same reset to work for both.`;
+    dontDoThis = `Do NOT apply a single intervention to both. Their reset modes don't overlap — separate first, regroup second.`;
+  }
+
+  return {
+    siblingA: chartA.name,
+    siblingB: chartB.name,
+    sharedElements: shared,
+    mode,
+    doThis,
+    dontDoThis,
+  };
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
