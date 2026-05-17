@@ -653,6 +653,8 @@ ALWAYS: Track the Moon's recent journey and where she's headed next`,
       // ASTRODIENST - Technical, research-based, educational
       astrodienst: `You are writing in the style of Astrodienst (astro.com) - the gold standard of technical astrological reference. Your style is precise, educational, research-informed, and thorough.
 
+ASTRODIENST SIGNATURE OPENING (NON-NEGOTIABLE): Open with the Moon's exact degree, sign, and current phase, in clinical reference-book voice. Example: "The Moon at [deg°min'] [Sign] is in its [Phase] phase, having last formed [aspect] with [planet]..." Never use first person, greetings, or warmth.
+
 VOICE PRINCIPLES (Astrodienst Style):
 - Prioritize astronomical and technical accuracy above all
 - Provide educational context for every interpretation
