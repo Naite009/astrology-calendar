@@ -114,6 +114,11 @@ interface ReadingPayload {
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
   whatEscalates?: { name: string; body: string }[];
+  whatEachChildNeedsFromYou?: ({
+    childName: string;
+    opener: string;
+    lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
+  } | { childName: string; opener: null; lines: null })[];
 }
 
 const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
@@ -453,6 +458,27 @@ Examples:
   RIGHT: "He pushes back because stopping feels like losing momentum and control, and momentum is how he regulates."
 BANNED: any description that ends at the feeling or the behavior with no "because" / "so that" / "in order to" clause naming the child's internal choice. If a sentence describes a reaction without naming the purpose behind it, REWRITE. The parent must finish reading thinking "that makes sense why they do that," not just "that is what they do."
 
+WHAT EACH CHILD NEEDS FROM YOU RULE (applies to whatEachChildNeedsFromYou field — one entry per child, Layer 3 parent-alignment recognition):
+This section is RECOGNITION, not instruction. It translates each child's wiring into the kind of parent that specific child needs the user to be. The parent must read it and think "this fits MY child," not "this is parenting advice."
+SHAPE per child entry: { childName, opener: "This child needs a parent who...", lines: EXACTLY 3 entries (optional 4th tagged "specificFriction" when a Chiron contact / retrograde Mercury / Moon-Pluto demands it) }. Each line ≤ 14 words, verb-first, completing the opener.
+SLOT REQUIREMENTS — one line per tiedTo slot, in this order:
+  1) tiedTo: "processing" → translate this child's childMechanisms.corePattern into ONE quality the parent must embody so the child's internal processing can complete.
+  2) tiedTo: "stuckPoint" → translate this child's childMechanisms.theConflict into ONE quality that prevents the parent from misreading the stuck moment.
+  3) tiedTo: "pressure" → translate this child's childMechanisms.underStress into ONE quality that keeps the parent steady when the child amplifies.
+HARD RULES (per line):
+- Mechanism mapping is mandatory. Each line maps to a specific element of THAT child's childMechanisms entry. If you cannot point to the source element, REWRITE.
+- "Because otherwise what happens?" test: if removing the line costs the parent nothing specific to THIS child, REWRITE.
+- Genericity test: strip the chart context and re-read. If the 3 lines still work for any child, the entry is INVALID.
+- Recognition, not instruction. BANNED openings/phrases: "do this", "try", "make sure to", "remember to", "ask", "use", "give", "provide", numbered steps, scripts, "tips".
+- BANNED therapy language: "hold space", "attune", "co-regulate", "honor their feelings", "validate their inner world", "meet them where they are", "create a safe container", "be present with".
+- BANNED generic parenting advice: "be patient", "listen actively", "set clear boundaries", "be consistent", "stay calm", "model the behavior", "lead by example".
+- No "because" clauses in the line itself. These are recognition lines, not explanations.
+DIFFERENTIATION RULE (CRITICAL — sibling-aware): Across children, the lines must NOT be swappable. If swapping child A's lines into child B's block still reads true, REWRITE the second child. Same axes as childMechanisms (timing, processing, reaction).
+
+DEPENDENCY GATE (per child — CRITICAL):
+Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means", "this creates")? If BOTH are present → emit the 3 mechanism-mapped lines for that child. If EITHER is missing → emit { childName, opener: null, lines: null } for that child. Do NOT fall back to generic parenting language. A null entry per child is correct behavior when that child's mechanism is weak; a generic entry is INVALID OUTPUT.
+
+
 PAIR COVERAGE RULE (HARD):
 - Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
 - Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
@@ -716,10 +742,23 @@ JSON SCHEMA (return exactly this shape — all 8 sections required where applica
       "whatHelps": ""
     }
   ],
-  "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ]
+  "whatEscalates": [ { "name": "MemberName", "body": string (ONE or TWO short observational lines describing what tends to escalate this person. NO instructions or scripts.) } ],
+  "whatEachChildNeedsFromYou": [
+    {
+      "childName": "ChildName",
+      "opener": "This child needs a parent who...",
+      "lines": [
+        { "text": string (≤14 words, verb-first, completes the opener; maps to this child's childMechanisms.corePattern), "tiedTo": "processing" },
+        { "text": string (≤14 words; maps to childMechanisms.theConflict), "tiedTo": "stuckPoint" },
+        { "text": string (≤14 words; maps to childMechanisms.underStress), "tiedTo": "pressure" }
+        // Optional 4th entry tiedTo: "specificFriction"
+      ]
+    }
+    // EXACTLY one entry per child, in input order. If a child's childMechanisms entry fails the DEPENDENCY GATE, emit { "childName": "ChildName", "opener": null, "lines": null } for that child instead. See DIFFERENTIATION RULE.
+  ]
 }
 
-ALLOWED OUTPUT SECTIONS ONLY: atAGlance, childMechanisms, parentRegulationCenter, parentChildConnections, siblingConnections, whatEscalates. childMechanisms is the highest-priority section and MUST be produced FIRST, with EXACTLY one entry per child, following the MECHANISM PORTRAIT RULE and MECHANISM DIFFERENTIATION RULE. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
+ALLOWED OUTPUT SECTIONS ONLY: atAGlance, childMechanisms, parentRegulationCenter, parentChildConnections, siblingConnections, whatEscalates, whatEachChildNeedsFromYou. childMechanisms is the highest-priority section and MUST be produced FIRST, with EXACTLY one entry per child, following the MECHANISM PORTRAIT RULE and MECHANISM DIFFERENTIATION RULE. whatEachChildNeedsFromYou MUST be produced IMMEDIATELY AFTER childMechanisms (so each entry can map from the mechanism just produced), following the WHAT EACH CHILD NEEDS FROM YOU RULE + DEPENDENCY GATE. The deterministic "What Each Person Responds Best To" and "When Pressure Builds" sections are computed client-side from the chart data and are NOT generated by you.
 
 DO NOT GENERATE — HARD BAN (these sections have been REMOVED from the product entirely):
 - childAdaptations entries (return [] only)
@@ -954,6 +993,69 @@ If any answer is wrong, rewrite before returning.`;
       return s;
     };
     payload = scrub(payload) as ReadingPayload;
+
+    // ─── DEPENDENCY GATE per child: whatEachChildNeedsFromYou requires a valid childMechanisms entry ─────
+    const CONFLICT_PATTERNS_SYS = [
+      /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
+      /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
+      /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
+      /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
+    ];
+    const CAUSE_EFFECT_SYS = /\b(so|because|which makes|which means|this creates|so that|which is why)\b/i;
+    const BANNED_NEEDS_LINE_SYS = [
+      /\bhold\s+space\b/i, /\battune\b/i, /\bco[- ]?regulate\b/i,
+      /\bhonor\s+their\s+feelings\b/i, /\bvalidate\s+their\s+inner\b/i,
+      /\bmeet\s+them\s+where\s+they\s+are\b/i, /\bsafe\s+container\b/i,
+      /\bbe\s+present\s+with\b/i,
+      /\bbe\s+patient\b/i, /\blisten\s+actively\b/i, /\bset\s+clear\s+boundaries\b/i,
+      /\bbe\s+consistent\b/i, /\bstay\s+calm\b/i, /\bmodel\s+the\s+behavior\b/i,
+      /\blead\s+by\s+example\b/i,
+      /^\s*(ask|use|try|give|provide|do|make sure|remember|tell)\b/i,
+    ];
+    const pRec = payload as unknown as Record<string, unknown>;
+    const mechanisms = (pRec.childMechanisms as Array<Record<string, unknown>> | undefined) ?? [];
+    const needsArr = (pRec.whatEachChildNeedsFromYou as Array<Record<string, unknown>> | undefined) ?? [];
+    const sysValidationLog: string[] = [];
+    if (mechanisms.length > 0) {
+      const mechByName = new Map<string, { theConflict?: string; inRealLife?: string; underStress?: string }>();
+      for (const m of mechanisms) {
+        const n = String(m?.name ?? "").trim().toLowerCase();
+        if (n) mechByName.set(n, m as { theConflict?: string; inRealLife?: string; underStress?: string });
+      }
+      const gated = needsArr.map((entry) => {
+        const childName = String(entry?.childName ?? "").trim();
+        const cm = mechByName.get(childName.toLowerCase());
+        const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS_SYS.some((re) => re.test(cm.theConflict!));
+        const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
+          CAUSE_EFFECT_SYS.test(cm.inRealLife) && CAUSE_EFFECT_SYS.test(cm.underStress);
+        if (!conflictOk || !causeOk) {
+          sysValidationLog.push(`needs_blocked_weak_mechanism:${childName}`);
+          return { childName, opener: null, lines: null };
+        }
+        const lines = Array.isArray(entry?.lines) ? (entry.lines as Array<Record<string, unknown>>) : [];
+        const cleaned = lines.filter(
+          (l) => typeof l?.text === "string" && String(l.text).trim().length > 0 &&
+            !BANNED_NEEDS_LINE_SYS.some((re) => re.test(String(l.text))),
+        );
+        if (cleaned.length < 3) {
+          sysValidationLog.push(`needs_underfilled:${childName}`);
+          return { childName, opener: null, lines: null };
+        }
+        return {
+          childName,
+          opener: "This child needs a parent who...",
+          lines: cleaned.slice(0, 4),
+        };
+      });
+      pRec.whatEachChildNeedsFromYou = gated;
+    } else {
+      pRec.whatEachChildNeedsFromYou = [];
+    }
+    if (sysValidationLog.length) {
+      console.warn("[family-system-reading] needs section validation:", sysValidationLog);
+      pRec._validation_log = sysValidationLog;
+    }
+
 
     // Migrate any legacy fields the AI might still emit and strip forbidden keys.
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
