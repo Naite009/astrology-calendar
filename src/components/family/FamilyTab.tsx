@@ -1789,6 +1789,71 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         });
         const marsCatByName = new Map<string, ReturnType<typeof marsHouseCategory>>();
         for (const m of members) marsCatByName.set(m.chart.name, marsHouseCategory(m.chart));
+        // --- Build the Three Big Knots summary ---
+        const engineLine = headline?.sentence || missionStatement?.sentence || null;
+        const topMission = siblingSoulMissions.find((s) => s.nodeType === "North") || siblingSoulMissions[0];
+        const siblingMissionLine = topMission
+          ? `${topMission.contactorName} is ${topMission.ownerName}'s Developmental Teacher — friction here is growth, not a problem.`
+          : (() => {
+              const n = parentChildNodal.find((x) => x.nodeType === "North");
+              return n
+                ? `${n.contactorName} is helping ${n.ownerName} grow — what feels like friction is actually the lesson.`
+                : null;
+            })();
+        const topShadow = parentalShadows[0];
+        const topMirror = twelfthHouseMirrors[0];
+        const parentPulseLine = topShadow
+          ? `${topShadow.child} may mirror ${topShadow.parent}'s unspoken stress — when they act out, check the household "volume" first.`
+          : topMirror
+            ? `${topMirror.child} senses what ${topMirror.parent} hasn't said — name your own state out loud first; the behavior softens.`
+            : null;
+        const hasGlance = !!(engineLine || siblingMissionLine || parentPulseLine);
+
+        // --- Translation Gap per child ---
+        const childMembers = members.filter((m) => m.role === "child" || m.role === "sibling");
+        const dashboardByName = new Map(dashboard.map((d) => [d.name, d]));
+        const translationGaps = childMembers.map((m) => {
+          const moonSign = m.chart.planets.Moon?.sign;
+          const mercurySign = m.chart.planets.Mercury?.sign;
+          const marsSign = m.chart.planets.Mars?.sign;
+          const dd = marsDoDont(marsSign);
+          const row = dashboardByName.get(m.chart.name);
+          return {
+            name: m.chart.name,
+            moonSign,
+            mercurySign,
+            marsSign,
+            dont: dd.dont,
+            doThis: dd.doThis,
+            triggeredBy: row?.triggeredBy,
+            circuitBreaker: row?.circuitBreaker,
+          };
+        }).filter((x) => x.moonSign || x.mercurySign || x.marsSign);
+
+        // --- Parental Anchor (with Balsamic Moon reframe) ---
+        const parentMembers = members.filter((m) => m.role === "parent");
+        const parentAnchors = parentMembers.map((m) => {
+          const sunLon = planetLongitude(m.chart.planets.Sun);
+          const moonLon = planetLongitude(m.chart.planets.Moon);
+          const phase = sunLon !== null && moonLon !== null ? moonPhaseLabel(sunLon, moonLon) : null;
+          const moonSign = m.chart.planets.Moon?.sign;
+          const isBalsamic = phase === "Balsamic";
+          const anchor = isBalsamic
+            ? `Your ${moonSign ?? ""} Moon is in the Balsamic phase — it's wired to compost and release energy, not generate it. Silence is a real tool for balance. But because the kids pick up on what you don't say, naming your feelings out loud (even a quick "I'm tired / I'm wound up") prevents them from carrying it for you.`
+            : phase
+              ? `Your ${moonSign ?? ""} Moon (${phase} phase) sets the household weather. Naming your inner state out loud — even one sentence — keeps the kids from absorbing it subconsciously.`
+              : null;
+          return { name: m.chart.name, phase, moonSign, anchor, isBalsamic };
+        }).filter((x) => !!x.anchor);
+
+        const hasTechnicalContent =
+          groupedGenerationalGaps.length > 0 ||
+          houseOverlays.length > 0 ||
+          (profectionAlignment && profectionAlignment.perMember.length > 0) ||
+          parentChildNodal.length > 0 ||
+          midpointHotspots.length > 0 ||
+          tsquareCompletions.length > 0;
+
         return (
           <Card className="border-primary/60 bg-primary/5">
             <CardHeader className="pb-3">
@@ -1797,41 +1862,103 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 The Family Feedback Loop
               </CardTitle>
               <CardDescription className="pt-1">
-                How members collide, gridlock, mirror, and surrogate for each other. Deterministic, computed from the charts.
+                What this family actually needs from each other — in plain English, with the math kept under the hood.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
-              {headline && (
-                <div className="rounded-md border-2 border-primary bg-primary/10 p-3 space-y-1">
-                  <div className="text-xs uppercase tracking-wider text-primary font-semibold">So What? — The Headline</div>
-                  <p className="font-semibold leading-relaxed text-base">{headline.sentence}</p>
+              {/* 1. Your Family at a Glance — The Three Big Knots */}
+              {hasGlance && (
+                <div className="rounded-md border-2 border-primary bg-primary/10 p-4 space-y-3">
+                  <div className="text-xs uppercase tracking-wider text-primary font-semibold">
+                    Your Family at a Glance
+                  </div>
+                  <ul className="space-y-2.5">
+                    {engineLine && (
+                      <li className="flex gap-2">
+                        <span className="font-semibold text-primary shrink-0">The Engine:</span>
+                        <span>{engineLine}</span>
+                      </li>
+                    )}
+                    {siblingMissionLine && (
+                      <li className="flex gap-2">
+                        <span className="font-semibold text-primary shrink-0">The Sibling Mission:</span>
+                        <span>{siblingMissionLine}</span>
+                      </li>
+                    )}
+                    {parentPulseLine && (
+                      <li className="flex gap-2">
+                        <span className="font-semibold text-primary shrink-0">The Parent Pulse:</span>
+                        <span>{parentPulseLine}</span>
+                      </li>
+                    )}
+                  </ul>
                 </div>
               )}
 
-              {missionStatement && (
-                <div className="rounded-md border border-primary/50 bg-background/60 p-3 space-y-1">
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Family Mission Statement</div>
-                  <p className="font-medium leading-relaxed">{missionStatement.sentence}</p>
+              {/* 2. The Translation Gap — per child */}
+              {translationGaps.length > 0 && (
+                <div className="space-y-3">
+                  <div className="font-semibold text-base">The Translation Gap</div>
                   <p className="text-xs text-muted-foreground">
-                    Element tally: fire {missionStatement.elementCounts.fire}, earth {missionStatement.elementCounts.earth}, air {missionStatement.elementCounts.air}, water {missionStatement.elementCounts.water}.
-                    {missionStatement.dominantModality ? ` Dominant modality: ${missionStatement.dominantModality}.` : ""}
+                    How each child <em>feels</em> things versus how they <em>say</em> them — and exactly what to do (and avoid) when it gets loud.
                   </p>
+                  {translationGaps.map((c, i) => (
+                    <div key={i} className="rounded-md border border-border bg-background/60 p-3 space-y-2">
+                      <div className="font-semibold">{c.name}</div>
+                      <div className="text-sm">
+                        Feels Like <span className="font-medium">{c.moonSign ?? "—"}</span>
+                        {" → "}
+                        Speaks Like <span className="font-medium">{c.mercurySign ?? "—"}</span>
+                        {c.marsSign && (
+                          <> {" → "} Acts Like <span className="font-medium">{c.marsSign}</span></>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="rounded border border-destructive/40 bg-destructive/5 p-2">
+                          <div className="text-[10px] uppercase tracking-wider font-semibold text-destructive mb-1">Don't</div>
+                          <div className="text-xs">{c.dont}</div>
+                        </div>
+                        <div className="rounded border border-emerald-500/40 bg-emerald-500/5 p-2">
+                          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Do</div>
+                          <div className="text-xs">{c.doThis}</div>
+                        </div>
+                      </div>
+                      {(c.triggeredBy || c.circuitBreaker) && (
+                        <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
+                          {c.triggeredBy && <span><span className="font-medium">Trigger:</span> {c.triggeredBy}. </span>}
+                          {c.circuitBreaker && <span><span className="font-medium">Reset:</span> {c.circuitBreaker}</span>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
+              {/* 4. Parental Anchor reframe */}
+              {parentAnchors.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold text-base">The Parental Anchor</div>
+                  {parentAnchors.map((p, i) => (
+                    <div key={i} className={`rounded-md border p-3 ${p.isBalsamic ? "border-primary/60 bg-primary/5" : "border-border bg-background/60"}`}>
+                      <div className="font-medium mb-1">{p.name}</div>
+                      <p className="text-sm">{p.anchor}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Developmental Tasks — kept, human-friendly */}
               {sunDevelopmentalTasks.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Each Child's Developmental Task (Sun as Hero's Journey)</div>
+                  <div className="font-semibold">Each Child's Developmental Task</div>
                   <p className="text-xs text-muted-foreground">
-                    Reframe the trait. Each child's Sun sign is the practice they're here to grow into, not a label they're stuck with.
+                    What each child is here to practice — not a label they're stuck with.
                   </p>
                   {sunDevelopmentalTasks.map((t, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
                       <div className="font-medium flex items-center gap-2 flex-wrap">
-                        <span>{t.name} ({t.sunSign} Sun)</span>
-                        <Badge variant="outline" className="text-[10px] font-normal capitalize">
-                          {t.task}
-                        </Badge>
+                        <span>{t.name}</span>
+                        <Badge variant="outline" className="text-[10px] font-normal capitalize">{t.task}</Badge>
                       </div>
                       <p className="text-muted-foreground">{t.reframe}</p>
                       <p className="text-xs italic text-muted-foreground">
@@ -1842,42 +1969,39 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
+              {/* Sibling Lens — kept */}
               {siblingLenses.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">The Sibling Lens (3rd-House Cusp)</div>
+                  <div className="font-semibold">How Each Child Sees Their Siblings</div>
                   <p className="text-xs text-muted-foreground">
-                    How each child instinctively perceives their brothers and sisters, based on the sign on their 3rd-House cusp.
+                    Each child's built-in lens for reading their brothers and sisters.
                   </p>
                   {siblingLenses.map((s, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">
-                        {s.child} <span className="text-muted-foreground font-normal">· 3rd in {s.cuspSign}</span>
-                      </div>
+                      <div className="font-medium">{s.child}</div>
                       <p className="text-muted-foreground">{s.lens}</p>
                     </div>
                   ))}
                 </div>
               )}
 
+              {/* Elemental Void — relabeled */}
               {elementalVoid.missingElement && (
                 <div className="space-y-1">
                   <div className="font-semibold">
-                    {elementalVoid.surrogate ? "Natural Surrogate" : "Elemental Void"}
+                    {elementalVoid.surrogate ? "The Natural Anchor" : "What This Family is Missing"}
                     {" — "}
                     <span className="capitalize">{elementalVoid.missingElement}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Tally: {elementalVoid.counts.fire} fire, {elementalVoid.counts.earth} earth, {elementalVoid.counts.air} air, {elementalVoid.counts.water} water (Sun, Moon, Mercury, Venus, Mars).
-                  </div>
                   {elementalVoid.surrogate ? (
                     <p>
-                      <span className="font-medium">{elementalVoid.surrogate.name}</span> is the natural surrogate: {elementalVoid.surrogate.why}. The element is technically missing but this person carries the function.
+                      <span className="font-medium">{elementalVoid.surrogate.name}</span> quietly carries this for the family: {elementalVoid.surrogate.why}.
                     </p>
                   ) : (
                     <p className="text-muted-foreground">{elementalVoid.impact}</p>
                   )}
                   {elementalVoid.anchorSuggestion && (
-                    <p><span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">Add</span>{elementalVoid.anchorSuggestion}</p>
+                    <p><span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">Try</span>{elementalVoid.anchorSuggestion}</p>
                   )}
                 </div>
               )}
@@ -1886,8 +2010,6 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 <div className="rounded-md border border-primary/40 p-3 space-y-1 bg-background/50">
                   <div className="font-semibold">
                     {triangulation.modalityPattern.label}
-                    {" — "}
-                    <span className="capitalize">{triangulation.modalityPattern.dominant}</span> pile-up ({triangulation.modalityPattern.count})
                   </div>
                   <p>{triangulation.modalityPattern.intervention}</p>
                 </div>
@@ -1895,14 +2017,14 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
               {bridges.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Bridge Members</div>
+                  <div className="font-semibold">Who Bridges Whom</div>
                   {bridges.map((b, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
                       <div>
                         <span className="font-medium">{b.clashingPair[0]} ↔ {b.clashingPair[1]}</span>
                         <span className="text-muted-foreground"> — {b.clashReason}</span>
                       </div>
-                      <div>Bridge: <span className="font-medium">{b.bridge}</span> ({b.sharedElementWithA}/{b.sharedElementWithB})</div>
+                      <div>Bridge: <span className="font-medium">{b.bridge}</span></div>
                       <p className="text-muted-foreground">{b.howToUse}</p>
                       {b.withdrawalCaveat && (
                         <p className="text-xs italic text-muted-foreground">⚠ {b.withdrawalCaveat}</p>
@@ -1914,12 +2036,12 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
               {triangulation.triangles.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Triangulation</div>
+                  <div className="font-semibold">When Three People Get Stuck</div>
                   {triangulation.triangles.map((t, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
                       <p>{t.sequence}</p>
                       <p className="text-muted-foreground">
-                        <span className="text-xs uppercase tracking-wider mr-2">Circuit breaker</span>
+                        <span className="text-xs uppercase tracking-wider mr-2">Reset</span>
                         {t.intervention}
                       </p>
                     </div>
@@ -1929,7 +2051,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
               {mirrors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Family Mirrors (Inherited Signatures)</div>
+                  <div className="font-semibold">Same Team, Different Volume</div>
                   {mirrors.map((m, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
                       <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
@@ -1939,52 +2061,53 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
+              {/* 3. Regulation Dashboard — compact, 5-second read */}
               {dashboard.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">Regulation Dashboard</div>
-                  <div className="overflow-x-auto">
+                  <div className="font-semibold">Quick Regulation Dashboard</div>
+                  <div className="overflow-x-auto rounded-md border border-border">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr className="text-left text-muted-foreground border-b border-border">
-                          <th className="py-1 pr-3">Person</th>
-                          <th className="py-1 pr-3">Triggered by</th>
-                          <th className="py-1 pr-3">Stress reaction</th>
-                          <th className="py-1">Circuit breaker</th>
+                        <tr className="text-left bg-muted/50 border-b border-border">
+                          <th className="py-2 px-2 font-semibold">Person</th>
+                          <th className="py-2 px-2 font-semibold">Trigger</th>
+                          <th className="py-2 px-2 font-semibold">Reaction</th>
+                          <th className="py-2 px-2 font-semibold">Reset ⚡</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dashboard.map((row, i) => {
                           const cat = marsCatByName.get(row.name);
                           return (
-                          <Fragment key={i}>
-                            <tr className="border-b border-border/50 align-top">
-                              <td className="py-2 pr-3 font-medium">
-                                <div className="flex items-center gap-1.5">
-                                  {cat === "angular" && (
-                                    <span title="Angular Mars (1/4/7/10) — The Lift: stress is visible and actionable">
-                                      <Star className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500" />
-                                    </span>
-                                  )}
-                                  {(cat === "succedent" || cat === "cadent") && (
-                                    <span title="Succedent/Cadent Mars (6/8/12 etc.) — Hidden Impact: stress goes underground first">
-                                      <Cloud className="h-3.5 w-3.5 text-purple-500" />
-                                    </span>
-                                  )}
-                                  <span>{row.name}</span>
-                                </div>
-                              </td>
-                              <td className="py-2 pr-3">{row.triggeredBy}</td>
-                              <td className="py-2 pr-3">{row.stressReaction}</td>
-                              <td className="py-2">{row.circuitBreaker}</td>
-                            </tr>
-                            {row.sensitivityNotes && row.sensitivityNotes.map((s, j) => (
-                              <tr key={`${i}-${j}`} className="border-b border-border/50">
-                                <td colSpan={4} className="py-1 pl-3 italic text-muted-foreground text-xs">
-                                  ⚠ Sensitivity ({s.aboutChild}): {s.note}
+                            <Fragment key={i}>
+                              <tr className="border-b border-border/50 align-top hover:bg-muted/30">
+                                <td className="py-2 px-2 font-medium">
+                                  <div className="flex items-center gap-1.5">
+                                    {cat === "angular" && (
+                                      <span title="Visible — stress shows up early">
+                                        <Star className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500" />
+                                      </span>
+                                    )}
+                                    {(cat === "succedent" || cat === "cadent") && (
+                                      <span title="Hidden — stress goes underground first">
+                                        <Cloud className="h-3.5 w-3.5 text-purple-500" />
+                                      </span>
+                                    )}
+                                    <span>{row.name}</span>
+                                  </div>
                                 </td>
+                                <td className="py-2 px-2">{row.triggeredBy}</td>
+                                <td className="py-2 px-2">{row.stressReaction}</td>
+                                <td className="py-2 px-2 font-medium">{row.circuitBreaker}</td>
                               </tr>
-                            ))}
-                          </Fragment>
+                              {row.sensitivityNotes && row.sensitivityNotes.map((s, j) => (
+                                <tr key={`${i}-${j}`} className="border-b border-border/50">
+                                  <td colSpan={4} className="py-1 px-2 italic text-muted-foreground text-xs bg-muted/20">
+                                    ⚠ Sensitivity ({s.aboutChild}): {s.note}
+                                  </td>
+                                </tr>
+                              ))}
+                            </Fragment>
                           );
                         })}
                       </tbody>
@@ -1993,145 +2116,19 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
+              {/* 12th-House Mirrors — kept but renamed */}
               {twelfthHouseMirrors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">12th-House Mirrors (Stress = Reflection)</div>
+                  <div className="font-semibold">When Stress is a Reflection</div>
                   <p className="text-xs text-muted-foreground">
-                    When a child's planet falls in a parent's 12th house, the child's "stress behaviors" are a real-time reflection of the parent's unexpressed subconscious. Name your own state out loud first; the behavior softens.
+                    Sometimes a child's outburst is them picking up on something a parent hasn't said. Name your own state out loud first; the behavior usually softens.
                   </p>
                   {twelfthHouseMirrors.map((m, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">
-                        {m.child}'s {m.childPlanet} → {m.parent}'s 12th
-                      </div>
+                      <div className="font-medium">{m.child} ↔ {m.parent}</div>
                       <p className="text-muted-foreground">{m.text}</p>
                     </div>
                   ))}
-                </div>
-              )}
-
-              {midpointHotspots.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Midpoint Hotspots</div>
-                  <p className="text-xs text-muted-foreground">
-                    Children (or other members) whose planet sits within 1.5° of the midpoint between two parents' planets. They activate the parents' shared energy.
-                  </p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="text-left text-muted-foreground border-b border-border">
-                          <th className="py-1 pr-3">Parents</th>
-                          <th className="py-1 pr-3">Parents' planets</th>
-                          <th className="py-1 pr-3">Midpoint</th>
-                          <th className="py-1 pr-3">Activated by</th>
-                          <th className="py-1 pr-3">Their planet</th>
-                          <th className="py-1">Orb</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {midpointHotspots.map((h, i) => (
-                          <Fragment key={i}>
-                            <tr className="border-b border-border/50 align-top">
-                              <td className="py-2 pr-3 font-medium">{h.parentA} + {h.parentB}</td>
-                              <td className="py-2 pr-3">{h.parentPlanetA} / {h.parentPlanetB}</td>
-                              <td className="py-2 pr-3">{String(h.midpointDegree).padStart(2,"0")}°{String(h.midpointMinutes).padStart(2,"0")}' {h.midpointSign}</td>
-                              <td className="py-2 pr-3 font-medium">{h.activator}</td>
-                              <td className="py-2 pr-3">{h.activatorPlanet}</td>
-                              <td className="py-2">{h.orb.toFixed(2)}°</td>
-                            </tr>
-                            <tr className="border-b border-border/50">
-                              <td colSpan={6} className="py-1 pl-3 italic text-muted-foreground text-xs">
-                                {h.interpretation}
-                              </td>
-                            </tr>
-                          </Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {tsquareCompletions.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">T-Square Completions (Missing Leg)</div>
-                  <p className="text-xs text-muted-foreground">
-                    A child whose planet falls on the open apex of a parent's natal square. Their existence completes the configuration.
-                  </p>
-                  {tsquareCompletions.map((t, i) => (
-                    <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">{t.parent} ↔ {t.child}</div>
-                      <p className="text-muted-foreground">{t.text}</p>
-                      <p className="text-xs text-muted-foreground">Orb: {t.orb.toFixed(2)}°</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {groupedGenerationalGaps.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Generational Outer-Planet Gap</div>
-                  <p className="text-xs text-muted-foreground">
-                    Different signs on Uranus, Neptune, and Pluto. One paragraph per pair so it reads as a single developmental invitation, not a list.
-                  </p>
-                  {groupedGenerationalGaps.map((g, i) => (
-                    <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <div className="font-medium">{g.parent} ↔ {g.child}</div>
-                      <p className="text-muted-foreground">{g.paragraph}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {houseOverlays.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">House Overlays (Hellenistic)</div>
-                  <p className="text-xs text-muted-foreground">
-                    Where each person's Sun, Mars, Saturn, and Jupiter land inside other members' houses. Flags hidden impact (6/8/12) and visibility/support (angular: 1/4/7/10).
-                  </p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="text-left text-muted-foreground border-b border-border">
-                          <th className="py-1 pr-3">From</th>
-                          <th className="py-1 pr-3">Planet</th>
-                          <th className="py-1 pr-3">Into</th>
-                          <th className="py-1 pr-3">House</th>
-                          <th className="py-1">Effect</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {houseOverlays.map((o, i) => (
-                          <Fragment key={i}>
-                            <tr className={`border-b border-border/50 align-top ${o.category === "hidden" ? "bg-purple-500/5" : "bg-emerald-500/5"}`}>
-                              <td className="py-2 pr-3 font-medium">{o.fromName}</td>
-                              <td className="py-2 pr-3">{o.fromPlanet}{o.fromSign ? ` in ${o.fromSign}` : ""}</td>
-                              <td className="py-2 pr-3 font-medium">{o.toName}</td>
-                              <td className="py-2 pr-3">{o.house}</td>
-                              <td className="py-2">
-                                {o.category === "hidden" ? (
-                                  <Badge variant="outline" className="text-[10px] font-normal border-purple-500/60 text-purple-600 dark:text-purple-400 gap-1">
-                                    <Cloud className="h-3 w-3" />
-                                    The Work — Hidden Impact
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
-                                    <Star className="h-3 w-3" />
-                                    The Lift — Visibility / Support
-                                  </Badge>
-                                )}
-                              </td>
-                            </tr>
-                            <tr className="border-b border-border/50">
-                              <td colSpan={5} className="py-1 pl-3 italic text-muted-foreground text-xs">
-                                {o.note}
-                              </td>
-                            </tr>
-                          </Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
               )}
 
@@ -2139,111 +2136,248 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 <div className="space-y-2">
                   <div className="font-semibold flex items-center gap-2">
                     <Cloud className="h-4 w-4 text-purple-500" />
-                    Parental Shadow (Parent's Planet in Child's 12th)
+                    Parental Shadow
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    The flip side of the 12th-House Mirror. When a parent's planet lands in a child's 12th house, the parent's unspoken energy lives inside the child's subconscious. When they seem reactive, check your own internal stress levels — they might be mirroring what you haven't said yet.
+                    When a parent's unspoken energy lives in a child's subconscious. If they seem reactive, check your own internal volume first.
                   </p>
                   {parentalShadows.map((s, i) => (
                     <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r">
-                      <div className="font-medium">
-                        {s.parent}'s {s.parentPlanet} → {s.child}'s 12th
-                      </div>
+                      <div className="font-medium">{s.parent} ↔ {s.child}</div>
                       <p className="text-muted-foreground">{s.text}</p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {profectionAlignment && profectionAlignment.perMember.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Current Family Focus (Profections)</div>
-                  <p className="text-xs text-muted-foreground">
-                    Each member's active house this year. Same house = synergy. Squared or opposed houses = priority clash.
-                  </p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="text-left text-muted-foreground border-b border-border">
-                          <th className="py-1 pr-3">Person</th>
-                          <th className="py-1 pr-3">Age</th>
-                          <th className="py-1 pr-3">Active house</th>
-                          <th className="py-1">This year's focus</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {profectionAlignment.perMember.map((p, i) => {
-                          const mates = yearMatesByParent.get(p.name) ?? [];
-                          return (
-                            <tr key={i} className="border-b border-border/50">
-                              <td className="py-2 pr-3 font-medium">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span>{p.name}</span>
-                                  {mates.map((ym, j) => (
-                                    <Badge key={j} variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
-                                      <Trophy className="h-3 w-3" />
-                                      Year-Mate: {ym.mate}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="py-2 pr-3">{p.age}</td>
-                              <td className="py-2 pr-3">{p.house}</td>
-                              <td className="py-2 text-muted-foreground">{p.theme}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  {profectionAlignment.synergies.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Synergy</div>
-                      {profectionAlignment.synergies.map((s, i) => (
-                        <div key={i} className="border-l-2 border-primary/40 pl-3">
-                          <p>{s.note}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {profectionAlignment.clashes.length > 0 && (
-                    <div className="space-y-1 pt-2">
-                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Developmental Invitations</div>
-                      {profectionAlignment.clashes.map((c, i) => (
-                        <div key={i} className="border-l-2 border-amber-500/50 pl-3">
-                          <div className="font-medium">
-                            {c.memberA} ({ordinalShort(c.houseA)}) {c.relation === "square" ? "□" : "☍"} {c.memberB} ({ordinalShort(c.houseB)})
-                          </div>
-                          <p className="text-muted-foreground">{c.note}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* 3. Astrology Nerd Corner — collapsed by default */}
+              {hasTechnicalContent && (
+                <details className="rounded-md border border-dashed border-border bg-background/40 group">
+                  <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
+                    <span>🔭 Astrology Nerd Corner — Technical Deep Dive</span>
+                    <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
+                    <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
+                  </summary>
+                  <div className="p-3 pt-1 space-y-5 border-t border-border">
+                    <p className="text-xs text-muted-foreground italic">
+                      For the astrology-curious: the underlying placements driving everything above.
+                    </p>
 
-              {parentChildNodal.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Nodal Destiny (Parent ↔ Child)</div>
-                  <p className="text-xs text-muted-foreground">
-                    Parent or child Sun/Moon on another member's lunar nodes. North Node = The Teacher (where they're growing). South Node = The Comfort Zone (familiar, old pattern). Sibling-to-sibling Soul Missions appear inside the Sibling Connections card above.
-                  </p>
-                  {parentChildNodal.map((n, i) => (
-                    <div
-                      key={i}
-                      className={`border-l-2 pl-3 ${n.nodeType === "North" ? "border-primary/60" : "border-amber-500/50"}`}
-                    >
-                      <div className="font-medium flex items-center gap-2 flex-wrap">
-                        <span>{n.contactorName}'s {n.contactorPlanet} ↔ {n.ownerName}'s {n.nodeType} Node</span>
-                        <Badge variant="outline" className="text-[10px] font-normal">
-                          {n.role}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">orb {n.orb.toFixed(2)}°</span>
+                    {midpointHotspots.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Midpoint Hotspots</div>
+                        <p className="text-xs text-muted-foreground">
+                          Members whose planet sits within 1.5° of the midpoint between two parents' planets.
+                        </p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs border-collapse">
+                            <thead>
+                              <tr className="text-left text-muted-foreground border-b border-border">
+                                <th className="py-1 pr-3">Parents</th>
+                                <th className="py-1 pr-3">Planets</th>
+                                <th className="py-1 pr-3">Midpoint</th>
+                                <th className="py-1 pr-3">Activated by</th>
+                                <th className="py-1 pr-3">Their planet</th>
+                                <th className="py-1">Orb</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {midpointHotspots.map((h, i) => (
+                                <Fragment key={i}>
+                                  <tr className="border-b border-border/50 align-top">
+                                    <td className="py-2 pr-3 font-medium">{h.parentA} + {h.parentB}</td>
+                                    <td className="py-2 pr-3">{h.parentPlanetA} / {h.parentPlanetB}</td>
+                                    <td className="py-2 pr-3">{String(h.midpointDegree).padStart(2,"0")}°{String(h.midpointMinutes).padStart(2,"0")}' {h.midpointSign}</td>
+                                    <td className="py-2 pr-3 font-medium">{h.activator}</td>
+                                    <td className="py-2 pr-3">{h.activatorPlanet}</td>
+                                    <td className="py-2">{h.orb.toFixed(2)}°</td>
+                                  </tr>
+                                  <tr className="border-b border-border/50">
+                                    <td colSpan={6} className="py-1 pl-3 italic text-muted-foreground text-xs">
+                                      {h.interpretation}
+                                    </td>
+                                  </tr>
+                                </Fragment>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                      <p className="text-muted-foreground">{n.text}</p>
-                    </div>
-                  ))}
-                </div>
+                    )}
+
+                    {tsquareCompletions.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">T-Square Completions</div>
+                        <p className="text-xs text-muted-foreground">
+                          A child whose planet falls on the open apex of a parent's natal square.
+                        </p>
+                        {tsquareCompletions.map((t, i) => (
+                          <div key={i} className="border-l-2 border-primary/40 pl-3">
+                            <div className="font-medium">{t.parent} ↔ {t.child}</div>
+                            <p className="text-muted-foreground">{t.text}</p>
+                            <p className="text-xs text-muted-foreground">Orb: {t.orb.toFixed(2)}°</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {groupedGenerationalGaps.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Generational Outer-Planet Gap</div>
+                        <p className="text-xs text-muted-foreground">
+                          Different signs on Uranus, Neptune, and Pluto — one paragraph per pair.
+                        </p>
+                        {groupedGenerationalGaps.map((g, i) => (
+                          <div key={i} className="border-l-2 border-primary/40 pl-3">
+                            <div className="font-medium">{g.parent} ↔ {g.child}</div>
+                            <p className="text-muted-foreground">{g.paragraph}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {houseOverlays.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">House Overlays</div>
+                        <p className="text-xs text-muted-foreground">
+                          Where each person's Sun, Mars, Saturn, and Jupiter land inside other members' houses.
+                        </p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs border-collapse">
+                            <thead>
+                              <tr className="text-left text-muted-foreground border-b border-border">
+                                <th className="py-1 pr-3">From</th>
+                                <th className="py-1 pr-3">Planet</th>
+                                <th className="py-1 pr-3">Into</th>
+                                <th className="py-1 pr-3">House</th>
+                                <th className="py-1">Effect</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {houseOverlays.map((o, i) => (
+                                <Fragment key={i}>
+                                  <tr className={`border-b border-border/50 align-top ${o.category === "hidden" ? "bg-purple-500/5" : "bg-emerald-500/5"}`}>
+                                    <td className="py-2 pr-3 font-medium">{o.fromName}</td>
+                                    <td className="py-2 pr-3">{o.fromPlanet}{o.fromSign ? ` in ${o.fromSign}` : ""}</td>
+                                    <td className="py-2 pr-3 font-medium">{o.toName}</td>
+                                    <td className="py-2 pr-3">{o.house}</td>
+                                    <td className="py-2">
+                                      {o.category === "hidden" ? (
+                                        <Badge variant="outline" className="text-[10px] font-normal border-purple-500/60 text-purple-600 dark:text-purple-400 gap-1">
+                                          <Cloud className="h-3 w-3" />
+                                          Hidden
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                          <Star className="h-3 w-3" />
+                                          Visible
+                                        </Badge>
+                                      )}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-b border-border/50">
+                                    <td colSpan={5} className="py-1 pl-3 italic text-muted-foreground text-xs">
+                                      {o.note}
+                                    </td>
+                                  </tr>
+                                </Fragment>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {profectionAlignment && profectionAlignment.perMember.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Family Season (Each Person's Focus This Year)</div>
+                        <p className="text-xs text-muted-foreground">
+                          Each member's active focus this year. Shared focus = synergy. Tense angles = developmental invitation.
+                        </p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs border-collapse">
+                            <thead>
+                              <tr className="text-left text-muted-foreground border-b border-border">
+                                <th className="py-1 pr-3">Person</th>
+                                <th className="py-1 pr-3">Age</th>
+                                <th className="py-1 pr-3">Active area</th>
+                                <th className="py-1">This year's focus</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {profectionAlignment.perMember.map((p, i) => {
+                                const mates = yearMatesByParent.get(p.name) ?? [];
+                                return (
+                                  <tr key={i} className="border-b border-border/50">
+                                    <td className="py-2 pr-3 font-medium">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span>{p.name}</span>
+                                        {mates.map((ym, j) => (
+                                          <Badge key={j} variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                            <Trophy className="h-3 w-3" />
+                                            Year-Mate: {ym.mate}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </td>
+                                    <td className="py-2 pr-3">{p.age}</td>
+                                    <td className="py-2 pr-3">{p.house}</td>
+                                    <td className="py-2 text-muted-foreground">{p.theme}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        {profectionAlignment.synergies.length > 0 && (
+                          <div className="space-y-1 pt-2">
+                            <div className="text-xs uppercase tracking-wider text-muted-foreground">Synergy</div>
+                            {profectionAlignment.synergies.map((s, i) => (
+                              <div key={i} className="border-l-2 border-primary/40 pl-3">
+                                <p>{s.note}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {profectionAlignment.clashes.length > 0 && (
+                          <div className="space-y-1 pt-2">
+                            <div className="text-xs uppercase tracking-wider text-muted-foreground">Developmental Invitations</div>
+                            {profectionAlignment.clashes.map((c, i) => (
+                              <div key={i} className="border-l-2 border-amber-500/50 pl-3">
+                                <div className="font-medium">
+                                  {c.memberA} ({ordinalShort(c.houseA)}) ↔ {c.memberB} ({ordinalShort(c.houseB)})
+                                </div>
+                                <p className="text-muted-foreground">{c.note}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {parentChildNodal.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Soul Mission (Parent ↔ Child)</div>
+                        <p className="text-xs text-muted-foreground">
+                          North Node = The Teacher (where they're growing). South Node = The Comfort Zone.
+                        </p>
+                        {parentChildNodal.map((n, i) => (
+                          <div
+                            key={i}
+                            className={`border-l-2 pl-3 ${n.nodeType === "North" ? "border-primary/60" : "border-amber-500/50"}`}
+                          >
+                            <div className="font-medium flex items-center gap-2 flex-wrap">
+                              <span>{n.contactorName} ↔ {n.ownerName} ({n.nodeType} Node)</span>
+                              <Badge variant="outline" className="text-[10px] font-normal">{n.role}</Badge>
+                              <span className="text-xs text-muted-foreground">orb {n.orb.toFixed(2)}°</span>
+                            </div>
+                            <p className="text-muted-foreground">{n.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </details>
               )}
             </CardContent>
           </Card>
