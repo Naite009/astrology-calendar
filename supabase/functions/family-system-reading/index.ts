@@ -114,6 +114,11 @@ interface ReadingPayload {
   siblingConnections?: ({ siblingA: string; siblingB: string } & PairConnectionEntry)[];
   childAdaptations?: { name: string; line: string; whatMakesItWorse?: string[] }[];
   whatEscalates?: { name: string; body: string }[];
+  whatEachChildNeedsFromYou?: ({
+    childName: string;
+    opener: string;
+    lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
+  } | { childName: string; opener: null; lines: null })[];
 }
 
 const isParentRole = (role: string) => /parent|mother|father|mom|dad|stepparent|stepmother|stepfather|guardian/i.test(role);
