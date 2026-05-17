@@ -1058,7 +1058,7 @@ AYURVEDIC SEASON: ${currentSeason}
 
 CRITICAL INSTRUCTIONS:
 1. Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number.
-2. Be direct and practical. Keep the opening in the selected voice style (for Tara: start naturally with "Today is...").
+2. Be direct and practical. STAY FULLY IN THE SELECTED VOICE — do not blend voices, do not drift into generic horoscope language, and do not lose the speaker's signature phrasing. For Tara specifically: the opening MUST follow her signature pattern "${greeting}! Today is [full date] and the Moon is in [1–3 word felt-sense descriptor] [Sign] all day." (e.g. "the Moon is in chatty, curious Gemini"). Never say the Moon sign without a felt-sense descriptor in front of it.
 3. Do NOT include any meal plans, recipes, or food content - that belongs exclusively in the Kitchen tab.
 4. PAY SPECIAL ATTENTION to tight aspects (orb < 2°) - these are the most powerful influences today.
 5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
