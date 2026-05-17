@@ -43,7 +43,6 @@ import {
   buildFamilySystem,
   buildFamilySystemPayload,
   FamilySystemReadingResponse,
-  buildPressurePattern,
   buildPressurePatternsForGroup,
   buildRespondsBestForGroup,
   buildHouseholdResetLine,
@@ -171,11 +170,7 @@ function PairBlock({
         <p className="text-muted-foreground whitespace-pre-line">{legacyBody}</p>
       )}
 
-      {!hasAnything && (
-        <p className="text-muted-foreground italic">
-          Regenerate this reading to see how this relationship shows up day to day.
-        </p>
-      )}
+      {!hasAnything && null}
     </div>
   );
 }
@@ -1579,7 +1574,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardContent className="pt-4 space-y-2 text-sm">
             {(() => {
               const lines = buildRespondsBestForGroup(
-                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+                members.map((m) => ({ id: m.chart.id, chart: m.chart })),
+                reading
               );
               return members.map((m) => (
                 <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
@@ -1606,7 +1602,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           <CardContent className="pt-4 space-y-2 text-sm">
             {(() => {
               const patterns = buildPressurePatternsForGroup(
-                members.map((m) => ({ id: m.chart.id, chart: m.chart }))
+                members.map((m) => ({ id: m.chart.id, chart: m.chart })),
+                reading
               );
               return members.map((m) => (
                 <div key={m.chart.id} className="border-l-2 border-primary/40 pl-3">
