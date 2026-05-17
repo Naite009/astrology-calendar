@@ -1581,6 +1581,38 @@ Keep the tone professional, insightful, and practically applicable.`,
                 </Card>
               )}
 
+              {/* Generate Reading button — only after voice + chart are chosen */}
+              {viewMode === 'daily' && (
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Button
+                    onClick={() => {
+                      setCosmicData(null);
+                      fetchCosmicWeather(true);
+                    }}
+                    disabled={isLoading}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        {cosmicData ? 'Regenerate Reading' : 'Generate Reading'}
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedChart
+                      ? `Will be written in ${voiceStyle === 'tara' ? 'Tara Vogel' : voiceStyle}'s voice, personalized for ${selectedChart.name}.`
+                      : `Will be written in ${voiceStyle === 'tara' ? 'Tara Vogel' : voiceStyle}'s voice (general — pick a chart above to personalize).`}
+                  </p>
+                </div>
+              )}
+
               {/* Personalized Transits Panel */}
               {selectedChart && viewMode === 'daily' && (
                 <div className="mb-6">
