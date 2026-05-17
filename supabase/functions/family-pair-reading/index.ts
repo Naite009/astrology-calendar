@@ -814,6 +814,64 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     };
     payload = scrubText(payload) as ReadingPayload;
 
+    // ─── DEPENDENCY GATE: whatThisChildNeedsFromYou requires a valid childMechanism ─────
+    const CONFLICT_PATTERNS = [
+      /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
+      /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
+      /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
+      /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
+    ];
+    const CAUSE_EFFECT_MARKERS = /\b(so|because|which makes|which means|this creates|so that|which is why)\b/i;
+    const cm = (payload as Record<string, unknown>).childMechanism as
+      | { theConflict?: string; inRealLife?: string; underStress?: string }
+      | undefined;
+    const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS.some((re) => re.test(cm.theConflict!));
+    const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
+      CAUSE_EFFECT_MARKERS.test(cm.inRealLife) && CAUSE_EFFECT_MARKERS.test(cm.underStress);
+    const mechanismValid = conflictOk && causeOk;
+
+    // Banned phrase backstop for needs lines.
+    const BANNED_NEEDS_LINE = [
+      /\bhold\s+space\b/i, /\battune\b/i, /\bco[- ]?regulate\b/i,
+      /\bhonor\s+their\s+feelings\b/i, /\bvalidate\s+their\s+inner\b/i,
+      /\bmeet\s+them\s+where\s+they\s+are\b/i, /\bsafe\s+container\b/i,
+      /\bbe\s+present\s+with\b/i,
+      /\bbe\s+patient\b/i, /\blisten\s+actively\b/i, /\bset\s+clear\s+boundaries\b/i,
+      /\bbe\s+consistent\b/i, /\bstay\s+calm\b/i, /\bmodel\s+the\s+behavior\b/i,
+      /\blead\s+by\s+example\b/i,
+      /^\s*(ask|use|try|give|provide|do|make sure|remember|tell)\b/i,
+    ];
+    const validationLog: string[] = [];
+    const needs = (payload as Record<string, unknown>).whatThisChildNeedsFromYou as
+      | { opener?: string; lines?: { text?: string; tiedTo?: string }[] }
+      | null
+      | undefined;
+    if (!mechanismValid) {
+      (payload as Record<string, unknown>).whatThisChildNeedsFromYou = null;
+      validationLog.push("needs_section_blocked_weak_mechanism");
+    } else if (needs && Array.isArray(needs.lines)) {
+      const cleaned = needs.lines.filter(
+        (l) => typeof l?.text === "string" && l.text.trim().length > 0 &&
+          !BANNED_NEEDS_LINE.some((re) => re.test(l.text!)),
+      );
+      if (cleaned.length < 3) {
+        (payload as Record<string, unknown>).whatThisChildNeedsFromYou = null;
+        validationLog.push("needs_section_underfilled");
+      } else {
+        (payload as Record<string, unknown>).whatThisChildNeedsFromYou = {
+          opener: "This child needs a parent who...",
+          lines: cleaned.slice(0, 4),
+        };
+      }
+    } else if (needs === undefined) {
+      (payload as Record<string, unknown>).whatThisChildNeedsFromYou = null;
+    }
+    if (validationLog.length) {
+      console.warn("[family-pair-reading] needs section validation:", validationLog);
+      (payload as Record<string, unknown>)._validation_log = validationLog;
+    }
+
+
     return new Response(
       JSON.stringify({
         ...payload,
