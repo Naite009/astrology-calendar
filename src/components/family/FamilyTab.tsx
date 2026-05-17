@@ -1985,15 +1985,23 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       <tbody>
                         {houseOverlays.map((o, i) => (
                           <Fragment key={i}>
-                            <tr className="border-b border-border/50 align-top">
+                            <tr className={`border-b border-border/50 align-top ${o.category === "hidden" ? "bg-purple-500/5" : "bg-emerald-500/5"}`}>
                               <td className="py-2 pr-3 font-medium">{o.fromName}</td>
                               <td className="py-2 pr-3">{o.fromPlanet}{o.fromSign ? ` in ${o.fromSign}` : ""}</td>
                               <td className="py-2 pr-3 font-medium">{o.toName}</td>
                               <td className="py-2 pr-3">{o.house}</td>
                               <td className="py-2">
-                                <Badge variant="outline" className={`text-[10px] font-normal ${o.category === "hidden" ? "border-amber-500/50" : "border-primary/50"}`}>
-                                  {o.label}
-                                </Badge>
+                                {o.category === "hidden" ? (
+                                  <Badge variant="outline" className="text-[10px] font-normal border-purple-500/60 text-purple-600 dark:text-purple-400 gap-1">
+                                    <Cloud className="h-3 w-3" />
+                                    The Work — Hidden Impact
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/60 text-emerald-600 dark:text-emerald-400 gap-1">
+                                    <Star className="h-3 w-3" />
+                                    The Lift — Visibility / Support
+                                  </Badge>
+                                )}
                               </td>
                             </tr>
                             <tr className="border-b border-border/50">
