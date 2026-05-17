@@ -458,6 +458,27 @@ Examples:
   RIGHT: "He pushes back because stopping feels like losing momentum and control, and momentum is how he regulates."
 BANNED: any description that ends at the feeling or the behavior with no "because" / "so that" / "in order to" clause naming the child's internal choice. If a sentence describes a reaction without naming the purpose behind it, REWRITE. The parent must finish reading thinking "that makes sense why they do that," not just "that is what they do."
 
+WHAT EACH CHILD NEEDS FROM YOU RULE (applies to whatEachChildNeedsFromYou field — one entry per child, Layer 3 parent-alignment recognition):
+This section is RECOGNITION, not instruction. It translates each child's wiring into the kind of parent that specific child needs the user to be. The parent must read it and think "this fits MY child," not "this is parenting advice."
+SHAPE per child entry: { childName, opener: "This child needs a parent who...", lines: EXACTLY 3 entries (optional 4th tagged "specificFriction" when a Chiron contact / retrograde Mercury / Moon-Pluto demands it) }. Each line ≤ 14 words, verb-first, completing the opener.
+SLOT REQUIREMENTS — one line per tiedTo slot, in this order:
+  1) tiedTo: "processing" → translate this child's childMechanisms.corePattern into ONE quality the parent must embody so the child's internal processing can complete.
+  2) tiedTo: "stuckPoint" → translate this child's childMechanisms.theConflict into ONE quality that prevents the parent from misreading the stuck moment.
+  3) tiedTo: "pressure" → translate this child's childMechanisms.underStress into ONE quality that keeps the parent steady when the child amplifies.
+HARD RULES (per line):
+- Mechanism mapping is mandatory. Each line maps to a specific element of THAT child's childMechanisms entry. If you cannot point to the source element, REWRITE.
+- "Because otherwise what happens?" test: if removing the line costs the parent nothing specific to THIS child, REWRITE.
+- Genericity test: strip the chart context and re-read. If the 3 lines still work for any child, the entry is INVALID.
+- Recognition, not instruction. BANNED openings/phrases: "do this", "try", "make sure to", "remember to", "ask", "use", "give", "provide", numbered steps, scripts, "tips".
+- BANNED therapy language: "hold space", "attune", "co-regulate", "honor their feelings", "validate their inner world", "meet them where they are", "create a safe container", "be present with".
+- BANNED generic parenting advice: "be patient", "listen actively", "set clear boundaries", "be consistent", "stay calm", "model the behavior", "lead by example".
+- No "because" clauses in the line itself. These are recognition lines, not explanations.
+DIFFERENTIATION RULE (CRITICAL — sibling-aware): Across children, the lines must NOT be swappable. If swapping child A's lines into child B's block still reads true, REWRITE the second child. Same axes as childMechanisms (timing, processing, reaction).
+
+DEPENDENCY GATE (per child — CRITICAL):
+Generation order: produce that child's childMechanisms entry FIRST. Then internally validate: does theConflict contain a structural mismatch ("feels like X but has to Y" / "wants A but is wired for B"), AND do inRealLife AND underStress contain cause→effect markers ("so", "because", "which makes", "which means", "this creates")? If BOTH are present → emit the 3 mechanism-mapped lines for that child. If EITHER is missing → emit { childName, opener: null, lines: null } for that child. Do NOT fall back to generic parenting language. A null entry per child is correct behavior when that child's mechanism is weak; a generic entry is INVALID OUTPUT.
+
+
 PAIR COVERAGE RULE (HARD):
 - Do not generate whatAlreadyWorks, "What Already Works", or any standalone strengths/works section.
 - Every parent-child and sibling connection belongs ONLY inside parentChildConnections.dynamic and siblingConnections.dynamic.
