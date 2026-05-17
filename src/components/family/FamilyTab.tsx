@@ -295,7 +295,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v6-web:${sel
+    `system-pipeline-v7-advanced:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1666,14 +1666,21 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
       {members.length >= 2 && (() => {
         const web = buildFamilyWeb(members);
-        const { elementalVoid, bridges, triangulation, mirrors, dashboard } = web;
+        const {
+          elementalVoid, bridges, triangulation, mirrors, dashboard,
+          twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
+        } = web;
         const anyContent =
           elementalVoid.missingElement ||
           bridges.length > 0 ||
           triangulation.triangles.length > 0 ||
           triangulation.modalityPattern ||
           mirrors.length > 0 ||
-          dashboard.length > 0;
+          dashboard.length > 0 ||
+          twelfthHouseMirrors.length > 0 ||
+          midpointHotspots.length > 0 ||
+          tsquareCompletions.length > 0 ||
+          generationalGaps.length > 0;
         if (!anyContent) return null;
         return (
           <Card className="border-primary/60 bg-primary/5">
@@ -1801,6 +1808,98 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
+
+              {twelfthHouseMirrors.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">12th-House Mirrors (Karmic Custodian)</div>
+                  <p className="text-xs text-muted-foreground">
+                    A child's planet falling in a parent's 12th house means the child senses what the parent hasn't named.
+                  </p>
+                  {twelfthHouseMirrors.map((m, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <div className="font-medium">
+                        {m.child}'s {m.childPlanet} → {m.parent}'s 12th
+                      </div>
+                      <p className="text-muted-foreground">{m.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {midpointHotspots.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Midpoint Hotspots</div>
+                  <p className="text-xs text-muted-foreground">
+                    Children (or other members) whose planet sits within 1.5° of the midpoint between two parents' planets. They activate the parents' shared energy.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="text-left text-muted-foreground border-b border-border">
+                          <th className="py-1 pr-3">Parents</th>
+                          <th className="py-1 pr-3">Parents' planets</th>
+                          <th className="py-1 pr-3">Midpoint</th>
+                          <th className="py-1 pr-3">Activated by</th>
+                          <th className="py-1 pr-3">Their planet</th>
+                          <th className="py-1">Orb</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {midpointHotspots.map((h, i) => (
+                          <Fragment key={i}>
+                            <tr className="border-b border-border/50 align-top">
+                              <td className="py-2 pr-3 font-medium">{h.parentA} + {h.parentB}</td>
+                              <td className="py-2 pr-3">{h.parentPlanetA} / {h.parentPlanetB}</td>
+                              <td className="py-2 pr-3">{String(h.midpointDegree).padStart(2,"0")}°{String(h.midpointMinutes).padStart(2,"0")}' {h.midpointSign}</td>
+                              <td className="py-2 pr-3 font-medium">{h.activator}</td>
+                              <td className="py-2 pr-3">{h.activatorPlanet}</td>
+                              <td className="py-2">{h.orb.toFixed(2)}°</td>
+                            </tr>
+                            <tr className="border-b border-border/50">
+                              <td colSpan={6} className="py-1 pl-3 italic text-muted-foreground text-xs">
+                                {h.interpretation}
+                              </td>
+                            </tr>
+                          </Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {tsquareCompletions.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">T-Square Completions (Missing Leg)</div>
+                  <p className="text-xs text-muted-foreground">
+                    A child whose planet falls on the open apex of a parent's natal square. Their existence completes the configuration.
+                  </p>
+                  {tsquareCompletions.map((t, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <div className="font-medium">{t.parent} ↔ {t.child}</div>
+                      <p className="text-muted-foreground">{t.text}</p>
+                      <p className="text-xs text-muted-foreground">Orb: {t.orb.toFixed(2)}°</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {generationalGaps.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Generational Outer-Planet Gap</div>
+                  <p className="text-xs text-muted-foreground">
+                    Different signs on Uranus, Neptune, and Pluto reveal where the friction is generational, not personal.
+                  </p>
+                  {generationalGaps.map((g, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3">
+                      <div className="font-medium">
+                        {g.parent} ({g.planet} in {g.parentSign}) ↔ {g.child} ({g.planet} in {g.childSign})
+                      </div>
+                      <p className="text-muted-foreground">{g.text}</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>

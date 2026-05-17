@@ -41,3 +41,25 @@ Five deterministic, no-AI sections appended below the existing system reading se
 - No AI calls. All five sections compute from existing `members[]` chart data (signs + houses + Saturn).
 - Houses derived from `chart.houseCusps` only — never invented.
 - Section renders only if at least one sub-block has content; otherwise the card is hidden.
+
+## 6. Karmic Custodian (12th-House Mirrors)
+- For each child planet in [Sun, Moon, Mercury, Venus, Mars], compute which house it falls in inside the **parent's** chart via `houseOfPlanet` against parent's `houseCusps`.
+- If house == 12, emit a mirror with a planet-specific deterministic line (Moon = restlessness/sensing stress, Sun = unspoken self, Mercury = unsaid words, Venus = avoided relationship tension, Mars = held anger).
+
+## 7. Midpoint Hotspots (with table)
+- Requires ≥2 parents. For each parent pair, compute short-arc midpoint and its opposition between every pair of [Sun, Moon, Mercury, Venus, Mars, Ascendant].
+- Any other family member whose [Sun, Moon, Mercury, Venus, Mars, Ascendant] falls within **1.5°** of either axis = a hotspot.
+- Rendered as a table: Parents | Parents' planets | Midpoint (sign+deg+min) | Activated by | Their planet | Orb. Deterministic interpretation row below.
+- Dedupe by (parents, planet-pair, activator, activatorPlanet); cap at top 8 by tightest orb.
+
+## 8. T-Square Completion (Missing Leg)
+- Scan each parent's natal chart for squares (90° ± 6°) between any two of [Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn].
+- Each square defines two apex points (90° from both, on the perpendicular axis).
+- For each child, if any of [Sun, Moon, Mars, Ascendant] is within **3°** of either apex, emit ONE completion per parent-child pair (tightest orb wins).
+
+## 9. Generational Outer-Planet Gap
+- For each parent↔child pair, compare Uranus/Neptune/Pluto signs. Different sign = generational gap.
+- Hard-coded lookup table covers ~17 realistic living combos (Pluto Virgo↔Libra, Scorpio↔Sagittarius, Capricorn↔Aquarius, etc.). Missing combos fall back to a neutral "friction is generational, not personal" line.
+
+## Cache key
+Bumped to `system-pipeline-v7-advanced` to force regeneration with the four new layers.
