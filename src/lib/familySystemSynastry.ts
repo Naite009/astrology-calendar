@@ -1526,11 +1526,11 @@ export interface TwelfthHouseMirror {
 }
 
 const TWELFTH_HOUSE_TEXT: Record<string, (parent: string, child: string) => string> = {
-  Sun: (_p, c) => `${c} reflects the part of yourself you keep private. Be honest about what you want, so they don't carry the unspoken version.`,
-  Moon: (_p, c) => `When you're carrying unspoken stress, ${c} gets restless or clingy. They feel it before you name it.`,
-  Mercury: (_p, c) => `${c} voices thoughts you haven't said out loud. If they ask blunt questions, it's your own held-back words coming through them.`,
-  Venus: (_p, c) => `${c} picks up on relationship tension you're avoiding. Acknowledge it directly so they don't have to mirror it.`,
-  Mars: (_p, c) => `${c} acts out anger you're sitting on. Name your own frustration first; their reactivity will drop.`,
+  Sun: (_p, c) => `${c}'s "look at me" behavior is a mirror of the part of yourself you keep private. When they act out for attention, ask what part of you is going unseen. Name your own desire to be seen first, and their performing softens.`,
+  Moon: (_p, c) => `${c}'s restlessness, clinginess, or random tears are a mirror of stress you haven't named out loud. They feel it before you do. Say "I'm tense right now and it's not about you," and their nervous system settles.`,
+  Mercury: (_p, c) => `${c}'s blunt questions or "weird" comments are a mirror of thoughts you're holding back. They voice what you won't. Say the held-back sentence yourself, and their odd timing drops.`,
+  Venus: (_p, c) => `${c}'s neediness or sudden coldness is a mirror of relationship tension you're avoiding. Acknowledge the tension directly (even to yourself) so they don't have to act it out for you.`,
+  Mars: (_p, c) => `${c}'s tantrums or pushback are a mirror of anger you're sitting on. Their reactivity will drop the moment you name your own frustration ("I'm mad about X, not you").`,
 };
 
 export function findTwelfthHouseMirrors(
@@ -2068,6 +2068,120 @@ export function findNodalDestiny(
   return out.sort((a, b) => a.orb - b.orb).slice(0, 12);
 }
 
+// ── Section 13: Sun as Hero's Journey (Developmental Task) ────────────────────
+export interface SunDevelopmentalTask {
+  name: string;
+  sunSign: string;
+  task: string;        // "practicing courage"
+  reframe: string;     // longer behavioral reframe replacing the trait label
+  insteadOf: string;   // the lazy trait label being replaced
+}
+
+const SUN_TASK: Record<string, { task: string; insteadOf: string; reframe: (name: string) => string }> = {
+  Aries: { task: "practicing courage", insteadOf: "impulsive", reframe: (n) => `${n} isn't impulsive, ${n} is practicing courage. Every burst of "I'll do it" is a rep at trusting their own first move. Reward the trying, even when the move is rough.` },
+  Taurus: { task: "practicing steadiness", insteadOf: "stubborn", reframe: (n) => `${n} isn't stubborn, ${n} is practicing steadiness. Their slowness is them learning that their own pace is allowed. Don't rush, give a long runway.` },
+  Gemini: { task: "practicing curiosity", insteadOf: "scattered", reframe: (n) => `${n} isn't scattered, ${n} is practicing curiosity. The questions and topic-jumping are how they map the world. Answer the question, don't shut the loop.` },
+  Cancer: { task: "practicing belonging", insteadOf: "moody", reframe: (n) => `${n} isn't moody, ${n} is practicing belonging. Their tides are them learning who is safe and who isn't. Stay consistent, don't take the withdrawal personally.` },
+  Leo: { task: "practicing being seen", insteadOf: "attention-seeking", reframe: (n) => `${n} isn't attention-seeking, ${n} is practicing being seen. They are learning their light is allowed to take up space. Witness it out loud, don't dim it.` },
+  Virgo: { task: "practicing usefulness", insteadOf: "critical", reframe: (n) => `${n} isn't critical, ${n} is practicing usefulness. Noticing what's off is how they contribute. Thank them for the catch before correcting the tone.` },
+  Libra: { task: "practicing fairness", insteadOf: "indecisive", reframe: (n) => `${n} isn't indecisive, ${n} is practicing fairness. The pause is them weighing what's right for everyone. Hold the space, don't decide for them.` },
+  Scorpio: { task: "practicing depth", insteadOf: "intense", reframe: (n) => `${n} isn't too intense, ${n} is practicing depth. They are learning that nothing surface-level will satisfy them. Meet them at the real layer, don't deflect with small talk.` },
+  Sagittarius: { task: "practicing meaning", insteadOf: "restless", reframe: (n) => `${n} isn't restless, ${n} is practicing meaning. The wandering and big questions are them looking for what's true. Engage the big question, don't dismiss it as much.` },
+  Capricorn: { task: "practicing responsibility", insteadOf: "serious", reframe: (n) => `${n} isn't too serious, ${n} is practicing responsibility. They are learning what they can hold. Let them carry real things, but explicitly tell them it's safe to be a kid too.` },
+  Aquarius: { task: "practicing originality", insteadOf: "weird", reframe: (n) => `${n} isn't weird, ${n} is practicing originality. The "off" choices are them testing if their own mind is allowed. Don't normalize them, ask what they see.` },
+  Pisces: { task: "practicing empathy", insteadOf: "spacey", reframe: (n) => `${n} isn't spacey, ${n} is practicing empathy. The drift is them absorbing what's around. Help them name it, don't snap them out of it.` },
+};
+
+export function findSunDevelopmentalTasks(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): SunDevelopmentalTask[] {
+  const out: SunDevelopmentalTask[] = [];
+  const children = members.filter((m) => m.role === "child");
+  for (const c of children) {
+    const sun = (c.chart.planets as any).Sun as NatalPlanetPosition | undefined;
+    if (!sun?.sign) continue;
+    const entry = SUN_TASK[sun.sign];
+    if (!entry) continue;
+    out.push({
+      name: c.chart.name,
+      sunSign: sun.sign,
+      task: entry.task,
+      insteadOf: entry.insteadOf,
+      reframe: entry.reframe(c.chart.name),
+    });
+  }
+  return out;
+}
+
+// ── Section 14: Family Mission Statement ──────────────────────────────────────
+export interface FamilyMissionStatement {
+  sentence: string;
+  dominantElement: "fire" | "earth" | "air" | "water" | null;
+  secondaryElement: "fire" | "earth" | "air" | "water" | null;
+  dominantModality: "cardinal" | "fixed" | "mutable" | null;
+  elementCounts: { fire: number; earth: number; air: number; water: number };
+  modalityCounts: { cardinal: number; fixed: number; mutable: number };
+}
+
+const ELEMENT_PHRASE: Record<string, string> = {
+  fire: "individual fire (drive, will, spark)",
+  earth: "grounded earth (body, work, security)",
+  air: "collective air (ideas, words, social fabric)",
+  water: "shared water (feeling, intuition, bonding)",
+};
+
+const MODALITY_PHRASE: Record<string, string> = {
+  cardinal: "while learning to start and lead without burning out",
+  fixed: "while learning to hold steady without becoming rigid",
+  mutable: "while learning to adapt without losing the thread",
+};
+
+const MISSION_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"];
+const CARDINAL_SET = new Set(["Aries", "Cancer", "Libra", "Capricorn"]);
+const FIXED_SET = new Set(["Taurus", "Leo", "Scorpio", "Aquarius"]);
+const MUTABLE_SET = new Set(["Gemini", "Virgo", "Sagittarius", "Pisces"]);
+
+export function computeFamilyMissionStatement(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): FamilyMissionStatement | null {
+  if (members.length < 2) return null;
+  const elementCounts = { fire: 0, earth: 0, air: 0, water: 0 };
+  const modalityCounts = { cardinal: 0, fixed: 0, mutable: 0 };
+  for (const m of members) {
+    const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
+    for (const pname of MISSION_PLANETS) {
+      const sign = planets[pname]?.sign;
+      const el = elementOf(sign);
+      if (el) elementCounts[el]++;
+      if (sign) {
+        if (CARDINAL_SET.has(sign)) modalityCounts.cardinal++;
+        else if (FIXED_SET.has(sign)) modalityCounts.fixed++;
+        else if (MUTABLE_SET.has(sign)) modalityCounts.mutable++;
+      }
+    }
+  }
+  const sortedEls = Object.entries(elementCounts).sort((a, b) => b[1] - a[1]);
+  const dominantElement = sortedEls[0]?.[1] > 0 ? (sortedEls[0][0] as any) : null;
+  const secondaryElement = sortedEls[1]?.[1] > 0 ? (sortedEls[1][0] as any) : null;
+  const sortedMods = Object.entries(modalityCounts).sort((a, b) => b[1] - a[1]);
+  const dominantModality = sortedMods[0]?.[1] > 0 ? (sortedMods[0][0] as any) : null;
+
+  if (!dominantElement || !secondaryElement) return null;
+
+  const sentence =
+    `This family is here to learn how to balance ${ELEMENT_PHRASE[dominantElement]} with ${ELEMENT_PHRASE[secondaryElement]}` +
+    (dominantModality ? `, ${MODALITY_PHRASE[dominantModality]}.` : ".");
+
+  return {
+    sentence,
+    dominantElement,
+    secondaryElement,
+    dominantModality,
+    elementCounts,
+    modalityCounts,
+  };
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
@@ -2082,6 +2196,8 @@ export interface FamilyWeb {
   houseOverlays: HouseOverlay[];
   profectionAlignment: ProfectionAlignment | null;
   nodalDestiny: NodalDestiny[];
+  sunDevelopmentalTasks: SunDevelopmentalTask[];
+  missionStatement: FamilyMissionStatement | null;
 }
 
 export function buildFamilyWeb(
@@ -2100,5 +2216,7 @@ export function buildFamilyWeb(
     houseOverlays: findHouseOverlays(members),
     profectionAlignment: findProfectionAlignment(members),
     nodalDestiny: findNodalDestiny(members),
+    sunDevelopmentalTasks: findSunDevelopmentalTasks(members),
+    missionStatement: computeFamilyMissionStatement(members),
   };
 }

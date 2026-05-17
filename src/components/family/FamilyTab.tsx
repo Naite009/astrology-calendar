@@ -301,7 +301,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v8-hellenistic:${sel
+    `system-pipeline-v9-reframe:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1676,6 +1676,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           elementalVoid, bridges, triangulation, mirrors, dashboard,
           twelfthHouseMirrors, midpointHotspots, tsquareCompletions, generationalGaps,
           houseOverlays, profectionAlignment, nodalDestiny,
+          sunDevelopmentalTasks, missionStatement,
         } = web;
         const anyContent =
           elementalVoid.missingElement ||
@@ -1690,7 +1691,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           generationalGaps.length > 0 ||
           houseOverlays.length > 0 ||
           (profectionAlignment && (profectionAlignment.synergies.length > 0 || profectionAlignment.clashes.length > 0 || profectionAlignment.perMember.length > 0)) ||
-          nodalDestiny.length > 0;
+          nodalDestiny.length > 0 ||
+          sunDevelopmentalTasks.length > 0 ||
+          !!missionStatement;
         if (!anyContent) return null;
         return (
           <Card className="border-primary/60 bg-primary/5">
@@ -1704,6 +1707,40 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
+              {missionStatement && (
+                <div className="rounded-md border border-primary/50 bg-background/60 p-3 space-y-1">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Family Mission Statement</div>
+                  <p className="font-medium leading-relaxed">{missionStatement.sentence}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Element tally: fire {missionStatement.elementCounts.fire}, earth {missionStatement.elementCounts.earth}, air {missionStatement.elementCounts.air}, water {missionStatement.elementCounts.water}.
+                    {missionStatement.dominantModality ? ` Dominant modality: ${missionStatement.dominantModality}.` : ""}
+                  </p>
+                </div>
+              )}
+
+              {sunDevelopmentalTasks.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Each Child's Developmental Task (Sun as Hero's Journey)</div>
+                  <p className="text-xs text-muted-foreground">
+                    Reframe the trait. Each child's Sun sign is the practice they're here to grow into, not a label they're stuck with.
+                  </p>
+                  {sunDevelopmentalTasks.map((t, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                      <div className="font-medium flex items-center gap-2 flex-wrap">
+                        <span>{t.name} ({t.sunSign} Sun)</span>
+                        <Badge variant="outline" className="text-[10px] font-normal capitalize">
+                          {t.task}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground">{t.reframe}</p>
+                      <p className="text-xs italic text-muted-foreground">
+                        Instead of calling them "{t.insteadOf}", name the practice.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {elementalVoid.missingElement && (
                 <div className="space-y-1">
                   <div className="font-semibold">
@@ -1823,9 +1860,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
 
               {twelfthHouseMirrors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold">12th-House Mirrors (Karmic Custodian)</div>
+                  <div className="font-semibold">12th-House Mirrors (Stress = Reflection)</div>
                   <p className="text-xs text-muted-foreground">
-                    A child's planet falling in a parent's 12th house means the child senses what the parent hasn't named.
+                    When a child's planet falls in a parent's 12th house, the child's "stress behaviors" are a real-time reflection of the parent's unexpressed subconscious. Name your own state out loud first; the behavior softens.
                   </p>
                   {twelfthHouseMirrors.map((m, i) => (
                     <div key={i} className="border-l-2 border-primary/40 pl-3">
