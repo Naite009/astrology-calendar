@@ -2017,7 +2017,26 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {profectionAlignment && profectionAlignment.perMember.length > 0 && (
+              {parentalShadows.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold flex items-center gap-2">
+                    <Cloud className="h-4 w-4 text-purple-500" />
+                    Parental Shadow (Parent's Planet in Child's 12th)
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The flip side of the 12th-House Mirror. When a parent's planet lands in a child's 12th house, the parent's unspoken energy lives inside the child's subconscious. When they seem reactive, check your own internal stress levels — they might be mirroring what you haven't said yet.
+                  </p>
+                  {parentalShadows.map((s, i) => (
+                    <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r">
+                      <div className="font-medium">
+                        {s.parent}'s {s.parentPlanet} → {s.child}'s 12th
+                      </div>
+                      <p className="text-muted-foreground">{s.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
                 <div className="space-y-2">
                   <div className="font-semibold">Current Family Focus (Profections)</div>
                   <p className="text-xs text-muted-foreground">
