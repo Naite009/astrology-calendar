@@ -1526,11 +1526,11 @@ export interface TwelfthHouseMirror {
 }
 
 const TWELFTH_HOUSE_TEXT: Record<string, (parent: string, child: string) => string> = {
-  Sun: (_p, c) => `${c} reflects the part of yourself you keep private. Be honest about what you want, so they don't carry the unspoken version.`,
-  Moon: (_p, c) => `When you're carrying unspoken stress, ${c} gets restless or clingy. They feel it before you name it.`,
-  Mercury: (_p, c) => `${c} voices thoughts you haven't said out loud. If they ask blunt questions, it's your own held-back words coming through them.`,
-  Venus: (_p, c) => `${c} picks up on relationship tension you're avoiding. Acknowledge it directly so they don't have to mirror it.`,
-  Mars: (_p, c) => `${c} acts out anger you're sitting on. Name your own frustration first; their reactivity will drop.`,
+  Sun: (_p, c) => `${c}'s "look at me" behavior is a mirror of the part of yourself you keep private. When they act out for attention, ask what part of you is going unseen. Name your own desire to be seen first, and their performing softens.`,
+  Moon: (_p, c) => `${c}'s restlessness, clinginess, or random tears are a mirror of stress you haven't named out loud. They feel it before you do. Say "I'm tense right now and it's not about you," and their nervous system settles.`,
+  Mercury: (_p, c) => `${c}'s blunt questions or "weird" comments are a mirror of thoughts you're holding back. They voice what you won't. Say the held-back sentence yourself, and their odd timing drops.`,
+  Venus: (_p, c) => `${c}'s neediness or sudden coldness is a mirror of relationship tension you're avoiding. Acknowledge the tension directly (even to yourself) so they don't have to act it out for you.`,
+  Mars: (_p, c) => `${c}'s tantrums or pushback are a mirror of anger you're sitting on. Their reactivity will drop the moment you name your own frustration ("I'm mad about X, not you").`,
 };
 
 export function findTwelfthHouseMirrors(
