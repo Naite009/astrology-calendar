@@ -1880,6 +1880,88 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
+              {/* 0. Family Power Map — single-glance summary of Soul Missions + Mirrors */}
+              {(siblingSoulMissions.length > 0 || parentalShadows.length > 0) && (
+                <div className="rounded-md border border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
+                    <Compass className="h-3.5 w-3.5" />
+                    Family Power Map
+                  </div>
+                  <div className="space-y-1.5 font-mono text-sm">
+                    {siblingSoulMissions.slice(0, 4).map((s, i) => (
+                      <div key={`ssm-${i}`} className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold">{s.teacherChild}</span>
+                        <span className="text-muted-foreground">——(</span>
+                        <span className={s.nodeType === "North"
+                          ? "px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold"
+                          : "px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 text-xs font-semibold"}>
+                          {s.nodeType === "North" ? "Teacher" : "Old Friend"}
+                        </span>
+                        <span className="text-muted-foreground">)——&gt;</span>
+                        <span className="font-semibold">{s.studentChild}</span>
+                      </div>
+                    ))}
+                    {parentalShadows.slice(0, 4).map((p, i) => (
+                      <div key={`ps-${i}`} className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold">{p.child}</span>
+                        <span className="text-muted-foreground">&lt;——(</span>
+                        <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 text-xs font-semibold">
+                          Mirror
+                        </span>
+                        <span className="text-muted-foreground">)——</span>
+                        <span className="font-semibold">{p.parent}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">
+                    Teachers grow each other on purpose. Mirrors reflect what hasn't been said out loud.
+                  </p>
+                </div>
+              )}
+
+              {/* 0b. The 10-Second Reset — quick action cards for meltdowns */}
+              {(() => {
+                const childRows = dashboard.filter((d) => {
+                  const role = members.find((m) => m.chart.name === d.name)?.role;
+                  return role === "child" || role === "sibling";
+                });
+                if (childRows.length === 0) return null;
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-amber-500" />
+                      <div className="font-semibold text-base">The 10-Second Reset</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Scan this during a meltdown. Red = what set them off. Green = what brings them back.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {childRows.map((row, i) => (
+                        <div key={i} className="rounded-lg border border-border bg-background shadow-sm overflow-hidden">
+                          <div className="px-3 py-2 bg-muted/50 border-b border-border font-semibold text-sm">
+                            {row.name}
+                          </div>
+                          <div className="p-3 space-y-2">
+                            <div className="rounded border border-rose-300/60 bg-rose-50 dark:bg-rose-950/30 p-2">
+                              <div className="text-[10px] uppercase tracking-wider font-semibold text-rose-700 dark:text-rose-300 mb-0.5">
+                                Trigger
+                              </div>
+                              <div className="text-xs text-rose-900 dark:text-rose-100">{row.triggeredBy || "—"}</div>
+                            </div>
+                            <div className="rounded border border-emerald-300/60 bg-emerald-50 dark:bg-emerald-950/30 p-2">
+                              <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-300 mb-0.5 flex items-center gap-1">
+                                <Zap className="h-3 w-3" /> Circuit Breaker
+                              </div>
+                              <div className="text-xs text-emerald-900 dark:text-emerald-100">{row.circuitBreaker || "—"}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* 1. Your Family at a Glance — The Three Big Knots */}
               {hasGlance && (
                 <div className="rounded-md border-2 border-primary bg-primary/10 p-4 space-y-3">
@@ -1909,7 +1991,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {/* 2. The Translation Gap — per child */}
+              {/* 2. The Translation Gap — visual flow per child */}
               {translationGaps.length > 0 && (
                 <div className="space-y-3">
                   <div className="font-semibold text-base">The Translation Gap</div>
@@ -1919,12 +2001,31 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                   {translationGaps.map((c, i) => (
                     <div key={i} className="rounded-md border border-border bg-background/60 p-3 space-y-2">
                       <div className="font-semibold">{c.name}</div>
-                      <div className="text-sm">
-                        Feels Like <span className="font-medium">{c.moonSign ?? "—"}</span>
-                        {" → "}
-                        Speaks Like <span className="font-medium">{c.mercurySign ?? "—"}</span>
+                      {/* Visual flow: Heart → Brain → Action */}
+                      <div className="flex items-stretch gap-1.5 flex-wrap text-xs">
+                        <div className="flex-1 min-w-[110px] rounded-md border border-rose-300/60 bg-rose-50 dark:bg-rose-950/30 px-2 py-1.5 text-center">
+                          <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-rose-700 dark:text-rose-300">
+                            <Heart className="h-3 w-3" /> Heart
+                          </div>
+                          <div className="font-semibold text-rose-900 dark:text-rose-100">{c.moonSign ?? "—"}</div>
+                        </div>
+                        <div className="flex items-center text-muted-foreground font-mono text-base">→</div>
+                        <div className="flex-1 min-w-[110px] rounded-md border border-sky-300/60 bg-sky-50 dark:bg-sky-950/30 px-2 py-1.5 text-center">
+                          <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-sky-700 dark:text-sky-300">
+                            <Brain className="h-3 w-3" /> Brain
+                          </div>
+                          <div className="font-semibold text-sky-900 dark:text-sky-100">{c.mercurySign ?? "—"}</div>
+                        </div>
                         {c.marsSign && (
-                          <> {" → "} Acts Like <span className="font-medium">{c.marsSign}</span></>
+                          <>
+                            <div className="flex items-center text-muted-foreground font-mono text-base">→</div>
+                            <div className="flex-1 min-w-[110px] rounded-md border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 px-2 py-1.5 text-center">
+                              <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-300">
+                                <Activity className="h-3 w-3" /> Action
+                              </div>
+                              <div className="font-semibold text-amber-900 dark:text-amber-100">{c.marsSign}</div>
+                            </div>
+                          </>
                         )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
@@ -1937,27 +2038,37 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                           <div className="text-xs">{c.doThis}</div>
                         </div>
                       </div>
-                      {(c.triggeredBy || c.circuitBreaker) && (
-                        <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
-                          {c.triggeredBy && <span><span className="font-medium">Trigger:</span> {c.triggeredBy}. </span>}
-                          {c.circuitBreaker && <span><span className="font-medium">Reset:</span> {c.circuitBreaker}</span>}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* 4. Parental Anchor reframe */}
+              {/* 4. Parental Anchor reframe — Household Thermostat */}
               {parentAnchors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-semibold text-base">The Parental Anchor</div>
-                  {parentAnchors.map((p, i) => (
-                    <div key={i} className={`rounded-md border p-3 ${p.isBalsamic ? "border-primary/60 bg-primary/5" : "border-border bg-background/60"}`}>
-                      <div className="font-medium mb-1">{p.name}</div>
-                      <p className="text-sm">{p.anchor}</p>
-                    </div>
-                  ))}
+                  {parentAnchors.map((p, i) => {
+                    const prof = profectionAlignment?.perMember.find((pm) => pm.name === p.name);
+                    const mission = prof ? PROFECTION_MISSION[prof.house] : null;
+                    return (
+                      <div
+                        key={i}
+                        className="rounded-lg border-2 border-sky-300/70 dark:border-sky-700/70 bg-sky-50 dark:bg-sky-950/40 p-4 shadow-sm space-y-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Thermometer className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                          <div className="font-semibold text-base text-sky-900 dark:text-sky-100">
+                            {p.name}: The Household Thermostat
+                          </div>
+                        </div>
+                        {mission && (
+                          <div className="text-xs uppercase tracking-wider font-semibold text-sky-700 dark:text-sky-300">
+                            Current Mission: {mission}
+                          </div>
+                        )}
+                        <p className="text-sm text-sky-950 dark:text-sky-50">{p.anchor}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
