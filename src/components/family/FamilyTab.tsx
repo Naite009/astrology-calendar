@@ -1707,6 +1707,40 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
+              {missionStatement && (
+                <div className="rounded-md border border-primary/50 bg-background/60 p-3 space-y-1">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Family Mission Statement</div>
+                  <p className="font-medium leading-relaxed">{missionStatement.sentence}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Element tally: fire {missionStatement.elementCounts.fire}, earth {missionStatement.elementCounts.earth}, air {missionStatement.elementCounts.air}, water {missionStatement.elementCounts.water}.
+                    {missionStatement.dominantModality ? ` Dominant modality: ${missionStatement.dominantModality}.` : ""}
+                  </p>
+                </div>
+              )}
+
+              {sunDevelopmentalTasks.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-semibold">Each Child's Developmental Task (Sun as Hero's Journey)</div>
+                  <p className="text-xs text-muted-foreground">
+                    Reframe the trait. Each child's Sun sign is the practice they're here to grow into, not a label they're stuck with.
+                  </p>
+                  {sunDevelopmentalTasks.map((t, i) => (
+                    <div key={i} className="border-l-2 border-primary/40 pl-3 space-y-1">
+                      <div className="font-medium flex items-center gap-2 flex-wrap">
+                        <span>{t.name} ({t.sunSign} Sun)</span>
+                        <Badge variant="outline" className="text-[10px] font-normal capitalize">
+                          {t.task}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground">{t.reframe}</p>
+                      <p className="text-xs italic text-muted-foreground">
+                        Instead of calling them "{t.insteadOf}", name the practice.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {elementalVoid.missingElement && (
                 <div className="space-y-1">
                   <div className="font-semibold">
