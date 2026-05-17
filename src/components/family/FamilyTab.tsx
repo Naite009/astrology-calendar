@@ -55,6 +55,7 @@ import {
   buildHouseholdResetLine,
   buildFamilyWeb,
   computeSiblingResetMode,
+  marsHouseCategory,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 
