@@ -832,13 +832,25 @@ function pickSecondaries(
 }
 
 export function buildRespondsBestForGroup(
-  members: { id: string; chart: NatalChart }[]
+  members: { id: string; chart: NatalChart }[],
+  reading?: FamilySystemReadingResponse,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const used = new Set<string>();
   const usedFragments = new Set<string>();
+  const needsByName = new Map(
+    (reading?.whatEachChildNeedsFromYou ?? [])
+      .filter((entry) => entry.opener && Array.isArray(entry.lines) && entry.lines.length >= 3)
+      .map((entry) => [entry.childName.trim().toLowerCase(), entry.lines.map((l) => l.text.trim()).join("; ")]),
+  );
 
   for (const m of members) {
+    const mechanismMapped = needsByName.get(m.chart.name.trim().toLowerCase());
+    if (mechanismMapped) {
+      out[m.id] = mechanismMapped;
+      used.add(mechanismMapped);
+      continue;
+    }
     const planets = m.chart.planets as Record<string, NatalPlanetPosition | undefined>;
     const moon = planets.Moon?.sign;
     const lead = (moon && MOON_LEAD[moon]) || "a calm tone and one thing at a time";
@@ -848,8 +860,8 @@ export function buildRespondsBestForGroup(
     const caveat = saturnLuminaryCaveat(planets);
 
     // Compose: "responds best to <lead>" + optional sect opener merged + secondaries + caveat
-    const parts: string[] = [`responds best to ${lead}`];
-    if (opener && !lead.includes(opener.split(" ")[0])) parts[0] = `responds best to ${lead}, plus ${opener}`;
+    const parts: string[] = [lead];
+    if (opener && !lead.includes(opener.split(" ")[0])) parts.push(opener);
     if (secondaries.length) parts.push(secondaries.join(", and "));
     if (caveat) parts.push(caveat);
 
