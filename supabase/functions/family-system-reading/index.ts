@@ -141,24 +141,103 @@ function formatCompositeBits(c: CompositeChart): string {
   return bits.join(", ") || "no composite details";
 }
 
-function fallbackPairDynamic(nameA: string, nameB: string): string {
-  return `Shared Pattern:
-Different pacing — ${nameA} reaches for clarity, ${nameB} needs room to respond.
-How this can show up:
-At its best:
-One stays simple. The other has space to stay present.
-More commonly:
-One explains more. The other pulls away or pushes back.
-Under stress:
-One tries harder. The other shuts down or gets sharp. Both feel missed.
-Where connection can happen:
-Short, low-pressure moments without a goal.`;
+// Generic-fallback patterns we refuse to ever emit. If a `dynamic` matches
+// any of these, it is nulled and the pair is flagged for regeneration.
+const GENERIC_DYNAMIC_PATTERNS: RegExp[] = [
+  /different\s+pacing/i,
+  /reaches?\s+for\s+clarity/i,
+  /needs?\s+room\s+to\s+respond/i,
+  /one\s+explains?\s+more.*pulls?\s+away/i,
+  /one\s+tries\s+harder.*shuts?\s+down/i,
+  /both\s+feel\s+missed/i,
+  /short,?\s+low[- ]pressure\s+moments?\s+without\s+a\s+goal/i,
+  /one\s+stays\s+simple.*has\s+space\s+to\s+stay\s+present/i,
+];
+
+function isGenericDynamic(s: string | null | undefined): boolean {
+  if (!s) return false;
+  return GENERIC_DYNAMIC_PATTERNS.some((re) => re.test(s));
+}
+
+// Normalize a dynamic for cross-pair comparison: strip names, punctuation,
+// markdown labels, and stop-words; keep significant word shingles.
+function normalizeForCompare(s: string, names: string[]): string {
+  let out = " " + s.toLowerCase() + " ";
+  for (const n of names) {
+    if (!n) continue;
+    out = out.replace(new RegExp(`\\b${n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "g"), " ");
+  }
+  out = out.replace(/shared pattern|how this can show up|at its best|more commonly|under stress|where connection can happen/gi, " ");
+  out = out.replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+  return out;
+}
+
+function shingleSet(s: string, k = 3): Set<string> {
+  const tokens = s.split(" ").filter((t) => t.length > 2);
+  const set = new Set<string>();
+  for (let i = 0; i <= tokens.length - k; i += 1) set.add(tokens.slice(i, i + k).join(" "));
+  return set;
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  if (!a.size && !b.size) return 1;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter += 1;
+  const uni = a.size + b.size - inter;
+  return uni === 0 ? 0 : inter / uni;
+}
+
+type PairLike = {
+  dynamic?: string | null;
+  parent?: string;
+  child?: string;
+  siblingA?: string;
+  siblingB?: string;
+};
+
+// Strip generic-template dynamics AND detect interchangeable pairs
+// (high shingle overlap after stripping names). Both endpoints get nulled
+// so the UI shows the "Regenerate this reading" prompt instead of garbage.
+function enforcePairUniqueness(pairs: PairLike[], log: string[], scope: string): void {
+  // Step 1: null generic-template dynamics.
+  for (const p of pairs) {
+    if (isGenericDynamic(p.dynamic)) {
+      const label = p.parent ? `${p.parent}+${p.child}` : `${p.siblingA}+${p.siblingB}`;
+      log.push(`${scope}_generic_template:${label}`);
+      p.dynamic = null;
+    }
+  }
+  // Step 2: pairwise similarity check on surviving dynamics.
+  const items = pairs
+    .map((p, idx) => {
+      const names = [p.parent, p.child, p.siblingA, p.siblingB].filter(Boolean) as string[];
+      if (!p.dynamic || p.dynamic.trim().length === 0) return null;
+      const norm = normalizeForCompare(p.dynamic, names);
+      return { idx, pair: p, shingles: shingleSet(norm), label: p.parent ? `${p.parent}+${p.child}` : `${p.siblingA}+${p.siblingB}` };
+    })
+    .filter((x): x is NonNullable<typeof x> => !!x);
+  const toNull = new Set<number>();
+  for (let i = 0; i < items.length; i += 1) {
+    for (let j = i + 1; j < items.length; j += 1) {
+      const sim = jaccard(items[i].shingles, items[j].shingles);
+      if (sim >= 0.5) {
+        toNull.add(items[i].idx);
+        toNull.add(items[j].idx);
+        log.push(`${scope}_interchangeable:${items[i].label}<->${items[j].label}(sim=${sim.toFixed(2)})`);
+      }
+    }
+  }
+  for (const idx of toNull) pairs[idx].dynamic = null;
 }
 
 function ensurePairCoverage(payload: ReadingPayload, members: RequestBody["members"]): void {
   const parents = members.filter((m) => isParentRole(m.role));
   const children = members.filter((m) => isChildRole(m.role));
 
+  // NOTE: We deliberately do NOT inject any generic fallback text for
+  // missing pairs. If the AI failed to generate a pair, we add a shell
+  // with `dynamic: null` so the UI prompts a regenerate, instead of
+  // smuggling a shared template into multiple relationships.
   if (parents.length && children.length) {
     const existing = new Set((payload.parentChildConnections ?? []).map((p) => `${normalizePairName(p.parent)}|${normalizePairName(p.child)}`));
     const complete = [...(payload.parentChildConnections ?? [])];
@@ -169,7 +248,7 @@ function ensurePairCoverage(payload: ReadingPayload, members: RequestBody["membe
         complete.push({
           parent: parent.name,
           child: child.name,
-          dynamic: fallbackPairDynamic(parent.name, child.name),
+          dynamic: null,
           composite: null,
           bridge: null,
           friction: null,
@@ -195,8 +274,8 @@ function ensurePairCoverage(payload: ReadingPayload, members: RequestBody["membe
         complete.push({
           siblingA: older.name,
           siblingB: younger.name,
-          patternType: "pacing friction",
-          dynamic: fallbackPairDynamic(older.name, younger.name),
+          patternType: null,
+          dynamic: null,
           composite: null,
           bridge: null,
           friction: null,
@@ -1061,6 +1140,26 @@ If any answer is wrong, rewrite before returning.`;
     const sanitized = sanitizeReadingPayload(payload as unknown as Record<string, unknown>);
     payload = sanitized.payload as unknown as ReadingPayload;
     delete (payload as unknown as Record<string, unknown>).whatAlreadyWorks;
+
+    // ─── ENFORCE PAIR UNIQUENESS BEFORE COVERAGE ─────────────────────────
+    // 1) Strip any generic-template `dynamic` the AI fell back to.
+    // 2) Null pairs whose `dynamic` is interchangeable with another pair's
+    //    (high shingle overlap after stripping the participants' names).
+    // After this, `ensurePairCoverage` will only ADD missing pair shells
+    // with `dynamic: null` — never with templated text.
+    const uniqLog: string[] = [];
+    if (Array.isArray((payload as any).parentChildConnections)) {
+      enforcePairUniqueness((payload as any).parentChildConnections as PairLike[], uniqLog, "pc");
+    }
+    if (Array.isArray((payload as any).siblingConnections)) {
+      enforcePairUniqueness((payload as any).siblingConnections as PairLike[], uniqLog, "sib");
+    }
+    if (uniqLog.length) {
+      console.warn("[family-system-reading] pair uniqueness:", uniqLog);
+      const existingLog = ((payload as unknown as Record<string, unknown>)._validation_log as string[]) ?? [];
+      (payload as unknown as Record<string, unknown>)._validation_log = [...existingLog, ...uniqLog];
+    }
+
     ensurePairCoverage(payload, body.members);
     if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) {
       console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
