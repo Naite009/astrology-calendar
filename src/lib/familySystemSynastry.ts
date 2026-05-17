@@ -1833,6 +1833,241 @@ export function findGenerationalGaps(
   return out;
 }
 
+// ── Section 10: House Overlays (Hellenistic) ──────────────────────────────────
+export interface HouseOverlay {
+  fromName: string;
+  fromPlanet: "Sun" | "Mars" | "Saturn" | "Jupiter";
+  fromSign?: string;
+  toName: string;
+  house: number;
+  category: "hidden" | "angular" | "neutral";
+  label: string;
+  note: string;
+}
+
+const HIDDEN_HOUSES = new Set([6, 8, 12]);
+const ANGULAR_HOUSES = new Set([1, 4, 7, 10]);
+
+const OVERLAY_TEXT: Record<string, (from: string, to: string, h: number) => string> = {
+  "Sun:hidden": (from, to, h) => `${from}'s Sun lands in ${to}'s ${ordinal(h)} house — their identity activates ${to}'s private, behind-the-scenes life. ${to} may feel pressured to perform around them without knowing why.`,
+  "Sun:angular": (from, to, h) => `${from}'s Sun lands on ${to}'s ${ordinal(h)} angle — they visibly shape ${to}'s self-image, home, partnerships, or public role. Their attention literally moves ${to}'s life.`,
+  "Mars:hidden": (from, to, h) => `${from}'s Mars lands in ${to}'s ${ordinal(h)} house — their drive triggers ${to}'s hidden frustration, health stress, or unspoken conflicts. The friction won't be named, it will be somatic.`,
+  "Mars:angular": (from, to, h) => `${from}'s Mars lands on ${to}'s ${ordinal(h)} angle — they push ${to} into action visibly. Helpful when aligned, exhausting when not.`,
+  "Saturn:hidden": (from, to, h) => `${from}'s Saturn lands in ${to}'s ${ordinal(h)} house — they apply quiet, invisible pressure to ${to}'s vulnerabilities. ${to} feels watched or judged without proof.`,
+  "Saturn:angular": (from, to, h) => `${from}'s Saturn lands on ${to}'s ${ordinal(h)} angle — they openly structure ${to}'s identity, home, partnerships, or public role. Can feel like support or like a ceiling.`,
+  "Jupiter:hidden": (from, to, h) => `${from}'s Jupiter lands in ${to}'s ${ordinal(h)} house — they quietly expand ${to}'s hidden resources or healing. A behind-the-scenes benefactor.`,
+  "Jupiter:angular": (from, to, h) => `${from}'s Jupiter lands on ${to}'s ${ordinal(h)} angle — they visibly open doors for ${to} in identity, home, relationships, or career. A clear lift.`,
+};
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+export function findHouseOverlays(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): HouseOverlay[] {
+  const out: HouseOverlay[] = [];
+  const planets: ("Sun" | "Mars" | "Saturn" | "Jupiter")[] = ["Sun", "Mars", "Saturn", "Jupiter"];
+  for (const from of members) {
+    for (const to of members) {
+      if (from.chart.id === to.chart.id) continue;
+      if (!to.chart.houseCusps) continue;
+      for (const planetName of planets) {
+        const planet = (from.chart.planets as any)[planetName] as NatalPlanetPosition | undefined;
+        if (!planet?.sign) continue;
+        const h = houseOfPlanet(to.chart, planet);
+        if (h == null) continue;
+        let category: "hidden" | "angular" | "neutral" = "neutral";
+        if (HIDDEN_HOUSES.has(h)) category = "hidden";
+        else if (ANGULAR_HOUSES.has(h)) category = "angular";
+        if (category === "neutral") continue;
+        const fn = OVERLAY_TEXT[`${planetName}:${category}`];
+        if (!fn) continue;
+        out.push({
+          fromName: from.chart.name,
+          fromPlanet: planetName,
+          fromSign: planet.sign,
+          toName: to.chart.name,
+          house: h,
+          category,
+          label: category === "hidden" ? "Hidden Impact" : "Visibility / Support",
+          note: fn(from.chart.name, to.chart.name, h),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+// ── Section 11: Profection Alignment ──────────────────────────────────────────
+export interface ProfectionAlignment {
+  perMember: { name: string; age: number; house: number; theme: string }[];
+  synergies: { members: string[]; house: number; theme: string; note: string }[];
+  clashes: { memberA: string; houseA: number; memberB: string; houseB: number; relation: "square" | "opposition"; note: string }[];
+}
+
+const PROFECTION_THEME_SHORT: Record<number, string> = {
+  1: "self, body, identity",
+  2: "money, resources, security",
+  3: "siblings, talking, daily moves",
+  4: "home, family, foundation",
+  5: "creativity, play, being seen",
+  6: "health, work, routines",
+  7: "partnerships, one-on-ones",
+  8: "shared resources, deep change",
+  9: "travel, beliefs, big picture",
+  10: "public role, achievement",
+  11: "friends, groups, future",
+  12: "solitude, rest, hidden things",
+};
+
+function ageFromBirthDate(birthDate?: string | null): number | null {
+  if (!birthDate) return null;
+  const [y, mo, d] = birthDate.split("-").map(Number);
+  if (!y || !mo || !d) return null;
+  const now = new Date();
+  let a = now.getFullYear() - y;
+  const before = now.getMonth() + 1 < mo || (now.getMonth() + 1 === mo && now.getDate() < d);
+  if (before) a--;
+  return a >= 0 ? a : null;
+}
+
+export function findProfectionAlignment(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): ProfectionAlignment | null {
+  const perMember: ProfectionAlignment["perMember"] = [];
+  for (const m of members) {
+    const age = ageFromBirthDate(m.chart.birthDate);
+    if (age == null) continue;
+    const house = (age % 12) + 1;
+    perMember.push({
+      name: m.chart.name,
+      age,
+      house,
+      theme: PROFECTION_THEME_SHORT[house] ?? "",
+    });
+  }
+  if (perMember.length < 2) return null;
+
+  // Synergy: 2+ members share same profected house
+  const houseMap = new Map<number, string[]>();
+  for (const p of perMember) {
+    if (!houseMap.has(p.house)) houseMap.set(p.house, []);
+    houseMap.get(p.house)!.push(p.name);
+  }
+  const synergies: ProfectionAlignment["synergies"] = [];
+  for (const [house, names] of houseMap.entries()) {
+    if (names.length >= 2) {
+      synergies.push({
+        members: names,
+        house,
+        theme: PROFECTION_THEME_SHORT[house] ?? "",
+        note: `${names.join(" and ")} are sharing a ${ordinal(house)}-house year (${PROFECTION_THEME_SHORT[house]}). Aim their effort at the same target — this is the season to plan together.`,
+      });
+    }
+  }
+
+  // Clashes: squares (3 houses apart in 4-cycle) or oppositions (6 apart)
+  const clashes: ProfectionAlignment["clashes"] = [];
+  for (let i = 0; i < perMember.length; i++) {
+    for (let j = i + 1; j < perMember.length; j++) {
+      const a = perMember[i];
+      const b = perMember[j];
+      const diff = Math.abs(a.house - b.house);
+      const arc = Math.min(diff, 12 - diff);
+      if (arc === 3) {
+        clashes.push({
+          memberA: a.name, houseA: a.house, memberB: b.name, houseB: b.house,
+          relation: "square",
+          note: `${a.name}'s ${ordinal(a.house)}-house year (${PROFECTION_THEME_SHORT[a.house]}) squares ${b.name}'s ${ordinal(b.house)}-house year (${PROFECTION_THEME_SHORT[b.house]}). Their priorities will pull in different directions this year — schedule separate time blocks for each, don't try to merge them.`,
+        });
+      } else if (arc === 6) {
+        clashes.push({
+          memberA: a.name, houseA: a.house, memberB: b.name, houseB: b.house,
+          relation: "opposition",
+          note: `${a.name}'s ${ordinal(a.house)}-house year (${PROFECTION_THEME_SHORT[a.house]}) is opposite ${b.name}'s ${ordinal(b.house)}-house year (${PROFECTION_THEME_SHORT[b.house]}). Their needs are mirror-opposite this year — explicit negotiation beats assumption.`,
+        });
+      }
+    }
+  }
+
+  return { perMember, synergies, clashes };
+}
+
+// ── Section 12: Nodal Destiny ─────────────────────────────────────────────────
+export interface NodalDestiny {
+  ownerName: string;       // member whose Node is hit
+  nodeType: "North" | "South";
+  nodeSign?: string;
+  contactorName: string;   // member whose Sun/Moon hits the node
+  contactorPlanet: "Sun" | "Moon";
+  contactorSign?: string;
+  orb: number;
+  role: "The Teacher" | "The Comfort Zone";
+  text: string;
+}
+
+const NODAL_ORB = 6;
+
+export function findNodalDestiny(
+  members: { chart: NatalChart; role: FamilyRole }[],
+): NodalDestiny[] {
+  const out: NodalDestiny[] = [];
+  for (const owner of members) {
+    const north = (owner.chart.planets as any).NorthNode as NatalPlanetPosition | undefined;
+    const south = (owner.chart.planets as any).SouthNode as NatalPlanetPosition | undefined;
+    const northAbs = toAbs(north);
+    const southAbs = toAbs(south);
+    for (const contactor of members) {
+      if (contactor.chart.id === owner.chart.id) continue;
+      for (const planetName of ["Sun", "Moon"] as const) {
+        const pos = (contactor.chart.planets as any)[planetName] as NatalPlanetPosition | undefined;
+        const pAbs = toAbs(pos);
+        if (pAbs == null) continue;
+
+        if (northAbs != null) {
+          let diff = Math.abs(pAbs - northAbs);
+          if (diff > 180) diff = 360 - diff;
+          if (diff <= NODAL_ORB) {
+            out.push({
+              ownerName: owner.chart.name,
+              nodeType: "North",
+              nodeSign: north?.sign,
+              contactorName: contactor.chart.name,
+              contactorPlanet: planetName,
+              contactorSign: pos?.sign,
+              orb: Math.round(diff * 100) / 100,
+              role: "The Teacher",
+              text: `${contactor.chart.name}'s ${planetName} sits on ${owner.chart.name}'s North Node. ${contactor.chart.name} is The Teacher — they embody the direction ${owner.chart.name} is here to grow toward. Their presence will feel both magnetic and stretching, because they live the thing ${owner.chart.name} is still becoming.`,
+            });
+          }
+        }
+        if (southAbs != null) {
+          let diff = Math.abs(pAbs - southAbs);
+          if (diff > 180) diff = 360 - diff;
+          if (diff <= NODAL_ORB) {
+            out.push({
+              ownerName: owner.chart.name,
+              nodeType: "South",
+              nodeSign: south?.sign,
+              contactorName: contactor.chart.name,
+              contactorPlanet: planetName,
+              contactorSign: pos?.sign,
+              orb: Math.round(diff * 100) / 100,
+              role: "The Comfort Zone",
+              text: `${contactor.chart.name}'s ${planetName} sits on ${owner.chart.name}'s South Node. ${contactor.chart.name} is The Comfort Zone — easy, familiar, deeply known, and also the pattern ${owner.chart.name} is meant to evolve beyond. Comfortable, but watch for over-reliance or repeating old loops together.`,
+            });
+          }
+        }
+      }
+    }
+  }
+  // Dedupe & sort by tightest orb, cap at 12
+  return out.sort((a, b) => a.orb - b.orb).slice(0, 12);
+}
+
 // ── Master bundle ─────────────────────────────────────────────────────────────
 export interface FamilyWeb {
   elementalVoid: ElementalVoid;
@@ -1844,6 +2079,9 @@ export interface FamilyWeb {
   midpointHotspots: MidpointHotspot[];
   tsquareCompletions: TSquareCompletion[];
   generationalGaps: GenerationalGap[];
+  houseOverlays: HouseOverlay[];
+  profectionAlignment: ProfectionAlignment | null;
+  nodalDestiny: NodalDestiny[];
 }
 
 export function buildFamilyWeb(
@@ -1859,5 +2097,8 @@ export function buildFamilyWeb(
     midpointHotspots: findMidpointHotspots(members),
     tsquareCompletions: findTSquareCompletions(members),
     generationalGaps: findGenerationalGaps(members),
+    houseOverlays: findHouseOverlays(members),
+    profectionAlignment: findProfectionAlignment(members),
+    nodalDestiny: findNodalDestiny(members),
   };
 }
