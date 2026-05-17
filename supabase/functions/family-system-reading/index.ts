@@ -1148,12 +1148,13 @@ If any answer is wrong, rewrite before returning.`;
       ensurePairCoverage(processed, body.members);
       if (sanitized.droppedTopLevel.length || sanitized.droppedPairKeys.length) console.warn("[family-system-reading] sanitizer dropped fields", sanitized);
       const shape = validatePairShape(processed as unknown as Record<string, unknown>);
-      return { payload: processed, shape };
+      return { payload: processed, shape, softFailures: sysValidationLog };
     };
 
     let processed = processPayload(payload, "primary");
-    if (!processed.shape.ok) {
-      console.warn("[family-system-reading] primary output failed validation, repairing before response", processed.shape.errors);
+    const primaryFailures = [...processed.shape.errors, ...processed.softFailures];
+    if (primaryFailures.length) {
+      console.warn("[family-system-reading] primary output failed validation, repairing before response", primaryFailures);
       const repairResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -1163,7 +1164,7 @@ If any answer is wrong, rewrite before returning.`;
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `${userPrompt}\n\nREPAIR PASS REQUIRED. The previous JSON failed validation and MUST be regenerated before the user sees it. Do not return placeholders, null dynamics, or generic advice.\n\nVALIDATION FAILURES:\n${processed.shape.errors.map((e) => `- ${e}`).join("\n")}\n\nFAILED JSON TO REPAIR:\n${JSON.stringify(processed.payload)}\n\nReturn the FULL corrected JSON object only. Every parent-child pair and sibling pair needs a valid dynamic with the six required labels. Every child mechanism must explain WHY the behavior happens using internal timing conflict plus cause-to-effect language. whatEachChildNeedsFromYou must map directly from that mechanism or stay null only if the mechanism remains invalid. If two pairs share structure, verbs, or stress sequence, rewrite them independently.`,
+              content: `${userPrompt}\n\nREPAIR PASS REQUIRED. The previous JSON failed validation and MUST be regenerated before the user sees it. Do not return placeholders, null dynamics, or generic advice.\n\nVALIDATION FAILURES:\n${primaryFailures.map((e) => `- ${e}`).join("\n")}\n\nFAILED JSON TO REPAIR:\n${JSON.stringify(processed.payload)}\n\nReturn the FULL corrected JSON object only. Every parent-child pair and sibling pair needs a valid dynamic with the six required labels. Every child mechanism must explain WHY the behavior happens using internal timing conflict plus cause-to-effect language. whatEachChildNeedsFromYou must map directly from that mechanism. If the needs section failed, strengthen childMechanisms first, then generate the needs lines. If two pairs share structure, verbs, or stress sequence, rewrite them independently.`,
             },
           ],
           response_format: { type: "json_object" },
@@ -1182,8 +1183,9 @@ If any answer is wrong, rewrite before returning.`;
       }
     }
     payload = processed.payload;
-    if (!processed.shape.ok) {
-      console.error("[family-system-reading] pair shape invalid after repair", processed.shape.errors);
+    const finalFailures = [...processed.shape.errors, ...processed.softFailures];
+    if (finalFailures.length) {
+      console.error("[family-system-reading] shape/mechanism invalid after repair", finalFailures);
       return new Response(JSON.stringify({ error: "Family reading did not pass validation. Please generate again." }), {
         status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
