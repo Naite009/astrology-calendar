@@ -2037,6 +2037,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
+              {profectionAlignment && profectionAlignment.perMember.length > 0 && (
                 <div className="space-y-2">
                   <div className="font-semibold">Current Family Focus (Profections)</div>
                   <p className="text-xs text-muted-foreground">
