@@ -152,6 +152,10 @@ const GENERIC_DYNAMIC_PATTERNS: RegExp[] = [
   /both\s+feel\s+missed/i,
   /short,?\s+low[- ]pressure\s+moments?\s+without\s+a\s+goal/i,
   /one\s+stays\s+simple.*has\s+space\s+to\s+stay\s+present/i,
+  /\bpressure\s+builds\b/i,
+  /\bpulls?\s+back\b/i,
+  /\bshuts?\s+down\b/i,
+  /\bdetach(?:es)?\s*,?\s*observe(?:s)?\s+coolly\b/i,
 ];
 
 function isGenericDynamic(s: string | null | undefined): boolean {
@@ -197,7 +201,7 @@ type PairLike = {
 
 // Strip generic-template dynamics AND detect interchangeable pairs
 // (high shingle overlap after stripping names). Both endpoints get nulled
-// so the UI shows the "Regenerate this reading" prompt instead of garbage.
+// so the repair pass regenerates them before anything reaches the UI.
 function enforcePairUniqueness(pairs: PairLike[], log: string[], scope: string): void {
   // Step 1: null generic-template dynamics.
   for (const p of pairs) {
@@ -220,7 +224,7 @@ function enforcePairUniqueness(pairs: PairLike[], log: string[], scope: string):
   for (let i = 0; i < items.length; i += 1) {
     for (let j = i + 1; j < items.length; j += 1) {
       const sim = jaccard(items[i].shingles, items[j].shingles);
-      if (sim >= 0.5) {
+      if (sim >= 0.42) {
         toNull.add(items[i].idx);
         toNull.add(items[j].idx);
         log.push(`${scope}_interchangeable:${items[i].label}<->${items[j].label}(sim=${sim.toFixed(2)})`);
