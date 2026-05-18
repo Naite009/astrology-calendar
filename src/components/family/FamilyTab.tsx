@@ -117,6 +117,7 @@ import {
   marsHouseCategory,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
+import { ChildPortraitCard } from "./ChildPortrait";
 
 /**
  * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
