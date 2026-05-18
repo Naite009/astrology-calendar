@@ -2328,6 +2328,19 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                       For the astrology-curious: the underlying placements driving everything above.
                     </p>
 
+                    {mirrors.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Same Team, Different Volume</div>
+                        {mirrors.map((m, i) => (
+                          <div key={i} className="border-l-2 border-primary/40 pl-3">
+                            <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
+                            <span className="text-muted-foreground">{m.sameTeamMessage}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+
                     {midpointHotspots.length > 0 && (
                       <div className="space-y-2">
                         <div className="font-semibold">Midpoint Hotspots</div>
