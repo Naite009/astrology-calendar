@@ -2182,17 +2182,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {mirrors.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Same Team, Different Volume</div>
-                  {mirrors.map((m, i) => (
-                    <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
-                      <span className="text-muted-foreground">{m.sameTeamMessage}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Same Team, Different Volume — moved into Nerd Corner accordion below */}
 
               {/* 3. Regulation Dashboard — compact, 5-second read */}
               {dashboard.length > 0 && (
