@@ -2265,23 +2265,65 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {parentalShadows.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold flex items-center gap-2">
-                    <Cloud className="h-4 w-4 text-purple-500" />
-                    Parental Shadow
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    When a parent's unspoken energy lives in a child's subconscious. If they seem reactive, check your own internal volume first.
-                  </p>
-                  {parentalShadows.map((s, i) => (
-                    <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r">
-                      <div className="font-medium">{s.parent} ↔ {s.child}</div>
-                      <p className="text-muted-foreground">{s.text}</p>
+              {parentalShadows.length > 0 && (() => {
+                // Consolidate: one block per (parent, child) pair, listing all planets together.
+                type Group = { parent: string; child: string; planets: string[]; texts: string[] };
+                const groups = new Map<string, Group>();
+                for (const s of parentalShadows) {
+                  const k = `${s.parent}|${s.child}`;
+                  if (!groups.has(k)) groups.set(k, { parent: s.parent, child: s.child, planets: [], texts: [] });
+                  const g = groups.get(k)!;
+                  g.planets.push(s.parentPlanet);
+                  g.texts.push(s.text);
+                }
+                // Pick the most specific fix line based on the planets involved.
+                const fixFor = (parent: string, child: string, planets: string[]): string => {
+                  const has = (p: string) => planets.includes(p);
+                  if (has("Saturn")) {
+                    return `Be explicit with your expectations and standards — when ${parent}'s silent version stays silent, ${child} carries it as ambient self-doubt.`;
+                  }
+                  if (has("Sun") || has("Mars") || has("Mercury")) {
+                    return `${child} is ${parent}'s primary emotional mirror. If ${child} is acting out, name your own feeling first ("I'm feeling a bit rushed / annoyed") and watch ${child} settle.`;
+                  }
+                  if (has("Moon")) {
+                    return `Name your mood out loud ("I'm tense, not about you") so ${child} doesn't carry it for you.`;
+                  }
+                  if (has("Venus")) {
+                    return `Acknowledge unspoken relational tension out loud — otherwise ${child} absorbs it as their fault.`;
+                  }
+                  return `When ${child} seems reactive, check your own internal volume first.`;
+                };
+                const labelFor = (planets: string[]): string => {
+                  const order = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn"];
+                  const seen = new Set<string>();
+                  const ordered = order.filter((p) => planets.includes(p) && !seen.has(p) && (seen.add(p), true));
+                  return ordered.join("/");
+                };
+                const list = Array.from(groups.values());
+                return (
+                  <div className="space-y-2">
+                    <div className="font-semibold flex items-center gap-2">
+                      <Cloud className="h-4 w-4 text-purple-500" />
+                      Parental Shadow: The Subconscious Mirror
                     </div>
-                  ))}
-                </div>
-              )}
+                    <p className="text-xs text-muted-foreground">
+                      When a parent's unspoken energy lives in a child's subconscious. If they seem reactive, check your own internal volume first.
+                    </p>
+                    {list.map((g, i) => (
+                      <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r space-y-1">
+                        <div className="font-medium">
+                          {g.child} <span className="text-xs font-normal text-muted-foreground">(12th-House {labelFor(g.planets)} from {g.parent})</span>
+                        </div>
+                        <p className="text-muted-foreground">{g.texts[0]}</p>
+                        <p className="text-sm">
+                          <span className="font-semibold text-purple-700 dark:text-purple-300">Fix:</span>{" "}
+                          {fixFor(g.parent, g.child, g.planets)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* 3. Astrology Nerd Corner — collapsed by default */}
               {hasTechnicalContent && (
