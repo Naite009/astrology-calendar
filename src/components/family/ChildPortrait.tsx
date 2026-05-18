@@ -22,12 +22,12 @@ export function ChildPortraitCard({ members }: Props) {
     [members],
   );
   const [selectedId, setSelectedId] = useState<string | null>(
-    children.length === 1 ? children[0].id : null,
+    children.length === 1 ? children[0].chart.id : null,
   );
 
   if (children.length === 0) return null;
 
-  const selected = children.find((c) => c.id === selectedId) ?? null;
+  const selected = children.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart) : null;
 
   return (
@@ -52,7 +52,7 @@ export function ChildPortraitCard({ members }: Props) {
               </SelectTrigger>
               <SelectContent>
                 {children.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
+                  <SelectItem key={c.chart.id} value={c.chart.id}>
                     {c.chart.name}
                   </SelectItem>
                 ))}
