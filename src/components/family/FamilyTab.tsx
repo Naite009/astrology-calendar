@@ -797,9 +797,6 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         <FamilySystemReadingView reading={systemReading} members={selectedMembers} />
       )}
 
-      {selectedMembers.length > 0 && (
-        <ChildPortraitCard members={selectedMembers} />
-      )}
 
       <Card>
         <CardHeader>
@@ -894,6 +891,11 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           )}
         </CardContent>
       </Card>
+
+      {selectedMembers.length > 0 && (
+        <ChildPortraitCard members={selectedMembers} />
+      )}
+
 
       {aiReading && report && (
         <AiPairReadingView
