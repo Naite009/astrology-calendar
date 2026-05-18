@@ -796,6 +796,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         <FamilySystemReadingView reading={systemReading} members={selectedMembers} />
       )}
 
+      {selectedMembers.length > 0 && (
+        <ChildPortraitCard members={selectedMembers} />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
