@@ -892,9 +892,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
-      {selectedMembers.length > 0 && (
-        <ChildPortraitCard members={selectedMembers} />
+      {members.length > 0 && (
+        <ChildPortraitCard members={members.map((m) => ({ chart: m.chart, role: m.role }))} />
       )}
+
 
 
       {aiReading && report && (
