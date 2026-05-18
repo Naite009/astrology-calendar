@@ -117,6 +117,7 @@ import {
   marsHouseCategory,
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
+import { ChildPortraitCard } from "./ChildPortrait";
 
 /**
  * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
@@ -794,6 +795,10 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
 
       {systemReading && (
         <FamilySystemReadingView reading={systemReading} members={selectedMembers} />
+      )}
+
+      {selectedMembers.length > 0 && (
+        <ChildPortraitCard members={selectedMembers} />
       )}
 
       <Card>
