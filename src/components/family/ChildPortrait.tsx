@@ -8,7 +8,6 @@ import type { FamilyRole } from "@/lib/parentChildSynastry";
 import { buildChildPortrait } from "@/lib/childPortrait";
 
 interface Member {
-  id: string;
   chart: NatalChart;
   role: FamilyRole;
 }
