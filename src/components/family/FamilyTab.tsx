@@ -892,6 +892,11 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
+      {selectedMembers.length > 0 && (
+        <ChildPortraitCard members={selectedMembers} />
+      )}
+
+
       {aiReading && report && (
         <AiPairReadingView
           reading={aiReading}
