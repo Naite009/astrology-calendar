@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Baby, Sparkles, Mountain, Heart, Anchor, BookOpen, Shield } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { NatalChart } from "@/hooks/useNatalChart";
-import type { FamilyRole } from "@/lib/familyRelationshipTypes";
+import type { FamilyRole } from "@/lib/parentChildSynastry";
 import { buildChildPortrait } from "@/lib/childPortrait";
 
 interface Member {
