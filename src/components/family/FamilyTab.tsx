@@ -361,7 +361,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
   const pairCacheKey = (fId: string, fR: string, tId: string, tR: string) =>
     `${fId}:${fR}>${tId}:${tR}`;
   const systemCacheKey = (sel: { chart: NatalChart; role: FamilyRole }[]) =>
-    `system-pipeline-v12-dashboard:${sel
+    `system-pipeline-v13-polish:${sel
       .map((s) => `${s.chart.id}:${s.role}`)
       .sort()
       .join("|")}`;
@@ -1561,6 +1561,18 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         );
       })()}
 
+      {/* === Nerd Corner: Full Connections & Profiles (collapsed by default) === */}
+      <details className="rounded-md border border-dashed border-border bg-background/40 group">
+        <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
+          <span>🔭 View Full Astrological Blueprint — Connections & Profiles</span>
+          <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
+          <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
+        </summary>
+        <div className="p-3 pt-1 space-y-4 border-t border-border">
+          <p className="text-xs text-muted-foreground italic">
+            The Soul Mission teacher notes stay visible above in the Family Power Map. Everything here is the underlying detail.
+          </p>
+
       {reading.parentChildConnections && reading.parentChildConnections.length > 0 && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
@@ -1730,6 +1742,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           </CardContent>
         </Card>
       )}
+        </div>
+      </details>
+
 
       {members.length > 0 && (
         <Card>
@@ -1866,7 +1881,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           (profectionAlignment && profectionAlignment.perMember.length > 0) ||
           parentChildNodal.length > 0 ||
           midpointHotspots.length > 0 ||
-          tsquareCompletions.length > 0;
+          tsquareCompletions.length > 0 ||
+          mirrors.length > 0;
 
         return (
           <Card className="border-primary/60 bg-primary/5">
@@ -1880,7 +1896,51 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 space-y-5 text-sm">
-              {/* 0. Family Power Map — single-glance summary of Soul Missions + Mirrors */}
+              {/* 0. Emergency Resets — flashcards at the very top */}
+              {(() => {
+                const childRows = dashboard.filter((d) => {
+                  const role = members.find((m) => m.chart.name === d.name)?.role;
+                  return role === "child" || role === "sibling";
+                });
+                if (childRows.length === 0) return null;
+                return (
+                  <div className="space-y-2 rounded-lg border-2 border-amber-400/70 bg-gradient-to-br from-amber-50 to-rose-50 dark:from-amber-950/30 dark:to-rose-950/30 p-4 shadow-md">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-amber-500" />
+                      <div className="font-bold text-lg tracking-tight">Emergency Resets</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Scan during a meltdown. Red = what set them off. Green = what brings them back.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {childRows.map((row, i) => (
+                        <div key={i} className="rounded-lg border-2 border-border bg-background shadow-sm overflow-hidden">
+                          <div className="px-3 py-2 bg-muted/60 border-b-2 border-border font-bold text-base">
+                            {row.name}
+                          </div>
+                          <div className="p-3 space-y-2">
+                            <div className="rounded border border-rose-400/70 bg-rose-100/70 dark:bg-rose-950/40 p-2">
+                              <div className="text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300 mb-0.5">
+                                Trigger
+                              </div>
+                              <div className="text-sm text-rose-900 dark:text-rose-100 font-medium">{row.triggeredBy || "—"}</div>
+                            </div>
+                            <div className="text-center text-muted-foreground font-mono text-base leading-none">⮕</div>
+                            <div className="rounded border border-emerald-400/70 bg-emerald-100/70 dark:bg-emerald-950/40 p-2">
+                              <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300 mb-0.5 flex items-center gap-1">
+                                <Zap className="h-3 w-3" /> Circuit Breaker
+                              </div>
+                              <div className="text-sm text-emerald-900 dark:text-emerald-100 font-medium">{row.circuitBreaker || "—"}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 0b. Family Power Map — single-glance summary of Soul Missions + Mirrors */}
               {(siblingSoulMissions.length > 0 || parentalShadows.length > 0) && (
                 <div className="rounded-md border border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
@@ -1901,66 +1961,30 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                         <span className="font-semibold">{s.studentChild}</span>
                       </div>
                     ))}
-                    {parentalShadows.slice(0, 4).map((p, i) => (
-                      <div key={`ps-${i}`} className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold">{p.child}</span>
-                        <span className="text-muted-foreground">&lt;——(</span>
-                        <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 text-xs font-semibold">
-                          Mirror
-                        </span>
-                        <span className="text-muted-foreground">)——</span>
-                        <span className="font-semibold">{p.parent}</span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const byPair = new Map<string, { parent: string; child: string }>();
+                      for (const p of parentalShadows) {
+                        const k = `${p.parent}|${p.child}`;
+                        if (!byPair.has(k)) byPair.set(k, { parent: p.parent, child: p.child });
+                      }
+                      return Array.from(byPair.values()).slice(0, 4).map((p, i) => (
+                        <div key={`ps-${i}`} className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold">{p.child}</span>
+                          <span className="text-muted-foreground">&lt;——(</span>
+                          <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 text-xs font-semibold">
+                            Mirror
+                          </span>
+                          <span className="text-muted-foreground">)——</span>
+                          <span className="font-semibold">{p.parent}</span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                   <p className="text-xs text-muted-foreground italic">
                     Teachers grow each other on purpose. Mirrors reflect what hasn't been said out loud.
                   </p>
                 </div>
               )}
-
-              {/* 0b. The 10-Second Reset — quick action cards for meltdowns */}
-              {(() => {
-                const childRows = dashboard.filter((d) => {
-                  const role = members.find((m) => m.chart.name === d.name)?.role;
-                  return role === "child" || role === "sibling";
-                });
-                if (childRows.length === 0) return null;
-                return (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-amber-500" />
-                      <div className="font-semibold text-base">The 10-Second Reset</div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Scan this during a meltdown. Red = what set them off. Green = what brings them back.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {childRows.map((row, i) => (
-                        <div key={i} className="rounded-lg border border-border bg-background shadow-sm overflow-hidden">
-                          <div className="px-3 py-2 bg-muted/50 border-b border-border font-semibold text-sm">
-                            {row.name}
-                          </div>
-                          <div className="p-3 space-y-2">
-                            <div className="rounded border border-rose-300/60 bg-rose-50 dark:bg-rose-950/30 p-2">
-                              <div className="text-[10px] uppercase tracking-wider font-semibold text-rose-700 dark:text-rose-300 mb-0.5">
-                                Trigger
-                              </div>
-                              <div className="text-xs text-rose-900 dark:text-rose-100">{row.triggeredBy || "—"}</div>
-                            </div>
-                            <div className="rounded border border-emerald-300/60 bg-emerald-50 dark:bg-emerald-950/30 p-2">
-                              <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-300 mb-0.5 flex items-center gap-1">
-                                <Zap className="h-3 w-3" /> Circuit Breaker
-                              </div>
-                              <div className="text-xs text-emerald-900 dark:text-emerald-100">{row.circuitBreaker || "—"}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
 
               {/* 1. Your Family at a Glance — The Three Big Knots */}
               {hasGlance && (
@@ -2174,17 +2198,7 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {mirrors.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold">Same Team, Different Volume</div>
-                  {mirrors.map((m, i) => (
-                    <div key={i} className="border-l-2 border-primary/40 pl-3">
-                      <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
-                      <span className="text-muted-foreground">{m.sameTeamMessage}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Same Team, Different Volume — moved into Nerd Corner accordion below */}
 
               {/* 3. Regulation Dashboard — compact, 5-second read */}
               {dashboard.length > 0 && (
@@ -2257,23 +2271,65 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                 </div>
               )}
 
-              {parentalShadows.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-semibold flex items-center gap-2">
-                    <Cloud className="h-4 w-4 text-purple-500" />
-                    Parental Shadow
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    When a parent's unspoken energy lives in a child's subconscious. If they seem reactive, check your own internal volume first.
-                  </p>
-                  {parentalShadows.map((s, i) => (
-                    <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r">
-                      <div className="font-medium">{s.parent} ↔ {s.child}</div>
-                      <p className="text-muted-foreground">{s.text}</p>
+              {parentalShadows.length > 0 && (() => {
+                // Consolidate: one block per (parent, child) pair, listing all planets together.
+                type Group = { parent: string; child: string; planets: string[]; texts: string[] };
+                const groups = new Map<string, Group>();
+                for (const s of parentalShadows) {
+                  const k = `${s.parent}|${s.child}`;
+                  if (!groups.has(k)) groups.set(k, { parent: s.parent, child: s.child, planets: [], texts: [] });
+                  const g = groups.get(k)!;
+                  g.planets.push(s.parentPlanet);
+                  g.texts.push(s.text);
+                }
+                // Pick the most specific fix line based on the planets involved.
+                const fixFor = (parent: string, child: string, planets: string[]): string => {
+                  const has = (p: string) => planets.includes(p);
+                  if (has("Saturn")) {
+                    return `Be explicit with your expectations and standards — when ${parent}'s silent version stays silent, ${child} carries it as ambient self-doubt.`;
+                  }
+                  if (has("Sun") || has("Mars") || has("Mercury")) {
+                    return `${child} is ${parent}'s primary emotional mirror. If ${child} is acting out, name your own feeling first ("I'm feeling a bit rushed / annoyed") and watch ${child} settle.`;
+                  }
+                  if (has("Moon")) {
+                    return `Name your mood out loud ("I'm tense, not about you") so ${child} doesn't carry it for you.`;
+                  }
+                  if (has("Venus")) {
+                    return `Acknowledge unspoken relational tension out loud — otherwise ${child} absorbs it as their fault.`;
+                  }
+                  return `When ${child} seems reactive, check your own internal volume first.`;
+                };
+                const labelFor = (planets: string[]): string => {
+                  const order = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn"];
+                  const seen = new Set<string>();
+                  const ordered = order.filter((p) => planets.includes(p) && !seen.has(p) && (seen.add(p), true));
+                  return ordered.join("/");
+                };
+                const list = Array.from(groups.values());
+                return (
+                  <div className="space-y-2">
+                    <div className="font-semibold flex items-center gap-2">
+                      <Cloud className="h-4 w-4 text-purple-500" />
+                      Parental Shadow: The Subconscious Mirror
                     </div>
-                  ))}
-                </div>
-              )}
+                    <p className="text-xs text-muted-foreground">
+                      When a parent's unspoken energy lives in a child's subconscious. If they seem reactive, check your own internal volume first.
+                    </p>
+                    {list.map((g, i) => (
+                      <div key={i} className="border-l-2 border-purple-500/60 pl-3 bg-purple-500/5 py-2 rounded-r space-y-1">
+                        <div className="font-medium">
+                          {g.child} <span className="text-xs font-normal text-muted-foreground">(12th-House {labelFor(g.planets)} from {g.parent})</span>
+                        </div>
+                        <p className="text-muted-foreground">{g.texts[0]}</p>
+                        <p className="text-sm">
+                          <span className="font-semibold text-purple-700 dark:text-purple-300">Fix:</span>{" "}
+                          {fixFor(g.parent, g.child, g.planets)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* 3. Astrology Nerd Corner — collapsed by default */}
               {hasTechnicalContent && (
@@ -2287,6 +2343,19 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
                     <p className="text-xs text-muted-foreground italic">
                       For the astrology-curious: the underlying placements driving everything above.
                     </p>
+
+                    {mirrors.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-semibold">Same Team, Different Volume</div>
+                        {mirrors.map((m, i) => (
+                          <div key={i} className="border-l-2 border-primary/40 pl-3">
+                            <span className="font-medium">{m.parent} ↔ {m.child}</span>: {m.mirroredPlacement}.{" "}
+                            <span className="text-muted-foreground">{m.sameTeamMessage}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
 
                     {midpointHotspots.length > 0 && (
                       <div className="space-y-2">
