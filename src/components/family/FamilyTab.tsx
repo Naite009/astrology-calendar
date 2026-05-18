@@ -1866,7 +1866,8 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           (profectionAlignment && profectionAlignment.perMember.length > 0) ||
           parentChildNodal.length > 0 ||
           midpointHotspots.length > 0 ||
-          tsquareCompletions.length > 0;
+          tsquareCompletions.length > 0 ||
+          mirrors.length > 0;
 
         return (
           <Card className="border-primary/60 bg-primary/5">
