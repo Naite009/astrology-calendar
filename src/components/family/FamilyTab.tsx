@@ -892,9 +892,18 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
         </CardContent>
       </Card>
 
-      {members.length > 0 && (
-        <ChildPortraitCard members={members.map((m) => ({ chart: m.chart, role: m.role }))} />
-      )}
+      {(() => {
+        const allFamilyMembers = members
+          .map((m) => {
+            const chart = allCharts.find((c) => c.id === m.member_chart_id);
+            return chart ? { chart, role: m.role } : null;
+          })
+          .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
+        return allFamilyMembers.length > 0 ? (
+          <ChildPortraitCard members={allFamilyMembers} />
+        ) : null;
+      })()}
+
 
 
 
