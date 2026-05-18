@@ -1742,6 +1742,9 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
           </CardContent>
         </Card>
       )}
+        </div>
+      </details>
+
 
       {members.length > 0 && (
         <Card>
