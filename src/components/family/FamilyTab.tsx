@@ -1561,6 +1561,18 @@ const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemRe
         );
       })()}
 
+      {/* === Nerd Corner: Full Connections & Profiles (collapsed by default) === */}
+      <details className="rounded-md border border-dashed border-border bg-background/40 group">
+        <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
+          <span>🔭 View Full Astrological Blueprint — Connections & Profiles</span>
+          <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
+          <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
+        </summary>
+        <div className="p-3 pt-1 space-y-4 border-t border-border">
+          <p className="text-xs text-muted-foreground italic">
+            The Soul Mission teacher notes stay visible above in the Family Power Map. Everything here is the underlying detail.
+          </p>
+
       {reading.parentChildConnections && reading.parentChildConnections.length > 0 && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
