@@ -19,9 +19,10 @@ interface Member {
 interface Props {
   members: Member[];
   primaryChartId?: string | null;
+  viewerAge?: number | null;
 }
 
-export function ChildPortraitCard({ members, primaryChartId }: Props) {
+export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props) {
   const people = useMemo(() => {
     const filtered = members.filter((m) => !!m.chart?.id);
     return filtered.sort((a, b) => {
@@ -40,7 +41,8 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
   if (people.length === 0) return null;
 
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
-  const portrait = selected ? buildChildPortrait(selected.chart) : null;
+  const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
+
 
   return (
     <Card className="border-primary/50">
@@ -135,8 +137,8 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
                 : isElder
                   ? "The Soul Curriculum — Lessons Mastered"
                   : "The Soul Curriculum — Habitual Past & Unfolding Future";
-              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Unfolding Future";
-              const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Habitual Past";
+              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Vitalizing Edge";
+              const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Tired Habit";
               return (
                 <>
                   <div className="rounded-md border border-primary/40 bg-background/60 p-4">
@@ -207,6 +209,14 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
                         </div>
                       )}
                     </div>
+                    {portrait.identityInvitation.tradeLine && (
+                      <div className="rounded-md border-l-4 border-fuchsia-500/70 bg-fuchsia-50 dark:bg-fuchsia-950/30 p-3 mt-2">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700 dark:text-fuchsia-300 mb-1">
+                          The Pivot · Trade Tired Habit for Vitalizing Edge
+                        </div>
+                        <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.identityInvitation.tradeLine}</p>
+                      </div>
+                    )}
                   </section>
                 </>
               );
@@ -261,9 +271,7 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
                   : "These are the places mastery has been built through repetition and pressure. This is where the credential lives.";
               const supportLabel = portrait.lifePhase === "child"
                 ? "How to support"
-                : portrait.lifePhase === "elder"
-                  ? "How they transmit it"
-                  : "How they leverage it";
+                : "How to partner with this energy";
               return (
                 <section className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -274,9 +282,16 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
                   <div className="space-y-2">
                     {portrait.masterySpot.saturn && (
                       <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
-                        <div className="font-semibold text-sm">
-                          Saturn in {portrait.masterySpot.saturn.sign}
-                          {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                        <div className="font-semibold text-sm flex items-center gap-2 flex-wrap">
+                          <span>
+                            Saturn in {portrait.masterySpot.saturn.sign}
+                            {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                          </span>
+                          {portrait.masterySpot.saturn.adultStandardLabel && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {portrait.masterySpot.saturn.adultStandardLabel}
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm">
                           <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
@@ -304,6 +319,35 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
                 </section>
               );
             })()}
+
+            {/* Chiron Return Spotlight (ages 45-52): the soul of the reading */}
+            {portrait.chironReturnSpotlight && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-rose-600" />
+                  <div className="font-semibold text-base">{portrait.chironReturnSpotlight.title}</div>
+                  <Badge variant="outline" className="text-[10px]">Soul of the reading</Badge>
+                </div>
+                <div className="rounded-md border-2 border-rose-400/60 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/40 dark:to-amber-950/30 p-4">
+                  <p className="text-rose-950 dark:text-rose-50 text-sm leading-relaxed">{portrait.chironReturnSpotlight.body}</p>
+                </div>
+              </section>
+            )}
+
+            {/* View from the Bridge — visible only when viewer is older than subject */}
+            {portrait.viewFromBridge && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4 text-teal-600" />
+                  <div className="font-semibold text-base">The View from the Bridge</div>
+                  <Badge variant="outline" className="text-[10px]">For the elder witness</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-teal-500/70 bg-teal-50 dark:bg-teal-950/30 p-4">
+                  <p className="text-teal-950 dark:text-teal-50 text-sm leading-relaxed">{portrait.viewFromBridge.body}</p>
+                </div>
+              </section>
+            )}
+
 
             {/* 4. How-To Executive Summary */}
             {(() => {
