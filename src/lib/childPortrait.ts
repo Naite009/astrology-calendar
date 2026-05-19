@@ -522,16 +522,14 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     const practice = sunSign ? SUN_PRACTICE_BY_SIGN[sunSign] : "their own way of being seen";
     body = `This is the ego-birth phase. ${chart.name} is testing how they push back, take up space, and become someone. When the system overheats, the reset is: ${reset}. The self they are practicing is ${practice}.`;
   } else {
-    stage = "Adult";
-    focus = sunSign && sunHouse
-      ? `${sunSign} Sun in the ${ordinal(sunHouse)} house`
-      : sunSign
-        ? `${sunSign} Sun`
-        : "Sun";
-    body = sunSign
-      ? `Adult-stage anchor: the Sun's developmental task is ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own self-expression"}.`
-      : "Adult-stage anchor.";
+    const adultAge = age ?? 30;
+    const anchor = buildAdultAnchor(adultAge, chart.name, sunSign, sunHouse, saturnSignEarly, saturnHouseEarly, marsSign);
+    stage = anchor.stage;
+    focus = anchor.focus;
+    body = anchor.body;
+    if (anchor.extraHolding) extraHolding = anchor.extraHolding;
   }
+
 
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
