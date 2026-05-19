@@ -1239,6 +1239,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     chartRuler,
     tightestAspects,
     howTo: { ritual, learningStyle, boundary },
+    cognitiveProfile,
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
