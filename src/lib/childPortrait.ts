@@ -1069,6 +1069,7 @@ export interface ChildPortrait {
     aspect: AspectName;
     orb: number;
     synthesis: string;
+    realTalk?: string;
   };
 
   // NEW: How they actually communicate (3rd house sign vs. its ruler's placement)
@@ -1078,7 +1079,9 @@ export interface ChildPortrait {
     rulerSign: string;
     rulerHouse: number | null;
     synthesis: string;
+    realTalk?: string;
   };
+
 
   // NEW: Specific shadow-handling guidance if SN sits in 6/8/12
   shadowGuidance?: {
