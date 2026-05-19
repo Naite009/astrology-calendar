@@ -892,6 +892,25 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     shadowGuidance = { southHouse: snHouse, instruction: HIDDEN_HOUSE_SHADOW[snHouse] };
   }
 
+  // === 8. View from the Bridge (only when viewer is older than subject) ===
+  let viewFromBridge: ChildPortrait["viewFromBridge"] = undefined;
+  if (
+    viewerAge != null &&
+    age != null &&
+    viewerAge > age + 2 && // need a real generational gap, not a few months
+    snSign && nnSign && snTired && nnCall
+  ) {
+    const chironClause = isAdultLike && chironSign
+      ? ` You've also watched them carry ${chironTender} in ${chironSign}, and it has become a real part of how they read other people.`
+      : "";
+    const saturnClause = saturnSign
+      ? ` Their inner Saturn keeps asking them to trust ${SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] ?? "their own ground"}, and they are further along that road than they think.`
+      : "";
+    viewFromBridge = {
+      body: `From where you are standing, the arc is visible: ${chart.name} started in the familiar ${snSign} groove of ${snTired}, and the whole life is bending them toward the ${nnSign} edge of ${nnCall}.${chironClause}${saturnClause} What looks like struggle from inside their head looks like genuine growth from the bridge you are standing on. Naming this out loud, once, in plain language, is one of the most useful things an elder can do.`,
+    };
+  }
+
   return {
     name: chart.name,
     age,
@@ -905,13 +924,16 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     identityInvitation: {
       rising: ascSign ? { sign: ascSign, line: risingLine } : undefined,
       sun: sunSign ? { sign: sunSign, house: sunHouse, line: sunLine } : undefined,
-      northNode: nnSign ? { sign: nnSign, house: nnHouse, line: nnLine } : undefined,
+      northNode: nnSign ? { sign: nnSign, house: nnHouse, line: nnLineFinal } : undefined,
       southNode: snSign ? { sign: snSign, house: snHouse, line: snLine } : undefined,
+      tradeLine,
     },
     masterySpot: {
       saturn: saturnBlock,
       chiron: chironBlock,
     },
+    chironReturnSpotlight,
+    viewFromBridge,
     howTo: { ritual, learningStyle, boundary },
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
@@ -923,4 +945,5 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     },
   };
 }
+
 
