@@ -335,6 +335,76 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </section>
             )}
 
+            {/* TRANSLATION RULE 1 · The Cognitive Clash (Friction Rule) */}
+            {portrait.cognitiveClash && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-fuchsia-600" />
+                  <div className="font-semibold text-base">The Cognitive Clash — surface language vs. inner OS</div>
+                  <Badge variant="outline" className="text-[10px]">Friction Rule</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-fuchsia-500/70 bg-fuchsia-50 dark:bg-fuchsia-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700 dark:text-fuchsia-300">
+                    Speaks {portrait.cognitiveClash.cuspSign} · runs on {portrait.cognitiveClash.rulerName} in {portrait.cognitiveClash.rulerSign}
+                    {portrait.cognitiveClash.rulerHouse ? ` · ${portrait.cognitiveClash.rulerHouse}th house` : ""}
+                  </div>
+                  <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.cognitiveClash.line}</p>
+                </div>
+              </section>
+            )}
+
+            {/* TRANSLATION RULE 2 · The Energy Discharge (Mars-by-house) */}
+            {portrait.energyDischarge && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-red-600" />
+                  <div className="font-semibold text-base">The Energy Discharge — where the drive needs to land</div>
+                  <Badge variant="outline" className="text-[10px]">Energy Rule</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-red-500/70 bg-red-50 dark:bg-red-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-red-700 dark:text-red-300">
+                    {portrait.energyDischarge.marsSign} Mars · {portrait.energyDischarge.marsHouse}th house
+                  </div>
+                  <p className="text-red-950 dark:text-red-50 text-sm leading-relaxed">{portrait.energyDischarge.line}</p>
+                </div>
+              </section>
+            )}
+
+            {/* TRANSLATION RULE 3 · The Internal Tug-of-War (tightest aspect under 2°) */}
+            {portrait.internalTugOfWar && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Mountain className="h-4 w-4 text-orange-600" />
+                  <div className="font-semibold text-base">The Internal Tug-of-War — the lead story</div>
+                  <Badge variant="outline" className="text-[10px]">Aspect Rule · orb {portrait.internalTugOfWar.orb.toFixed(1)}°</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-orange-500/70 bg-orange-50 dark:bg-orange-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-orange-700 dark:text-orange-300">
+                    {portrait.internalTugOfWar.aSign} {portrait.internalTugOfWar.a} {portrait.internalTugOfWar.aspect} {portrait.internalTugOfWar.bSign} {portrait.internalTugOfWar.b}
+                  </div>
+                  <p className="text-orange-950 dark:text-orange-50 text-sm leading-relaxed">{portrait.internalTugOfWar.line}</p>
+                </div>
+              </section>
+            )}
+
+            {/* TRANSLATION RULE 4 · Cloaking Time (personal planet or chart ruler in 12th) */}
+            {portrait.cloakingNote && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-slate-600" />
+                  <div className="font-semibold text-base">Cloaking Time — privacy requirement</div>
+                  <Badge variant="outline" className="text-[10px]">12th House Rule</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-700 dark:text-slate-300">
+                    {portrait.cloakingNote.bodies.map(b => `${b.sign} ${b.name}`).join(" · ")} · in the 12th
+                  </div>
+                  <p className="text-slate-900 dark:text-slate-50 text-sm leading-relaxed">{portrait.cloakingNote.line}</p>
+                </div>
+              </section>
+            )}
+
+
 
             {/* 3. Mastery Spot */}
 

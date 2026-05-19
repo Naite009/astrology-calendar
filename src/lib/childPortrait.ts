@@ -779,6 +779,89 @@ const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
   12: "Handle their stress-responses in private. Public correction is a major trigger here. They need 1-on-1 'love deposits' to feel safe enough to stop performing. Address things one-on-one, low volume, never in front of others.",
 };
 
+// ── NEW: Translation-rule data maps ──────────────────────────────────────────
+
+// Friction Rule: when 3rd-cusp sign and its ruler's sign clash, what does the
+// friction LOOK like in lived behavior? Keyed by ruler-sign element relationship.
+const CLASH_FRICTION_BY_RULER_ELEMENT: Record<"fire" | "earth" | "air" | "water", string> = {
+  fire:  "we sound calm on the surface, but inside we're already two steps ahead and pushing for the move",
+  earth: "we sound easy and flexible out loud, but inside we are quietly tracking what's solid and what isn't",
+  air:   "we sound personal and present, but inside we're running comparisons and looking for the cleaner frame",
+  water: "we sound matter-of-fact, but inside we are reading the room's feeling and pricing it into every sentence",
+};
+
+const CLASH_BEHAVIOR_BY_RULER_ELEMENT: Record<"fire" | "earth" | "air" | "water", string> = {
+  fire:  "we go quiet right before we make the actual move, because the inside has already decided and the mouth is just catching up",
+  earth: "we say 'sure, that works' and then very slowly steer the plan toward the version our body trusts",
+  air:   "we agree in conversation, then revise our position the moment we have space to think alone",
+  water: "we change the temperature of a room without saying anything, and people feel it before we name it",
+};
+
+// Energy Rule: Mars-by-house — how the drive resets, and what shows up when it can't.
+const MARS_HOUSE_DISCHARGE: Record<number, { action: string; shadow: string }> = {
+  1:  { action: "moving the body first thing, claiming physical space before talking",                          shadow: "irritability that lands on whoever is closest, and a low-grade 'why am I picking a fight' feeling" },
+  2:  { action: "physical work that produces something they can see or touch (cooking, building, lifting)",     shadow: "compulsive spending, food, or body-tinkering as a stand-in for the missing discharge" },
+  3:  { action: "fast talking, fast walking, errand sprints, hands-on tinkering, quick wins",                  shadow: "verbal snapping, scattered tabs, and a brain that won't stop scrolling" },
+  4:  { action: "physical work inside the home: rearranging, deep-cleaning, cooking, gardening",                shadow: "tension that detonates inside the family unit instead of out in the world" },
+  5:  { action: "play, sport, art, creative risk, romance, anything that feels like joyful release",            shadow: "shame-spirals about 'wasted potential' and picking fights with the people they love most" },
+  6:  { action: "structured exercise, routines they can master, fixing one small broken thing per day",         shadow: "body symptoms (gut, sleep, headaches) carrying the rage the mouth won't say" },
+  7:  { action: "vigorous one-on-one engagement: sparring conversation, partnered training, real debate",       shadow: "passive-aggressive jabs at a partner, or a constant low simmer of 'they always start it'" },
+  8:  { action: "intense private outlets: heavy lifting, sex, deep therapy work, financial deep-dives",        shadow: "control battles, sudden financial chaos, or icy withdrawal that looks like punishment" },
+  9:  { action: "long walks, travel, study sprints, big-stakes outdoor adventure, teaching",                   shadow: "preaching at people, restless 'I have to get out of here' agitation, picking fights about beliefs" },
+  10: { action: "ambition-driven output: a real project, a public deliverable, building visible reputation",   shadow: "career sabotage, burnout, or aggression that lands on subordinates and bosses" },
+  11: { action: "group sport, activism, organizing, sweating with friends",                                    shadow: "alienating their own friend group, or burning a bridge in a community they love" },
+  12: { action: "private movement no one watches: solo swim, dawn run, breathwork, journaling sweat out",      shadow: "self-attack, depression-shaped fatigue, illness, or rage they turn inward instead of out" },
+};
+
+// Aspect Rule: per-planet GOAL ("wants") and CHALLENGE ("audits with"), in we/us voice.
+const PLANET_GOAL: Record<string, string> = {
+  Sun:     "to shine as the version of ourselves we actually are",
+  Moon:    "to feel safe, soothed, and emotionally at home",
+  Mercury: "to think out loud, swap ideas, and land on the truth in real time",
+  Venus:   "to be loved, valued, and close to beauty",
+  Mars:    "to act on what matters, right now, without committee",
+  Jupiter: "to expand, mean something, and trust that more is possible",
+  Saturn:  "to build something real that holds up over time",
+  Uranus:  "to stay free, original, and unconverted by the group",
+  Neptune: "to dissolve into something larger and trust the unseen current",
+  Pluto:   "to face the real truth and use power honestly",
+  Chiron:  "to make medicine out of the place we were once hurt",
+};
+
+const PLANET_CHALLENGE: Record<string, string> = {
+  Sun:     "a question about whether we're actually allowed to be seen yet",
+  Moon:    "a tightness around whether it's safe to need anything",
+  Mercury: "a second-guess about whether our read is sharp enough",
+  Venus:   "an audit about whether we're lovable as-is",
+  Mars:    "a hesitation about whether we have the right to take the shot",
+  Jupiter: "an excess valve that opens before we've checked our capacity",
+  Saturn:  "a 'prove it' clause that asks if we've earned this yet",
+  Uranus:  "a sudden exit-impulse the moment things feel boxed in",
+  Neptune: "a fog that softens the edges and blurs the boundary line",
+  Pluto:   "a control reflex that wants to manage every variable",
+  Chiron:  "a tender spot that flares before the rest of us notices",
+};
+
+const ASPECT_EXTERNAL_LINE: Record<AspectName, string> = {
+  conjunction:  "fused, like one signal not two",
+  opposition:   "split, like we're arguing with ourselves in public",
+  square:       "edgy, like we're bracing for impact",
+  trine:        "easy, like nothing is actually happening here",
+  sextile:      "interested, like we keep circling the same opportunity",
+};
+
+const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
+  conjunction:  "blended so tightly that we can't tell which voice is which",
+  opposition:   "torn between two equally true needs and trying to honor both",
+  square:       "in active friction, with both sides demanding airtime at the same time",
+  trine:        "quietly negotiating in the background, and easy to take for granted",
+  sextile:      "in a real conversation, where one side keeps gently offering and the other keeps almost saying yes",
+};
+
+// 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
+const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
+
+
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
   | "Lunar Phase (0-7)"
@@ -924,6 +1007,48 @@ export interface ChildPortrait {
     thirdHouseRulerHouse?: number | null;
     sunAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
     moonAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
+  };
+
+  // NEW · Friction Rule: house cusp sign (surface language) vs. its ruler's sign (inner OS).
+  // Same data the Hidden Engine reads, re-shaped with the "Cognitive Clash" formula in we/us voice.
+  cognitiveClash?: {
+    cuspSign: string;       // 3rd house cusp = surface language
+    rulerName: string;
+    rulerSign: string;      // internal operating system
+    rulerHouse: number | null;
+    friction: string;       // the specific friction
+    behavior: string;       // real-world behavior the friction produces
+    line: string;           // the full formatted paragraph
+  };
+
+  // NEW · Energy Rule: Mars by house = how the drive needs to discharge.
+  energyDischarge?: {
+    marsSign: string;
+    marsHouse: number;
+    action: string;     // how they reset
+    shadow: string;     // what happens if they can't
+    line: string;
+  };
+
+  // NEW · Aspect Rule: tightest aspect under 2.0° orb between any two of the named bodies.
+  internalTugOfWar?: {
+    a: string;
+    aSign: string;
+    b: string;
+    bSign: string;
+    aspect: AspectName;
+    orb: number;
+    goal: string;       // what Planet A wants
+    challenge: string;  // how Planet B audits it
+    external: string;   // how it looks from the outside
+    internal: string;   // what's actually felt inside
+    line: string;
+  };
+
+  // NEW · 12th House Rule: cloaking flag for any personal planet or chart ruler in 12.
+  cloakingNote?: {
+    bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
+    line: string;
   };
 }
 
@@ -1430,6 +1555,87 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   }
   const tightestAspects = luminaryConversations.length > 0 ? luminaryConversations : undefined;
 
+  // === TRANSLATION RULE 1: The Cognitive Clash (Friction Rule) ============
+  // Surface language = 3rd-house cusp sign. Internal OS = its ruler's sign.
+  let cognitiveClash: ChildPortrait["cognitiveClash"] = undefined;
+  if (thirdCuspSign && thirdRulerName && thirdRulerSign) {
+    const cuspEl = ELEMENT_OF_SIGN[thirdCuspSign];
+    const rulerEl = ELEMENT_OF_SIGN[thirdRulerSign];
+    if (cuspEl && rulerEl && cuspEl !== rulerEl) {
+      const friction = CLASH_FRICTION_BY_RULER_ELEMENT[rulerEl];
+      const behavior = CLASH_BEHAVIOR_BY_RULER_ELEMENT[rulerEl];
+      const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
+      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. This creates a specific friction: ${friction}. In real life, that means ${behavior}. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      cognitiveClash = {
+        cuspSign: thirdCuspSign,
+        rulerName: thirdRulerName,
+        rulerSign: thirdRulerSign,
+        rulerHouse: thirdRulerHouse,
+        friction,
+        behavior,
+        line,
+      };
+    }
+  }
+
+  // === TRANSLATION RULE 2: The Energy Discharge (Mars-by-house) ===========
+  let energyDischarge: ChildPortrait["energyDischarge"] = undefined;
+  if (marsSign && marsHouse && MARS_HOUSE_DISCHARGE[marsHouse]) {
+    const m = MARS_HOUSE_DISCHARGE[marsHouse];
+    const line = `Because ${chart.name}'s drive lives in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}), the reset is ${m.action}. If we don't give them that outlet, the result is ${m.shadow}. The Mars sign (${marsSign}) flavors how the discharge moves, but the house is where it needs to land.`;
+    energyDischarge = { marsSign, marsHouse, action: m.action, shadow: m.shadow, line };
+  }
+
+  // === TRANSLATION RULE 3: The Internal Tug-of-War (tightest aspect <2.0°) ==
+  let internalTugOfWar: ChildPortrait["internalTugOfWar"] = undefined;
+  {
+    const pool = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron"];
+    let best: { a: string; b: string; aspect: AspectName; orb: number } | null = null;
+    for (let i = 0; i < pool.length; i++) {
+      for (let j = i + 1; j < pool.length; j++) {
+        const asp = aspectBetween(planets[pool[i]], planets[pool[j]]);
+        if (!asp) continue;
+        if (asp.orb >= 2.0) continue;
+        if (!best || asp.orb < best.orb) {
+          best = { a: pool[i], b: pool[j], aspect: asp.name, orb: asp.orb };
+        }
+      }
+    }
+    if (best) {
+      const ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Chiron", "Uranus", "Neptune", "Pluto"];
+      const [a, b] = ORDER.indexOf(best.a) <= ORDER.indexOf(best.b) ? [best.a, best.b] : [best.b, best.a];
+      const aSign = planets[a]?.sign ?? "";
+      const bSign = planets[b]?.sign ?? "";
+      const goal = PLANET_GOAL[a] ?? "to express itself fully";
+      const challenge = PLANET_CHALLENGE[b] ?? "an inner audit";
+      const external = ASPECT_EXTERNAL_LINE[best.aspect];
+      const internal = ASPECT_INTERNAL_LINE[best.aspect];
+      const line = `${chart.name}'s tightest internal conversation is ${aSign} ${a} ${best.aspect} ${bSign} ${b} (orb ${best.orb.toFixed(1)}°). Our ${a} wants ${goal}, but our ${b} audits this with ${challenge}. From the outside it looks ${external}; on the inside, the two voices are actually ${internal}. The work is not to silence either side. It is to let ${a} lead first and let ${b} edit second, instead of the other way around.`;
+      internalTugOfWar = { a, aSign, b, bSign, aspect: best.aspect, orb: best.orb, goal, challenge, external, internal, line };
+    }
+  }
+
+  // === TRANSLATION RULE 4: Cloaking Time (personal planet or chart ruler in 12th) ==
+  let cloakingNote: ChildPortrait["cloakingNote"] = undefined;
+  {
+    const found: Array<{ name: string; sign: string }> = [];
+    for (const name of CLOAKING_BODIES) {
+      const p = planets[name];
+      if (!p?.sign) continue;
+      if (houseOf(chart, p) === 12) found.push({ name, sign: p.sign });
+    }
+    if (chartRuler?.rulerHouse === 12 && !found.find(f => f.name === chartRuler!.rulerName)) {
+      found.push({ name: chartRuler.rulerName + " (Chart Ruler)", sign: chartRuler.rulerSign });
+    }
+    if (found.length > 0) {
+      const names = found.map(f => `${f.sign} ${f.name}`).join(", ");
+      const line = `${chart.name} has a 12th-house cloaking signature: ${names}. We process in the dark before we process in public. What this means in practice: drafting, deciding, and feeling all need a private room first, and public exposure on these themes is a high-stress trigger, not a motivator. Schedule the alone time on purpose, before the room asks for the answer. Surprise spotlights on this material will read as a threat, even when the room means well.`;
+      cloakingNote = { bodies: found, line };
+    }
+  }
+
+
+
   return {
 
     name: chart.name,
@@ -1460,6 +1666,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     nodeHouseSynthesis,
     howTo: { ritual, learningStyle, boundary },
     cognitiveProfile,
+    cognitiveClash,
+    energyDischarge,
+    internalTugOfWar,
+    cloakingNote,
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
