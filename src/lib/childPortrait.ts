@@ -215,6 +215,38 @@ const SOUTH_NODE_DEFAULT_BY_SIGN: Record<string, string> = {
   Pisces: "drifting, dissolving, and waiting to be rescued",
 };
 
+// Adult-pivot one-liners: "trade X for Y"
+const SN_TIRED_BY_SIGN: Record<string, string> = {
+  Aries: "doing it all alone",
+  Taurus: "staying in the comfortable rut",
+  Gemini: "gathering more information instead of choosing",
+  Cancer: "retreating into the family bubble",
+  Leo: "needing the spotlight on you",
+  Virgo: "over-fixing and over-correcting",
+  Libra: "smoothing the room and disappearing yourself",
+  Scorpio: "going private and controlling through silence",
+  Sagittarius: "running to the next big idea",
+  Capricorn: "carrying it all alone",
+  Aquarius: "being right",
+  Pisces: "drifting and waiting to be rescued",
+};
+
+const NN_CALL_BY_SIGN: Record<string, string> = {
+  Aries: "leading your own life",
+  Taurus: "steady self-worth at your own pace",
+  Gemini: "asking the real question out loud",
+  Cancer: "letting people in and tending home",
+  Leo: "being seen, fully, as yourself",
+  Virgo: "useful daily craft",
+  Libra: "real partnership and sharing the wheel",
+  Scorpio: "depth and intimacy with one or two people",
+  Sagittarius: "your own truth out loud",
+  Capricorn: "earned, long-arc mastery",
+  Aquarius: "the future you're building with others",
+  Pisces: "trust, flow, and genuine rest",
+};
+
+
 const SATURN_SACRED_STRUGGLE_BY_SIGN: Record<string, string> = {
   Aries: "trusting their own initiative; they may freeze before acting",
   Taurus: "trusting that they have enough and are enough materially and bodily",
