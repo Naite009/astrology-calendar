@@ -212,8 +212,42 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
               );
             })()}
 
+            {/* Core Conflict — lead story (luminary in hard aspect to outer planet) */}
+            {portrait.coreConflict && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Mountain className="h-4 w-4 text-amber-600" />
+                  <div className="font-semibold text-base">The Core Conflict — the lead story</div>
+                </div>
+                <div className="rounded-md border-l-4 border-amber-500/80 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
+                    {portrait.coreConflict.luminarySign} {portrait.coreConflict.luminary} {portrait.coreConflict.aspect} {portrait.coreConflict.outerPlanet} in {portrait.coreConflict.outerSign}
+                  </div>
+                  <p className="text-amber-950 dark:text-amber-50 text-sm leading-relaxed">{portrait.coreConflict.synthesis}</p>
+                </div>
+              </section>
+            )}
+
+            {/* Hidden Engine — 3rd house ruler synthesis */}
+            {portrait.hiddenEngine && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-indigo-600" />
+                  <div className="font-semibold text-base">The Hidden Engine — what's under their voice</div>
+                </div>
+                <div className="rounded-md border-l-4 border-indigo-500/70 bg-indigo-50 dark:bg-indigo-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-indigo-700 dark:text-indigo-300">
+                    3rd house in {portrait.hiddenEngine.thirdSign} · ruled by {portrait.hiddenEngine.rulerName} in {portrait.hiddenEngine.rulerSign}
+                    {portrait.hiddenEngine.rulerHouse ? ` · ${portrait.hiddenEngine.rulerHouse}th house` : ""}
+                  </div>
+                  <p className="text-indigo-950 dark:text-indigo-50 text-sm leading-relaxed">{portrait.hiddenEngine.synthesis}</p>
+                </div>
+              </section>
+            )}
+
 
             {/* 3. Mastery Spot */}
+
             {(portrait.masterySpot.saturn || portrait.masterySpot.chiron) && (() => {
               const masteryTitle = portrait.lifePhase === "child"
                 ? "The Mastery Spot — Where they need a witness"
