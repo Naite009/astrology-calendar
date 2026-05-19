@@ -398,7 +398,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     Speaks {portrait.cognitiveClash.cuspSign} · runs on {portrait.cognitiveClash.rulerName} in {portrait.cognitiveClash.rulerSign}
                     {portrait.cognitiveClash.rulerHouse ? ` · ${portrait.cognitiveClash.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.cognitiveClash.line}</p>
+                  <DecipherToggle original={portrait.cognitiveClash.line} realTalk={portrait.cognitiveClash.realTalk} textClass="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
