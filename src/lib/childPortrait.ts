@@ -506,7 +506,26 @@ const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
     hard: "feelings and words running on different tracks — they may not have the language for what they feel in real time",
     soft: "the gift of putting emotion into clear, honest language",
   },
-};
+  };
+
+  // NEW: Chart Ruler — the "Captain of the Ship" (ruler of Ascendant)
+  chartRuler?: {
+    rulerName: string;
+    rulerSign: string;
+    rulerHouse: number | null;
+    ascSign: string;
+    line: string;
+  };
+
+  // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
+  tightestAspects?: Array<{
+    a: string;
+    b: string;
+    aspect: AspectName;
+    orb: number;
+    quality: "hard" | "soft";
+    line: string;
+  }>;
 
 function aspectConversationKey(a: string, b: string): string {
   return [a, b].sort().join("-");
