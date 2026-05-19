@@ -861,6 +861,131 @@ const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
 // 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
 const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
 
+// ── Pressure / Engine / Safety translation data ──────────────────────────────
+
+// Surface archetype: what you LOOK LIKE when the 3rd-cusp sign is leading.
+// Used for the "look like a ___" half of the Engine formula.
+const SURFACE_ARCHETYPE_BY_SIGN: Record<string, string> = {
+  Aries: "a sprinter",
+  Taurus: "a builder",
+  Gemini: "a reporter",
+  Cancer: "a host",
+  Leo: "a performer",
+  Virgo: "an editor",
+  Libra: "a diplomat",
+  Scorpio: "a poker player",
+  Sagittarius: "a teacher",
+  Capricorn: "a CEO",
+  Aquarius: "an analyst",
+  Pisces: "a poet",
+};
+
+// Absorption archetype: what you ABSORB LIKE on the inside (the ruler's sign).
+const ABSORPTION_ARCHETYPE_BY_SIGN: Record<string, string> = {
+  Aries: "a struck match",
+  Taurus: "a slow root system",
+  Gemini: "a radio scanning every frequency",
+  Cancer: "a tidepool",
+  Leo: "a stage light tracking the room",
+  Virgo: "a quality-control scanner",
+  Libra: "a tuning fork",
+  Scorpio: "a deep-sea sonar",
+  Sagittarius: "a horizon-line",
+  Capricorn: "a steel beam under load",
+  Aquarius: "a circuit board",
+  Pisces: "a sponge",
+};
+
+// Mars sign → the specific shape the pressure leak takes if the discharge
+// route is blocked. Used in the Pressure Logic Consequence sentence.
+const PRESSURE_CONSEQUENCE_BY_MARS_SIGN: Record<string, string> = {
+  Aries:       "an Aries-style explosion — short, hot, all at once, then gone",
+  Taurus:      "a Taurus-style stonewall — they go immovable and refuse to be moved",
+  Gemini:      "a Gemini-style verbal cut — quick, articulate, surgical",
+  Cancer:      "a Cancer-style emotional flood that takes hours to settle",
+  Leo:         "a Leo-style pride flare — they freeze you out for not seeing them",
+  Virgo:       "a Virgo-style hyper-criticism aimed at whoever is closest",
+  Libra:       "a Libra-style cold politeness that quietly ends the conversation",
+  Scorpio:     "a Scorpio-style total shutdown — eye contact gone, room temperature drops",
+  Sagittarius: "a Sagittarius-style 'I'm out' — they leave the room, the topic, or the plan",
+  Capricorn:   "a Capricorn-style icy withdrawal — work-mode replaces relationship-mode",
+  Aquarius:    "an Aquarius-style detachment — they go conceptual and stop being reachable",
+  Pisces:      "a Pisces-style dissolve — they fog out, get sick, or disappear inward",
+};
+
+// Sun sign → "their desire to ___" for the Internal Audit / Safety formula.
+const SUN_DESIRE_BY_SIGN: Record<string, string> = {
+  Aries:       "move first and take the shot",
+  Taurus:      "build something they can stand on",
+  Gemini:      "say the thing out loud and see what comes back",
+  Cancer:      "tend the people they love",
+  Leo:         "be fully seen as themselves",
+  Virgo:       "do the thing well and useful",
+  Libra:       "land on what is actually fair",
+  Scorpio:     "go all the way in and tell the truth",
+  Sagittarius: "name the bigger meaning",
+  Capricorn:   "build a track record that holds up",
+  Aquarius:    "stay original and uncoopted",
+  Pisces:      "dissolve into something larger and trust it",
+};
+
+// Moon sign → "their need to ___" version of the same.
+const MOON_DESIRE_BY_SIGN: Record<string, string> = {
+  Aries:       "react in real time without filtering",
+  Taurus:      "settle into steady physical comfort",
+  Gemini:      "talk the feeling into shape",
+  Cancer:      "be physically close to the people who matter",
+  Leo:         "be warmly received, not just tolerated",
+  Virgo:       "have a useful task to hold during the feeling",
+  Libra:       "have the room be peaceful and fair",
+  Scorpio:     "be trusted with the real story",
+  Sagittarius: "have room to roam while they process",
+  Capricorn:   "know there is a real structure holding them",
+  Aquarius:    "be treated as a peer, not a problem",
+  Pisces:      "soak in soft sensory input and rest",
+};
+
+// What the auditing planet does NOT want to happen — used after "they are
+// careful because they don't want to ___" in the Safety/Audit sentence.
+const AUDIT_LOSS_BY_PLANET: Record<string, string> = {
+  Saturn:  "be caught short, be wrong in public, or look incompetent",
+  Pluto:   "be overpowered, blindsided, or stripped of control",
+  Uranus:  "be domesticated, predictable, or trapped inside someone else's expectation",
+  Mars:    "show their hand before they're ready or pick the wrong fight",
+  Neptune: "lose the dream by naming it too literally",
+  Chiron:  "have the old wound get touched in front of the wrong person",
+};
+
+// Pressure Rule trigger: which bodies count as "Captain or Engine."
+// Chart Ruler is computed dynamically; these are the engines.
+const PRESSURE_ENGINE_BODIES = ["Mars", "Saturn"] as const;
+
+// House-themed cloaking need: when the pressure body is in a given house,
+// what does the person need protected/given?
+const PRESSURE_NEED_BY_HOUSE: Record<number, string> = {
+  1:  "uninterrupted time alone in their own body before any group asks anything of them",
+  2:  "private control of money, food, and physical comforts without being audited",
+  3:  "the right to draft their thoughts in private before being asked to explain",
+  4:  "an actual locked door at home and zero unannounced family check-ins",
+  5:  "private creative time where no one watches the work in progress",
+  6:  "uninterrupted routine — no surprise schedule changes on the day-of",
+  7:  "one-on-one time without an audience and without third parties weighing in",
+  8:  "total privacy around money, intimacy, and what they're processing emotionally",
+  9:  "room to wrestle privately with their own beliefs before being asked to defend them",
+  10: "the ability to manage their public reputation themselves, in their own timing",
+  11: "the right to step out of the group when the group gets loud",
+  12: "real, scheduled, uninterrupted alone time — not 'when there's a gap' alone time",
+};
+
+const PRESSURE_NEED_LABEL_BY_HOUSE: Record<number, string> = {
+  1: "Solo Recharge", 2: "Resource Privacy", 3: "Drafting Time",
+  4: "Locked-Door Time", 5: "Private Creative Time", 6: "Routine Protection",
+  7: "One-on-One Time", 8: "Total Privacy", 9: "Belief Privacy",
+  10: "Reputation Control", 11: "Off-Group Time", 12: "Cloaking Time",
+};
+
+
+
 
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
@@ -1050,6 +1175,21 @@ export interface ChildPortrait {
     bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
     line: string;
   };
+
+  // NEW · Pressure Rule: when Chart Ruler / Mars / Saturn sits in the 12th,
+  // in Scorpio, or in hard aspect to Pluto, name the internal pressure +
+  // concrete consequence if the cloaking need isn't met.
+  pressureSignature?: {
+    body: string;          // which engine/captain is under pressure
+    bodySign: string;
+    bodyHouse: number | null;
+    trigger: "12th house" | "Scorpio" | "Pluto aspect";
+    needLabel: string;     // e.g. "Cloaking Time"
+    need: string;          // the specific house-themed thing to provide
+    consequence: string;   // what happens if the need is denied
+    line: string;
+  };
+
 }
 
 
@@ -1427,7 +1567,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const fear = OUTER_FEAR_LINE[c.outerPlanet] ?? "afraid of getting it wrong";
     const luminaryNature = LUMINARY_NATURE_LINE[c.luminary];
     const aspectVerb = c.aspect === "opposition" ? "is in opposition to" : c.aspect === "square" ? "is squared by" : "is conjunct";
-    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). Because their ${luminaryNature} is constantly being audited by ${audit}, their natural ${lumFlavor} edge keeps getting second-guessed in real time. This is why they may seem distant, over-prepared, or "logical" when they are actually just ${fear}. The work is not to silence the ${c.outerPlanet}, but to let the ${c.luminarySign} ${c.luminary} lead first and have ${c.outerPlanet} edit second, instead of the other way around.`;
+    const desire = c.luminary === "Sun"
+      ? (SUN_DESIRE_BY_SIGN[c.luminarySign] ?? "be themselves out loud")
+      : (MOON_DESIRE_BY_SIGN[c.luminarySign] ?? "feel safe in their own skin");
+    const loss = AUDIT_LOSS_BY_PLANET[c.outerPlanet] ?? "lose control of the outcome";
+    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). This is The Internal Audit: their desire to ${desire} is being audited in real time by ${audit}. They aren't hesitant and they aren't shy — they are careful, because they don't want to ${loss}. What you may be reading as "distant," "over-prepared," or "too logical" is actually ${fear} from the inside. The work is not to silence the ${c.outerPlanet}. It is to let the ${c.luminarySign} ${c.luminary} lead first and let ${c.outerPlanet} edit second, instead of the other way around.`;
+
     coreConflict = { ...c, synthesis };
   }
 
@@ -1438,7 +1583,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const undercurrent = RULER_UNDERCURRENT_BY_SIGN[thirdRulerSign] ?? "a private undercurrent";
     const domain = thirdRulerHouse ? HOUSE_UNDERCURRENT_DOMAIN[thirdRulerHouse] : null;
     const domainClause = domain ? `, ${domain}` : "";
-    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. Underneath the surface tone there is ${undercurrent}${domainClause}. If ${chart.name} suddenly goes quiet or careful, they are not being passive: they are managing that undercurrent in real time so it doesn't leak out as too much.`;
+    const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
+    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. They look like ${surfaceArch}, but they absorb like ${absorbArch}. Underneath the surface tone there is ${undercurrent}${domainClause}. The ah-ha: if you only address the surface (the ${thirdCuspSign} tone), you clog the undercurrent (the ${thirdRulerSign} processing) — and the next thing that comes out is either a sudden quiet or a sudden too-much. Speak to both layers and the whole channel stays open.`;
+
     hiddenEngine = {
       thirdSign: thirdCuspSign,
       rulerName: thirdRulerName,
@@ -1565,7 +1713,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const friction = CLASH_FRICTION_BY_RULER_ELEMENT[rulerEl];
       const behavior = CLASH_BEHAVIOR_BY_RULER_ELEMENT[rulerEl];
       const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
-      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. This creates a specific friction: ${friction}. In real life, that means ${behavior}. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
+      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
+      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. We look like ${surfaceArch}, but we absorb like ${absorbArch}. The friction: ${friction}. In real life, that means ${behavior}. The ah-ha: if anyone responds only to the surface, the undercurrent stays clogged — and the next thing out of us is either a sudden silence or a sudden too-much. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+
       cognitiveClash = {
         cuspSign: thirdCuspSign,
         rulerName: thirdRulerName,
@@ -1634,6 +1785,69 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     }
   }
 
+  // === TRANSLATION RULE 5: The Pressure Signature ==========================
+  // Triggers when the Chart Ruler (Captain) or Mars/Saturn (Engine) sits in
+  // the 12th house, OR is in Scorpio, OR is in hard aspect to Pluto.
+  // Names the felt internal pressure + the concrete consequence of denying
+  // the cloaking need. Picks the tightest / most-loaded trigger.
+  let pressureSignature: ChildPortrait["pressureSignature"] = undefined;
+  {
+    const pluto = planets["Pluto"];
+    const captainName = chartRuler?.rulerName;
+    const candidatesP: Array<{ name: string; trigger: "12th house" | "Scorpio" | "Pluto aspect"; priority: number }> = [];
+    const considerBody = (name: string, isCaptain: boolean) => {
+      const p = planets[name];
+      if (!p?.sign) return;
+      const h = houseOf(chart, p);
+      // 12th house is the strongest pressure signal
+      if (h === 12) candidatesP.push({ name, trigger: "12th house", priority: isCaptain ? 0 : 1 });
+      // Scorpio placement is a permanent pressure-cooker
+      else if (p.sign === "Scorpio") candidatesP.push({ name, trigger: "Scorpio", priority: isCaptain ? 2 : 3 });
+      // Hard Pluto aspect is the active audit
+      const asp = aspectBetween(p, pluto);
+      if (asp && HARD_ASPECTS.includes(asp.name) && name !== "Pluto") {
+        candidatesP.push({ name, trigger: "Pluto aspect", priority: (isCaptain ? 4 : 5) + asp.orb / 10 });
+      }
+    };
+    if (captainName) considerBody(captainName, true);
+    for (const e of PRESSURE_ENGINE_BODIES) {
+      if (e !== captainName) considerBody(e, false);
+    }
+    candidatesP.sort((a, b) => a.priority - b.priority);
+    const pick = candidatesP[0];
+    if (pick) {
+      const body = planets[pick.name];
+      const bodySign = body?.sign ?? "";
+      const bodyHouse = body ? houseOf(chart, body) : null;
+      const needHouse = pick.trigger === "12th house" ? 12 : (bodyHouse ?? 12);
+      const need = PRESSURE_NEED_BY_HOUSE[needHouse] ?? PRESSURE_NEED_BY_HOUSE[12];
+      const needLabel = PRESSURE_NEED_LABEL_BY_HOUSE[needHouse] ?? "Cloaking Time";
+      const consequence = marsSign
+        ? (PRESSURE_CONSEQUENCE_BY_MARS_SIGN[marsSign] ?? "a total shutdown — the door closes and stays closed")
+        : "a total shutdown — the door closes and stays closed";
+      const roleLabel = pick.name === captainName ? "Captain (Chart Ruler)" : "Engine";
+      const triggerClause =
+        pick.trigger === "12th house"
+          ? `their ${roleLabel} (${pick.name} in ${bodySign}) sits in the 12th house`
+          : pick.trigger === "Scorpio"
+          ? `their ${roleLabel} (${pick.name}) lives in Scorpio${bodyHouse ? ` in the ${ordinal(bodyHouse)} house` : ""}`
+          : `their ${roleLabel} (${pick.name} in ${bodySign}${bodyHouse ? `, ${ordinal(bodyHouse)} house` : ""}) is in hard aspect to Pluto`;
+      const line = `There is a massive internal world inside ${chart.name} that feels "too big" for the room, because ${triggerClause}. They aren't being quiet, shy, or withholding — they are actively managing an undercurrent in real time so it doesn't leak out as too much. The pressure is real and it is constant. If you don't provide ${needLabel} — meaning ${need} — the consequence isn't a polite ask twice: it's ${consequence}. Build the cloaking need into the schedule on purpose, before they have to ask for it, and the pressure stays workable instead of explosive.`;
+      pressureSignature = {
+        body: pick.name,
+        bodySign,
+        bodyHouse,
+        trigger: pick.trigger,
+        needLabel,
+        need,
+        consequence,
+        line,
+      };
+    }
+  }
+
+
+
 
 
   return {
@@ -1670,6 +1884,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     energyDischarge,
     internalTugOfWar,
     cloakingNote,
+    pressureSignature,
+
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,

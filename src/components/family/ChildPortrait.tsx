@@ -302,7 +302,26 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </section>
             )}
 
+            {/* PRESSURE RULE · Captain/Engine in 12th, Scorpio, or hard Pluto aspect */}
+            {portrait.pressureSignature && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  <div className="font-semibold text-base">The Pressure Signature — what feels "too big" for the room</div>
+                  <Badge variant="outline" className="text-[10px]">Pressure Rule · {portrait.pressureSignature.trigger}</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-purple-500/70 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-2">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
+                    {portrait.pressureSignature.bodySign} {portrait.pressureSignature.body}
+                    {portrait.pressureSignature.bodyHouse ? ` · ${portrait.pressureSignature.bodyHouse}th house` : ""} · needs {portrait.pressureSignature.needLabel}
+                  </div>
+                  <p className="text-purple-950 dark:text-purple-50 text-sm leading-relaxed">{portrait.pressureSignature.line}</p>
+                </div>
+              </section>
+            )}
+
             {/* Core Conflict — lead story (luminary in hard aspect to outer planet) */}
+
             {portrait.coreConflict && (
               <section className="space-y-2">
                 <div className="flex items-center gap-2">
