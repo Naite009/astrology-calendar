@@ -137,8 +137,8 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                 : isElder
                   ? "The Soul Curriculum — Lessons Mastered"
                   : "The Soul Curriculum — Habitual Past & Unfolding Future";
-              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Unfolding Future";
-              const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Habitual Past";
+              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Vitalizing Edge";
+              const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Tired Habit";
               return (
                 <>
                   <div className="rounded-md border border-primary/40 bg-background/60 p-4">
