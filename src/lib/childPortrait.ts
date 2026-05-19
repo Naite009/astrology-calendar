@@ -481,11 +481,24 @@ export interface ChildPortrait {
     sun?: { sign: string; house: number | null; line: string };
     northNode?: { sign: string; house: number | null; line: string };
     southNode?: { sign: string; house: number | null; line: string };
+    // NEW: adult-only one-liner "trade X for Y"
+    tradeLine?: string;
   };
 
   masterySpot: {
-    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string };
+    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string; adultStandardLabel?: string };
     chiron?: { sign: string; house: number | null; tender: string; howToSupport: string };
+  };
+
+  // NEW: 45-52 spotlight: the Credentialing of the Wound
+  chironReturnSpotlight?: {
+    title: string;
+    body: string;
+  };
+
+  // NEW: shown when the viewer is older than the subject
+  viewFromBridge?: {
+    body: string;
   };
 
   howTo: {
@@ -503,6 +516,7 @@ export interface ChildPortrait {
     moonAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
   };
 }
+
 
 
 // ── Life-cycle helpers ───────────────────────────────────────────────────────
