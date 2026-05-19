@@ -1583,7 +1583,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const undercurrent = RULER_UNDERCURRENT_BY_SIGN[thirdRulerSign] ?? "a private undercurrent";
     const domain = thirdRulerHouse ? HOUSE_UNDERCURRENT_DOMAIN[thirdRulerHouse] : null;
     const domainClause = domain ? `, ${domain}` : "";
-    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. Underneath the surface tone there is ${undercurrent}${domainClause}. If ${chart.name} suddenly goes quiet or careful, they are not being passive: they are managing that undercurrent in real time so it doesn't leak out as too much.`;
+    const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
+    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. They look like ${surfaceArch}, but they absorb like ${absorbArch}. Underneath the surface tone there is ${undercurrent}${domainClause}. The ah-ha: if you only address the surface (the ${thirdCuspSign} tone), you clog the undercurrent (the ${thirdRulerSign} processing) — and the next thing that comes out is either a sudden quiet or a sudden too-much. Speak to both layers and the whole channel stays open.`;
+
     hiddenEngine = {
       thirdSign: thirdCuspSign,
       rulerName: thirdRulerName,
