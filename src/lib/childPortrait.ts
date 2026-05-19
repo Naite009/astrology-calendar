@@ -440,6 +440,142 @@ const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
   Pluto: "they learn best by going deep on one thing at a time",
 };
 
+// ── Rising-Filter Synthesis (Chart Ruler "Boss of the Chart") ───────────────
+// Each rising sign carries a stereotype that gets weaponized into "keyword astrology."
+// We name the stereotype only to ban it, then describe the actual nervous-system intent.
+const RISING_FILTER: Record<string, { stereotype: string; verb: string; surfaceJob: string }> = {
+  Aries: { stereotype: "aggressive", verb: "lead with directness", surfaceJob: "test the room for who can hold their pace" },
+  Taurus: { stereotype: "stubborn", verb: "use a slow, grounded body", surfaceJob: "set the room's pace before anyone can rush them" },
+  Gemini: { stereotype: "scattered", verb: "use quick conversation and questions", surfaceJob: "scan for the room's actual position before committing" },
+  Cancer: { stereotype: "moody", verb: "use emotional reading", surfaceJob: "check whether it is safe to soften" },
+  Leo: { stereotype: "showy", verb: "lead with warmth and presence", surfaceJob: "create a stage worth being met on" },
+  Virgo: { stereotype: "picky", verb: "use careful precision", surfaceJob: "remove friction before it can hurt anyone" },
+  Libra: { stereotype: "nice or people-pleasing", verb: "use diplomacy and harmonizing", surfaceJob: "lower the temperature so the real talk can happen" },
+  Scorpio: { stereotype: "intense", verb: "use a quiet, watching presence", surfaceJob: "wait for the room to reveal who is actually safe" },
+  Sagittarius: { stereotype: "blunt", verb: "use big-picture honesty", surfaceJob: "test whether the room can hold the real truth" },
+  Capricorn: { stereotype: "cold", verb: "use structured authority", surfaceJob: "establish who is responsible for what before warmth arrives" },
+  Aquarius: { stereotype: "weird", verb: "use cool objectivity", surfaceJob: "stay one step outside the group in order to see it clearly" },
+  Pisces: { stereotype: "dreamy", verb: "use a soft, permeable presence", surfaceJob: "let the room's mood enter so it can be read from the inside" },
+};
+
+// What the chart-ruler's SIGN is actually defending or pursuing (the deep aim).
+const RULER_SIGN_DRIVE: Record<string, string> = {
+  Aries: "their own initiative and the freedom to move first",
+  Taurus: "bodily steadiness and the right to set their own pace",
+  Gemini: "options, information, and the freedom to change their mind",
+  Cancer: "emotional belonging and the safety of the inner circle",
+  Leo: "being seen warmly and on their own terms",
+  Virgo: "competence, order, and the right to refine",
+  Libra: "fair partnership and a balanced field",
+  Scorpio: "depth, privacy, and emotional truth",
+  Sagittarius: "freedom, meaning, and the bigger horizon",
+  Capricorn: "earned respect and long-arc mastery",
+  Aquarius: "personal independence and the integrity of their own signal",
+  Pisces: "rest, dissolution, and an unfenced inner world",
+};
+
+// ── Node-House Synthesis (comfort of / edge of) ─────────────────────────────
+// South Node house = comfort. North Node house = the edge where life actually is.
+const HOUSE_COMFORT: Record<number, string> = {
+  1: "the comfort of being 'just the surface presentation,' never the inner self",
+  2: "the comfort of accumulating, holding, and not letting anything be moved",
+  3: "the comfort of running the conversation so it never lands on them",
+  4: "the comfort of the home cave and the inner circle",
+  5: "the comfort of being the one who is watched and applauded",
+  6: "the comfort of always being the one who fixes and tends",
+  7: "the comfort of the we, of over-stabilizing the relationship",
+  8: "the comfort of staying private and controlling the depth-level",
+  9: "the comfort of the big idea and the meaning, far away from the mundane",
+  10: "the comfort of the public role and the title",
+  11: "the comfort of the group, the cause, and being one of many",
+  12: "the comfort of disappearing and processing in private",
+};
+const HOUSE_EDGE: Record<number, string> = {
+  1: "the intensity of the me — claiming a body, a face, and a pulse in the room",
+  2: "the edge of pure self-worth without the props",
+  3: "the edge of listening for the real signal and saying the actual sentence",
+  4: "the edge of being seen and rooted in the world, not just at home",
+  5: "the edge of co-creating with one specific other person instead of an audience",
+  6: "the edge of resting the body and trusting that nothing breaks",
+  7: "the intensity of the me — taking a clear position even if it costs the we",
+  8: "the edge of merging, sharing power, and letting another in fully",
+  9: "the edge of the small mundane detail and the practical daily craft",
+  10: "the edge of the private inner life beneath the public role",
+  11: "the edge of the one specific bond instead of the group",
+  12: "the edge of being witnessed in plain view",
+};
+
+// ── Moon Phase Profile (Sun–Moon angular distance) ──────────────────────────
+// Phase = (moonLon − sunLon) mod 360. Eight phases, 45° each.
+// We give each phase a behavioral profile, with explicit Composter/Finisher
+// framing for Balsamic so AI never tells them to "initiate" or "start."
+export type MoonPhaseName =
+  | "New" | "Crescent" | "First Quarter" | "Gibbous"
+  | "Full" | "Disseminating" | "Last Quarter" | "Balsamic";
+
+const MOON_PHASE_PROFILE: Record<MoonPhaseName, { label: string; instinct: string; banTold: string; trueWork: string }> = {
+  New: {
+    label: "Seed / Instinct",
+    instinct: "acts on raw instinct before they can fully explain why",
+    banTold: "Don't tell them to 'plan it first' — that kills the seed",
+    trueWork: "Their work is to trust the impulse and start unpolished",
+  },
+  Crescent: {
+    label: "Builder of the New Thing",
+    instinct: "feels resistance from the old world and has to push the seed forward against it",
+    banTold: "Don't tell them they're 'difficult' for resisting; they are protecting an emerging thing",
+    trueWork: "Their work is to keep moving the seed even when the field pushes back",
+  },
+  "First Quarter": {
+    label: "Crisis-in-Action",
+    instinct: "thrives when a problem demands a decision and a move right now",
+    banTold: "Don't tell them to 'wait and see'",
+    trueWork: "Their work is to use friction as fuel and make the call",
+  },
+  Gibbous: {
+    label: "Refiner / Perfecter",
+    instinct: "edits, adjusts, and pressure-tests almost obsessively before reveal",
+    banTold: "Don't tell them they are 'picky' — the refinement IS the contribution",
+    trueWork: "Their work is to perfect the offering before sharing it",
+  },
+  Full: {
+    label: "Illuminator / Revealer",
+    instinct: "sees both sides at once and is built to make things visible",
+    banTold: "Don't tell them to 'pick a side' prematurely",
+    trueWork: "Their work is to hold the tension long enough for clarity to arrive, then reveal",
+  },
+  Disseminating: {
+    label: "Teacher / Translator",
+    instinct: "naturally translates what they have lived into something others can use",
+    banTold: "Don't tell them they 'talk too much'",
+    trueWork: "Their work is to give it away in language other people can hold",
+  },
+  "Last Quarter": {
+    label: "Revolutionary / Reformer",
+    instinct: "sees what no longer works and dismantles it from the inside",
+    banTold: "Don't tell them they are 'negative' for naming what is broken",
+    trueWork: "Their work is to dismantle the outgrown structure on purpose",
+  },
+  Balsamic: {
+    label: "Composter / Finisher",
+    instinct: "is built to release, integrate, and complete cycles, not to start new ones from scratch",
+    banTold: "Stop telling them to 'initiate,' 'launch,' or 'manifest.' That framing makes them feel broken",
+    trueWork: "Their power lives in letting go on purpose, finishing what is unfinished, and quietly preparing the soil for the next cycle. Endings are their genius, not their failure",
+  },
+};
+
+function computeMoonPhase(sunLon: number, moonLon: number): { phase: MoonPhaseName; angle: number } {
+  const angle = ((moonLon - sunLon) % 360 + 360) % 360;
+  if (angle < 45) return { phase: "New", angle };
+  if (angle < 90) return { phase: "Crescent", angle };
+  if (angle < 135) return { phase: "First Quarter", angle };
+  if (angle < 180) return { phase: "Gibbous", angle };
+  if (angle < 225) return { phase: "Full", angle };
+  if (angle < 270) return { phase: "Disseminating", angle };
+  if (angle < 315) return { phase: "Last Quarter", angle };
+  return { phase: "Balsamic", angle };
+}
+
 // ── Synthesis libraries: "the why behind the what" ───────────────────────────
 const SIGN_FLAVOR_ADJ: Record<string, string> = {
   Aries: "fiery, direct, ready-to-go",
