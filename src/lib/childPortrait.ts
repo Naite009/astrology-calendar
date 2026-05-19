@@ -1099,9 +1099,10 @@ export interface ChildPortrait {
   };
 
   masterySpot: {
-    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string; adultStandardLabel?: string };
-    chiron?: { sign: string; house: number | null; tender: string; howToSupport: string };
+    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string; adultStandardLabel?: string; realTalk?: string };
+    chiron?: { sign: string; house: number | null; tender: string; howToSupport: string; realTalk?: string };
   };
+
 
   // NEW: 45-52 spotlight: the Credentialing of the Wound
   chironReturnSpotlight?: {
