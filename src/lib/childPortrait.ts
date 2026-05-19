@@ -473,7 +473,7 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
   sunAspects.sort((a, b) => a.orb - b.orb);
   hardToMoon.sort((a, b) => a.orb - b.orb);
 
-  let stage: ChildPortrait["developmentalAnchor"]["stage"] = "Adult";
+  let stage: DevelopmentalStage = "Moon (0-7)";
   let focus = "";
   let body = "";
   let extraHolding: string | undefined;
