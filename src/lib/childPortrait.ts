@@ -266,6 +266,26 @@ const SATURN_SACRED_STRUGGLE_BY_SIGN: Record<string, string> = {
   Pisces: "trusting structure and saying no without guilt",
 };
 
+// Communication scripts by Saturn sign. These are the *how to say it* phrases
+// used in the Personal Standards / Boundary section. They translate the inner
+// Saturn theme into a concrete sentence a parent or partner can actually use,
+// so the section is a Communication Strategy — not a restatement of the
+// Mastery Spot text.
+const SATURN_COMMUNICATION_SCRIPT: Record<string, { opener: string; avoid: string }> = {
+  Aries:       { opener: "\"You don't have to get it right on the first try — just start, and we'll adjust together.\"", avoid: "rushing them or calling them slow to act" },
+  Taurus:      { opener: "\"You have enough, and you are enough. Take the time you need.\"",                              avoid: "implying they're being greedy, stingy, or stuck" },
+  Gemini:      { opener: "\"Say it however it comes out — I'll meet you in the middle.\"",                                avoid: "correcting their words mid-sentence" },
+  Cancer:      { opener: "\"Being soft here is safe. I'm not going anywhere.\"",                                          avoid: "calling them too sensitive or dramatic" },
+  Leo:         { opener: "\"I see you, and being seen here won't cost you anything.\"",                                   avoid: "shaming them in front of other people" },
+  Virgo:       { opener: "\"This is already good enough. We're not graded on this.\"",                                    avoid: "pointing out the one small thing they missed" },
+  Libra:       { opener: "\"We can disagree on this and still be okay.\"",                                                avoid: "framing your difference as proof the bond is breaking" },
+  Scorpio:     { opener: "\"You can tell me the real version. I can handle it.\"",                                        avoid: "asking layered or interrogating questions" },
+  Sagittarius: { opener: "\"Your read on this counts. What does it look like from where you're standing?\"",              avoid: "telling them their meaning of it is wrong" },
+  Capricorn:   { opener: "\"You don't have to earn this with output. The standard is yours to set.\"",                    avoid: "tying your approval to what they produced" },
+  Aquarius:    { opener: "\"You don't have to fit in here to belong here.\"",                                             avoid: "guilt-tripping them into 'joining in'" },
+  Pisces:      { opener: "\"No is a complete sentence — you don't have to explain it.\"",                                 avoid: "pressuring them to justify a soft refusal" },
+};
+
 const SATURN_HOUSE_SUPPORT: Record<number, string> = {
   1: "their identity and physical presence — never tease their body or how they show up; affirm 'you get to take up space'",
   2: "their sense of worth and material safety — affirm 'you are enough as you are, with what you have'",
@@ -1233,23 +1253,29 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     ? `${chart.name} is a ${cogProfile.label}: ${cogProfile.processing}. Real-world application: ${cogProfile.application}.${intakeStyle ? ` Intake note (3rd-house cusp in ${thirdCuspSign}): ${intakeStyle}.` : ""}${rulerNudge ? ` Add: ${rulerNudge}.` : ""}`
     : `${chart.name} learns best at their own pace and through their own filter.${rulerNudge ? ` ${rulerNudge.charAt(0).toUpperCase() + rulerNudge.slice(1)}.` : ""}`;
 
-  const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
+  // Personal Standards / Boundary is a COMMUNICATION STRATEGY, not a restatement
+  // of the Mastery Spot. We translate the Saturn theme into an actual script
+  // (what to say, what to avoid) and pair it with the Mars-based nervous-system
+  // reset. We never re-quote the inner-Saturn struggle line here — that lives
+  // in the Mastery Spot.
+  const commScript = saturnSign ? SATURN_COMMUNICATION_SCRIPT[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
-  // Adult voice uses "Course correct" + Saturn-house Standard framing
   let boundary: string;
   if (isAdultLike) {
     const standardClause = saturnAdultLabel
-      ? ` The boundary here is really a ${saturnAdultLabel}: ${chart.name} needs to know this territory is theirs to set, not anyone else's to approve.`
+      ? ` Frame it as a ${saturnAdultLabel} — this territory is theirs to set, not anyone else's to approve.`
       : "";
-    const marsClause = boundaryMars ? ` When the nervous system overheats, the reset is: ${boundaryMars}.` : "";
-    const satClause = boundarySaturn ? ` Their inner Saturn is already busy ${boundarySaturn}, so harsh self-correction lands as "I am defective," not "I made a mistake."` : "";
-    boundary = `Course correct, don't punish.${marsClause}${satClause}${standardClause}`.trim();
+    const resetClause = boundaryMars ? ` If the nervous system is already hot, reset first: ${boundaryMars}, then deliver the line.` : "";
+    const scriptClause = commScript
+      ? ` Try the opener: ${commScript.opener} Avoid ${commScript.avoid}, which collapses the conversation before it starts.`
+      : "";
+    boundary = `Course correct through language, not pressure.${scriptClause}${resetClause}${standardClause}`.trim();
   } else {
-    boundary = boundaryMars && boundarySaturn
-      ? `Redirect, do not punish. ${chart.name}'s nervous system needs you to ${boundaryMars} before the boundary lands. Frame the limit as structure, not shame: their Saturn is already busy ${boundarySaturn}, so a harsh tone here registers as "I am defective," not "I made a mistake."`
-      : boundaryMars
-        ? `Redirect first: ${boundaryMars}. Then state the limit calmly as structure, not shame.`
-        : "Redirect physically first; state the limit calmly as structure, not shame.";
+    const resetClause = boundaryMars ? ` First, regulate the body: ${boundaryMars}.` : "";
+    const scriptClause = commScript
+      ? ` Then use the opener: ${commScript.opener} Avoid ${commScript.avoid} — for them, that tone registers as "I am defective," not "I made a mistake."`
+      : " Then state the limit calmly as structure, not shame.";
+    boundary = `Redirect, then communicate.${resetClause}${scriptClause}`.trim();
   }
 
 
