@@ -861,6 +861,131 @@ const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
 // 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
 const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
 
+// ── Pressure / Engine / Safety translation data ──────────────────────────────
+
+// Surface archetype: what you LOOK LIKE when the 3rd-cusp sign is leading.
+// Used for the "look like a ___" half of the Engine formula.
+const SURFACE_ARCHETYPE_BY_SIGN: Record<string, string> = {
+  Aries: "a sprinter",
+  Taurus: "a builder",
+  Gemini: "a reporter",
+  Cancer: "a host",
+  Leo: "a performer",
+  Virgo: "an editor",
+  Libra: "a diplomat",
+  Scorpio: "a poker player",
+  Sagittarius: "a teacher",
+  Capricorn: "a CEO",
+  Aquarius: "an analyst",
+  Pisces: "a poet",
+};
+
+// Absorption archetype: what you ABSORB LIKE on the inside (the ruler's sign).
+const ABSORPTION_ARCHETYPE_BY_SIGN: Record<string, string> = {
+  Aries: "a struck match",
+  Taurus: "a slow root system",
+  Gemini: "a radio scanning every frequency",
+  Cancer: "a tidepool",
+  Leo: "a stage light tracking the room",
+  Virgo: "a quality-control scanner",
+  Libra: "a tuning fork",
+  Scorpio: "a deep-sea sonar",
+  Sagittarius: "a horizon-line",
+  Capricorn: "a steel beam under load",
+  Aquarius: "a circuit board",
+  Pisces: "a sponge",
+};
+
+// Mars sign → the specific shape the pressure leak takes if the discharge
+// route is blocked. Used in the Pressure Logic Consequence sentence.
+const PRESSURE_CONSEQUENCE_BY_MARS_SIGN: Record<string, string> = {
+  Aries:       "an Aries-style explosion — short, hot, all at once, then gone",
+  Taurus:      "a Taurus-style stonewall — they go immovable and refuse to be moved",
+  Gemini:      "a Gemini-style verbal cut — quick, articulate, surgical",
+  Cancer:      "a Cancer-style emotional flood that takes hours to settle",
+  Leo:         "a Leo-style pride flare — they freeze you out for not seeing them",
+  Virgo:       "a Virgo-style hyper-criticism aimed at whoever is closest",
+  Libra:       "a Libra-style cold politeness that quietly ends the conversation",
+  Scorpio:     "a Scorpio-style total shutdown — eye contact gone, room temperature drops",
+  Sagittarius: "a Sagittarius-style 'I'm out' — they leave the room, the topic, or the plan",
+  Capricorn:   "a Capricorn-style icy withdrawal — work-mode replaces relationship-mode",
+  Aquarius:    "an Aquarius-style detachment — they go conceptual and stop being reachable",
+  Pisces:      "a Pisces-style dissolve — they fog out, get sick, or disappear inward",
+};
+
+// Sun sign → "their desire to ___" for the Internal Audit / Safety formula.
+const SUN_DESIRE_BY_SIGN: Record<string, string> = {
+  Aries:       "move first and take the shot",
+  Taurus:      "build something they can stand on",
+  Gemini:      "say the thing out loud and see what comes back",
+  Cancer:      "tend the people they love",
+  Leo:         "be fully seen as themselves",
+  Virgo:       "do the thing well and useful",
+  Libra:       "land on what is actually fair",
+  Scorpio:     "go all the way in and tell the truth",
+  Sagittarius: "name the bigger meaning",
+  Capricorn:   "build a track record that holds up",
+  Aquarius:    "stay original and uncoopted",
+  Pisces:      "dissolve into something larger and trust it",
+};
+
+// Moon sign → "their need to ___" version of the same.
+const MOON_DESIRE_BY_SIGN: Record<string, string> = {
+  Aries:       "react in real time without filtering",
+  Taurus:      "settle into steady physical comfort",
+  Gemini:      "talk the feeling into shape",
+  Cancer:      "be physically close to the people who matter",
+  Leo:         "be warmly received, not just tolerated",
+  Virgo:       "have a useful task to hold during the feeling",
+  Libra:       "have the room be peaceful and fair",
+  Scorpio:     "be trusted with the real story",
+  Sagittarius: "have room to roam while they process",
+  Capricorn:   "know there is a real structure holding them",
+  Aquarius:    "be treated as a peer, not a problem",
+  Pisces:      "soak in soft sensory input and rest",
+};
+
+// What the auditing planet does NOT want to happen — used after "they are
+// careful because they don't want to ___" in the Safety/Audit sentence.
+const AUDIT_LOSS_BY_PLANET: Record<string, string> = {
+  Saturn:  "be caught short, be wrong in public, or look incompetent",
+  Pluto:   "be overpowered, blindsided, or stripped of control",
+  Uranus:  "be domesticated, predictable, or trapped inside someone else's expectation",
+  Mars:    "show their hand before they're ready or pick the wrong fight",
+  Neptune: "lose the dream by naming it too literally",
+  Chiron:  "have the old wound get touched in front of the wrong person",
+};
+
+// Pressure Rule trigger: which bodies count as "Captain or Engine."
+// Chart Ruler is computed dynamically; these are the engines.
+const PRESSURE_ENGINE_BODIES = ["Mars", "Saturn"] as const;
+
+// House-themed cloaking need: when the pressure body is in a given house,
+// what does the person need protected/given?
+const PRESSURE_NEED_BY_HOUSE: Record<number, string> = {
+  1:  "uninterrupted time alone in their own body before any group asks anything of them",
+  2:  "private control of money, food, and physical comforts without being audited",
+  3:  "the right to draft their thoughts in private before being asked to explain",
+  4:  "an actual locked door at home and zero unannounced family check-ins",
+  5:  "private creative time where no one watches the work in progress",
+  6:  "uninterrupted routine — no surprise schedule changes on the day-of",
+  7:  "one-on-one time without an audience and without third parties weighing in",
+  8:  "total privacy around money, intimacy, and what they're processing emotionally",
+  9:  "room to wrestle privately with their own beliefs before being asked to defend them",
+  10: "the ability to manage their public reputation themselves, in their own timing",
+  11: "the right to step out of the group when the group gets loud",
+  12: "real, scheduled, uninterrupted alone time — not 'when there's a gap' alone time",
+};
+
+const PRESSURE_NEED_LABEL_BY_HOUSE: Record<number, string> = {
+  1: "Solo Recharge", 2: "Resource Privacy", 3: "Drafting Time",
+  4: "Locked-Door Time", 5: "Private Creative Time", 6: "Routine Protection",
+  7: "One-on-One Time", 8: "Total Privacy", 9: "Belief Privacy",
+  10: "Reputation Control", 11: "Off-Group Time", 12: "Cloaking Time",
+};
+
+
+
 
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
