@@ -239,6 +239,44 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </section>
             )}
 
+            {/* Moon Phase Profile — names Balsamic etc. */}
+            {portrait.moonPhaseProfile && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-violet-600" />
+                  <div className="font-semibold text-base">Moon Phase: {portrait.moonPhaseProfile.phase} — {portrait.moonPhaseProfile.label}</div>
+                  <Badge variant="outline" className="text-[10px]">Sun–Moon {portrait.moonPhaseProfile.angle.toFixed(1)}°</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-violet-500/70 bg-violet-50 dark:bg-violet-950/30 p-3 space-y-2">
+                  <p className="text-sm text-violet-950 dark:text-violet-50 leading-relaxed">
+                    <span className="font-semibold">Instinct:</span> {portrait.moonPhaseProfile.instinct}
+                  </p>
+                  <p className="text-sm text-violet-950 dark:text-violet-50 leading-relaxed">
+                    <span className="font-semibold">Stop being told:</span> {portrait.moonPhaseProfile.banTold}
+                  </p>
+                  <p className="text-sm text-violet-950 dark:text-violet-50 leading-relaxed">
+                    <span className="font-semibold">True work:</span> {portrait.moonPhaseProfile.trueWork}
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {/* Node–House Synthesis (comfort of / edge of) */}
+            {portrait.nodeHouseSynthesis && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4 text-emerald-600" />
+                  <div className="font-semibold text-base">The Node Axis — comfort of the past, edge of the now</div>
+                </div>
+                <div className="rounded-md border-l-4 border-emerald-500/70 bg-emerald-50 dark:bg-emerald-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
+                    {portrait.nodeHouseSynthesis.snSign} South Node ({portrait.nodeHouseSynthesis.snHouse}th) → {portrait.nodeHouseSynthesis.nnSign} North Node ({portrait.nodeHouseSynthesis.nnHouse}th)
+                  </div>
+                  <p className="text-emerald-950 dark:text-emerald-50 text-sm leading-relaxed">{portrait.nodeHouseSynthesis.line}</p>
+                </div>
+              </section>
+            )}
+
             {/* Core Conflict — lead story (luminary in hard aspect to outer planet) */}
             {portrait.coreConflict && (
               <section className="space-y-2">
