@@ -499,7 +499,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <p className="text-sm text-muted-foreground">
                           <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.saturn.howToSupport}
                         </p>
+                        {portrait.masterySpot.saturn.realTalk && (
+                          <MasteryDecipher realTalk={portrait.masterySpot.saturn.realTalk} />
+                        )}
                       </div>
+
                     )}
                     {portrait.masterySpot.chiron && (
                       <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
