@@ -324,6 +324,105 @@ const MERCURY_LEARNING_BY_SIGN: Record<string, string> = {
   Pisces: "image, metaphor, music, and absorbing by osmosis",
 };
 
+// Mercury sign → Cognitive Profile (HOW the mind actually processes information).
+// label = the operating system name. processing = how data is taken in.
+// blocker = what makes the brain reject input. application = a real-world "so what."
+const MERCURY_COGNITIVE_PROFILE: Record<string, {
+  label: string;
+  processing: string;
+  blocker: string;
+  application: string;
+}> = {
+  Aries: {
+    label: "Sprint Processor",
+    processing: "thinks in bursts and decides while moving; the body figures it out before the head finishes the sentence",
+    blocker: "long preambles and slow group discussion shut the engine down",
+    application: "don't ask for a five-step plan; give one live problem to attack and let the strategy emerge while solving it",
+  },
+  Taurus: {
+    label: "Tactile Processor",
+    processing: "thinks by handling the thing; comprehension lives in the hands and the senses, not in abstract description",
+    blocker: "rapid verbal instructions with no object, demo, or pace; rushing erases retention",
+    application: "for any new skill, give the physical object and a slow demonstration; words come after the hands already understand",
+  },
+  Gemini: {
+    label: "Parallel Processor",
+    processing: "thinks by connecting many small pieces in real time, mid-conversation; the mouth and the mind run at the same speed",
+    blocker: "being told to 'just listen'; without talk-back the data evaporates",
+    application: "for any concept, ask them to teach it back immediately in their own words; that is when it actually locks in",
+  },
+  Cancer: {
+    label: "Emotional-Context Processor",
+    processing: "thinks through felt meaning; needs to know who is involved and why it matters before the facts can land",
+    blocker: "cold lists, anonymous data, or pressure with no emotional frame",
+    application: "wrap any teaching in a short personal story; the facts ride in on the feeling, not the other way around",
+  },
+  Leo: {
+    label: "Performance Processor",
+    processing: "thinks by demonstrating; the wiring locks in when they get to show what they know, ideally to a real audience",
+    blocker: "silent solo drill with no audience or reflection back",
+    application: "let them be 'the one explaining it'; teaching a younger sibling, a peer, or a camera is their fastest path to mastery",
+  },
+  Virgo: {
+    label: "Procedural Processor",
+    processing: "thinks in step-by-step sequences; safety comes from a clean, written, ordered method they can follow and verify",
+    blocker: "vague open-ended prompts and 'just figure it out' freezes them",
+    application: "give the exact method on paper, then ask them to refine it; they will hand you back a cleaner version",
+  },
+  Libra: {
+    label: "Comparative Processor",
+    processing: "thinks by weighing options out loud with a partner; clarity comes through dialogue, not solo reflection",
+    blocker: "being forced to commit before the comparison conversation has happened",
+    application: "for any decision, set up a real back-and-forth ('here are the two options, walk me through them'); the answer shows up mid-sentence",
+  },
+  Scorpio: {
+    label: "Depth Processor",
+    processing: "thinks by going all the way into one thing; surface coverage of many topics feels meaningless and gets discarded",
+    blocker: "interruption, rotation between subjects, or being kept on the surface",
+    application: "let them obsess on one project, deeply, for an unusual length of time; that intensity is the learning, not a problem to manage",
+  },
+  Sagittarius: {
+    label: "Meaning-First Processor",
+    processing: "thinks from the big picture down; needs the philosophical 'why this matters' before any detail will register",
+    blocker: "drilling on rules or details before the larger purpose is named",
+    application: "before any chore, lesson, or correction, name the bigger principle in one sentence; the specifics then click into place",
+  },
+  Capricorn: {
+    label: "Long-Arc Processor",
+    processing: "thinks in milestones and earned progress; needs to see the staircase before they will take the first step",
+    blocker: "open-ended exploration with no visible structure or finish line",
+    application: "map a clear sequence with checkpoints; their motivation runs on seeing the climb laid out, not on a vague 'do your best'",
+  },
+  Aquarius: {
+    label: "Systems Architect (Lateral Thinker)",
+    processing: "thinks by mapping the entire system before touching any single part, and routinely solves problems by importing solutions from completely unrelated fields",
+    blocker: "rote repetition and 'because I said so' rules; without the big-picture purpose, the details register as noise",
+    application: "for a stuck family or school issue, hand them the 'goal of the kitchen' or the 'goal of the project' and let them design the process. Expect the solution to arrive sideways, borrowed from a documentary, a game, or a business they've been reading about",
+  },
+  Pisces: {
+    label: "Osmotic / Image Processor",
+    processing: "learns through atmosphere, image, music, and metaphor; absorbs by being in the room more than by being directly instructed",
+    blocker: "logic-heavy lists, dense bullet points, or harsh fluorescent direct instruction will actively clog the intake",
+    application: "give a story, an image, or a piece of music alongside the lesson; skip the bullet list. They will recall the feeling and the picture, and the content rides in attached to it",
+  },
+};
+
+// 3rd house cusp → information-intake style modifier (layered on top of Mercury profile)
+const THIRD_HOUSE_CUSP_INTAKE: Record<string, string> = {
+  Aries: "Information has to arrive with stakes and momentum, or the brain treats it as filler",
+  Taurus: "Information lands best when delivered slowly, in one calm voice, with no time pressure",
+  Gemini: "Information needs to be conversational and two-way; one-way lectures bounce off",
+  Cancer: "Information needs to come from a person they trust emotionally, not a cold authority",
+  Leo: "Information lands when it is delivered with warmth and confidence, never with sarcasm or shame",
+  Virgo: "Information needs to be precise and accurate; a single careless error costs you their trust in the whole lesson",
+  Libra: "Information lands when it is framed as fair and balanced, with both sides shown",
+  Scorpio: "Information has to feel real and unfiltered; sanitized or performative delivery is rejected",
+  Sagittarius: "Information lands when the 'big idea' and the honest truth are named up front",
+  Capricorn: "Information needs structure, credentials, and a visible reason it counts",
+  Aquarius: "Information lands when they are treated as a peer in the conversation, never talked down to",
+  Pisces: "Information needs softness and imagery; harsh, blunt delivery scrambles the signal",
+};
+
 const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
   Sun: "they learn best when their effort is visibly seen",
   Moon: "they learn best when they feel safe and unrushed",
@@ -332,7 +431,7 @@ const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
   Mars: "they learn best with stakes, challenge, and movement",
   Jupiter: "they learn best when the big-picture 'why' is named first",
   Saturn: "they learn best with structure, milestones, and clear standards",
-  Uranus: "they learn best at unusual angles, not in the standard order",
+  Uranus: "they learn best by importing solutions from unrelated fields, not by following the standard sequence",
   Neptune: "they learn best through story, image, and absorbed mood",
   Pluto: "they learn best by going deep on one thing at a time",
 };
@@ -624,6 +723,18 @@ export interface ChildPortrait {
     ritual: string;
     learningStyle: string;
     boundary: string;
+  };
+
+  // NEW: Structured Cognitive Profile (replaces fortune-cookie learning adjectives)
+  cognitiveProfile?: {
+    mercurySign: string;
+    label: string;             // e.g. "Systems Architect (Lateral Thinker)"
+    processing: string;        // HOW the mind takes in information
+    blocker: string;           // what shuts the intake down
+    application: string;       // real-world "so what" for parents/partners
+    thirdCuspSign?: string;
+    intakeStyle?: string;      // 3rd-house cusp modifier
+    rulerNudge?: string;       // 3rd-house ruler nudge
   };
 
   mathCheck: {
@@ -938,12 +1049,30 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       ? `A daily 5-minute ritual: ${ritualMoon}.`
       : "A daily 5-minute ritual that respects their nervous system.";
 
-  const learnLine = mercurySign ? MERCURY_LEARNING_BY_SIGN[mercurySign] : "their own pace and method";
-  const paceLine = mercurySign && MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]
-    ? ` The 'why' under that: with ${mercurySign} Mercury, the nervous system is ${MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]}.`
-    : "";
-  const rulerNudge = thirdRulerName ? ` Add: ${THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? ""}.` : "";
-  const learningStyle = `${chart.name} learns best ${learnLine}.${paceLine}${rulerNudge}`;
+  // === 4b. Cognitive Profile (Mercury sign + 3rd-house cusp) ==============
+  // This replaces vague "learning style" adjectives with a named processing profile,
+  // its blocker, and a real-world application.
+  const cogProfile = mercurySign ? MERCURY_COGNITIVE_PROFILE[mercurySign] : undefined;
+  const intakeStyle = thirdCuspSign ? THIRD_HOUSE_CUSP_INTAKE[thirdCuspSign] : undefined;
+  const rulerNudge = thirdRulerName ? (THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? "") : "";
+  const cognitiveProfile = cogProfile
+    ? {
+        mercurySign: mercurySign!,
+        label: cogProfile.label,
+        processing: cogProfile.processing,
+        blocker: cogProfile.blocker,
+        application: cogProfile.application,
+        thirdCuspSign,
+        intakeStyle,
+        rulerNudge: rulerNudge || undefined,
+      }
+    : undefined;
+
+  // The single-line "learningStyle" string keeps backwards compatibility with the
+  // existing How-To card. It now uses Cognitive-Profile language, not adjectives.
+  const learningStyle = cogProfile
+    ? `${chart.name} is a ${cogProfile.label}: ${cogProfile.processing}. Real-world application: ${cogProfile.application}.${intakeStyle ? ` Intake note (3rd-house cusp in ${thirdCuspSign}): ${intakeStyle}.` : ""}${rulerNudge ? ` Add: ${rulerNudge}.` : ""}`
+    : `${chart.name} learns best at their own pace and through their own filter.${rulerNudge ? ` ${rulerNudge.charAt(0).toUpperCase() + rulerNudge.slice(1)}.` : ""}`;
 
   const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
@@ -1110,6 +1239,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     chartRuler,
     tightestAspects,
     howTo: { ritual, learningStyle, boundary },
+    cognitiveProfile,
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
