@@ -306,6 +306,9 @@ export interface ChildPortrait {
   name: string;
   age: number | null;
   birthDate?: string;
+  lifePhase: LifePhaseGroup;
+
+
 
   developmentalAnchor: {
     stage: DevelopmentalStage;
