@@ -209,6 +209,14 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         </div>
                       )}
                     </div>
+                    {portrait.identityInvitation.tradeLine && (
+                      <div className="rounded-md border-l-4 border-fuchsia-500/70 bg-fuchsia-50 dark:bg-fuchsia-950/30 p-3 mt-2">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700 dark:text-fuchsia-300 mb-1">
+                          The Pivot · Trade Tired Habit for Vitalizing Edge
+                        </div>
+                        <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.identityInvitation.tradeLine}</p>
+                      </div>
+                    )}
                   </section>
                 </>
               );
