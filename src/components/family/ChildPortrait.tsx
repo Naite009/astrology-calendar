@@ -9,8 +9,9 @@ import { buildChildPortrait } from "@/lib/childPortrait";
 
 interface Member {
   chart: NatalChart;
-  role: FamilyRole;
+  role: FamilyRole | string;
 }
+
 
 interface Props {
   members: Member[];

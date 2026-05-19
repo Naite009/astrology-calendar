@@ -893,16 +893,16 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
       </Card>
 
       {(() => {
-        const allFamilyMembers = members
-          .map((m) => {
-            const chart = allCharts.find((c) => c.id === m.member_chart_id);
-            return chart ? { chart, role: m.role } : null;
-          })
-          .filter((x): x is { chart: NatalChart; role: FamilyRole } => !!x);
-        return allFamilyMembers.length > 0 ? (
-          <ChildPortraitCard members={allFamilyMembers} />
+        const familyByChartId = new Map(members.map((m) => [m.member_chart_id, m.role as FamilyRole]));
+        const everyone = allCharts.map((chart) => ({
+          chart,
+          role: (familyByChartId.get(chart.id) ?? "self") as FamilyRole,
+        }));
+        return everyone.length > 0 ? (
+          <ChildPortraitCard members={everyone} />
         ) : null;
       })()}
+
 
 
 
