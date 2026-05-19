@@ -17,6 +17,37 @@ interface Member {
   role: FamilyRole | string;
 }
 
+// Decipher toggle — swaps a section's prose for its blunt "Real Talk"
+// translation. Lives inline so each section gets its own local state.
+function DecipherToggle({
+  original,
+  realTalk,
+  textClass,
+}: {
+  original: string;
+  realTalk?: string;
+  textClass: string;
+}) {
+  const [show, setShow] = useState(false);
+  if (!realTalk) {
+    return <p className={textClass}>{original}</p>;
+  }
+  return (
+    <div className="space-y-2">
+      <p className={textClass}>{show ? realTalk : original}</p>
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-current/30 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+      >
+        {show ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+        {show ? "Hide Decipher" : "Decipher · Real Talk"}
+      </button>
+    </div>
+  );
+}
+
+
 
 interface Props {
   members: Member[];
