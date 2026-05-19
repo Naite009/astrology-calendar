@@ -282,9 +282,16 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="space-y-2">
                     {portrait.masterySpot.saturn && (
                       <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
-                        <div className="font-semibold text-sm">
-                          Saturn in {portrait.masterySpot.saturn.sign}
-                          {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                        <div className="font-semibold text-sm flex items-center gap-2 flex-wrap">
+                          <span>
+                            Saturn in {portrait.masterySpot.saturn.sign}
+                            {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                          </span>
+                          {portrait.masterySpot.saturn.adultStandardLabel && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {portrait.masterySpot.saturn.adultStandardLabel}
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm">
                           <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
@@ -312,6 +319,35 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                 </section>
               );
             })()}
+
+            {/* Chiron Return Spotlight (ages 45-52): the soul of the reading */}
+            {portrait.chironReturnSpotlight && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-rose-600" />
+                  <div className="font-semibold text-base">{portrait.chironReturnSpotlight.title}</div>
+                  <Badge variant="outline" className="text-[10px]">Soul of the reading</Badge>
+                </div>
+                <div className="rounded-md border-2 border-rose-400/60 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/40 dark:to-amber-950/30 p-4">
+                  <p className="text-rose-950 dark:text-rose-50 text-sm leading-relaxed">{portrait.chironReturnSpotlight.body}</p>
+                </div>
+              </section>
+            )}
+
+            {/* View from the Bridge — visible only when viewer is older than subject */}
+            {portrait.viewFromBridge && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4 text-teal-600" />
+                  <div className="font-semibold text-base">The View from the Bridge</div>
+                  <Badge variant="outline" className="text-[10px]">For the elder witness</Badge>
+                </div>
+                <div className="rounded-md border-l-4 border-teal-500/70 bg-teal-50 dark:bg-teal-950/30 p-4">
+                  <p className="text-teal-950 dark:text-teal-50 text-sm leading-relaxed">{portrait.viewFromBridge.body}</p>
+                </div>
+              </section>
+            )}
+
 
             {/* 4. How-To Executive Summary */}
             {(() => {
