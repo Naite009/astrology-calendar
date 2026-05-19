@@ -1521,7 +1521,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const chironSign = Chiron?.sign;
   const chironHouse = houseOf(chart, Chiron);
   const chironTender = chironSign ? (CHIRON_TENDER_BY_SIGN[chironSign] ?? "a specific tender spot only they fully know") : "";
-  const chironBlock = chironSign
+  const chironBlock: NonNullable<ChildPortrait["masterySpot"]["chiron"]> | undefined = chironSign
     ? {
         sign: chironSign,
         house: chironHouse,
