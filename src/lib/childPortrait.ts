@@ -1785,6 +1785,69 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     }
   }
 
+  // === TRANSLATION RULE 5: The Pressure Signature ==========================
+  // Triggers when the Chart Ruler (Captain) or Mars/Saturn (Engine) sits in
+  // the 12th house, OR is in Scorpio, OR is in hard aspect to Pluto.
+  // Names the felt internal pressure + the concrete consequence of denying
+  // the cloaking need. Picks the tightest / most-loaded trigger.
+  let pressureSignature: ChildPortrait["pressureSignature"] = undefined;
+  {
+    const pluto = planets["Pluto"];
+    const captainName = chartRuler?.rulerName;
+    const candidatesP: Array<{ name: string; trigger: "12th house" | "Scorpio" | "Pluto aspect"; priority: number }> = [];
+    const considerBody = (name: string, isCaptain: boolean) => {
+      const p = planets[name];
+      if (!p?.sign) return;
+      const h = houseOf(chart, p);
+      // 12th house is the strongest pressure signal
+      if (h === 12) candidatesP.push({ name, trigger: "12th house", priority: isCaptain ? 0 : 1 });
+      // Scorpio placement is a permanent pressure-cooker
+      else if (p.sign === "Scorpio") candidatesP.push({ name, trigger: "Scorpio", priority: isCaptain ? 2 : 3 });
+      // Hard Pluto aspect is the active audit
+      const asp = aspectBetween(p, pluto);
+      if (asp && HARD_ASPECTS.includes(asp.name) && name !== "Pluto") {
+        candidatesP.push({ name, trigger: "Pluto aspect", priority: (isCaptain ? 4 : 5) + asp.orb / 10 });
+      }
+    };
+    if (captainName) considerBody(captainName, true);
+    for (const e of PRESSURE_ENGINE_BODIES) {
+      if (e !== captainName) considerBody(e, false);
+    }
+    candidatesP.sort((a, b) => a.priority - b.priority);
+    const pick = candidatesP[0];
+    if (pick) {
+      const body = planets[pick.name];
+      const bodySign = body?.sign ?? "";
+      const bodyHouse = body ? houseOf(chart, body) : null;
+      const needHouse = pick.trigger === "12th house" ? 12 : (bodyHouse ?? 12);
+      const need = PRESSURE_NEED_BY_HOUSE[needHouse] ?? PRESSURE_NEED_BY_HOUSE[12];
+      const needLabel = PRESSURE_NEED_LABEL_BY_HOUSE[needHouse] ?? "Cloaking Time";
+      const consequence = marsSign
+        ? (PRESSURE_CONSEQUENCE_BY_MARS_SIGN[marsSign] ?? "a total shutdown — the door closes and stays closed")
+        : "a total shutdown — the door closes and stays closed";
+      const roleLabel = pick.name === captainName ? "Captain (Chart Ruler)" : "Engine";
+      const triggerClause =
+        pick.trigger === "12th house"
+          ? `their ${roleLabel} (${pick.name} in ${bodySign}) sits in the 12th house`
+          : pick.trigger === "Scorpio"
+          ? `their ${roleLabel} (${pick.name}) lives in Scorpio${bodyHouse ? ` in the ${ordinal(bodyHouse)} house` : ""}`
+          : `their ${roleLabel} (${pick.name} in ${bodySign}${bodyHouse ? `, ${ordinal(bodyHouse)} house` : ""}) is in hard aspect to Pluto`;
+      const line = `There is a massive internal world inside ${chart.name} that feels "too big" for the room, because ${triggerClause}. They aren't being quiet, shy, or withholding — they are actively managing an undercurrent in real time so it doesn't leak out as too much. The pressure is real and it is constant. If you don't provide ${needLabel} — meaning ${need} — the consequence isn't a polite ask twice: it's ${consequence}. Build the cloaking need into the schedule on purpose, before they have to ask for it, and the pressure stays workable instead of explosive.`;
+      pressureSignature = {
+        body: pick.name,
+        bodySign,
+        bodyHouse,
+        trigger: pick.trigger,
+        needLabel,
+        need,
+        consequence,
+        line,
+      };
+    }
+  }
+
+
+
 
 
   return {
