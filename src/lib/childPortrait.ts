@@ -1194,6 +1194,7 @@ export interface ChildPortrait {
     friction: string;       // the specific friction
     behavior: string;       // real-world behavior the friction produces
     line: string;           // the full formatted paragraph
+    realTalk?: string;
   };
 
   // NEW · Energy Rule: Mars by house = how the drive needs to discharge.
@@ -1203,6 +1204,7 @@ export interface ChildPortrait {
     action: string;     // how they reset
     shadow: string;     // what happens if they can't
     line: string;
+    realTalk?: string;
   };
 
   // NEW · Aspect Rule: tightest aspect under 2.0° orb between any two of the named bodies.
@@ -1218,12 +1220,14 @@ export interface ChildPortrait {
     external: string;   // how it looks from the outside
     internal: string;   // what's actually felt inside
     line: string;
+    realTalk?: string;
   };
 
   // NEW · 12th House Rule: cloaking flag for any personal planet or chart ruler in 12.
   cloakingNote?: {
     bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
     line: string;
+    realTalk?: string;
   };
 
   // NEW · Pressure Rule: when Chart Ruler / Mars / Saturn sits in the 12th,
@@ -1238,9 +1242,11 @@ export interface ChildPortrait {
     need: string;          // the specific house-themed thing to provide
     consequence: string;   // what happens if the need is denied
     line: string;
+    realTalk?: string;
   };
 
 }
+
 
 
 
