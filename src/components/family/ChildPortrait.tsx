@@ -142,75 +142,99 @@ export function ChildPortraitCard({ members }: Props) {
             </section>
 
             {/* 3. Mastery Spot */}
-            {(portrait.masterySpot.saturn || portrait.masterySpot.chiron) && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Mountain className="h-4 w-4 text-primary" />
-                  <div className="font-semibold text-base">The Mastery Spot (Sacred Struggles)</div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Not wounds. Practice rooms. These are the places mastery is built, slowly, with a witness.
-                </p>
-                <div className="space-y-2">
-                  {portrait.masterySpot.saturn && (
-                    <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
-                      <div className="font-semibold text-sm">
-                        Saturn in {portrait.masterySpot.saturn.sign}
-                        {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+            {(portrait.masterySpot.saturn || portrait.masterySpot.chiron) && (() => {
+              const masteryTitle = portrait.lifePhase === "child"
+                ? "The Mastery Spot — Where they need a witness"
+                : portrait.lifePhase === "elder"
+                  ? "The Mastery Spot — Wisdom they carry for the next generation"
+                  : "The Mastery Spot — Area of professional and personal mastery";
+              const masterySub = portrait.lifePhase === "child"
+                ? "Not wounds. Practice rooms. These are the places mastery is built, slowly, with a witness."
+                : portrait.lifePhase === "elder"
+                  ? "These are the places they've earned the right to mentor from. The scar is now the credential."
+                  : "These are the places mastery has been built through repetition and pressure. This is where the credential lives.";
+              const supportLabel = portrait.lifePhase === "child"
+                ? "How to support"
+                : portrait.lifePhase === "elder"
+                  ? "How they transmit it"
+                  : "How they leverage it";
+              return (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mountain className="h-4 w-4 text-primary" />
+                    <div className="font-semibold text-base">{masteryTitle}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{masterySub}</p>
+                  <div className="space-y-2">
+                    {portrait.masterySpot.saturn && (
+                      <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
+                        <div className="font-semibold text-sm">
+                          Saturn in {portrait.masterySpot.saturn.sign}
+                          {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.saturn.howToSupport}
+                        </p>
                       </div>
-                      <p className="text-sm">
-                        <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">How to support:</span> {portrait.masterySpot.saturn.howToSupport}
-                      </p>
-                    </div>
-                  )}
-                  {portrait.masterySpot.chiron && (
-                    <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
-                      <div className="font-semibold text-sm">
-                        Chiron in {portrait.masterySpot.chiron.sign}
-                        {portrait.masterySpot.chiron.house ? ` · ${portrait.masterySpot.chiron.house}th house` : ""}
+                    )}
+                    {portrait.masterySpot.chiron && (
+                      <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
+                        <div className="font-semibold text-sm">
+                          Chiron in {portrait.masterySpot.chiron.sign}
+                          {portrait.masterySpot.chiron.house ? ` · ${portrait.masterySpot.chiron.house}th house` : ""}
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-semibold">The tender spot:</span> {portrait.masterySpot.chiron.tender}.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.chiron.howToSupport}
+                        </p>
                       </div>
-                      <p className="text-sm">
-                        <span className="font-semibold">The tender spot:</span> {portrait.masterySpot.chiron.tender}.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">How to support:</span> {portrait.masterySpot.chiron.howToSupport}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
+                    )}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* 4. How-To Executive Summary */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">The How-To Summary</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
-                    <Heart className="h-3 w-3" /> The Ritual
+            {(() => {
+              const isChild = portrait.lifePhase === "child";
+              const ritualLabel = isChild ? "The Ritual" : "Energy Management";
+              const boundaryLabel = isChild ? "The Boundary" : "Personal Standards";
+              const sectionTitle = isChild ? "The How-To Summary" : "The Interaction Guide";
+              return (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <div className="font-semibold text-base">{sectionTitle}</div>
                   </div>
-                  <p className="text-sm">{portrait.howTo.ritual}</p>
-                </div>
-                <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
-                    <BookOpen className="h-3 w-3" /> The Learning Style
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
+                        <Heart className="h-3 w-3" /> {ritualLabel}
+                      </div>
+                      <p className="text-sm">{portrait.howTo.ritual}</p>
+                    </div>
+                    <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
+                        <BookOpen className="h-3 w-3" /> The Learning Style
+                      </div>
+                      <p className="text-sm">{portrait.howTo.learningStyle}</p>
+                    </div>
+                    <div className="rounded-md border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
+                        <Shield className="h-3 w-3" /> {boundaryLabel}
+                      </div>
+                      <p className="text-sm">{portrait.howTo.boundary}</p>
+                    </div>
                   </div>
-                  <p className="text-sm">{portrait.howTo.learningStyle}</p>
-                </div>
-                <div className="rounded-md border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
-                    <Shield className="h-3 w-3" /> The Boundary
-                  </div>
-                  <p className="text-sm">{portrait.howTo.boundary}</p>
-                </div>
-              </div>
-            </section>
+                </section>
+              );
+            })()}
+
 
             {/* 5. Math Check (collapsible) */}
             <details className="rounded-md border border-dashed border-border bg-background/40 group">
