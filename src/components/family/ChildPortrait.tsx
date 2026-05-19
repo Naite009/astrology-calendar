@@ -449,7 +449,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-slate-700 dark:text-slate-300">
                     {portrait.cloakingNote.bodies.map(b => `${b.sign} ${b.name}`).join(" · ")} · in the 12th
                   </div>
-                  <p className="text-slate-900 dark:text-slate-50 text-sm leading-relaxed">{portrait.cloakingNote.line}</p>
+                  <DecipherToggle original={portrait.cloakingNote.line} realTalk={portrait.cloakingNote.realTalk} textClass="text-slate-900 dark:text-slate-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
