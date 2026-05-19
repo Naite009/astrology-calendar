@@ -288,6 +288,90 @@ const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
   Pluto: "they learn best by going deep on one thing at a time",
 };
 
+// ── Synthesis libraries: "the why behind the what" ───────────────────────────
+const SIGN_FLAVOR_ADJ: Record<string, string> = {
+  Aries: "fiery, direct, ready-to-go",
+  Taurus: "steady, sensual, slow-building",
+  Gemini: "curious, talkative, idea-driven",
+  Cancer: "tender, protective, emotionally tuned",
+  Leo: "warm, generous, expressive",
+  Virgo: "precise, helpful, careful",
+  Libra: "fair, relational, peace-seeking",
+  Scorpio: "intense, private, depth-driven",
+  Sagittarius: "expansive, honest, freedom-loving",
+  Capricorn: "disciplined, responsible, long-view",
+  Aquarius: "original, independent, future-tilted",
+  Pisces: "dreamy, compassionate, porous",
+};
+
+const OUTER_AUDIT_VOICE: Record<string, string> = {
+  Saturn: "a perfectionist inner critic that audits every move and asks 'is this good enough yet?'",
+  Pluto: "an all-or-nothing inner pressure that wants to control the outcome or shut the whole thing down",
+  Uranus: "a restless 'exit-button' reflex that wants to disrupt or detach the moment things get too predictable",
+};
+
+const OUTER_FEAR_LINE: Record<string, string> = {
+  Saturn: "afraid of being 'wrong,' caught short, or seen as incompetent",
+  Pluto: "afraid of being overpowered or losing control of the truth",
+  Uranus: "afraid of being trapped, predictable, or domesticated",
+};
+
+const LUMINARY_NATURE_LINE: Record<string, string> = {
+  Sun: "core sense of self and how they shine",
+  Moon: "emotional safety and how they soothe",
+};
+
+const THIRD_HOUSE_VOICE_TONE: Record<string, string> = {
+  Aries: "direct, fast, and to-the-point",
+  Taurus: "slow, grounded, and concrete",
+  Gemini: "curious and quick with questions",
+  Cancer: "warm and emotionally attentive",
+  Leo: "expressive and confident",
+  Virgo: "precise and analytical",
+  Libra: "fair, diplomatic, the peacemaker",
+  Scorpio: "private with sudden moments of depth",
+  Sagittarius: "big-picture and blunt",
+  Capricorn: "measured, structured, and economical with words",
+  Aquarius: "objective, cool, and a little unusual",
+  Pisces: "soft, image-based, and indirect",
+};
+
+const RULER_UNDERCURRENT_BY_SIGN: Record<string, string> = {
+  Aries: "an intense, direct fire",
+  Taurus: "a stubborn, slow-moving weight",
+  Gemini: "a fast, scattered current of ideas",
+  Cancer: "a tender protective ache",
+  Leo: "a need to be seen and honored",
+  Virgo: "a constant inner edit",
+  Libra: "a quiet relational calculation",
+  Scorpio: "a powerful pressure they're actively managing",
+  Sagittarius: "a restless need for the bigger truth",
+  Capricorn: "a serious sense of responsibility",
+  Aquarius: "a detached, observational coolness",
+  Pisces: "an absorbed, mood-soaked current",
+};
+
+const HOUSE_UNDERCURRENT_DOMAIN: Record<number, string> = {
+  1: "running in their own body and presentation",
+  2: "running around money, body, and self-worth",
+  3: "running in the conversation itself",
+  4: "running around home and family",
+  5: "running in creativity, play, and romance",
+  6: "running in the daily routine and body",
+  7: "running with one partner at a time",
+  8: "running around intimacy, power, and shared resources",
+  9: "running around belief and the bigger picture",
+  10: "running in their public life and reputation",
+  11: "running with the group, peers, or future vision",
+  12: "running in the inner, private world",
+};
+
+const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
+  6: "Handle their stress-responses through daily routine, not big sit-down confrontations. They process best while doing something side-by-side (walking, cooking, driving). Formal 'we need to talk' moments feel like an inspection and shut them down.",
+  8: "Handle their stress-responses in private and with full honesty. Hidden tensions land harder than spoken ones for this person. They need transparency about what's really going on, never in front of an audience, and they need to know you can be trusted with the real story.",
+  12: "Handle their stress-responses in private. Public correction is a major trigger here. They need 1-on-1 'love deposits' to feel safe enough to stop performing. Address things one-on-one, low volume, never in front of others.",
+};
+
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
   | "Lunar Phase (0-7)"
@@ -317,6 +401,32 @@ export interface ChildPortrait {
     extraHolding?: string;
   };
 
+  // NEW: The lead story — luminary in hard aspect to Saturn/Pluto/Uranus
+  coreConflict?: {
+    luminary: "Sun" | "Moon";
+    luminarySign: string;
+    outerPlanet: string;
+    outerSign: string;
+    aspect: AspectName;
+    orb: number;
+    synthesis: string;
+  };
+
+  // NEW: How they actually communicate (3rd house sign vs. its ruler's placement)
+  hiddenEngine?: {
+    thirdSign: string;
+    rulerName: string;
+    rulerSign: string;
+    rulerHouse: number | null;
+    synthesis: string;
+  };
+
+  // NEW: Specific shadow-handling guidance if SN sits in 6/8/12
+  shadowGuidance?: {
+    southHouse: number;
+    instruction: string;
+  };
+
   identityInvitation: {
     rising?: { sign: string; line: string };
     sun?: { sign: string; house: number | null; line: string };
@@ -344,6 +454,7 @@ export interface ChildPortrait {
     moonAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
   };
 }
+
 
 // ── Life-cycle helpers ───────────────────────────────────────────────────────
 // Anchored to outer-planet cycles: Saturn returns ~29.5 / ~58.9 / ~88.4y.
