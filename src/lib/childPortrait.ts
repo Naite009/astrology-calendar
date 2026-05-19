@@ -1567,7 +1567,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const fear = OUTER_FEAR_LINE[c.outerPlanet] ?? "afraid of getting it wrong";
     const luminaryNature = LUMINARY_NATURE_LINE[c.luminary];
     const aspectVerb = c.aspect === "opposition" ? "is in opposition to" : c.aspect === "square" ? "is squared by" : "is conjunct";
-    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). Because their ${luminaryNature} is constantly being audited by ${audit}, their natural ${lumFlavor} edge keeps getting second-guessed in real time. This is why they may seem distant, over-prepared, or "logical" when they are actually just ${fear}. The work is not to silence the ${c.outerPlanet}, but to let the ${c.luminarySign} ${c.luminary} lead first and have ${c.outerPlanet} edit second, instead of the other way around.`;
+    const desire = c.luminary === "Sun"
+      ? (SUN_DESIRE_BY_SIGN[c.luminarySign] ?? "be themselves out loud")
+      : (MOON_DESIRE_BY_SIGN[c.luminarySign] ?? "feel safe in their own skin");
+    const loss = AUDIT_LOSS_BY_PLANET[c.outerPlanet] ?? "lose control of the outcome";
+    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). This is The Internal Audit: their desire to ${desire} is being audited in real time by ${audit}. They aren't hesitant and they aren't shy — they are careful, because they don't want to ${loss}. What you may be reading as "distant," "over-prepared," or "too logical" is actually ${fear} from the inside. The work is not to silence the ${c.outerPlanet}. It is to let the ${c.luminarySign} ${c.luminary} lead first and let ${c.outerPlanet} edit second, instead of the other way around.`;
+
     coreConflict = { ...c, synthesis };
   }
 
