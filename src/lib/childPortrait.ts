@@ -620,6 +620,8 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     name: chart.name,
     age,
     birthDate: chart.birthDate,
+    lifePhase: lifePhaseFor(age),
+
     developmentalAnchor: { stage, focus, body, extraHolding },
     identityInvitation: {
       rising: ascSign ? { sign: ascSign, line: risingLine } : undefined,
