@@ -172,18 +172,24 @@ const MOON_HARD_ASPECT_NOTE: Record<string, string> = {
 
 const SUN_PRACTICE_BY_SIGN: Record<string, string> = {
   Aries: "practicing courage, not 'being impulsive'",
-  Taurus: "practicing steady self-worth, not 'being stubborn'",
-  Gemini: "practicing curiosity and honest voice, not 'being scattered'",
-  Cancer: "practicing tender leadership, not 'being too sensitive'",
-  Leo: "practicing generous visibility, not 'showing off'",
-  Virgo: "practicing useful precision, not 'being picky'",
-  Libra: "practicing fair self-advocacy, not 'people-pleasing'",
-  Scorpio: "practicing honest intensity, not 'being dramatic'",
-  Sagittarius: "practicing meaning and honesty, not 'being blunt'",
-  Capricorn: "practicing earned authority, not 'being too serious'",
-  Aquarius: "practicing original perspective, not 'being difficult'",
-  Pisces: "practicing compassion with edges, not 'being a dreamer'",
+// Sun-sign "what they are practicing" lines.
+// Phrased as nervous-system intent, never as banned keywords
+// ("people-pleasing," "difficult," "dreamer," "weird," "scattered," "moody").
+const SUN_PRACTICE_BY_SIGN: Record<string, string> = {
+  Aries: "practicing courage; the nervous system fires before it gets boxed in, which keeps initiative online",
+  Taurus: "practicing steady self-worth; the nervous system slows to protect against being rushed or destabilized",
+  Gemini: "practicing curiosity and honest voice; the nervous system stays alert by sampling many inputs at once",
+  Cancer: "practicing tender leadership; the nervous system tracks the room's feeling state to keep the bond safe",
+  Leo: "practicing generous visibility; the nervous system needs warm reflection back to confirm it is welcome",
+  Virgo: "practicing useful precision; the nervous system steadies by finding the next small competent action",
+  Libra: "practicing fair self-advocacy; the nervous system reads disharmony as physical danger and smooths the room pre-emptively",
+  Scorpio: "practicing honest intensity; the nervous system keeps the real story private until trust is proven",
+  Sagittarius: "practicing meaning and honesty; the nervous system bolts the moment things feel small or untrue",
+  Capricorn: "practicing earned authority; the nervous system uses structure to convert pressure into capability",
+  Aquarius: "practicing original perspective; the nervous system refuses groupthink to keep its own signal clean",
+  Pisces: "practicing compassion with edges; the nervous system absorbs the room and needs edges to prevent flooding",
 };
+
 
 const NORTH_NODE_STRETCH_BY_SIGN: Record<string, string> = {
   Aries: "leading from their own initiative, not waiting to be chosen",
