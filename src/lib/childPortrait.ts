@@ -170,8 +170,6 @@ const MOON_HARD_ASPECT_NOTE: Record<string, string> = {
   Chiron: "Their early sense of comfort has a tender spot. Repair after rupture matters more than getting it right the first time. Saying 'that wasn't fair, I see it' is medicine.",
 };
 
-const SUN_PRACTICE_BY_SIGN: Record<string, string> = {
-  Aries: "practicing courage, not 'being impulsive'",
 // Sun-sign "what they are practicing" lines.
 // Phrased as nervous-system intent, never as banned keywords
 // ("people-pleasing," "difficult," "dreamer," "weird," "scattered," "moody").
