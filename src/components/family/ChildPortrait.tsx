@@ -52,7 +52,7 @@ export function ChildPortraitCard({ members }: Props) {
               <SelectContent>
                 {people.map((c) => (
                   <SelectItem key={c.chart.id} value={c.chart.id}>
-                    {c.chart.name} <span className="opacity-60">· {c.role}</span>
+                    {c.chart.name}
                   </SelectItem>
                 ))}
               </SelectContent>
