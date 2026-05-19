@@ -271,9 +271,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   : "These are the places mastery has been built through repetition and pressure. This is where the credential lives.";
               const supportLabel = portrait.lifePhase === "child"
                 ? "How to support"
-                : portrait.lifePhase === "elder"
-                  ? "How they transmit it"
-                  : "How they leverage it";
+                : "How to partner with this energy";
               return (
                 <section className="space-y-2">
                   <div className="flex items-center gap-2">
