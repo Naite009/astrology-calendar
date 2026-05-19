@@ -1555,6 +1555,87 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   }
   const tightestAspects = luminaryConversations.length > 0 ? luminaryConversations : undefined;
 
+  // === TRANSLATION RULE 1: The Cognitive Clash (Friction Rule) ============
+  // Surface language = 3rd-house cusp sign. Internal OS = its ruler's sign.
+  let cognitiveClash: ChildPortrait["cognitiveClash"] = undefined;
+  if (thirdCuspSign && thirdRulerName && thirdRulerSign) {
+    const cuspEl = ELEMENT_OF_SIGN[thirdCuspSign];
+    const rulerEl = ELEMENT_OF_SIGN[thirdRulerSign];
+    if (cuspEl && rulerEl && cuspEl !== rulerEl) {
+      const friction = CLASH_FRICTION_BY_RULER_ELEMENT[rulerEl];
+      const behavior = CLASH_BEHAVIOR_BY_RULER_ELEMENT[rulerEl];
+      const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
+      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. This creates a specific friction: ${friction}. In real life, that means ${behavior}. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      cognitiveClash = {
+        cuspSign: thirdCuspSign,
+        rulerName: thirdRulerName,
+        rulerSign: thirdRulerSign,
+        rulerHouse: thirdRulerHouse,
+        friction,
+        behavior,
+        line,
+      };
+    }
+  }
+
+  // === TRANSLATION RULE 2: The Energy Discharge (Mars-by-house) ===========
+  let energyDischarge: ChildPortrait["energyDischarge"] = undefined;
+  if (marsSign && marsHouse && MARS_HOUSE_DISCHARGE[marsHouse]) {
+    const m = MARS_HOUSE_DISCHARGE[marsHouse];
+    const line = `Because ${chart.name}'s drive lives in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}), the reset is ${m.action}. If we don't give them that outlet, the result is ${m.shadow}. The Mars sign (${marsSign}) flavors how the discharge moves, but the house is where it needs to land.`;
+    energyDischarge = { marsSign, marsHouse, action: m.action, shadow: m.shadow, line };
+  }
+
+  // === TRANSLATION RULE 3: The Internal Tug-of-War (tightest aspect <2.0°) ==
+  let internalTugOfWar: ChildPortrait["internalTugOfWar"] = undefined;
+  {
+    const pool = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Chiron"];
+    let best: { a: string; b: string; aspect: AspectName; orb: number } | null = null;
+    for (let i = 0; i < pool.length; i++) {
+      for (let j = i + 1; j < pool.length; j++) {
+        const asp = aspectBetween(planets[pool[i]], planets[pool[j]]);
+        if (!asp) continue;
+        if (asp.orb >= 2.0) continue;
+        if (!best || asp.orb < best.orb) {
+          best = { a: pool[i], b: pool[j], aspect: asp.name, orb: asp.orb };
+        }
+      }
+    }
+    if (best) {
+      const ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Chiron", "Uranus", "Neptune", "Pluto"];
+      const [a, b] = ORDER.indexOf(best.a) <= ORDER.indexOf(best.b) ? [best.a, best.b] : [best.b, best.a];
+      const aSign = planets[a]?.sign ?? "";
+      const bSign = planets[b]?.sign ?? "";
+      const goal = PLANET_GOAL[a] ?? "to express itself fully";
+      const challenge = PLANET_CHALLENGE[b] ?? "an inner audit";
+      const external = ASPECT_EXTERNAL_LINE[best.aspect];
+      const internal = ASPECT_INTERNAL_LINE[best.aspect];
+      const line = `${chart.name}'s tightest internal conversation is ${aSign} ${a} ${best.aspect} ${bSign} ${b} (orb ${best.orb.toFixed(1)}°). Our ${a} wants ${goal}, but our ${b} audits this with ${challenge}. From the outside it looks ${external}; on the inside, the two voices are actually ${internal}. The work is not to silence either side. It is to let ${a} lead first and let ${b} edit second, instead of the other way around.`;
+      internalTugOfWar = { a, aSign, b, bSign, aspect: best.aspect, orb: best.orb, goal, challenge, external, internal, line };
+    }
+  }
+
+  // === TRANSLATION RULE 4: Cloaking Time (personal planet or chart ruler in 12th) ==
+  let cloakingNote: ChildPortrait["cloakingNote"] = undefined;
+  {
+    const found: Array<{ name: string; sign: string }> = [];
+    for (const name of CLOAKING_BODIES) {
+      const p = planets[name];
+      if (!p?.sign) continue;
+      if (houseOf(chart, p) === 12) found.push({ name, sign: p.sign });
+    }
+    if (chartRuler?.rulerHouse === 12 && !found.find(f => f.name === chartRuler!.rulerName)) {
+      found.push({ name: chartRuler.rulerName + " (Chart Ruler)", sign: chartRuler.rulerSign });
+    }
+    if (found.length > 0) {
+      const names = found.map(f => `${f.sign} ${f.name}`).join(", ");
+      const line = `${chart.name} has a 12th-house cloaking signature: ${names}. We process in the dark before we process in public. What this means in practice: drafting, deciding, and feeling all need a private room first, and public exposure on these themes is a high-stress trigger, not a motivator. Schedule the alone time on purpose, before the room asks for the answer. Surprise spotlights on this material will read as a threat, even when the room means well.`;
+      cloakingNote = { bodies: found, line };
+    }
+  }
+
+
+
   return {
 
     name: chart.name,
