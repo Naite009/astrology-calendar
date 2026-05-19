@@ -47,6 +47,30 @@ function DecipherToggle({
   );
 }
 
+// Decipher for Mastery Spot: shows a small button that reveals the Real Talk
+// paragraph beneath the existing struggle/support copy (instead of replacing it).
+function MasteryDecipher({ realTalk }: { realTalk: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="space-y-2 pt-1">
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-foreground/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+      >
+        {show ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+        {show ? "Hide Decipher" : "Decipher · Real Talk"}
+      </button>
+      {show && (
+        <p className="text-sm leading-relaxed italic text-foreground/90 border-l-2 border-foreground/30 pl-3">
+          {realTalk}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
 
 
 interface Props {
