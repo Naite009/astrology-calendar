@@ -1049,12 +1049,30 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       ? `A daily 5-minute ritual: ${ritualMoon}.`
       : "A daily 5-minute ritual that respects their nervous system.";
 
-  const learnLine = mercurySign ? MERCURY_LEARNING_BY_SIGN[mercurySign] : "their own pace and method";
-  const paceLine = mercurySign && MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]
-    ? ` The 'why' under that: with ${mercurySign} Mercury, the nervous system is ${MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]}.`
-    : "";
-  const rulerNudge = thirdRulerName ? ` Add: ${THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? ""}.` : "";
-  const learningStyle = `${chart.name} learns best ${learnLine}.${paceLine}${rulerNudge}`;
+  // === 4b. Cognitive Profile (Mercury sign + 3rd-house cusp) ==============
+  // This replaces vague "learning style" adjectives with a named processing profile,
+  // its blocker, and a real-world application.
+  const cogProfile = mercurySign ? MERCURY_COGNITIVE_PROFILE[mercurySign] : undefined;
+  const intakeStyle = thirdCuspSign ? THIRD_HOUSE_CUSP_INTAKE[thirdCuspSign] : undefined;
+  const rulerNudge = thirdRulerName ? (THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? "") : "";
+  const cognitiveProfile = cogProfile
+    ? {
+        mercurySign: mercurySign!,
+        label: cogProfile.label,
+        processing: cogProfile.processing,
+        blocker: cogProfile.blocker,
+        application: cogProfile.application,
+        thirdCuspSign,
+        intakeStyle,
+        rulerNudge: rulerNudge || undefined,
+      }
+    : undefined;
+
+  // The single-line "learningStyle" string keeps backwards compatibility with the
+  // existing How-To card. It now uses Cognitive-Profile language, not adjectives.
+  const learningStyle = cogProfile
+    ? `${chart.name} is a ${cogProfile.label}: ${cogProfile.processing}. Real-world application: ${cogProfile.application}.${intakeStyle ? ` Intake note (3rd-house cusp in ${thirdCuspSign}): ${intakeStyle}.` : ""}${rulerNudge ? ` Add: ${rulerNudge}.` : ""}`
+    : `${chart.name} learns best at their own pace and through their own filter.${rulerNudge ? ` ${rulerNudge.charAt(0).toUpperCase() + rulerNudge.slice(1)}.` : ""}`;
 
   const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
