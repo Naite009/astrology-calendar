@@ -398,6 +398,43 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <BookOpen className="h-4 w-4 text-primary" />
                     <div className="font-semibold text-base">{sectionTitle}</div>
                   </div>
+
+                  {portrait.cognitiveProfile && (
+                    <div className="rounded-md border-l-4 border-sky-500/70 bg-sky-50 dark:bg-sky-950/30 p-3 space-y-2 mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="secondary" className="text-[10px]">
+                          Cognitive Profile
+                        </Badge>
+                        <div className="font-semibold text-sm text-sky-950 dark:text-sky-50">
+                          {portrait.cognitiveProfile.label}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
+                          {portrait.cognitiveProfile.mercurySign} Mercury
+                          {portrait.cognitiveProfile.thirdCuspSign ? ` · 3rd-house cusp in ${portrait.cognitiveProfile.thirdCuspSign}` : ""}
+                        </div>
+                      </div>
+                      <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
+                        <span className="font-semibold">How they process:</span> {portrait.cognitiveProfile.processing}.
+                      </p>
+                      <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
+                        <span className="font-semibold">What blocks the intake:</span> {portrait.cognitiveProfile.blocker}.
+                      </p>
+                      <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
+                        <span className="font-semibold">So what (real-world application):</span> {portrait.cognitiveProfile.application}.
+                      </p>
+                      {portrait.cognitiveProfile.intakeStyle && (
+                        <p className="text-xs text-sky-900 dark:text-sky-100 leading-relaxed italic">
+                          Intake note (3rd-house cusp in {portrait.cognitiveProfile.thirdCuspSign}): {portrait.cognitiveProfile.intakeStyle}.
+                        </p>
+                      )}
+                      {portrait.cognitiveProfile.rulerNudge && (
+                        <p className="text-xs text-sky-900 dark:text-sky-100 leading-relaxed italic">
+                          Plus: {portrait.cognitiveProfile.rulerNudge}.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
                       <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
