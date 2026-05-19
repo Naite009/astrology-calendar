@@ -72,7 +72,8 @@ export function validateChart(chart: NatalChart): ChartValidation {
     const a = cuspAbs[i];
     const b = cuspAbs[i + 6];
     if (a == null || b == null) continue;
-    const diff = Math.abs(((b - a + 540) % 360) - 180);
+    const normalized = (((b - a) % 360) + 360) % 360;
+    const diff = Math.abs(normalized - 180);
     if (diff > 0.5) {
       issues.push({
         severity: "error",
