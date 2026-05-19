@@ -475,13 +475,13 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
   sunAspects.sort((a, b) => a.orb - b.orb);
   hardToMoon.sort((a, b) => a.orb - b.orb);
 
-  let stage: DevelopmentalStage = "Moon (0-7)";
+  let stage: DevelopmentalStage = "Lunar Phase (0-7)";
   let focus = "";
   let body = "";
   let extraHolding: string | undefined;
 
   if (age != null && age <= 7) {
-    stage = "Moon (0-7)";
+    stage = "Lunar Phase (0-7)";
     focus = moonSign && moonHouse
       ? `${moonSign} Moon in the ${ordinal(moonHouse)} house`
       : moonSign
@@ -495,7 +495,7 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
       extraHolding = MOON_HARD_ASPECT_NOTE[top.to];
     }
   } else if (age != null && age <= 12) {
-    stage = "Mercury (8-12)";
+    stage = "Mercury Phase (8-12)";
     const merc = mercurySign && mercuryHouse
       ? `${mercurySign} Mercury in the ${ordinal(mercuryHouse)} house`
       : mercurySign
@@ -507,8 +507,8 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
       : "";
     focus = merc + (thirdCuspSign ? ` · 3rd-house cusp in ${thirdCuspSign}` : "");
     body = `This is the operating-system phase. ${chart.name} is building how they think, take in information, and talk to themselves. They learn best ${learn}.${rulerLine}`;
-  } else if (age != null && age <= 18) {
-    stage = "Mars/Sun (13-18)";
+  } else if (age != null && age <= 21) {
+    stage = "Mars / Identity Phase (13-21)";
     const mars = marsSign && marsHouse
       ? `${marsSign} Mars in the ${ordinal(marsHouse)} house`
       : marsSign
@@ -522,15 +522,30 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     focus = `${mars} · ${sun}`;
     const reset = marsSign ? MARS_RESET_BY_SIGN[marsSign] : "physical discharge before reasoning";
     const practice = sunSign ? SUN_PRACTICE_BY_SIGN[sunSign] : "their own way of being seen";
-    body = `This is the ego-birth phase. ${chart.name} is testing how they push back, take up space, and become someone. When the system overheats, the reset is: ${reset}. The self they are practicing is ${practice}.`;
+    body = `This is the will-and-identity phase. ${chart.name} is testing how they push back, take up space, and become someone independent of the family. When the system overheats, the reset is: ${reset}. The self they are practicing is ${practice}.`;
   } else {
     const adultAge = age ?? 30;
-    const anchor = buildAdultAnchor(adultAge, chart.name, sunSign, sunHouse, Saturn?.sign, houseOf(chart, Saturn), marsSign);
+    const ninthCuspSign = chart.houseCusps?.house9?.sign;
+    const tenthCuspSign = chart.houseCusps?.house10?.sign;
+    const anchor = buildAdultAnchor(
+      adultAge,
+      chart.name,
+      sunSign,
+      sunHouse,
+      Saturn?.sign,
+      houseOf(chart, Saturn),
+      Chiron?.sign,
+      planets.Jupiter?.sign,
+      planets.Neptune?.sign,
+      ninthCuspSign,
+      tenthCuspSign,
+    );
     stage = anchor.stage;
     focus = anchor.focus;
     body = anchor.body;
     if (anchor.extraHolding) extraHolding = anchor.extraHolding;
   }
+
 
 
   // === 2. Identity Invitation =============================================
