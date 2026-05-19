@@ -1322,22 +1322,54 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   }
 
 
-  // === 9. Chart Ruler ("Captain of the Ship") =============================
+  // === 9. Chart Ruler ("Boss of the Chart") ================================
+  // Dynamic Astrology: Rising filter is fueled BY the chart ruler's placement.
+  // We name the rising stereotype only to ban it, then describe the real intent.
   let chartRuler: ChildPortrait["chartRuler"] = undefined;
   if (ascSign) {
     const rulerName = TRADITIONAL_RULERS[ascSign];
     const rulerPlanet = rulerName ? planets[rulerName] : undefined;
     if (rulerName && rulerPlanet?.sign) {
       const rulerHouse = houseOf(chart, rulerPlanet);
-      const flavor = SIGN_FLAVOR_ADJ[rulerPlanet.sign] ?? rulerPlanet.sign;
-      const domain = rulerHouse ? HOUSE_THEME[rulerHouse] : null;
-      const minorFrame = phase === "child"
-        ? "the engine they are practicing steering"
-        : "the engine driving the whole ship";
-      const line = `With ${ascSign} Rising, the Captain of the Ship is ${rulerName}. ${rulerName} is hanging out in ${rulerPlanet.sign}${rulerHouse ? ` in the ${ordinal(rulerHouse)} house` : ""}, which means ${chart.name}'s primary motivation runs through ${flavor} energy${domain ? `, channeled into ${domain}` : ""}. That is ${minorFrame}: the rest of the chart is the crew, but this is the one giving the orders.`;
+      const filter = RISING_FILTER[ascSign];
+      const drive = RULER_SIGN_DRIVE[rulerPlanet.sign] ?? "what they truly care about";
+      const houseClause = rulerHouse ? `, running through ${HOUSE_THEME[rulerHouse]}` : "";
+      const line = filter
+        ? `${chart.name}'s ${ascSign} Filter isn't about being ${filter.stereotype}. It is fueled by ${rulerName} in ${rulerPlanet.sign}${rulerHouse ? ` (${ordinal(rulerHouse)} house)` : ""}, which means they ${filter.verb} in order to protect ${drive}${houseClause}. The surface job of the filter is to ${filter.surfaceJob}; the deeper job, run by ${rulerName}, is to keep ${drive} intact.`
+        : `With ${ascSign} Rising, the chart's boss is ${rulerName} in ${rulerPlanet.sign}${rulerHouse ? ` (${ordinal(rulerHouse)} house)` : ""}, which means ${chart.name}'s motivation runs through ${drive}${houseClause}.`;
       chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, ascSign, line };
     }
   }
+
+  // === 11. Moon Phase Profile (Sun–Moon angular distance) =================
+  let moonPhaseProfile: ChildPortrait["moonPhaseProfile"] = undefined;
+  const sunLonForPhase = absLon(Sun);
+  const moonLonForPhase = absLon(Moon);
+  if (sunLonForPhase != null && moonLonForPhase != null) {
+    const { phase: mphase, angle } = computeMoonPhase(sunLonForPhase, moonLonForPhase);
+    const p = MOON_PHASE_PROFILE[mphase];
+    moonPhaseProfile = {
+      phase: mphase,
+      angle,
+      label: p.label,
+      instinct: `${chart.name} ${p.instinct}.`,
+      banTold: p.banTold + ".",
+      trueWork: p.trueWork + ".",
+    };
+  }
+
+  // === 12. Node-House Synthesis (comfort of / edge of) ====================
+  let nodeHouseSynthesis: ChildPortrait["nodeHouseSynthesis"] = undefined;
+  if (snSign && nnSign) {
+    const comfort = snHouse ? HOUSE_COMFORT[snHouse] : null;
+    const edge = nnHouse ? HOUSE_EDGE[nnHouse] : null;
+    if (comfort && edge) {
+      const line = `With a ${snSign} South Node in the ${ordinal(snHouse!)} house, ${chart.name}'s Tired Habit is ${comfort}, run in a ${snSign} style. The life pulse is pulling toward the ${nnSign} North Node in the ${ordinal(nnHouse!)} house: ${edge}. The honest move is to stop performing ${comfort.replace(/^the comfort of /, "")} and start showing up for ${edge.replace(/^the (intensity|edge) of /, "")}.`;
+      nodeHouseSynthesis = { snSign, snHouse, nnSign, nnHouse, line };
+    }
+  }
+
+
 
   // === 10. Tightest Planetary Conversations ===============================
   // Prioritize tightest Sun/Moon aspects, then translate to behavioral language.
