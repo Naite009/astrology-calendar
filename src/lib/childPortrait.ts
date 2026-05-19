@@ -1906,7 +1906,66 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
 
 
+  // === Real Talk (Decipher) — attach a blunt 2-3 sentence translation
+  // to each major synthesis block. Survival-strategy framing, "wise friend"
+  // tone, no jargon. Uses already-computed sign/house data above.
+  const N = chart.name;
+
+  if (chartRuler) {
+    const filter = RISING_FILTER[chartRuler.ascSign];
+    const mask = SIGN_SURVIVAL_MASK[chartRuler.rulerSign] ?? "keep one foot near the exit";
+    const payoff = SIGN_PAYOFF[chartRuler.rulerSign] ?? "in control";
+    const stereo = filter?.stereotype ?? "what they look like on the surface";
+    chartRuler.realTalk = `Real talk: ${N}'s ${chartRuler.ascSign} Rising isn't actually about being ${stereo}. They ${mask}, because the real prize is feeling ${payoff}. The surface is ${chartRuler.ascSign}; the engine running it is ${chartRuler.rulerName} in ${chartRuler.rulerSign}. Meet the engine, not the mask.`;
+  }
+
+  if (hiddenEngine) {
+    const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[hiddenEngine.thirdSign] ?? "themselves";
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[hiddenEngine.rulerSign] ?? "an open channel";
+    hiddenEngine.realTalk = `Real talk: ${N} performs ${hiddenEngine.thirdSign} on the outside so people think they've got the read, but inside they're absorbing like ${absorbArch}. They look like ${surfaceArch}; they process like ${absorbArch}. The ${hiddenEngine.thirdSign} tone is a stall move — it buys time while the actual ${hiddenEngine.rulerSign} processor finishes the math. Don't argue with the surface; speak to the processor.`;
+  }
+
+  if (cognitiveClash) {
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[cognitiveClash.rulerSign] ?? "an open channel";
+    cognitiveClash.realTalk = `Real talk: when ${N} sounds ${cognitiveClash.cuspSign}, the ${cognitiveClash.rulerSign} inside is already two steps ahead. They aren't being inconsistent — they're using the surface tone to buy a few seconds while the actual ${cognitiveClash.rulerSign} read finishes loading. If you push the surface for an answer, you'll get a stall, not a lie.`;
+  }
+
+  if (coreConflict) {
+    const desire = coreConflict.luminary === "Sun"
+      ? (SUN_DESIRE_BY_SIGN[coreConflict.luminarySign] ?? "be themselves out loud")
+      : (MOON_DESIRE_BY_SIGN[coreConflict.luminarySign] ?? "feel safe in their own skin");
+    coreConflict.realTalk = `Real talk: ${N} isn't hesitant. They're scanning to make sure it's actually safe to ${desire}, because ${coreConflict.outerPlanet} keeps asking "are you allowed yet?" Once they decide they are, they move. The pause looks like fear; it's actually a permission check.`;
+  }
+
+  if (energyDischarge) {
+    energyDischarge.realTalk = `Real talk: if ${N} doesn't burn off the ${energyDischarge.marsSign} fuel through ${energyDischarge.action}, the fuel doesn't disappear. It leaks out as ${energyDischarge.shadow}. The "mood" isn't a mood; it's unspent Mars looking for the door.`;
+  }
+
+  if (internalTugOfWar) {
+    internalTugOfWar.realTalk = `Real talk: ${N} is running two true things at once. ${internalTugOfWar.a} wants the move; ${internalTugOfWar.b} wants to make sure the move doesn't cost them. The arguing isn't dysfunction — it's quality control. The fix is to let ${internalTugOfWar.a} go first, then let ${internalTugOfWar.b} edit the receipt, not the impulse.`;
+  }
+
+  if (cloakingNote) {
+    cloakingNote.realTalk = `Real talk: public exposure on this material doesn't motivate ${N}. It threatens them. They have to process it in the dark first, then come back with the answer. Surprise spotlights read as ambush, even when the room means well.`;
+  }
+
+  if (pressureSignature) {
+    const sign = pressureSignature.bodySign;
+    pressureSignature.realTalk = `Real talk: ${N} is sitting on a ${sign} volcano. They need a door they can lock so they can decompress without ${pressureSignature.consequence}. It isn't about being shy or rude. It's about safety — theirs and yours.`;
+  }
+
+  if (saturnBlock) {
+    const reason = SATURN_REAL_REASON[saturnBlock.sign] ?? "learned early that competence was the safest currency in the room";
+    const payoff = SIGN_PAYOFF[saturnBlock.sign] ?? "in charge";
+    saturnBlock.realTalk = `Real talk: this isn't a "struggle area." ${N} ${reason}, so the chase for feeling ${payoff} became the strategy. The mastery is letting that strategy retire when it isn't needed anymore — and letting someone else hold the weight without it costing them their identity.`;
+  }
+
+  if (chironBlock) {
+    chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna — don't try to remove it; protect it and use it on purpose.`;
+  }
+
   return {
+
 
     name: chart.name,
     age,
