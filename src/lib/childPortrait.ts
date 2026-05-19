@@ -984,6 +984,50 @@ const PRESSURE_NEED_LABEL_BY_HOUSE: Record<number, string> = {
   10: "Reputation Control", 11: "Off-Group Time", 12: "Cloaking Time",
 };
 
+// ── Real Talk · Decipher data ────────────────────────────────────────────────
+// "Survival strategy" framing: what each sign actually DOES to stay safe or
+// feel powerful, plus the payoff feeling they're chasing. Used by the
+// Decipher button to swap abstract synthesis lines for blunt translations.
+const SIGN_SURVIVAL_MASK: Record<string, string> = {
+  Aries:       "lead with speed and the willingness to start a fight",
+  Taurus:      "go still and refuse to be moved",
+  Gemini:      "use words and quick subject changes to keep the room loose",
+  Cancer:      "take care of you so the door between you stays open",
+  Leo:         "turn up the warmth so love arrives on their terms",
+  Virgo:       "point out the flaw before someone else can",
+  Libra:       "use a 'nice' mask to quiet the room quickly",
+  Scorpio:     "stay quiet and read you while you read nothing",
+  Sagittarius: "crack a joke and keep one foot toward the door",
+  Capricorn:   "be the most competent person in the room",
+  Aquarius:    "play the 'I'm the weird one' card so the group can't absorb them",
+  Pisces:      "go soft and 'I'm fine' so the actual feeling stays private",
+};
+
+const SIGN_PAYOFF: Record<string, string> = {
+  Aries: "unstoppable", Taurus: "un-rushable", Gemini: "un-cornerable",
+  Cancer: "indispensable", Leo: "chosen", Virgo: "un-criticizable",
+  Libra: "un-trappable", Scorpio: "un-readable", Sagittarius: "free",
+  Capricorn: "in charge", Aquarius: "un-coopted", Pisces: "unfindable",
+};
+
+// Per-sign "real reason" used inside the Mastery Spot Decipher.
+const SATURN_REAL_REASON: Record<string, string> = {
+  Aries:       "learned early that hesitating got them run over, so 'go first' became survival",
+  Taurus:      "learned early that being rushed cost them something real, so 'no, on my timing' became survival",
+  Gemini:      "learned early that the wrong word landed them in trouble, so picking words carefully became survival",
+  Cancer:      "learned early that softness wasn't always met, so armoring up became survival",
+  Leo:         "learned early that being seen had a cost, so dimming the light became survival",
+  Virgo:       "learned early that mistakes got named loudly, so being unimprovable became survival",
+  Libra:       "learned early that conflict broke the bond, so smoothing the room became survival",
+  Scorpio:     "learned early that opening up got used against them, so keeping the inside private became survival",
+  Sagittarius: "learned early that their truth was 'too much,' so under-stating it became survival",
+  Capricorn:   "learned early that no one else was coming, so being the responsible one became survival",
+  Aquarius:    "learned early that fitting in cost them themselves, so staying outside became survival",
+  Pisces:      "learned early that structure felt like a cage, so dissolving became survival",
+};
+
+
+
 
 
 
@@ -1025,6 +1069,7 @@ export interface ChildPortrait {
     aspect: AspectName;
     orb: number;
     synthesis: string;
+    realTalk?: string;
   };
 
   // NEW: How they actually communicate (3rd house sign vs. its ruler's placement)
@@ -1034,7 +1079,9 @@ export interface ChildPortrait {
     rulerSign: string;
     rulerHouse: number | null;
     synthesis: string;
+    realTalk?: string;
   };
+
 
   // NEW: Specific shadow-handling guidance if SN sits in 6/8/12
   shadowGuidance?: {
@@ -1052,9 +1099,10 @@ export interface ChildPortrait {
   };
 
   masterySpot: {
-    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string; adultStandardLabel?: string };
-    chiron?: { sign: string; house: number | null; tender: string; howToSupport: string };
+    saturn?: { sign: string; house: number | null; struggle: string; howToSupport: string; adultStandardLabel?: string; realTalk?: string };
+    chiron?: { sign: string; house: number | null; tender: string; howToSupport: string; realTalk?: string };
   };
+
 
   // NEW: 45-52 spotlight: the Credentialing of the Wound
   chironReturnSpotlight?: {
@@ -1074,7 +1122,9 @@ export interface ChildPortrait {
     rulerHouse: number | null;
     ascSign: string;
     line: string;
+    realTalk?: string;
   };
+
 
   // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
   tightestAspects?: Array<{
@@ -1144,6 +1194,7 @@ export interface ChildPortrait {
     friction: string;       // the specific friction
     behavior: string;       // real-world behavior the friction produces
     line: string;           // the full formatted paragraph
+    realTalk?: string;
   };
 
   // NEW · Energy Rule: Mars by house = how the drive needs to discharge.
@@ -1153,6 +1204,7 @@ export interface ChildPortrait {
     action: string;     // how they reset
     shadow: string;     // what happens if they can't
     line: string;
+    realTalk?: string;
   };
 
   // NEW · Aspect Rule: tightest aspect under 2.0° orb between any two of the named bodies.
@@ -1168,12 +1220,14 @@ export interface ChildPortrait {
     external: string;   // how it looks from the outside
     internal: string;   // what's actually felt inside
     line: string;
+    realTalk?: string;
   };
 
   // NEW · 12th House Rule: cloaking flag for any personal planet or chart ruler in 12.
   cloakingNote?: {
     bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
     line: string;
+    realTalk?: string;
   };
 
   // NEW · Pressure Rule: when Chart Ruler / Mars / Saturn sits in the 12th,
@@ -1188,9 +1242,11 @@ export interface ChildPortrait {
     need: string;          // the specific house-themed thing to provide
     consequence: string;   // what happens if the need is denied
     line: string;
+    realTalk?: string;
   };
 
 }
+
 
 
 
@@ -1448,7 +1504,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const isAdultLike = phase === "adult" || phase === "elder";
   const saturnAdultLabel = saturnHouse ? SATURN_HOUSE_ADULT_STANDARD[saturnHouse] : undefined;
   const partnerVerb = isAdultLike ? "How to partner with this energy" : "How to support";
-  const saturnBlock = saturnSign
+  const saturnBlock: NonNullable<ChildPortrait["masterySpot"]["saturn"]> | undefined = saturnSign
     ? {
         sign: saturnSign,
         house: saturnHouse,
@@ -1465,7 +1521,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const chironSign = Chiron?.sign;
   const chironHouse = houseOf(chart, Chiron);
   const chironTender = chironSign ? (CHIRON_TENDER_BY_SIGN[chironSign] ?? "a specific tender spot only they fully know") : "";
-  const chironBlock = chironSign
+  const chironBlock: NonNullable<ChildPortrait["masterySpot"]["chiron"]> | undefined = chironSign
     ? {
         sign: chironSign,
         house: chironHouse,
@@ -1850,7 +1906,66 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
 
 
+  // === Real Talk (Decipher) — attach a blunt 2-3 sentence translation
+  // to each major synthesis block. Survival-strategy framing, "wise friend"
+  // tone, no jargon. Uses already-computed sign/house data above.
+  const N = chart.name;
+
+  if (chartRuler) {
+    const filter = RISING_FILTER[chartRuler.ascSign];
+    const mask = SIGN_SURVIVAL_MASK[chartRuler.rulerSign] ?? "keep one foot near the exit";
+    const payoff = SIGN_PAYOFF[chartRuler.rulerSign] ?? "in control";
+    const stereo = filter?.stereotype ?? "what they look like on the surface";
+    chartRuler.realTalk = `Real talk: ${N}'s ${chartRuler.ascSign} Rising isn't actually about being ${stereo}. They ${mask}, because the real prize is feeling ${payoff}. The surface is ${chartRuler.ascSign}; the engine running it is ${chartRuler.rulerName} in ${chartRuler.rulerSign}. Meet the engine, not the mask.`;
+  }
+
+  if (hiddenEngine) {
+    const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[hiddenEngine.thirdSign] ?? "themselves";
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[hiddenEngine.rulerSign] ?? "an open channel";
+    hiddenEngine.realTalk = `Real talk: ${N} performs ${hiddenEngine.thirdSign} on the outside so people think they've got the read, but inside they're absorbing like ${absorbArch}. They look like ${surfaceArch}; they process like ${absorbArch}. The ${hiddenEngine.thirdSign} tone is a stall move — it buys time while the actual ${hiddenEngine.rulerSign} processor finishes the math. Don't argue with the surface; speak to the processor.`;
+  }
+
+  if (cognitiveClash) {
+    const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[cognitiveClash.rulerSign] ?? "an open channel";
+    cognitiveClash.realTalk = `Real talk: when ${N} sounds ${cognitiveClash.cuspSign}, the ${cognitiveClash.rulerSign} inside is already two steps ahead. They aren't being inconsistent — they're using the surface tone to buy a few seconds while the actual ${cognitiveClash.rulerSign} read finishes loading. If you push the surface for an answer, you'll get a stall, not a lie.`;
+  }
+
+  if (coreConflict) {
+    const desire = coreConflict.luminary === "Sun"
+      ? (SUN_DESIRE_BY_SIGN[coreConflict.luminarySign] ?? "be themselves out loud")
+      : (MOON_DESIRE_BY_SIGN[coreConflict.luminarySign] ?? "feel safe in their own skin");
+    coreConflict.realTalk = `Real talk: ${N} isn't hesitant. They're scanning to make sure it's actually safe to ${desire}, because ${coreConflict.outerPlanet} keeps asking "are you allowed yet?" Once they decide they are, they move. The pause looks like fear; it's actually a permission check.`;
+  }
+
+  if (energyDischarge) {
+    energyDischarge.realTalk = `Real talk: if ${N} doesn't burn off the ${energyDischarge.marsSign} fuel through ${energyDischarge.action}, the fuel doesn't disappear. It leaks out as ${energyDischarge.shadow}. The "mood" isn't a mood; it's unspent Mars looking for the door.`;
+  }
+
+  if (internalTugOfWar) {
+    internalTugOfWar.realTalk = `Real talk: ${N} is running two true things at once. ${internalTugOfWar.a} wants the move; ${internalTugOfWar.b} wants to make sure the move doesn't cost them. The arguing isn't dysfunction — it's quality control. The fix is to let ${internalTugOfWar.a} go first, then let ${internalTugOfWar.b} edit the receipt, not the impulse.`;
+  }
+
+  if (cloakingNote) {
+    cloakingNote.realTalk = `Real talk: public exposure on this material doesn't motivate ${N}. It threatens them. They have to process it in the dark first, then come back with the answer. Surprise spotlights read as ambush, even when the room means well.`;
+  }
+
+  if (pressureSignature) {
+    const sign = pressureSignature.bodySign;
+    pressureSignature.realTalk = `Real talk: ${N} is sitting on a ${sign} volcano. They need a door they can lock so they can decompress without ${pressureSignature.consequence}. It isn't about being shy or rude. It's about safety — theirs and yours.`;
+  }
+
+  if (saturnBlock) {
+    const reason = SATURN_REAL_REASON[saturnBlock.sign] ?? "learned early that competence was the safest currency in the room";
+    const payoff = SIGN_PAYOFF[saturnBlock.sign] ?? "in charge";
+    saturnBlock.realTalk = `Real talk: this isn't a "struggle area." ${N} ${reason}, so the chase for feeling ${payoff} became the strategy. The mastery is letting that strategy retire when it isn't needed anymore — and letting someone else hold the weight without it costing them their identity.`;
+  }
+
+  if (chironBlock) {
+    chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna — don't try to remove it; protect it and use it on purpose.`;
+  }
+
   return {
+
 
     name: chart.name,
     age,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Baby, Sparkles, Mountain, Heart, Anchor, BookOpen, Shield, Star, ChevronsUpDown, Check } from "lucide-react";
+import { Baby, Sparkles, Mountain, Heart, Anchor, BookOpen, Shield, Star, ChevronsUpDown, Check, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -16,6 +16,61 @@ interface Member {
   chart: NatalChart;
   role: FamilyRole | string;
 }
+
+// Decipher toggle — swaps a section's prose for its blunt "Real Talk"
+// translation. Lives inline so each section gets its own local state.
+function DecipherToggle({
+  original,
+  realTalk,
+  textClass,
+}: {
+  original: string;
+  realTalk?: string;
+  textClass: string;
+}) {
+  const [show, setShow] = useState(false);
+  if (!realTalk) {
+    return <p className={textClass}>{original}</p>;
+  }
+  return (
+    <div className="space-y-2">
+      <p className={textClass}>{show ? realTalk : original}</p>
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-current/30 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+      >
+        {show ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+        {show ? "Hide Decipher" : "Decipher · Real Talk"}
+      </button>
+    </div>
+  );
+}
+
+// Decipher for Mastery Spot: shows a small button that reveals the Real Talk
+// paragraph beneath the existing struggle/support copy (instead of replacing it).
+function MasteryDecipher({ realTalk }: { realTalk: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="space-y-2 pt-1">
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-foreground/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+      >
+        {show ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+        {show ? "Hide Decipher" : "Decipher · Real Talk"}
+      </button>
+      {show && (
+        <p className="text-sm leading-relaxed italic text-foreground/90 border-l-2 border-foreground/30 pl-3">
+          {realTalk}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
 
 
 interface Props {
@@ -259,7 +314,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {portrait.chartRuler.ascSign} Rising · ruled by {portrait.chartRuler.rulerName} in {portrait.chartRuler.rulerSign}
                     {portrait.chartRuler.rulerHouse ? ` · ${portrait.chartRuler.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-cyan-950 dark:text-cyan-50 text-sm leading-relaxed">{portrait.chartRuler.line}</p>
+                  <DecipherToggle original={portrait.chartRuler.line} realTalk={portrait.chartRuler.realTalk} textClass="text-cyan-950 dark:text-cyan-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -315,7 +370,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {portrait.pressureSignature.bodySign} {portrait.pressureSignature.body}
                     {portrait.pressureSignature.bodyHouse ? ` · ${portrait.pressureSignature.bodyHouse}th house` : ""} · needs {portrait.pressureSignature.needLabel}
                   </div>
-                  <p className="text-purple-950 dark:text-purple-50 text-sm leading-relaxed">{portrait.pressureSignature.line}</p>
+                  <DecipherToggle original={portrait.pressureSignature.line} realTalk={portrait.pressureSignature.realTalk} textClass="text-purple-950 dark:text-purple-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -332,7 +387,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
                     {portrait.coreConflict.luminarySign} {portrait.coreConflict.luminary} {portrait.coreConflict.aspect} {portrait.coreConflict.outerPlanet} in {portrait.coreConflict.outerSign}
                   </div>
-                  <p className="text-amber-950 dark:text-amber-50 text-sm leading-relaxed">{portrait.coreConflict.synthesis}</p>
+                  <DecipherToggle original={portrait.coreConflict.synthesis} realTalk={portrait.coreConflict.realTalk} textClass="text-amber-950 dark:text-amber-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -349,7 +404,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     3rd house in {portrait.hiddenEngine.thirdSign} · ruled by {portrait.hiddenEngine.rulerName} in {portrait.hiddenEngine.rulerSign}
                     {portrait.hiddenEngine.rulerHouse ? ` · ${portrait.hiddenEngine.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-indigo-950 dark:text-indigo-50 text-sm leading-relaxed">{portrait.hiddenEngine.synthesis}</p>
+                  <DecipherToggle original={portrait.hiddenEngine.synthesis} realTalk={portrait.hiddenEngine.realTalk} textClass="text-indigo-950 dark:text-indigo-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -367,7 +422,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     Speaks {portrait.cognitiveClash.cuspSign} · runs on {portrait.cognitiveClash.rulerName} in {portrait.cognitiveClash.rulerSign}
                     {portrait.cognitiveClash.rulerHouse ? ` · ${portrait.cognitiveClash.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.cognitiveClash.line}</p>
+                  <DecipherToggle original={portrait.cognitiveClash.line} realTalk={portrait.cognitiveClash.realTalk} textClass="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -384,7 +439,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-red-700 dark:text-red-300">
                     {portrait.energyDischarge.marsSign} Mars · {portrait.energyDischarge.marsHouse}th house
                   </div>
-                  <p className="text-red-950 dark:text-red-50 text-sm leading-relaxed">{portrait.energyDischarge.line}</p>
+                  <DecipherToggle original={portrait.energyDischarge.line} realTalk={portrait.energyDischarge.realTalk} textClass="text-red-950 dark:text-red-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -401,7 +456,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-orange-700 dark:text-orange-300">
                     {portrait.internalTugOfWar.aSign} {portrait.internalTugOfWar.a} {portrait.internalTugOfWar.aspect} {portrait.internalTugOfWar.bSign} {portrait.internalTugOfWar.b}
                   </div>
-                  <p className="text-orange-950 dark:text-orange-50 text-sm leading-relaxed">{portrait.internalTugOfWar.line}</p>
+                  <DecipherToggle original={portrait.internalTugOfWar.line} realTalk={portrait.internalTugOfWar.realTalk} textClass="text-orange-950 dark:text-orange-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -418,7 +473,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-slate-700 dark:text-slate-300">
                     {portrait.cloakingNote.bodies.map(b => `${b.sign} ${b.name}`).join(" · ")} · in the 12th
                   </div>
-                  <p className="text-slate-900 dark:text-slate-50 text-sm leading-relaxed">{portrait.cloakingNote.line}</p>
+                  <DecipherToggle original={portrait.cloakingNote.line} realTalk={portrait.cloakingNote.realTalk} textClass="text-slate-900 dark:text-slate-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
@@ -468,7 +523,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <p className="text-sm text-muted-foreground">
                           <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.saturn.howToSupport}
                         </p>
+                        {portrait.masterySpot.saturn.realTalk && (
+                          <MasteryDecipher realTalk={portrait.masterySpot.saturn.realTalk} />
+                        )}
                       </div>
+
                     )}
                     {portrait.masterySpot.chiron && (
                       <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
@@ -482,7 +541,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <p className="text-sm text-muted-foreground">
                           <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.chiron.howToSupport}
                         </p>
+                        {portrait.masterySpot.chiron.realTalk && (
+                          <MasteryDecipher realTalk={portrait.masterySpot.chiron.realTalk} />
+                        )}
                       </div>
+
                     )}
                   </div>
                   {portrait.tightestAspects && portrait.tightestAspects.length > 0 && (
