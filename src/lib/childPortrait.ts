@@ -1504,7 +1504,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const isAdultLike = phase === "adult" || phase === "elder";
   const saturnAdultLabel = saturnHouse ? SATURN_HOUSE_ADULT_STANDARD[saturnHouse] : undefined;
   const partnerVerb = isAdultLike ? "How to partner with this energy" : "How to support";
-  const saturnBlock = saturnSign
+  const saturnBlock: NonNullable<ChildPortrait["masterySpot"]["saturn"]> | undefined = saturnSign
     ? {
         sign: saturnSign,
         house: saturnHouse,
