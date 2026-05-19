@@ -290,7 +290,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {portrait.chartRuler.ascSign} Rising · ruled by {portrait.chartRuler.rulerName} in {portrait.chartRuler.rulerSign}
                     {portrait.chartRuler.rulerHouse ? ` · ${portrait.chartRuler.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-cyan-950 dark:text-cyan-50 text-sm leading-relaxed">{portrait.chartRuler.line}</p>
+                  <DecipherToggle original={portrait.chartRuler.line} realTalk={portrait.chartRuler.realTalk} textClass="text-cyan-950 dark:text-cyan-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
