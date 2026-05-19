@@ -1175,6 +1175,21 @@ export interface ChildPortrait {
     bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
     line: string;
   };
+
+  // NEW · Pressure Rule: when Chart Ruler / Mars / Saturn sits in the 12th,
+  // in Scorpio, or in hard aspect to Pluto, name the internal pressure +
+  // concrete consequence if the cloaking need isn't met.
+  pressureSignature?: {
+    body: string;          // which engine/captain is under pressure
+    bodySign: string;
+    bodyHouse: number | null;
+    trigger: "12th house" | "Scorpio" | "Pluto aspect";
+    needLabel: string;     // e.g. "Cloaking Time"
+    need: string;          // the specific house-themed thing to provide
+    consequence: string;   // what happens if the need is denied
+    line: string;
+  };
+
 }
 
 
