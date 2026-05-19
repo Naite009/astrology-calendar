@@ -127,6 +127,28 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
         {portrait && (
           <div className="space-y-5">
+            {validation && validation.issues.length > 0 && (
+              <div className="rounded-md border border-amber-400/60 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-semibold text-xs uppercase tracking-wider">
+                  <AlertTriangle className="h-4 w-4" />
+                  Chart data check ({validation.issues.length} {validation.issues.length === 1 ? "issue" : "issues"})
+                </div>
+                <p className="text-xs text-amber-900 dark:text-amber-100">
+                  The reading below uses the chart data exactly as stored. These items could make a house assignment wrong, please verify against the original chart wheel before trusting any house-specific text.
+                </p>
+                <ul className="space-y-1.5 text-xs text-amber-900 dark:text-amber-100">
+                  {validation.issues.map((iss, i) => (
+                    <li key={i} className="leading-snug">
+                      <span className={cn("font-semibold", iss.severity === "error" ? "text-red-700 dark:text-red-300" : "text-amber-800 dark:text-amber-200")}>
+                        {iss.severity === "error" ? "ERROR:" : "Check:"}
+                      </span>{" "}
+                      {iss.message}
+                      {iss.fix && <span className="block text-amber-700 dark:text-amber-300/80 italic mt-0.5">→ {iss.fix}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {(() => {
               const isChild = portrait.lifePhase === "child";
               const isElder = portrait.lifePhase === "elder";
