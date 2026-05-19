@@ -1122,7 +1122,9 @@ export interface ChildPortrait {
     rulerHouse: number | null;
     ascSign: string;
     line: string;
+    realTalk?: string;
   };
+
 
   // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
   tightestAspects?: Array<{
