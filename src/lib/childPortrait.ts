@@ -592,7 +592,7 @@ function buildAdultAnchor(
 
 
 // ── Builder ──────────────────────────────────────────────────────────────────
-export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
+export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null): ChildPortrait | null {
   const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
   const Sun = planets.Sun;
   const Moon = planets.Moon;
