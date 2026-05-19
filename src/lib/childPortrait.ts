@@ -55,14 +55,15 @@ function absLon(p?: NatalPlanetPosition): number | null {
   const idx = SIGNS.indexOf(p.sign);
   if (idx < 0) return null;
   const deg = typeof p.degree === "number" ? p.degree : 0;
-  return idx * 30 + deg;
+  const min = typeof (p as any).minutes === "number" ? (p as any).minutes : 0;
+  return idx * 30 + deg + min / 60;
 }
 
-function cuspAbs(c?: { sign: string; degree?: number }): number | null {
+function cuspAbs(c?: { sign: string; degree?: number; minutes?: number }): number | null {
   if (!c?.sign) return null;
   const idx = SIGNS.indexOf(c.sign);
   if (idx < 0) return null;
-  return idx * 30 + (c.degree ?? 0);
+  return idx * 30 + (c.degree ?? 0) + ((c.minutes ?? 0) / 60);
 }
 
 function houseOf(chart: NatalChart, planet?: NatalPlanetPosition): number | null {
