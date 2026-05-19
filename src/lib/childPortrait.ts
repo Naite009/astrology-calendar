@@ -523,7 +523,7 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     body = `This is the ego-birth phase. ${chart.name} is testing how they push back, take up space, and become someone. When the system overheats, the reset is: ${reset}. The self they are practicing is ${practice}.`;
   } else {
     const adultAge = age ?? 30;
-    const anchor = buildAdultAnchor(adultAge, chart.name, sunSign, sunHouse, saturnSignEarly, saturnHouseEarly, marsSign);
+    const anchor = buildAdultAnchor(adultAge, chart.name, sunSign, sunHouse, Saturn?.sign, houseOf(chart, Saturn), marsSign);
     stage = anchor.stage;
     focus = anchor.focus;
     body = anchor.body;
