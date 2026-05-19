@@ -380,7 +380,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     3rd house in {portrait.hiddenEngine.thirdSign} · ruled by {portrait.hiddenEngine.rulerName} in {portrait.hiddenEngine.rulerSign}
                     {portrait.hiddenEngine.rulerHouse ? ` · ${portrait.hiddenEngine.rulerHouse}th house` : ""}
                   </div>
-                  <p className="text-indigo-950 dark:text-indigo-50 text-sm leading-relaxed">{portrait.hiddenEngine.synthesis}</p>
+                  <DecipherToggle original={portrait.hiddenEngine.synthesis} realTalk={portrait.hiddenEngine.realTalk} textClass="text-indigo-950 dark:text-indigo-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
