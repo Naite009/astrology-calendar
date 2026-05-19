@@ -363,7 +363,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
                     {portrait.coreConflict.luminarySign} {portrait.coreConflict.luminary} {portrait.coreConflict.aspect} {portrait.coreConflict.outerPlanet} in {portrait.coreConflict.outerSign}
                   </div>
-                  <p className="text-amber-950 dark:text-amber-50 text-sm leading-relaxed">{portrait.coreConflict.synthesis}</p>
+                  <DecipherToggle original={portrait.coreConflict.synthesis} realTalk={portrait.coreConflict.realTalk} textClass="text-amber-950 dark:text-amber-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
