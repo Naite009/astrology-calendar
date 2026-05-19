@@ -857,6 +857,25 @@ export interface ChildPortrait {
     line: string;
   }>;
 
+  // NEW: Moon Phase Profile (Sun–Moon angular distance) — names Balsamic etc.
+  moonPhaseProfile?: {
+    phase: MoonPhaseName;
+    angle: number;     // 0–360
+    label: string;
+    instinct: string;
+    banTold: string;
+    trueWork: string;
+  };
+
+  // NEW: Node-House synthesis (comfort of X / edge of Y)
+  nodeHouseSynthesis?: {
+    snSign: string;
+    snHouse: number | null;
+    nnSign: string;
+    nnHouse: number | null;
+    line: string;
+  };
+
 
 
   howTo: {
