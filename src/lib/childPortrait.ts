@@ -1107,6 +1107,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     },
     chironReturnSpotlight,
     viewFromBridge,
+    chartRuler,
+    tightestAspects,
     howTo: { ritual, learningStyle, boundary },
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
