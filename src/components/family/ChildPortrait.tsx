@@ -17,17 +17,14 @@ interface Props {
 }
 
 export function ChildPortraitCard({ members }: Props) {
-  const children = useMemo(
-    () => members.filter((m) => m.role === "child" || m.role === "sibling"),
-    [members],
-  );
+  const people = useMemo(() => members.filter((m) => !!m.chart?.id), [members]);
   const [selectedId, setSelectedId] = useState<string | null>(
-    children.length === 1 ? children[0].chart.id : null,
+    people.length === 1 ? people[0].chart.id : null,
   );
 
-  if (children.length === 0) return null;
+  if (people.length === 0) return null;
 
-  const selected = children.find((c) => c.chart.id === selectedId) ?? null;
+  const selected = people.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart) : null;
 
   return (
@@ -35,25 +32,26 @@ export function ChildPortraitCard({ members }: Props) {
       <CardHeader className="pb-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-t-lg">
         <CardTitle className="text-base flex items-center gap-2">
           <Baby className="h-4 w-4 text-primary" />
-          Child Portrait
+          Portrait
         </CardTitle>
         <CardDescription className="pt-1">
-          A warm, expert deep-dive for one child at a time. Age-responsive developmental anchor, the identity they're practicing,
-          their sacred struggles, and exactly how to support them this season.
+          A warm, expert deep-dive for any person on your family list, child or adult. The reading auto-adapts to their
+          life stage: the Moon for the youngest, Mercury and Mars for school-age and teens, then the Saturn Returns,
+          Uranus Opposition (around 42), Chiron Return (around 50), and the eldering thresholds beyond.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4 space-y-5 text-sm">
         <div className="flex items-end gap-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Choose a child</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Choose a person</div>
             <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v || null)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a child to see their portrait" />
+                <SelectValue placeholder="Select a person to see their portrait" />
               </SelectTrigger>
               <SelectContent>
-                {children.map((c) => (
+                {people.map((c) => (
                   <SelectItem key={c.chart.id} value={c.chart.id}>
-                    {c.chart.name}
+                    {c.chart.name} <span className="opacity-60">· {c.role}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -62,8 +60,9 @@ export function ChildPortraitCard({ members }: Props) {
         </div>
 
         {!portrait && (
-          <p className="text-muted-foreground italic">Pick a child above to generate their portrait.</p>
+          <p className="text-muted-foreground italic">Pick a person above to generate their portrait.</p>
         )}
+
 
         {portrait && (
           <div className="space-y-5">
