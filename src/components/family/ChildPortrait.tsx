@@ -222,6 +222,23 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               );
             })()}
 
+            {/* Captain of the Ship — Chart Ruler */}
+            {portrait.chartRuler && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4 text-cyan-600" />
+                  <div className="font-semibold text-base">The Captain of the Ship</div>
+                </div>
+                <div className="rounded-md border-l-4 border-cyan-500/70 bg-cyan-50 dark:bg-cyan-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-cyan-700 dark:text-cyan-300">
+                    {portrait.chartRuler.ascSign} Rising · ruled by {portrait.chartRuler.rulerName} in {portrait.chartRuler.rulerSign}
+                    {portrait.chartRuler.rulerHouse ? ` · ${portrait.chartRuler.rulerHouse}th house` : ""}
+                  </div>
+                  <p className="text-cyan-950 dark:text-cyan-50 text-sm leading-relaxed">{portrait.chartRuler.line}</p>
+                </div>
+              </section>
+            )}
+
             {/* Core Conflict — lead story (luminary in hard aspect to outer planet) */}
             {portrait.coreConflict && (
               <section className="space-y-2">
@@ -316,6 +333,26 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       </div>
                     )}
                   </div>
+                  {portrait.tightestAspects && portrait.tightestAspects.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                        Tightest planetary conversations
+                      </div>
+                      {portrait.tightestAspects.map((a, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "rounded-md border-l-4 p-3 text-sm leading-relaxed",
+                            a.quality === "hard"
+                              ? "border-amber-500/70 bg-amber-50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-50"
+                              : "border-emerald-500/70 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-50",
+                          )}
+                        >
+                          {a.line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
               );
             })()}

@@ -415,6 +415,104 @@ const HOUSE_UNDERCURRENT_DOMAIN: Record<number, string> = {
   12: "running in the inner, private world",
 };
 
+// Mercury sign → nervous-system pace (the "why" behind the learning style)
+const MERCURY_NERVOUS_SYSTEM_PACE: Record<string, string> = {
+  Aries: "fast, urgency-driven, fires before fully thinking; needs a real stake to lock in",
+  Taurus: "slow, sensory, repetition-friendly; needs to touch the thing and not be rushed",
+  Gemini: "quick and branching; connects many small pieces in real time, gets bored if it stalls",
+  Cancer: "story- and feeling-first; needs emotional context before facts will actually land",
+  Leo: "warms up through performance; explaining it out loud is how the wiring locks in",
+  Virgo: "step-by-step and methodical; gets anxious without a clean procedure to follow",
+  Libra: "thinks by comparing options out loud with another person; needs a sounding board",
+  Scorpio: "single-focus, deep-dive; needs the hidden 'why' before any surface detail will stick",
+  Sagittarius: "big-picture first; the meaning has to be named before the details register",
+  Capricorn: "structured and milestone-driven; needs to see the whole staircase to start the first step",
+  Aquarius: "needs to understand the 'system' before the 'task'; context first, instructions second",
+  Pisces: "image-, metaphor- and music-based; facts arrive sideways through story and atmosphere",
+};
+
+// Tight planetary "conversations" — short, behavioral readings for the Mastery Spot.
+// Keys are sorted "A-B" alphabetically so lookup is deterministic.
+const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
+  "Moon-Sun": {
+    hard: "an internal head/heart split — what they want and what they need don't always match, and they feel both pulls at once",
+    soft: "internal alignment between what they want and what they need — the inside and the outside agree",
+  },
+  "Saturn-Sun": {
+    hard: "an inner critic that audits every move and asks 'is this good enough yet?' before they've even started",
+    soft: "natural discipline and the ability to play the long game without burning out",
+  },
+  "Pluto-Sun": {
+    hard: "an all-or-nothing pressure around being seen — fully invisible or in full power, rarely in between",
+    soft: "natural depth and the ability to regenerate after intense seasons",
+  },
+  "Sun-Uranus": {
+    hard: "a freedom-versus-belonging tug — they bolt the second things feel boxed in",
+    soft: "originality and permission to be themselves without apology",
+  },
+  "Mars-Sun": {
+    hard: "drive on overdrive — they push through even when the body is asking them to slow",
+    soft: "clean courage and the ability to act on what matters without overthinking",
+  },
+  "Sun-Venus": {
+    hard: "identity tied to being liked — they may shape-shift a little to keep the love",
+    soft: "natural warmth and easy magnetism in how they show up",
+  },
+  "Neptune-Sun": {
+    hard: "an identity that blurs in groups — they absorb other people's roles and lose their own outline",
+    soft: "imagination and a compassionate, artistic sense of self",
+  },
+  "Jupiter-Sun": {
+    hard: "a tendency to over-promise or over-extend the self before checking capacity",
+    soft: "generosity, optimism, and natural authority",
+  },
+  "Chiron-Sun": {
+    hard: "a tender place where being fully themselves felt 'not allowed' early on",
+    soft: "the wisdom to see and name other people's hidden wounds with real care",
+  },
+  "Mars-Moon": {
+    hard: "feelings and actions on a hair-trigger — emotion fires before the pause arrives",
+    soft: "emotional courage and the ability to act on what they feel without freezing",
+  },
+  "Moon-Saturn": {
+    hard: "emotional self-protection — they may swallow the feeling instead of saying it out loud",
+    soft: "emotional steadiness and the ability to hold their own through hard moments",
+  },
+  "Moon-Pluto": {
+    hard: "feelings that arrive in big waves and need full expression before they can release",
+    soft: "emotional depth and the capacity to be with other people's intensity without flinching",
+  },
+  "Moon-Uranus": {
+    hard: "mood shifts that surprise even them — predictability has to be built, not assumed",
+    soft: "emotional originality and freedom from inherited family patterns",
+  },
+  "Moon-Neptune": {
+    hard: "emotional osmosis — they pick up the room's mood and carry it as if it were their own",
+    soft: "deep empathy and a poetic emotional sense",
+  },
+  "Jupiter-Moon": {
+    hard: "feelings that swell big — generosity that can leave them emotionally empty",
+    soft: "natural emotional warmth, faith, and easy generosity of heart",
+  },
+  "Moon-Venus": {
+    hard: "love and need tangled — they may confuse being needed with being loved",
+    soft: "emotional warmth, easy affection, and a soothing presence",
+  },
+  "Chiron-Moon": {
+    hard: "a tender early-comfort wound — small ruptures register much bigger than they look",
+    soft: "compassion and the gift of soothing others through their own remembered tenderness",
+  },
+  "Mercury-Moon": {
+    hard: "feelings and words running on different tracks — they may not have the language for what they feel in real time",
+    soft: "the gift of putting emotion into clear, honest language",
+  },
+};
+
+
+function aspectConversationKey(a: string, b: string): string {
+  return [a, b].sort().join("-");
+}
+
 const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
   6: "Handle their stress-responses through daily routine, not big sit-down confrontations. They process best while doing something side-by-side (walking, cooking, driving). Formal 'we need to talk' moments feel like an inspection and shut them down.",
   8: "Handle their stress-responses in private and with full honesty. Hidden tensions land harder than spoken ones for this person. They need transparency about what's really going on, never in front of an audience, and they need to know you can be trusted with the real story.",
@@ -500,6 +598,27 @@ export interface ChildPortrait {
   viewFromBridge?: {
     body: string;
   };
+
+  // NEW: Chart Ruler — the "Captain of the Ship" (ruler of Ascendant)
+  chartRuler?: {
+    rulerName: string;
+    rulerSign: string;
+    rulerHouse: number | null;
+    ascSign: string;
+    line: string;
+  };
+
+  // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
+  tightestAspects?: Array<{
+    a: string;
+    b: string;
+    aspect: AspectName;
+    orb: number;
+    quality: "hard" | "soft";
+    line: string;
+  }>;
+
+
 
   howTo: {
     ritual: string;
@@ -820,8 +939,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       : "A daily 5-minute ritual that respects their nervous system.";
 
   const learnLine = mercurySign ? MERCURY_LEARNING_BY_SIGN[mercurySign] : "their own pace and method";
+  const paceLine = mercurySign && MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]
+    ? ` The 'why' under that: with ${mercurySign} Mercury, the nervous system is ${MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]}.`
+    : "";
   const rulerNudge = thirdRulerName ? ` Add: ${THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? ""}.` : "";
-  const learningStyle = `${chart.name} learns best ${learnLine}.${rulerNudge}`;
+  const learningStyle = `${chart.name} learns best ${learnLine}.${paceLine}${rulerNudge}`;
 
   const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
@@ -911,7 +1033,58 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     };
   }
 
+
+  // === 9. Chart Ruler ("Captain of the Ship") =============================
+  let chartRuler: ChildPortrait["chartRuler"] = undefined;
+  if (ascSign) {
+    const rulerName = TRADITIONAL_RULERS[ascSign];
+    const rulerPlanet = rulerName ? planets[rulerName] : undefined;
+    if (rulerName && rulerPlanet?.sign) {
+      const rulerHouse = houseOf(chart, rulerPlanet);
+      const flavor = SIGN_FLAVOR_ADJ[rulerPlanet.sign] ?? rulerPlanet.sign;
+      const domain = rulerHouse ? HOUSE_THEME[rulerHouse] : null;
+      const minorFrame = phase === "child"
+        ? "the engine they are practicing steering"
+        : "the engine driving the whole ship";
+      const line = `With ${ascSign} Rising, the Captain of the Ship is ${rulerName}. ${rulerName} is hanging out in ${rulerPlanet.sign}${rulerHouse ? ` in the ${ordinal(rulerHouse)} house` : ""}, which means ${chart.name}'s primary motivation runs through ${flavor} energy${domain ? `, channeled into ${domain}` : ""}. That is ${minorFrame}: the rest of the chart is the crew, but this is the one giving the orders.`;
+      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, ascSign, line };
+    }
+  }
+
+  // === 10. Tightest Planetary Conversations ===============================
+  // Prioritize tightest Sun/Moon aspects, then translate to behavioral language.
+  const seenPair = new Set<string>();
+  const luminaryConversations: Array<{ a: string; b: string; aspect: AspectName; orb: number; quality: "hard" | "soft"; line: string }> = [];
+  const pushAspect = (aFrom: "Sun" | "Moon", to: string, aspect: AspectName, orb: number) => {
+    const key = aspectConversationKey(aFrom, to);
+    if (seenPair.has(key)) return;
+    const lookup = ASPECT_CONVERSATION[key];
+    if (!lookup) return;
+    const quality: "hard" | "soft" = HARD_ASPECTS.includes(aspect) ? "hard" : "soft";
+    const text = quality === "hard" ? lookup.hard : lookup.soft;
+    const aspectLabel = quality === "hard" ? "in tension with" : "in flow with";
+    const aSign = aFrom === "Sun" ? sunSign : moonSign;
+    const bSign = planets[to]?.sign;
+    const minorFrame = phase === "child"
+      ? "This is a developmental edge they are practicing, not a flaw."
+      : "";
+    const line = `${aSign ? `${aSign} ` : ""}${aFrom} ${aspectLabel} ${bSign ? `${bSign} ` : ""}${to} (${aspect}, orb ${orb.toFixed(1)}°): ${text}.${minorFrame ? ` ${minorFrame}` : ""}`;
+    luminaryConversations.push({ a: aFrom, b: to, aspect, orb, quality, line });
+    seenPair.add(key);
+  };
+  // Walk tightest-first across both luminaries
+  const combined: Array<{ from: "Sun" | "Moon"; to: string; aspect: AspectName; orb: number }> = [
+    ...sunAspects.map(s => ({ from: "Sun" as const, to: s.to, aspect: s.aspect, orb: s.orb })),
+    ...moonAspects.map(m => ({ from: "Moon" as const, to: m.to, aspect: m.aspect, orb: m.orb })),
+  ].sort((a, b) => a.orb - b.orb);
+  for (const c of combined) {
+    if (luminaryConversations.length >= 3) break;
+    pushAspect(c.from, c.to, c.aspect, c.orb);
+  }
+  const tightestAspects = luminaryConversations.length > 0 ? luminaryConversations : undefined;
+
   return {
+
     name: chart.name,
     age,
     birthDate: chart.birthDate,
@@ -934,6 +1107,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     },
     chironReturnSpotlight,
     viewFromBridge,
+    chartRuler,
+    tightestAspects,
     howTo: { ritual, learningStyle, boundary },
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
