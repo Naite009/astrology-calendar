@@ -599,6 +599,27 @@ export interface ChildPortrait {
     body: string;
   };
 
+  // NEW: Chart Ruler — the "Captain of the Ship" (ruler of Ascendant)
+  chartRuler?: {
+    rulerName: string;
+    rulerSign: string;
+    rulerHouse: number | null;
+    ascSign: string;
+    line: string;
+  };
+
+  // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
+  tightestAspects?: Array<{
+    a: string;
+    b: string;
+    aspect: AspectName;
+    orb: number;
+    quality: "hard" | "soft";
+    line: string;
+  }>;
+
+
+
   howTo: {
     ritual: string;
     learningStyle: string;
