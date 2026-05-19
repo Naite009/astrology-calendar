@@ -1884,6 +1884,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     energyDischarge,
     internalTugOfWar,
     cloakingNote,
+    pressureSignature,
+
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
