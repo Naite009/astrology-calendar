@@ -432,7 +432,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-orange-700 dark:text-orange-300">
                     {portrait.internalTugOfWar.aSign} {portrait.internalTugOfWar.a} {portrait.internalTugOfWar.aspect} {portrait.internalTugOfWar.bSign} {portrait.internalTugOfWar.b}
                   </div>
-                  <p className="text-orange-950 dark:text-orange-50 text-sm leading-relaxed">{portrait.internalTugOfWar.line}</p>
+                  <DecipherToggle original={portrait.internalTugOfWar.line} realTalk={portrait.internalTugOfWar.realTalk} textClass="text-orange-950 dark:text-orange-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
