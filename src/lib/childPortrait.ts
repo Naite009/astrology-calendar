@@ -779,6 +779,89 @@ const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
   12: "Handle their stress-responses in private. Public correction is a major trigger here. They need 1-on-1 'love deposits' to feel safe enough to stop performing. Address things one-on-one, low volume, never in front of others.",
 };
 
+// ── NEW: Translation-rule data maps ──────────────────────────────────────────
+
+// Friction Rule: when 3rd-cusp sign and its ruler's sign clash, what does the
+// friction LOOK like in lived behavior? Keyed by ruler-sign element relationship.
+const CLASH_FRICTION_BY_RULER_ELEMENT: Record<"fire" | "earth" | "air" | "water", string> = {
+  fire:  "we sound calm on the surface, but inside we're already two steps ahead and pushing for the move",
+  earth: "we sound easy and flexible out loud, but inside we are quietly tracking what's solid and what isn't",
+  air:   "we sound personal and present, but inside we're running comparisons and looking for the cleaner frame",
+  water: "we sound matter-of-fact, but inside we are reading the room's feeling and pricing it into every sentence",
+};
+
+const CLASH_BEHAVIOR_BY_RULER_ELEMENT: Record<"fire" | "earth" | "air" | "water", string> = {
+  fire:  "we go quiet right before we make the actual move, because the inside has already decided and the mouth is just catching up",
+  earth: "we say 'sure, that works' and then very slowly steer the plan toward the version our body trusts",
+  air:   "we agree in conversation, then revise our position the moment we have space to think alone",
+  water: "we change the temperature of a room without saying anything, and people feel it before we name it",
+};
+
+// Energy Rule: Mars-by-house — how the drive resets, and what shows up when it can't.
+const MARS_HOUSE_DISCHARGE: Record<number, { action: string; shadow: string }> = {
+  1:  { action: "moving the body first thing, claiming physical space before talking",                          shadow: "irritability that lands on whoever is closest, and a low-grade 'why am I picking a fight' feeling" },
+  2:  { action: "physical work that produces something they can see or touch (cooking, building, lifting)",     shadow: "compulsive spending, food, or body-tinkering as a stand-in for the missing discharge" },
+  3:  { action: "fast talking, fast walking, errand sprints, hands-on tinkering, quick wins",                  shadow: "verbal snapping, scattered tabs, and a brain that won't stop scrolling" },
+  4:  { action: "physical work inside the home: rearranging, deep-cleaning, cooking, gardening",                shadow: "tension that detonates inside the family unit instead of out in the world" },
+  5:  { action: "play, sport, art, creative risk, romance, anything that feels like joyful release",            shadow: "shame-spirals about 'wasted potential' and picking fights with the people they love most" },
+  6:  { action: "structured exercise, routines they can master, fixing one small broken thing per day",         shadow: "body symptoms (gut, sleep, headaches) carrying the rage the mouth won't say" },
+  7:  { action: "vigorous one-on-one engagement: sparring conversation, partnered training, real debate",       shadow: "passive-aggressive jabs at a partner, or a constant low simmer of 'they always start it'" },
+  8:  { action: "intense private outlets: heavy lifting, sex, deep therapy work, financial deep-dives",        shadow: "control battles, sudden financial chaos, or icy withdrawal that looks like punishment" },
+  9:  { action: "long walks, travel, study sprints, big-stakes outdoor adventure, teaching",                   shadow: "preaching at people, restless 'I have to get out of here' agitation, picking fights about beliefs" },
+  10: { action: "ambition-driven output: a real project, a public deliverable, building visible reputation",   shadow: "career sabotage, burnout, or aggression that lands on subordinates and bosses" },
+  11: { action: "group sport, activism, organizing, sweating with friends",                                    shadow: "alienating their own friend group, or burning a bridge in a community they love" },
+  12: { action: "private movement no one watches: solo swim, dawn run, breathwork, journaling sweat out",      shadow: "self-attack, depression-shaped fatigue, illness, or rage they turn inward instead of out" },
+};
+
+// Aspect Rule: per-planet GOAL ("wants") and CHALLENGE ("audits with"), in we/us voice.
+const PLANET_GOAL: Record<string, string> = {
+  Sun:     "to shine as the version of ourselves we actually are",
+  Moon:    "to feel safe, soothed, and emotionally at home",
+  Mercury: "to think out loud, swap ideas, and land on the truth in real time",
+  Venus:   "to be loved, valued, and close to beauty",
+  Mars:    "to act on what matters, right now, without committee",
+  Jupiter: "to expand, mean something, and trust that more is possible",
+  Saturn:  "to build something real that holds up over time",
+  Uranus:  "to stay free, original, and unconverted by the group",
+  Neptune: "to dissolve into something larger and trust the unseen current",
+  Pluto:   "to face the real truth and use power honestly",
+  Chiron:  "to make medicine out of the place we were once hurt",
+};
+
+const PLANET_CHALLENGE: Record<string, string> = {
+  Sun:     "a question about whether we're actually allowed to be seen yet",
+  Moon:    "a tightness around whether it's safe to need anything",
+  Mercury: "a second-guess about whether our read is sharp enough",
+  Venus:   "an audit about whether we're lovable as-is",
+  Mars:    "a hesitation about whether we have the right to take the shot",
+  Jupiter: "an excess valve that opens before we've checked our capacity",
+  Saturn:  "a 'prove it' clause that asks if we've earned this yet",
+  Uranus:  "a sudden exit-impulse the moment things feel boxed in",
+  Neptune: "a fog that softens the edges and blurs the boundary line",
+  Pluto:   "a control reflex that wants to manage every variable",
+  Chiron:  "a tender spot that flares before the rest of us notices",
+};
+
+const ASPECT_EXTERNAL_LINE: Record<AspectName, string> = {
+  conjunction:  "fused, like one signal not two",
+  opposition:   "split, like we're arguing with ourselves in public",
+  square:       "edgy, like we're bracing for impact",
+  trine:        "easy, like nothing is actually happening here",
+  sextile:      "interested, like we keep circling the same opportunity",
+};
+
+const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
+  conjunction:  "blended so tightly that we can't tell which voice is which",
+  opposition:   "torn between two equally true needs and trying to honor both",
+  square:       "in active friction, with both sides demanding airtime at the same time",
+  trine:        "quietly negotiating in the background, and easy to take for granted",
+  sextile:      "in a real conversation, where one side keeps gently offering and the other keeps almost saying yes",
+};
+
+// 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
+const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
+
+
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
   | "Lunar Phase (0-7)"
