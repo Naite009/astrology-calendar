@@ -559,16 +559,28 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
   const sunLine = sunSign
     ? `The Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} house, around ${HOUSE_THEME[sunHouse]})` : ""} is what they are practicing, not what they already are: ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of shining"}.`
     : "";
+  const phase = lifePhaseFor(age);
   const nnSign = NorthNode?.sign;
   const nnHouse = houseOf(chart, NorthNode);
+  const nnDefault = nnSign ? (NORTH_NODE_STRETCH_BY_SIGN[nnSign] ?? "the direction they're growing toward") : "";
   const nnLine = nnSign
-    ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the soul's stretch: ${NORTH_NODE_STRETCH_BY_SIGN[nnSign] ?? "the direction they're growing toward"}. It will feel uncomfortable on purpose.`
+    ? phase === "child"
+      ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the soul's stretch: ${nnDefault}. It will feel uncomfortable on purpose.`
+      : phase === "elder"
+        ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""}: the lessons mastered here are ${nnDefault}. This is the wisdom they've earned the right to teach.`
+        : `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the unfolding future: ${nnDefault}. It still feels uncomfortable on purpose, and it is the most honest direction.`
     : "";
   const snSign = SouthNode?.sign;
   const snHouse = houseOf(chart, SouthNode);
+  const snDefault = snSign ? (SOUTH_NODE_DEFAULT_BY_SIGN[snSign] ?? "their familiar fallback") : "";
   const snLine = snSign
-    ? `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is their default mode under stress: ${SOUTH_NODE_DEFAULT_BY_SIGN[snSign] ?? "their familiar fallback"}. It is comfortable but small. The growth is gently away from this.`
+    ? phase === "child"
+      ? `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is their default mode under stress: ${snDefault}. It is comfortable but small. The growth is gently away from this.`
+      : phase === "elder"
+        ? `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""}: the habit of ${snDefault} is now an old friend they no longer need to keep proving wrong. They've already grown past it.`
+        : `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is the habitual past: ${snDefault}. It is the comfortable fallback they reach for under stress. The growth is gently away from this.`
     : "";
+
 
   // === 3. Mastery Spot ====================================================
   const saturnSign = Saturn?.sign;
