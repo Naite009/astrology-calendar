@@ -1253,23 +1253,29 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     ? `${chart.name} is a ${cogProfile.label}: ${cogProfile.processing}. Real-world application: ${cogProfile.application}.${intakeStyle ? ` Intake note (3rd-house cusp in ${thirdCuspSign}): ${intakeStyle}.` : ""}${rulerNudge ? ` Add: ${rulerNudge}.` : ""}`
     : `${chart.name} learns best at their own pace and through their own filter.${rulerNudge ? ` ${rulerNudge.charAt(0).toUpperCase() + rulerNudge.slice(1)}.` : ""}`;
 
-  const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
+  // Personal Standards / Boundary is a COMMUNICATION STRATEGY, not a restatement
+  // of the Mastery Spot. We translate the Saturn theme into an actual script
+  // (what to say, what to avoid) and pair it with the Mars-based nervous-system
+  // reset. We never re-quote the inner-Saturn struggle line here — that lives
+  // in the Mastery Spot.
+  const commScript = saturnSign ? SATURN_COMMUNICATION_SCRIPT[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
-  // Adult voice uses "Course correct" + Saturn-house Standard framing
   let boundary: string;
   if (isAdultLike) {
     const standardClause = saturnAdultLabel
-      ? ` The boundary here is really a ${saturnAdultLabel}: ${chart.name} needs to know this territory is theirs to set, not anyone else's to approve.`
+      ? ` Frame it as a ${saturnAdultLabel} — this territory is theirs to set, not anyone else's to approve.`
       : "";
-    const marsClause = boundaryMars ? ` When the nervous system overheats, the reset is: ${boundaryMars}.` : "";
-    const satClause = boundarySaturn ? ` Their inner Saturn is already busy ${boundarySaturn}, so harsh self-correction lands as "I am defective," not "I made a mistake."` : "";
-    boundary = `Course correct, don't punish.${marsClause}${satClause}${standardClause}`.trim();
+    const resetClause = boundaryMars ? ` If the nervous system is already hot, reset first: ${boundaryMars}, then deliver the line.` : "";
+    const scriptClause = commScript
+      ? ` Try the opener: ${commScript.opener} Avoid ${commScript.avoid}, which collapses the conversation before it starts.`
+      : "";
+    boundary = `Course correct through language, not pressure.${scriptClause}${resetClause}${standardClause}`.trim();
   } else {
-    boundary = boundaryMars && boundarySaturn
-      ? `Redirect, do not punish. ${chart.name}'s nervous system needs you to ${boundaryMars} before the boundary lands. Frame the limit as structure, not shame: their Saturn is already busy ${boundarySaturn}, so a harsh tone here registers as "I am defective," not "I made a mistake."`
-      : boundaryMars
-        ? `Redirect first: ${boundaryMars}. Then state the limit calmly as structure, not shame.`
-        : "Redirect physically first; state the limit calmly as structure, not shame.";
+    const resetClause = boundaryMars ? ` First, regulate the body: ${boundaryMars}.` : "";
+    const scriptClause = commScript
+      ? ` Then use the opener: ${commScript.opener} Avoid ${commScript.avoid} — for them, that tone registers as "I am defective," not "I made a mistake."`
+      : " Then state the limit calmly as structure, not shame.";
+    boundary = `Redirect, then communicate.${resetClause}${scriptClause}`.trim();
   }
 
 
