@@ -1038,7 +1038,7 @@ export type DevelopmentalStage =
   | "Mars / Identity Phase (13-21)"
   | "Saturn Return: Building the Foundation (22-35)"
   | "Uranus Opposition: Mid-Life Awakening (36-45)"
-  | "Chiron Return: Sacred Healing (46-55)"
+  | "Chiron Return: The Wound Becomes Expertise (46-55)"
   | "Second Saturn Return: Mentorship and Legacy (56-70)"
   | "Eldering Threshold: Integration of the Soul Story (70+)";
 
@@ -1294,12 +1294,11 @@ function buildAdultAnchor(
     };
   }
   if (age <= 55) {
-    const jup = jupiterSign ? ` Jupiter in ${jupiterSign} is the meaning-maker that turns the wound into teaching.` : "";
-    const chi = chironSign ? `Chiron in ${chironSign} is returning to its natal place around age 50.` : "Chiron is returning to its natal place around age 50.";
+    const jup = jupiterSign ? ` Jupiter in ${jupiterSign} gives them the exact language to teach what they lived through.` : "";
     return {
-      stage: "Chiron Return: Sacred Healing (46-55)",
+      stage: "Chiron Return: The Wound Becomes Expertise (46-55)",
       focus: `${sunFocus} · Chiron ${chironSign ? `in ${chironSign}` : ""} · Jupiter ${jupiterSign ? `in ${jupiterSign}` : ""}`.trim(),
-      body: `${chi} ${name} is being asked to find the wisdom in the wound, not to re-injure but to integrate. What used to be "the sore spot" becomes the credential.${jup} The struggle continues to be ${sat}, but with more authority now.`,
+      body: `The biggest struggle ${name} had in their twenties is finally becoming their greatest strength. The sore spot is not getting bigger; other people are starting to come to ${name} for help with it.${jup} The old "${sat}" pressure is still there, but now ${name} is running the show instead of auditioning for it.`,
     };
   }
   if (age <= 70) {
@@ -1397,7 +1396,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         : "Moon";
     const safety = moonSign ? MOON_SAFETY_BY_SIGN[moonSign] : "predictability, calm tone, and being met where they are";
     const houseClause = moonHouse ? ` Their emotional weather plays out around ${HOUSE_THEME[moonHouse]}.` : "";
-    body = `At this age, their whole nervous system is the curriculum. ${chart.name}'s safety is built through ${safety}.${houseClause} Repetition of small calm moments matters more than any single big talk.`;
+    body = `${chart.name} is learning safety through their body, not through words. What builds it is ${safety}.${houseClause} Small, calm, repeated moments do more than any single big talk.`;
     if (hardToMoon.length > 0) {
       const top = hardToMoon[0];
       extraHolding = MOON_HARD_ASPECT_NOTE[top.to];
@@ -1473,7 +1472,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the soul's stretch: ${nnDefault}. It will feel uncomfortable on purpose.`
       : phase === "elder"
         ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""}: the lessons mastered here are ${nnDefault}. This is the wisdom they've earned the right to teach.`
-        : `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the unfolding future: ${nnDefault}. It still feels uncomfortable on purpose, and it is the most honest direction.`
+        : `The most honest direction for ${chart.name} right now is ${nnDefault}. It feels uncomfortable on purpose — that discomfort is the signal they are headed the right way (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
     : "";
   const snSign = SouthNode?.sign;
   const snHouse = houseOf(chart, SouthNode);
@@ -1490,12 +1489,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   // Adult-only "trade X for Y" pivot line
   const tradeLine = phase === "adult" && snTired && nnCall
-    ? `Trade ${snTired} for ${nnCall}. The Tired Habit feels safe, but the Vitalizing Edge is where the actual life is right now.`
+    ? `Stop ${snTired}. Start ${nnCall}. The old habit feels safe, but the energy has already left it — the aliveness is on the other side.`
     : undefined;
 
-  // For adults, reframe NN line as "The Vitalizing Edge"
+  // For adults, lead with the bottom-line interpretation
   const nnLineFinal = nnSign && phase === "adult"
-    ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the Vitalizing Edge: ${nnDefault}. This is where energy returns when ${chart.name} stops doing the Tired Habit and lets this lead instead.`
+    ? `Where ${chart.name}'s energy actually returns right now: ${nnDefault}. Every time they default to the old habit instead, they feel flat — that flatness is the signal to pivot here (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
     : nnLine;
 
   // === 3. Mastery Spot ====================================================
@@ -1527,7 +1526,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         house: chironHouse,
         tender: chironTender,
         howToSupport: isAdultLike
-          ? `This is no longer a wound to manage: it is the credential ${chart.name} has earned the right to teach from. The thing they felt "less than" about in their twenties (${chironTender}) is exactly the territory they can now walk other people through. Stop protecting the scar. Show it on purpose.`
+          ? `The thing ${chart.name} felt "less than" about in their twenties (${chironTender}) is exactly what other people now need their help with. It stopped being a wound to hide and became the reason people trust them. Stop protecting the scar. Show it on purpose.`
           : `When ${chart.name} bumps this wound, the antidote is never "you shouldn't feel that way." Name it: "I can see this is the sore spot. I am not going anywhere." Repair after rupture, every time.`,
       }
     : undefined;
@@ -1536,8 +1535,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   let chironReturnSpotlight: ChildPortrait["chironReturnSpotlight"] = undefined;
   if (age != null && age >= 45 && age <= 52 && chironSign) {
     chironReturnSpotlight = {
-      title: "The Credentialing of the Wound",
-      body: `${chart.name} is inside the Chiron Return window (peaking around age 50). This is the soul of the reading right now. The exact thing they felt "less than" about in their twenties, ${chironTender} in ${chironSign}${chironHouse ? ` (${ordinal(chironHouse)} house)` : ""}, is being formally credentialed. The wound is not getting bigger; it is becoming the curriculum. What used to drain them is exactly what they are now qualified to teach, mentor, or hold space around. The job in this window is not more healing for themselves: it is letting other people benefit from the path they already walked.`,
+      title: "The Wound Becomes the Expertise",
+      body: `The biggest thing ${chart.name} struggled with in their twenties — ${chironTender} (Chiron in ${chironSign}${chironHouse ? `, ${ordinal(chironHouse)} house` : ""}) — is finally becoming their greatest strength. This is the heart of the reading right now. The wound is not getting louder; other people are starting to come to ${chart.name} for help with the exact thing that used to hurt. The job this decade is not more healing for themselves. It is letting other people benefit from the path they already walked.`,
     };
   }
 
