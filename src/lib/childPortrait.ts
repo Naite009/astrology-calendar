@@ -739,6 +739,55 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
       ? `Redirect first: ${boundaryMars}. Then state the limit calmly as structure, not shame.`
       : "Redirect physically first; state the limit calmly as structure, not shame.";
 
+  // === 5. SYNTHESIS: Core Conflict (luminary in hard aspect to Saturn/Pluto/Uranus) ===
+  let coreConflict: ChildPortrait["coreConflict"] = undefined;
+  const HARD_OUTERS = ["Saturn", "Pluto", "Uranus"];
+  const candidates: Array<{ luminary: "Sun" | "Moon"; luminarySign: string; outerPlanet: string; outerSign: string; aspect: AspectName; orb: number }> = [];
+  for (const a of sunAspects) {
+    if (HARD_ASPECTS.includes(a.aspect) && HARD_OUTERS.includes(a.to) && sunSign && planets[a.to]?.sign) {
+      candidates.push({ luminary: "Sun", luminarySign: sunSign, outerPlanet: a.to, outerSign: planets[a.to]!.sign!, aspect: a.aspect, orb: a.orb });
+    }
+  }
+  for (const a of moonAspects) {
+    if (HARD_ASPECTS.includes(a.aspect) && HARD_OUTERS.includes(a.to) && moonSign && planets[a.to]?.sign) {
+      candidates.push({ luminary: "Moon", luminarySign: moonSign, outerPlanet: a.to, outerSign: planets[a.to]!.sign!, aspect: a.aspect, orb: a.orb });
+    }
+  }
+  candidates.sort((a, b) => a.orb - b.orb);
+  if (candidates.length > 0) {
+    const c = candidates[0];
+    const lumFlavor = SIGN_FLAVOR_ADJ[c.luminarySign] ?? c.luminarySign;
+    const audit = OUTER_AUDIT_VOICE[c.outerPlanet] ?? "an inner pressure";
+    const fear = OUTER_FEAR_LINE[c.outerPlanet] ?? "afraid of getting it wrong";
+    const luminaryNature = LUMINARY_NATURE_LINE[c.luminary];
+    const aspectVerb = c.aspect === "opposition" ? "is in opposition to" : c.aspect === "square" ? "is squared by" : "is conjunct";
+    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). Because their ${luminaryNature} is constantly being audited by ${audit}, their natural ${lumFlavor} edge keeps getting second-guessed in real time. This is why they may seem distant, over-prepared, or "logical" when they are actually just ${fear}. The work is not to silence the ${c.outerPlanet}, but to let the ${c.luminarySign} ${c.luminary} lead first and have ${c.outerPlanet} edit second, instead of the other way around.`;
+    coreConflict = { ...c, synthesis };
+  }
+
+  // === 6. SYNTHESIS: Hidden Engine (3rd house ruler) ======================
+  let hiddenEngine: ChildPortrait["hiddenEngine"] = undefined;
+  if (thirdCuspSign && thirdRulerName && thirdRulerSign) {
+    const voice = THIRD_HOUSE_VOICE_TONE[thirdCuspSign] ?? "their own";
+    const undercurrent = RULER_UNDERCURRENT_BY_SIGN[thirdRulerSign] ?? "a private undercurrent";
+    const domain = thirdRulerHouse ? HOUSE_UNDERCURRENT_DOMAIN[thirdRulerHouse] : null;
+    const domainClause = domain ? `, ${domain}` : "";
+    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. Underneath the surface tone there is ${undercurrent}${domainClause}. If ${chart.name} suddenly goes quiet or careful, they are not being passive: they are managing that undercurrent in real time so it doesn't leak out as too much.`;
+    hiddenEngine = {
+      thirdSign: thirdCuspSign,
+      rulerName: thirdRulerName,
+      rulerSign: thirdRulerSign,
+      rulerHouse: thirdRulerHouse,
+      synthesis,
+    };
+  }
+
+  // === 7. SYNTHESIS: Shadow Guidance (South Node in 6/8/12) ===============
+  let shadowGuidance: ChildPortrait["shadowGuidance"] = undefined;
+  if (snHouse && HIDDEN_HOUSE_SHADOW[snHouse]) {
+    shadowGuidance = { southHouse: snHouse, instruction: HIDDEN_HOUSE_SHADOW[snHouse] };
+  }
+
   return {
     name: chart.name,
     age,
@@ -746,6 +795,9 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     lifePhase: lifePhaseFor(age),
 
     developmentalAnchor: { stage, focus, body, extraHolding },
+    coreConflict,
+    hiddenEngine,
+    shadowGuidance,
     identityInvitation: {
       rising: ascSign ? { sign: ascSign, line: risingLine } : undefined,
       sun: sunSign ? { sign: sunSign, house: sunHouse, line: sunLine } : undefined,
@@ -767,3 +819,4 @@ export function buildChildPortrait(chart: NatalChart): ChildPortrait | null {
     },
   };
 }
+
