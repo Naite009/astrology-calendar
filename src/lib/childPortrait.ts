@@ -939,8 +939,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       : "A daily 5-minute ritual that respects their nervous system.";
 
   const learnLine = mercurySign ? MERCURY_LEARNING_BY_SIGN[mercurySign] : "their own pace and method";
+  const paceLine = mercurySign && MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]
+    ? ` The 'why' under that: with ${mercurySign} Mercury, the nervous system is ${MERCURY_NERVOUS_SYSTEM_PACE[mercurySign]}.`
+    : "";
   const rulerNudge = thirdRulerName ? ` Add: ${THIRD_HOUSE_RULER_NUDGE[thirdRulerName] ?? ""}.` : "";
-  const learningStyle = `${chart.name} learns best ${learnLine}.${rulerNudge}`;
+  const learningStyle = `${chart.name} learns best ${learnLine}.${paceLine}${rulerNudge}`;
 
   const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
