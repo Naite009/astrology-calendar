@@ -346,7 +346,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {portrait.pressureSignature.bodySign} {portrait.pressureSignature.body}
                     {portrait.pressureSignature.bodyHouse ? ` · ${portrait.pressureSignature.bodyHouse}th house` : ""} · needs {portrait.pressureSignature.needLabel}
                   </div>
-                  <p className="text-purple-950 dark:text-purple-50 text-sm leading-relaxed">{portrait.pressureSignature.line}</p>
+                  <DecipherToggle original={portrait.pressureSignature.line} realTalk={portrait.pressureSignature.realTalk} textClass="text-purple-950 dark:text-purple-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
