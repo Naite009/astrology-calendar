@@ -213,11 +213,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   ? "what follows is not a horoscope. It is a portrait of the soul story they have lived and the wisdom now ready to be transmitted: what was carried, what was healed, and what is being handed to the next generation."
                   : "what follows is not a horoscope. It is a portrait of the developmental work this person is doing at this exact life stage, the outer-planet cycles activating now, and how to meet themselves with more truth and less performance.";
               const curriculumTitle = isChild
-                ? "The Soul Curriculum"
+                ? "The Soul Work"
                 : isElder
-                  ? "The Soul Curriculum — Lessons Mastered"
-                  : "The Soul Curriculum — Habitual Past & Unfolding Future";
-              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Vitalizing Edge";
+                  ? "The Soul Work — Lessons Mastered"
+                  : "The Soul Work — Old Habit & Honest Direction";
+              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · Where Energy Returns";
               const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Tired Habit";
               return (
                 <>
@@ -292,7 +292,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {portrait.identityInvitation.tradeLine && (
                       <div className="rounded-md border-l-4 border-fuchsia-500/70 bg-fuchsia-50 dark:bg-fuchsia-950/30 p-3 mt-2">
                         <div className="text-[10px] uppercase tracking-wider font-bold text-fuchsia-700 dark:text-fuchsia-300 mb-1">
-                          The Pivot · Trade Tired Habit for Vitalizing Edge
+                          The Pivot · Drop the Tired Habit, Choose Where Energy Returns
                         </div>
                         <p className="text-fuchsia-950 dark:text-fuchsia-50 text-sm leading-relaxed">{portrait.identityInvitation.tradeLine}</p>
                       </div>
@@ -491,8 +491,8 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               const masterySub = portrait.lifePhase === "child"
                 ? "Not wounds. Practice rooms. These are the places mastery is built, slowly, with a witness."
                 : portrait.lifePhase === "elder"
-                  ? "These are the places they've earned the right to mentor from. The scar is now the credential."
-                  : "These are the places mastery has been built through repetition and pressure. This is where the credential lives.";
+                  ? "These are the places other people now come to them for help. The scar became the reason people trust them."
+                  : "These are the places mastery has been built through repetition and pressure. This is where they actually know what they're doing.";
               const supportLabel = portrait.lifePhase === "child"
                 ? "How to support"
                 : "How to partner with this energy";
