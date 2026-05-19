@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Baby, Sparkles, Mountain, Heart, Anchor, BookOpen, Shield } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Baby, Sparkles, Mountain, Heart, Anchor, BookOpen, Shield, Star, ChevronsUpDown, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { FamilyRole } from "@/lib/parentChildSynastry";
 import { buildChildPortrait } from "@/lib/childPortrait";
@@ -15,13 +18,24 @@ interface Member {
 
 interface Props {
   members: Member[];
+  primaryChartId?: string | null;
 }
 
-export function ChildPortraitCard({ members }: Props) {
-  const people = useMemo(() => members.filter((m) => !!m.chart?.id), [members]);
+export function ChildPortraitCard({ members, primaryChartId }: Props) {
+  const people = useMemo(() => {
+    const filtered = members.filter((m) => !!m.chart?.id);
+    return filtered.sort((a, b) => {
+      const aPrimary = primaryChartId && a.chart.id === primaryChartId;
+      const bPrimary = primaryChartId && b.chart.id === primaryChartId;
+      if (aPrimary && !bPrimary) return -1;
+      if (!aPrimary && bPrimary) return 1;
+      return (a.chart.name ?? "").localeCompare(b.chart.name ?? "");
+    });
+  }, [members, primaryChartId]);
   const [selectedId, setSelectedId] = useState<string | null>(
     people.length === 1 ? people[0].chart.id : null,
   );
+  const [open, setOpen] = useState(false);
 
   if (people.length === 0) return null;
 
@@ -45,20 +59,61 @@ export function ChildPortraitCard({ members }: Props) {
         <div className="flex items-end gap-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Choose a person</div>
-            <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v || null)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a person to see their portrait" />
-              </SelectTrigger>
-              <SelectContent>
-                {people.map((c) => (
-                  <SelectItem key={c.chart.id} value={c.chart.id}>
-                    {c.chart.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between font-normal"
+                >
+                  <span className="truncate flex items-center gap-1.5">
+                    {selected ? (
+                      <>
+                        {primaryChartId && selected.chart.id === primaryChartId && (
+                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        )}
+                        {selected.chart.name}
+                      </>
+                    ) : (
+                      "Select a person to see their portrait"
+                    )}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[320px] p-0 z-50 bg-background" align="start">
+                <Command>
+                  <CommandInput placeholder="Search people..." />
+                  <CommandList className="max-h-[300px]">
+                    <CommandEmpty>No person found.</CommandEmpty>
+                    <CommandGroup>
+                      {people.map((c) => {
+                        const isPrimary = primaryChartId && c.chart.id === primaryChartId;
+                        return (
+                          <CommandItem
+                            key={c.chart.id}
+                            value={c.chart.name ?? c.chart.id}
+                            onSelect={() => {
+                              setSelectedId(c.chart.id);
+                              setOpen(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", selectedId === c.chart.id ? "opacity-100" : "opacity-0")} />
+                            {isPrimary && <Star className="mr-1.5 h-3.5 w-3.5 fill-amber-400 text-amber-400 shrink-0" />}
+                            <span className="truncate">{c.chart.name}</span>
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
+
 
         {!portrait && (
           <p className="text-muted-foreground italic">Pick a person above to generate their portrait.</p>
