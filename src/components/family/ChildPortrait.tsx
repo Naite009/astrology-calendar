@@ -67,150 +67,191 @@ export function ChildPortraitCard({ members }: Props) {
 
         {portrait && (
           <div className="space-y-5">
-            {/* Letter opening */}
-            <div className="rounded-md border border-primary/40 bg-background/60 p-4">
-              <p className="text-sm leading-relaxed">
-                A note about <span className="font-semibold">{portrait.name}</span>
-                {portrait.age != null && <span className="text-muted-foreground"> (age {portrait.age})</span>}:
-                what follows is not a horoscope. It is a portrait of the developmental work this specific child is doing
-                right now, and what they need from the adults around them to do it well.
-              </p>
-            </div>
+            {(() => {
+              const isChild = portrait.lifePhase === "child";
+              const isElder = portrait.lifePhase === "elder";
+              const openingBody = isChild
+                ? "what follows is not a horoscope. It is a portrait of the developmental work this specific child is doing right now, and what they need from the adults around them to do it well."
+                : isElder
+                  ? "what follows is not a horoscope. It is a portrait of the soul story they have lived and the wisdom now ready to be transmitted: what was carried, what was healed, and what is being handed to the next generation."
+                  : "what follows is not a horoscope. It is a portrait of the developmental work this person is doing at this exact life stage, the outer-planet cycles activating now, and how to meet themselves with more truth and less performance.";
+              const curriculumTitle = isChild
+                ? "The Soul Curriculum"
+                : isElder
+                  ? "The Soul Curriculum — Lessons Mastered"
+                  : "The Soul Curriculum — Habitual Past & Unfolding Future";
+              const nnLabel = isChild ? "North Node · The Stretch" : isElder ? "North Node · Wisdom Earned" : "North Node · The Unfolding Future";
+              const snLabel = isChild ? "South Node · Default Mode Under Stress" : isElder ? "South Node · The Old Friend No Longer Needed" : "South Node · The Habitual Past";
+              return (
+                <>
+                  <div className="rounded-md border border-primary/40 bg-background/60 p-4">
+                    <p className="text-sm leading-relaxed">
+                      A note about <span className="font-semibold">{portrait.name}</span>
+                      {portrait.age != null && <span className="text-muted-foreground"> (age {portrait.age})</span>}:{" "}
+                      {openingBody}
+                    </p>
+                  </div>
 
-            {/* 1. Developmental Anchor */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Anchor className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">The Developmental Anchor</div>
-                <Badge variant="outline" className="text-[10px]">{portrait.developmentalAnchor.stage}</Badge>
-              </div>
-              <div className="rounded-md border border-border bg-background/40 p-3 space-y-2">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Where the work lives right now</div>
-                <div className="font-medium">{portrait.developmentalAnchor.focus}</div>
-                <p className="text-muted-foreground leading-relaxed">{portrait.developmentalAnchor.body}</p>
-                {portrait.developmentalAnchor.extraHolding && (
-                  <div className="rounded border-l-4 border-amber-500/70 bg-amber-50 dark:bg-amber-950/30 p-3 mt-2">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1">
-                      Extra holding needed
+                  <section className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Anchor className="h-4 w-4 text-primary" />
+                      <div className="font-semibold text-base">The Developmental Anchor</div>
+                      <Badge variant="outline" className="text-[10px]">{portrait.developmentalAnchor.stage}</Badge>
                     </div>
-                    <p className="text-amber-950 dark:text-amber-50 text-sm">{portrait.developmentalAnchor.extraHolding}</p>
-                  </div>
-                )}
-              </div>
-            </section>
+                    <div className="rounded-md border border-border bg-background/40 p-3 space-y-2">
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Where the work lives right now</div>
+                      <div className="font-medium">{portrait.developmentalAnchor.focus}</div>
+                      <p className="text-muted-foreground leading-relaxed">{portrait.developmentalAnchor.body}</p>
+                      {portrait.developmentalAnchor.extraHolding && (
+                        <div className="rounded border-l-4 border-amber-500/70 bg-amber-50 dark:bg-amber-950/30 p-3 mt-2">
+                          <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 mb-1">
+                            {isChild ? "Extra holding needed" : "Tender area to honor"}
+                          </div>
+                          <p className="text-amber-950 dark:text-amber-50 text-sm">{portrait.developmentalAnchor.extraHolding}</p>
+                        </div>
+                      )}
+                    </div>
+                  </section>
 
-            {/* 2. Identity Invitation */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">The Identity Invitation</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {portrait.identityInvitation.rising && (
-                  <div className="rounded-md border border-sky-300/60 bg-sky-50 dark:bg-sky-950/30 p-3 space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
-                      Rising · The Filter
+                  <section className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <div className="font-semibold text-base">{curriculumTitle}</div>
                     </div>
-                    <p className="text-sky-950 dark:text-sky-50 text-sm">{portrait.identityInvitation.rising.line}</p>
-                  </div>
-                )}
-                {portrait.identityInvitation.sun && (
-                  <div className="rounded-md border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
-                      Sun · What They're Practicing
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {portrait.identityInvitation.rising && (
+                        <div className="rounded-md border border-sky-300/60 bg-sky-50 dark:bg-sky-950/30 p-3 space-y-1">
+                          <div className="text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
+                            Rising · The Filter
+                          </div>
+                          <p className="text-sky-950 dark:text-sky-50 text-sm">{portrait.identityInvitation.rising.line}</p>
+                        </div>
+                      )}
+                      {portrait.identityInvitation.sun && (
+                        <div className="rounded-md border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
+                          <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
+                            Sun · What They're Practicing
+                          </div>
+                          <p className="text-amber-950 dark:text-amber-50 text-sm">{portrait.identityInvitation.sun.line}</p>
+                        </div>
+                      )}
+                      {portrait.identityInvitation.northNode && (
+                        <div className="rounded-md border border-emerald-300/60 bg-emerald-50 dark:bg-emerald-950/30 p-3 space-y-1">
+                          <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
+                            {nnLabel}
+                          </div>
+                          <p className="text-emerald-950 dark:text-emerald-50 text-sm">{portrait.identityInvitation.northNode.line}</p>
+                        </div>
+                      )}
+                      {portrait.identityInvitation.southNode && (
+                        <div className="rounded-md border border-purple-300/60 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-1">
+                          <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
+                            {snLabel}
+                          </div>
+                          <p className="text-purple-950 dark:text-purple-50 text-sm">{portrait.identityInvitation.southNode.line}</p>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-amber-950 dark:text-amber-50 text-sm">{portrait.identityInvitation.sun.line}</p>
-                  </div>
-                )}
-                {portrait.identityInvitation.northNode && (
-                  <div className="rounded-md border border-emerald-300/60 bg-emerald-50 dark:bg-emerald-950/30 p-3 space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
-                      North Node · The Stretch
-                    </div>
-                    <p className="text-emerald-950 dark:text-emerald-50 text-sm">{portrait.identityInvitation.northNode.line}</p>
-                  </div>
-                )}
-                {portrait.identityInvitation.southNode && (
-                  <div className="rounded-md border border-purple-300/60 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
-                      South Node · Default Mode Under Stress
-                    </div>
-                    <p className="text-purple-950 dark:text-purple-50 text-sm">{portrait.identityInvitation.southNode.line}</p>
-                  </div>
-                )}
-              </div>
-            </section>
+                  </section>
+                </>
+              );
+            })()}
+
 
             {/* 3. Mastery Spot */}
-            {(portrait.masterySpot.saturn || portrait.masterySpot.chiron) && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Mountain className="h-4 w-4 text-primary" />
-                  <div className="font-semibold text-base">The Mastery Spot (Sacred Struggles)</div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Not wounds. Practice rooms. These are the places mastery is built, slowly, with a witness.
-                </p>
-                <div className="space-y-2">
-                  {portrait.masterySpot.saturn && (
-                    <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
-                      <div className="font-semibold text-sm">
-                        Saturn in {portrait.masterySpot.saturn.sign}
-                        {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+            {(portrait.masterySpot.saturn || portrait.masterySpot.chiron) && (() => {
+              const masteryTitle = portrait.lifePhase === "child"
+                ? "The Mastery Spot — Where they need a witness"
+                : portrait.lifePhase === "elder"
+                  ? "The Mastery Spot — Wisdom they carry for the next generation"
+                  : "The Mastery Spot — Area of professional and personal mastery";
+              const masterySub = portrait.lifePhase === "child"
+                ? "Not wounds. Practice rooms. These are the places mastery is built, slowly, with a witness."
+                : portrait.lifePhase === "elder"
+                  ? "These are the places they've earned the right to mentor from. The scar is now the credential."
+                  : "These are the places mastery has been built through repetition and pressure. This is where the credential lives.";
+              const supportLabel = portrait.lifePhase === "child"
+                ? "How to support"
+                : portrait.lifePhase === "elder"
+                  ? "How they transmit it"
+                  : "How they leverage it";
+              return (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mountain className="h-4 w-4 text-primary" />
+                    <div className="font-semibold text-base">{masteryTitle}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{masterySub}</p>
+                  <div className="space-y-2">
+                    {portrait.masterySpot.saturn && (
+                      <div className="rounded-md border-l-4 border-slate-500/70 bg-slate-50 dark:bg-slate-900/40 p-3 space-y-1">
+                        <div className="font-semibold text-sm">
+                          Saturn in {portrait.masterySpot.saturn.sign}
+                          {portrait.masterySpot.saturn.house ? ` · ${portrait.masterySpot.saturn.house}th house` : ""}
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.saturn.howToSupport}
+                        </p>
                       </div>
-                      <p className="text-sm">
-                        <span className="font-semibold">The struggle:</span> {portrait.masterySpot.saturn.struggle}.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">How to support:</span> {portrait.masterySpot.saturn.howToSupport}
-                      </p>
-                    </div>
-                  )}
-                  {portrait.masterySpot.chiron && (
-                    <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
-                      <div className="font-semibold text-sm">
-                        Chiron in {portrait.masterySpot.chiron.sign}
-                        {portrait.masterySpot.chiron.house ? ` · ${portrait.masterySpot.chiron.house}th house` : ""}
+                    )}
+                    {portrait.masterySpot.chiron && (
+                      <div className="rounded-md border-l-4 border-rose-500/70 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
+                        <div className="font-semibold text-sm">
+                          Chiron in {portrait.masterySpot.chiron.sign}
+                          {portrait.masterySpot.chiron.house ? ` · ${portrait.masterySpot.chiron.house}th house` : ""}
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-semibold">The tender spot:</span> {portrait.masterySpot.chiron.tender}.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.chiron.howToSupport}
+                        </p>
                       </div>
-                      <p className="text-sm">
-                        <span className="font-semibold">The tender spot:</span> {portrait.masterySpot.chiron.tender}.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">How to support:</span> {portrait.masterySpot.chiron.howToSupport}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
+                    )}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* 4. How-To Executive Summary */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">The How-To Summary</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
-                    <Heart className="h-3 w-3" /> The Ritual
+            {(() => {
+              const isChild = portrait.lifePhase === "child";
+              const ritualLabel = isChild ? "The Ritual" : "Energy Management";
+              const boundaryLabel = isChild ? "The Boundary" : "Personal Standards";
+              const sectionTitle = isChild ? "The How-To Summary" : "The Interaction Guide";
+              return (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <div className="font-semibold text-base">{sectionTitle}</div>
                   </div>
-                  <p className="text-sm">{portrait.howTo.ritual}</p>
-                </div>
-                <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
-                    <BookOpen className="h-3 w-3" /> The Learning Style
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
+                        <Heart className="h-3 w-3" /> {ritualLabel}
+                      </div>
+                      <p className="text-sm">{portrait.howTo.ritual}</p>
+                    </div>
+                    <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
+                        <BookOpen className="h-3 w-3" /> The Learning Style
+                      </div>
+                      <p className="text-sm">{portrait.howTo.learningStyle}</p>
+                    </div>
+                    <div className="rounded-md border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
+                        <Shield className="h-3 w-3" /> {boundaryLabel}
+                      </div>
+                      <p className="text-sm">{portrait.howTo.boundary}</p>
+                    </div>
                   </div>
-                  <p className="text-sm">{portrait.howTo.learningStyle}</p>
-                </div>
-                <div className="rounded-md border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
-                    <Shield className="h-3 w-3" /> The Boundary
-                  </div>
-                  <p className="text-sm">{portrait.howTo.boundary}</p>
-                </div>
-              </div>
-            </section>
+                </section>
+              );
+            })()}
+
 
             {/* 5. Math Check (collapsible) */}
             <details className="rounded-md border border-dashed border-border bg-background/40 group">
