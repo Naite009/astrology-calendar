@@ -415,6 +415,103 @@ const HOUSE_UNDERCURRENT_DOMAIN: Record<number, string> = {
   12: "running in the inner, private world",
 };
 
+// Mercury sign → nervous-system pace (the "why" behind the learning style)
+const MERCURY_NERVOUS_SYSTEM_PACE: Record<string, string> = {
+  Aries: "fast, urgency-driven, fires before fully thinking; needs a real stake to lock in",
+  Taurus: "slow, sensory, repetition-friendly; needs to touch the thing and not be rushed",
+  Gemini: "quick and branching; connects many small pieces in real time, gets bored if it stalls",
+  Cancer: "story- and feeling-first; needs emotional context before facts will actually land",
+  Leo: "warms up through performance; explaining it out loud is how the wiring locks in",
+  Virgo: "step-by-step and methodical; gets anxious without a clean procedure to follow",
+  Libra: "thinks by comparing options out loud with another person; needs a sounding board",
+  Scorpio: "single-focus, deep-dive; needs the hidden 'why' before any surface detail will stick",
+  Sagittarius: "big-picture first; the meaning has to be named before the details register",
+  Capricorn: "structured and milestone-driven; needs to see the whole staircase to start the first step",
+  Aquarius: "needs to understand the 'system' before the 'task'; context first, instructions second",
+  Pisces: "image-, metaphor- and music-based; facts arrive sideways through story and atmosphere",
+};
+
+// Tight planetary "conversations" — short, behavioral readings for the Mastery Spot.
+// Keys are sorted "A-B" alphabetically so lookup is deterministic.
+const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
+  "Moon-Sun": {
+    hard: "an internal head/heart split — what they want and what they need don't always match, and they feel both pulls at once",
+    soft: "internal alignment between what they want and what they need — the inside and the outside agree",
+  },
+  "Saturn-Sun": {
+    hard: "an inner critic that audits every move and asks 'is this good enough yet?' before they've even started",
+    soft: "natural discipline and the ability to play the long game without burning out",
+  },
+  "Pluto-Sun": {
+    hard: "an all-or-nothing pressure around being seen — fully invisible or in full power, rarely in between",
+    soft: "natural depth and the ability to regenerate after intense seasons",
+  },
+  "Sun-Uranus": {
+    hard: "a freedom-versus-belonging tug — they bolt the second things feel boxed in",
+    soft: "originality and permission to be themselves without apology",
+  },
+  "Mars-Sun": {
+    hard: "drive on overdrive — they push through even when the body is asking them to slow",
+    soft: "clean courage and the ability to act on what matters without overthinking",
+  },
+  "Sun-Venus": {
+    hard: "identity tied to being liked — they may shape-shift a little to keep the love",
+    soft: "natural warmth and easy magnetism in how they show up",
+  },
+  "Neptune-Sun": {
+    hard: "an identity that blurs in groups — they absorb other people's roles and lose their own outline",
+    soft: "imagination and a compassionate, artistic sense of self",
+  },
+  "Jupiter-Sun": {
+    hard: "a tendency to over-promise or over-extend the self before checking capacity",
+    soft: "generosity, optimism, and natural authority",
+  },
+  "Chiron-Sun": {
+    hard: "a tender place where being fully themselves felt 'not allowed' early on",
+    soft: "the wisdom to see and name other people's hidden wounds with real care",
+  },
+  "Mars-Moon": {
+    hard: "feelings and actions on a hair-trigger — emotion fires before the pause arrives",
+    soft: "emotional courage and the ability to act on what they feel without freezing",
+  },
+  "Moon-Saturn": {
+    hard: "emotional self-protection — they may swallow the feeling instead of saying it out loud",
+    soft: "emotional steadiness and the ability to hold their own through hard moments",
+  },
+  "Moon-Pluto": {
+    hard: "feelings that arrive in big waves and need full expression before they can release",
+    soft: "emotional depth and the capacity to be with other people's intensity without flinching",
+  },
+  "Moon-Uranus": {
+    hard: "mood shifts that surprise even them — predictability has to be built, not assumed",
+    soft: "emotional originality and freedom from inherited family patterns",
+  },
+  "Moon-Neptune": {
+    hard: "emotional osmosis — they pick up the room's mood and carry it as if it were their own",
+    soft: "deep empathy and a poetic emotional sense",
+  },
+  "Jupiter-Moon": {
+    hard: "feelings that swell big — generosity that can leave them emotionally empty",
+    soft: "natural emotional warmth, faith, and easy generosity of heart",
+  },
+  "Moon-Venus": {
+    hard: "love and need tangled — they may confuse being needed with being loved",
+    soft: "emotional warmth, easy affection, and a soothing presence",
+  },
+  "Chiron-Moon": {
+    hard: "a tender early-comfort wound — small ruptures register much bigger than they look",
+    soft: "compassion and the gift of soothing others through their own remembered tenderness",
+  },
+  "Mercury-Moon": {
+    hard: "feelings and words running on different tracks — they may not have the language for what they feel in real time",
+    soft: "the gift of putting emotion into clear, honest language",
+  },
+};
+
+function aspectConversationKey(a: string, b: string): string {
+  return [a, b].sort().join("-");
+}
+
 const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
   6: "Handle their stress-responses through daily routine, not big sit-down confrontations. They process best while doing something side-by-side (walking, cooking, driving). Formal 'we need to talk' moments feel like an inspection and shut them down.",
   8: "Handle their stress-responses in private and with full honesty. Hidden tensions land harder than spoken ones for this person. They need transparency about what's really going on, never in front of an audience, and they need to know you can be trusted with the real story.",
