@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import type { FamilyRole } from "@/lib/parentChildSynastry";
 import { buildChildPortrait } from "@/lib/childPortrait";
+import { validateChart } from "@/lib/chartValidator";
+import { AlertTriangle } from "lucide-react";
 
 interface Member {
   chart: NatalChart;
