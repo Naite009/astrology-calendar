@@ -277,6 +277,23 @@ const SATURN_HOUSE_SUPPORT: Record<number, string> = {
   12: "their need for genuine alone-time — protect their rest and inner world",
 };
 
+// For adults: Saturn-by-house becomes a "Standard" they're claiming
+const SATURN_HOUSE_ADULT_STANDARD: Record<number, string> = {
+  1: "Self-Presentation Standard",
+  2: "Worth Standard",
+  3: "Voice Standard",
+  4: "Home Standard",
+  5: "Creative Standard",
+  6: "Daily-Practice Standard",
+  7: "Partnership Standard",
+  8: "Intimacy Standard",
+  9: "Belief Standard",
+  10: "Public-Role Standard",
+  11: "Community Standard",
+  12: "Solitude Standard",
+};
+
+
 const CHIRON_TENDER_BY_SIGN: Record<string, string> = {
   Aries: "feeling weak, behind, or 'less than' physically",
   Taurus: "feeling like they don't have enough or aren't enough materially",
