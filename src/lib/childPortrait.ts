@@ -725,6 +725,18 @@ export interface ChildPortrait {
     boundary: string;
   };
 
+  // NEW: Structured Cognitive Profile (replaces fortune-cookie learning adjectives)
+  cognitiveProfile?: {
+    mercurySign: string;
+    label: string;             // e.g. "Systems Architect (Lateral Thinker)"
+    processing: string;        // HOW the mind takes in information
+    blocker: string;           // what shuts the intake down
+    application: string;       // real-world "so what" for parents/partners
+    thirdCuspSign?: string;
+    intakeStyle?: string;      // 3rd-house cusp modifier
+    rulerNudge?: string;       // 3rd-house ruler nudge
+  };
+
   mathCheck: {
     thirdHouseSign?: string;
     thirdHouseRuler?: string;
