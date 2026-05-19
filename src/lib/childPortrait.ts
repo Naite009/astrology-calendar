@@ -925,6 +925,48 @@ export interface ChildPortrait {
     sunAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
     moonAspects: Array<{ to: string; aspect: AspectName; orb: number }>;
   };
+
+  // NEW · Friction Rule: house cusp sign (surface language) vs. its ruler's sign (inner OS).
+  // Same data the Hidden Engine reads, re-shaped with the "Cognitive Clash" formula in we/us voice.
+  cognitiveClash?: {
+    cuspSign: string;       // 3rd house cusp = surface language
+    rulerName: string;
+    rulerSign: string;      // internal operating system
+    rulerHouse: number | null;
+    friction: string;       // the specific friction
+    behavior: string;       // real-world behavior the friction produces
+    line: string;           // the full formatted paragraph
+  };
+
+  // NEW · Energy Rule: Mars by house = how the drive needs to discharge.
+  energyDischarge?: {
+    marsSign: string;
+    marsHouse: number;
+    action: string;     // how they reset
+    shadow: string;     // what happens if they can't
+    line: string;
+  };
+
+  // NEW · Aspect Rule: tightest aspect under 2.0° orb between any two of the named bodies.
+  internalTugOfWar?: {
+    a: string;
+    aSign: string;
+    b: string;
+    bSign: string;
+    aspect: AspectName;
+    orb: number;
+    goal: string;       // what Planet A wants
+    challenge: string;  // how Planet B audits it
+    external: string;   // how it looks from the outside
+    internal: string;   // what's actually felt inside
+    line: string;
+  };
+
+  // NEW · 12th House Rule: cloaking flag for any personal planet or chart ruler in 12.
+  cloakingNote?: {
+    bodies: Array<{ name: string; sign: string }>;   // planets sitting in the 12th
+    line: string;
+  };
 }
 
 
