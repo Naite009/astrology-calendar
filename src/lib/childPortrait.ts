@@ -1033,7 +1033,58 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     };
   }
 
+
+  // === 9. Chart Ruler ("Captain of the Ship") =============================
+  let chartRuler: ChildPortrait["chartRuler"] = undefined;
+  if (ascSign) {
+    const rulerName = TRADITIONAL_RULERS[ascSign];
+    const rulerPlanet = rulerName ? planets[rulerName] : undefined;
+    if (rulerName && rulerPlanet?.sign) {
+      const rulerHouse = houseOf(chart, rulerPlanet);
+      const flavor = SIGN_FLAVOR_ADJ[rulerPlanet.sign] ?? rulerPlanet.sign;
+      const domain = rulerHouse ? HOUSE_THEME[rulerHouse] : null;
+      const minorFrame = phase === "child"
+        ? "the engine they are practicing steering"
+        : "the engine driving the whole ship";
+      const line = `With ${ascSign} Rising, the Captain of the Ship is ${rulerName}. ${rulerName} is hanging out in ${rulerPlanet.sign}${rulerHouse ? ` in the ${ordinal(rulerHouse)} house` : ""}, which means ${chart.name}'s primary motivation runs through ${flavor} energy${domain ? `, channeled into ${domain}` : ""}. That is ${minorFrame}: the rest of the chart is the crew, but this is the one giving the orders.`;
+      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, ascSign, line };
+    }
+  }
+
+  // === 10. Tightest Planetary Conversations ===============================
+  // Prioritize tightest Sun/Moon aspects, then translate to behavioral language.
+  const seenPair = new Set<string>();
+  const luminaryConversations: Array<{ a: string; b: string; aspect: AspectName; orb: number; quality: "hard" | "soft"; line: string }> = [];
+  const pushAspect = (aFrom: "Sun" | "Moon", to: string, aspect: AspectName, orb: number) => {
+    const key = aspectConversationKey(aFrom, to);
+    if (seenPair.has(key)) return;
+    const lookup = ASPECT_CONVERSATION[key];
+    if (!lookup) return;
+    const quality: "hard" | "soft" = HARD_ASPECTS.includes(aspect) ? "hard" : "soft";
+    const text = quality === "hard" ? lookup.hard : lookup.soft;
+    const aspectLabel = quality === "hard" ? "in tension with" : "in flow with";
+    const aSign = aFrom === "Sun" ? sunSign : moonSign;
+    const bSign = planets[to]?.sign;
+    const minorFrame = phase === "child"
+      ? "This is a developmental edge they are practicing, not a flaw."
+      : "";
+    const line = `${aSign ? `${aSign} ` : ""}${aFrom} ${aspectLabel} ${bSign ? `${bSign} ` : ""}${to} (${aspect}, orb ${orb.toFixed(1)}°): ${text}.${minorFrame ? ` ${minorFrame}` : ""}`;
+    luminaryConversations.push({ a: aFrom, b: to, aspect, orb, quality, line });
+    seenPair.add(key);
+  };
+  // Walk tightest-first across both luminaries
+  const combined: Array<{ from: "Sun" | "Moon"; to: string; aspect: AspectName; orb: number }> = [
+    ...sunAspects.map(s => ({ from: "Sun" as const, to: s.to, aspect: s.aspect, orb: s.orb })),
+    ...moonAspects.map(m => ({ from: "Moon" as const, to: m.to, aspect: m.aspect, orb: m.orb })),
+  ].sort((a, b) => a.orb - b.orb);
+  for (const c of combined) {
+    if (luminaryConversations.length >= 3) break;
+    pushAspect(c.from, c.to, c.aspect, c.orb);
+  }
+  const tightestAspects = luminaryConversations.length > 0 ? luminaryConversations : undefined;
+
   return {
+
     name: chart.name,
     age,
     birthDate: chart.birthDate,
