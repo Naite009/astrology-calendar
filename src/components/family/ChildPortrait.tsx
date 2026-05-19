@@ -517,7 +517,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <p className="text-sm text-muted-foreground">
                           <span className="font-semibold text-foreground">{supportLabel}:</span> {portrait.masterySpot.chiron.howToSupport}
                         </p>
+                        {portrait.masterySpot.chiron.realTalk && (
+                          <MasteryDecipher realTalk={portrait.masterySpot.chiron.realTalk} />
+                        )}
                       </div>
+
                     )}
                   </div>
                   {portrait.tightestAspects && portrait.tightestAspects.length > 0 && (
