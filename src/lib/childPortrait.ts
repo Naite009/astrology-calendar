@@ -266,6 +266,26 @@ const SATURN_SACRED_STRUGGLE_BY_SIGN: Record<string, string> = {
   Pisces: "trusting structure and saying no without guilt",
 };
 
+// Communication scripts by Saturn sign. These are the *how to say it* phrases
+// used in the Personal Standards / Boundary section. They translate the inner
+// Saturn theme into a concrete sentence a parent or partner can actually use,
+// so the section is a Communication Strategy — not a restatement of the
+// Mastery Spot text.
+const SATURN_COMMUNICATION_SCRIPT: Record<string, { opener: string; avoid: string }> = {
+  Aries:       { opener: "\"You don't have to get it right on the first try — just start, and we'll adjust together.\"", avoid: "rushing them or calling them slow to act" },
+  Taurus:      { opener: "\"You have enough, and you are enough. Take the time you need.\"",                              avoid: "implying they're being greedy, stingy, or stuck" },
+  Gemini:      { opener: "\"Say it however it comes out — I'll meet you in the middle.\"",                                avoid: "correcting their words mid-sentence" },
+  Cancer:      { opener: "\"Being soft here is safe. I'm not going anywhere.\"",                                          avoid: "calling them too sensitive or dramatic" },
+  Leo:         { opener: "\"I see you, and being seen here won't cost you anything.\"",                                   avoid: "shaming them in front of other people" },
+  Virgo:       { opener: "\"This is already good enough. We're not graded on this.\"",                                    avoid: "pointing out the one small thing they missed" },
+  Libra:       { opener: "\"We can disagree on this and still be okay.\"",                                                avoid: "framing your difference as proof the bond is breaking" },
+  Scorpio:     { opener: "\"You can tell me the real version. I can handle it.\"",                                        avoid: "asking layered or interrogating questions" },
+  Sagittarius: { opener: "\"Your read on this counts. What does it look like from where you're standing?\"",              avoid: "telling them their meaning of it is wrong" },
+  Capricorn:   { opener: "\"You don't have to earn this with output. The standard is yours to set.\"",                    avoid: "tying your approval to what they produced" },
+  Aquarius:    { opener: "\"You don't have to fit in here to belong here.\"",                                             avoid: "guilt-tripping them into 'joining in'" },
+  Pisces:      { opener: "\"No is a complete sentence — you don't have to explain it.\"",                                 avoid: "pressuring them to justify a soft refusal" },
+};
+
 const SATURN_HOUSE_SUPPORT: Record<number, string> = {
   1: "their identity and physical presence — never tease their body or how they show up; affirm 'you get to take up space'",
   2: "their sense of worth and material safety — affirm 'you are enough as you are, with what you have'",
