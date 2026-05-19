@@ -290,17 +290,17 @@ const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
 
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
-  | "Moon (0-7)"
-  | "Mercury (8-12)"
-  | "Mars/Sun (13-18)"
-  | "Nodal Return / Emerging Adult (19-28)"
-  | "First Saturn Return (29-31)"
-  | "Settling Saturn (32-36)"
-  | "Uranus Opposition / Midlife (37-44)"
-  | "Chiron Return / Integration (45-55)"
-  | "Second Saturn Return / Eldering (56-62)"
-  | "Wisdom Years (63-83)"
-  | "Uranus Return / Third Saturn Return (84+)";
+  | "Lunar Phase (0-7)"
+  | "Mercury Phase (8-12)"
+  | "Mars / Identity Phase (13-21)"
+  | "Saturn Return: Building the Foundation (22-35)"
+  | "Uranus Opposition: Mid-Life Awakening (36-45)"
+  | "Chiron Return: Sacred Healing (46-55)"
+  | "Second Saturn Return: Mentorship and Legacy (56-70)"
+  | "Eldering Threshold: Integration of the Soul Story (70+)";
+
+export type LifePhaseGroup = "child" | "adult" | "elder";
+
 
 export interface ChildPortrait {
   name: string;
