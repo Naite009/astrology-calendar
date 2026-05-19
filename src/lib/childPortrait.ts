@@ -1713,7 +1713,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const friction = CLASH_FRICTION_BY_RULER_ELEMENT[rulerEl];
       const behavior = CLASH_BEHAVIOR_BY_RULER_ELEMENT[rulerEl];
       const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
-      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. This creates a specific friction: ${friction}. In real life, that means ${behavior}. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
+      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
+      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. We look like ${surfaceArch}, but we absorb like ${absorbArch}. The friction: ${friction}. In real life, that means ${behavior}. The ah-ha: if anyone responds only to the surface, the undercurrent stays clogged — and the next thing out of us is either a sudden silence or a sudden too-much. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+
       cognitiveClash = {
         cuspSign: thirdCuspSign,
         rulerName: thirdRulerName,
