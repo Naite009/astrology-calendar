@@ -44,6 +44,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
+  const validation = selected ? validateChart(selected.chart) : null;
 
 
   return (
