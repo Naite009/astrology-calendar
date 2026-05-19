@@ -899,7 +899,20 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           role: (familyByChartId.get(chart.id) ?? "self") as FamilyRole,
         }));
         return everyone.length > 0 ? (
-          <ChildPortraitCard members={everyone} primaryChartId={userNatalChart?.id ?? null} />
+          <ChildPortraitCard
+            members={everyone}
+            primaryChartId={userNatalChart?.id ?? null}
+            viewerAge={(() => {
+              const bd = userNatalChart?.birthDate;
+              if (!bd) return null;
+              const [y, mo, d] = bd.split("-").map(Number);
+              if (!y || !mo || !d) return null;
+              const now = new Date();
+              let a = now.getFullYear() - y;
+              if (now.getMonth() + 1 < mo || (now.getMonth() + 1 === mo && now.getDate() < d)) a--;
+              return a >= 0 ? a : null;
+            })()}
+          />
         ) : null;
       })()}
 
