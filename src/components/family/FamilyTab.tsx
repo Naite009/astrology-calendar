@@ -899,7 +899,7 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
           role: (familyByChartId.get(chart.id) ?? "self") as FamilyRole,
         }));
         return everyone.length > 0 ? (
-          <ChildPortraitCard members={everyone} />
+          <ChildPortraitCard members={everyone} primaryChartId={userNatalChart?.id ?? null} />
         ) : null;
       })()}
 
