@@ -1666,6 +1666,10 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     nodeHouseSynthesis,
     howTo: { ritual, learningStyle, boundary },
     cognitiveProfile,
+    cognitiveClash,
+    energyDischarge,
+    internalTugOfWar,
+    cloakingNote,
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
