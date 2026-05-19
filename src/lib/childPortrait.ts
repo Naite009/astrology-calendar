@@ -342,74 +342,76 @@ export interface ChildPortrait {
   };
 }
 
-// ── Adult life-cycle stage copy ──────────────────────────────────────────────
-// Anchored to well-known outer-planet transits and the classical "Saturn cycles."
-// Saturn returns: ~29.5y, ~58.9y, ~88.4y. Uranus opposition: ~41-42y. Uranus return: ~84y.
-// Chiron return: ~50.7y. Nodal return: ~18.6y / ~37.2y / ~55.8y.
-function buildAdultAnchor(age: number, name: string, sunSign?: string, sunHouse?: number | null, saturnSign?: string, saturnHouse?: number | null, marsSign?: string): { stage: DevelopmentalStage; focus: string; body: string; extraHolding?: string } {
+// ── Life-cycle helpers ───────────────────────────────────────────────────────
+// Anchored to outer-planet cycles: Saturn returns ~29.5 / ~58.9 / ~88.4y.
+// Uranus opposition ~41-42y. Chiron return ~50.7y. Uranus return ~84y.
+export function lifePhaseFor(age: number | null): LifePhaseGroup {
+  if (age == null) return "adult";
+  if (age <= 21) return "child";
+  if (age <= 69) return "adult";
+  return "elder";
+}
+
+function buildAdultAnchor(
+  age: number,
+  name: string,
+  sunSign?: string,
+  sunHouse?: number | null,
+  saturnSign?: string,
+  saturnHouse?: number | null,
+  chironSign?: string,
+  jupiterSign?: string,
+  neptuneSign?: string,
+  ninthCuspSign?: string,
+  tenthCuspSign?: string,
+): { stage: DevelopmentalStage; focus: string; body: string; extraHolding?: string } {
   const sunLine = sunSign ? (SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen") : "their own way of being seen";
   const sat = saturnSign ? (SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] ?? "earned mastery") : "earned mastery";
   const satHouse = saturnHouse && SATURN_HOUSE_SUPPORT[saturnHouse] ? SATURN_HOUSE_SUPPORT[saturnHouse] : null;
-  const reset = marsSign ? MARS_RESET_BY_SIGN[marsSign] : "moving the body before talking";
   const sunFocus = sunSign && sunHouse ? `${sunSign} Sun in the ${ordinal(sunHouse)} house` : (sunSign ? `${sunSign} Sun` : "Sun");
 
-  if (age <= 28) {
+  if (age <= 35) {
     return {
-      stage: "Nodal Return / Emerging Adult (19-28)",
-      focus: `${sunFocus} · pre-Saturn-Return shaping`,
-      body: `This is the "who am I outside the family" decade. ${name} is rehearsing adult identity, testing belonging, and bumping into the first nodal return around 18-19. The work is practicing ${sunLine} in their own room, not anyone else's. Mistakes here are tuition, not failure.`,
-    };
-  }
-  if (age <= 31) {
-    return {
-      stage: "First Saturn Return (29-31)",
-      focus: `${sunFocus} · Saturn returning to natal place`,
-      body: `The first Saturn Return is the soul's "is this actually mine?" audit. ${name} is being asked to consciously sign on (or off) to relationships, work, and structures built in their twenties. The struggle is ${sat}. Anything not truly theirs gets heavy; anything truly theirs gets real.`,
+      stage: "Saturn Return: Building the Foundation (22-35)",
+      focus: `${sunFocus} · Saturn ${saturnSign ? `in ${saturnSign}` : ""}`.trim(),
+      body: `This is the Saturn Return decade: the soul's first real "is this actually mine?" audit, peaking around 29-30. ${name} is being asked to claim authority over their own life, sign on (or off) to the structures built in their twenties, and stop performing a borrowed version of adulthood. The struggle is ${sat}. What is truly theirs gets real; what was never theirs gets heavy.`,
       extraHolding: satHouse ? `Where to protect them this season: ${satHouse}.` : undefined,
     };
   }
-  if (age <= 36) {
+  if (age <= 45) {
     return {
-      stage: "Settling Saturn (32-36)",
-      focus: `${sunFocus} · post-Return rebuilding`,
-      body: `After the Saturn Return, ${name} is building the structure that survived the audit. This is the "stop apologizing for the life you chose" phase. The reset under stress is: ${reset}. Visible progress is slow on purpose.`,
-    };
-  }
-  if (age <= 44) {
-    return {
-      stage: "Uranus Opposition / Midlife (37-44)",
+      stage: "Uranus Opposition: Mid-Life Awakening (36-45)",
       focus: `${sunFocus} · Uranus opposing natal Uranus`,
-      body: `Around 41-42, Uranus opposes itself. ${name} is feeling the "is this the only life I get?" question in the body. Old agreements crack. The work is not to blow up the structure but to let the parts that are genuinely false fall off. Practicing ${sunLine} is the antidote to acting out.`,
+      body: `Around 41-42, Uranus opposes itself. ${name} is feeling the "is this the only life I get?" question in the body, and the Sun's old definition of self is being re-evaluated for truth. The work is not to blow up the structure but to let the parts that are genuinely false fall off. Practicing ${sunLine} is the antidote to acting out the awakening sideways.`,
     };
   }
   if (age <= 55) {
+    const jup = jupiterSign ? ` Jupiter in ${jupiterSign} is the meaning-maker that turns the wound into teaching.` : "";
+    const chi = chironSign ? `Chiron in ${chironSign} is returning to its natal place around age 50.` : "Chiron is returning to its natal place around age 50.";
     return {
-      stage: "Chiron Return / Integration (45-55)",
-      focus: `${sunFocus} · Chiron returning around 50`,
-      body: `The Chiron Return (around 50) brings the original wound back, not to re-injure but to integrate. ${name} is being asked to mentor from the scar, not hide it. What used to be "the sore spot" becomes the credential. The struggle continues to be ${sat}, but with more authority now.`,
+      stage: "Chiron Return: Sacred Healing (46-55)",
+      focus: `${sunFocus} · Chiron ${chironSign ? `in ${chironSign}` : ""} · Jupiter ${jupiterSign ? `in ${jupiterSign}` : ""}`.trim(),
+      body: `${chi} ${name} is being asked to find the wisdom in the wound, not to re-injure but to integrate. What used to be "the sore spot" becomes the credential.${jup} The struggle continues to be ${sat}, but with more authority now.`,
     };
   }
-  if (age <= 62) {
+  if (age <= 70) {
+    const tenth = tenthCuspSign ? ` The 10th-house cusp in ${tenthCuspSign} colors what legacy looks like for them.` : "";
     return {
-      stage: "Second Saturn Return / Eldering (56-62)",
-      focus: `${sunFocus} · second Saturn Return`,
-      body: `The second Saturn Return (~58-60) is the eldering threshold. ${name} is being asked: what is yours to keep carrying, what gets handed down, and what gets put down for good? Legacy questions get loud. This is the "what was it all for" phase, and the honest answer becomes the next chapter.`,
+      stage: "Second Saturn Return: Mentorship and Legacy (56-70)",
+      focus: `${sunFocus} · second Saturn Return · 10th house ${tenthCuspSign ?? ""}`.trim(),
+      body: `The second Saturn Return (~58-60) is the transition to mentorship. ${name} is being asked: what is yours to keep carrying, what gets handed down, and what gets put down for good?${tenth} Legacy questions get loud. The honest answer becomes the next chapter, and the role shifts from doer to elder-in-training.`,
       extraHolding: satHouse ? `Tender area to honor: ${satHouse}.` : undefined,
     };
   }
-  if (age <= 83) {
-    return {
-      stage: "Wisdom Years (63-83)",
-      focus: `${sunFocus} · post-second-Saturn consolidation`,
-      body: `${name} is in the wisdom-keeper decades. The task is no longer "prove it" but "transmit it." Practicing ${sunLine} now means being recognizably themselves without performance. Health rhythms, chosen company, and meaning matter more than output.`,
-    };
-  }
+  const ninth = ninthCuspSign ? `The 9th-house cusp in ${ninthCuspSign} colors the philosophy they're now living from.` : "The 9th-house themes of meaning, philosophy, and spirit move to the foreground.";
+  const nep = neptuneSign ? ` Neptune ${neptuneSign ? `in ${neptuneSign}` : ""} is the dissolver of small identity, opening room for the larger story.` : "";
   return {
-    stage: "Uranus Return / Third Saturn Return (84+)",
-    focus: `${sunFocus} · Uranus return (~84) and third Saturn Return (~88)`,
-    body: `${name} is in the rare-air phase: Uranus has returned to its natal place (around 84) and the third Saturn Return (around 88) is in view. The work is presence, blessing, and being the living memory in the room. What is loved gets named out loud.`,
+    stage: "Eldering Threshold: Integration of the Soul Story (70+)",
+    focus: `${sunFocus} · 9th house ${ninthCuspSign ?? ""} · Neptune ${neptuneSign ?? ""}`.trim(),
+    body: `${name} is in the integration phase: the lifetime is becoming one story, not a list of events. ${ninth}${nep} The work is the peace of perspective: what is loved gets named out loud, what is forgiven gets released, and presence becomes the gift in the room.`,
   };
 }
+
 
 
 // ── Builder ──────────────────────────────────────────────────────────────────
