@@ -333,6 +333,26 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       </div>
                     )}
                   </div>
+                  {portrait.tightestAspects && portrait.tightestAspects.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                        Tightest planetary conversations
+                      </div>
+                      {portrait.tightestAspects.map((a, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "rounded-md border-l-4 p-3 text-sm leading-relaxed",
+                            a.quality === "hard"
+                              ? "border-amber-500/70 bg-amber-50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-50"
+                              : "border-emerald-500/70 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-50",
+                          )}
+                        >
+                          {a.line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
               );
             })()}
