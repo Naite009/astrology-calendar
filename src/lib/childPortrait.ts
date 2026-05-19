@@ -1429,6 +1429,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     viewFromBridge,
     chartRuler,
     tightestAspects,
+    moonPhaseProfile,
+    nodeHouseSynthesis,
     howTo: { ritual, learningStyle, boundary },
     cognitiveProfile,
     mathCheck: {
