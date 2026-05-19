@@ -984,6 +984,50 @@ const PRESSURE_NEED_LABEL_BY_HOUSE: Record<number, string> = {
   10: "Reputation Control", 11: "Off-Group Time", 12: "Cloaking Time",
 };
 
+// ── Real Talk · Decipher data ────────────────────────────────────────────────
+// "Survival strategy" framing: what each sign actually DOES to stay safe or
+// feel powerful, plus the payoff feeling they're chasing. Used by the
+// Decipher button to swap abstract synthesis lines for blunt translations.
+const SIGN_SURVIVAL_MASK: Record<string, string> = {
+  Aries:       "lead with speed and the willingness to start a fight",
+  Taurus:      "go still and refuse to be moved",
+  Gemini:      "use words and quick subject changes to keep the room loose",
+  Cancer:      "take care of you so the door between you stays open",
+  Leo:         "turn up the warmth so love arrives on their terms",
+  Virgo:       "point out the flaw before someone else can",
+  Libra:       "use a 'nice' mask to quiet the room quickly",
+  Scorpio:     "stay quiet and read you while you read nothing",
+  Sagittarius: "crack a joke and keep one foot toward the door",
+  Capricorn:   "be the most competent person in the room",
+  Aquarius:    "play the 'I'm the weird one' card so the group can't absorb them",
+  Pisces:      "go soft and 'I'm fine' so the actual feeling stays private",
+};
+
+const SIGN_PAYOFF: Record<string, string> = {
+  Aries: "unstoppable", Taurus: "un-rushable", Gemini: "un-cornerable",
+  Cancer: "indispensable", Leo: "chosen", Virgo: "un-criticizable",
+  Libra: "un-trappable", Scorpio: "un-readable", Sagittarius: "free",
+  Capricorn: "in charge", Aquarius: "un-coopted", Pisces: "unfindable",
+};
+
+// Per-sign "real reason" used inside the Mastery Spot Decipher.
+const SATURN_REAL_REASON: Record<string, string> = {
+  Aries:       "learned early that hesitating got them run over, so 'go first' became survival",
+  Taurus:      "learned early that being rushed cost them something real, so 'no, on my timing' became survival",
+  Gemini:      "learned early that the wrong word landed them in trouble, so picking words carefully became survival",
+  Cancer:      "learned early that softness wasn't always met, so armoring up became survival",
+  Leo:         "learned early that being seen had a cost, so dimming the light became survival",
+  Virgo:       "learned early that mistakes got named loudly, so being unimprovable became survival",
+  Libra:       "learned early that conflict broke the bond, so smoothing the room became survival",
+  Scorpio:     "learned early that opening up got used against them, so keeping the inside private became survival",
+  Sagittarius: "learned early that their truth was 'too much,' so under-stating it became survival",
+  Capricorn:   "learned early that no one else was coming, so being the responsible one became survival",
+  Aquarius:    "learned early that fitting in cost them themselves, so staying outside became survival",
+  Pisces:      "learned early that structure felt like a cage, so dissolving became survival",
+};
+
+
+
 
 
 
