@@ -19,9 +19,10 @@ interface Member {
 interface Props {
   members: Member[];
   primaryChartId?: string | null;
+  viewerAge?: number | null;
 }
 
-export function ChildPortraitCard({ members, primaryChartId }: Props) {
+export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props) {
   const people = useMemo(() => {
     const filtered = members.filter((m) => !!m.chart?.id);
     return filtered.sort((a, b) => {
@@ -40,7 +41,8 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
   if (people.length === 0) return null;
 
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
-  const portrait = selected ? buildChildPortrait(selected.chart) : null;
+  const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
+
 
   return (
     <Card className="border-primary/50">
