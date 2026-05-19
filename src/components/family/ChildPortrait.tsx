@@ -415,7 +415,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="text-[10px] uppercase tracking-wider font-bold text-red-700 dark:text-red-300">
                     {portrait.energyDischarge.marsSign} Mars · {portrait.energyDischarge.marsHouse}th house
                   </div>
-                  <p className="text-red-950 dark:text-red-50 text-sm leading-relaxed">{portrait.energyDischarge.line}</p>
+                  <DecipherToggle original={portrait.energyDischarge.line} realTalk={portrait.energyDischarge.realTalk} textClass="text-red-950 dark:text-red-50 text-sm leading-relaxed" />
                 </div>
               </section>
             )}
