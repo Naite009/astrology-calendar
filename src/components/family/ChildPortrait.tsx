@@ -341,6 +341,23 @@ export function ChildPortraitCard({ members, primaryChartId }: Props) {
               );
             })()}
 
+            {/* Shadow Guidance — South Node in hidden house (6/8/12) */}
+            {portrait.shadowGuidance && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  <div className="font-semibold text-base">Shadow Handling — how to address stress with them</div>
+                </div>
+                <div className="rounded-md border-l-4 border-purple-500/70 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-1">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
+                    South Node in the {portrait.shadowGuidance.southHouse}th house
+                  </div>
+                  <p className="text-purple-950 dark:text-purple-50 text-sm leading-relaxed">{portrait.shadowGuidance.instruction}</p>
+                </div>
+              </section>
+            )}
+
+
 
             {/* 5. Math Check (collapsible) */}
             <details className="rounded-md border border-dashed border-border bg-background/40 group">
