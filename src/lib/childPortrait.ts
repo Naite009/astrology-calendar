@@ -747,39 +747,68 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const snSign = SouthNode?.sign;
   const snHouse = houseOf(chart, SouthNode);
   const snDefault = snSign ? (SOUTH_NODE_DEFAULT_BY_SIGN[snSign] ?? "their familiar fallback") : "";
+  const snTired = snSign ? (SN_TIRED_BY_SIGN[snSign] ?? snDefault) : "";
+  const nnCall = nnSign ? (NN_CALL_BY_SIGN[nnSign] ?? nnDefault) : "";
   const snLine = snSign
     ? phase === "child"
       ? `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is their default mode under stress: ${snDefault}. It is comfortable but small. The growth is gently away from this.`
       : phase === "elder"
         ? `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""}: the habit of ${snDefault} is now an old friend they no longer need to keep proving wrong. They've already grown past it.`
-        : `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is the habitual past: ${snDefault}. It is the comfortable fallback they reach for under stress. The growth is gently away from this.`
+        : `South Node in ${snSign}${snHouse ? ` (${ordinal(snHouse)} house)` : ""} is the Tired Habit: ${snDefault}. It is comfortable, it is familiar, and it is no longer where the energy lives.`
     : "";
 
+  // Adult-only "trade X for Y" pivot line
+  const tradeLine = phase === "adult" && snTired && nnCall
+    ? `Trade ${snTired} for ${nnCall}. The Tired Habit feels safe, but the Vitalizing Edge is where the actual life is right now.`
+    : undefined;
+
+  // For adults, reframe NN line as "The Vitalizing Edge"
+  const nnLineFinal = nnSign && phase === "adult"
+    ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the Vitalizing Edge: ${nnDefault}. This is where energy returns when ${chart.name} stops doing the Tired Habit and lets this lead instead.`
+    : nnLine;
 
   // === 3. Mastery Spot ====================================================
   const saturnSign = Saturn?.sign;
   const saturnHouse = houseOf(chart, Saturn);
+  const isAdultLike = phase === "adult" || phase === "elder";
+  const saturnAdultLabel = saturnHouse ? SATURN_HOUSE_ADULT_STANDARD[saturnHouse] : undefined;
+  const partnerVerb = isAdultLike ? "How to partner with this energy" : "How to support";
   const saturnBlock = saturnSign
     ? {
         sign: saturnSign,
         house: saturnHouse,
         struggle: SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] ?? "trusting their own competence",
-        howToSupport: saturnHouse && SATURN_HOUSE_SUPPORT[saturnHouse]
-          ? `Protect ${SATURN_HOUSE_SUPPORT[saturnHouse]}. When ${chart.name} feels 'not enough' here, do not problem-solve first; just witness it out loud ("that sounds heavy, and you're not alone in it").`
-          : `When ${chart.name} feels 'not enough' in this area, witness it out loud before trying to fix it.`,
+        howToSupport: isAdultLike && saturnAdultLabel
+          ? `This is ${chart.name}'s ${saturnAdultLabel}. The work is not to outsource the standard to anyone else: it is to claim it as their own and stop asking for permission. When the old 'not enough' voice shows up here, name it as the audit it is, then keep going.`
+          : saturnHouse && SATURN_HOUSE_SUPPORT[saturnHouse]
+            ? `Protect ${SATURN_HOUSE_SUPPORT[saturnHouse]}. When ${chart.name} feels 'not enough' here, do not problem-solve first; just witness it out loud ("that sounds heavy, and you're not alone in it").`
+            : `When ${chart.name} feels 'not enough' in this area, witness it out loud before trying to fix it.`,
+        adultStandardLabel: isAdultLike ? saturnAdultLabel : undefined,
       }
     : undefined;
 
   const chironSign = Chiron?.sign;
   const chironHouse = houseOf(chart, Chiron);
+  const chironTender = chironSign ? (CHIRON_TENDER_BY_SIGN[chironSign] ?? "a specific tender spot only they fully know") : "";
   const chironBlock = chironSign
     ? {
         sign: chironSign,
         house: chironHouse,
-        tender: CHIRON_TENDER_BY_SIGN[chironSign] ?? "a specific tender spot only they fully know",
-        howToSupport: `When ${chart.name} bumps this wound, the antidote is never "you shouldn't feel that way." Name it: "I can see this is the sore spot. I am not going anywhere." Repair after rupture, every time.`,
+        tender: chironTender,
+        howToSupport: isAdultLike
+          ? `This is no longer a wound to manage: it is the credential ${chart.name} has earned the right to teach from. The thing they felt "less than" about in their twenties (${chironTender}) is exactly the territory they can now walk other people through. Stop protecting the scar. Show it on purpose.`
+          : `When ${chart.name} bumps this wound, the antidote is never "you shouldn't feel that way." Name it: "I can see this is the sore spot. I am not going anywhere." Repair after rupture, every time.`,
       }
     : undefined;
+
+  // === 3b. Chiron Return Spotlight (ages 45-52): Credentialing of the Wound
+  let chironReturnSpotlight: ChildPortrait["chironReturnSpotlight"] = undefined;
+  if (age != null && age >= 45 && age <= 52 && chironSign) {
+    chironReturnSpotlight = {
+      title: "The Credentialing of the Wound",
+      body: `${chart.name} is inside the Chiron Return window (peaking around age 50). This is the soul of the reading right now. The exact thing they felt "less than" about in their twenties, ${chironTender} in ${chironSign}${chironHouse ? ` (${ordinal(chironHouse)} house)` : ""}, is being formally credentialed. The wound is not getting bigger; it is becoming the curriculum. What used to drain them is exactly what they are now qualified to teach, mentor, or hold space around. The job in this window is not more healing for themselves: it is letting other people benefit from the path they already walked.`,
+    };
+  }
 
   // === 4. How-To ==========================================================
   const ritualMoon = moonSign ? MOON_SAFETY_BY_SIGN[moonSign] : null;
@@ -796,11 +825,23 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   const boundarySaturn = saturnSign ? SATURN_SACRED_STRUGGLE_BY_SIGN[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
-  const boundary = boundaryMars && boundarySaturn
-    ? `Redirect, do not punish. ${chart.name}'s nervous system needs you to ${boundaryMars} before the boundary lands. Frame the limit as structure, not shame: their Saturn is already busy ${boundarySaturn}, so a harsh tone here registers as "I am defective," not "I made a mistake."`
-    : boundaryMars
-      ? `Redirect first: ${boundaryMars}. Then state the limit calmly as structure, not shame.`
-      : "Redirect physically first; state the limit calmly as structure, not shame.";
+  // Adult voice uses "Course correct" + Saturn-house Standard framing
+  let boundary: string;
+  if (isAdultLike) {
+    const standardClause = saturnAdultLabel
+      ? ` The boundary here is really a ${saturnAdultLabel}: ${chart.name} needs to know this territory is theirs to set, not anyone else's to approve.`
+      : "";
+    const marsClause = boundaryMars ? ` When the nervous system overheats, the reset is: ${boundaryMars}.` : "";
+    const satClause = boundarySaturn ? ` Their inner Saturn is already busy ${boundarySaturn}, so harsh self-correction lands as "I am defective," not "I made a mistake."` : "";
+    boundary = `Course correct, don't punish.${marsClause}${satClause}${standardClause}`.trim();
+  } else {
+    boundary = boundaryMars && boundarySaturn
+      ? `Redirect, do not punish. ${chart.name}'s nervous system needs you to ${boundaryMars} before the boundary lands. Frame the limit as structure, not shame: their Saturn is already busy ${boundarySaturn}, so a harsh tone here registers as "I am defective," not "I made a mistake."`
+      : boundaryMars
+        ? `Redirect first: ${boundaryMars}. Then state the limit calmly as structure, not shame.`
+        : "Redirect physically first; state the limit calmly as structure, not shame.";
+  }
+
 
   // === 5. SYNTHESIS: Core Conflict (luminary in hard aspect to Saturn/Pluto/Uranus) ===
   let coreConflict: ChildPortrait["coreConflict"] = undefined;
