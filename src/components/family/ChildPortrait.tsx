@@ -250,6 +250,73 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   </section>
 
+                  {/* === Engine Architecture ============================================
+                      Four structural buckets, "Agreement Architecture" style:
+                      Social · Identity · Drive · Processing. Each card pulls from existing
+                      portrait data and renders a compact Real Talk synthesis line.
+                      No poetry, no generic definitions. Wit + Grit voice only. */}
+                  {(() => {
+                    const N = portrait.name;
+                    const cr = portrait.chartRuler;
+                    const sun = portrait.identityInvitation.sun;
+                    const tightAspect = portrait.tightestAspects?.[0];
+                    const drive = portrait.energyDischarge;
+                    const pressure = portrait.pressureSignature;
+                    const cloak = portrait.cloakingNote;
+                    const cog = portrait.cognitiveProfile;
+                    const showEngines = !!(cr || sun || drive || cloak || cog);
+                    if (!showEngines) return null;
+
+                    const socialLine = cr
+                      ? `${N} uses a ${cr.ascSign} mask to protect a ${cr.rulerSign} heart. The surface scans the room; ${cr.rulerName} in ${cr.rulerSign}${cr.rulerHouse ? `, ${cr.rulerHouse}th house` : ""} is the engine actually steering.`
+                      : null;
+
+                    const identityLine = sun
+                      ? (tightAspect
+                          ? `${N} is practicing ${sun.sign}${sun.house ? ` in the ${sun.house}th house` : ""}, but they are being fact-checked by ${tightAspect.b === "Sun" ? tightAspect.a : tightAspect.b} (${tightAspect.aspect}, orb ${tightAspect.orb.toFixed(1)}°). Every move forward gets audited before it's allowed to count.`
+                          : `${N} is practicing ${sun.sign}${sun.house ? ` in the ${sun.house}th house` : ""}. This is what they are growing into, not what they already are.`)
+                      : null;
+
+                    const driveLine = drive
+                      ? (pressure
+                          ? `${N} is sitting on a ${drive.marsSign} volcano in the ${drive.marsHouse}th house. If they don't ${drive.action}, the consequence is ${drive.shadow}. Pressure trigger: ${pressure.trigger}.`
+                          : `${N} is sitting on a ${drive.marsSign} volcano in the ${drive.marsHouse}th house. If they don't ${drive.action}, the consequence is ${drive.shadow}.`)
+                      : null;
+
+                    const processingLine = cloak
+                      ? `${N} processes in the dark. ${cloak.bodies.map(b => `${b.sign} ${b.name}`).join(" + ")} sit${cloak.bodies.length === 1 ? "s" : ""} in the 12th, so they go quiet, disappear, and come back with the finished answer. Don't chase them in; let them come to you.`
+                      : (cog
+                          ? `${N} processes as a ${cog.label}. ${cog.processing}. Don't crowd the intake; let the answer arrive.`
+                          : null);
+
+                    const cards = [
+                      { key: "social",     label: "The Social Engine",     sub: "Rising + Chart Ruler",     line: socialLine,     border: "border-cyan-300/60",   bg: "bg-cyan-50 dark:bg-cyan-950/30",     text: "text-cyan-950 dark:text-cyan-50" },
+                      { key: "identity",   label: "The Identity Engine",   sub: "Sun + Tightest Aspect",    line: identityLine,   border: "border-amber-300/60",  bg: "bg-amber-50 dark:bg-amber-950/30",   text: "text-amber-950 dark:text-amber-50" },
+                      { key: "drive",      label: "The Drive Engine",      sub: "Mars + House",             line: driveLine,      border: "border-red-300/60",    bg: "bg-red-50 dark:bg-red-950/30",       text: "text-red-950 dark:text-red-50" },
+                      { key: "processing", label: "The Processing Engine", sub: "12th House + Mercury",     line: processingLine, border: "border-slate-300/60",  bg: "bg-slate-50 dark:bg-slate-900/40",   text: "text-slate-900 dark:text-slate-50" },
+                    ].filter(c => c.line);
+
+                    return (
+                      <section className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          <div className="font-semibold text-base">Engine Architecture</div>
+                          <Badge variant="outline" className="text-[10px]">Real Talk · Synthesis</Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {cards.map(c => (
+                            <div key={c.key} className={cn("rounded-md border p-3 space-y-1", c.border, c.bg)}>
+                              <div className="text-xs uppercase tracking-wider opacity-70 font-semibold">{c.label}</div>
+                              <div className="text-[10px] uppercase tracking-wider opacity-60">{c.sub}</div>
+                              <p className={cn("text-sm leading-relaxed pt-1", c.text)}>{c.line}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  })()}
+
+
                   <section className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-primary" />
