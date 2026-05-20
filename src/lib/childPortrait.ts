@@ -2161,7 +2161,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   ];
   function dedupeBannedPhrases<T>(node: T): T {
     if (typeof node === "string") {
-      let out = node;
+      let out: string = node;
       for (const { pattern, replacement } of BAN_ON_REPEAT) {
         let first = true;
         out = out.replace(pattern, (match) => (first ? ((first = false), match) : replacement));
