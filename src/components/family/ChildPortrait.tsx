@@ -17,7 +17,7 @@ interface Member {
   role: FamilyRole | string;
 }
 
-// Decipher toggle — swaps a section's prose for its blunt "Real Talk"
+// Decipher toggle, swaps a section's prose for its blunt "Real Talk"
 // translation. Lives inline so each section gets its own local state.
 function DecipherToggle({
   original,
@@ -263,7 +263,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       return n + (s[(v - 20) % 10] || s[v] || s[0]);
                     };
 
-                    // Arc 1 — Protective Strategy (Rising + Venus)
+                    // Arc 1, Protective Strategy (Rising + Venus)
                     let arc1: string | null = null;
                     if (cr && venus) {
                       const sameAsRuler = cr.rulerName === "Venus";
@@ -271,21 +271,21 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         ? `Venus is also the captain of the chart, so the ${venus.sign} heart in the ${ord(venus.house)} house is what the ${cr.ascSign} surface is actually defending`
                         : `underneath the ${cr.ascSign} surface, a Venus in ${venus.sign} (${ord(venus.house)} house) heart is what the mask is actually defending`;
                       arc1 =
-                        `${N} wears the ${cr.ascSign} mask like a tactical peace treaty. The smile, the leveling of voices, the small adjustments that get the room to settle — none of it is performance for its own sake. It is a way to lower the volume so a ${venus.sign} heart underneath doesn't feel trapped or crowded. ${venusClause}, and what it values is room to move. ` +
-                        `Watch the eight-in-the-morning kitchen and you'll see it: ${N} reads the tension first, smooths the edges, hands out the coffee, agrees with the easier opinion. It looks like graciousness. What it actually buys is an exit. The diplomat work clears a corridor so the ${venus.sign} part of them can keep options open later in the day. Treat the niceness as a doorway, not a verdict — if the doorway starts closing, the charm drops fast.`;
+                        `${N} wears the ${cr.ascSign} mask like a tactical peace treaty. The smile, the leveling of voices, the small adjustments that get the room to settle, none of it is performance for its own sake. It is a way to lower the volume so a ${venus.sign} heart underneath doesn't feel trapped or crowded. ${venusClause}, and what it values is room to move. ` +
+                        `Watch the eight-in-the-morning kitchen and you'll see it: ${N} reads the tension first, smooths the edges, hands out the coffee, agrees with the easier opinion. It looks like graciousness. What it actually buys is an exit. The diplomat work clears a corridor so the ${venus.sign} part of them can keep options open later in the day. Treat the niceness as a doorway, not a verdict, if the doorway starts closing, the charm drops fast.`;
                     }
 
-                    // Arc 2 — Identity Collision (Sun + Chiron + Sun house)
+                    // Arc 2, Identity Collision (Sun + Chiron + Sun house)
                     let arc2: string | null = null;
                     if (sun) {
                       const sunHousePhrase = sun.house ? `in the ${ord(sun.house)} house` : "";
                       const seenPhrase = sun.house === 1
-                        ? "the 1st-house Sun makes self-visibility the actual job — the work is to be seen as themselves, in their own body, without translation"
+                        ? "the 1st-house Sun makes self-visibility the actual job, the work is to be seen as themselves, in their own body, without translation"
                         : `the Sun ${sunHousePhrase} carries the need to be seen on their own terms`;
                       const chironPhrase = chiron
                         ? `Chiron sits in ${chiron.sign}${chiron.house ? ` in the ${ord(chiron.house)} house` : ""}, running a quiet audit in the background: is this too much? is this fair? am I allowed? ` +
                           (chiron.house === 7
-                            ? `The 7th-house location of that audit means the question gets routed through other people — every move forward feels like it has to be approved by the room before it counts. `
+                            ? `The 7th-house location of that audit means the question gets routed through other people, every move forward feels like it has to be approved by the room before it counts. `
                             : `That audit fires before ${N} has even finished the sentence. `)
                         : "";
                       arc2 =
@@ -293,7 +293,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         `Life starts to feel like a long audition where the role is "themselves" and the casting director is invisible. The mastery here is not a slogan about self-advocacy. It is something more physical: standing in the center of the room, taking up the full square footage of their body, and not scanning anyone's face for an apology. When ${N} stops asking permission to exist out loud, the audit goes quiet, because there is no longer anything for it to police.`;
                     }
 
-                    // Arc 3 — Pressure & The Dark Room (Mars + Moon/Mercury 12th)
+                    // Arc 3, Pressure & The Dark Room (Mars + Moon/Mercury 12th)
                     let arc3: string | null = null;
                     if (drive || cloak || twelfth) {
                       const marsPart = drive
@@ -303,7 +303,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         ? cloak.bodies.map(b => `${b.sign} ${b.name}`).join(" and ")
                         : (twelfth && twelfth.length ? twelfth.map(b => `${b.sign} ${b.name}`).join(" and ") : null);
                       const cloakPart = cloakBodies
-                        ? `Layered over that engine is a 12th-house cloaking need — ${cloakBodies} sit${cloakBodies.includes(" and ") ? "" : "s"} in the back room of the chart, which means ${N} has to go inward to come back to themselves. The silence is not withdrawal from you. It is a return to their own body, the place where the thinking actually finishes. `
+                        ? `Layered over that engine is a 12th-house cloaking need, ${cloakBodies} sit${cloakBodies.includes(" and ") ? "" : "s"} in the back room of the chart, which means ${N} has to go inward to come back to themselves. The silence is not withdrawal from you. It is a return to their own body, the place where the thinking actually finishes. `
                         : `${N} also needs a closed door to come back to themselves. The silence is not withdrawal from you; it is a return to their own body, where the thinking actually finishes. `;
                       const triggerPart = pressure
                         ? `Trigger to watch: ${pressure.trigger}. `
@@ -372,7 +372,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       <p className="text-sm">{portrait.howTo.ritual}</p>
                     </div>
 
-                    {/* Consolidated Cognitive Map — replaces duplicate Learning Style + Cognitive Profile */}
+                    {/* Consolidated Cognitive Map, replaces duplicate Learning Style + Cognitive Profile */}
                     {portrait.cognitiveProfile ? (
                       <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-2">
                         <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
@@ -421,12 +421,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               );
             })()}
 
-            {/* Shadow Guidance — South Node in hidden house (6/8/12) */}
+            {/* Shadow Guidance, South Node in hidden house (6/8/12) */}
             {portrait.shadowGuidance && (
               <section className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-purple-600" />
-                  <div className="font-semibold text-base">Shadow Handling — how to address stress with them</div>
+                  <div className="font-semibold text-base">Shadow Handling, how to address stress with them</div>
                 </div>
                 <div className="rounded-md border-l-4 border-purple-500/70 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-1">
                   <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
@@ -442,7 +442,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
             {/* 5. Math Check (collapsible) */}
             <details className="rounded-md border border-dashed border-border bg-background/40 group">
               <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
-                <span>🔭 Math Check — what this reading is grounded in</span>
+                <span>🔭 Math Check, what this reading is grounded in</span>
                 <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
                 <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
               </summary>
