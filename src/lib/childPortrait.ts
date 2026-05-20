@@ -2274,6 +2274,17 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     cloakingNote,
     pressureSignature,
 
+    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus) } : undefined,
+    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron) } : undefined,
+    twelfthHouseBodies: (() => {
+      const out: Array<{ name: string; sign: string }> = [];
+      for (const n of ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"]) {
+        const p = planets[n];
+        if (p?.sign && houseOf(chart, p) === 12) out.push({ name: n, sign: p.sign });
+      }
+      return out.length ? out : undefined;
+    })(),
+
     mathCheck: {
       thirdHouseSign: thirdCuspSign,
       thirdHouseRuler: thirdRulerName,
