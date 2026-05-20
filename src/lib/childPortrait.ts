@@ -1257,6 +1257,11 @@ export interface ChildPortrait {
     rulerNudge?: string;       // 3rd-house ruler nudge
   };
 
+  // Lightweight placements used by the Narrative Briefing prose blocks
+  venusPlacement?: { sign: string; house: number | null };
+  chironPlacement?: { sign: string; house: number | null };
+  twelfthHouseBodies?: Array<{ name: string; sign: string }>;
+
   mathCheck: {
     thirdHouseSign?: string;
     thirdHouseRuler?: string;
