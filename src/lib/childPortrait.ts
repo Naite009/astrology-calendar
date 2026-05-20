@@ -443,7 +443,7 @@ const THIRD_HOUSE_CUSP_INTAKE: Record<string, string> = {
   Libra: "Information lands when it is framed as fair and balanced, with both sides shown",
   Scorpio: "Information has to feel real and unfiltered; sanitized or performative delivery is rejected",
   Sagittarius: "Information lands when the 'big idea' and the honest truth are named up front",
-  Capricorn: "Information needs structure, credentials, and a visible reason it counts",
+  Capricorn: "Information needs structure, a clear chain of command, and a visible reason it counts",
   Aquarius: "Information lands when they are treated as a peer in the conversation, never talked down to",
   Pisces: "Information needs softness and imagery; harsh, blunt delivery scrambles the signal",
 };
@@ -496,6 +496,55 @@ const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: st
   Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
 };
 
+// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo literally looks like in the room.
+// Keyed by Rising sign. Concrete, observable behavior — no astro-nouns.
+const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
+  Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
+  Taurus:      "they refuse to be rushed out the door — the body sets the pace and the schedule has to bend",
+  Gemini:      "they're already mid-sentence about three different things before their feet hit the kitchen floor",
+  Cancer:      "they scan everyone's face for the mood of the morning before they say a word",
+  Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
+  Virgo:       "they spot the one thing out of place — the crumbs, the wrong mug — and can't unsee it",
+  Libra:       "they smooth the first tension in the room before they've even sat down",
+  Scorpio:     "they go quiet and watch, reading who is actually safe to talk to first",
+  Sagittarius: "they're already half out the door, talking about the trip, the plan, anything past this kitchen",
+  Capricorn:   "they want to know the plan for the day before they'll fully arrive in the morning",
+  Aquarius:    "they stand slightly apart, observing the family as if from outside it",
+  Pisces:      "they feel the loud music, the bright light, the leftover tension from last night, all of it at once",
+};
+
+// ── Elder/parent advice per Rising mask — what NOT to do at 8 AM.
+const RISING_ELDER_ADVICE: Record<string, string> = {
+  Aries:       "Don't tell them to slow down — give them the first job of the morning so the energy has a target.",
+  Taurus:      "Don't rush the body. Give a 10-minute warning, not a 'we leave now.'",
+  Gemini:      "Don't shut down the chatter. Ask one real question and the wiring lands.",
+  Cancer:      "Don't perform 'fine' over a tense morning — they read the room either way. Name it briefly.",
+  Leo:         "Don't skip the greeting. A warm hello costs nothing and changes the day.",
+  Virgo:       "Don't call them picky. They are flooded by the out-of-place thing — fix it or name it, then move on.",
+  Libra:       "Don't ask them to take a side at breakfast. Let them have neutral ground until they're warmed up.",
+  Scorpio:     "Don't push for a chipper morning report. Quiet is the runway, not the problem.",
+  Sagittarius: "Don't pin them down to the table. Keep one door symbolically open — talk about later in the day.",
+  Capricorn:   "Don't drop them into chaos. A two-sentence map of the day lets the nervous system settle.",
+  Aquarius:    "Don't demand warmth on cue. Let them observe; warmth comes once they're not being watched.",
+  Pisces:      "Don't tell them to toughen up. Lower the music, dim the light, give them five quiet minutes to dock.",
+};
+
+const RISING_FALSE_STORY: Record<string, string> = {
+  Aries:       "being pushy",
+  Taurus:      "being lazy or stubborn",
+  Gemini:      "being scattered",
+  Cancer:      "being moody",
+  Leo:         "being showy",
+  Virgo:       "being picky",
+  Libra:       "being nice to be liked",
+  Scorpio:     "being intense or cold",
+  Sagittarius: "being flaky",
+  Capricorn:   "being cold or rigid",
+  Aquarius:    "being aloof or weird",
+  Pisces:      "being dreamy or dramatic",
+};
+
+
 // What the chart-ruler's SIGN is actually defending or pursuing (the deep aim).
 const RULER_SIGN_DRIVE: Record<string, string> = {
   Aries: "their own initiative and the freedom to move first",
@@ -506,7 +555,7 @@ const RULER_SIGN_DRIVE: Record<string, string> = {
   Virgo: "competence, order, and the right to refine",
   Libra: "fair partnership and a balanced field",
   Scorpio: "depth, privacy, and emotional truth",
-  Sagittarius: "freedom, meaning, and the bigger horizon",
+  Sagittarius: "freedom, an open exit, and a story large enough to live inside",
   Capricorn: "earned respect and long-arc mastery",
   Aquarius: "personal independence and the integrity of their own signal",
   Pisces: "rest, dissolution, and an unfenced inner world",
@@ -671,7 +720,7 @@ const RULER_UNDERCURRENT_BY_SIGN: Record<string, string> = {
   Virgo: "a constant inner edit",
   Libra: "a quiet relational calculation",
   Scorpio: "a powerful pressure they're actively managing",
-  Sagittarius: "a restless need for the bigger truth",
+  Sagittarius: "a restless pull toward the exit",
   Capricorn: "a serious sense of responsibility",
   Aquarius: "a detached, observational coolness",
   Pisces: "an absorbed, mood-soaked current",
@@ -923,7 +972,7 @@ const ABSORPTION_ARCHETYPE_BY_SIGN: Record<string, string> = {
   Virgo: "a quality-control scanner",
   Libra: "a tuning fork",
   Scorpio: "a deep-sea sonar",
-  Sagittarius: "a horizon-line",
+  Sagittarius: "an open road scanning for the exit",
   Capricorn: "a steel beam under load",
   Aquarius: "a circuit board",
   Pisces: "a sponge",
@@ -1500,25 +1549,31 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const rulerPlanetForFilter = rulerNameForFilter ? planets[rulerNameForFilter] : undefined;
     const rulerSignForFilter = rulerPlanetForFilter?.sign;
     const rulerHouseForFilter = rulerPlanetForFilter ? houseOf(chart, rulerPlanetForFilter) : null;
+    const falseStory = RISING_FALSE_STORY[ascSign] ?? "what people first assume";
+    const kitchen = RISING_KITCHEN_BEHAVIOR[ascSign] ?? "";
+    const elderTip = RISING_ELDER_ADVICE[ascSign] ?? "";
     if (scanner && rulerNameForFilter && rulerSignForFilter) {
-      const undercurrent = RULER_UNDERCURRENT_BY_SIGN[rulerSignForFilter] ?? "their own quiet motive";
-      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[rulerSignForFilter] ?? "an open channel";
-      const houseClause = rulerHouseForFilter ? ` running through ${HOUSE_THEME[rulerHouseForFilter]}` : "";
+      // Paradox formula: inner archetype (ruler's sign mask label) wearing the Rising mask.
+      const innerArchetype = RISING_SCANNER[rulerSignForFilter]?.mask ?? rulerSignForFilter;
+      const drive = RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them";
+      const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
+      // 1) Behavioral truth (Paradox). 2) Nervous-system reason. 3) Kitchen scene. 4) Elder advice.
       risingLine =
-        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
-        `The Boss: that filter is actually run by ${rulerNameForFilter} in ${rulerSignForFilter}${rulerHouseForFilter ? ` (${ordinal(rulerHouseForFilter)} house)` : ""}, which means underneath the "${scanner.mask}" look there is ${undercurrent}${houseClause}. ` +
-        `Real talk: ${chart.name} uses a ${ascSign} "${scanner.mask}" mask to filter the room, but because the actual boss is ${rulerNameForFilter} in ${rulerSignForFilter}, they are really a "${absorbArch}" trying to look like a "${scanner.mask}." They use the ${ascSign} focus on "${scanner.scanFor}" to ${scanner.safety}. ` +
-        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+        `${chart.name} is an ${innerArchetype} (${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}) wearing a ${scanner.mask} mask (${ascSign} Rising). ` +
+        `${chart.name} isn't ${falseStory}; ${chart.name} is ${scanner.safety} so they can keep ${drive} intact. ` +
+        (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
+        (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else if (scanner) {
       risingLine =
-        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
-        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+        `${chart.name} wears a ${scanner.mask} mask (${ascSign} Rising) and isn't ${falseStory} — they are ${scanner.safety}. ` +
+        (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
+        (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else {
-      risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
+      risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a mask, not the inner self.`;
     }
   }
-  // Identity Collision: blend Sun sign with its tightest aspect, person-name first.
-  // Banned: sentences that start with "The Sun in X is..." or "[Sign] is..."
+  // The Lead Story: Sun + tightest aspect as a single collision.
+  // Formula: practicing X while fighting Y → "this looks like..." → nervous-system reason → elder advice.
   let sunLine = "";
   if (sunSign) {
     const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
@@ -1528,18 +1583,23 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const apSign = planets[ap]?.sign ?? "";
       const apHouse = planets[ap] ? houseOf(chart, planets[ap]) : null;
       const isHard = HARD_ASPECTS.includes(tightSun.aspect);
-      const modifier = isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft;
+      
       const challenge = PLANET_CHALLENGE[ap] ?? "an inner audit";
       const goal = PLANET_GOAL[ap] ?? "their own truth";
-      const verb = isHard ? "constantly being audited by" : "quietly being shaped by";
+      const fightVerb = isHard ? "fighting" : "negotiating with";
       sunLine =
-        `${chart.name} is practicing ${practice} with ${modifier} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
-        `${chart.name}'s natural ${sunSign} way of showing up is ${verb} ${challenge}. ` +
-        `${chart.name} isn't being difficult or distant — ${chart.name} is protecting ${goal}.`;
+        `${chart.name} is practicing ${practice} while ${fightVerb} ${challenge} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
+        `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
+        `${chart.name} isn't being difficult or distant — the nervous system is protecting ${goal} from getting exposed too fast. ` +
+        `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
-      sunLine = `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). This is what they're growing into, not what they already are.`;
+      sunLine =
+        `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
+        `This is what they are growing into, not what they already are. ` +
+        `For the adult in the room: reflect back the moments you actually see them do it. That is what locks it in.`;
     }
   }
+
   const phase = lifePhaseFor(age);
   const nnSign = NorthNode?.sign;
   const nnHouse = houseOf(chart, NorthNode);
