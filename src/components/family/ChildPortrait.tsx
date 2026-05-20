@@ -427,13 +427,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </section>
             )}
 
-            {/* TRANSLATION RULE 2 · The Energy Discharge (Mars-by-house) */}
+            {/* TRANSLATION RULE 2 · The Safety Valve (Mars-by-house) */}
             {portrait.energyDischarge && (
               <section className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-red-600" />
-                  <div className="font-semibold text-base">The Energy Discharge — where the drive needs to land</div>
-                  <Badge variant="outline" className="text-[10px]">Energy Rule</Badge>
+                  <div className="font-semibold text-base">The Safety Valve — where the stress lands in the body</div>
+                  <Badge variant="outline" className="text-[10px]">Safety Valve</Badge>
                 </div>
                 <div className="rounded-md border-l-4 border-red-500/70 bg-red-50 dark:bg-red-950/30 p-3 space-y-1">
                   <div className="text-[10px] uppercase tracking-wider font-bold text-red-700 dark:text-red-300">
