@@ -1861,11 +1861,13 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     }
   }
 
-  // === TRANSLATION RULE 2: The Energy Discharge (Mars-by-house) ===========
+  // === TRANSLATION RULE 2: The Safety Valve (Mars-by-house) ===============
+  // Name where the physical stress lands and the one daily release that keeps
+  // ${name} sane. No "Mars represents..." fluff. Lead with the person and behavior.
   let energyDischarge: ChildPortrait["energyDischarge"] = undefined;
   if (marsSign && marsHouse && MARS_HOUSE_DISCHARGE[marsHouse]) {
     const m = MARS_HOUSE_DISCHARGE[marsHouse];
-    const line = `Because ${chart.name}'s drive lives in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}), the reset is ${m.action}. If we don't give them that outlet, the result is ${m.shadow}. The Mars sign (${marsSign}) flavors how the discharge moves, but the house is where it needs to land.`;
+    const line = `${chart.name}'s stress lands in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}) — that is where the body carries it. The safety valve is ${m.action}. Skip the valve and the pressure leaks out as ${m.shadow}. ${chart.name} needs that release built into the day, not earned at the end of it.`;
     energyDischarge = { marsSign, marsHouse, action: m.action, shadow: m.shadow, line };
   }
 
