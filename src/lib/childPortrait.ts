@@ -1474,9 +1474,33 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
-  const risingLine = ascSign
-    ? `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`
-    : "";
+  // Rising Filter = Scanner (sign) + Boss (chart ruler) + Real-Talk Synthesis + Why (safety mechanism).
+  // We compute the chart ruler inline here so the Filter card leads with the synthesis,
+  // not a generic "this is the surface presentation" definition.
+  let risingLine = "";
+  if (ascSign) {
+    const scanner = RISING_SCANNER[ascSign];
+    const rulerNameForFilter = TRADITIONAL_RULERS[ascSign];
+    const rulerPlanetForFilter = rulerNameForFilter ? planets[rulerNameForFilter] : undefined;
+    const rulerSignForFilter = rulerPlanetForFilter?.sign;
+    const rulerHouseForFilter = rulerPlanetForFilter ? houseOf(chart, rulerPlanetForFilter) : null;
+    if (scanner && rulerNameForFilter && rulerSignForFilter) {
+      const undercurrent = RULER_UNDERCURRENT_BY_SIGN[rulerSignForFilter] ?? "their own quiet motive";
+      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[rulerSignForFilter] ?? "an open channel";
+      const houseClause = rulerHouseForFilter ? ` running through ${HOUSE_THEME[rulerHouseForFilter]}` : "";
+      risingLine =
+        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
+        `The Boss: that filter is actually run by ${rulerNameForFilter} in ${rulerSignForFilter}${rulerHouseForFilter ? ` (${ordinal(rulerHouseForFilter)} house)` : ""}, which means underneath the "${scanner.mask}" look there is ${undercurrent}${houseClause}. ` +
+        `Real talk: ${chart.name} uses a ${ascSign} "${scanner.mask}" mask to filter the room, but because the actual boss is ${rulerNameForFilter} in ${rulerSignForFilter}, they are really a "${absorbArch}" trying to look like a "${scanner.mask}." They use the ${ascSign} focus on "${scanner.scanFor}" to ${scanner.safety}. ` +
+        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+    } else if (scanner) {
+      risingLine =
+        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
+        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+    } else {
+      risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
+    }
+  }
   const sunLine = sunSign
     ? `The Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} house, around ${HOUSE_THEME[sunHouse]})` : ""} is what they are practicing, not what they already are: ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of shining"}.`
     : "";
