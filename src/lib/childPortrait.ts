@@ -2278,10 +2278,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       moonAspects: moonAspects.slice(0, 6),
     },
   };
-  // Apply No-Repeats pass across the whole Portrait before returning.
+  // Apply Master Reset passes before returning: (1) drop banned vocabulary,
+  // (2) de-duplicate signature phrases across the whole Portrait.
   // mathCheck is excluded to preserve raw debug data.
   const { mathCheck, ...textFields } = assembled;
-  const dedupedText = dedupeAcrossPortrait(textFields, new Set<number>());
+  const scrubbed = scrubHardBan(textFields);
+  const dedupedText = dedupeAcrossPortrait(scrubbed, new Set<number>());
   return { ...dedupedText, mathCheck };
 }
 
