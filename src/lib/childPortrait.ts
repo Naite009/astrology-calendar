@@ -1847,7 +1847,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
       const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
       const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
-      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. We look like ${surfaceArch}, but we absorb like ${absorbArch}. The friction: ${friction}. In real life, that means ${behavior}. The ah-ha: if anyone responds only to the surface, the undercurrent stays clogged — and the next thing out of us is either a sudden silence or a sudden too-much. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      const line = `${chart.name} speaks ${thirdCuspSign}, but ${chart.name} processes like ${thirdRulerSign}. The surface tone everyone meets first is ${surfaceArch}; underneath, ${chart.name} absorbs like ${absorbArch}${houseClause}. The friction: ${friction}. In real life that means ${behavior}. If anyone responds only to the surface ${thirdCuspSign} tone, the ${thirdRulerSign} undercurrent stays clogged — and the next thing out of ${chart.name} is either a sudden silence or a sudden too-much.`;
 
       cognitiveClash = {
         cuspSign: thirdCuspSign,
