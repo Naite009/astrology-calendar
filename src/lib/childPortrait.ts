@@ -2137,7 +2137,73 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna — don't try to remove it; protect it and use it on purpose.`;
   }
 
-  return {
+  // === No-Repeats Pass ====================================================
+  // Banned-on-repeat: if any of these signature phrases appears more than once
+  // across the assembled Portrait copy, the second+ occurrence is rewritten
+  // into a fresh behavioral description. First occurrence is preserved.
+  const BAN_ON_REPEAT: Array<{ pattern: RegExp; replacement: string }> = [
+    {
+      pattern: /freedom,\s*an open exit,\s*and a story large enough(?:\s*to live inside)?/gi,
+      replacement: "the right to leave without a permission slip",
+    },
+    {
+      pattern: /Zero Entanglements:[^.]+/g,
+      replacement: "that same need to keep one door unlocked at all times",
+    },
+    {
+      pattern: /scans the room as a [A-Z][a-z]+/g,
+      replacement: "runs the same scan",
+    },
+    {
+      pattern: /the nervous-system goal is [^.]+/g,
+      replacement: "the same protection is running underneath",
+    },
+  ];
+  function dedupeBannedPhrases<T>(node: T): T {
+    if (typeof node === "string") {
+      let out = node;
+      for (const { pattern, replacement } of BAN_ON_REPEAT) {
+        let first = true;
+        out = out.replace(pattern, (match) => (first ? ((first = false), match) : replacement));
+      }
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map(dedupeBannedPhrases) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        result[k] = dedupeBannedPhrases(v);
+      }
+      return result as unknown as T;
+    }
+    return node;
+  }
+  // Cross-field dedupe: track each banned phrase globally across the whole Portrait,
+  // keep only the first occurrence anywhere, replace later ones with the fallback.
+  function dedupeAcrossPortrait<T>(node: T, seen: Set<number>): T {
+    if (typeof node === "string") {
+      let out = node;
+      BAN_ON_REPEAT.forEach((rule, idx) => {
+        out = out.replace(rule.pattern, (match) => {
+          if (seen.has(idx)) return rule.replacement;
+          seen.add(idx);
+          return match;
+        });
+      });
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map((n) => dedupeAcrossPortrait(n, seen)) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        result[k] = dedupeAcrossPortrait(v, seen);
+      }
+      return result as unknown as T;
+    }
+    return node;
+  }
+
+  const assembled = {
 
 
     name: chart.name,
