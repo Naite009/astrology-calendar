@@ -479,6 +479,23 @@ const RISING_FILTER: Record<string, { stereotype: string; verb: string; surfaceJ
   Pisces: { stereotype: "dreamy", verb: "use a soft, permeable presence", surfaceJob: "let the room's mood enter so it can be read from the inside" },
 };
 
+// ── Rising Scanner: physical "what does this sign scan a room for" + mask label + safety payoff
+// Used by the Identity Invitation Filter section to follow the Scanner / Boss / Synthesis / Why template.
+const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: string }> = {
+  Aries:       { mask: "Starter",         scanFor: "Who's in charge here? Where's the first move?",            safety: "moving first so no one can pin them in place" },
+  Taurus:      { mask: "Anchor",          scanFor: "What feels solid? What's about to get rushed?",            safety: "setting the pace so nothing can shove their body" },
+  Gemini:      { mask: "Reporter",        scanFor: "What's the story? Who's actually saying what?",            safety: "gathering options before anyone locks them into one" },
+  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who is hurting in the room?",                 safety: "reading the emotional weather before they expose their own" },
+  Leo:         { mask: "Performer",       scanFor: "Where is the warmth? Who is actually looking?",            safety: "controlling how they get seen instead of being caught off-guard" },
+  Virgo:       { mask: "Editor",          scanFor: "What is out of place? What's about to break?",             safety: "fixing the small thing first so the big thing can't blindside them" },
+  Libra:       { mask: "Diplomat",        scanFor: "Who's uncomfortable? Where's the imbalance in the room?",  safety: "smoothing the surface so no one turns hostile toward them" },
+  Scorpio:     { mask: "X-Ray",           scanFor: "What is the real story underneath what people are saying?", safety: "knowing the truth before anyone can use it against them" },
+  Sagittarius: { mask: "Explorer",        scanFor: "Where's the exit? Where's the bigger story?",              safety: "keeping a door open so they never feel cornered" },
+  Capricorn:   { mask: "Manager",         scanFor: "Who's in charge here? What are the rules?",                safety: "knowing the structure before they have to play inside it" },
+  Aquarius:    { mask: "Outsider",        scanFor: "What is the group missing? Where can I stand outside this?", safety: "staying one step outside the group so it can't absorb them" },
+  Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
+};
+
 // What the chart-ruler's SIGN is actually defending or pursuing (the deep aim).
 const RULER_SIGN_DRIVE: Record<string, string> = {
   Aries: "their own initiative and the freedom to move first",
