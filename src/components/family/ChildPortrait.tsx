@@ -17,7 +17,7 @@ interface Member {
   role: FamilyRole | string;
 }
 
-// Decipher toggle — swaps a section's prose for its blunt "Real Talk"
+// Decipher toggle, swaps a section's prose for its blunt "Real Talk"
 // translation. Lives inline so each section gets its own local state.
 function DecipherToggle({
   original,
@@ -243,71 +243,107 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   </section>
 
-                  {/* === Engine Architecture ============================================
-                      Four structural buckets, "Agreement Architecture" style:
-                      Social · Identity · Drive · Processing. Each card pulls from existing
-                      portrait data and renders a compact Real Talk synthesis line.
-                      No poetry, no generic definitions. Wit + Grit voice only. */}
+                  {/* === Narrative Briefing ============================================
+                      A single deep prose read built from three connected arcs:
+                      Protective Strategy · Identity Collision · Pressure & the Dark Room.
+                      Wit + Grit voice only. No generic definitions, no header skeletons. */}
                   {(() => {
                     const N = portrait.name;
                     const cr = portrait.chartRuler;
                     const sun = portrait.identityInvitation.sun;
-                    const tightAspect = portrait.tightestAspects?.[0];
+                    const venus = (portrait as any).venusPlacement as { sign: string; house: number | null } | undefined;
+                    const chiron = (portrait as any).chironPlacement as { sign: string; house: number | null } | undefined;
                     const drive = portrait.energyDischarge;
                     const pressure = portrait.pressureSignature;
                     const cloak = portrait.cloakingNote;
-                    const cog = portrait.cognitiveProfile;
-                    const showEngines = !!(cr || sun || drive || cloak || cog);
-                    if (!showEngines) return null;
+                    const twelfth = (portrait as any).twelfthHouseBodies as Array<{ name: string; sign: string }> | undefined;
+                    const ord = (n: number | null | undefined) => {
+                      if (!n) return "";
+                      const s = ["th","st","nd","rd"], v = n % 100;
+                      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                    };
 
-                    const socialLine = cr
-                      ? `${N} uses a ${cr.ascSign} mask to protect a ${cr.rulerSign} heart. The surface scans the room; ${cr.rulerName} in ${cr.rulerSign}${cr.rulerHouse ? `, ${cr.rulerHouse}th house` : ""} is the engine actually steering.`
-                      : null;
+                    // Arc 1, Protective Strategy (Rising + Venus)
+                    let arc1: string | null = null;
+                    if (cr && venus) {
+                      const sameAsRuler = cr.rulerName === "Venus";
+                      const venusClause = sameAsRuler
+                        ? `Venus is also the captain of the chart, so the ${venus.sign} heart in the ${ord(venus.house)} house is what the ${cr.ascSign} surface is actually defending`
+                        : `underneath the ${cr.ascSign} surface, a Venus in ${venus.sign} (${ord(venus.house)} house) heart is what the mask is actually defending`;
+                      arc1 =
+                        `${N} wears the ${cr.ascSign} mask like a tactical peace treaty. The smile, the leveling of voices, the small adjustments that get the room to settle, none of it is performance for its own sake. It is a way to lower the volume so a ${venus.sign} heart underneath doesn't feel trapped or crowded. ${venusClause}, and what it values is room to move. ` +
+                        `Watch the eight-in-the-morning kitchen and you'll see it: ${N} reads the tension first, smooths the edges, hands out the coffee, agrees with the easier opinion. It looks like graciousness. What it actually buys is an exit. The diplomat work clears a corridor so the ${venus.sign} part of them can keep options open later in the day. Treat the niceness as a doorway, not a verdict, if the doorway starts closing, the charm drops fast.`;
+                    }
 
-                    const identityLine = sun
-                      ? (tightAspect
-                          ? `${N} is practicing ${sun.sign}${sun.house ? ` in the ${sun.house}th house` : ""}, but they are being fact-checked by ${tightAspect.b === "Sun" ? tightAspect.a : tightAspect.b} (${tightAspect.aspect}, orb ${tightAspect.orb.toFixed(1)}°). Every move forward gets audited before it's allowed to count.`
-                          : `${N} is practicing ${sun.sign}${sun.house ? ` in the ${sun.house}th house` : ""}. This is what they are growing into, not what they already are.`)
-                      : null;
+                    // Arc 2, Identity Collision (Sun + Chiron + Sun house)
+                    let arc2: string | null = null;
+                    if (sun) {
+                      const sunHousePhrase = sun.house ? `in the ${ord(sun.house)} house` : "";
+                      const seenPhrase = sun.house === 1
+                        ? "the 1st-house Sun makes self-visibility the actual job, the work is to be seen as themselves, in their own body, without translation"
+                        : `the Sun ${sunHousePhrase} carries the need to be seen on their own terms`;
+                      const chironPhrase = chiron
+                        ? `Chiron sits in ${chiron.sign}${chiron.house ? ` in the ${ord(chiron.house)} house` : ""}, running a quiet audit in the background: is this too much? is this fair? am I allowed? ` +
+                          (chiron.house === 7
+                            ? `The 7th-house location of that audit means the question gets routed through other people, every move forward feels like it has to be approved by the room before it counts. `
+                            : `That audit fires before ${N} has even finished the sentence. `)
+                        : "";
+                      arc2 =
+                        `Inside, ${seenPhrase}. ${chironPhrase}` +
+                        `Life starts to feel like a long audition where the role is "themselves" and the casting director is invisible. The mastery here is not a slogan about self-advocacy. It is something more physical: standing in the center of the room, taking up the full square footage of their body, and not scanning anyone's face for an apology. When ${N} stops asking permission to exist out loud, the audit goes quiet, because there is no longer anything for it to police.`;
+                    }
 
-                    const driveLine = drive
-                      ? (pressure
-                          ? `${N} is sitting on a ${drive.marsSign} volcano in the ${drive.marsHouse}th house. If they don't ${drive.action}, the consequence is ${drive.shadow}. Pressure trigger: ${pressure.trigger}.`
-                          : `${N} is sitting on a ${drive.marsSign} volcano in the ${drive.marsHouse}th house. If they don't ${drive.action}, the consequence is ${drive.shadow}.`)
-                      : null;
+                    // Arc 3, Pressure & The Dark Room (Mars + Moon/Mercury 12th)
+                    let arc3: string | null = null;
+                    if (drive || cloak || twelfth) {
+                      const marsPart = drive
+                        ? `The engine underneath is a ${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house. It is intense, private, and does not waste motion. ${drive.marsSign === "Scorpio" ? "Scorpio Mars does not flare for attention; it flares when it has been chased into a corner it was already trying to leave. " : ""}`
+                        : "";
+                      const cloakBodies = cloak?.bodies?.length
+                        ? cloak.bodies.map(b => `${b.sign} ${b.name}`).join(" and ")
+                        : (twelfth && twelfth.length ? twelfth.map(b => `${b.sign} ${b.name}`).join(" and ") : null);
+                      const cloakPart = cloakBodies
+                        ? `Layered over that engine is a 12th-house cloaking need, ${cloakBodies} sit${cloakBodies.includes(" and ") ? "" : "s"} in the back room of the chart, which means ${N} has to go inward to come back to themselves. The silence is not withdrawal from you. It is a return to their own body, the place where the thinking actually finishes. `
+                        : `${N} also needs a closed door to come back to themselves. The silence is not withdrawal from you; it is a return to their own body, where the thinking actually finishes. `;
+                      const triggerPart = pressure
+                        ? `Trigger to watch: ${pressure.trigger}. `
+                        : "";
+                      arc3 =
+                        marsPart + cloakPart + triggerPart +
+                        `Warning for the people around them: if you chase ${N} into the silence before they've processed, the ${drive?.marsSign ?? "Mars"} engine will flare, and what comes back will be sharper than anyone meant. Let them cloak. When they come back out, the answer will already be finished, and the conversation can be short. That's the deal.`;
+                    }
 
-                    const processingLine = cloak
-                      ? `${N} processes in the dark. ${cloak.bodies.map(b => `${b.sign} ${b.name}`).join(" + ")} sit${cloak.bodies.length === 1 ? "s" : ""} in the 12th, so they go quiet, disappear, and come back with the finished answer. Don't chase them in; let them come to you.`
-                      : (cog
-                          ? `${N} processes as a ${cog.label}. ${cog.processing}. Don't crowd the intake; let the answer arrive.`
-                          : null);
+                    const arcs = [
+                      { key: "protective", label: "The Protective Strategy", sub: "Rising + Venus",                body: arc1, accent: "border-cyan-300/60 bg-cyan-50/60 dark:bg-cyan-950/20" },
+                      { key: "identity",   label: "The Identity Collision",  sub: "Sun + Chiron + 1st House",      body: arc2, accent: "border-amber-300/60 bg-amber-50/60 dark:bg-amber-950/20" },
+                      { key: "pressure",   label: "The Pressure & The Dark Room", sub: "Mars + Moon + 12th House", body: arc3, accent: "border-purple-300/60 bg-purple-50/60 dark:bg-purple-950/20" },
+                    ].filter(a => a.body);
 
-                    const cards = [
-                      { key: "social",     label: "The Social Engine",     sub: "Rising + Chart Ruler",     line: socialLine,     border: "border-cyan-300/60",   bg: "bg-cyan-50 dark:bg-cyan-950/30",     text: "text-cyan-950 dark:text-cyan-50" },
-                      { key: "identity",   label: "The Identity Engine",   sub: "Sun + Tightest Aspect",    line: identityLine,   border: "border-amber-300/60",  bg: "bg-amber-50 dark:bg-amber-950/30",   text: "text-amber-950 dark:text-amber-50" },
-                      { key: "drive",      label: "The Drive Engine",      sub: "Mars + House",             line: driveLine,      border: "border-red-300/60",    bg: "bg-red-50 dark:bg-red-950/30",       text: "text-red-950 dark:text-red-50" },
-                      { key: "processing", label: "The Processing Engine", sub: "12th House + Mercury",     line: processingLine, border: "border-slate-300/60",  bg: "bg-slate-50 dark:bg-slate-900/40",   text: "text-slate-900 dark:text-slate-50" },
-                    ].filter(c => c.line);
+                    if (arcs.length === 0) return null;
 
                     return (
-                      <section className="space-y-2">
+                      <section className="space-y-3">
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-primary" />
-                          <div className="font-semibold text-base">Engine Architecture</div>
-                          <Badge variant="outline" className="text-[10px]">Real Talk · Synthesis</Badge>
+                          <div className="font-semibold text-base">Narrative Briefing</div>
+                          <Badge variant="outline" className="text-[10px]">Deep Read</Badge>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {cards.map(c => (
-                            <div key={c.key} className={cn("rounded-md border p-3 space-y-1", c.border, c.bg)}>
-                              <div className="text-xs uppercase tracking-wider opacity-70 font-semibold">{c.label}</div>
-                              <div className="text-[10px] uppercase tracking-wider opacity-60">{c.sub}</div>
-                              <p className={cn("text-sm leading-relaxed pt-1", c.text)}>{c.line}</p>
+                        <div className="space-y-3">
+                          {arcs.map(a => (
+                            <div key={a.key} className={cn("rounded-md border p-4 space-y-2", a.accent)}>
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <div className="font-semibold text-sm">{a.label}</div>
+                                <div className="text-[10px] uppercase tracking-wider opacity-60">{a.sub}</div>
+                              </div>
+                              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{a.body}</p>
                             </div>
                           ))}
                         </div>
                       </section>
                     );
                   })()}
+
+
 
                 </>
               );
@@ -336,7 +372,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       <p className="text-sm">{portrait.howTo.ritual}</p>
                     </div>
 
-                    {/* Consolidated Cognitive Map — replaces duplicate Learning Style + Cognitive Profile */}
+                    {/* Consolidated Cognitive Map, replaces duplicate Learning Style + Cognitive Profile */}
                     {portrait.cognitiveProfile ? (
                       <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-2">
                         <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
@@ -385,12 +421,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               );
             })()}
 
-            {/* Shadow Guidance — South Node in hidden house (6/8/12) */}
+            {/* Shadow Guidance, South Node in hidden house (6/8/12) */}
             {portrait.shadowGuidance && (
               <section className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-purple-600" />
-                  <div className="font-semibold text-base">Shadow Handling — how to address stress with them</div>
+                  <div className="font-semibold text-base">Shadow Handling, how to address stress with them</div>
                 </div>
                 <div className="rounded-md border-l-4 border-purple-500/70 bg-purple-50 dark:bg-purple-950/30 p-3 space-y-1">
                   <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
@@ -406,7 +442,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
             {/* 5. Math Check (collapsible) */}
             <details className="rounded-md border border-dashed border-border bg-background/40 group">
               <summary className="cursor-pointer select-none p-3 font-semibold text-sm flex items-center justify-between hover:bg-muted/40 rounded-md">
-                <span>🔭 Math Check — what this reading is grounded in</span>
+                <span>🔭 Math Check, what this reading is grounded in</span>
                 <span className="text-xs text-muted-foreground group-open:hidden">click to expand</span>
                 <span className="text-xs text-muted-foreground hidden group-open:inline">click to collapse</span>
               </summary>
