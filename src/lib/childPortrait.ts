@@ -496,6 +496,55 @@ const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: st
   Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
 };
 
+// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo literally looks like in the room.
+// Keyed by Rising sign. Concrete, observable behavior — no astro-nouns.
+const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
+  Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
+  Taurus:      "they refuse to be rushed out the door — the body sets the pace and the schedule has to bend",
+  Gemini:      "they're already mid-sentence about three different things before their feet hit the kitchen floor",
+  Cancer:      "they scan everyone's face for the mood of the morning before they say a word",
+  Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
+  Virgo:       "they spot the one thing out of place — the crumbs, the wrong mug — and can't unsee it",
+  Libra:       "they smooth the first tension in the room before they've even sat down",
+  Scorpio:     "they go quiet and watch, reading who is actually safe to talk to first",
+  Sagittarius: "they're already half out the door, talking about the trip, the plan, anything past this kitchen",
+  Capricorn:   "they want to know the plan for the day before they'll fully arrive in the morning",
+  Aquarius:    "they stand slightly apart, observing the family as if from outside it",
+  Pisces:      "they feel the loud music, the bright light, the leftover tension from last night, all of it at once",
+};
+
+// ── Elder/parent advice per Rising mask — what NOT to do at 8 AM.
+const RISING_ELDER_ADVICE: Record<string, string> = {
+  Aries:       "Don't tell them to slow down — give them the first job of the morning so the energy has a target.",
+  Taurus:      "Don't rush the body. Give a 10-minute warning, not a 'we leave now.'",
+  Gemini:      "Don't shut down the chatter. Ask one real question and the wiring lands.",
+  Cancer:      "Don't perform 'fine' over a tense morning — they read the room either way. Name it briefly.",
+  Leo:         "Don't skip the greeting. A warm hello costs nothing and changes the day.",
+  Virgo:       "Don't call them picky. They are flooded by the out-of-place thing — fix it or name it, then move on.",
+  Libra:       "Don't ask them to take a side at breakfast. Let them have neutral ground until they're warmed up.",
+  Scorpio:     "Don't push for a chipper morning report. Quiet is the runway, not the problem.",
+  Sagittarius: "Don't pin them down to the table. Keep one door symbolically open — talk about later in the day.",
+  Capricorn:   "Don't drop them into chaos. A two-sentence map of the day lets the nervous system settle.",
+  Aquarius:    "Don't demand warmth on cue. Let them observe; warmth comes once they're not being watched.",
+  Pisces:      "Don't tell them to toughen up. Lower the music, dim the light, give them five quiet minutes to dock.",
+};
+
+const RISING_FALSE_STORY: Record<string, string> = {
+  Aries:       "being pushy",
+  Taurus:      "being lazy or stubborn",
+  Gemini:      "being scattered",
+  Cancer:      "being moody",
+  Leo:         "being showy",
+  Virgo:       "being picky",
+  Libra:       "being nice to be liked",
+  Scorpio:     "being intense or cold",
+  Sagittarius: "being flaky",
+  Capricorn:   "being cold or rigid",
+  Aquarius:    "being aloof or weird",
+  Pisces:      "being dreamy or dramatic",
+};
+
+
 // What the chart-ruler's SIGN is actually defending or pursuing (the deep aim).
 const RULER_SIGN_DRIVE: Record<string, string> = {
   Aries: "their own initiative and the freedom to move first",
