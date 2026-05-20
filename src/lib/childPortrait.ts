@@ -2249,6 +2249,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       moonAspects: moonAspects.slice(0, 6),
     },
   };
+  // Apply No-Repeats pass across the whole Portrait before returning.
+  // mathCheck is excluded to preserve raw debug data.
+  const { mathCheck, ...textFields } = assembled;
+  const dedupedText = dedupeAcrossPortrait(textFields, new Set<number>());
+  return { ...dedupedText, mathCheck };
 }
 
 
