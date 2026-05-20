@@ -1539,9 +1539,9 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
-  // Rising Filter = Scanner (sign) + Boss (chart ruler) + Real-Talk Synthesis + Why (safety mechanism).
-  // We compute the chart ruler inline here so the Filter card leads with the synthesis,
-  // not a generic "this is the surface presentation" definition.
+  // Rising Filter = Behavioral Astrology only. No invented archetypes (no "Explorer/Teacher/CEO").
+  // Structure: Sun+Rising combo as Nervous-System Goal → ruler as the engine/drive → kitchen scene → elder advice.
+  // The ruler is cited as planet-in-sign-in-house with its drive, NOT relabeled as a mask archetype.
   let risingLine = "";
   if (ascSign) {
     const scanner = RISING_SCANNER[ascSign];
@@ -1552,32 +1552,46 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const falseStory = RISING_FALSE_STORY[ascSign] ?? "what people first assume";
     const kitchen = RISING_KITCHEN_BEHAVIOR[ascSign] ?? "";
     const elderTip = RISING_ELDER_ADVICE[ascSign] ?? "";
+    // Sun+Rising combo: practicing the Sun's work inside the Rising's scan.
+    const sunPracticeHere = sunSign ? (SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen") : "";
+    const sunHouseClause = sunHouse ? ` in the ${ordinal(sunHouse)} house (${HOUSE_THEME[sunHouse]})` : "";
     if (scanner && rulerNameForFilter && rulerSignForFilter) {
-      // Paradox formula: inner archetype (ruler's sign mask label) wearing the Rising mask.
-      const innerArchetype = RISING_SCANNER[rulerSignForFilter]?.mask ?? rulerSignForFilter;
       const drive = RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them";
       const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
-      // 1) Behavioral truth (Paradox). 2) Nervous-system reason. 3) Kitchen scene. 4) Elder advice.
+      // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Kitchen + elder.
+      const lead = sunSign
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
+        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
       risingLine =
-        `${chart.name} is an ${innerArchetype} (${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}) wearing a ${scanner.mask} mask (${ascSign} Rising). ` +
-        `${chart.name} isn't ${falseStory}; ${chart.name} is ${scanner.safety} so they can keep ${drive} intact. ` +
+        lead +
+        `The engine running that scan is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} — it needs ${drive}. ` +
+        `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety} so ${drive} stays intact. ` +
         (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
         (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else if (scanner) {
+      const lead = sunSign
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
+        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
       risingLine =
-        `${chart.name} wears a ${scanner.mask} mask (${ascSign} Rising) and isn't ${falseStory} — they are ${scanner.safety}. ` +
+        lead +
+        `${chart.name} isn't ${falseStory} — the nervous-system goal is ${scanner.safety}. ` +
         (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
         (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else {
-      risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a mask, not the inner self.`;
+      risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a scan pattern, not the inner self.`;
     }
   }
   // The Lead Story: Sun + tightest aspect as a single collision.
   // Formula: practicing X while fighting Y → "this looks like..." → nervous-system reason → elder advice.
+  // Special case: Sun in the 1st house = self-visibility work (the Work is being seen at all).
   let sunLine = "";
   if (sunSign) {
     const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
     const tightSun = sunAspects[0];
+    // 1st-house Sun overlay: the struggle is self-visibility, not technique.
+    const firstHouseOverlay = sunHouse === 1
+      ? ` Because the Sun sits in the 1st house, the work is Self-Visibility itself: the struggle is feeling like ${chart.name} has to apologize for existing, and the mastery is realizing that when ${chart.name} shows up fully, the room actually gets more balanced, not less.`
+      : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
       const apSign = planets[ap]?.sign ?? "";
@@ -1590,12 +1604,14 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       sunLine =
         `${chart.name} is practicing ${practice} while ${fightVerb} ${challenge} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
         `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
-        `${chart.name} isn't being difficult or distant — the nervous system is protecting ${goal} from getting exposed too fast. ` +
+        `${chart.name} isn't being difficult or distant — the nervous system is protecting ${goal} from getting exposed too fast.` +
+        firstHouseOverlay + ` ` +
         `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
       sunLine =
         `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
-        `This is what they are growing into, not what they already are. ` +
+        `This is what they are growing into, not what they already are.` +
+        firstHouseOverlay + ` ` +
         `For the adult in the room: reflect back the moments you actually see them do it. That is what locks it in.`;
     }
   }
