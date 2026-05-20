@@ -1549,25 +1549,31 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const rulerPlanetForFilter = rulerNameForFilter ? planets[rulerNameForFilter] : undefined;
     const rulerSignForFilter = rulerPlanetForFilter?.sign;
     const rulerHouseForFilter = rulerPlanetForFilter ? houseOf(chart, rulerPlanetForFilter) : null;
+    const falseStory = RISING_FALSE_STORY[ascSign] ?? "what people first assume";
+    const kitchen = RISING_KITCHEN_BEHAVIOR[ascSign] ?? "";
+    const elderTip = RISING_ELDER_ADVICE[ascSign] ?? "";
     if (scanner && rulerNameForFilter && rulerSignForFilter) {
-      const undercurrent = RULER_UNDERCURRENT_BY_SIGN[rulerSignForFilter] ?? "their own quiet motive";
-      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[rulerSignForFilter] ?? "an open channel";
-      const houseClause = rulerHouseForFilter ? ` running through ${HOUSE_THEME[rulerHouseForFilter]}` : "";
+      // Paradox formula: inner archetype (ruler's sign mask label) wearing the Rising mask.
+      const innerArchetype = RISING_SCANNER[rulerSignForFilter]?.mask ?? rulerSignForFilter;
+      const drive = RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them";
+      const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
+      // 1) Behavioral truth (Paradox). 2) Nervous-system reason. 3) Kitchen scene. 4) Elder advice.
       risingLine =
-        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
-        `The Boss: that filter is actually run by ${rulerNameForFilter} in ${rulerSignForFilter}${rulerHouseForFilter ? ` (${ordinal(rulerHouseForFilter)} house)` : ""}, which means underneath the "${scanner.mask}" look there is ${undercurrent}${houseClause}. ` +
-        `Real talk: ${chart.name} uses a ${ascSign} "${scanner.mask}" mask to filter the room, but because the actual boss is ${rulerNameForFilter} in ${rulerSignForFilter}, they are really a "${absorbArch}" trying to look like a "${scanner.mask}." They use the ${ascSign} focus on "${scanner.scanFor}" to ${scanner.safety}. ` +
-        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+        `${chart.name} is an ${innerArchetype} (${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}) wearing a ${scanner.mask} mask (${ascSign} Rising). ` +
+        `${chart.name} isn't ${falseStory}; ${chart.name} is ${scanner.safety} so they can keep ${drive} intact. ` +
+        (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
+        (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else if (scanner) {
       risingLine =
-        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
-        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+        `${chart.name} wears a ${scanner.mask} mask (${ascSign} Rising) and isn't ${falseStory} — they are ${scanner.safety}. ` +
+        (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
+        (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else {
-      risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
+      risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a mask, not the inner self.`;
     }
   }
-  // Identity Collision: blend Sun sign with its tightest aspect, person-name first.
-  // Banned: sentences that start with "The Sun in X is..." or "[Sign] is..."
+  // The Lead Story: Sun + tightest aspect as a single collision.
+  // Formula: practicing X while fighting Y → "this looks like..." → nervous-system reason → elder advice.
   let sunLine = "";
   if (sunSign) {
     const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
@@ -1580,15 +1586,20 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const modifier = isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft;
       const challenge = PLANET_CHALLENGE[ap] ?? "an inner audit";
       const goal = PLANET_GOAL[ap] ?? "their own truth";
-      const verb = isHard ? "constantly being audited by" : "quietly being shaped by";
+      const fightVerb = isHard ? "fighting" : "negotiating with";
       sunLine =
-        `${chart.name} is practicing ${practice} with ${modifier} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
-        `${chart.name}'s natural ${sunSign} way of showing up is ${verb} ${challenge}. ` +
-        `${chart.name} isn't being difficult or distant — ${chart.name} is protecting ${goal}.`;
+        `${chart.name} is practicing ${practice} while ${fightVerb} ${challenge} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
+        `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
+        `${chart.name} isn't being difficult or distant — the nervous system is protecting ${goal} from getting exposed too fast. ` +
+        `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
-      sunLine = `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). This is what they're growing into, not what they already are.`;
+      sunLine =
+        `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
+        `This is what they are growing into, not what they already are. ` +
+        `For the adult in the room: reflect back the moments you actually see them do it. That is what locks it in.`;
     }
   }
+
   const phase = lifePhaseFor(age);
   const nnSign = NorthNode?.sign;
   const nnHouse = houseOf(chart, NorthNode);
