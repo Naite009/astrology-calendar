@@ -671,7 +671,7 @@ const RULER_UNDERCURRENT_BY_SIGN: Record<string, string> = {
   Virgo: "a constant inner edit",
   Libra: "a quiet relational calculation",
   Scorpio: "a powerful pressure they're actively managing",
-  Sagittarius: "a restless need for the bigger truth",
+  Sagittarius: "a restless pull toward the exit",
   Capricorn: "a serious sense of responsibility",
   Aquarius: "a detached, observational coolness",
   Pisces: "an absorbed, mood-soaked current",
