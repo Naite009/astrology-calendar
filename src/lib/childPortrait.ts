@@ -2203,7 +2203,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     return node;
   }
 
-  const assembled = {
+  const assembled: any = {
 
 
     name: chart.name,
