@@ -1556,7 +1556,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const sunPracticeHere = sunSign ? (SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen") : "";
     const sunHouseClause = sunHouse ? ` in the ${ordinal(sunHouse)} house (${HOUSE_THEME[sunHouse]})` : "";
     if (scanner && rulerNameForFilter && rulerSignForFilter) {
-      const drive = RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them";
+      // Behavioral overrides for specific ruler placements (no metaphor labels).
+      // Venus in Sagittarius in the 2nd house = Autonomy / Zero Entanglements (not "horizons").
+      const isVenusSag2H = rulerNameForFilter === "Venus" && rulerSignForFilter === "Sagittarius" && rulerHouseForFilter === 2;
+      const drive = isVenusSag2H
+        ? "Zero Entanglements: the right to change their mind and walk away without negotiating it"
+        : (RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them");
       const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
       // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Kitchen + elder.
       const lead = sunSign
@@ -1564,17 +1569,31 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
       risingLine =
         lead +
-        `The engine running that scan is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} — it needs ${drive}. ` +
+        `The engine running that scan is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}, and it needs ${drive}. ` +
         `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety} so ${drive} stays intact. ` +
         (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
         (elderTip ? `For the adult in the room: ${elderTip}` : "");
+
+      // SURGICAL OVERRIDE: Libra Rising + 1st House Sun = "Nice for a Reason" / polite buffer copy.
+      if (ascSign === "Libra" && sunHouse === 1) {
+        const venusClause = isVenusSag2H
+          ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to clear the room.`
+          : ` Underneath, ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} is the engine: it needs ${drive}.`;
+        risingLine =
+          `${chart.name} uses a Libra Diplomat mask to build a polite buffer around themselves. ` +
+          `${chart.name} isn't being nice to be liked; being nice keeps people at a distance so they don't interfere with the 1st-house need to just be themselves. ` +
+          `It is a peace treaty ${chart.name} signs every morning to buy a little space.` +
+          venusClause +
+          (kitchen ? ` At 8 AM in the kitchen: ${kitchen}.` : "") +
+          (elderTip ? ` For the adult in the room: ${elderTip}` : "");
+      }
     } else if (scanner) {
       const lead = sunSign
         ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
         : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
       risingLine =
         lead +
-        `${chart.name} isn't ${falseStory} — the nervous-system goal is ${scanner.safety}. ` +
+        `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety}. ` +
         (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
         (elderTip ? `For the adult in the room: ${elderTip}` : "");
     } else {
@@ -1588,9 +1607,9 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   if (sunSign) {
     const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
     const tightSun = sunAspects[0];
-    // 1st-house Sun overlay: the struggle is self-visibility, not technique.
+    // 1st-house Sun overlay: the pressure is to Exist Out Loud (concrete behavior, not "self-advocacy").
     const firstHouseOverlay = sunHouse === 1
-      ? ` Because the Sun sits in the 1st house, the work is Self-Visibility itself: the struggle is feeling like ${chart.name} has to apologize for existing, and the mastery is realizing that when ${chart.name} shows up fully, the room actually gets more balanced, not less.`
+      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair" — a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
       : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
@@ -2118,7 +2137,73 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna — don't try to remove it; protect it and use it on purpose.`;
   }
 
-  return {
+  // === No-Repeats Pass ====================================================
+  // Banned-on-repeat: if any of these signature phrases appears more than once
+  // across the assembled Portrait copy, the second+ occurrence is rewritten
+  // into a fresh behavioral description. First occurrence is preserved.
+  const BAN_ON_REPEAT: Array<{ pattern: RegExp; replacement: string }> = [
+    {
+      pattern: /freedom,\s*an open exit,\s*and a story large enough(?:\s*to live inside)?/gi,
+      replacement: "the right to leave without a permission slip",
+    },
+    {
+      pattern: /Zero Entanglements:[^.]+/g,
+      replacement: "that same need to keep one door unlocked at all times",
+    },
+    {
+      pattern: /scans the room as a [A-Z][a-z]+/g,
+      replacement: "runs the same scan",
+    },
+    {
+      pattern: /the nervous-system goal is [^.]+/g,
+      replacement: "the same protection is running underneath",
+    },
+  ];
+  function dedupeBannedPhrases<T>(node: T): T {
+    if (typeof node === "string") {
+      let out: string = node;
+      for (const { pattern, replacement } of BAN_ON_REPEAT) {
+        let first = true;
+        out = out.replace(pattern, (match) => (first ? ((first = false), match) : replacement));
+      }
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map(dedupeBannedPhrases) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        result[k] = dedupeBannedPhrases(v);
+      }
+      return result as unknown as T;
+    }
+    return node;
+  }
+  // Cross-field dedupe: track each banned phrase globally across the whole Portrait,
+  // keep only the first occurrence anywhere, replace later ones with the fallback.
+  function dedupeAcrossPortrait<T>(node: T, seen: Set<number>): T {
+    if (typeof node === "string") {
+      let out: string = node;
+      BAN_ON_REPEAT.forEach((rule, idx) => {
+        out = out.replace(rule.pattern, (match) => {
+          if (seen.has(idx)) return rule.replacement;
+          seen.add(idx);
+          return match;
+        });
+      });
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map((n) => dedupeAcrossPortrait(n, seen)) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        result[k] = dedupeAcrossPortrait(v, seen);
+      }
+      return result as unknown as T;
+    }
+    return node;
+  }
+
+  const assembled: any = {
 
 
     name: chart.name,
@@ -2164,6 +2249,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       moonAspects: moonAspects.slice(0, 6),
     },
   };
+  // Apply No-Repeats pass across the whole Portrait before returning.
+  // mathCheck is excluded to preserve raw debug data.
+  const { mathCheck, ...textFields } = assembled;
+  const dedupedText = dedupeAcrossPortrait(textFields, new Set<number>());
+  return { ...dedupedText, mathCheck };
 }
 
 
