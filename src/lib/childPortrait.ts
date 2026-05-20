@@ -2182,7 +2182,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   // keep only the first occurrence anywhere, replace later ones with the fallback.
   function dedupeAcrossPortrait<T>(node: T, seen: Set<number>): T {
     if (typeof node === "string") {
-      let out = node;
+      let out: string = node;
       BAN_ON_REPEAT.forEach((rule, idx) => {
         out = out.replace(rule.pattern, (match) => {
           if (seen.has(idx)) return rule.replacement;
