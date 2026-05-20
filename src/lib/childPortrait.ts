@@ -1258,8 +1258,9 @@ export interface ChildPortrait {
   };
 
   // Lightweight placements used by the Narrative Briefing prose blocks
-  venusPlacement?: { sign: string; house: number | null };
-  chironPlacement?: { sign: string; house: number | null };
+  venusPlacement?: { sign: string; house: number | null; degree: number | null };
+  chironPlacement?: { sign: string; house: number | null; degree: number | null };
+  ascDegree?: number | null;
   twelfthHouseBodies?: Array<{ name: string; sign: string }>;
 
   mathCheck: {
@@ -2274,8 +2275,9 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     cloakingNote,
     pressureSignature,
 
-    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus) } : undefined,
-    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron) } : undefined,
+    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus), degree: Venus.degree ?? null } : undefined,
+    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron), degree: Chiron.degree ?? null } : undefined,
+    ascDegree: chart.houseCusps?.house1?.degree ?? null,
     twelfthHouseBodies: (() => {
       const out: Array<{ name: string; sign: string }> = [];
       for (const n of ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron"]) {

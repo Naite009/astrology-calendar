@@ -251,72 +251,94 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     const N = portrait.name;
                     const cr = portrait.chartRuler;
                     const sun = portrait.identityInvitation.sun;
-                    const venus = (portrait as any).venusPlacement as { sign: string; house: number | null } | undefined;
-                    const chiron = (portrait as any).chironPlacement as { sign: string; house: number | null } | undefined;
+                    const venus = (portrait as any).venusPlacement as { sign: string; house: number | null; degree: number | null } | undefined;
+                    const chiron = (portrait as any).chironPlacement as { sign: string; house: number | null; degree: number | null } | undefined;
+                    const ascDegree = (portrait as any).ascDegree as number | null | undefined;
                     const drive = portrait.energyDischarge;
                     const pressure = portrait.pressureSignature;
                     const cloak = portrait.cloakingNote;
                     const twelfth = (portrait as any).twelfthHouseBodies as Array<{ name: string; sign: string }> | undefined;
+                    const howTo = portrait.howTo;
+                    const cog = portrait.cognitiveProfile;
                     const ord = (n: number | null | undefined) => {
                       if (!n) return "";
                       const s = ["th","st","nd","rd"], v = n % 100;
                       return n + (s[(v - 20) % 10] || s[v] || s[0]);
                     };
+                    const fmtDeg = (d: number | null | undefined) =>
+                      typeof d === "number" ? `${d.toFixed(1)}°` : null;
 
-                    // Arc 1, Protective Strategy (Rising + Venus)
+                    // Sun-to-Chiron orb (if present in mathCheck)
+                    const sunChiron = portrait.mathCheck.sunAspects?.find(a => a.to === "Chiron");
+
+                    // Arc 1 — Protective Strategy (Rising + Venus), with morning advice folded in
                     let arc1: string | null = null;
                     if (cr && venus) {
+                      const ascAnchor = fmtDeg(ascDegree) ? ` (${cr.ascSign} Rising at ${fmtDeg(ascDegree)})` : ` (${cr.ascSign} Rising)`;
+                      const venusAnchor = `Venus in ${venus.sign}${fmtDeg(venus.degree) ? ` at ${fmtDeg(venus.degree)}` : ""}${venus.house ? `, ${ord(venus.house)} house` : ""}`;
                       const sameAsRuler = cr.rulerName === "Venus";
                       const venusClause = sameAsRuler
-                        ? `Venus is also the captain of the chart, so the ${venus.sign} heart in the ${ord(venus.house)} house is what the ${cr.ascSign} surface is actually defending`
-                        : `underneath the ${cr.ascSign} surface, a Venus in ${venus.sign} (${ord(venus.house)} house) heart is what the mask is actually defending`;
+                        ? `Venus is also the captain of the chart, so that ${venus.sign} heart in the ${ord(venus.house)} house is what the surface is actually defending`
+                        : `underneath the surface, ${venusAnchor} is the heart the mask is actually defending`;
                       arc1 =
-                        `${N} wears the ${cr.ascSign} mask like a tactical peace treaty. The smile, the leveling of voices, the small adjustments that get the room to settle, none of it is performance for its own sake. It is a way to lower the volume so a ${venus.sign} heart underneath doesn't feel trapped or crowded. ${venusClause}, and what it values is room to move. ` +
-                        `Watch the eight-in-the-morning kitchen and you'll see it: ${N} reads the tension first, smooths the edges, hands out the coffee, agrees with the easier opinion. It looks like graciousness. What it actually buys is an exit. The diplomat work clears a corridor so the ${venus.sign} part of them can keep options open later in the day. Treat the niceness as a doorway, not a verdict, if the doorway starts closing, the charm drops fast.`;
+                        `${N} wears the ${cr.ascSign} mask${ascAnchor} like a tactical peace treaty. The smile, the leveling of voices, the small adjustments that get the room to settle, none of it is performance for its own sake. It is a way to lower the volume so ${venusAnchor} doesn't feel trapped or crowded. ${venusClause}, and what it values is room to move. ` +
+                        `Watch the eight-in-the-morning kitchen and you'll see it: ${N} reads the tension first, smooths the edges, hands out the coffee, agrees with the easier opinion. It looks like graciousness. What it actually buys is an exit. The ${cr.ascSign} diplomat work clears a corridor so the ${venus.sign} part of them can keep options open later in the day. Treat the niceness as a doorway, not a verdict; the boundary, the only one that holds, is the right to walk away from a closing room. ` +
+                        (howTo?.ritual ? `So the daily love-language with ${N} isn't a check-in or a follow-up question; it is the ${howTo.ritual.toLowerCase().replace(/\.$/, "")}, because it confirms the doorway is still open. ` : "") +
+                        `If you sense the charm getting bright and fast, that is not affection scaling up. That is the ${venus.sign} Venus measuring the exit and the ${cr.ascSign} Rising buying time at the door.`;
                     }
 
-                    // Arc 2, Identity Collision (Sun + Chiron + Sun house)
+                    // Arc 2 — Identity Collision (Sun + Chiron + Sun house), with the boundary folded in
                     let arc2: string | null = null;
                     if (sun) {
-                      const sunHousePhrase = sun.house ? `in the ${ord(sun.house)} house` : "";
+                      const sunAnchor = `Sun in ${sun.sign}${sun.house ? `, ${ord(sun.house)} house` : ""}`;
+                      const chironAnchor = chiron
+                        ? `Chiron in ${chiron.sign}${fmtDeg(chiron.degree) ? ` at ${fmtDeg(chiron.degree)}` : ""}${chiron.house ? `, ${ord(chiron.house)} house` : ""}`
+                        : null;
+                      const collisionAnchor = sunChiron
+                        ? ` (Sun ${sunChiron.aspect} Chiron, orb ${sunChiron.orb.toFixed(1)}°)`
+                        : "";
                       const seenPhrase = sun.house === 1
-                        ? "the 1st-house Sun makes self-visibility the actual job, the work is to be seen as themselves, in their own body, without translation"
-                        : `the Sun ${sunHousePhrase} carries the need to be seen on their own terms`;
-                      const chironPhrase = chiron
-                        ? `Chiron sits in ${chiron.sign}${chiron.house ? ` in the ${ord(chiron.house)} house` : ""}, running a quiet audit in the background: is this too much? is this fair? am I allowed? ` +
+                        ? `The ${sunAnchor} makes self-visibility the actual job: the work is to be seen as themselves, in their own body, without translation.`
+                        : `The ${sunAnchor} carries the need to be seen on their own terms.`;
+                      const chironPhrase = chironAnchor
+                        ? ` But ${chironAnchor}${collisionAnchor} runs a quiet audit in the background: is this too much, is this fair, am I allowed. ` +
                           (chiron.house === 7
-                            ? `The 7th-house location of that audit means the question gets routed through other people, every move forward feels like it has to be approved by the room before it counts. `
+                            ? `Because the audit lives in the 7th, the question gets routed through other people; every step forward has to be approved by the room before it counts. `
                             : `That audit fires before ${N} has even finished the sentence. `)
                         : "";
                       arc2 =
-                        `Inside, ${seenPhrase}. ${chironPhrase}` +
-                        `Life starts to feel like a long audition where the role is "themselves" and the casting director is invisible. The mastery here is not a slogan about self-advocacy. It is something more physical: standing in the center of the room, taking up the full square footage of their body, and not scanning anyone's face for an apology. When ${N} stops asking permission to exist out loud, the audit goes quiet, because there is no longer anything for it to police.`;
+                        `Inside, the math collides. ${seenPhrase}${chironPhrase}` +
+                        `Life starts to feel like a long audition where the role is "themselves" and the casting director is invisible. The mastery here is not a slogan about self-advocacy. It is something more physical: standing in the center of the room, taking up the full square footage of their body, and not scanning anyone's face for an apology. ` +
+                        (howTo?.boundary ? `Concretely, that is the ${howTo.boundary.toLowerCase().replace(/\.$/, "")}, and the reason it works is exactly the ${collisionAnchor ? "Sun-Chiron audit" : "1st-house Sun"}: every time ${N} holds that line without flinching, the audit loses one of its questions. ` : "") +
+                        `When ${N} stops asking permission to exist out loud, the audit goes quiet, because there is no longer anything for it to police.`;
                     }
 
-                    // Arc 3, Pressure & The Dark Room (Mars + Moon/Mercury 12th)
+                    // Arc 3 — Pressure & The Dark Room (Mars + 12th), with cognitive how-to folded in
                     let arc3: string | null = null;
                     if (drive || cloak || twelfth) {
-                      const marsPart = drive
-                        ? `The engine underneath is a ${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house. It is intense, private, and does not waste motion. ${drive.marsSign === "Scorpio" ? "Scorpio Mars does not flare for attention; it flares when it has been chased into a corner it was already trying to leave. " : ""}`
+                      const marsAnchor = drive ? `${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house` : null;
+                      const marsPart = marsAnchor
+                        ? `The engine underneath is a ${marsAnchor}. It is intense, private, and does not waste motion. ${drive!.marsSign === "Scorpio" ? "Scorpio Mars does not flare for attention; it flares when it has been chased into a corner it was already trying to leave. " : ""}`
                         : "";
                       const cloakBodies = cloak?.bodies?.length
                         ? cloak.bodies.map(b => `${b.sign} ${b.name}`).join(" and ")
                         : (twelfth && twelfth.length ? twelfth.map(b => `${b.sign} ${b.name}`).join(" and ") : null);
                       const cloakPart = cloakBodies
-                        ? `Layered over that engine is a 12th-house cloaking need, ${cloakBodies} sit${cloakBodies.includes(" and ") ? "" : "s"} in the back room of the chart, which means ${N} has to go inward to come back to themselves. The silence is not withdrawal from you. It is a return to their own body, the place where the thinking actually finishes. `
+                        ? `Layered over that engine is a 12th-house cloaking need: ${cloakBodies} sit${cloakBodies.includes(" and ") ? "" : "s"} in the back room of the chart, which means ${N} has to go inward to come back out as themselves. The silence is not withdrawal from you; it is a return to their own body, the place where the thinking actually finishes. `
                         : `${N} also needs a closed door to come back to themselves. The silence is not withdrawal from you; it is a return to their own body, where the thinking actually finishes. `;
-                      const triggerPart = pressure
-                        ? `Trigger to watch: ${pressure.trigger}. `
-                        : "";
+                      const triggerPart = pressure ? `The trigger that turns the silence sharp: ${pressure.trigger}. ` : "";
+                      const cogFold = cog
+                        ? `Don't trap ${N} in a checklist or a "where are you on this" status check; the ${cog.mercurySign} Mercury ${cloakBodies ? "in the 12th" : ""} processes by drift, not by report. ${cog.application ? cog.application.replace(/\.$/, "") + ". " : ""}`
+                        : (howTo?.learningStyle ? `Don't trap ${N} in a checklist; ${howTo.learningStyle.toLowerCase().replace(/\.$/, "")}, because that is how the intake actually completes. ` : "");
                       arc3 =
-                        marsPart + cloakPart + triggerPart +
-                        `Warning for the people around them: if you chase ${N} into the silence before they've processed, the ${drive?.marsSign ?? "Mars"} engine will flare, and what comes back will be sharper than anyone meant. Let them cloak. When they come back out, the answer will already be finished, and the conversation can be short. That's the deal.`;
+                        marsPart + cloakPart + triggerPart + cogFold +
+                        `So the warning is simple, and it is rooted in the same math: if you chase ${N} into the silence before they've processed, the ${marsAnchor ?? "Mars"} engine will flare, and what comes back will be sharper than anyone meant. Let them cloak. When they come back out, the answer will already be finished, the conversation can be short, and the ${cr?.ascSign ?? ""} diplomat will be back in the kitchen by morning. That is the whole handling instruction, end to end.`;
                     }
 
                     const arcs = [
-                      { key: "protective", label: "The Protective Strategy", sub: "Rising + Venus",                body: arc1, accent: "border-cyan-300/60 bg-cyan-50/60 dark:bg-cyan-950/20" },
-                      { key: "identity",   label: "The Identity Collision",  sub: "Sun + Chiron + 1st House",      body: arc2, accent: "border-amber-300/60 bg-amber-50/60 dark:bg-amber-950/20" },
-                      { key: "pressure",   label: "The Pressure & The Dark Room", sub: "Mars + Moon + 12th House", body: arc3, accent: "border-purple-300/60 bg-purple-50/60 dark:bg-purple-950/20" },
+                      { key: "protective", label: "The Protective Strategy",        sub: "Rising + Venus",                body: arc1, accent: "border-cyan-300/60 bg-cyan-50/60 dark:bg-cyan-950/20" },
+                      { key: "identity",   label: "The Identity Collision",         sub: "Sun + Chiron + 1st House",      body: arc2, accent: "border-amber-300/60 bg-amber-50/60 dark:bg-amber-950/20" },
+                      { key: "pressure",   label: "The Pressure & The Dark Room",   sub: "Mars + 12th House + Mercury",   body: arc3, accent: "border-purple-300/60 bg-purple-50/60 dark:bg-purple-950/20" },
                     ].filter(a => a.body);
 
                     if (arcs.length === 0) return null;
@@ -326,7 +348,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-primary" />
                           <div className="font-semibold text-base">Narrative Briefing</div>
-                          <Badge variant="outline" className="text-[10px]">Deep Read</Badge>
+                          <Badge variant="outline" className="text-[10px]">One Story · Math-Anchored</Badge>
                         </div>
                         <div className="space-y-3">
                           {arcs.map(a => (
@@ -345,81 +367,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
 
 
+
                 </>
               );
             })()}
 
 
 
-            {/* 4. How-To Executive Summary */}
-            {(() => {
-              const isChild = portrait.lifePhase === "child";
-              const ritualLabel = isChild ? "The Ritual" : "Energy Management";
-              const boundaryLabel = isChild ? "The Boundary" : "Personal Standards";
-              const sectionTitle = isChild ? "The How-To Summary" : "The Interaction Guide";
-              return (
-                <section className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                    <div className="font-semibold text-base">{sectionTitle}</div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <div className="rounded-md border border-rose-300/60 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-1">
-                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-rose-700 dark:text-rose-300">
-                        <Heart className="h-3 w-3" /> {ritualLabel}
-                      </div>
-                      <p className="text-sm">{portrait.howTo.ritual}</p>
-                    </div>
-
-                    {/* Consolidated Cognitive Map, replaces duplicate Learning Style + Cognitive Profile */}
-                    {portrait.cognitiveProfile ? (
-                      <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-2">
-                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
-                          <BookOpen className="h-3 w-3" /> The Cognitive Map
-                        </div>
-                        <div className="font-semibold text-sm text-sky-950 dark:text-sky-50">
-                          {portrait.cognitiveProfile.label}
-                        </div>
-                        <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
-                          <span className="font-semibold">How they process:</span> {portrait.cognitiveProfile.processing}
-                        </p>
-                        <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
-                          <span className="font-semibold">What blocks the intake:</span> {portrait.cognitiveProfile.blocker}
-                        </p>
-                        <p className="text-sm text-sky-950 dark:text-sky-50 leading-relaxed">
-                          <span className="font-semibold">So what:</span> {portrait.cognitiveProfile.application}
-                        </p>
-                        {portrait.cognitiveProfile.intakeStyle && (
-                          <p className="text-xs text-sky-900 dark:text-sky-100 leading-relaxed italic">
-                            Intake note (3rd-house cusp in {portrait.cognitiveProfile.thirdCuspSign}): {portrait.cognitiveProfile.intakeStyle}
-                          </p>
-                        )}
-                        {portrait.cognitiveProfile.rulerNudge && (
-                          <p className="text-xs text-sky-900 dark:text-sky-100 leading-relaxed italic">
-                            Plus: {portrait.cognitiveProfile.rulerNudge}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="rounded-md border border-sky-300/60 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-1">
-                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-sky-700 dark:text-sky-300">
-                          <BookOpen className="h-3 w-3" /> The Cognitive Map
-                        </div>
-                        <p className="text-sm">{portrait.howTo.learningStyle}</p>
-                      </div>
-                    )}
-
-                    <div className="rounded-md border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-1">
-                      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
-                        <Shield className="h-3 w-3" /> {boundaryLabel}
-                      </div>
-                      <p className="text-sm">{portrait.howTo.boundary}</p>
-                    </div>
-                  </div>
-                </section>
-              );
-            })()}
 
             {/* Shadow Guidance, South Node in hidden house (6/8/12) */}
             {portrait.shadowGuidance && (
