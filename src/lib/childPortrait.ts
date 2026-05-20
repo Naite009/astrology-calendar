@@ -443,7 +443,7 @@ const THIRD_HOUSE_CUSP_INTAKE: Record<string, string> = {
   Libra: "Information lands when it is framed as fair and balanced, with both sides shown",
   Scorpio: "Information has to feel real and unfiltered; sanitized or performative delivery is rejected",
   Sagittarius: "Information lands when the 'big idea' and the honest truth are named up front",
-  Capricorn: "Information needs structure, credentials, and a visible reason it counts",
+  Capricorn: "Information needs structure, a clear chain of command, and a visible reason it counts",
   Aquarius: "Information lands when they are treated as a peer in the conversation, never talked down to",
   Pisces: "Information needs softness and imagery; harsh, blunt delivery scrambles the signal",
 };
