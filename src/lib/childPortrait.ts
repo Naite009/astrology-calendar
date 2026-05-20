@@ -479,6 +479,23 @@ const RISING_FILTER: Record<string, { stereotype: string; verb: string; surfaceJ
   Pisces: { stereotype: "dreamy", verb: "use a soft, permeable presence", surfaceJob: "let the room's mood enter so it can be read from the inside" },
 };
 
+// ── Rising Scanner: physical "what does this sign scan a room for" + mask label + safety payoff
+// Used by the Identity Invitation Filter section to follow the Scanner / Boss / Synthesis / Why template.
+const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: string }> = {
+  Aries:       { mask: "Starter",         scanFor: "Who's in charge here? Where's the first move?",            safety: "moving first so no one can pin them in place" },
+  Taurus:      { mask: "Anchor",          scanFor: "What feels solid? What's about to get rushed?",            safety: "setting the pace so nothing can shove their body" },
+  Gemini:      { mask: "Reporter",        scanFor: "What's the story? Who's actually saying what?",            safety: "gathering options before anyone locks them into one" },
+  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who is hurting in the room?",                 safety: "reading the emotional weather before they expose their own" },
+  Leo:         { mask: "Performer",       scanFor: "Where is the warmth? Who is actually looking?",            safety: "controlling how they get seen instead of being caught off-guard" },
+  Virgo:       { mask: "Editor",          scanFor: "What is out of place? What's about to break?",             safety: "fixing the small thing first so the big thing can't blindside them" },
+  Libra:       { mask: "Diplomat",        scanFor: "Who's uncomfortable? Where's the imbalance in the room?",  safety: "smoothing the surface so no one turns hostile toward them" },
+  Scorpio:     { mask: "X-Ray",           scanFor: "What is the real story underneath what people are saying?", safety: "knowing the truth before anyone can use it against them" },
+  Sagittarius: { mask: "Explorer",        scanFor: "Where's the exit? Where's the bigger story?",              safety: "keeping a door open so they never feel cornered" },
+  Capricorn:   { mask: "Manager",         scanFor: "Who's in charge here? What are the rules?",                safety: "knowing the structure before they have to play inside it" },
+  Aquarius:    { mask: "Outsider",        scanFor: "What is the group missing? Where can I stand outside this?", safety: "staying one step outside the group so it can't absorb them" },
+  Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
+};
+
 // What the chart-ruler's SIGN is actually defending or pursuing (the deep aim).
 const RULER_SIGN_DRIVE: Record<string, string> = {
   Aries: "their own initiative and the freedom to move first",
@@ -1457,9 +1474,33 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
-  const risingLine = ascSign
-    ? `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`
-    : "";
+  // Rising Filter = Scanner (sign) + Boss (chart ruler) + Real-Talk Synthesis + Why (safety mechanism).
+  // We compute the chart ruler inline here so the Filter card leads with the synthesis,
+  // not a generic "this is the surface presentation" definition.
+  let risingLine = "";
+  if (ascSign) {
+    const scanner = RISING_SCANNER[ascSign];
+    const rulerNameForFilter = TRADITIONAL_RULERS[ascSign];
+    const rulerPlanetForFilter = rulerNameForFilter ? planets[rulerNameForFilter] : undefined;
+    const rulerSignForFilter = rulerPlanetForFilter?.sign;
+    const rulerHouseForFilter = rulerPlanetForFilter ? houseOf(chart, rulerPlanetForFilter) : null;
+    if (scanner && rulerNameForFilter && rulerSignForFilter) {
+      const undercurrent = RULER_UNDERCURRENT_BY_SIGN[rulerSignForFilter] ?? "their own quiet motive";
+      const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[rulerSignForFilter] ?? "an open channel";
+      const houseClause = rulerHouseForFilter ? ` running through ${HOUSE_THEME[rulerHouseForFilter]}` : "";
+      risingLine =
+        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
+        `The Boss: that filter is actually run by ${rulerNameForFilter} in ${rulerSignForFilter}${rulerHouseForFilter ? ` (${ordinal(rulerHouseForFilter)} house)` : ""}, which means underneath the "${scanner.mask}" look there is ${undercurrent}${houseClause}. ` +
+        `Real talk: ${chart.name} uses a ${ascSign} "${scanner.mask}" mask to filter the room, but because the actual boss is ${rulerNameForFilter} in ${rulerSignForFilter}, they are really a "${absorbArch}" trying to look like a "${scanner.mask}." They use the ${ascSign} focus on "${scanner.scanFor}" to ${scanner.safety}. ` +
+        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+    } else if (scanner) {
+      risingLine =
+        `The Scanner: ${chart.name}'s ${ascSign} Rising walks into a room asking "${scanner.scanFor}" — that's the "${scanner.mask}" mask people meet first. ` +
+        `Why: the filter is a safety mechanism, not a personality trait — the ${ascSign} scan is how they ${scanner.safety} before they ever have to feel exposed.`;
+    } else {
+      risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
+    }
+  }
   const sunLine = sunSign
     ? `The Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} house, around ${HOUSE_THEME[sunHouse]})` : ""} is what they are practicing, not what they already are: ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of shining"}.`
     : "";
