@@ -1607,9 +1607,9 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   if (sunSign) {
     const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
     const tightSun = sunAspects[0];
-    // 1st-house Sun overlay: the struggle is self-visibility, not technique.
+    // 1st-house Sun overlay: the pressure is to Exist Out Loud (concrete behavior, not "self-advocacy").
     const firstHouseOverlay = sunHouse === 1
-      ? ` Because the Sun sits in the 1st house, the work is Self-Visibility itself: the struggle is feeling like ${chart.name} has to apologize for existing, and the mastery is realizing that when ${chart.name} shows up fully, the room actually gets more balanced, not less.`
+      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair" — a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
       : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
