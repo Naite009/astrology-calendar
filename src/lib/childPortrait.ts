@@ -2201,6 +2201,9 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       return result as unknown as T;
     }
     return node;
+  }
+
+
 
   // === Hard Banned Vocabulary =============================================
   // "Master Reset" rule: these words/phrases never appear in user-facing copy,
