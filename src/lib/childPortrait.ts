@@ -2203,6 +2203,35 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     return node;
   }
 
+
+
+  // === Hard Banned Vocabulary =============================================
+  // "Master Reset" rule: these words/phrases never appear in user-facing copy,
+  // no matter which lookup table produced them. Replaced with real-world verbs.
+  const HARD_BAN: Array<{ pattern: RegExp; replacement: string }> = [
+    { pattern: /\bhorizons?\b/gi,            replacement: "open road" },
+    { pattern: /\bsacred\b/gi,               replacement: "protected" },
+    { pattern: /\bcurriculum\b/gi,           replacement: "work" },
+    { pattern: /\bunfolding\b/gi,            replacement: "happening" },
+    { pattern: /\bmeaning[-\s]?makers?\b/gi, replacement: "sense-maker" },
+    // Smooth dashes/quotes that drift in from templates.
+    { pattern: /\s+—\s+/g,                   replacement: ", " },
+  ];
+  function scrubHardBan<T>(node: T): T {
+    if (typeof node === "string") {
+      let out: string = node;
+      for (const { pattern, replacement } of HARD_BAN) out = out.replace(pattern, replacement);
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map(scrubHardBan) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) result[k] = scrubHardBan(v);
+      return result as unknown as T;
+    }
+    return node;
+  }
+
   const assembled: any = {
 
 
@@ -2249,10 +2278,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       moonAspects: moonAspects.slice(0, 6),
     },
   };
-  // Apply No-Repeats pass across the whole Portrait before returning.
+  // Apply Master Reset passes before returning: (1) drop banned vocabulary,
+  // (2) de-duplicate signature phrases across the whole Portrait.
   // mathCheck is excluded to preserve raw debug data.
   const { mathCheck, ...textFields } = assembled;
-  const dedupedText = dedupeAcrossPortrait(textFields, new Set<number>());
+  const scrubbed = scrubHardBan(textFields);
+  const dedupedText = dedupeAcrossPortrait(scrubbed, new Set<number>());
   return { ...dedupedText, mathCheck };
 }
 
