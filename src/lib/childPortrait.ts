@@ -1583,7 +1583,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const apSign = planets[ap]?.sign ?? "";
       const apHouse = planets[ap] ? houseOf(chart, planets[ap]) : null;
       const isHard = HARD_ASPECTS.includes(tightSun.aspect);
-      const modifier = isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft;
+      void (isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft);
       const challenge = PLANET_CHALLENGE[ap] ?? "an inner audit";
       const goal = PLANET_GOAL[ap] ?? "their own truth";
       const fightVerb = isHard ? "fighting" : "negotiating with";
