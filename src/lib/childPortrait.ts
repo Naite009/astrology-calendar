@@ -875,6 +875,22 @@ const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
   sextile:      "in a real conversation, where one side keeps gently offering and the other keeps almost saying yes",
 };
 
+// Identity Collision: short modifier word for "practicing X with ___" when blending
+// the Sun with its tightest aspect. Hard aspects use the friction word; soft aspects
+// use the support word. Keeps the synthesis person-led, not "Sun in X is...".
+const SUN_BLEND_MODIFIER: Record<string, { hard: string; soft: string }> = {
+  Moon:    { hard: "Mood Crosscurrents",   soft: "Inner Permission" },
+  Mercury: { hard: "a Running Commentary", soft: "Quick Translation" },
+  Venus:   { hard: "a Charm Audit",        soft: "Easy Magnetism" },
+  Mars:    { hard: "a Lit Fuse",           soft: "a Steady Engine" },
+  Jupiter: { hard: "an Overpromise",       soft: "Room to Grow" },
+  Saturn:  { hard: "Edges",                soft: "Structure" },
+  Uranus:  { hard: "Surprise Exits",       soft: "Free Wiring" },
+  Neptune: { hard: "Fog",                  soft: "a Soft Filter" },
+  Pluto:   { hard: "Pressure",             soft: "Quiet Power" },
+  Chiron:  { hard: "a Tender Spot",        soft: "a Healed Wound" },
+};
+
 // 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
 const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
 
@@ -1501,9 +1517,29 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
     }
   }
-  const sunLine = sunSign
-    ? `The Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} house, around ${HOUSE_THEME[sunHouse]})` : ""} is what they are practicing, not what they already are: ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of shining"}.`
-    : "";
+  // Identity Collision: blend Sun sign with its tightest aspect, person-name first.
+  // Banned: sentences that start with "The Sun in X is..." or "[Sign] is..."
+  let sunLine = "";
+  if (sunSign) {
+    const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
+    const tightSun = sunAspects[0];
+    if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
+      const ap = tightSun.to;
+      const apSign = planets[ap]?.sign ?? "";
+      const apHouse = planets[ap] ? houseOf(chart, planets[ap]) : null;
+      const isHard = HARD_ASPECTS.includes(tightSun.aspect);
+      const modifier = isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft;
+      const challenge = PLANET_CHALLENGE[ap] ?? "an inner audit";
+      const goal = PLANET_GOAL[ap] ?? "their own truth";
+      const verb = isHard ? "constantly being audited by" : "quietly being shaped by";
+      sunLine =
+        `${chart.name} is practicing ${practice} with ${modifier} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
+        `${chart.name}'s natural ${sunSign} way of showing up is ${verb} ${challenge}. ` +
+        `${chart.name} isn't being difficult or distant — ${chart.name} is protecting ${goal}.`;
+    } else {
+      sunLine = `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). This is what they're growing into, not what they already are.`;
+    }
+  }
   const phase = lifePhaseFor(age);
   const nnSign = NorthNode?.sign;
   const nnHouse = houseOf(chart, NorthNode);
@@ -1811,7 +1847,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
       const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
       const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
-      const line = `${chart.name} speaks the language of ${thirdCuspSign} (the surface tone everyone meets first), but our actual operating system is ${thirdRulerName} in ${thirdRulerSign}${houseClause}. We look like ${surfaceArch}, but we absorb like ${absorbArch}. The friction: ${friction}. In real life, that means ${behavior}. The ah-ha: if anyone responds only to the surface, the undercurrent stays clogged — and the next thing out of us is either a sudden silence or a sudden too-much. Once we name the gap out loud, it stops feeling like inconsistency and starts feeling like signal.`;
+      const line = `${chart.name} speaks ${thirdCuspSign}, but ${chart.name} processes like ${thirdRulerSign}. The surface tone everyone meets first is ${surfaceArch}; underneath, ${chart.name} absorbs like ${absorbArch}${houseClause}. The friction: ${friction}. In real life that means ${behavior}. If anyone responds only to the surface ${thirdCuspSign} tone, the ${thirdRulerSign} undercurrent stays clogged — and the next thing out of ${chart.name} is either a sudden silence or a sudden too-much.`;
 
       cognitiveClash = {
         cuspSign: thirdCuspSign,
@@ -1825,11 +1861,13 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     }
   }
 
-  // === TRANSLATION RULE 2: The Energy Discharge (Mars-by-house) ===========
+  // === TRANSLATION RULE 2: The Safety Valve (Mars-by-house) ===============
+  // Name where the physical stress lands and the one daily release that keeps
+  // ${name} sane. No "Mars represents..." fluff. Lead with the person and behavior.
   let energyDischarge: ChildPortrait["energyDischarge"] = undefined;
   if (marsSign && marsHouse && MARS_HOUSE_DISCHARGE[marsHouse]) {
     const m = MARS_HOUSE_DISCHARGE[marsHouse];
-    const line = `Because ${chart.name}'s drive lives in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}), the reset is ${m.action}. If we don't give them that outlet, the result is ${m.shadow}. The Mars sign (${marsSign}) flavors how the discharge moves, but the house is where it needs to land.`;
+    const line = `${chart.name}'s stress lands in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}) — that is where the body carries it. The safety valve is ${m.action}. Skip the valve and the pressure leaks out as ${m.shadow}. ${chart.name} needs that release built into the day, not earned at the end of it.`;
     energyDischarge = { marsSign, marsHouse, action: m.action, shadow: m.shadow, line };
   }
 
