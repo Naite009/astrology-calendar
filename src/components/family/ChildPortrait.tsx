@@ -267,7 +267,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       {portrait.identityInvitation.sun && (
                         <div className="rounded-md border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
                           <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300">
-                            Sun · What They're Practicing
+                            The Identity Collision · Sun blended with its tightest aspect
                           </div>
                           <p className="text-amber-950 dark:text-amber-50 text-sm">{portrait.identityInvitation.sun.line}</p>
                         </div>
