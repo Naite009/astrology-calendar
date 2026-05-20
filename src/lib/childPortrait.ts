@@ -923,7 +923,7 @@ const ABSORPTION_ARCHETYPE_BY_SIGN: Record<string, string> = {
   Virgo: "a quality-control scanner",
   Libra: "a tuning fork",
   Scorpio: "a deep-sea sonar",
-  Sagittarius: "a horizon-line",
+  Sagittarius: "an open road scanning for the exit",
   Capricorn: "a steel beam under load",
   Aquarius: "a circuit board",
   Pisces: "a sponge",
