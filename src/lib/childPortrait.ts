@@ -875,6 +875,22 @@ const ASPECT_INTERNAL_LINE: Record<AspectName, string> = {
   sextile:      "in a real conversation, where one side keeps gently offering and the other keeps almost saying yes",
 };
 
+// Identity Collision: short modifier word for "practicing X with ___" when blending
+// the Sun with its tightest aspect. Hard aspects use the friction word; soft aspects
+// use the support word. Keeps the synthesis person-led, not "Sun in X is...".
+const SUN_BLEND_MODIFIER: Record<string, { hard: string; soft: string }> = {
+  Moon:    { hard: "Mood Crosscurrents",   soft: "Inner Permission" },
+  Mercury: { hard: "a Running Commentary", soft: "Quick Translation" },
+  Venus:   { hard: "a Charm Audit",        soft: "Easy Magnetism" },
+  Mars:    { hard: "a Lit Fuse",           soft: "a Steady Engine" },
+  Jupiter: { hard: "an Overpromise",       soft: "Room to Grow" },
+  Saturn:  { hard: "Edges",                soft: "Structure" },
+  Uranus:  { hard: "Surprise Exits",       soft: "Free Wiring" },
+  Neptune: { hard: "Fog",                  soft: "a Soft Filter" },
+  Pluto:   { hard: "Pressure",             soft: "Quiet Power" },
+  Chiron:  { hard: "a Tender Spot",        soft: "a Healed Wound" },
+};
+
 // 12th House Rule: bodies whose presence in the 12th house triggers a cloaking note.
 const CLOAKING_BODIES = ["Sun", "Moon", "Mercury", "Venus", "Mars"] as const;
 
