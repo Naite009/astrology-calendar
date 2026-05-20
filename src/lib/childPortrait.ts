@@ -506,7 +506,7 @@ const RULER_SIGN_DRIVE: Record<string, string> = {
   Virgo: "competence, order, and the right to refine",
   Libra: "fair partnership and a balanced field",
   Scorpio: "depth, privacy, and emotional truth",
-  Sagittarius: "freedom, meaning, and the bigger horizon",
+  Sagittarius: "freedom, an open exit, and a story large enough to live inside",
   Capricorn: "earned respect and long-arc mastery",
   Aquarius: "personal independence and the integrity of their own signal",
   Pisces: "rest, dissolution, and an unfenced inner world",
