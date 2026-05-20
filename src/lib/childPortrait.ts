@@ -1517,9 +1517,29 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       risingLine = `The Rising in ${ascSign} is the filter ${chart.name} uses to first read any room: it is the surface presentation, not the inner self. People meet this first.`;
     }
   }
-  const sunLine = sunSign
-    ? `The Sun in ${sunSign}${sunHouse ? ` (${ordinal(sunHouse)} house, around ${HOUSE_THEME[sunHouse]})` : ""} is what they are practicing, not what they already are: ${SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of shining"}.`
-    : "";
+  // Identity Collision: blend Sun sign with its tightest aspect, person-name first.
+  // Banned: sentences that start with "The Sun in X is..." or "[Sign] is..."
+  let sunLine = "";
+  if (sunSign) {
+    const practice = SUN_PRACTICE_BY_SIGN[sunSign] ?? "their own way of being seen";
+    const tightSun = sunAspects[0];
+    if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
+      const ap = tightSun.to;
+      const apSign = planets[ap]?.sign ?? "";
+      const apHouse = planets[ap] ? houseOf(chart, planets[ap]) : null;
+      const isHard = HARD_ASPECTS.includes(tightSun.aspect);
+      const modifier = isHard ? SUN_BLEND_MODIFIER[ap].hard : SUN_BLEND_MODIFIER[ap].soft;
+      const challenge = PLANET_CHALLENGE[ap] ?? "an inner audit";
+      const goal = PLANET_GOAL[ap] ?? "their own truth";
+      const verb = isHard ? "constantly being audited by" : "quietly being shaped by";
+      sunLine =
+        `${chart.name} is practicing ${practice} with ${modifier} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
+        `${chart.name}'s natural ${sunSign} way of showing up is ${verb} ${challenge}. ` +
+        `${chart.name} isn't being difficult or distant — ${chart.name} is protecting ${goal}.`;
+    } else {
+      sunLine = `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). This is what they're growing into, not what they already are.`;
+    }
+  }
   const phase = lifePhaseFor(age);
   const nnSign = NorthNode?.sign;
   const nnHouse = houseOf(chart, NorthNode);
