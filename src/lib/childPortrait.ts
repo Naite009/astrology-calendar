@@ -2201,6 +2201,32 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       return result as unknown as T;
     }
     return node;
+
+  // === Hard Banned Vocabulary =============================================
+  // "Master Reset" rule: these words/phrases never appear in user-facing copy,
+  // no matter which lookup table produced them. Replaced with real-world verbs.
+  const HARD_BAN: Array<{ pattern: RegExp; replacement: string }> = [
+    { pattern: /\bhorizons?\b/gi,            replacement: "open road" },
+    { pattern: /\bsacred\b/gi,               replacement: "protected" },
+    { pattern: /\bcurriculum\b/gi,           replacement: "work" },
+    { pattern: /\bunfolding\b/gi,            replacement: "happening" },
+    { pattern: /\bmeaning[-\s]?makers?\b/gi, replacement: "sense-maker" },
+    // Smooth dashes/quotes that drift in from templates.
+    { pattern: /\s+—\s+/g,                   replacement: ", " },
+  ];
+  function scrubHardBan<T>(node: T): T {
+    if (typeof node === "string") {
+      let out: string = node;
+      for (const { pattern, replacement } of HARD_BAN) out = out.replace(pattern, replacement);
+      return out as unknown as T;
+    }
+    if (Array.isArray(node)) return node.map(scrubHardBan) as unknown as T;
+    if (node && typeof node === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) result[k] = scrubHardBan(v);
+      return result as unknown as T;
+    }
+    return node;
   }
 
   const assembled: any = {
