@@ -497,7 +497,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                   <span className="text-[11px] uppercase tracking-wider opacity-70 hidden group-open:inline">Tap to close</span>
                                 </summary>
                                 <div className="mt-3 text-[13px] opacity-90">
-                                  Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>CFO</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
+                                  Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>Safety Builder</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
                                 </div>
                                 <div className="mt-3 overflow-x-auto">
                                   <table className="w-full text-[12.5px] border-collapse">
