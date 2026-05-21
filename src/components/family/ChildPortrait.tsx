@@ -540,7 +540,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                       })}
                                     </tbody>
                                   </table>
-                                  <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign run as <strong>The Manager</strong> or <strong>The Tourist</strong>, routine voltage, no opening rawness and no closing urgency.</div>
+                                  <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign read as <strong>The Manager</strong> or <strong>The Tourist</strong>: no raw opening, no closing urgency.</div>
                                 </div>
                               </details>
 
