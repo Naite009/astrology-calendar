@@ -243,16 +243,15 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   </section>
 
-                  {/* === Behavioral Portrait =========================================
-                      Color-coded sections, each with three layers:
-                      • Math   – the technical anchor (sign, house, degree, orb)
-                      • Visual – what the parent / partner actually sees
-                      • Internal – what is happening structurally underneath
-                      Sections:
-                        2. Social Strategy   (Rising + Chart Ruler)   – emerald
-                        3. Identity Core     (Sun · Chiron opposition) – amber
-                        4. Functioning Engine (Mars vs 12H Mercury)    – rose
-                      The Developmental Anchor above is Section 1. */}
+                  {/* === Behavioral Portrait — Synthesis of Friction ================
+                      Flowing prose, no bullets, no boxes. Bold math anchors live
+                      inline inside the paragraphs. Framed by the Chiron Return
+                      where applicable. Four movements:
+                        I.   The Energy Debt        (Rising + Chart Ruler)
+                        II.  The Phantom Auditor    (Sun · Chiron opposition)
+                        III. The Contentious Silence(Mars · 12H Mercury/Moon)
+                        IV.  The Grand Finale       (Chiron Return framing)
+                  ================================================================= */}
                   {(() => {
                     const N = portrait.name;
                     const cr = portrait.chartRuler;
@@ -266,6 +265,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     const twelfth = portrait.twelfthHouseBodies;
                     const cog = portrait.cognitiveProfile;
                     const math = portrait.mathCheck;
+                    const age = portrait.age;
 
                     const ord = (n: number | null | undefined) => {
                       if (!n) return "";
@@ -280,54 +280,45 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     const hasMoon12 = twelfthList.some(b => b.name === "Moon");
                     const hasMerc12 = twelfthList.some(b => b.name === "Mercury");
 
-                    type Section = {
-                      key: string;
-                      title: string;
-                      tag: string;
-                      tone: "emerald" | "amber" | "rose";
-                      icon: JSX.Element;
-                      math: string;
-                      visual: string;
-                      internal: string;
-                    };
-                    const sections: Section[] = [];
+                    // Chiron Return window: ~ages 48–51 (Chiron transit to natal Chiron)
+                    const inChironReturn = typeof age === "number" && age >= 48 && age <= 51;
 
-                    // ── 2. The Social Strategy (Rising + Chart Ruler) ─────────────────
+                    // Reusable bold inline math anchor
+                    const M = ({ children }: { children: React.ReactNode }) => (
+                      <strong className="font-semibold text-foreground">{children}</strong>
+                    );
+
+                    const paragraphs: JSX.Element[] = [];
+
+                    // ── I. The Energy Debt ────────────────────────────────────────────
                     if (cr && venus) {
                       const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` at ${fmtDeg(ascDegree)}` : ""}`;
-                      const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${fmtDeg(venus.degree) && cr.rulerName === "Venus" ? ` at ${fmtDeg(venus.degree)}` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}`;
+                      const venusDeg = fmtDeg(venus.degree);
                       const pureIntent = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
-                      sections.push({
-                        key: "social",
-                        title: "The Social Strategy",
-                        tag: "Rising · Chart Ruler",
-                        tone: "emerald",
-                        icon: <Shield className="h-4 w-4" />,
-                        math: `${ascStr}, ruled by ${rulerStr}.`,
-                        visual: `A "helpful" person. ${N} reads the temperature of the room, levels the volume, and hands out the small kindness that will get the group to settle before anyone has to ask. It looks like graciousness, an agreeable nod, a soft pivot at 8 AM in the kitchen.`,
-                        internal: `The Chart Ruler is the motive behind the Mask. The ${cr.ascSign} diplomacy is a tactical buffer, its job is to lower the cost of being in the room so the ${cr.rulerSign} engine underneath can keep its options open. That engine is ${cr.rulerName}${cr.rulerHouse === 2 ? `, parked in the 2nd house, where freedom and self-worth and resources are the same currency` : ""}. ${pureIntent ? `Venus at 0° Sagittarius sits on the degree of Pure Intent, which makes the need for freedom non-negotiable, not a preference. ` : ""}${N} is not being nice. ${N} is being Sustainable, leveling the room so her ${cr.rulerSign} sense of self-worth is not drained by other people's chaos.`,
-                      });
+                      const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` at ${venusDeg}` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}`;
+                      paragraphs.push(
+                        <p key="energy-debt" className="text-[15px] leading-[1.85] text-foreground/90">
+                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">I · The Energy Debt</span>
+                          What the room reads as graciousness is actually an <em>Exit Strategy</em>. With <M>{ascStr}</M> running the front door and <M>{rulerStr}</M> as the chart ruler, {N} is over-functioning at the level of social atmosphere, leveling the volume, smoothing the pivot, handing out the small kindness that gets the group to settle before anyone has to ask. It looks like diplomacy. It is closer to <em>greasing the tracks</em>, lowering the emotional friction in the room so the Sagittarius engine underneath can keep its options open and stay free to leave. {pureIntent ? <>The fact that Venus sits at <M>0° Sagittarius</M>, the degree of Pure Intent, means freedom is not a preference here, it is non-negotiable wiring. </> : null}She is not being nice. She is paying a daily <em>energy debt</em> to keep other people's weight off her exits. That debt is invisible to everyone but her.
+                        </p>
+                      );
                     }
 
-                    // ── 3. The Identity Core (Sun · Chiron) ───────────────────────────
+                    // ── II. The Phantom Auditor ───────────────────────────────────────
                     if (sun && chiron && sunChiron) {
                       const orbStr = `${sunChiron.orb.toFixed(1)}°`;
                       const tight = sunChiron.orb <= 2;
-                      const isOpp = sunChiron.aspect === "opposition";
-                      const cardinal = ["Aries", "Cancer", "Libra", "Capricorn"].includes(sun.sign) && ["Aries", "Cancer", "Libra", "Capricorn"].includes(chiron.sign);
-                      sections.push({
-                        key: "identity",
-                        title: "The Identity Core",
-                        tag: "Sun · Chiron · Visibility Paradox",
-                        tone: "amber",
-                        icon: <Eye className="h-4 w-4" />,
-                        math: `Sun in ${sun.sign}${sun.house ? ` (${ord(sun.house)} house)` : ""} ${sunChiron.aspect} Chiron in ${chiron.sign}${chiron.house ? ` (${ord(chiron.house)} house)` : ""} at ${orbStr} orb.`,
-                        visual: `${N} looks like she is checking for a green light before she acts. She can seem to audition for her own life instead of inhabiting it, scanning the nearest face for whether the version of her in the room is the version she is allowed to have.`,
-                        internal: `${cardinal && isOpp ? `This is a Cardinal Opposition on the Angle of Identity. ` : ""}The Sun is "Who I Am." Chiron is "Where I Am Sensitive." Because the orb is ${tight ? "this tight" : "active"} (${orbStr}), the two parts are in permanent tug-of-war. The ${ord(sun.house)}-house Sun wants to take up the full square footage of the body without apology; the ${chiron.house ? `${ord(chiron.house)}-house` : ""} Chiron feels everyone else's reaction first and runs a quiet Permission Audit before any visible move. This is not low self-esteem, it is a high-speed collision between her own light and other people's shadows, happening behind her face in real time.`,
-                      });
+                      const sunStr = `${sun.sign} Sun${sun.house ? ` in the ${ord(sun.house)} house` : ""}`;
+                      const chiStr = `Chiron in ${chiron.sign}${chiron.house ? `, ${ord(chiron.house)} house` : ""}`;
+                      paragraphs.push(
+                        <p key="phantom-auditor" className="text-[15px] leading-[1.85] text-foreground/90">
+                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">II · The Phantom Auditor</span>
+                          Underneath the diplomacy is a nervous system that flinches before it acts. The <M>{sunStr}</M> wants the full square footage of the body, the visible life, the unapologetic claim of space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is not a wound that bleeds, it is a <em>Phantom Auditor</em>. It runs a Permission Audit on every move before the move is made. What looks from the outside like indecision is actually <em>Vigilance</em>, a quiet, almost cellular sting that fires the instant {N} thinks she might be too much, too loud, too visible, too lit. She is performing a version of herself she thinks is <em>legal</em>, because the true-voltage version feels like a violation of the room. That is not low self-esteem. That is a high-speed collision between her own light and other people's shadow, happening behind her face in real time.
+                        </p>
+                      );
                     }
 
-                    // ── 4. The Functioning Engine (Mars vs 12H Mercury) ───────────────
+                    // ── III. The Contentious Silence ─────────────────────────────────
                     if (drive) {
                       const marsStr = `${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house`;
                       const isMars1 = drive.marsHouse === 1;
@@ -335,87 +326,40 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const translators: string[] = [];
                       if (hasMoon12) translators.push("Moon");
                       if (hasMerc12) translators.push(`${cog?.mercurySign ? cog.mercurySign + " " : ""}Mercury`);
-                      const translatorMath = translators.length
-                        ? `${translators.join(" and ")} in the 12th house.`
-                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury as the translator.` : "translator placement.");
-
-                      sections.push({
-                        key: "engine",
-                        title: "The Functioning Engine",
-                        tag: "Mars · 12th House · The Dark Room",
-                        tone: "rose",
-                        icon: <Mountain className="h-4 w-4" />,
-                        math: `${marsStr} vs ${translatorMath}`,
-                        visual: `A pressure cooker with a delay. ${N} feels things physically and immediately, but the words arrive late, sometimes hours late, sometimes through a closed door first. From the outside this can read as stubborn, withdrawn, or moody. It is none of those.`,
-                        internal: `This is a Mutual Injunction between Action (Mars) and Expression (${translators.length ? translators.join("/") : "Mercury"}). ${isMars1 ? `${drive.marsSign} Mars in the 1st is a high-pressure steam engine, the temperature shows up in the body before there is time to choose a face for it. ` : ""}${(hasMoon12 || hasMerc12) ? `But the translator sits in the 12th, the house of the unconscious, the Dark Room. Thoughts have to travel through deep water before they can be spoken. ` : ""}This creates the Signal Gap: feeling at 100 mph, language at 10. ${N} is not being silent, she is literally translating ${isMars1 ? "1st-house heat" : "Mars heat"} into ${(hasMoon12 || hasMerc12) ? "12th-house language" : "language"}. ${pressure ? `${pressure.trigger.replace(/\.$/, "")}, that is what turns the gap dangerous. ` : ""}${isScorpio ? `A Scorpio Mars under pressure does not negotiate, it disappears, and the disappearance is the warning shot. ` : ""}If you chase ${N} into the silence before the engine has cooled, you will hit a wall. Let her cloak. When she comes back, the answer will be finished.`,
-                      });
+                      const translatorStr = translators.length
+                        ? `${translators.join(" and ")} in the 12th house`
+                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury as the translator` : "the translator placement");
+                      paragraphs.push(
+                        <p key="contentious-silence" className="text-[15px] leading-[1.85] text-foreground/90">
+                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">III · The Contentious Silence</span>
+                          When {N} goes quiet, the room misreads it. It is not processing. It is not sulking. It is <em>Containment</em>. With <M>{marsStr}</M>{isMars1 ? " sitting right on the front of the chart" : ""} and <M>{translatorStr}</M>, the engine fires at full pressure long before the language is ready, and the language has to travel through deep water before it can come out clean. {isScorpio ? <>A <M>Scorpio Mars</M> under load does not run at room temperature, it runs at <em>1,000°</em>, and {N} knows it. </> : null}The silence is a pressure valve she is holding closed <em>on purpose</em>, because she would rather absorb the cost than let the unedited version land on someone she loves. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is what makes the valve dangerous. </> : null}Her silence is an act of love. It is also exhausting in a way no one else in the room can see. If you chase her into that quiet before the engine has cooled, you will hit a wall, and the wall is the warning shot. Let her cloak. When she comes back, the answer will be finished and it will be true.
+                        </p>
+                      );
                     }
 
-                    if (sections.length === 0) return null;
+                    // ── IV. The Grand Finale (Chiron Return framing) ─────────────────
+                    if (inChironReturn && chiron) {
+                      const chiDegStr = fmtDeg(chiron.degree);
+                      paragraphs.push(
+                        <p key="grand-finale" className="text-[15px] leading-[1.85] text-foreground/90">
+                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">IV · The Grand Finale — Chiron Return, Age {age}</span>
+                          All of this is happening inside a single, once-in-a-lifetime weather system. Transiting Chiron is conjunct natal <M>Chiron in {chiron.sign}{chiDegStr ? ` at ${chiDegStr}` : ""}</M>, which means she is in her <em>Chiron Return</em>, the developmental milestone where the Phantom Auditor either gets retired or gets handed the keys for the rest of her life. For roughly forty-nine years she has been a student of her own sore spot, learning every contour of where she felt <em>too much</em>. The return is the graduation. The work now is not to soften the intensity, it is to stop auditing it. The Energy Debt gets renegotiated. The Permission Audit gets revoked. The Contentious Silence stops being containment and starts being <em>discernment</em>, chosen, not paid. This is the Grand Finale of her apprenticeship to herself, and the only thing being asked of the people around her is to stop reading her recalibration as a problem and start recognizing it as a woman finally taking up the room she was always built for.
+                        </p>
+                      );
+                    }
 
-                    const toneStyles: Record<Section["tone"], { wrap: string; bar: string; chip: string; mathBox: string; visualBox: string; internalBox: string; iconWrap: string; }> = {
-                      emerald: {
-                        wrap: "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20",
-                        bar: "bg-emerald-500/80",
-                        chip: "border-emerald-500/50 text-emerald-700 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-950/40",
-                        mathBox: "border-l-2 border-emerald-500/60 bg-emerald-100/40 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100",
-                        visualBox: "border border-emerald-500/30 bg-background/60",
-                        internalBox: "border border-emerald-500/40 bg-emerald-50/70 dark:bg-emerald-950/30",
-                        iconWrap: "text-emerald-600 dark:text-emerald-400",
-                      },
-                      amber: {
-                        wrap: "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20",
-                        bar: "bg-amber-500/80",
-                        chip: "border-amber-500/50 text-amber-800 dark:text-amber-300 bg-amber-100/60 dark:bg-amber-950/40",
-                        mathBox: "border-l-2 border-amber-500/60 bg-amber-100/40 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100",
-                        visualBox: "border border-amber-500/30 bg-background/60",
-                        internalBox: "border border-amber-500/40 bg-amber-50/70 dark:bg-amber-950/30",
-                        iconWrap: "text-amber-600 dark:text-amber-400",
-                      },
-                      rose: {
-                        wrap: "border-rose-500/40 bg-rose-50/40 dark:bg-rose-950/20",
-                        bar: "bg-rose-500/80",
-                        chip: "border-rose-500/50 text-rose-700 dark:text-rose-300 bg-rose-100/60 dark:bg-rose-950/40",
-                        mathBox: "border-l-2 border-rose-500/60 bg-rose-100/40 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100",
-                        visualBox: "border border-rose-500/30 bg-background/60",
-                        internalBox: "border border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/30",
-                        iconWrap: "text-rose-600 dark:text-rose-400",
-                      },
-                    };
+                    if (paragraphs.length === 0) return null;
 
                     return (
-                      <>
-                        {sections.map((s) => {
-                          const t = toneStyles[s.tone];
-                          return (
-                            <section key={s.key} className={cn("rounded-lg border overflow-hidden", t.wrap)}>
-                              <div className={cn("h-1 w-full", t.bar)} />
-                              <div className="p-4 space-y-3">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className={t.iconWrap}>{s.icon}</span>
-                                  <div className="font-semibold text-base">{s.title}</div>
-                                  <Badge variant="outline" className={cn("text-[10px]", t.chip)}>{s.tag}</Badge>
-                                </div>
-
-                                <div className={cn("rounded-md p-3", t.mathBox)}>
-                                  <div className="text-[10px] uppercase tracking-wider font-bold opacity-70 mb-1">The Math</div>
-                                  <p className="text-xs leading-relaxed font-mono">{s.math}</p>
-                                </div>
-
-                                <div className={cn("rounded-md p-3", t.visualBox)}>
-                                  <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">The Visual · What the parent sees</div>
-                                  <p className="text-sm leading-relaxed text-foreground/90">{s.visual}</p>
-                                </div>
-
-                                <div className={cn("rounded-md p-3", t.internalBox)}>
-                                  <div className="text-[10px] uppercase tracking-wider font-bold opacity-70 mb-1">The Internal · The Astrology Math</div>
-                                  <p className="text-sm leading-relaxed text-foreground/90">{s.internal}</p>
-                                </div>
-                              </div>
-                            </section>
-                          );
-                        })}
-                      </>
+                      <section className="space-y-5 rounded-lg border border-border bg-background/40 p-5">
+                        <div className="flex items-center gap-2 border-b border-border pb-3">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          <div className="font-semibold text-base">Behavioral Portrait — Synthesis of Friction</div>
+                        </div>
+                        <div className="space-y-6">
+                          {paragraphs}
+                        </div>
+                      </section>
                     );
                   })()}
 
