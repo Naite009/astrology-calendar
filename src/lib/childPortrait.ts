@@ -718,19 +718,21 @@ function computeMoonPhase(sunLon: number, moonLon: number): { phase: MoonPhaseNa
 }
 
 // ── Synthesis libraries: "the why behind the what" ───────────────────────────
+// Used parenthetically after a Sun/Moon sign to add concrete behavior, not
+// adjective soup. Each entry must describe something observable.
 const SIGN_FLAVOR_ADJ: Record<string, string> = {
-  Aries: "fiery, direct, ready-to-go",
-  Taurus: "steady, sensual, slow-building",
-  Gemini: "curious, talkative, idea-driven",
-  Cancer: "tender, protective, emotionally tuned",
-  Leo: "warm, generous, expressive",
-  Virgo: "precise, helpful, careful",
-  Libra: "fair, relational, peace-seeking",
-  Scorpio: "intense, private, depth-driven",
-  Sagittarius: "expansive, honest, freedom-loving",
-  Capricorn: "disciplined, responsible, long-view",
-  Aquarius: "original, independent, future-tilted",
-  Pisces: "dreamy, compassionate, porous",
+  Aries: "moves first and asks questions later, will start the project before the plan exists",
+  Taurus: "sets their own pace, will not be rushed, builds in long quiet stretches",
+  Gemini: "thinks out loud, runs several conversations at once, changes their mind in public",
+  Cancer: "tracks the emotional weather of the room and adjusts before anyone names what shifted",
+  Leo: "warms up the room when they walk in, needs to be greeted by name",
+  Virgo: "notices what is out of place, fixes the small broken thing, refines the method as they go",
+  Libra: "weighs both sides out loud, lowers the temperature before having the real conversation",
+  Scorpio: "stays quiet and watches first, then says the thing nobody else will say",
+  Sagittarius: "names the bigger picture, keeps an exit visible, says the honest sentence",
+  Capricorn: "wants the plan and the timeline, takes the long way on purpose, earns it",
+  Aquarius: "stands a half-step outside the group, watches the system, refuses to copy the script",
+  Pisces: "absorbs the mood in the room, answers in image and feeling more than bullet points",
 };
 
 const OUTER_AUDIT_VOICE: Record<string, string> = {
