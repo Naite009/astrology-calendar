@@ -438,6 +438,54 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                   </tbody>
                                 </table>
                               </div>
+
+                              <Row label="The Full Zodiac Voltage Map">
+                                Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>CFO</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
+                              </Row>
+                              <div className="mt-3 overflow-x-auto">
+                                <table className="w-full text-[12.5px] border-collapse">
+                                  <thead>
+                                    <tr className="border-b border-indigo-500/40">
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[14%]">Sign</th>
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[43%]">0° Archetype (The Raw Opener)</th>
+                                      <th className="text-left font-semibold py-2 align-top w-[43%]">29° Archetype (The Anaretic Master)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="align-top">
+                                    {([
+                                      ["Aries",       "The Spark, raw ignition, pure initiative with no filter.",                          "The Veteran Fighter, urgent self-assertion, last-call courage."],
+                                      ["Taurus",      "The Settler, first claim on the land, body before logic.",                          "The Expert CFO, urgent mastery of resource, body, and value."],
+                                      ["Gemini",      "The First Question, raw curiosity, unfiltered talk.",                               "The Closing Reporter, urgent translator, must get the story out now."],
+                                      ["Cancer",      "The First Cry, raw need for belonging, no defense yet.",                            "The Veteran Caretaker, urgent feeding of the home, last-call nurture."],
+                                      ["Leo",         "The First Roar, raw self-expression, no audience check.",                           "The Closing Performer, urgent visibility, last-call self-claim."],
+                                      ["Virgo",       "The First Sort, raw analysis, no polish yet.",                                      "The Expert Editor, urgent refinement, last-call precision."],
+                                      ["Libra",       "The First Mirror, raw need for the other, no diplomacy yet.",                      "The Closing Diplomat, urgent fairness, last-call balance."],
+                                      ["Scorpio",     "The First Plunge, raw merge, no exit strategy.",                                    "The Veteran Investigator, urgent truth, last-call power audit."],
+                                      ["Sagittarius", "The Explorer, raw freedom, uncompromising open horizon.",                           "The Closing Prophet, urgent meaning, last-call belief."],
+                                      ["Capricorn",   "The First Climb, raw ambition, structure with no résumé yet.",                     "The Veteran Executive, urgent authority, last-call legacy build."],
+                                      ["Aquarius",    "The First Outsider, raw difference, no group to test it against.",                 "The Closing Architect, urgent system design, last-call reform."],
+                                      ["Pisces",      "The First Dissolve, raw empathy, no boundary yet.",                                 "The Closing Mystic, urgent surrender, last-call compassion."],
+                                    ] as Array<[string, string, string]>).map(([sign, zero, ana]) => {
+                                      const isRuler = rulerIsAnyZero && cr.rulerSign === sign;
+                                      const isDispo = dispoIsAnaretic && dispo!.sign === sign;
+                                      const highlight = isRuler || isDispo;
+                                      return (
+                                        <tr key={sign} className={cn("border-b border-indigo-500/15", highlight && "bg-indigo-500/10")}>
+                                          <td className="py-2.5 pr-3">
+                                            <strong>{sign}</strong>
+                                            {isRuler ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 0° Ruler</div> : null}
+                                            {isDispo ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 29° Dispositor</div> : null}
+                                          </td>
+                                          <td className={cn("py-2.5 pr-3", isRuler && "font-semibold")}>{zero}</td>
+                                          <td className={cn("py-2.5", isDispo && "font-semibold")}>{ana}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                                <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign run as <strong>The Manager</strong> or <strong>The Tourist</strong>, routine voltage, no opening rawness and no closing urgency.</div>
+                              </div>
+
                               {inChironReturnSec1 ? (
                                 <Row label="The Chiron Return Frame">
                                   At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "Explorer/CFO" : "extreme-degree"} loop</strong> as the actual instrument.
