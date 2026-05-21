@@ -570,18 +570,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "identity-glitch",
                         roman: "III",
-                        title: "The Identity Glitch",
-                        tag: `Sun · Chiron Collision · ${orbStr}`,
+                        title: "The Sun-Chiron Sting",
+                        tag: `Sun · Chiron · ${orbStr}`,
                         tone: "amber",
                         icon: <Eye className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "razor-tight " : "tight "}{orbStr} orb</M> (under the {stingOrbCap}° Sting threshold)</Row>
-                            <Row label="The Physics">
-                              This is a <strong>literal internal collision</strong> between the <em>Need to Be</em> (Sun) and the <em>Fear of Reaction</em> (Chiron). The two ends are wired directly across from each other, every time one fires, the other fires back. At <M>{orbStr}</M> there is no buffer between them.
+                            <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "very tight " : "tight "}{orbStr} orb</M> (the closer the orb, the stronger the effect; anything under {stingOrbCap}° is considered very close).</Row>
+                            <Row label="What This Aspect Does">
+                              The Sun is who {N} is meant to be. Chiron is the old sore spot, the place she expects to get hurt for showing up. When these two are this close to each other in the chart, the part of her that wants to be seen and the part of her that braces for a bad reaction are tied together. Every time one shows up, the other shows up right behind it. At <M>{orbStr}</M> there is almost no space between the two.
                             </Row>
-                            <Row label="The Truth">
-                              Call this the <strong>Permission Audit</strong>. Because the orb is under {stingOrbCap}°, {N} feels a physical <em>sting</em> in identity the moment {N} takes up space without first checking that it is "legal." This is not scanning faces for approval. This is fighting an <strong>internal glitch</strong> that says being oneself is a violation. The audit runs behind the eyes every day, and it costs energy whether anyone in the room is reacting or not.
+                            <Row label="What It Feels Like">
+                              The moment {N} starts to take up space, be seen, or speak as herself, she feels a small inner flinch, like she has to first check that it is okay. This is not her watching faces in the room to see if people approve. It is an inner voice asking, "am I allowed to do this?" The voice runs whether anyone in the room is reacting or not, and it costs energy all day.
                             </Row>
                           </>
                         ),
