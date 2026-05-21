@@ -288,7 +288,16 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       <strong className="font-semibold text-foreground">{children}</strong>
                     );
 
-                    const paragraphs: JSX.Element[] = [];
+                    type Movement = {
+                      key: string;
+                      roman: string;
+                      title: string;
+                      tag: string;
+                      tone: "emerald" | "amber" | "rose" | "indigo";
+                      icon: JSX.Element;
+                      body: JSX.Element;
+                    };
+                    const movements: Movement[] = [];
 
                     // ── I. The Energy Debt ────────────────────────────────────────────
                     if (cr && venus) {
@@ -296,12 +305,19 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const venusDeg = fmtDeg(venus.degree);
                       const pureIntent = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
                       const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` at ${venusDeg}` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}`;
-                      paragraphs.push(
-                        <p key="energy-debt" className="text-[15px] leading-[1.85] text-foreground/90">
-                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">I · The Energy Debt</span>
-                          What the room reads as graciousness is actually an <em>Exit Strategy</em>. With <M>{ascStr}</M> running the front door and <M>{rulerStr}</M> as the chart ruler, {N} is over-functioning at the level of social atmosphere, leveling the volume, smoothing the pivot, handing out the small kindness that gets the group to settle before anyone has to ask. It looks like diplomacy. It is closer to <em>greasing the tracks</em>, lowering the emotional friction in the room so the Sagittarius engine underneath can keep its options open and stay free to leave. {pureIntent ? <>The fact that Venus sits at <M>0° Sagittarius</M>, the degree of Pure Intent, means freedom is not a preference here, it is non-negotiable wiring. </> : null}She is not being nice. She is paying a daily <em>energy debt</em> to keep other people's weight off her exits. That debt is invisible to everyone but her.
-                        </p>
-                      );
+                      movements.push({
+                        key: "energy-debt",
+                        roman: "I",
+                        title: "The Energy Debt",
+                        tag: "Rising · Chart Ruler",
+                        tone: "emerald",
+                        icon: <Shield className="h-4 w-4" />,
+                        body: (
+                          <>
+                            What the room reads as graciousness is actually an <em>Exit Strategy</em>. With <M>{ascStr}</M> running the front door and <M>{rulerStr}</M> as the chart ruler, {N} is over-functioning at the level of social atmosphere, leveling the volume, smoothing the pivot, handing out the small kindness that gets the group to settle before anyone has to ask. It looks like diplomacy. It is closer to <em>greasing the tracks</em>, lowering the emotional friction in the room so the Sagittarius engine underneath can keep its options open and stay free to leave. {pureIntent ? <>The fact that Venus sits at <M>0° Sagittarius</M>, the degree of Pure Intent, means freedom is not a preference here, it is non-negotiable wiring. </> : null}She is not being nice. She is paying a daily <em>energy debt</em> to keep other people's weight off her exits. That debt is invisible to everyone but her.
+                          </>
+                        ),
+                      });
                     }
 
                     // ── II. The Phantom Auditor ───────────────────────────────────────
@@ -310,12 +326,19 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const tight = sunChiron.orb <= 2;
                       const sunStr = `${sun.sign} Sun${sun.house ? ` in the ${ord(sun.house)} house` : ""}`;
                       const chiStr = `Chiron in ${chiron.sign}${chiron.house ? `, ${ord(chiron.house)} house` : ""}`;
-                      paragraphs.push(
-                        <p key="phantom-auditor" className="text-[15px] leading-[1.85] text-foreground/90">
-                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">II · The Phantom Auditor</span>
-                          Underneath the diplomacy is a nervous system that flinches before it acts. The <M>{sunStr}</M> wants the full square footage of the body, the visible life, the unapologetic claim of space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is not a wound that bleeds, it is a <em>Phantom Auditor</em>. It runs a Permission Audit on every move before the move is made. What looks from the outside like indecision is actually <em>Vigilance</em>, a quiet, almost cellular sting that fires the instant {N} thinks she might be too much, too loud, too visible, too lit. She is performing a version of herself she thinks is <em>legal</em>, because the true-voltage version feels like a violation of the room. That is not low self-esteem. That is a high-speed collision between her own light and other people's shadow, happening behind her face in real time.
-                        </p>
-                      );
+                      movements.push({
+                        key: "phantom-auditor",
+                        roman: "II",
+                        title: "The Phantom Auditor",
+                        tag: "Sun · Chiron · Permission Audit",
+                        tone: "amber",
+                        icon: <Eye className="h-4 w-4" />,
+                        body: (
+                          <>
+                            Underneath the diplomacy is a nervous system that flinches before it acts. The <M>{sunStr}</M> wants the full square footage of the body, the visible life, the unapologetic claim of space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is not a wound that bleeds, it is a <em>Phantom Auditor</em>. It runs a Permission Audit on every move before the move is made. What looks from the outside like indecision is actually <em>Vigilance</em>, a quiet, almost cellular sting that fires the instant {N} thinks she might be too much, too loud, too visible, too lit. She is performing a version of herself she thinks is <em>legal</em>, because the true-voltage version feels like a violation of the room. That is not low self-esteem. That is a high-speed collision between her own light and other people's shadow, happening behind her face in real time.
+                          </>
+                        ),
+                      });
                     }
 
                     // ── III. The Contentious Silence ─────────────────────────────────
@@ -329,37 +352,100 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const translatorStr = translators.length
                         ? `${translators.join(" and ")} in the 12th house`
                         : (cog?.mercurySign ? `${cog.mercurySign} Mercury as the translator` : "the translator placement");
-                      paragraphs.push(
-                        <p key="contentious-silence" className="text-[15px] leading-[1.85] text-foreground/90">
-                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">III · The Contentious Silence</span>
-                          When {N} goes quiet, the room misreads it. It is not processing. It is not sulking. It is <em>Containment</em>. With <M>{marsStr}</M>{isMars1 ? " sitting right on the front of the chart" : ""} and <M>{translatorStr}</M>, the engine fires at full pressure long before the language is ready, and the language has to travel through deep water before it can come out clean. {isScorpio ? <>A <M>Scorpio Mars</M> under load does not run at room temperature, it runs at <em>1,000°</em>, and {N} knows it. </> : null}The silence is a pressure valve she is holding closed <em>on purpose</em>, because she would rather absorb the cost than let the unedited version land on someone she loves. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is what makes the valve dangerous. </> : null}Her silence is an act of love. It is also exhausting in a way no one else in the room can see. If you chase her into that quiet before the engine has cooled, you will hit a wall, and the wall is the warning shot. Let her cloak. When she comes back, the answer will be finished and it will be true.
-                        </p>
-                      );
+                      movements.push({
+                        key: "contentious-silence",
+                        roman: "III",
+                        title: "The Contentious Silence",
+                        tag: "Mars · 12th House · Containment",
+                        tone: "rose",
+                        icon: <Mountain className="h-4 w-4" />,
+                        body: (
+                          <>
+                            When {N} goes quiet, the room misreads it. It is not processing. It is not sulking. It is <em>Containment</em>. With <M>{marsStr}</M>{isMars1 ? " sitting right on the front of the chart" : ""} and <M>{translatorStr}</M>, the engine fires at full pressure long before the language is ready, and the language has to travel through deep water before it can come out clean. {isScorpio ? <>A <M>Scorpio Mars</M> under load does not run at room temperature, it runs at <em>1,000°</em>, and {N} knows it. </> : null}The silence is a pressure valve she is holding closed <em>on purpose</em>, because she would rather absorb the cost than let the unedited version land on someone she loves. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is what makes the valve dangerous. </> : null}Her silence is an act of love. It is also exhausting in a way no one else in the room can see. If you chase her into that quiet before the engine has cooled, you will hit a wall, and the wall is the warning shot. Let her cloak. When she comes back, the answer will be finished and it will be true.
+                          </>
+                        ),
+                      });
                     }
 
                     // ── IV. The Grand Finale (Chiron Return framing) ─────────────────
                     if (inChironReturn && chiron) {
                       const chiDegStr = fmtDeg(chiron.degree);
-                      paragraphs.push(
-                        <p key="grand-finale" className="text-[15px] leading-[1.85] text-foreground/90">
-                          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground block mb-2">IV · The Grand Finale — Chiron Return, Age {age}</span>
-                          All of this is happening inside a single, once-in-a-lifetime weather system. Transiting Chiron is conjunct natal <M>Chiron in {chiron.sign}{chiDegStr ? ` at ${chiDegStr}` : ""}</M>, which means she is in her <em>Chiron Return</em>, the developmental milestone where the Phantom Auditor either gets retired or gets handed the keys for the rest of her life. For roughly forty-nine years she has been a student of her own sore spot, learning every contour of where she felt <em>too much</em>. The return is the graduation. The work now is not to soften the intensity, it is to stop auditing it. The Energy Debt gets renegotiated. The Permission Audit gets revoked. The Contentious Silence stops being containment and starts being <em>discernment</em>, chosen, not paid. This is the Grand Finale of her apprenticeship to herself, and the only thing being asked of the people around her is to stop reading her recalibration as a problem and start recognizing it as a woman finally taking up the room she was always built for.
-                        </p>
-                      );
+                      movements.push({
+                        key: "grand-finale",
+                        roman: "IV",
+                        title: `The Grand Finale, Chiron Return at ${age}`,
+                        tag: "Transiting Chiron · Natal Chiron",
+                        tone: "indigo",
+                        icon: <Star className="h-4 w-4" />,
+                        body: (
+                          <>
+                            All of this is happening inside a single, once-in-a-lifetime weather system. Transiting Chiron is conjunct natal <M>Chiron in {chiron.sign}{chiDegStr ? ` at ${chiDegStr}` : ""}</M>, which means she is in her <em>Chiron Return</em>, the developmental milestone where the Phantom Auditor either gets retired or gets handed the keys for the rest of her life. For roughly forty-nine years she has been a student of her own sore spot, learning every contour of where she felt <em>too much</em>. The return is the graduation. The work now is not to soften the intensity, it is to stop auditing it. The Energy Debt gets renegotiated. The Permission Audit gets revoked. The Contentious Silence stops being containment and starts being <em>discernment</em>, chosen, not paid. This is the Grand Finale of her apprenticeship to herself, and the only thing being asked of the people around her is to stop reading her recalibration as a problem and start recognizing it as a woman finally taking up the room she was always built for.
+                          </>
+                        ),
+                      });
                     }
 
-                    if (paragraphs.length === 0) return null;
+                    if (movements.length === 0) return null;
+
+                    const toneStyles: Record<Movement["tone"], { wrap: string; bar: string; chip: string; iconWrap: string; roman: string; body: string; }> = {
+                      emerald: {
+                        wrap: "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20",
+                        bar: "bg-emerald-500/80",
+                        chip: "border-emerald-500/50 text-emerald-700 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-950/40",
+                        iconWrap: "text-emerald-600 dark:text-emerald-400",
+                        roman: "text-emerald-600/70 dark:text-emerald-400/70",
+                        body: "text-emerald-950/90 dark:text-emerald-50/90",
+                      },
+                      amber: {
+                        wrap: "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20",
+                        bar: "bg-amber-500/80",
+                        chip: "border-amber-500/50 text-amber-800 dark:text-amber-300 bg-amber-100/60 dark:bg-amber-950/40",
+                        iconWrap: "text-amber-600 dark:text-amber-400",
+                        roman: "text-amber-600/70 dark:text-amber-400/70",
+                        body: "text-amber-950/90 dark:text-amber-50/90",
+                      },
+                      rose: {
+                        wrap: "border-rose-500/40 bg-rose-50/40 dark:bg-rose-950/20",
+                        bar: "bg-rose-500/80",
+                        chip: "border-rose-500/50 text-rose-700 dark:text-rose-300 bg-rose-100/60 dark:bg-rose-950/40",
+                        iconWrap: "text-rose-600 dark:text-rose-400",
+                        roman: "text-rose-600/70 dark:text-rose-400/70",
+                        body: "text-rose-950/90 dark:text-rose-50/90",
+                      },
+                      indigo: {
+                        wrap: "border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-950/20",
+                        bar: "bg-indigo-500/80",
+                        chip: "border-indigo-500/50 text-indigo-700 dark:text-indigo-300 bg-indigo-100/60 dark:bg-indigo-950/40",
+                        iconWrap: "text-indigo-600 dark:text-indigo-400",
+                        roman: "text-indigo-600/70 dark:text-indigo-400/70",
+                        body: "text-indigo-950/90 dark:text-indigo-50/90",
+                      },
+                    };
 
                     return (
-                      <section className="space-y-5 rounded-lg border border-border bg-background/40 p-5">
-                        <div className="flex items-center gap-2 border-b border-border pb-3">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-primary" />
-                          <div className="font-semibold text-base">Behavioral Portrait — Synthesis of Friction</div>
+                          <div className="font-semibold text-base">Behavioral Portrait, Synthesis of Friction</div>
                         </div>
-                        <div className="space-y-6">
-                          {paragraphs}
-                        </div>
-                      </section>
+                        {movements.map((m) => {
+                          const t = toneStyles[m.tone];
+                          return (
+                            <section key={m.key} className={cn("rounded-lg border overflow-hidden", t.wrap)}>
+                              <div className={cn("h-1 w-full", t.bar)} />
+                              <div className="p-5 space-y-3">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  <span className={cn("text-2xl font-bold leading-none", t.roman)}>{m.roman}</span>
+                                  <span className={t.iconWrap}>{m.icon}</span>
+                                  <div className="font-semibold text-base">{m.title}</div>
+                                  <Badge variant="outline" className={cn("text-[10px]", t.chip)}>{m.tag}</Badge>
+                                </div>
+                                <p className={cn("text-[15px] leading-[1.85]", t.body)}>{m.body}</p>
+                              </div>
+                            </section>
+                          );
+                        })}
+                      </div>
                     );
                   })()}
 
