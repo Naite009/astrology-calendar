@@ -556,7 +556,7 @@ const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
   Taurus:      "they refuse to be rushed out the door, the body sets the pace and the schedule has to bend",
   Gemini:      "they're already mid-sentence about three different things before their feet hit the kitchen floor",
-  Cancer:      "they scan everyone's face for the mood of the morning before they say a word",
+  Cancer:      "they read the face of whoever walked in first to check what kind of morning this is going to be",
   Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
   Virgo:       "they spot the one thing out of place, the crumbs, the wrong mug, and can't unsee it",
   Libra:       "they smooth the first tension in the room before they've even sat down",
