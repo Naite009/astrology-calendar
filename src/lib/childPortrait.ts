@@ -370,19 +370,22 @@ const SATURN_HOUSE_ADULT_STANDARD: Record<number, string> = {
 };
 
 
+// The actual core wound for each Chiron sign. Phrased as the lifelong tender
+// territory the person keeps bumping into, not a single feeling or a
+// physical stereotype.
 const CHIRON_TENDER_BY_SIGN: Record<string, string> = {
   Aries: "having to fight for the right to exist as themselves: going first, taking up space, getting angry, asserting 'I want this' without apologizing or shrinking",
-  Taurus: "feeling like they don't have enough or aren't enough materially",
-  Gemini: "feeling stupid, mis-heard, or talked over",
-  Cancer: "feeling unwelcome, unwanted, or like 'too much'",
-  Leo: "feeling invisible, unloved, or laughed at",
-  Virgo: "feeling broken, defective, or never quite right",
-  Libra: "feeling unchosen, unfair-treated, or pushed aside",
-  Scorpio: "feeling betrayed or unsafe to trust",
-  Sagittarius: "feeling unfree or that their truth doesn't matter",
-  Capricorn: "feeling unworthy unless producing",
-  Aquarius: "feeling like the outsider or 'the weird one'",
-  Pisces: "feeling unseen in their sensitivity or used",
+  Taurus: "self-worth tied to what they have, what they earn, and what their body can produce: the quiet question of whether they are 'enough' on their own, with no proof attached",
+  Gemini: "their voice and their mind being taken seriously: being interrupted, mis-quoted, talked over, or treated as 'just' clever instead of actually believed",
+  Cancer: "belonging and being mothered: never quite sure if they were truly welcome, wanted, or safe to need things from the people supposed to take care of them",
+  Leo: "being loved for who they actually are versus what they perform: the fear that the real them is not interesting enough without the show",
+  Virgo: "never doing it right or being clean/healthy/competent enough: a private feeling that something about them or their body is broken and needs fixing",
+  Libra: "knowing who they are inside a relationship: losing themselves to keep the peace, or feeling unchosen and unable to disappoint anyone",
+  Scorpio: "trust, power, and what gets done to them in private: betrayal, control, intimacy, and the question of who actually has the power in any close bond",
+  Sagittarius: "meaning and faith: a hunger for a 'true north' to believe in, and the ache when teachers, beliefs, or systems they trusted turn out to be hollow",
+  Capricorn: "authority and being taken seriously: father-stuff, legitimacy, the right to be in charge, and the fear of being exposed as not qualified",
+  Aquarius: "belonging to the group while still being themselves: the lifelong gap between wanting to be part of something and feeling like the odd one out in it",
+  Pisces: "where they end and other people begin: absorbing other people's pain, getting cast as the saint or the scapegoat, and losing track of what is actually theirs",
 };
 
 const MERCURY_LEARNING_BY_SIGN: Record<string, string> = {
