@@ -601,18 +601,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "signal-failure",
                         roman: "IV",
-                        title: "The Signal Failure",
-                        tag: "12th House · Buffered Translator",
+                        title: "Why Words Lag Behind The Feeling",
+                        tag: "12th House Mercury/Moon",
                         tone: "rose",
                         icon: <Mountain className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math">{marsStr ? <><M>{marsStr}</M> vs. <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
-                            <Row label="The Physics">
-                              {marsStr ? <>Direct conflict between a <strong>High-Heat Engine</strong> and a <strong>Buffered Translator</strong>. {isScorpio ? <>A <M>Scorpio Mars</M> does not idle, it runs at full combustion. </> : null}But the part of {N} that converts that heat into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form.</> : <>The translator that converts inner signal into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form. Whatever pressure builds inside has to pass through that buffer before it can leave the mouth.</>}
+                            <Row label="The Math">{marsStr ? <><M>{marsStr}</M> with <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
+                            <Row label="What This Placement Does">
+                              {marsStr ? <>{N}'s Mars (the part of her that wants to act and push) is strong{isScorpio ? <>, especially in <M>Scorpio</M>, which runs hot and does not coast</> : null}. But the part of her that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Everything that happens there has to be felt and processed inside first, before it can come out loud. </> : <>The part of {N} that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Anything that happens there has to be felt and processed inside first, before it can come out loud. </>}
                             </Row>
-                            <Row label="The Truth">
-                              Call this the <strong>Technical Lag</strong>. {N} feels intensity at <strong>100mph</strong>, but the signal cannot travel from the engine to the mouth fast enough. {N} is not <em>choosing</em> to be silent. The wiring physically delays the output. The silence is a byproduct of internal architecture, not a social move. Push {N} before the signal completes and what comes out is jagged, not because {N} meant it, but because you forced an incomplete transmission.
+                            <Row label="What It Feels Like">
+                              {N} feels things strongly and fast, but the words for those feelings take longer to arrive. She is not choosing to go quiet. The 12th House placement means the words have to take the long way around before they can come out of her mouth. If someone pushes her to answer before the words are ready, what comes out can sound sharp or jumbled, not because she meant it that way, but because she was rushed before the sentence finished forming inside.
                             </Row>
                           </>
                         ),
