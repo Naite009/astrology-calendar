@@ -532,26 +532,30 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
 
                     // ── II. The Identity Glitch ───────────────────────────────────────
-                    if (sun && chiron && sunChiron) {
+                    // GATE: Sun-Chiron must exist AND orb < 3° to trigger Collision/Sting/Permission Audit.
+                    // Math triggers the label. The blueprint is now law: any chart with this signature fires this section.
+                    const stingOrbCap = 3;
+                    if (sun && chiron && sunChiron && sunChiron.orb < stingOrbCap) {
                       const orbStr = `${sunChiron.orb.toFixed(1)}°`;
-                      const tight = sunChiron.orb <= 2;
+                      const tight = sunChiron.orb <= 1.5;
+                      const aspectName = sunChiron.aspect || "opposition";
                       const sunStr = `${sun.sign} Sun${sun.house ? ` (${ord(sun.house)} House)` : ""}`;
                       const chiStr = `Chiron in ${chiron.sign}${chiron.house ? ` (${ord(chiron.house)} House)` : ""}`;
                       movements.push({
                         key: "identity-glitch",
                         roman: "III",
                         title: "The Identity Glitch",
-                        tag: "Sun · Chiron Collision",
+                        tag: `Sun · Chiron Collision · ${orbStr}`,
                         tone: "amber",
                         icon: <Eye className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math"><M>{sunStr}</M> opposite <M>{chiStr}</M> at a <M>{tight ? "tight " : ""}{orbStr} orb</M></Row>
+                            <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "razor-tight " : "tight "}{orbStr} orb</M> (under the {stingOrbCap}° Sting threshold)</Row>
                             <Row label="The Physics">
-                              This is a <strong>literal internal collision</strong> between the <em>Need to Be</em> (Sun) and the <em>Fear of Reaction</em> (Chiron). Opposition means the two ends are wired directly across from each other, every time one fires, the other fires back. At <M>{orbStr}</M> there is no buffer between them.
+                              This is a <strong>literal internal collision</strong> between the <em>Need to Be</em> (Sun) and the <em>Fear of Reaction</em> (Chiron). The two ends are wired directly across from each other, every time one fires, the other fires back. At <M>{orbStr}</M> there is no buffer between them.
                             </Row>
                             <Row label="The Truth">
-                              Call this the <strong>Permission Audit</strong>. Because the orb is so tight, she feels a physical <em>sting</em> in her identity the moment she takes up space without first checking that it is "legal." She is not scanning faces for approval. She is fighting an <strong>internal glitch</strong> that tells her being herself is a violation. The audit runs behind her eyes every day, and it costs energy whether anyone in the room is reacting or not.
+                              Call this the <strong>Permission Audit</strong>. Because the orb is under {stingOrbCap}°, {N} feels a physical <em>sting</em> in identity the moment {N} takes up space without first checking that it is "legal." This is not scanning faces for approval. This is fighting an <strong>internal glitch</strong> that says being oneself is a violation. The audit runs behind the eyes every day, and it costs energy whether anyone in the room is reacting or not.
                             </Row>
                           </>
                         ),
@@ -559,30 +563,30 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     }
 
                     // ── III. The Signal Failure ───────────────────────────────────────
-                    if (drive) {
-                      const marsStr = `${drive.marsSign} Mars (${ord(drive.marsHouse)} House)`;
-                      const isScorpio = drive.marsSign === "Scorpio";
+                    // GATE: Mercury OR Moon in House 12 fires this section. Mars context is optional.
+                    // The math is universal: house === 12 for a translator body triggers Buffered Translator / Technical Lag.
+                    if (hasMoon12 || hasMerc12) {
+                      const marsStr = drive ? `${drive.marsSign} Mars (${ord(drive.marsHouse)} House)` : null;
+                      const isScorpio = drive?.marsSign === "Scorpio";
                       const translators: string[] = [];
                       if (hasMoon12) translators.push("Moon");
                       if (hasMerc12) translators.push(`${cog?.mercurySign ? cog.mercurySign + " " : ""}Mercury`);
-                      const translatorStr = translators.length
-                        ? `${translators.join(" / ")} in the 12th House`
-                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury in the 12th House` : "translator placement in the 12th House");
+                      const translatorStr = `${translators.join(" / ")} in the 12th House`;
                       movements.push({
                         key: "signal-failure",
                         roman: "IV",
                         title: "The Signal Failure",
-                        tag: "Mars · Mercury Wiring",
+                        tag: "12th House · Buffered Translator",
                         tone: "rose",
                         icon: <Mountain className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math"><M>{marsStr}</M> vs. <M>{translatorStr}</M></Row>
+                            <Row label="The Math">{marsStr ? <><M>{marsStr}</M> vs. <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
                             <Row label="The Physics">
-                              Direct conflict between a <strong>High-Heat Engine</strong> and a <strong>Buffered Translator</strong>. {isScorpio ? <>A <M>Scorpio Mars</M> does not idle, it runs at full combustion. </> : null}But the part of her that converts that heat into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form.
+                              {marsStr ? <>Direct conflict between a <strong>High-Heat Engine</strong> and a <strong>Buffered Translator</strong>. {isScorpio ? <>A <M>Scorpio Mars</M> does not idle, it runs at full combustion. </> : null}But the part of {N} that converts that heat into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form.</> : <>The translator that converts inner signal into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form. Whatever pressure builds inside has to pass through that buffer before it can leave the mouth.</>}
                             </Row>
                             <Row label="The Truth">
-                              Call this the <strong>Technical Lag</strong>. She feels intensity at <strong>100mph</strong>, but the signal cannot travel from the engine to her mouth fast enough. She is not <em>choosing</em> to be silent. The wiring physically delays the output. Her silence is a byproduct of her internal architecture, not a social move. Push her before the signal completes and what comes out is jagged, not because she meant it, but because you forced an incomplete transmission.
+                              Call this the <strong>Technical Lag</strong>. {N} feels intensity at <strong>100mph</strong>, but the signal cannot travel from the engine to the mouth fast enough. {N} is not <em>choosing</em> to be silent. The wiring physically delays the output. The silence is a byproduct of internal architecture, not a social move. Push {N} before the signal completes and what comes out is jagged, not because {N} meant it, but because you forced an incomplete transmission.
                             </Row>
                           </>
                         ),
