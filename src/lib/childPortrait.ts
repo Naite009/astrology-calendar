@@ -900,7 +900,7 @@ function aspectConversationKey(a: string, b: string): string {
 const HIDDEN_HOUSE_SHADOW: Record<number, string> = {
   6: "Handle their stress-responses through daily routine, not big sit-down confrontations. They process best while doing something side-by-side (walking, cooking, driving). Formal 'we need to talk' moments feel like an inspection and shut them down.",
   8: "Handle their stress-responses in private and with full honesty. Hidden tensions land harder than spoken ones for this person. They need transparency about what's really going on, never in front of an audience, and they need to know you can be trusted with the real story.",
-  12: "Handle their stress-responses in private. Public correction is a major trigger here. They need 1-on-1 'love deposits' to feel safe enough to stop performing. Address things one-on-one, low volume, never in front of others.",
+  12: "Handle their stress-responses in private. Public correction is a major trigger here. They need quiet one-on-one reassurance to feel safe enough to stop performing. Address things in private, low volume, never in front of others.",
 };
 
 // ── NEW: Translation-rule data maps ──────────────────────────────────────────
