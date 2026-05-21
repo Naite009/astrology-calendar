@@ -303,45 +303,45 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     if (cr && venus) {
                       const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` at ${fmtDeg(ascDegree)}` : ""}`;
                       const venusDeg = fmtDeg(venus.degree);
-                      const pureIntent = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
+                      const zeroDeg = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
                       const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` at ${venusDeg}` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}`;
                       movements.push({
                         key: "energy-debt",
                         roman: "I",
                         title: "The Energy Debt",
-                        tag: "Rising · Chart Ruler",
+                        tag: "The Mask vs. The Heart",
                         tone: "emerald",
                         icon: <Shield className="h-4 w-4" />,
                         body: (
                           <>
-                            What the room reads as graciousness is actually an <em>Exit Strategy</em>. With <M>{ascStr}</M> running the front door and <M>{rulerStr}</M> as the chart ruler, {N} is over-functioning at the level of social atmosphere, leveling the volume, smoothing the pivot, handing out the small kindness that gets the group to settle before anyone has to ask. It looks like diplomacy. It is closer to <em>greasing the tracks</em>, lowering the emotional friction in the room so the Sagittarius engine underneath can keep its options open and stay free to leave. {pureIntent ? <>The fact that Venus sits at <M>0° Sagittarius</M>, the degree of Pure Intent, means freedom is not a preference here, it is non-negotiable wiring. </> : null}She is not being nice. She is paying a daily <em>energy debt</em> to keep other people's weight off her exits. That debt is invisible to everyone but her.
+                            Here is the straight version. {N}'s "front door" is <M>{ascStr}</M>, and that door is wired to keep the room calm. If the volume goes up, if two people are bickering, if someone is hurt, she feels physical pressure to step in and smooth it out. From the outside this looks like niceness. It is not. The reason she works that hard is sitting one layer down: her chart is run by <M>{rulerStr}</M>, and {cr.rulerSign === "Sagittarius" ? "Sagittarius is claustrophobic" : `${cr.rulerSign} needs room`}. When the room gets heavy with other people's problems, she feels trapped. So she works the mask, lowers the temperature, hands out the small kindness, all so the room will finally settle and she can have five minutes to herself. {zeroDeg ? <>Her Venus sits at <M>0° Sagittarius</M>, the very first degree, which makes that need for open space non-negotiable, not a preference. </> : null}She is not a people-pleaser. She is an <em>Over-Functioner</em>, doing twice the emotional work everyone else is doing, just to buy back her own breathing room. That is the cost, and it is invisible to almost everyone in her life.
                           </>
                         ),
                       });
                     }
 
-                    // ── II. The Phantom Auditor ───────────────────────────────────────
+                    // ── II. The Permission Audit ──────────────────────────────────────
                     if (sun && chiron && sunChiron) {
                       const orbStr = `${sunChiron.orb.toFixed(1)}°`;
                       const tight = sunChiron.orb <= 2;
                       const sunStr = `${sun.sign} Sun${sun.house ? ` in the ${ord(sun.house)} house` : ""}`;
                       const chiStr = `Chiron in ${chiron.sign}${chiron.house ? `, ${ord(chiron.house)} house` : ""}`;
                       movements.push({
-                        key: "phantom-auditor",
+                        key: "permission-audit",
                         roman: "II",
-                        title: "The Phantom Auditor",
-                        tag: "Sun · Chiron · Permission Audit",
+                        title: "The Permission Audit",
+                        tag: "The Ghost in the Room",
                         tone: "amber",
                         icon: <Eye className="h-4 w-4" />,
                         body: (
                           <>
-                            Underneath the diplomacy is a nervous system that flinches before it acts. The <M>{sunStr}</M> wants the full square footage of the body, the visible life, the unapologetic claim of space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is not a wound that bleeds, it is a <em>Phantom Auditor</em>. It runs a Permission Audit on every move before the move is made. What looks from the outside like indecision is actually <em>Vigilance</em>, a quiet, almost cellular sting that fires the instant {N} thinks she might be too much, too loud, too visible, too lit. She is performing a version of herself she thinks is <em>legal</em>, because the true-voltage version feels like a violation of the room. That is not low self-esteem. That is a high-speed collision between her own light and other people's shadow, happening behind her face in real time.
+                            Here is the part that costs her the most. Her <M>{sunStr}</M> is the natural part of her that wants to lead, have an opinion, pick the restaurant, take up space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is essentially her physical sensitivity to other people's reactions. The two are wired directly across from each other, which means she cannot just <em>be herself</em> without scanning the nearest face to see how it landed. If she wants something, her brain checks your expression first. If she sees even a flicker of annoyance, she shuts her own preference down to keep you comfortable. The honest way to say it is this: {N} feels like she needs a <em>permission slip</em> from the people around her just to exist as herself. She is constantly auditing the volume of her own personality to make sure she is not "too much" for the room. That audit is happening behind her eyes every single day, and it is exhausting.
                           </>
                         ),
                       });
                     }
 
-                    // ── III. The Contentious Silence ─────────────────────────────────
+                    // ── III. The Signal Gap ──────────────────────────────────────────
                     if (drive) {
                       const marsStr = `${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house`;
                       const isMars1 = drive.marsHouse === 1;
@@ -351,39 +351,22 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       if (hasMerc12) translators.push(`${cog?.mercurySign ? cog.mercurySign + " " : ""}Mercury`);
                       const translatorStr = translators.length
                         ? `${translators.join(" and ")} in the 12th house`
-                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury as the translator` : "the translator placement");
+                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury in the 12th house` : "her translator placement in the 12th house");
                       movements.push({
-                        key: "contentious-silence",
+                        key: "signal-gap",
                         roman: "III",
-                        title: "The Contentious Silence",
-                        tag: "Mars · 12th House · Containment",
+                        title: "The Signal Gap",
+                        tag: "The Engine vs. The Dark Room",
                         tone: "rose",
                         icon: <Mountain className="h-4 w-4" />,
                         body: (
                           <>
-                            When {N} goes quiet, the room misreads it. It is not processing. It is not sulking. It is <em>Containment</em>. With <M>{marsStr}</M>{isMars1 ? " sitting right on the front of the chart" : ""} and <M>{translatorStr}</M>, the engine fires at full pressure long before the language is ready, and the language has to travel through deep water before it can come out clean. {isScorpio ? <>A <M>Scorpio Mars</M> under load does not run at room temperature, it runs at <em>1,000°</em>, and {N} knows it. </> : null}The silence is a pressure valve she is holding closed <em>on purpose</em>, because she would rather absorb the cost than let the unedited version land on someone she loves. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is what makes the valve dangerous. </> : null}Her silence is an act of love. It is also exhausting in a way no one else in the room can see. If you chase her into that quiet before the engine has cooled, you will hit a wall, and the wall is the warning shot. Let her cloak. When she comes back, the answer will be finished and it will be true.
+                            When she goes silent, the room reads it wrong. Here is what is actually happening. {N} has a high-heat engine: <M>{marsStr}</M>{isMars1 ? ", sitting right at the front of the chart" : ""}. When she gets angry, excited, or hurt, she feels it in her body instantly, like a flash of heat. {isScorpio ? <>And a <M>Scorpio Mars</M> does not run at room temperature, it runs hot. </> : null}But the part of her that finds the <em>words</em> for that heat is <M>{translatorStr}</M>, which functions like a soundproof, dimly lit back room. Feelings have to travel through that room before they can come out as language. That creates a Signal Gap: feeling at full speed, words at quarter speed. When she gets quiet, she is not stonewalling and she is not sulking. She is in the dark room cooling the engine and looking for words that will not burn the person in front of her. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is exactly when the valve gets dangerous. </> : null}If you follow her into that silence and keep asking "what's wrong," you are forcing her to open the door before the heat is down, and that is when something sharp comes out that she will regret. Her silence is her way of protecting you from her intensity. Let her have it. When she comes back, the answer will be clean.
                           </>
                         ),
                       });
                     }
 
-                    // ── IV. The Grand Finale (Chiron Return framing) ─────────────────
-                    if (inChironReturn && chiron) {
-                      const chiDegStr = fmtDeg(chiron.degree);
-                      movements.push({
-                        key: "grand-finale",
-                        roman: "IV",
-                        title: `The Grand Finale, Chiron Return at ${age}`,
-                        tag: "Transiting Chiron · Natal Chiron",
-                        tone: "indigo",
-                        icon: <Star className="h-4 w-4" />,
-                        body: (
-                          <>
-                            All of this is happening inside a single, once-in-a-lifetime weather system. Transiting Chiron is conjunct natal <M>Chiron in {chiron.sign}{chiDegStr ? ` at ${chiDegStr}` : ""}</M>, which means she is in her <em>Chiron Return</em>, the developmental milestone where the Phantom Auditor either gets retired or gets handed the keys for the rest of her life. For roughly forty-nine years she has been a student of her own sore spot, learning every contour of where she felt <em>too much</em>. The return is the graduation. The work now is not to soften the intensity, it is to stop auditing it. The Energy Debt gets renegotiated. The Permission Audit gets revoked. The Contentious Silence stops being containment and starts being <em>discernment</em>, chosen, not paid. This is the Grand Finale of her apprenticeship to herself, and the only thing being asked of the people around her is to stop reading her recalibration as a problem and start recognizing it as a woman finally taking up the room she was always built for.
-                          </>
-                        ),
-                      });
-                    }
 
                     if (movements.length === 0) return null;
 
