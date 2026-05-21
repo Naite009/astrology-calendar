@@ -14,6 +14,17 @@ interface MercuryRetrogradeGuideProps {
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
+// Parse a date-string like "February 25-26, 2026 at 22°33' Pisces"
+// or "March 20, 2026". Returns the *first* date mentioned, at noon UTC.
+function parseRxDateString(s: string | null | undefined): Date | null {
+  if (!s) return null;
+  const m = s.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:[-–]\d{1,2})?,\s*(\d{4})/i);
+  if (!m) return null;
+  const months: Record<string, number> = { january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11 };
+  const d = new Date(Date.UTC(parseInt(m[3],10), months[m[1].toLowerCase()], parseInt(m[2],10), 12));
+  return isNaN(d.getTime()) ? null : d;
+}
+
 const SIGN_ORDER = ["aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces"] as const;
 
 function getAscendantSign(chart: NatalChart): string {
