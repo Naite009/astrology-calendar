@@ -393,23 +393,23 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               </Row>
                             ) : null}
                             {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
-                              <Row label="The Anaretic Stack, Deadline Mechanic">
-                                {N} carries multiple bodies parked at the <strong>Maximum Pressure Threshold</strong>{(() => {
+                              <Row label="The Anaretic Stack">
+                                {N} has more than one planet sitting at the very last degree of a sign{(() => {
                                   const parts: string[] = [];
                                   if (sunIsAnaretic) parts.push(`Sun at ${fmtDeg((sun as any).degree)} ${sun.sign}`);
                                   if (dispoIsAnaretic) parts.push(`${dispo!.name} at ${fmtDeg(dispo!.degree)} ${dispo!.sign}${dispoRx ? " Rx" : ""}`);
                                   if (chironIsAnaretic) parts.push(`Chiron at ${fmtDeg((chiron as any).degree)} ${chiron.sign}${chironRx ? " Rx" : ""}`);
                                   return parts.length ? <> ({parts.join(", ")})</> : null;
-                                })()}. This is not a personality trait. It is a <strong>Deadline Mechanic</strong>, a felt mandate to ship the definitive version of each lesson before the sign closes. Every movement above carries that "now-or-never" voltage.
+                                })()}. The anaretic degree (29°) carries a "now or never" feeling because the planet is about to leave the sign for good. Having more than one body parked there is not a personality trait. It is a felt sense that the lesson of each sign is on a deadline. That urgency shows up underneath everything written above.
                               </Row>
                             ) : null}
                             {isDegreeOpposition ? (
                               <Row label="The Opposition Layer">
-                                On top of the loop, the two co-rulers are sitting across from each other by degree, <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M> across the wheel. This makes the two needs louder at the same time. One side wants movement, honesty, risk, and space. The other side wants steadiness, comfort, money, and control over the pace. It is not indecision. It is her body checking whether a choice gives her freedom without making her feel unsafe, and safety without making her feel trapped.
+                                On top of the loop, the two co-rulers sit directly across the wheel from each other by degree: <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M>. An opposition means both needs get loud at the same time. One side wants movement, honesty, risk, and space. The other side wants steadiness, comfort, money, and control over the pace. This is not indecision. It is her body checking whether a choice gives her freedom without making her feel unsafe, and safety without making her feel trapped.
                               </Row>
                             ) : null}
-                            <Row label="The Truth">
-                              Her Libra Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {mutualReception ? <>The calm room helps the {cr.rulerName} side say what it really wants, and it helps the {dispo!.name} side notice what would actually feel safe. If the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, the developmental work is learning that <strong>she does not have to choose one side and abandon the other</strong>. The loop is not a glitch to fix. She can name both needs plainly: "I need room to move" and "I need to feel steady after I move." </> : null}
+                            <Row label="The Bottom Line">
+                              Her Libra Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {mutualReception ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo!.name} side notice what would actually feel safe. When the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside her Chiron Return window, the work is learning that <strong>she does not have to pick one side and abandon the other</strong>. She can say both out loud: "I need room to move" and "I need to feel steady after I move." </> : null}
                             </Row>
 
                           </>
