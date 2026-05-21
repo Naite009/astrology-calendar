@@ -421,22 +421,22 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         movements.push({
                           key: "voltage-scale",
                           roman: "II",
-                          title: "The Voltage Scale, A Clickable Key",
-                          tag: "Math Reference",
+                          title: "Why The Extreme Degrees Read Differently",
+                          tag: "Degree Reference",
                           tone: "indigo",
                           icon: <BookOpen className="h-4 w-4" />,
                           body: (
                             <>
                               <Row label="Why This Reading Hits Harder">
-                                Most charts run at <strong>middle voltage</strong>, settled degrees, linear chains, predictable outputs. {N}'s wiring sits at the <strong>extreme ends</strong> of the scale, which is why the intensity she feels is not a personality quirk, it is a measurable difference in the math. Use this key to see exactly where her voltage diverges from a standard build.
+                                Most planets sit in the middle of a sign (around 10°–20°), where the placement reads as steady and predictable. {N}'s key planets sit at the <strong>very first</strong> and <strong>very last</strong> degree of their signs. Those two spots have specific names in astrology and they change the reading. The intensity she feels is not a personality quirk: it is what those degrees actually do.
                               </Row>
                               <div className="mt-4 overflow-x-auto">
                                 <table className="w-full text-[13px] border-collapse">
                                   <thead>
                                     <tr className="border-b border-emerald-500/40">
                                       <th className="text-left font-semibold py-2 pr-3 align-top w-[22%]">Placement</th>
-                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[39%]">{N}'s Voltage</th>
-                                      <th className="text-left font-semibold py-2 align-top w-[39%]">The Standard (Middle Degree)</th>
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[39%]">How It Reads For {N}</th>
+                                      <th className="text-left font-semibold py-2 align-top w-[39%]">How A Middle Degree Reads</th>
                                     </tr>
                                   </thead>
                                   <tbody className="align-top">
