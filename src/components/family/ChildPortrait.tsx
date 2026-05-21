@@ -570,7 +570,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         : (cog?.mercurySign ? `${cog.mercurySign} Mercury in the 12th House` : "translator placement in the 12th House");
                       movements.push({
                         key: "signal-failure",
-                        roman: "III",
+                        roman: "IV",
                         title: "The Signal Failure",
                         tag: "Mars · Mercury Wiring",
                         tone: "rose",
