@@ -578,7 +578,10 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <BookOpen className="h-4 w-4 text-primary" />
                           <div className="font-semibold text-base">Behavioral Portrait, Synthesis of Friction</div>
                         </div>
-                        {movements.map((m) => {
+                        {movements.sort((a, b) => {
+                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
+                          return r(a.roman) - r(b.roman);
+                        }).map((m) => {
                           const t = toneStyles[m.tone];
                           return (
                             <section key={m.key} className={cn("rounded-lg border overflow-hidden", t.wrap)}>
