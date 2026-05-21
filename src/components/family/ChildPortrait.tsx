@@ -593,8 +593,8 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     if (inChironReturn) {
                       movements.push({
                         key: "developmental-threshold",
-                        roman: "IV",
-                        title: "The Developmental Threshold",
+                        roman: "V",
+                        title: "The Developmental Anchor, Chiron Return",
                         tag: `Chiron Return · Age ${age}`,
                         tone: "indigo",
                         icon: <BookOpen className="h-4 w-4" />,
@@ -602,10 +602,10 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <>
                             <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
                             <Row label="The Physics">
-                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being a wound the system tries to patch and becomes a piece of <strong>mastered hardware</strong>.
+                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being a wound the system tries to patch and becomes a piece of <strong>mastered hardware</strong>. At the same time, transiting <M>Jupiter in Taurus</M> is moving across the same ground the <strong>Expert CFO</strong> already owns, delivering the final layer of <strong>lived evidence</strong> that the foundation is real, the resource is real, the body knowledge is real.
                             </Row>
                             <Row label="The Truth">
-                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, the Over-Functioning, and starts <strong>owning the power of her intensity</strong>. The Audit gets retired. The silence stops being apologized for. The Sagittarius heart stops asking permission for its own oxygen. The whole system reboots with the same wiring, but with the operator finally at the controls.
+                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally retire because the <strong>CFO and the Explorer have agreed on the budget for her life</strong>. The Taurus side has receipts. The Sagittarius side has open road. She is not auditioning for permission to be the Grounded Explorer anymore. The wiring is the same. The operator is finally at the controls.
                             </Row>
                           </>
                         ),
