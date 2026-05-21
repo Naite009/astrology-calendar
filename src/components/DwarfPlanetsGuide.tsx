@@ -47,7 +47,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     shadow: 'Victim identity. Bitterness. Refusing help even when needed. Isolation as armor.',
     integration: 'Transform your deepest wounds into sovereignty. You survived the unsurvivable.',
     currentSign: 'Gemini',
-    currentSignNote: 'Sedna entered Gemini in 2024 after 40+ years in Taurus. Beginning a new cycle of mental/communication awakening around survival.',
+    currentSignNote: 'Sedna ingressed into Gemini in 2024 after 40+ years in Taurus, opening a new cycle of mental and communicative awakening around survival.',
   },
   {
     key: 'makemake',
@@ -62,7 +62,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     shadow: 'Resource exploitation. Creating without considering consequences. Fertility obsession.',
     integration: 'Create in harmony with natural cycles. Your manifestation power comes from Earth.',
     currentSign: 'Libra → Scorpio',
-    currentSignNote: 'Makemake has been in Libra since 2000 and enters Scorpio around 2025 — shifting from relational creation to transformative creation.',
+    currentSignNote: 'Makemake was in Libra from 2000 and ingressed into Scorpio in 2025, shifting from relational creation to transformative creation.',
   },
   {
     key: 'haumea',
@@ -152,7 +152,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     shadow: 'Repeating the same mistake. Entitlement. Betraying those who help you.',
     integration: 'Learn from your second chances. Gratitude prevents the fiery wheel.',
     currentSign: 'Capricorn → Aquarius',
-    currentSignNote: 'Ixion moves from Capricorn to Aquarius around 2025 — shifting from authority issues to collective ethics.',
+    currentSignNote: 'Ixion ingressed from Capricorn into Aquarius in 2025, shifting from authority issues to collective ethics.',
   },
   {
     key: 'varuna',

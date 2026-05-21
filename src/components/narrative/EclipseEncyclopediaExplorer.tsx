@@ -131,7 +131,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     glyphs: '♈ ♎',
     period: '2023–2025',
     status: 'ending',
-    description: 'Self vs. Other — identity, independence, relationships, and compromise. This series is winding down with its final eclipse in March 2025.',
+    description: 'Self vs. Other, identity, independence, relationships, and compromise. This series concluded with its final eclipse in March 2025.',
     bigPicture: 'The Aries-Libra eclipse series asked us to find the right balance between self-assertion and accommodation. Where had we abandoned ourselves to keep the peace? Where had we been so focused on our own path that we forgot how much we need each other? These eclipses triggered pivotal chapters in relationships, identity reckonings that led to greater honesty, and moments where partnership dynamics were fundamentally reset.',
     events: [
       {
@@ -744,7 +744,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   One of the most confusing things about eclipses is that <strong>multiple series run simultaneously</strong>. As the nodes shift from one axis to the next, there's a transition period where eclipses from the old and new axes interleave.
                 </p>
                 <p>
-                  Right now (2025–2027), this is exactly what's happening: the <strong>Virgo-Pisces lunar eclipses</strong> continue alongside the new <strong>Leo-Aquarius solar eclipses</strong>. The solar eclipses have moved to Leo-Aquarius, but the lunar eclipses are still completing the Virgo-Pisces story.
+                  A current example: the <strong>Virgo-Pisces lunar eclipses</strong> (2024-2027) continue alongside the newer <strong>Leo-Aquarius solar eclipses</strong> (2025-2028). The solar eclipses moved to Leo-Aquarius while the lunar eclipses are still completing the Virgo-Pisces story.
                 </p>
                 <p>
                   This means two different axes of your chart are being activated at the same time — a more complex but rich period of growth.
