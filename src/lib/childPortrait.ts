@@ -1202,9 +1202,16 @@ export interface ChildPortrait {
     rulerName: string;
     rulerSign: string;
     rulerHouse: number | null;
+    rulerDegree?: number | null;
     ascSign: string;
     line: string;
     realTalk?: string;
+    dispositor?: {
+      name: string;
+      sign: string;
+      house: number | null;
+      degree: number | null;
+    };
   };
 
 
