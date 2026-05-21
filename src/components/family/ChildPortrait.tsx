@@ -351,6 +351,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const cfoLabel = dispoIsCFO ? "the Expert CFO" : (dispoIsAnaretic ? `the ${dispo!.sign} master at the closing degree` : (dispo ? `the ${dispo!.sign} anchor` : ""));
                       const hasVoltage = rulerIsAnyZero || dispoIsAnaretic;
 
+                      // ── Retrograde physics ──
+                      const dispoRx = !!dispo?.retrograde;
+                      const chironRx = !!chiron?.retrograde;
+                      const sunIsAnaretic = !!sun && typeof (sun as any).degree === "number" && (sun as any).degree >= 28;
+                      const chironIsAnaretic = !!chiron && typeof (chiron as any).degree === "number" && (chiron as any).degree >= 29;
+                      const hasRetroLayer = dispoRx || chironRx;
+
                       const inChironReturnSec1 = inChironReturn;
                       movements.push({
                         key: "chain-of-command",
@@ -376,6 +383,24 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             {mutualReception ? (
                               <Row label="The Internal Partnership">
                                 {N} does not experience herself as having a single inner boss. She runs a constant partnership between a <strong>High-Energy Launch</strong> ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and a <strong>Strategic Financier</strong> ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). The {dispoIsCFO ? "CFO" : dispo!.name} side is <em>not</em> a brake meant to stop the {rulerIsExplorer ? "Explorer" : cr.rulerName}. It is the <strong>Financier</strong> that funds the launch. She is a <strong>Grounded {rulerIsExplorer ? "Explorer" : cr.rulerSign}</strong> who builds massive internal value on the {dispo!.sign} side <em>specifically so she can remain un-tethered on the {cr.rulerSign} side</em>. Every dollar of expertise, body knowledge, and resource gets stacked for one reason: to buy <strong>Strategic Autonomy</strong>, the right to move without ever having to ask permission or money again.
+                              </Row>
+                            ) : null}
+                            {hasRetroLayer ? (
+                              <Row label="The Retrograde Layer, Internalized Mandate">
+                                {dispoRx ? <>The {dispoIsCFO ? "CFO" : dispo!.name} is <strong>Retrograde</strong>. That means the foundation is <strong>Internalized</strong>. {N} does not trust outside experts or borrowed templates to tell her what her resource is worth. The {dispoIsCFO ? "Expert CFO" : dispo!.sign + " anchor"} is <strong>self-taught and self-audited</strong>, the sole architect of her own security. The world did not hand her the manual, so she wrote it from the inside. </> : null}
+                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The "sting" is not actually coming from the room. It is a <strong>re-run of an internal tape</strong>, a self-generated security check. The Permission Audit is an <strong>internal loop</strong>; {N} is her own harshest auditor, and the permission she keeps scanning for is permission from herself. </> : null}
+                                {dispoRx && chironRx ? <>Put together, this is a <strong>Self-Sourcing Power Plant</strong>. The Explorer breaks free using a <strong>Private Bank</strong> that no one else can sign off on, audited by an <strong>Internal Auditor</strong> who answers only to her. Nothing in this loop needs outside approval to operate. </> : null}
+                              </Row>
+                            ) : null}
+                            {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
+                              <Row label="The Anaretic Stack, Deadline Mechanic">
+                                {N} carries multiple bodies parked at the <strong>Maximum Pressure Threshold</strong>{(() => {
+                                  const parts: string[] = [];
+                                  if (sunIsAnaretic) parts.push(`Sun at ${fmtDeg((sun as any).degree)} ${sun.sign}`);
+                                  if (dispoIsAnaretic) parts.push(`${dispo!.name} at ${fmtDeg(dispo!.degree)} ${dispo!.sign}${dispoRx ? " Rx" : ""}`);
+                                  if (chironIsAnaretic) parts.push(`Chiron at ${fmtDeg((chiron as any).degree)} ${chiron.sign}${chironRx ? " Rx" : ""}`);
+                                  return parts.length ? <> ({parts.join(", ")})</> : null;
+                                })()}. This is not a personality trait. It is a <strong>Deadline Mechanic</strong>, a felt mandate to ship the definitive version of each lesson before the sign closes. Every movement above carries that "now-or-never" voltage.
                               </Row>
                             ) : null}
                             {isDegreeOpposition ? (
@@ -609,6 +634,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             <Row label="The Physics">
                               Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being a wound the system tries to patch and becomes a piece of <strong>mastered hardware</strong>. The <strong>Expert CFO</strong> at 29° Taurus has already done the slow accumulation work, and the Chiron Return is the moment that <strong>lived evidence</strong> gets cashed in, the foundation is real, the resource is real, the body knowledge is real.
                             </Row>
+                            {chiron?.retrograde ? (
+                              <Row label="The Retrograde Turns Direct">
+                                Natal Chiron is <strong>Retrograde</strong>, which means the Permission Audit has been running <em>inward</em> for almost five decades, {N} auditing herself with no outside referee. The Chiron Return is the moment the audit <strong>turns Direct in her mind</strong>. The internal loop opens. The verdict she has been waiting on, from herself, finally clears.
+                              </Row>
+                            ) : null}
                             <Row label="The Truth">
                               This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally retire because the <strong>CFO and the Explorer have agreed on the budget for her life</strong>. The Taurus side has receipts. The Sagittarius side has open road. She is not auditioning for permission to be the Grounded Explorer anymore. The wiring is the same. The operator is finally at the controls.
                             </Row>

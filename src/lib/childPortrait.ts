@@ -1203,6 +1203,7 @@ export interface ChildPortrait {
     rulerSign: string;
     rulerHouse: number | null;
     rulerDegree?: number | null;
+    rulerRetrograde?: boolean;
     ascSign: string;
     line: string;
     realTalk?: string;
@@ -1211,6 +1212,7 @@ export interface ChildPortrait {
       sign: string;
       house: number | null;
       degree: number | null;
+      retrograde?: boolean;
     };
   };
 
@@ -1265,8 +1267,8 @@ export interface ChildPortrait {
   };
 
   // Lightweight placements used by the Narrative Briefing prose blocks
-  venusPlacement?: { sign: string; house: number | null; degree: number | null };
-  chironPlacement?: { sign: string; house: number | null; degree: number | null };
+  venusPlacement?: { sign: string; house: number | null; degree: number | null; retrograde?: boolean };
+  chironPlacement?: { sign: string; house: number | null; degree: number | null; retrograde?: boolean };
   ascDegree?: number | null;
   twelfthHouseBodies?: Array<{ name: string; sign: string }>;
 
@@ -1888,10 +1890,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
             sign: dispoPlanet.sign,
             house: houseOf(chart, dispoPlanet),
             degree: dispoPlanet.degree ?? null,
+            retrograde: !!(dispoPlanet as any).isRetrograde,
           };
         }
       }
-      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, rulerDegree: rulerPlanet.degree ?? null, ascSign, line, dispositor };
+      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, rulerDegree: rulerPlanet.degree ?? null, rulerRetrograde: !!(rulerPlanet as any).isRetrograde, ascSign, line, dispositor };
     }
   }
 
@@ -2296,8 +2299,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     cloakingNote,
     pressureSignature,
 
-    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus), degree: Venus.degree ?? null } : undefined,
-    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron), degree: Chiron.degree ?? null } : undefined,
+    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus), degree: Venus.degree ?? null, retrograde: !!(Venus as any).isRetrograde } : undefined,
+    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron), degree: Chiron.degree ?? null, retrograde: !!(Chiron as any).isRetrograde } : undefined,
     ascDegree: chart.houseCusps?.house1?.degree ?? null,
     twelfthHouseBodies: (() => {
       const out: Array<{ name: string; sign: string }> = [];
