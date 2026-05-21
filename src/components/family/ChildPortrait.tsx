@@ -394,7 +394,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       if (hasVoltage || mutualReception) {
                         movements.push({
                           key: "voltage-scale",
-                          roman: "IV",
+                          roman: "V",
                           title: "The Voltage Scale, A Clickable Key",
                           tag: "Math Reference",
                           tone: "indigo",
