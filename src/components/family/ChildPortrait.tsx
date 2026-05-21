@@ -624,23 +624,23 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "developmental-threshold",
                         roman: "V",
-                        title: "The Developmental Anchor, Chiron Return",
+                        title: "The Chiron Return",
                         tag: `Chiron Return · Age ${age}`,
                         tone: "indigo",
                         icon: <BookOpen className="h-4 w-4" />,
                         body: (
                           <>
                             <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
-                            <Row label="The Physics">
-                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being something the system keeps trying to patch. The <strong>Safety Builder</strong> at 29° Taurus has spent years learning what actually makes {N} feel steady, and the Chiron Return is the moment that lived proof starts to matter: the body knows, the money lessons are real, the boundaries are real, and the foundation is not pretend.
+                            <Row label="What This Transit Does">
+                              Once every ~50 years, Chiron comes back to the exact degree it was in at birth. The old sore spot stops being something to keep patching. The 29° Taurus side of her has spent decades quietly learning what actually keeps her steady. The Chiron Return is when that lived experience starts to count: the body knows, the lessons about money and boundaries are real, and the ground under her feet is not pretend.
                             </Row>
                             {chiron?.retrograde ? (
-                              <Row label="The Retrograde Turns Direct">
-                                Natal Chiron is <strong>Retrograde</strong>, which means the Permission Audit has been running <em>inward</em> for almost five decades, {N} auditing herself with no outside referee. The Chiron Return is the moment the audit <strong>turns Direct in her mind</strong>. The internal loop opens. The verdict she has been waiting on, from herself, finally clears.
+                              <Row label="Natal Chiron Retrograde">
+                                Because natal Chiron is <strong>Retrograde</strong>, the inner question of "am I allowed to take up space?" has been running on the inside for almost fifty years, with {N} as her own judge and no outside voice to settle it. The Chiron Return is when that inner question can finally close. The verdict she has been waiting on (from herself) can finally come in.
                               </Row>
                             ) : null}
-                            <Row label="The Truth">
-                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally relax because the Taurus side knows what keeps her steady, and the Sagittarius side knows what keeps her alive inside. She is not auditioning for permission to need both. The wiring is the same. She is finally allowed to trust it.
+                            <Row label="What It Feels Like Now">
+                              This is the point where {N} stops trying to <em>fix</em> the inner flinch and the word-lag, and starts treating her intensity as something she is allowed to keep. The inner question can quiet down because the Taurus side now knows what keeps her steady, and the Sagittarius side knows what keeps her alive inside. She is not auditioning for permission to need both of those things. The chart was always built this way. She is finally allowed to trust it.
                             </Row>
                           </>
                         ),
