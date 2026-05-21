@@ -342,6 +342,15 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       }
                       const isDegreeOpposition = pairOrb !== null && pairOrb <= 5;
 
+                      // ── Voltage labels for extreme degrees ──
+                      const rulerIsExplorer = zeroDeg && cr.rulerSign === "Sagittarius"; // 0° Sag Venus = The Explorer
+                      const rulerIsAnyZero = zeroDeg; // any 0° ruler = raw, uncompromising opening
+                      const dispoIsAnaretic = !!dispo && typeof dispo.degree === "number" && dispo.degree >= 29;
+                      const dispoIsCFO = dispoIsAnaretic && dispo!.sign === "Taurus" && dispo!.name === "Jupiter"; // 29° Taurus Jupiter = Expert CFO
+                      const explorerLabel = rulerIsExplorer ? "the Explorer" : (rulerIsAnyZero ? `the raw ${cr.rulerSign} opener` : `the ${cr.rulerSign} operator`);
+                      const cfoLabel = dispoIsCFO ? "the Expert CFO" : (dispoIsAnaretic ? `the ${dispo!.sign} master at the closing degree` : (dispo ? `the ${dispo!.sign} anchor` : ""));
+                      const hasVoltage = rulerIsAnyZero || dispoIsAnaretic;
+
                       const inChironReturnSec1 = inChironReturn;
                       movements.push({
                         key: "chain-of-command",
@@ -355,12 +364,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             <Row label="The Math">
                               <M>{ascStr}</M> is ruled by <M>{rulerStr}</M>{dispoStr ? <>, which is hosted by <M>{dispoStr}</M></> : null}{mutualReception ? <>, and {dispo!.name} in {dispo!.sign} points right back to <M>{cr.rulerName}</M>. The chain closes on itself.</> : "."}
                             </Row>
+                            {hasVoltage ? (
+                              <Row label="The Anchor, The Extreme Degrees">
+                                {rulerIsAnyZero ? <>The Chart Ruler sits at <M>0° {cr.rulerSign}</M>, the <strong>Aries Point</strong> of the sign. This is not a tourist version of {cr.rulerSign}. It is <strong>{explorerLabel}</strong>, raw, uncompromising, zero filter, an <strong>absolute, non-negotiable need</strong> for {cr.rulerSign === "Sagittarius" ? "freedom and open horizon" : "what this sign demands"}. </> : null}
+                                {dispoIsAnaretic ? <>The Dispositor sits at <M>{fmtDeg(dispo!.degree)} {dispo!.sign}</M>, the <strong>anaretic</strong> closing degree. This is not background stability. It is <strong>{cfoLabel}</strong>, high-pressure, seasoned, urgent, a massive felt responsibility to <strong>master the resource and get it right, now</strong>.</> : null}
+                              </Row>
+                            ) : null}
                             <Row label="The Physics">
-                              The Rising sign is the <strong>front door</strong>, the Chart Ruler is the <strong>operator</strong> behind it, and the Dispositor is normally the <strong>final anchor</strong> the whole system reports to. {N}'s door is <M>{ascStr}</M>, so the surface looks like standard Libra: read the room, smooth the edges, keep things pleasant. The operator is <M>{rulerStr}</M>{zeroDeg ? <>, at the <M>0° anaretic</M> opening of the sign, which is the rawest amplitude {cr.rulerSign} can run at</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {dispoStr ? <>That operator reports up to <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "is built to convert lived experience into something durable and physical, security, body knowledge, resource" : `is built to convert experience into resource`}. </> : null}{mutualReception ? <>But here the chain does something unusual. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so it hands authority right back to where it came from. There is no final boss. The two planets host each other inside a <strong>Mutual Reception</strong>, a closed loop where <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> are co-signing every decision. </> : null}
+                              The Rising sign is the <strong>front door</strong>, the Chart Ruler is the <strong>operator</strong> behind it, and the Dispositor is normally the <strong>final anchor</strong> the whole system reports to. {N}'s door is <M>{ascStr}</M>, so the surface looks like standard Libra: read the room, smooth the edges, keep things pleasant. The operator is <M>{rulerStr}</M>{rulerIsAnyZero ? <>, running at the rawest amplitude {cr.rulerSign} can produce</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {dispoStr ? <>That operator reports up to <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "is built to convert lived experience into something durable and physical, security, body knowledge, resource" : `is built to convert experience into resource`}. </> : null}{mutualReception ? <>But here the chain does something unusual. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so it hands authority right back to where it came from. There is no final boss. The two planets host each other inside a <strong>Mutual Reception</strong>, a closed loop where <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> are co-signing every decision. </> : null}
                             </Row>
                             {mutualReception ? (
                               <Row label="The Internal Partnership">
-                                That is why {N} does not experience herself as having a single inner boss. She has an <strong>internal dialogue</strong> running at all times between her <strong>Need for {cr.rulerSign === "Sagittarius" ? "Adventure" : cr.rulerSign}</strong> ({cr.rulerName} in {cr.rulerSign}) and her <strong>Need for {dispo!.sign === "Taurus" ? "Security" : dispo!.sign}</strong> ({dispo!.name} in {dispo!.sign}). Every choice gets routed through both desks before it ships. The freedom side wants to move, expand, leave the door open. The security side wants the body fed, the bills paid, the ground solid. Neither one wins, neither one shuts up.
+                                That is why {N} does not experience herself as having a single inner boss. She runs a constant negotiation between a <strong>High-Energy Launch</strong> ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and a <strong>High-Pressure Brake</strong> ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). She is a <strong>Grounded {rulerIsExplorer ? "Explorer" : cr.rulerSign}</strong>, she refuses to fly unless the foundation is expert, and refuses to build a foundation unless it guarantees her freedom. Every choice gets routed through both desks before it ships.
                               </Row>
                             ) : null}
                             {isDegreeOpposition ? (
@@ -369,11 +384,69 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               </Row>
                             ) : null}
                             <Row label="The Truth">
-                              Her Libra Rising is not "wants to be liked." It is the <strong>Tactical Tool</strong> the loop uses to keep both desks happy. {mutualReception ? <>The diplomacy buys the {cr.rulerName} side its freedom to move, and the same diplomacy buys the {dispo!.name} side its stable ground. Both desks need the room calm to keep operating. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, the developmental work is learning that <strong>she does not have to choose</strong>. The loop is not a glitch to fix. She can be a <strong>Secure Adventurer</strong>, a person whose freedom is built on real ground and whose stability is built to travel. The past four decades of bouncing between the two desks become the <strong>Expertise</strong> of running them together. </> : null}
+                              Her Libra Rising is not "wants to be liked." It is the <strong>Tactical Tool</strong> the loop uses to keep both desks happy. {mutualReception ? <>The diplomacy buys the {rulerIsExplorer ? "Explorer" : cr.rulerName} side its freedom to move, and the same diplomacy buys the {dispoIsCFO ? "CFO" : dispo!.name} side its stable ground. Both desks need the room calm to keep operating. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, the developmental work is learning that <strong>she does not have to choose</strong>. The loop is not a glitch to fix. She can stop running the Permission Audit and start <strong>owning the {rulerIsExplorer && dispoIsCFO ? "Explorer/CFO" : "co-ruler"} loop</strong> as her actual operating system, freedom built on real ground, mastery built to travel. </> : null}
                             </Row>
                           </>
                         ),
                       });
+
+                      // ── IV. The Voltage Scale (clickable key) ──
+                      if (hasVoltage || mutualReception) {
+                        movements.push({
+                          key: "voltage-scale",
+                          roman: "V",
+                          title: "The Voltage Scale, A Clickable Key",
+                          tag: "Math Reference",
+                          tone: "indigo",
+                          icon: <BookOpen className="h-4 w-4" />,
+                          body: (
+                            <>
+                              <Row label="Why This Reading Hits Harder">
+                                Most charts run at <strong>middle voltage</strong>, settled degrees, linear chains, predictable outputs. {N}'s wiring sits at the <strong>extreme ends</strong> of the scale, which is why the intensity she feels is not a personality quirk, it is a measurable difference in the math. Use this key to see exactly where her voltage diverges from a standard build.
+                              </Row>
+                              <div className="mt-4 overflow-x-auto">
+                                <table className="w-full text-[13px] border-collapse">
+                                  <thead>
+                                    <tr className="border-b border-emerald-500/40">
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[22%]">Placement</th>
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[39%]">{N}'s Voltage</th>
+                                      <th className="text-left font-semibold py-2 align-top w-[39%]">The Standard (Middle Degree)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="align-top">
+                                    {rulerIsAnyZero ? (
+                                      <tr className="border-b border-emerald-500/20">
+                                        <td className="py-3 pr-3"><strong>0° (Aries Point)</strong></td>
+                                        <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>, raw, loudest, uncompromising intensity. No filter between need and action.</td>
+                                        <td className="py-3"><strong>The Tourist</strong>, 10°–20°. Settled, predictable, moderate. Knows the sign's rules and stays inside them.</td>
+                                      </tr>
+                                    ) : null}
+                                    {dispoIsAnaretic ? (
+                                      <tr className="border-b border-emerald-500/20">
+                                        <td className="py-3 pr-3"><strong>29° (Anaretic)</strong></td>
+                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Expert CFO" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
+                                        <td className="py-3"><strong>The Manager</strong>, 10°–20°. Routine, calm, ongoing work. No deadline pressure inside the placement.</td>
+                                      </tr>
+                                    ) : null}
+                                    {mutualReception ? (
+                                      <tr>
+                                        <td className="py-3 pr-3"><strong>Mutual Reception</strong></td>
+                                        <td className="py-3 pr-3"><strong>Closed Loop</strong>, self-sustaining, high-speed internal feedback. The two co-rulers co-sign every decision in real time.</td>
+                                        <td className="py-3"><strong>Linear Chain</strong>, follows a boss. Looks outward for permission, waits on a final anchor that lives somewhere else in the chart.</td>
+                                      </tr>
+                                    ) : null}
+                                  </tbody>
+                                </table>
+                              </div>
+                              {inChironReturnSec1 ? (
+                                <Row label="The Chiron Return Frame">
+                                  At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "Explorer/CFO" : "extreme-degree"} loop</strong> as the actual instrument.
+                                </Row>
+                              ) : null}
+                            </>
+                          ),
+                        });
+                      }
                     }
 
 
@@ -505,7 +578,10 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <BookOpen className="h-4 w-4 text-primary" />
                           <div className="font-semibold text-base">Behavioral Portrait, Synthesis of Friction</div>
                         </div>
-                        {movements.map((m) => {
+                        {movements.sort((a, b) => {
+                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
+                          return r(a.roman) - r(b.roman);
+                        }).map((m) => {
                           const t = toneStyles[m.tone];
                           return (
                             <section key={m.key} className={cn("rounded-lg border overflow-hidden", t.wrap)}>
