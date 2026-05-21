@@ -207,19 +207,21 @@ const SUN_PLAIN_BY_SIGN: Record<string, string> = {
   Pisces: "wired for empathy, imagination, and absorbing the mood of the room",
 };
 
+// Describes WHERE this core wiring shows up in real life. Each line must
+// stand alone in plain English with no astrology jargon and no vague pronouns.
 const SUN_HOUSE_PLAIN: Record<number, string> = {
-  1: "It sits in the 1st house, which means it shows up the second they walk in. The personality, the body, and the first impression all carry it.",
-  2: "It sits in the 2nd house, which means it shows up through what they value, what they own, and what feels safe in the body.",
-  3: "It sits in the 3rd house, which means it shows up through how they talk, learn, and move around their day.",
-  4: "It sits in the 4th house, which means it shows up at home and in private, with family and the people closest to them.",
-  5: "It sits in the 5th house, which means it shows up through play, creativity, romance, and what they make.",
-  6: "It sits in the 6th house, which means it shows up through daily work, health, and the small useful things they do.",
-  7: "It sits in the 7th house, which means it shows up most clearly in one-on-one relationships and partnerships.",
-  8: "It sits in the 8th house, which means it shows up around shared money, deep trust, and the things people usually keep private.",
-  9: "It sits in the 9th house, which means it shows up through travel, beliefs, teaching, and the bigger picture.",
-  10: "It sits in the 10th house, which means it shows up in their public role, their work, and what they are known for.",
-  11: "It sits in the 11th house, which means it shows up through friends, groups, and the future they are building with others.",
-  12: "It sits in the 12th house, which means it shows up quietly, behind the scenes, and in their inner life.",
+  1: "Other people pick this up in the first 30 seconds of meeting them. It is in their face, their body language, the way they enter a room, and the impression they leave. There is no hiding it and no warming up to it.",
+  2: "This wiring runs their relationship with money, their body, food, and what they consider valuable. You see who they are by watching what they spend on, what they refuse to spend on, and what they treat as worth keeping.",
+  3: "This wiring shows up in how they talk, text, learn, and move through an ordinary day. Siblings, neighbors, short trips, and the way they explain things are where it lives.",
+  4: "This wiring is most itself at home and with family. The public version can look different. The real version comes out behind closed doors, with the people they live with, and in the place they call home.",
+  5: "This wiring shows up in what they make, what they play at, who they flirt with, and how they parent or create. Hobbies, art, romance, and kids are where the core self comes out to play.",
+  6: "This wiring runs their daily routine, their job tasks, their health habits, and the small useful things they do every day. You see who they are in how they handle the to-do list.",
+  7: "This wiring shows up most clearly through one-on-one relationships. Their partner, their best friend, and their close clients reflect the core self back at them. They figure out who they are by who they pair up with.",
+  8: "This wiring shows up around shared money, intimacy, debt, inheritance, therapy, and the topics most people will not say out loud. The real self lives in the private, high-stakes conversations.",
+  9: "This wiring shows up through travel, big beliefs, teaching, publishing, and the search for meaning. Long trips and the question 'what is this all for' are where the core self lives.",
+  10: "This wiring shows up in their public role, their career, and what strangers know them for. The job title, the reputation, and the work they put their name on all carry the core self.",
+  11: "This wiring shows up through friend groups, communities, causes, and the long-term future they are building with other people. The chosen tribe is where the core self lives.",
+  12: "This wiring shows up quietly and behind the scenes. Dreams, solitude, spiritual practice, and the inner life are where the real self lives. Other people often miss it because it is not on display.",
 };
 
 // What Jupiter in this sign gives the person expertise in / language for.
