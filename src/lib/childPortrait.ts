@@ -576,7 +576,7 @@ const RISING_ELDER_ADVICE: Record<string, string> = {
   Leo:         "Don't skip the greeting. A warm hello costs nothing and changes the day.",
   Virgo:       "Don't call them picky. They are flooded by the out-of-place thing, fix it or name it, then move on.",
   Libra:       "Don't ask them to take a side at breakfast. Let them have neutral ground until they're warmed up.",
-  Scorpio:     "Don't push for a chipper morning report. Quiet is the runway, not the problem.",
+  Scorpio:     "Don't push for a chipper morning report. Quiet is how they warm up, not a problem to fix.",
   Sagittarius: "Don't pin them down to the table. Keep one door symbolically open, talk about later in the day.",
   Capricorn:   "Don't drop them into chaos. A two-sentence map of the day lets the nervous system settle.",
   Aquarius:    "Don't demand warmth on cue. Let them observe; warmth comes once they're not being watched.",
