@@ -477,13 +477,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">Closed Loop vs Linear Chain →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal space-y-2">
-                                              <p>Every planet answers to the ruler of the sign it sits in. Normally that ruler answers to another ruler, and the chain eventually ends somewhere else in the chart. That is a <strong>Linear Chain</strong>. It can look outward for one final answer.</p>
-                                              <p>A <strong>Closed Loop</strong> (mutual reception) is different. Two planets sit in each other's signs, so each one answers back to the other. {N}'s Venus sits in Jupiter's sign (Sagittarius), and Jupiter sits in Venus's sign (Taurus). That means the freedom need and the safety need keep checking each other. She is not being flaky. She is trying to choose something that lets her breathe and still feel okay after.</p>
+                                              <p>Every planet answers to the ruler of the sign it sits in. Normally that ruler answers to another ruler, and the chain eventually ends somewhere else in the chart. That is a <strong>Linear Chain</strong>: there is one final planet that holds the answer.</p>
+                                              <p>A <strong>Closed Loop</strong> (mutual reception) is different. Two planets sit in each other's signs, so each one answers right back to the other. {N}'s Venus sits in Jupiter's sign (Sagittarius), and Jupiter sits in Venus's sign (Taurus). So the freedom side and the safety side keep checking with each other instead of handing the answer off to anyone else. She is not being flaky. She is trying to choose something that lets her breathe and still feel okay after.</p>
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>Closed Loop</strong>, self-sustaining, high-speed internal feedback. The two co-rulers co-sign every decision in real time.</td>
-                                        <td className="py-3"><strong>Linear Chain</strong>, follows a boss. Looks outward for permission, waits on a final anchor that lives somewhere else in the chart.</td>
+                                        <td className="py-3 pr-3"><strong>Closed Loop</strong>: the two co-rulers keep checking with each other on every real decision.</td>
+                                        <td className="py-3"><strong>Linear Chain</strong>: the chain ends at one final planet that holds the answer.</td>
                                       </tr>
                                     ) : null}
                                   </tbody>
