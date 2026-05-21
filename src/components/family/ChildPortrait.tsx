@@ -447,12 +447,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 0° means →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
-                                              0° is the very first degree of a sign, called the <strong>Aries Point</strong> because it acts like a fresh ignition no matter which sign it lands in. There is no prior experience in the sign yet, no polish, no caution, no learned filter. The placement fires at full strength the moment it is touched. {N} feels it as raw, loud, uncompromising, almost public, like the need announces itself before she can edit it. It is the loudest voltage on the scale.
+                                              0° is the very first degree of a sign, also called the <strong>Aries Point</strong> because it acts like a fresh start no matter which sign it lands in. The planet has no prior experience in this sign yet, so there is no polish, no caution, and no learned filter. The need shows up at full strength the moment it is touched. {N} feels it as raw, loud, uncompromising, and almost public, like the need announces itself before she can soften it.
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>, raw, loudest, uncompromising intensity. No filter between need and action.</td>
-                                        <td className="py-3"><strong>The Tourist</strong>, 10°–20°. Settled, predictable, moderate. Knows the sign's rules and stays inside them.</td>
+                                        <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>: raw, loud, uncompromising. No filter between need and action.</td>
+                                        <td className="py-3"><strong>The Tourist</strong> (10°–20°): settled and moderate. Knows the sign's rules and stays inside them.</td>
                                       </tr>
                                     ) : null}
                                     {dispoIsAnaretic ? (
