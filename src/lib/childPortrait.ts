@@ -618,12 +618,12 @@ const RULER_SIGN_DRIVE: Record<string, string> = {
 // ── Node-House Synthesis (comfort of / edge of) ─────────────────────────────
 // South Node house = comfort. North Node house = the edge where life actually is.
 const HOUSE_COMFORT: Record<number, string> = {
-  1: "the comfort of being 'just the surface presentation,' never the inner self",
+  1: "the comfort of staying at the surface presentation and not letting people past it to the inner self",
   2: "the comfort of accumulating, holding, and not letting anything be moved",
-  3: "the comfort of running the conversation so it never lands on them",
+  3: "the comfort of staying in motion in the conversation so it rarely lands on them",
   4: "the comfort of the home cave and the inner circle",
   5: "the comfort of being the one who is watched and applauded",
-  6: "the comfort of always being the one who fixes and tends",
+  6: "the comfort of being the one who fixes and tends",
   7: "the comfort of the we, of over-stabilizing the relationship",
   8: "the comfort of staying private and controlling the depth-level",
   9: "the comfort of the big idea and the meaning, far away from the mundane",
