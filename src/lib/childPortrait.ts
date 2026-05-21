@@ -1890,10 +1890,11 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
             sign: dispoPlanet.sign,
             house: houseOf(chart, dispoPlanet),
             degree: dispoPlanet.degree ?? null,
+            retrograde: !!(dispoPlanet as any).isRetrograde,
           };
         }
       }
-      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, rulerDegree: rulerPlanet.degree ?? null, ascSign, line, dispositor };
+      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, rulerDegree: rulerPlanet.degree ?? null, rulerRetrograde: !!(rulerPlanet as any).isRetrograde, ascSign, line, dispositor };
     }
   }
 
