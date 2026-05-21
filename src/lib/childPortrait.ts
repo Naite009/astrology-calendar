@@ -217,7 +217,7 @@ const SUN_HOUSE_PLAIN: Record<number, string> = {
   5: "This wiring shows up in what they make, what they play at, who they flirt with, and how they parent or create. Hobbies, art, romance, and kids are where the core self comes out to play.",
   6: "This wiring runs their daily routine, their job tasks, their health habits, and the small useful things they do every day. You see who they are in how they handle the to-do list.",
   7: "This wiring shows up most clearly through one-on-one relationships. Their partner, their best friend, and their close clients reflect the core self back at them. They figure out who they are by who they pair up with.",
-  8: "This wiring shows up around shared money, intimacy, debt, inheritance, therapy, and the topics most people will not say out loud. The real self lives in the private, high-stakes conversations.",
+  8: "This wiring shows up around shared money, intimacy, debt, inheritance, therapy, and the topics most people skirt in casual conversation. The real self lives in the private, high-stakes conversations.",
   9: "This wiring shows up through travel, big beliefs, teaching, publishing, and the search for meaning. Long trips and the question 'what is this all for' are where the core self lives.",
   10: "This wiring shows up in their public role, their career, and what strangers know them for. The job title, the reputation, and the work they put their name on all carry the core self.",
   11: "This wiring shows up through friend groups, communities, causes, and the long-term future they are building with other people. The chosen tribe is where the core self lives.",
