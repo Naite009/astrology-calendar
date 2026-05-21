@@ -243,47 +243,56 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   </section>
 
-                  {/* === Narrative Briefing ============================================
-                      Single deep prose read using "Friction Logic":
-                      explains WHY the parts don't speak the same language.
-                      No engine labels, no boxes, just 3-4 woven paragraphs. */}
+                  {/* === Master Portrait =============================================
+                      Multi-layered "Master Manual" structure:
+                      2. Strategy & Exit (Rising + Ruler)
+                      3. Permission Audit (Sun vs Chiron)
+                      4. Dark Room & Engine (Mars vs 12H processor)
+                      5. Cognitive Map (3rd house cusp vs ruler)
+                      6. Interaction Guide (real-world handling rules)
+                      Each section is its own titled deep prose block, math-anchored. */}
                   {(() => {
                     const N = portrait.name;
                     const cr = portrait.chartRuler;
                     const sun = portrait.identityInvitation.sun;
-                    const venus = (portrait as any).venusPlacement as { sign: string; house: number | null; degree: number | null } | undefined;
-                    const chiron = (portrait as any).chironPlacement as { sign: string; house: number | null; degree: number | null } | undefined;
-                    const ascDegree = (portrait as any).ascDegree as number | null | undefined;
+                    const venus = portrait.venusPlacement;
+                    const chiron = portrait.chironPlacement;
+                    const ascDegree = portrait.ascDegree;
                     const drive = portrait.energyDischarge;
                     const pressure = portrait.pressureSignature;
                     const cloak = portrait.cloakingNote;
-                    const twelfth = (portrait as any).twelfthHouseBodies as Array<{ name: string; sign: string }> | undefined;
+                    const twelfth = portrait.twelfthHouseBodies;
                     const cog = portrait.cognitiveProfile;
+                    const math = portrait.mathCheck;
+
                     const ord = (n: number | null | undefined) => {
                       if (!n) return "";
-                      const s = ["th","st","nd","rd"], v = n % 100;
+                      const s = ["th", "st", "nd", "rd"], v = n % 100;
                       return n + (s[(v - 20) % 10] || s[v] || s[0]);
                     };
                     const fmtDeg = (d: number | null | undefined) =>
                       typeof d === "number" ? `${d.toFixed(1)}°` : null;
 
-                    const sunChiron = portrait.mathCheck.sunAspects?.find(a => a.to === "Chiron");
+                    const sunChiron = math.sunAspects?.find(a => a.to === "Chiron");
                     const twelfthList = (cloak?.bodies && cloak.bodies.length ? cloak.bodies : (twelfth ?? [])) as Array<{ name: string; sign: string }>;
                     const hasMoon12 = twelfthList.some(b => b.name === "Moon");
                     const hasMerc12 = twelfthList.some(b => b.name === "Mercury");
 
-                    const paragraphs: string[] = [];
+                    const sections: Array<{ key: string; title: string; tag: string; body: string }> = [];
 
-                    // Paragraph 1 — Opening frame, the protective surface
+                    // ── 2. The Strategy & The Exit (Rising + Ruler) ───────────────────
                     if (cr && venus) {
                       const ascAnchor = fmtDeg(ascDegree) ? `${cr.ascSign} Rising at ${fmtDeg(ascDegree)}` : `${cr.ascSign} Rising`;
-                      const venusAnchor = `Venus in ${venus.sign}${fmtDeg(venus.degree) ? ` at ${fmtDeg(venus.degree)}` : ""}${venus.house ? ` in the ${ord(venus.house)} house` : ""}`;
-                      paragraphs.push(
-                        `${N} opens every room with a treaty. The ${ascAnchor} reads the temperature first, levels the voices, and hands out whatever small kindness will get the group to settle. It looks like graciousness; it is actually tactical. Underneath the surface sits ${venusAnchor}, and what that ${venus.sign} heart values above almost everything is the ability to keep its own options open. The eight-in-the-morning kitchen diplomacy, the agreeable nod, the soft pivot, that is not a personality. That is a shield ${N} raises around the ${venus.sign} freedom${venus.house === 2 ? `, parked in the 2nd house where it doubles as her sense of self-worth and resourcing` : ""}. Treat the niceness as a doorway, not a verdict. The only boundary that actually holds for ${N} is the right to walk away from a closing room.`
-                      );
+                      const rulerAnchor = `${cr.rulerName} in ${cr.rulerSign}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}${fmtDeg(venus.degree) && cr.rulerName === "Venus" ? ` at ${fmtDeg(venus.degree)}` : ""}`;
+                      sections.push({
+                        key: "strategy",
+                        title: "The Strategy & The Exit",
+                        tag: "Rising · Ruler",
+                        body: `${N} walks into every room wearing a treaty. The ${ascAnchor} reads temperature before it reads people, levels the volume, and hands out whatever small kindness will get the group to settle. It looks like graciousness. It is actually a tactical mask, the Diplomat, and it has a specific job: to lower the cost of being there so the real Captain underneath can keep its options open. That Captain is ${rulerAnchor}. What that ${cr.rulerSign} engine values above almost everything else is the freedom to leave the room intact, with its sense of self, its time, and its possibilities still in its own hands. The eight-in-the-morning kitchen behavior, the agreeable nod, the soft pivot before anyone has to ask for it, that is not a personality trait, it is the survival method ${N} uses to keep her ${cr.rulerSign} freedom unmortgaged${cr.rulerHouse === 2 ? `, especially with the Captain parked in the 2nd house where freedom and self-worth and resources are the same currency` : ""}. The treaty is the doorway, not the verdict. The single boundary that actually holds for ${N} is the right to walk out of a room that is closing in, without having to argue for the right to do it.`,
+                      });
                     }
 
-                    // Paragraph 2 — The Visibility Paradox (1H Sun opp Chiron 7H)
+                    // ── 3. The Permission Audit (Sun vs Chiron) ───────────────────────
                     if (sun) {
                       const sunAnchor = `Sun in ${sun.sign}${sun.house ? `, ${ord(sun.house)} house` : ""}`;
                       const chironAnchor = chiron
@@ -296,46 +305,92 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
                       const collisionPhrase = chironAnchor
                         ? (oneSeven
-                            ? `Then look across the chart to ${chironAnchor}, sitting in a ${tightOpp ? "tight " : ""}${sunChiron?.aspect ?? "aspect"}${orbStr ? ` at ${orbStr} orb` : ""}. This is the Visibility Paradox in pure form: the 1st-house Sun wants to take up the full square footage of the body, and the 7th-house Chiron runs a Permission Audit through the eyes of other people, asking on every step forward, "am I allowed, is this fair, am I being too much."`
-                            : `Across from that drive sits ${chironAnchor}${orbStr ? `, in ${sunChiron?.aspect ?? "aspect"} at ${orbStr} orb` : ""}, running a quiet Permission Audit in the background.`)
-                        : `The catch is that ${N} grew up auditing herself before she had finished the sentence.`;
+                            ? `Sitting directly across the chart is ${chironAnchor}, in a ${tightOpp ? "tight " : ""}${sunChiron?.aspect ?? "aspect"}${orbStr ? ` at ${orbStr} orb` : ""}. This is the Permission Audit in pure form. The 1st-house Sun wants to take up the full square footage of the body without asking; the 7th-house Chiron checks every step forward through the eyes of the nearest other person, asking on each move, "am I allowed, am I being fair, am I being too much."`
+                            : `${chironAnchor} runs across from that drive${orbStr ? `, in ${sunChiron?.aspect ?? "aspect"} at ${orbStr} orb` : ""}, holding a quiet Permission Audit in the background that asks, before any visible move, "am I allowed, is this too much."`)
+                        : `The catch is that ${N} learned to audit herself before she had finished the sentence, scanning the nearest face for whether the version of her in the room was the version she was allowed to have.`;
 
-                      paragraphs.push(
-                        `${N} wants to be seen, in her body, on her own terms; ${sunAnchor} makes self-visibility the literal developmental job. ${collisionPhrase} ${oneSeven ? `Every time ${N} doesn't apologize for existing, some old part of her feels like she has just broken a law. ` : ""}The mastery here is not a slogan about self-advocacy, it is something physical: standing in the center of the room, taking up the full square footage of her body, and not scanning the nearest face for an apology. Each time ${N} holds that line without flinching, the audit loses one of its questions, and the Sun gets a little more of the daylight it was born for.`
-                      );
+                      sections.push({
+                        key: "audit",
+                        title: "The Permission Audit",
+                        tag: "Sun · Chiron · Identity Collision",
+                        body: `${sunAnchor} makes self-visibility the literal developmental job for ${N}. The body wants to be in the room, on its own terms, in its own size. ${collisionPhrase} The lived experience is that ${N} can feel like she is auditioning for her own life, performing the role of "${N}" instead of inhabiting it. ${oneSeven ? `Every time she does not apologize for existing, some older part of her registers it as breaking a law. ` : ""}The repair is not a slogan about self-advocacy, it is one sentence delivered without flourish: "you are already seen, and it did not cost the room anything." Said often enough, in low tone, the audit starts losing its questions. Each time ${N} holds the center of the room without scanning for an apology, the Sun gets a little more of the daylight it was actually born to occupy.`,
+                      });
                     }
 
-                    // Paragraph 3 — The Translator Problem (12H Moon/Mercury vs 1H Mars)
+                    // ── 4. The Dark Room & The Engine ─────────────────────────────────
                     if (drive || twelfthList.length || cog) {
                       const marsAnchor = drive ? `${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house` : "the Mars engine";
                       const isMars1 = drive?.marsHouse === 1;
                       const isScorpio = drive?.marsSign === "Scorpio";
                       const translators: string[] = [];
-                      if (hasMoon12) translators.push(`Moon`);
+                      if (hasMoon12) translators.push("Moon");
                       if (hasMerc12 || (cog && cog.mercurySign)) translators.push(`${cog?.mercurySign ?? ""} Mercury`.trim());
                       const translatorList = translators.length ? translators.join(" and ") : (cog?.mercurySign ? `${cog.mercurySign} Mercury` : "the translator");
                       const dark = (hasMoon12 || hasMerc12) ? "in the Dark Room of the 12th house" : "tucked behind a closed door";
 
-                      paragraphs.push(
-                        `Now the deeper friction. The engine driving ${N} is ${marsAnchor}, which means her feeling-state is ${isMars1 ? "1st-house immediate, the temperature shows up in her body before she has time to choose a face for it" : "intense and immediate"}${isScorpio ? "; Scorpio Mars does not flare for attention, it flares when it has been chased into a corner it was already trying to leave" : ""}. But her ${translatorList} sits ${dark}. So she feels everything in real time, and the words to describe what she feels have to travel inward first, through silence, through drift, through that 12th-house back room where the thinking actually finishes, before they can come back out as a sentence anyone else can hear. That gap is not avoidance and it is not coldness; it is the route the signal has to take. ${pressure ? `The trigger that turns the gap sharp is exactly this: ${pressure.trigger.toLowerCase().replace(/\.$/, "")}. ` : ""}If you chase ${N} into the 12th-house silence before her ${isScorpio ? "Scorpio " : ""}Mars has cooled, you will hit a wall, and the wall will be louder than anyone meant. Let her cloak. When she comes back out, the answer will already be finished, the conversation can be short, and the ${cr?.ascSign ?? ""} diplomat will be back in the kitchen by morning. That is the whole handling instruction, end to end.`
-                      );
+                      sections.push({
+                        key: "darkroom",
+                        title: "The Dark Room & The Engine",
+                        tag: "Mars · 12th House · Signal Gap",
+                        body: `Underneath the diplomat and the audit, the actual internal physics of ${N} look like this. The engine is ${marsAnchor}: ${isMars1 ? "1st-house immediate, the temperature shows up in her body before she has time to choose a face for it" : "intense and immediate, the charge arrives in the body first"}${isScorpio ? ". A Scorpio Mars does not flare for attention, it flares when it has been chased into a corner it was already trying to leave on its own" : ""}. The translator that has to put words around any of this is ${translatorList}, and it sits ${dark}. That is the Signal Gap. ${N} feels at one hundred miles an hour and her translator works at ten. The feeling is real-time; the language has to travel inward first, through silence, through drift, through that 12th-house back room where the thinking actually finishes, before it can come back out as a sentence anyone else can hear. The gap is not avoidance and it is not coldness, it is the literal route the signal takes. ${pressure ? `The thing that turns the gap dangerous is exactly this: ${pressure.trigger.toLowerCase().replace(/\.$/, "")}. ` : ""}If you chase ${N} into the silence before the ${isScorpio ? "Scorpio " : ""}Mars has cooled, you will hit a wall, and the wall will be louder than anyone meant it to be. Let her cloak. When she comes back out, the answer will be finished, the conversation can be short, and the ${cr?.ascSign ?? ""} diplomat will be back in the kitchen by morning.`,
+                      });
                     }
 
-                    if (paragraphs.length === 0) return null;
+                    // ── 5. The Cognitive Map (3rd house cusp + ruler) ─────────────────
+                    if (math.thirdHouseSign || cog) {
+                      const cusp = math.thirdHouseSign;
+                      const rulerName = math.thirdHouseRuler;
+                      const rulerSign = math.thirdHouseRulerSign;
+                      const rulerHouse = math.thirdHouseRulerHouse;
+                      const surface = cusp ? `${cusp} on the 3rd-house cusp` : "the surface voice";
+                      const inside = rulerName && rulerSign
+                        ? `${rulerName} in ${rulerSign}${rulerHouse ? `, ${ord(rulerHouse)} house` : ""}`
+                        : "the inner processor";
+
+                      sections.push({
+                        key: "cognitive",
+                        title: "The Cognitive Map",
+                        tag: "3rd House · How She Thinks",
+                        body: `${N} sounds like one thing and processes like another, and the chart tells you why before she does. ${surface ? `Her surface language is shaped by ${surface}: fast, big-picture, teacher-flavored, fluent at framing a thought as a story.` : ""} ${inside ? `But the actual processor underneath is ${inside}, which works like a slow root system, taking material in, sitting with it, testing it against what already feels true in the body, and only then producing an answer.` : ""} ${cog ? `${cog.processing} ${cog.blocker ? `What shuts that intake down is the opposite move: ${cog.blocker.toLowerCase().replace(/\.$/, "")}.` : ""}` : ""} The practical reading is that ${N} does not arrive at an opinion by being told one and agreeing or disagreeing on the spot. She finds her own answer through Comparative Dialogue, hearing a thought next to another thought, watching which one her body leans toward, and naming the difference out loud. Ask her what she thinks before she has done that comparison and she will sound certain in a way that is actually borrowed. Give her two options and the right to chew on them and the answer she comes back with will be hers, and it will hold.`,
+                      });
+                    }
+
+                    // ── 6. The Interaction Guide (Real-World Handling) ────────────────
+                    if (cr || drive || cog) {
+                      const isScorpioMars = drive?.marsSign === "Scorpio";
+                      sections.push({
+                        key: "handling",
+                        title: "The Interaction Guide",
+                        tag: "Real-World Handling",
+                        body: `If you want this to go well in real time, three rules cover most of it. First, course-correct through language, not pressure. The ${cr?.ascSign ?? "Rising"} diplomat will agree to anything in the moment to keep the room calm, then quietly route around it later, so leaning harder does not produce more cooperation, it produces a more polished exit. Reframe the ask in her own words, give her a choice between two versions of it, and let her pick. Second, reset in private. Public correction lands as ambush on this chart; she will smile through it and the cost will show up later as withdrawal, a missed reply, a closed door. Anything corrective belongs one-on-one, low tone, with the door shut and the time-pressure off. Third, never corner a ${drive?.marsSign ?? "Mars"} engine${isScorpioMars ? `; a Scorpio Mars under pressure does not negotiate, it disappears, and the disappearance is the warning shot, not the silence after it` : ""}. If the conversation has gotten hot, the move is to widen the room, not narrow it: drop the volume, drop the eye contact, name out loud that nothing has to be resolved in the next five minutes, and let the body settle before the words are asked to do any more work. Handled this way, ${N} comes back with the finished answer, the relationship intact, and the diplomat already back at the kitchen counter pouring coffee like none of it happened.`,
+                      });
+                    }
+
+                    if (sections.length === 0) return null;
+
+                    const icons: Record<string, JSX.Element> = {
+                      strategy: <Shield className="h-4 w-4 text-primary" />,
+                      audit: <Eye className="h-4 w-4 text-primary" />,
+                      darkroom: <Mountain className="h-4 w-4 text-primary" />,
+                      cognitive: <BookOpen className="h-4 w-4 text-primary" />,
+                      handling: <Heart className="h-4 w-4 text-primary" />,
+                    };
 
                     return (
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4 text-primary" />
-                          <div className="font-semibold text-base">Narrative Briefing</div>
-                          <Badge variant="outline" className="text-[10px]">One Story · Math-Anchored</Badge>
-                        </div>
-                        <div className="rounded-md border border-border bg-background/40 p-5 space-y-4">
-                          {paragraphs.map((p, i) => (
-                            <p key={i} className="text-sm leading-relaxed text-foreground/90">{p}</p>
-                          ))}
-                        </div>
-                      </section>
+                      <>
+                        {sections.map((s) => (
+                          <section key={s.key} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              {icons[s.key] ?? <Sparkles className="h-4 w-4 text-primary" />}
+                              <div className="font-semibold text-base">{s.title}</div>
+                              <Badge variant="outline" className="text-[10px]">{s.tag}</Badge>
+                            </div>
+                            <div className="rounded-md border border-border bg-background/40 p-5">
+                              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{s.body}</p>
+                            </div>
+                          </section>
+                        ))}
+                      </>
                     );
                   })()}
 
