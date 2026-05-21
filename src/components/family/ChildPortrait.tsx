@@ -546,7 +546,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
                               {inChironReturnSec1 ? (
                                 <Row label="The Chiron Return Frame">
-                                  At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "Explorer/CFO" : "extreme-degree"} loop</strong> as the actual instrument.
+                                  At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "freedom and safety" : "extreme-degree"} loop</strong> as the actual instrument.
                                 </Row>
                               ) : null}
                             </>
@@ -632,7 +632,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <>
                             <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
                             <Row label="The Physics">
-                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being a wound the system tries to patch and becomes a piece of <strong>mastered hardware</strong>. The <strong>Expert CFO</strong> at 29° Taurus has already done the slow accumulation work, and the Chiron Return is the moment that <strong>lived evidence</strong> gets cashed in, the foundation is real, the resource is real, the body knowledge is real.
+                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being something the system keeps trying to patch. The <strong>Safety Builder</strong> at 29° Taurus has spent years learning what actually makes {N} feel steady, and the Chiron Return is the moment that lived proof starts to matter: the body knows, the money lessons are real, the boundaries are real, and the foundation is not pretend.
                             </Row>
                             {chiron?.retrograde ? (
                               <Row label="The Retrograde Turns Direct">
@@ -640,7 +640,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               </Row>
                             ) : null}
                             <Row label="The Truth">
-                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally retire because the <strong>CFO and the Explorer have agreed on the budget for her life</strong>. The Taurus side has receipts. The Sagittarius side has open road. She is not auditioning for permission to be the Grounded Explorer anymore. The wiring is the same. The operator is finally at the controls.
+                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally relax because the Taurus side knows what keeps her steady, and the Sagittarius side knows what keeps her alive inside. She is not auditioning for permission to need both. The wiring is the same. She is finally allowed to trust it.
                             </Row>
                           </>
                         ),
