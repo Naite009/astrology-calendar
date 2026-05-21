@@ -189,6 +189,55 @@ const SUN_PRACTICE_BY_SIGN: Record<string, string> = {
   Pisces: "practicing compassion with edges; the nervous system absorbs the room and needs edges to prevent flooding",
 };
 
+// Plain-English one-liners used in the adult-anchor body so the reader gets
+// a direct definition instead of a metaphor. "What this placement actually
+// means in normal words."
+const SUN_PLAIN_BY_SIGN: Record<string, string> = {
+  Aries: "wired to start things and move first; needs action to feel like themselves",
+  Taurus: "wired for steadiness, comfort, and building things that last",
+  Gemini: "wired to ask questions, talk, and connect ideas",
+  Cancer: "wired to care for people and to track how everyone in the room is feeling",
+  Leo: "wired to be seen warmly and to express themselves out loud",
+  Virgo: "wired to be useful, to notice details, and to make things work better",
+  Libra: "wired to keep things fair and to think about themselves and the other person at the same time",
+  Scorpio: "wired for depth, privacy, and the real story underneath",
+  Sagittarius: "wired for honesty, freedom, and the bigger meaning of things",
+  Capricorn: "wired to build authority and to earn what they have",
+  Aquarius: "wired to think for themselves and stand a little outside the group",
+  Pisces: "wired for empathy, imagination, and absorbing the mood of the room",
+};
+
+const SUN_HOUSE_PLAIN: Record<number, string> = {
+  1: "It sits in the 1st house, which means it shows up the second they walk in. The personality, the body, and the first impression all carry it.",
+  2: "It sits in the 2nd house, which means it shows up through what they value, what they own, and what feels safe in the body.",
+  3: "It sits in the 3rd house, which means it shows up through how they talk, learn, and move around their day.",
+  4: "It sits in the 4th house, which means it shows up at home and in private, with family and the people closest to them.",
+  5: "It sits in the 5th house, which means it shows up through play, creativity, romance, and what they make.",
+  6: "It sits in the 6th house, which means it shows up through daily work, health, and the small useful things they do.",
+  7: "It sits in the 7th house, which means it shows up most clearly in one-on-one relationships and partnerships.",
+  8: "It sits in the 8th house, which means it shows up around shared money, deep trust, and the things people usually keep private.",
+  9: "It sits in the 9th house, which means it shows up through travel, beliefs, teaching, and the bigger picture.",
+  10: "It sits in the 10th house, which means it shows up in their public role, their work, and what they are known for.",
+  11: "It sits in the 11th house, which means it shows up through friends, groups, and the future they are building with others.",
+  12: "It sits in the 12th house, which means it shows up quietly, behind the scenes, and in their inner life.",
+};
+
+// What Jupiter in this sign gives the person expertise in / language for.
+const JUPITER_TEACHES_BY_SIGN: Record<string, string> = {
+  Aries: "courage, starting from scratch, and how to act on instinct",
+  Taurus: "money, body, food, and how to build real-world resources that last",
+  Gemini: "communication, writing, and how to connect ideas and people",
+  Cancer: "family, home, emotional safety, and how to take care of people",
+  Leo: "creative expression, leadership, and how to show up generously",
+  Virgo: "skill, craft, health routines, and how to make things actually work",
+  Libra: "relationships, fairness, design, and how to hold two sides at once",
+  Scorpio: "trust, intimacy, money others share, and how to face hard truths",
+  Sagittarius: "teaching, travel, big-picture meaning, and how to find honest direction",
+  Capricorn: "building authority, long-term plans, and how to earn lasting respect",
+  Aquarius: "innovation, community, and how to build something new with a group",
+  Pisces: "compassion, imagination, art, and how to hold pain without breaking",
+};
+
 
 const NORTH_NODE_STRETCH_BY_SIGN: Record<string, string> = {
   Aries: "leading from their own initiative, not waiting to be chosen",
