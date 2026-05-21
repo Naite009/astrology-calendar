@@ -511,7 +511,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                     <tbody className="align-top">
                                       {([
                                         ["Aries",       "The Spark, raw ignition, pure initiative with no filter.",                          "The Veteran Fighter, urgent self-assertion, last-call courage."],
-                                        ["Taurus",      "The Settler, first claim on the land, body before logic.",                          "The Expert CFO, urgent mastery of resource, body, and value."],
+                                        ["Taurus",      "The Settler, first claim on the land, body before logic.",                          "The Safety Builder, urgent focus on money, body, comfort, and value."],
                                         ["Gemini",      "The First Question, raw curiosity, unfiltered talk.",                               "The Closing Reporter, urgent translator, must get the story out now."],
                                         ["Cancer",      "The First Cry, raw need for belonging, no defense yet.",                            "The Veteran Caretaker, urgent feeding of the home, last-call nurture."],
                                         ["Leo",         "The First Roar, raw self-expression, no audience check.",                           "The Closing Performer, urgent visibility, last-call self-claim."],
