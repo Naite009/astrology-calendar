@@ -368,48 +368,48 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         icon: <Shield className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math, In Plain English">
-                              The chain of command has three links. Link 1 is the <strong>Rising sign</strong> (the front door): <M>{ascStr}</M>. Link 2 is the <strong>Chart Ruler</strong>, which is the planet that rules the Rising sign and runs the show behind the door: <M>{rulerStr}</M>. Link 3 is the <strong>Dispositor</strong>, which is the planet that rules <em>the sign the Chart Ruler is sitting in</em>. {dispoStr ? <>{cr.rulerName} is in <strong>{cr.rulerSign}</strong>, and {cr.rulerSign} is ruled by <strong>{dispo!.name}</strong>, so {dispo!.name} is the Dispositor: <M>{dispoStr}</M>.</> : <>The Chart Ruler hosts itself in its own sign, so there is no separate Dispositor.</>} {mutualReception ? <>And here is the twist: {dispo!.name} is sitting in <strong>{dispo!.sign}</strong>, which is ruled by <strong>{cr.rulerName}</strong>. So the chain bends back on itself. The two planets host each other. That is called a <strong>Mutual Reception</strong>. <strong>This is not indecision.</strong> It means {N} has two real needs tied together. The {cr.rulerSign} side says, "I need room to move, choose, and leave if I have to." The {dispo!.sign} side says, "I need my body, money, time, and peace to feel safe." A real yes has to respect both. A vacation can be a yes if it feels free and does not leave her stressed after. A job can be a yes if it gives her growth and does not trap her. A purchase can be a yes if it feels good now and still feels responsible later. When one side feels excited but the other side feels tight, her body may say no fast. That is not overthinking. It is her system noticing that one real need is being ignored.</> : null}
+                            <Row label="The Three Links">
+                              The chain of command has three links. Link 1 is the <strong>Rising sign</strong> (the part people meet first): <M>{ascStr}</M>. Link 2 is the <strong>Chart Ruler</strong>, the planet that rules the Rising sign and quietly drives what it is really after: <M>{rulerStr}</M>. Link 3 is the <strong>Dispositor</strong>, the planet that rules <em>the sign the Chart Ruler is sitting in</em>. {dispoStr ? <>{cr.rulerName} is in <strong>{cr.rulerSign}</strong>, and {cr.rulerSign} is ruled by <strong>{dispo!.name}</strong>, so {dispo!.name} is the Dispositor: <M>{dispoStr}</M>.</> : <>The Chart Ruler is in its own sign, so there is no separate Dispositor.</>} {mutualReception ? <>And here is the twist: {dispo!.name} is sitting in <strong>{dispo!.sign}</strong>, which is ruled by <strong>{cr.rulerName}</strong>. So the chain bends back on itself. The two planets host each other. That is called a <strong>Mutual Reception</strong>. <strong>This is not indecision.</strong> It means {N} has two real needs tied together. The {cr.rulerSign} side says, "I need room to move, choose, and leave if I have to." The {dispo!.sign} side says, "I need my body, money, time, and peace to feel safe." A real yes has to respect both. A vacation can be a yes if it feels free and does not leave her stressed after. A job can be a yes if it gives her growth and does not trap her. A purchase can be a yes if it feels good now and still feels responsible later. When one side feels excited but the other side feels tight, her body may say no fast. That is not overthinking. It is her noticing that one real need is being ignored.</> : null}
                             </Row>
                             {hasVoltage ? (
-                              <Row label="The Anchor, Why The Extreme Degrees Change The Reading">
-                                {rulerIsAnyZero ? <>The Chart Ruler sits at <M>0° {cr.rulerSign}</M>, the very first degree of the sign. That spot is called the <strong>Aries Point</strong>. A normal {cr.rulerSign} placement reads as {cr.rulerSign === "Sagittarius" ? <>seasoned, philosophical, "I have travelled and I have opinions"</> : <>a settled, learned version of {cr.rulerSign}</>}. At 0°, that experience has not been earned yet, so it fires with no filter. It reads as <strong>{explorerLabel}</strong>: raw, loud, uncompromising, an absolute non-negotiable need for {cr.rulerSign === "Sagittarius" ? "freedom and open horizon" : "what this sign wants"}. </> : null}
-                                {dispoIsAnaretic ? <>The Dispositor sits at <M>{fmtDeg(dispo!.degree)} {dispo!.sign}</M>, the very last degree of the sign. That spot is called the <strong>anaretic degree</strong>, sometimes "the degree of fate." This matters because a normal {dispo!.name} in {dispo!.sign} placement would read as {dispo!.sign === "Taurus" ? <>"settled comfort, stay put, build slow security, eat well, do not move,"</> : <>a relaxed mid-sign version of {dispo!.sign}</>}. <strong>That reading does not apply here.</strong> At 29°, {dispo!.name} has already lived the whole sign and is one breath from leaving it, so the placement acts like a senior expert on their final day, urgently trying to show the strongest version of {dispo!.sign === "Taurus" ? <>what Taurus knows: money, the body, food, comfort, and lasting value</> : <>what {dispo!.sign} knows</>}. So when this reading says "not background comfort, not staying put," it means <em>{dispo!.name} is not staying put</em>. The standard Taurus-as-couch reading is off the table. This is <strong>{cfoLabel}</strong>: urgent, high-pressure, and unwilling to waste the lesson. It wants {N} to build <strong>real skill and real safety</strong> ({dispo!.house === 8 ? <>through the <strong>8th House</strong>: shared money, trust, debt, secrets, and deep specialist knowledge</> : dispo!.house ? <>through the <strong>{ord(dispo!.house)} House</strong></> : <>through the dispositor's house</>}).</> : null}
+                              <Row label="Why The Degrees Change The Reading">
+                                {rulerIsAnyZero ? <>The Chart Ruler sits at <M>0° {cr.rulerSign}</M>, the very first degree of the sign. That spot is called the <strong>Aries Point</strong>. A normal {cr.rulerSign} placement reads as {cr.rulerSign === "Sagittarius" ? <>experienced and philosophical, the person who has travelled and formed opinions</> : <>a settled, learned version of {cr.rulerSign}</>}. At 0°, none of that experience has been earned yet, so the need shows up raw and loud, with no filter and no compromise. For {N} that means a strong, public need for {cr.rulerSign === "Sagittarius" ? "freedom, honesty, and an open horizon" : "what this sign wants"}. </> : null}
+                                {dispoIsAnaretic ? <>The Dispositor sits at <M>{fmtDeg(dispo!.degree)} {dispo!.sign}</M>, the very last degree of the sign. That spot is called the <strong>anaretic degree</strong>, sometimes "the degree of fate." A normal {dispo!.name} in {dispo!.sign} would read as {dispo!.sign === "Taurus" ? <>quiet comfort: stay put, build slow security, eat well, do not move</> : <>a relaxed mid-sign version of {dispo!.sign}</>}. <strong>That reading does not apply here.</strong> At 29°, {dispo!.name} has already lived the whole sign and is one breath from leaving it. The placement behaves like someone on their last day in a job they have mastered, urgently trying to put the lessons of {dispo!.sign === "Taurus" ? <>Taurus, money, the body, food, comfort, and lasting value</> : dispo!.sign} into something real before time runs out. So {dispo!.name} here is not the calm Taurus couch. It is urgent, focused, and unwilling to let the lesson go to waste. It wants {N} to build <strong>real skill and real safety</strong> ({dispo!.house === 8 ? <>through the <strong>8th House</strong>: shared money, trust, debt, secrets, and deep specialist knowledge</> : dispo!.house ? <>through the <strong>{ord(dispo!.house)} House</strong></> : <>through the dispositor's house</>}).</> : null}
                               </Row>
                             ) : null}
-                            <Row label="The Physics, How These Three Links Actually Work">
-                              In a standard chart, the Rising is the <strong>front door</strong> people see, the Chart Ruler is the <strong>person running the room</strong> behind that door, and the Dispositor is the <strong>final check</strong> the whole system reports up to. {N}'s door is <M>{ascStr}</M>, which is why the surface looks like classic Libra: read the room, smooth the edges, keep things pleasant. The part running the room is <M>{rulerStr}</M>{rulerIsAnyZero ? <>, turned all the way up in {cr.rulerSign}</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius needs space, honesty, movement, and a way out" : `${cr.rulerSign} has its own strong need`}. {dispoStr ? <>That part checks in with <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "asks simple body questions: Will this leave me steady? Will I still have enough money, time, calm, and control over my own life?" : `asks what will make the choice feel solid`}. </> : null}{mutualReception ? <>But the chain does not end there. Because {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, the decision gets passed right back. There is no other planet that makes the final call. <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> keep checking each other, so both needs have to be included. </> : null}
+                            <Row label="How These Three Links Actually Work">
+                              The Rising sign is the part of {N} other people meet first. The Chart Ruler is the planet that quietly drives what that Rising sign is really after. The Dispositor is the planet the Chart Ruler answers to. {N}'s Rising is <M>{ascStr}</M>, so on the surface she reads as classic Libra: she scans the room, smooths the edges, and keeps things pleasant. Underneath, the Chart Ruler is <M>{rulerStr}</M>{rulerIsAnyZero ? <>, at the loudest possible degree of {cr.rulerSign}</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius needs space, honesty, movement, and a way out" : `${cr.rulerSign} has its own strong need`}. {dispoStr ? <>That ruler then answers to <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "asks simple body questions: Will this leave me steady? Will I still have enough money, time, calm, and control over my own life?" : "asks what would make the choice feel solid"}. </> : null}{mutualReception ? <>Normally the chain ends there. Here it does not. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so the decision gets handed straight back. No other planet has the final word. <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> keep checking with each other, which is why both needs have to be honored before a real yes can land. </> : null}
                             </Row>
                             {mutualReception ? (
-                              <Row label="The Internal Partnership">
-                                {N} does not experience herself as having one simple inner voice. She has one part that wants movement, truth, and freedom ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and another part that needs steadiness, proof, and real safety ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). The {dispo!.name} side is <em>not</em> trying to ruin the {rulerIsExplorer ? "free" : cr.rulerName} side. It is asking, "Will I still feel okay after this?" She can move fast when both parts agree. She slows down when freedom would cost her peace, or when safety would make her feel trapped.
+                              <Row label="The Two Sides Of Her">
+                                {N} does not feel like she has one simple inner voice. She has one side that wants movement, truth, and freedom ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and another side that needs steadiness, proof, and real safety ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). The {dispo!.name} side is not trying to shut the {rulerIsExplorer ? "free" : cr.rulerName} side down. It is asking, "Will I still feel okay after this?" When both sides agree, she moves fast. When freedom would cost her peace, or safety would make her feel trapped, she slows down.
                               </Row>
                             ) : null}
                             {hasRetroLayer ? (
-                              <Row label="The Retrograde Layer, Internalized Mandate">
-                                {dispoRx ? <>The {dispo!.name} side is <strong>Retrograde</strong>. That means the safety check happens inside first. {N} does not fully trust outside experts or borrowed templates to tell her what her time, skill, body, and money are worth. The {dispoIsCFO ? "Taurus safety-builder" : dispo!.sign + " anchor"} is <strong>self-taught and self-checked</strong>. The world did not hand her the manual, so she wrote it from the inside. </> : null}
-                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The "sting" is not actually coming from the room. It is a <strong>re-run of an internal tape</strong>, a self-generated security check. The Permission Audit is an <strong>internal loop</strong>; {N} is her own harshest auditor, and the permission she keeps scanning for is permission from herself. </> : null}
-                                {dispoRx && chironRx ? <>Put together, this means the answer has to feel true inside her before it feels safe to act on outside. The free part of her does not move well when the safe part feels ignored. The safe part of her does not relax when the free part feels trapped. Nothing in this loop is waiting for someone else to approve her. </> : null}
+                              <Row label="The Retrograde Layer">
+                                {dispoRx ? <>The {dispo!.name} side is <strong>Retrograde</strong>, which means the safety check happens on the inside first. {N} does not really trust outside experts or borrowed advice to tell her what her time, skill, body, and money are worth. She figured out her own version of what safe looks like, and she trusts that version more than anyone else's. </> : null}
+                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The hurt of feeling like she has to prove she is allowed to take up space is not coming from the room. It is coming from her own head. The voice asking "is this okay, am I allowed?" is her own voice, and the permission she keeps waiting on is permission from herself. </> : null}
+                                {dispoRx && chironRx ? <>Put together: the answer has to feel true inside her before she can act on it. The free side will not move if the safe side feels ignored. The safe side will not relax if the free side feels trapped. Nothing in this is waiting on outside approval. </> : null}
                               </Row>
                             ) : null}
                             {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
-                              <Row label="The Anaretic Stack, Deadline Mechanic">
-                                {N} carries multiple bodies parked at the <strong>Maximum Pressure Threshold</strong>{(() => {
+                              <Row label="The Anaretic Stack">
+                                {N} has more than one planet sitting at the very last degree of a sign{(() => {
                                   const parts: string[] = [];
                                   if (sunIsAnaretic) parts.push(`Sun at ${fmtDeg((sun as any).degree)} ${sun.sign}`);
                                   if (dispoIsAnaretic) parts.push(`${dispo!.name} at ${fmtDeg(dispo!.degree)} ${dispo!.sign}${dispoRx ? " Rx" : ""}`);
                                   if (chironIsAnaretic) parts.push(`Chiron at ${fmtDeg((chiron as any).degree)} ${chiron.sign}${chironRx ? " Rx" : ""}`);
                                   return parts.length ? <> ({parts.join(", ")})</> : null;
-                                })()}. This is not a personality trait. It is a <strong>Deadline Mechanic</strong>, a felt mandate to ship the definitive version of each lesson before the sign closes. Every movement above carries that "now-or-never" voltage.
+                                })()}. The anaretic degree (29°) carries a "now or never" feeling because the planet is about to leave the sign for good. Having more than one body parked there is not a personality trait. It is a felt sense that the lesson of each sign is on a deadline. That urgency shows up underneath everything written above.
                               </Row>
                             ) : null}
                             {isDegreeOpposition ? (
                               <Row label="The Opposition Layer">
-                                On top of the loop, the two co-rulers are sitting across from each other by degree, <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M> across the wheel. This makes the two needs louder at the same time. One side wants movement, honesty, risk, and space. The other side wants steadiness, comfort, money, and control over the pace. It is not indecision. It is her body checking whether a choice gives her freedom without making her feel unsafe, and safety without making her feel trapped.
+                                On top of the loop, the two co-rulers sit directly across the wheel from each other by degree: <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M>. An opposition means both needs get loud at the same time. One side wants movement, honesty, risk, and space. The other side wants steadiness, comfort, money, and control over the pace. This is not indecision. It is her body checking whether a choice gives her freedom without making her feel unsafe, and safety without making her feel trapped.
                               </Row>
                             ) : null}
-                            <Row label="The Truth">
-                              Her Libra Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {mutualReception ? <>The calm room helps the {cr.rulerName} side say what it really wants, and it helps the {dispo!.name} side notice what would actually feel safe. If the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, the developmental work is learning that <strong>she does not have to choose one side and abandon the other</strong>. The loop is not a glitch to fix. She can name both needs plainly: "I need room to move" and "I need to feel steady after I move." </> : null}
+                            <Row label="The Bottom Line">
+                              Her Libra Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {mutualReception ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo!.name} side notice what would actually feel safe. When the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside her Chiron Return window, the work is learning that <strong>she does not have to pick one side and abandon the other</strong>. She can say both out loud: "I need room to move" and "I need to feel steady after I move." </> : null}
                             </Row>
 
                           </>
@@ -421,22 +421,22 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         movements.push({
                           key: "voltage-scale",
                           roman: "II",
-                          title: "The Voltage Scale, A Clickable Key",
-                          tag: "Math Reference",
+                          title: "Why The Extreme Degrees Read Differently",
+                          tag: "Degree Reference",
                           tone: "indigo",
                           icon: <BookOpen className="h-4 w-4" />,
                           body: (
                             <>
                               <Row label="Why This Reading Hits Harder">
-                                Most charts run at <strong>middle voltage</strong>, settled degrees, linear chains, predictable outputs. {N}'s wiring sits at the <strong>extreme ends</strong> of the scale, which is why the intensity she feels is not a personality quirk, it is a measurable difference in the math. Use this key to see exactly where her voltage diverges from a standard build.
+                                Most planets sit in the middle of a sign (around 10°–20°), where the placement reads as steady and predictable. {N}'s key planets sit at the <strong>very first</strong> and <strong>very last</strong> degree of their signs. Those two spots have specific names in astrology and they change the reading. The intensity she feels is not a personality quirk: it is what those degrees actually do.
                               </Row>
                               <div className="mt-4 overflow-x-auto">
                                 <table className="w-full text-[13px] border-collapse">
                                   <thead>
                                     <tr className="border-b border-emerald-500/40">
                                       <th className="text-left font-semibold py-2 pr-3 align-top w-[22%]">Placement</th>
-                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[39%]">{N}'s Voltage</th>
-                                      <th className="text-left font-semibold py-2 align-top w-[39%]">The Standard (Middle Degree)</th>
+                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[39%]">How It Reads For {N}</th>
+                                      <th className="text-left font-semibold py-2 align-top w-[39%]">How A Middle Degree Reads</th>
                                     </tr>
                                   </thead>
                                   <tbody className="align-top">
@@ -447,12 +447,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 0° means →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
-                                              0° is the very first degree of a sign, called the <strong>Aries Point</strong> because it acts like a fresh ignition no matter which sign it lands in. There is no prior experience in the sign yet, no polish, no caution, no learned filter. The placement fires at full strength the moment it is touched. {N} feels it as raw, loud, uncompromising, almost public, like the need announces itself before she can edit it. It is the loudest voltage on the scale.
+                                              0° is the very first degree of a sign, also called the <strong>Aries Point</strong> because it acts like a fresh start no matter which sign it lands in. The planet has no prior experience in this sign yet, so there is no polish, no caution, and no learned filter. The need shows up at full strength the moment it is touched. {N} feels it as raw, loud, uncompromising, and almost public, like the need announces itself before she can soften it.
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>, raw, loudest, uncompromising intensity. No filter between need and action.</td>
-                                        <td className="py-3"><strong>The Tourist</strong>, 10°–20°. Settled, predictable, moderate. Knows the sign's rules and stays inside them.</td>
+                                        <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>: raw, loud, uncompromising. No filter between need and action.</td>
+                                        <td className="py-3"><strong>The Tourist</strong> (10°–20°): settled and moderate. Knows the sign's rules and stays inside them.</td>
                                       </tr>
                                     ) : null}
                                     {dispoIsAnaretic ? (
@@ -462,12 +462,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 29° means →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
-                                              29° is the very last degree of a sign, called <strong>anaretic</strong> or the "degree of fate." The placement has lived the entire sign already and is one breath from changing signs forever. That creates a now-or-never pressure, like a senior expert on their last day, trying to ship the final, definitive version of the lesson. It feels urgent, high-stakes, slightly impatient, and carries a felt responsibility to get this sign <em>right</em> before time runs out.
+                                              29° is the very last degree of a sign, called the <strong>anaretic degree</strong> or "the degree of fate." The planet has already lived the entire sign and is one breath from leaving it for good. That creates a "now or never" feeling, like someone on their last day in a job they have spent years learning, trying to put everything they know into one last clear act. It feels urgent and a little impatient, with a strong sense of needing to get this sign <em>right</em> before time runs out.
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Safety Builder" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
-                                        <td className="py-3"><strong>The Manager</strong>, 10°–20°. Routine, calm, ongoing work. No deadline pressure inside the placement.</td>
+                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Safety Builder" : "The Closing-Degree Master"}</strong>: urgent, high-stakes, "now or never" mastery. Carries the full weight of the sign's lesson.</td>
+                                        <td className="py-3"><strong>The Manager</strong> (10°–20°): calm, ongoing, no deadline pressure inside the placement.</td>
                                       </tr>
                                     ) : null}
                                     {mutualReception ? (
@@ -477,13 +477,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">Closed Loop vs Linear Chain →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal space-y-2">
-                                              <p>Every planet answers to the ruler of the sign it sits in. Normally that ruler answers to another ruler, and the chain eventually ends somewhere else in the chart. That is a <strong>Linear Chain</strong>. It can look outward for one final answer.</p>
-                                              <p>A <strong>Closed Loop</strong> (mutual reception) is different. Two planets sit in each other's signs, so each one answers back to the other. {N}'s Venus sits in Jupiter's sign (Sagittarius), and Jupiter sits in Venus's sign (Taurus). That means the freedom need and the safety need keep checking each other. She is not being flaky. She is trying to choose something that lets her breathe and still feel okay after.</p>
+                                              <p>Every planet answers to the ruler of the sign it sits in. Normally that ruler answers to another ruler, and the chain eventually ends somewhere else in the chart. That is a <strong>Linear Chain</strong>: there is one final planet that holds the answer.</p>
+                                              <p>A <strong>Closed Loop</strong> (mutual reception) is different. Two planets sit in each other's signs, so each one answers right back to the other. {N}'s Venus sits in Jupiter's sign (Sagittarius), and Jupiter sits in Venus's sign (Taurus). So the freedom side and the safety side keep checking with each other instead of handing the answer off to anyone else. She is not being flaky. She is trying to choose something that lets her breathe and still feel okay after.</p>
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>Closed Loop</strong>, self-sustaining, high-speed internal feedback. The two co-rulers co-sign every decision in real time.</td>
-                                        <td className="py-3"><strong>Linear Chain</strong>, follows a boss. Looks outward for permission, waits on a final anchor that lives somewhere else in the chart.</td>
+                                        <td className="py-3 pr-3"><strong>Closed Loop</strong>: the two co-rulers keep checking with each other on every real decision.</td>
+                                        <td className="py-3"><strong>Linear Chain</strong>: the chain ends at one final planet that holds the answer.</td>
                                       </tr>
                                     ) : null}
                                   </tbody>
@@ -497,7 +497,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                   <span className="text-[11px] uppercase tracking-wider opacity-70 hidden group-open:inline">Tap to close</span>
                                 </summary>
                                 <div className="mt-3 text-[13px] opacity-90">
-                                  Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>Safety Builder</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
+                                  Every sign has the same two extreme spots: 0° (the raw opening) and 29° (the urgent closing). Here is how each sign reads at those degrees, with {N}'s placements highlighted.
                                 </div>
                                 <div className="mt-3 overflow-x-auto">
                                   <table className="w-full text-[12.5px] border-collapse">
@@ -540,13 +540,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                       })}
                                     </tbody>
                                   </table>
-                                  <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign run as <strong>The Manager</strong> or <strong>The Tourist</strong>, routine voltage, no opening rawness and no closing urgency.</div>
+                                  <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign read as <strong>The Manager</strong> or <strong>The Tourist</strong>: no raw opening, no closing urgency.</div>
                                 </div>
                               </details>
 
                               {inChironReturnSec1 ? (
                                 <Row label="The Chiron Return Frame">
-                                  At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "freedom and safety" : "extreme-degree"} loop</strong> as the actual instrument.
+                                  At <M>age {age}</M>, the work is not turning the intensity down. It is finally <strong>stopping the inner question</strong> she has been asking for almost five decades, whether her two strong needs ({rulerIsExplorer && dispoIsCFO ? "freedom and safety" : "both extreme-degree placements"}) are allowed to be this loud. They are. The chart was always built this way.
                                 </Row>
                               ) : null}
                             </>
@@ -570,18 +570,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "identity-glitch",
                         roman: "III",
-                        title: "The Identity Glitch",
-                        tag: `Sun · Chiron Collision · ${orbStr}`,
+                        title: "The Sun-Chiron Sting",
+                        tag: `Sun · Chiron · ${orbStr}`,
                         tone: "amber",
                         icon: <Eye className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "razor-tight " : "tight "}{orbStr} orb</M> (under the {stingOrbCap}° Sting threshold)</Row>
-                            <Row label="The Physics">
-                              This is a <strong>literal internal collision</strong> between the <em>Need to Be</em> (Sun) and the <em>Fear of Reaction</em> (Chiron). The two ends are wired directly across from each other, every time one fires, the other fires back. At <M>{orbStr}</M> there is no buffer between them.
+                            <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "very tight " : "tight "}{orbStr} orb</M> (the closer the orb, the stronger the effect; anything under {stingOrbCap}° is considered very close).</Row>
+                            <Row label="What This Aspect Does">
+                              The Sun is who {N} is meant to be. Chiron is the old sore spot, the place she expects to get hurt for showing up. When these two are this close to each other in the chart, the part of her that wants to be seen and the part of her that braces for a bad reaction are tied together. Every time one shows up, the other shows up right behind it. At <M>{orbStr}</M> there is almost no space between the two.
                             </Row>
-                            <Row label="The Truth">
-                              Call this the <strong>Permission Audit</strong>. Because the orb is under {stingOrbCap}°, {N} feels a physical <em>sting</em> in identity the moment {N} takes up space without first checking that it is "legal." This is not scanning faces for approval. This is fighting an <strong>internal glitch</strong> that says being oneself is a violation. The audit runs behind the eyes every day, and it costs energy whether anyone in the room is reacting or not.
+                            <Row label="What It Feels Like">
+                              The moment {N} starts to take up space, be seen, or speak as herself, she feels a small inner flinch, like she has to first check that it is okay. This is not her watching faces in the room to see if people approve. It is an inner voice asking, "am I allowed to do this?" The voice runs whether anyone in the room is reacting or not, and it costs energy all day.
                             </Row>
                           </>
                         ),
@@ -601,18 +601,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "signal-failure",
                         roman: "IV",
-                        title: "The Signal Failure",
-                        tag: "12th House · Buffered Translator",
+                        title: "Why Words Lag Behind The Feeling",
+                        tag: "12th House Mercury/Moon",
                         tone: "rose",
                         icon: <Mountain className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math">{marsStr ? <><M>{marsStr}</M> vs. <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
-                            <Row label="The Physics">
-                              {marsStr ? <>Direct conflict between a <strong>High-Heat Engine</strong> and a <strong>Buffered Translator</strong>. {isScorpio ? <>A <M>Scorpio Mars</M> does not idle, it runs at full combustion. </> : null}But the part of {N} that converts that heat into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form.</> : <>The translator that converts inner signal into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form. Whatever pressure builds inside has to pass through that buffer before it can leave the mouth.</>}
+                            <Row label="The Math">{marsStr ? <><M>{marsStr}</M> with <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
+                            <Row label="What This Placement Does">
+                              {marsStr ? <>{N}'s Mars (the part of her that wants to act and push) is strong{isScorpio ? <>, especially in <M>Scorpio</M>, which runs hot and does not coast</> : null}. But the part of her that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Everything that happens there has to be felt and processed inside first, before it can come out loud. </> : <>The part of {N} that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Anything that happens there has to be felt and processed inside first, before it can come out loud. </>}
                             </Row>
-                            <Row label="The Truth">
-                              Call this the <strong>Technical Lag</strong>. {N} feels intensity at <strong>100mph</strong>, but the signal cannot travel from the engine to the mouth fast enough. {N} is not <em>choosing</em> to be silent. The wiring physically delays the output. The silence is a byproduct of internal architecture, not a social move. Push {N} before the signal completes and what comes out is jagged, not because {N} meant it, but because you forced an incomplete transmission.
+                            <Row label="What It Feels Like">
+                              {N} feels things strongly and fast, but the words for those feelings take longer to arrive. She is not choosing to go quiet. The 12th House placement means the words have to take the long way around before they can come out of her mouth. If someone pushes her to answer before the words are ready, what comes out can sound sharp or jumbled, not because she meant it that way, but because she was rushed before the sentence finished forming inside.
                             </Row>
                           </>
                         ),
@@ -624,23 +624,23 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       movements.push({
                         key: "developmental-threshold",
                         roman: "V",
-                        title: "The Developmental Anchor, Chiron Return",
+                        title: "The Chiron Return",
                         tag: `Chiron Return · Age ${age}`,
                         tone: "indigo",
                         icon: <BookOpen className="h-4 w-4" />,
                         body: (
                           <>
                             <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
-                            <Row label="The Physics">
-                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being something the system keeps trying to patch. The <strong>Safety Builder</strong> at 29° Taurus has spent years learning what actually makes {N} feel steady, and the Chiron Return is the moment that lived proof starts to matter: the body knows, the money lessons are real, the boundaries are real, and the foundation is not pretend.
+                            <Row label="What This Transit Does">
+                              Once every ~50 years, Chiron comes back to the exact degree it was in at birth. The old sore spot stops being something to keep patching. The 29° Taurus side of her has spent decades quietly learning what actually keeps her steady. The Chiron Return is when that lived experience starts to count: the body knows, the lessons about money and boundaries are real, and the ground under her feet is not pretend.
                             </Row>
                             {chiron?.retrograde ? (
-                              <Row label="The Retrograde Turns Direct">
-                                Natal Chiron is <strong>Retrograde</strong>, which means the Permission Audit has been running <em>inward</em> for almost five decades, {N} auditing herself with no outside referee. The Chiron Return is the moment the audit <strong>turns Direct in her mind</strong>. The internal loop opens. The verdict she has been waiting on, from herself, finally clears.
+                              <Row label="Natal Chiron Retrograde">
+                                Because natal Chiron is <strong>Retrograde</strong>, the inner question of "am I allowed to take up space?" has been running on the inside for almost fifty years, with {N} as her own judge and no outside voice to settle it. The Chiron Return is when that inner question can finally close. The verdict she has been waiting on (from herself) can finally come in.
                               </Row>
                             ) : null}
-                            <Row label="The Truth">
-                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, and starts <strong>owning the power of her intensity</strong>. The Audit can finally relax because the Taurus side knows what keeps her steady, and the Sagittarius side knows what keeps her alive inside. She is not auditioning for permission to need both. The wiring is the same. She is finally allowed to trust it.
+                            <Row label="What It Feels Like Now">
+                              This is the point where {N} stops trying to <em>fix</em> the inner flinch and the word-lag, and starts treating her intensity as something she is allowed to keep. The inner question can quiet down because the Taurus side now knows what keeps her steady, and the Sagittarius side knows what keeps her alive inside. She is not auditioning for permission to need both of those things. The chart was always built this way. She is finally allowed to trust it.
                             </Row>
                           </>
                         ),
@@ -691,7 +691,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-primary" />
-                          <div className="font-semibold text-base">Behavioral Portrait, Synthesis of Friction</div>
+                          <div className="font-semibold text-base">Behavioral Portrait</div>
                         </div>
                         {movements.sort((a, b) => {
                           const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
