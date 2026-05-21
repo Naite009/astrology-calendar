@@ -299,73 +299,123 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     };
                     const movements: Movement[] = [];
 
-                    // ── I. The Energy Debt ────────────────────────────────────────────
+                    // Small subheader used inside each movement body
+                    const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
+                      <div className="mt-3 first:mt-0">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider opacity-70 mb-1">{label}</div>
+                        <div>{children}</div>
+                      </div>
+                    );
+
+                    // ── I. The Environmental Baseline ─────────────────────────────────
                     if (cr && venus) {
-                      const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` at ${fmtDeg(ascDegree)}` : ""}`;
+                      const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` (${fmtDeg(ascDegree)})` : ""}`;
                       const venusDeg = fmtDeg(venus.degree);
                       const zeroDeg = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
-                      const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` at ${venusDeg}` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} house` : ""}`;
+                      const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` (${venusDeg})` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} House` : ""}`;
                       movements.push({
-                        key: "energy-debt",
+                        key: "environmental-baseline",
                         roman: "I",
-                        title: "The Energy Debt",
-                        tag: "The Mask vs. The Heart",
+                        title: "The Environmental Baseline",
+                        tag: "Rising / Chart Ruler",
                         tone: "emerald",
                         icon: <Shield className="h-4 w-4" />,
                         body: (
                           <>
-                            Here is the straight version. {N}'s "front door" is <M>{ascStr}</M>, and that door is wired to keep the room calm. If the volume goes up, if two people are bickering, if someone is hurt, she feels physical pressure to step in and smooth it out. From the outside this looks like niceness. It is not. The reason she works that hard is sitting one layer down: her chart is run by <M>{rulerStr}</M>, and {cr.rulerSign === "Sagittarius" ? "Sagittarius is claustrophobic" : `${cr.rulerSign} needs room`}. When the room gets heavy with other people's problems, she feels trapped. So she works the mask, lowers the temperature, hands out the small kindness, all so the room will finally settle and she can have five minutes to herself. {zeroDeg ? <>Her Venus sits at <M>0° Sagittarius</M>, the very first degree, which makes that need for open space non-negotiable, not a preference. </> : null}She is not a people-pleaser. She is an <em>Over-Functioner</em>, doing twice the emotional work everyone else is doing, just to buy back her own breathing room. That is the cost, and it is invisible to almost everyone in her life.
+                            <Row label="The Math"><M>{ascStr}</M> · <M>{rulerStr}</M></Row>
+                            <Row label="The Physics">
+                              {N}'s system runs as a <strong>high-sensitivity sonar</strong>. Her <M>{ascStr}</M> is constantly reading the temperature of the room, volume, tension, micro-expressions, at a rate her nervous system cannot turn off. She does not "act nice" for approval. She <em>fixes the frequency</em> of the room because her body literally cannot relax inside a chaotic signal.
+                            </Row>
+                            <Row label="The Truth">
+                              The reason she works that hard sits one layer down: <M>{rulerStr}</M>{zeroDeg ? <>, parked at the <M>0° anaretic</M> opening of the sign,</> : null} needs <strong>open space</strong> to exist. {cr.rulerSign === "Sagittarius" ? "Sagittarius is claustrophobic by design" : `${cr.rulerSign} cannot breathe in a pressurized room`}. So she over-functions on the Libra side to <strong>stabilize the room</strong>, because only a stable room gives her {cr.rulerSign === "Sagittarius" ? "Sagittarius" : cr.rulerSign} heart the breathing room it needs. It is a <strong>tactical exchange</strong>: she spends social energy to buy back personal space. Not generosity. Physics.
+                            </Row>
                           </>
                         ),
                       });
                     }
 
-                    // ── II. The Permission Audit ──────────────────────────────────────
+                    // ── II. The Identity Glitch ───────────────────────────────────────
                     if (sun && chiron && sunChiron) {
                       const orbStr = `${sunChiron.orb.toFixed(1)}°`;
                       const tight = sunChiron.orb <= 2;
-                      const sunStr = `${sun.sign} Sun${sun.house ? ` in the ${ord(sun.house)} house` : ""}`;
-                      const chiStr = `Chiron in ${chiron.sign}${chiron.house ? `, ${ord(chiron.house)} house` : ""}`;
+                      const sunStr = `${sun.sign} Sun${sun.house ? ` (${ord(sun.house)} House)` : ""}`;
+                      const chiStr = `Chiron in ${chiron.sign}${chiron.house ? ` (${ord(chiron.house)} House)` : ""}`;
                       movements.push({
-                        key: "permission-audit",
+                        key: "identity-glitch",
                         roman: "II",
-                        title: "The Permission Audit",
-                        tag: "The Ghost in the Room",
+                        title: "The Identity Glitch",
+                        tag: "Sun · Chiron Collision",
                         tone: "amber",
                         icon: <Eye className="h-4 w-4" />,
                         body: (
                           <>
-                            Here is the part that costs her the most. Her <M>{sunStr}</M> is the natural part of her that wants to lead, have an opinion, pick the restaurant, take up space. But it sits in a {tight ? "tight " : ""}<M>{orbStr} {sunChiron.aspect}</M> to <M>{chiStr}</M>, and that Chiron is essentially her physical sensitivity to other people's reactions. The two are wired directly across from each other, which means she cannot just <em>be herself</em> without scanning the nearest face to see how it landed. If she wants something, her brain checks your expression first. If she sees even a flicker of annoyance, she shuts her own preference down to keep you comfortable. The honest way to say it is this: {N} feels like she needs a <em>permission slip</em> from the people around her just to exist as herself. She is constantly auditing the volume of her own personality to make sure she is not "too much" for the room. That audit is happening behind her eyes every single day, and it is exhausting.
+                            <Row label="The Math"><M>{sunStr}</M> opposite <M>{chiStr}</M> at a <M>{tight ? "tight " : ""}{orbStr} orb</M></Row>
+                            <Row label="The Physics">
+                              This is a <strong>literal internal collision</strong> between the <em>Need to Be</em> (Sun) and the <em>Fear of Reaction</em> (Chiron). Opposition means the two ends are wired directly across from each other, every time one fires, the other fires back. At <M>{orbStr}</M> there is no buffer between them.
+                            </Row>
+                            <Row label="The Truth">
+                              Call this the <strong>Permission Audit</strong>. Because the orb is so tight, she feels a physical <em>sting</em> in her identity the moment she takes up space without first checking that it is "legal." She is not scanning faces for approval. She is fighting an <strong>internal glitch</strong> that tells her being herself is a violation. The audit runs behind her eyes every day, and it costs energy whether anyone in the room is reacting or not.
+                            </Row>
                           </>
                         ),
                       });
                     }
 
-                    // ── III. The Signal Gap ──────────────────────────────────────────
+                    // ── III. The Signal Failure ───────────────────────────────────────
                     if (drive) {
-                      const marsStr = `${drive.marsSign} Mars in the ${ord(drive.marsHouse)} house`;
-                      const isMars1 = drive.marsHouse === 1;
+                      const marsStr = `${drive.marsSign} Mars (${ord(drive.marsHouse)} House)`;
                       const isScorpio = drive.marsSign === "Scorpio";
                       const translators: string[] = [];
                       if (hasMoon12) translators.push("Moon");
                       if (hasMerc12) translators.push(`${cog?.mercurySign ? cog.mercurySign + " " : ""}Mercury`);
                       const translatorStr = translators.length
-                        ? `${translators.join(" and ")} in the 12th house`
-                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury in the 12th house` : "her translator placement in the 12th house");
+                        ? `${translators.join(" / ")} in the 12th House`
+                        : (cog?.mercurySign ? `${cog.mercurySign} Mercury in the 12th House` : "translator placement in the 12th House");
                       movements.push({
-                        key: "signal-gap",
+                        key: "signal-failure",
                         roman: "III",
-                        title: "The Signal Gap",
-                        tag: "The Engine vs. The Dark Room",
+                        title: "The Signal Failure",
+                        tag: "Mars · Mercury Wiring",
                         tone: "rose",
                         icon: <Mountain className="h-4 w-4" />,
                         body: (
                           <>
-                            When she goes silent, the room reads it wrong. Here is what is actually happening. {N} has a high-heat engine: <M>{marsStr}</M>{isMars1 ? ", sitting right at the front of the chart" : ""}. When she gets angry, excited, or hurt, she feels it in her body instantly, like a flash of heat. {isScorpio ? <>And a <M>Scorpio Mars</M> does not run at room temperature, it runs hot. </> : null}But the part of her that finds the <em>words</em> for that heat is <M>{translatorStr}</M>, which functions like a soundproof, dimly lit back room. Feelings have to travel through that room before they can come out as language. That creates a Signal Gap: feeling at full speed, words at quarter speed. When she gets quiet, she is not stonewalling and she is not sulking. She is in the dark room cooling the engine and looking for words that will not burn the person in front of her. {pressure ? <>{pressure.trigger.replace(/\.$/, "")}, that is exactly when the valve gets dangerous. </> : null}If you follow her into that silence and keep asking "what's wrong," you are forcing her to open the door before the heat is down, and that is when something sharp comes out that she will regret. Her silence is her way of protecting you from her intensity. Let her have it. When she comes back, the answer will be clean.
+                            <Row label="The Math"><M>{marsStr}</M> vs. <M>{translatorStr}</M></Row>
+                            <Row label="The Physics">
+                              Direct conflict between a <strong>High-Heat Engine</strong> and a <strong>Buffered Translator</strong>. {isScorpio ? <>A <M>Scorpio Mars</M> does not idle, it runs at full combustion. </> : null}But the part of her that converts that heat into <em>words</em> sits inside the <strong>Dark Room</strong> of the 12th House, which routes every signal through a sound-dampening layer before language can form.
+                            </Row>
+                            <Row label="The Truth">
+                              Call this the <strong>Technical Lag</strong>. She feels intensity at <strong>100mph</strong>, but the signal cannot travel from the engine to her mouth fast enough. She is not <em>choosing</em> to be silent. The wiring physically delays the output. Her silence is a byproduct of her internal architecture, not a social move. Push her before the signal completes and what comes out is jagged, not because she meant it, but because you forced an incomplete transmission.
+                            </Row>
                           </>
                         ),
                       });
                     }
+
+                    // ── IV. The Developmental Threshold ───────────────────────────────
+                    if (inChironReturn) {
+                      movements.push({
+                        key: "developmental-threshold",
+                        roman: "IV",
+                        title: "The Developmental Threshold",
+                        tag: `Chiron Return · Age ${age}`,
+                        tone: "indigo",
+                        icon: <BookOpen className="h-4 w-4" />,
+                        body: (
+                          <>
+                            <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
+                            <Row label="The Physics">
+                              Once every ~50 years, Chiron returns to its natal degree. The sore spot stops being a wound the system tries to patch and becomes a piece of <strong>mastered hardware</strong>.
+                            </Row>
+                            <Row label="The Truth">
+                              This is the moment {N} stops trying to <em>fix</em> the glitches above, the Permission Audit, the Technical Lag, the Over-Functioning, and starts <strong>owning the power of her intensity</strong>. The Audit gets retired. The silence stops being apologized for. The Sagittarius heart stops asking permission for its own oxygen. The whole system reboots with the same wiring, but with the operator finally at the controls.
+                            </Row>
+                          </>
+                        ),
+                      });
+                    }
+
+
 
 
                     if (movements.length === 0) return null;
