@@ -1803,7 +1803,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const ritualMoon = moonSign ? MOON_SAFETY_BY_SIGN[moonSign] : null;
   const ritualVenus = Venus?.sign ? VENUS_LOVE_BY_SIGN[Venus.sign] : null;
   const ritual = ritualMoon && ritualVenus
-    ? `A daily 5-minute ritual: ${ritualMoon}. Weekly, layer in ${ritualVenus} as a love-deposit they actually register.`
+    ? `A daily 5-minute ritual: ${ritualMoon}. Weekly, layer in ${ritualVenus} so they feel cared for in a way they actually notice.`
     : ritualMoon
       ? `A daily 5-minute ritual: ${ritualMoon}.`
       : "A daily 5-minute ritual that respects their nervous system.";
