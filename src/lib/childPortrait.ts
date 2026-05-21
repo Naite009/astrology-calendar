@@ -767,19 +767,21 @@ const THIRD_HOUSE_VOICE_TONE: Record<string, string> = {
   Pisces: "soft, image-based, and indirect",
 };
 
+// Inserted into "Underneath the surface tone there is ${undercurrent}".
+// Must read as a felt, concrete pressure, not adjective fog.
 const RULER_UNDERCURRENT_BY_SIGN: Record<string, string> = {
-  Aries: "an intense, direct fire",
-  Taurus: "a stubborn, slow-moving weight",
-  Gemini: "a fast, scattered current of ideas",
-  Cancer: "a tender protective ache",
-  Leo: "a need to be seen and honored",
-  Virgo: "a constant inner edit",
-  Libra: "a quiet relational calculation",
-  Scorpio: "a powerful pressure they're actively managing",
-  Sagittarius: "a restless pull toward the exit",
-  Capricorn: "a serious sense of responsibility",
-  Aquarius: "a detached, observational coolness",
-  Pisces: "an absorbed, mood-soaked current",
+  Aries: "a push to act, decide, and move before they have finished thinking",
+  Taurus: "a quiet refusal to be rushed, the body setting the pace from underneath",
+  Gemini: "a fast feed of half-finished thoughts looking for somewhere to land",
+  Cancer: "a soft scan for who is safe and who is hurting in the room",
+  Leo: "a steady check for whether they are actually being seen and met",
+  Virgo: "a running mental edit, fixing and sequencing in the background",
+  Libra: "a constant weighing of how this is landing on the other person",
+  Scorpio: "a watchful pressure, holding the truth back until the room earns it",
+  Sagittarius: "a pull toward the exit, the bigger story, anywhere with more air",
+  Capricorn: "a serious tracking of who is responsible for what and what comes next",
+  Aquarius: "a half-step backwards out of the group so they can see the whole shape of it",
+  Pisces: "an absorbed wash of the room's mood that is hard to separate from their own",
 };
 
 const HOUSE_UNDERCURRENT_DOMAIN: Record<number, string> = {
