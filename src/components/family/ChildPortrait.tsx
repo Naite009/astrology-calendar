@@ -387,9 +387,9 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             ) : null}
                             {hasRetroLayer ? (
                               <Row label="The Retrograde Layer, Internalized Mandate">
-                                {dispoRx ? <>The {dispoIsCFO ? "CFO" : dispo!.name} is <strong>Retrograde</strong>. That means the foundation is <strong>Internalized</strong>. {N} does not trust outside experts or borrowed templates to tell her what her resource is worth. The {dispoIsCFO ? "Expert CFO" : dispo!.sign + " anchor"} is <strong>self-taught and self-audited</strong>, the sole architect of her own security. The world did not hand her the manual, so she wrote it from the inside. </> : null}
+                                {dispoRx ? <>The {dispo!.name} side is <strong>Retrograde</strong>. That means the safety check happens inside first. {N} does not fully trust outside experts or borrowed templates to tell her what her time, skill, body, and money are worth. The {dispoIsCFO ? "Taurus safety-builder" : dispo!.sign + " anchor"} is <strong>self-taught and self-checked</strong>. The world did not hand her the manual, so she wrote it from the inside. </> : null}
                                 {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The "sting" is not actually coming from the room. It is a <strong>re-run of an internal tape</strong>, a self-generated security check. The Permission Audit is an <strong>internal loop</strong>; {N} is her own harshest auditor, and the permission she keeps scanning for is permission from herself. </> : null}
-                                {dispoRx && chironRx ? <>Put together, this is a <strong>Self-Sourcing Power Plant</strong>. The Explorer breaks free using a <strong>Private Bank</strong> that no one else can sign off on, audited by an <strong>Internal Auditor</strong> who answers only to her. Nothing in this loop needs outside approval to operate. </> : null}
+                                {dispoRx && chironRx ? <>Put together, this means the answer has to feel true inside her before it feels safe to act on outside. The free part of her does not move well when the safe part feels ignored. The safe part of her does not relax when the free part feels trapped. Nothing in this loop is waiting for someone else to approve her. </> : null}
                               </Row>
                             ) : null}
                             {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
@@ -466,7 +466,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Expert CFO" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
+                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Safety Builder" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
                                         <td className="py-3"><strong>The Manager</strong>, 10°–20°. Routine, calm, ongoing work. No deadline pressure inside the placement.</td>
                                       </tr>
                                     ) : null}
