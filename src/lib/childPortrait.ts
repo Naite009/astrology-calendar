@@ -1203,6 +1203,7 @@ export interface ChildPortrait {
     rulerSign: string;
     rulerHouse: number | null;
     rulerDegree?: number | null;
+    rulerRetrograde?: boolean;
     ascSign: string;
     line: string;
     realTalk?: string;
@@ -1211,6 +1212,7 @@ export interface ChildPortrait {
       sign: string;
       house: number | null;
       degree: number | null;
+      retrograde?: boolean;
     };
   };
 
