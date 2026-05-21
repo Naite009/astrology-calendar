@@ -307,7 +307,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       </div>
                     );
 
-                    // ── I. The Chain of Command (Rising → Ruler → Dispositor) ────────
+                    // ── I. The Chain of Command + Mutual Reception Loop ──────────────
                     if (cr && venus) {
                       const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` (${fmtDeg(ascDegree)})` : ""}`;
                       const venusDeg = fmtDeg(venus.degree);
@@ -318,29 +318,64 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const dispoStr = dispo
                         ? `${dispo.name} in ${dispo.sign}${dispoDeg ? ` (${dispoDeg})` : ""}${dispo.house ? `, ${ord(dispo.house)} House` : ""}`
                         : null;
+
+                      // Mutual Reception: does the dispositor's sign loop back to the chart ruler?
+                      const SIGN_RULERS: Record<string, string> = {
+                        Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
+                        Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
+                        Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Saturn", Pisces: "Jupiter",
+                      };
+                      const mutualReception = !!dispo && SIGN_RULERS[dispo.sign] === cr.rulerName;
+
+                      // Out-of-sign opposition by absolute degree between ruler and dispositor
+                      const SIGN_INDEX: Record<string, number> = {
+                        Aries: 0, Taurus: 1, Gemini: 2, Cancer: 3, Leo: 4, Virgo: 5,
+                        Libra: 6, Scorpio: 7, Sagittarius: 8, Capricorn: 9, Aquarius: 10, Pisces: 11,
+                      };
+                      let pairOrb: number | null = null;
+                      if (dispo && typeof venus.degree === "number" && typeof dispo.degree === "number" && SIGN_INDEX[cr.rulerSign] != null && SIGN_INDEX[dispo.sign] != null) {
+                        const a = SIGN_INDEX[cr.rulerSign] * 30 + venus.degree;
+                        const b = SIGN_INDEX[dispo.sign] * 30 + dispo.degree;
+                        let d = Math.abs(a - b) % 360;
+                        if (d > 180) d = 360 - d;
+                        pairOrb = Math.abs(d - 180);
+                      }
+                      const isDegreeOpposition = pairOrb !== null && pairOrb <= 5;
+
                       const inChironReturnSec1 = inChironReturn;
                       movements.push({
                         key: "chain-of-command",
                         roman: "I",
-                        title: "The Chain of Command",
-                        tag: "Rising · Ruler · Dispositor",
+                        title: mutualReception ? "The Chain of Command, A Closed Loop" : "The Chain of Command",
+                        tag: mutualReception ? "Mutual Reception · Closed Loop" : "Rising · Ruler · Dispositor",
                         tone: "emerald",
                         icon: <Shield className="h-4 w-4" />,
                         body: (
                           <>
                             <Row label="The Math">
-                              <M>{ascStr}</M> is ruled by <M>{rulerStr}</M>{dispoStr ? <>, which is hosted by <M>{dispoStr}</M></> : null}.
+                              <M>{ascStr}</M> is ruled by <M>{rulerStr}</M>{dispoStr ? <>, which is hosted by <M>{dispoStr}</M></> : null}{mutualReception ? <>, and {dispo!.name} in {dispo!.sign} points right back to <M>{cr.rulerName}</M>. The chain closes on itself.</> : "."}
                             </Row>
                             <Row label="The Physics">
-                              The Rising sign is the <strong>front door</strong>, the Chart Ruler is the <strong>operator</strong> behind it, and the Dispositor is the <strong>actual anchor</strong> the whole system reports to. {N}'s door is <M>{ascStr}</M>, so the surface looks like standard Libra: read the room, smooth the edges, keep things pleasant. That is the cover story. The operator behind the door is <M>{rulerStr}</M>{zeroDeg ? <>, sitting at the <M>0° anaretic</M> opening of the sign, which is the rawest, most uncompromising amplitude {cr.rulerSign} can run at</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has exactly one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {dispoStr ? <>But the chain does not stop there. That {cr.rulerName} reports up to <M>{dispoStr}</M>, and {dispo!.sign === "Taurus" ? "Taurus in the 8th House is built to convert lived intensity, loss, debt, intimacy, survival, into durable, physical wisdom that does not evaporate" : `${dispo!.sign}${dispo!.house ? ` in the ${ord(dispo!.house)} House` : ""} is built to convert experience into resource`}. </> : null}
+                              The Rising sign is the <strong>front door</strong>, the Chart Ruler is the <strong>operator</strong> behind it, and the Dispositor is normally the <strong>final anchor</strong> the whole system reports to. {N}'s door is <M>{ascStr}</M>, so the surface looks like standard Libra: read the room, smooth the edges, keep things pleasant. The operator is <M>{rulerStr}</M>{zeroDeg ? <>, at the <M>0° anaretic</M> opening of the sign, which is the rawest amplitude {cr.rulerSign} can run at</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {dispoStr ? <>That operator reports up to <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "is built to convert lived experience into something durable and physical, security, body knowledge, resource" : `is built to convert experience into resource`}. </> : null}{mutualReception ? <>But here the chain does something unusual. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so it hands authority right back to where it came from. There is no final boss. The two planets host each other inside a <strong>Mutual Reception</strong>, a closed loop where <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> are co-signing every decision. </> : null}
                             </Row>
+                            {mutualReception ? (
+                              <Row label="The Internal Partnership">
+                                That is why {N} does not experience herself as having a single inner boss. She has an <strong>internal dialogue</strong> running at all times between her <strong>Need for {cr.rulerSign === "Sagittarius" ? "Adventure" : cr.rulerSign}</strong> ({cr.rulerName} in {cr.rulerSign}) and her <strong>Need for {dispo!.sign === "Taurus" ? "Security" : dispo!.sign}</strong> ({dispo!.name} in {dispo!.sign}). Every choice gets routed through both desks before it ships. The freedom side wants to move, expand, leave the door open. The security side wants the body fed, the bills paid, the ground solid. Neither one wins, neither one shuts up.
+                              </Row>
+                            ) : null}
+                            {isDegreeOpposition ? (
+                              <Row label="The Opposition Layer">
+                                On top of the loop, the two co-rulers are sitting across from each other by degree, <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M> across the wheel. That is one foot on the <strong>gas</strong> (Freedom) and one foot on the <strong>brake</strong> (Safety), firing at the same time. It is not indecision. It is two real needs wired in direct tension.
+                              </Row>
+                            ) : null}
                             <Row label="The Truth">
-                              That changes the entire function of her Libra Rising. It is not "wants to be liked." It is a <strong>Tactical Tool</strong>. The diplomacy is the tradecraft her <M>{cr.rulerName} in {cr.rulerSign}</M> uses to keep its independence intact, every smoothed conflict and every "I'm fine" is the ruler buying back its right to leave on its own terms. {dispoStr ? <>And underneath the freedom move, the real prize is the <M>{dispo!.name} in {dispo!.sign}</M> anchor: everything she lives through is being deposited into a <strong>physical library of wisdom</strong> her system can stand on later. {inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, that anchor is exactly what turns the past four decades of struggle into <strong>Expertise</strong>. The freedom stops being escape and starts being authority. </> : null}</> : null}
+                              Her Libra Rising is not "wants to be liked." It is the <strong>Tactical Tool</strong> the loop uses to keep both desks happy. {mutualReception ? <>The diplomacy buys the {cr.rulerName} side its freedom to move, and the same diplomacy buys the {dispo!.name} side its stable ground. Both desks need the room calm to keep operating. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, the developmental work is learning that <strong>she does not have to choose</strong>. The loop is not a glitch to fix. She can be a <strong>Secure Adventurer</strong>, a person whose freedom is built on real ground and whose stability is built to travel. The past four decades of bouncing between the two desks become the <strong>Expertise</strong> of running them together. </> : null}
                             </Row>
                           </>
                         ),
                       });
                     }
+
 
 
                     // ── II. The Identity Glitch ───────────────────────────────────────
