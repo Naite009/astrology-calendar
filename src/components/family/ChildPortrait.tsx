@@ -346,7 +346,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const rulerIsExplorer = zeroDeg && cr.rulerSign === "Sagittarius"; // 0° Sag Venus = The Explorer
                       const rulerIsAnyZero = zeroDeg; // any 0° ruler = raw, uncompromising opening
                       const dispoIsAnaretic = !!dispo && typeof dispo.degree === "number" && dispo.degree >= 29;
-                      const dispoIsCFO = dispoIsAnaretic && dispo!.sign === "Taurus" && dispo!.name === "Jupiter"; // 29° Taurus Jupiter = Expert CFO
+                      const dispoIsCFO = dispoIsAnaretic && dispo!.sign === "Taurus" && dispo!.name === "Jupiter"; // 29° Taurus Jupiter = Safety Builder
                       const explorerLabel = rulerIsExplorer ? "the Explorer" : (rulerIsAnyZero ? `the raw ${cr.rulerSign} opener` : `the ${cr.rulerSign} operator`);
                       const cfoLabel = dispoIsCFO ? "the urgent Taurus safety-builder" : (dispoIsAnaretic ? `the ${dispo!.sign} part at the closing degree` : (dispo ? `the ${dispo!.sign} anchor` : ""));
                       const hasVoltage = rulerIsAnyZero || dispoIsAnaretic;
