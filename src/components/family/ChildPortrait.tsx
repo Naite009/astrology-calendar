@@ -243,7 +243,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   </section>
 
-                  {/* === Behavioral Portrait — Synthesis of Friction ================
+                  {/* === Behavioral Portrait, Synthesis of Friction ================
                       Flowing prose, no bullets, no boxes. Bold math anchors live
                       inline inside the paragraphs. Framed by the Chiron Return
                       where applicable. Four movements:
@@ -758,7 +758,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <div className="font-semibold mb-1">3rd-house operating system</div>
                     <p className="text-muted-foreground">
                       3rd-house cusp in {portrait.mathCheck.thirdHouseSign}, ruled by{" "}
-                      <span className="font-medium text-foreground">{portrait.mathCheck.thirdHouseRuler ?? "—"}</span>
+                      <span className="font-medium text-foreground">{portrait.mathCheck.thirdHouseRuler ?? ","}</span>
                       {portrait.mathCheck.thirdHouseRulerSign && ` in ${portrait.mathCheck.thirdHouseRulerSign}`}
                       {portrait.mathCheck.thirdHouseRulerHouse && ` · ${portrait.mathCheck.thirdHouseRulerHouse}th house`}.
                     </p>
