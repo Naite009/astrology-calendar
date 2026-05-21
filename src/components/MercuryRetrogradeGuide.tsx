@@ -881,31 +881,63 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
           </div>
         )}
 
-        {/* ── SECTION: CURRENT CYCLE ── */}
-        {activeSection === "current" && (
-          <div className="space-y-4">
-            <SectionHeader icon="🌊" title="Current Cycle — Mercury in Pisces" subtitle="February 25–26 – March 20, 2026 · Retrograde from 22°33' to 8°29' Pisces" />
+        {/* ── SECTION: CURRENT CYCLE (dynamically resolved from today's date) ── */}
+        {activeSection === "current" && (() => {
+          const now = new Date();
+          // Flatten every rx across every year, attach parsed dates.
+          const all = Object.values(RETROGRADES_BY_YEAR).flatMap(y => y.retrogrades).map(rx => ({
+            rx,
+            stationRx: parseRxDateString(rx.station_rx),
+            stationDirect: parseRxDateString(rx.station_direct),
+            preshadow: parseRxDateString(rx.preshadow),
+            shadowExit: parseRxDateString(rx.shadow),
+          })).filter(x => x.stationRx && x.stationDirect);
 
-            <RxDetail rx={RETROGRADES_BY_YEAR[2026].retrogrades[0]} risingSign={risingSign} chartName={chartName} />
+          // Active: between station_rx and shadow_exit (or station_direct if shadow missing).
+          const active = all.find(x => {
+            const end = x.shadowExit || x.stationDirect!;
+            return now >= x.stationRx! && now <= end;
+          });
+          // Otherwise: next upcoming (earliest preshadow or station_rx after today).
+          const upcoming = all
+            .filter(x => (x.preshadow || x.stationRx)! > now)
+            .sort((a, b) => ((a.preshadow || a.stationRx)!.getTime() - (b.preshadow || b.stationRx)!.getTime()))[0];
+          const pick = active || upcoming || all[0];
+          const rx = pick.rx;
+          const isActive = !!active;
+          const headerLabel = isActive ? `Current Cycle — Mercury in ${rx.sign}` : `Next Cycle — Mercury in ${rx.sign}`;
+          const fmtShort = (d: Date | null) => d ? d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—";
+          const fmtLong = (d: Date | null) => d ? d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "—";
 
-            {/* Phase by phase */}
-            <div className="rounded-2xl border border-violet-600/40 bg-violet-900/25 p-5 space-y-4">
-              <p className="text-xs text-violet-200 font-semibold uppercase tracking-wider">📅 Phase by Phase — What to Watch</p>
-              {[
-                { phase: "Pre-Shadow · Feb 11–25", icon: "🌑", text: "Mercury first crosses 8°29' Pisces. Themes begin to whisper. A situation, conversation, or feeling starts to emerge that will become central to this retrograde. Pay attention to what arises around February 11 — it is a preview of what will need your full attention." },
-                { phase: "Station Retrograde · Feb 25-26", icon: "↩️", text: "Mercury halts at 22°33' Pisces and begins its backward journey. The days around February 25-26 are likely to feel intense, confused, or surprisingly clarifying. Old matters arrive suddenly. Technology may glitch. Conversations get complicated. This is the moment to slow down completely." },
-                { phase: "Cazimi · March 7", icon: "🌞", text: "Mercury conjuncts the Sun at 16°52' Pisces — the heart of the retrograde. The cazimi is a moment of clarity and illumination within the fog: Mercury is purified by the Sun's light. Insights land clearly, downloads arrive, and a brief window of lucidity opens. Pay attention to what comes through on this day — it is the retrograde's deepest message." },
-                { phase: "Station Direct · March 20", icon: "↪️", text: "Mercury halts again at 8°29' Pisces and prepares to move forward. The moment of turning direct may feel like a fog beginning to lift. Don't rush into major decisions immediately — give Mercury 2–3 days to build momentum." },
-                { phase: "Post-Shadow · Mar 20 – Apr 9", icon: "🌕", text: "Mercury retraces the shadow zone forward, from 8°29' back to 22°33' Pisces. You won't fully understand what this retrograde was about until April 9. Use this phase to apply what you've reviewed. Decisions are clearer now. Conversations that were tangled begin to resolve. Integration happens." },
-              ].map((item) => (
-                <div key={item.phase} className="rounded-xl bg-indigo-800/30 border border-indigo-500/30 p-4">
-                  <p className="text-xs text-indigo-200 font-semibold uppercase mb-2">{item.icon} {item.phase}</p>
-                  <p className="text-indigo-50 text-sm leading-relaxed">{item.text}</p>
+          const phases = [
+            pick.preshadow && { phase: `Pre-Shadow · ${fmtShort(pick.preshadow)} – ${fmtShort(pick.stationRx)}`, icon: "🌑", text: `Mercury first crosses the shadow degree in ${rx.sign}. Themes that will dominate this retrograde begin to whisper. Notice what surfaces in conversations, technology, and travel around ${fmtLong(pick.preshadow)}. It is a preview.` },
+            { phase: `Station Retrograde · ${fmtShort(pick.stationRx)}`, icon: "↩️", text: `Mercury halts in ${rx.sign} and turns backward. The days around ${fmtLong(pick.stationRx)} can feel intense, confused, or surprisingly clarifying. Old matters arrive suddenly. Slow down completely.` },
+            rx.cazimi && parseRxDateString(rx.cazimi) && { phase: `Cazimi · ${fmtShort(parseRxDateString(rx.cazimi))}`, icon: "🌞", text: `Mercury conjuncts the Sun at the heart of the retrograde. A brief window of lucidity opens. Pay attention to what lands on ${fmtLong(parseRxDateString(rx.cazimi))} — it is the retrograde's deepest message.` },
+            { phase: `Station Direct · ${fmtShort(pick.stationDirect)}`, icon: "↪️", text: `Mercury halts again and prepares to move forward on ${fmtLong(pick.stationDirect)}. Don't rush major decisions immediately, give Mercury 2 to 3 days to build momentum.` },
+            pick.shadowExit && { phase: `Post-Shadow · ${fmtShort(pick.stationDirect)} – ${fmtShort(pick.shadowExit)}`, icon: "🌕", text: `Mercury retraces the shadow zone forward. You won't fully understand what this retrograde was about until around ${fmtLong(pick.shadowExit)}. Integration happens here.` },
+          ].filter(Boolean) as { phase: string; icon: string; text: string }[];
+
+          return (
+            <div className="space-y-4">
+              <SectionHeader icon="🌊" title={headerLabel} subtitle={`${rx.dates} · Retrograde from ${rx.degrees}`} />
+              {!isActive && (
+                <div className="rounded-xl border border-amber-500/40 bg-amber-900/20 p-3 text-amber-100 text-sm">
+                  Mercury is currently <strong>direct</strong>. Showing the next upcoming retrograde cycle.
                 </div>
-              ))}
+              )}
+              <RxDetail rx={rx} risingSign={risingSign} chartName={chartName} />
+              <div className="rounded-2xl border border-violet-600/40 bg-violet-900/25 p-5 space-y-4">
+                <p className="text-xs text-violet-200 font-semibold uppercase tracking-wider">📅 Phase by Phase, What to Watch</p>
+                {phases.map((item) => (
+                  <div key={item.phase} className="rounded-xl bg-indigo-800/30 border border-indigo-500/30 p-4">
+                    <p className="text-xs text-indigo-200 font-semibold uppercase mb-2">{item.icon} {item.phase}</p>
+                    <p className="text-indigo-50 text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── SECTION: GUIDANCE ── */}
         {activeSection === "guidance" && (
