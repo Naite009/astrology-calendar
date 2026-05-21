@@ -691,7 +691,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-primary" />
-                          <div className="font-semibold text-base">Behavioral Portrait, Synthesis of Friction</div>
+                          <div className="font-semibold text-base">Behavioral Portrait</div>
                         </div>
                         {movements.sort((a, b) => {
                           const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
