@@ -451,8 +451,8 @@ Neptune retrograde effects are the subtlest of all:
 • Creative projects enter an incubation phase
 • Addictive patterns may surface for review and release
 
-Neptune is currently in Pisces (2012-2026), its home sign, making this an especially spiritually potent time. When it enters Aries in 2026, a new 165-year cycle of collective imagination begins.`,
-    speedNote: 'Neptune spends 14 years in each sign, shaping the spiritual and artistic sensibilities of entire generations. Currently in Pisces (2012-2026), its home sign.',
+Neptune spent 14 years in Pisces (2012-2026), its home sign, before ingressing into Aries to begin a new 165-year cycle of collective imagination centered on identity, action, and the imagined self.\`,
+    speedNote: 'Neptune spends 14 years in each sign, shaping the spiritual and artistic sensibilities of entire generations. It left Pisces and entered Aries in 2025-2026.',
     summary: 'Dreams, spirituality, illusion, and transcendence. Neptune shows where you dissolve boundaries and connect to the divine or deceive yourself.'
   },
   {
