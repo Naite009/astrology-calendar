@@ -539,7 +539,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const chiStr = `Chiron in ${chiron.sign}${chiron.house ? ` (${ord(chiron.house)} House)` : ""}`;
                       movements.push({
                         key: "identity-glitch",
-                        roman: "II",
+                        roman: "III",
                         title: "The Identity Glitch",
                         tag: "Sun · Chiron Collision",
                         tone: "amber",
