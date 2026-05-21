@@ -416,21 +416,46 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                   <tbody className="align-top">
                                     {rulerIsAnyZero ? (
                                       <tr className="border-b border-emerald-500/20">
-                                        <td className="py-3 pr-3"><strong>0° (Aries Point)</strong></td>
+                                        <td className="py-3 pr-3">
+                                          <strong>0° (Aries Point)</strong>
+                                          <details className="mt-1">
+                                            <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 0° means →</summary>
+                                            <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
+                                              0° is the very first degree of a sign, called the <strong>Aries Point</strong> because it acts like a fresh ignition no matter which sign it lands in. There is no prior experience in the sign yet, no polish, no caution, no learned filter. The placement fires at full strength the moment it is touched. {N} feels it as raw, loud, uncompromising, almost public, like the need announces itself before she can edit it. It is the loudest voltage on the scale.
+                                            </div>
+                                          </details>
+                                        </td>
                                         <td className="py-3 pr-3"><strong>{rulerIsExplorer ? "The Explorer" : "The Raw Opener"}</strong>, raw, loudest, uncompromising intensity. No filter between need and action.</td>
                                         <td className="py-3"><strong>The Tourist</strong>, 10°–20°. Settled, predictable, moderate. Knows the sign's rules and stays inside them.</td>
                                       </tr>
                                     ) : null}
                                     {dispoIsAnaretic ? (
                                       <tr className="border-b border-emerald-500/20">
-                                        <td className="py-3 pr-3"><strong>29° (Anaretic)</strong></td>
+                                        <td className="py-3 pr-3">
+                                          <strong>29° (Anaretic)</strong>
+                                          <details className="mt-1">
+                                            <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 29° means →</summary>
+                                            <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
+                                              29° is the very last degree of a sign, called <strong>anaretic</strong> or the "degree of fate." The placement has lived the entire sign already and is one breath from changing signs forever. That creates a now-or-never pressure, like a senior expert on their last day, trying to ship the final, definitive version of the lesson. It feels urgent, high-stakes, slightly impatient, and carries a felt responsibility to get this sign <em>right</em> before time runs out.
+                                            </div>
+                                          </details>
+                                        </td>
                                         <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Expert CFO" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
                                         <td className="py-3"><strong>The Manager</strong>, 10°–20°. Routine, calm, ongoing work. No deadline pressure inside the placement.</td>
                                       </tr>
                                     ) : null}
                                     {mutualReception ? (
                                       <tr>
-                                        <td className="py-3 pr-3"><strong>Mutual Reception</strong></td>
+                                        <td className="py-3 pr-3">
+                                          <strong>Mutual Reception</strong>
+                                          <details className="mt-1">
+                                            <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">Closed Loop vs Linear Chain →</summary>
+                                            <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal space-y-2">
+                                              <p>Every planet has a "boss," the ruler of the sign it sits in. Normally that boss has its own boss, who has its own boss, until the chain ends at one final anchor planet somewhere else in the chart. That is a <strong>Linear Chain</strong>. It looks outward. Decisions wait on permission from a single final authority.</p>
+                                              <p>A <strong>Closed Loop</strong> (mutual reception) is different. Two planets sit in each other's signs, so each one is the other's boss. {N}'s Venus sits in Jupiter's sign (Sagittarius), and Jupiter sits in Venus's sign (Taurus). They co-sign every decision in real time, with no outside referee. Nothing leaves the loop until both desks agree. That is why the inner negotiation feels constant and self-contained, freedom and security checking each other on every move, instead of one planet quietly running the show.</p>
+                                            </div>
+                                          </details>
+                                        </td>
                                         <td className="py-3 pr-3"><strong>Closed Loop</strong>, self-sustaining, high-speed internal feedback. The two co-rulers co-sign every decision in real time.</td>
                                         <td className="py-3"><strong>Linear Chain</strong>, follows a boss. Looks outward for permission, waits on a final anchor that lives somewhere else in the chart.</td>
                                       </tr>
@@ -439,52 +464,59 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                 </table>
                               </div>
 
-                              <Row label="The Full Zodiac Voltage Map">
-                                Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>CFO</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
-                              </Row>
-                              <div className="mt-3 overflow-x-auto">
-                                <table className="w-full text-[12.5px] border-collapse">
-                                  <thead>
-                                    <tr className="border-b border-indigo-500/40">
-                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[14%]">Sign</th>
-                                      <th className="text-left font-semibold py-2 pr-3 align-top w-[43%]">0° Archetype (The Raw Opener)</th>
-                                      <th className="text-left font-semibold py-2 align-top w-[43%]">29° Archetype (The Anaretic Master)</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="align-top">
-                                    {([
-                                      ["Aries",       "The Spark, raw ignition, pure initiative with no filter.",                          "The Veteran Fighter, urgent self-assertion, last-call courage."],
-                                      ["Taurus",      "The Settler, first claim on the land, body before logic.",                          "The Expert CFO, urgent mastery of resource, body, and value."],
-                                      ["Gemini",      "The First Question, raw curiosity, unfiltered talk.",                               "The Closing Reporter, urgent translator, must get the story out now."],
-                                      ["Cancer",      "The First Cry, raw need for belonging, no defense yet.",                            "The Veteran Caretaker, urgent feeding of the home, last-call nurture."],
-                                      ["Leo",         "The First Roar, raw self-expression, no audience check.",                           "The Closing Performer, urgent visibility, last-call self-claim."],
-                                      ["Virgo",       "The First Sort, raw analysis, no polish yet.",                                      "The Expert Editor, urgent refinement, last-call precision."],
-                                      ["Libra",       "The First Mirror, raw need for the other, no diplomacy yet.",                      "The Closing Diplomat, urgent fairness, last-call balance."],
-                                      ["Scorpio",     "The First Plunge, raw merge, no exit strategy.",                                    "The Veteran Investigator, urgent truth, last-call power audit."],
-                                      ["Sagittarius", "The Explorer, raw freedom, uncompromising open horizon.",                           "The Closing Prophet, urgent meaning, last-call belief."],
-                                      ["Capricorn",   "The First Climb, raw ambition, structure with no résumé yet.",                     "The Veteran Executive, urgent authority, last-call legacy build."],
-                                      ["Aquarius",    "The First Outsider, raw difference, no group to test it against.",                 "The Closing Architect, urgent system design, last-call reform."],
-                                      ["Pisces",      "The First Dissolve, raw empathy, no boundary yet.",                                 "The Closing Mystic, urgent surrender, last-call compassion."],
-                                    ] as Array<[string, string, string]>).map(([sign, zero, ana]) => {
-                                      const isRuler = rulerIsAnyZero && cr.rulerSign === sign;
-                                      const isDispo = dispoIsAnaretic && dispo!.sign === sign;
-                                      const highlight = isRuler || isDispo;
-                                      return (
-                                        <tr key={sign} className={cn("border-b border-indigo-500/15", highlight && "bg-indigo-500/10")}>
-                                          <td className="py-2.5 pr-3">
-                                            <strong>{sign}</strong>
-                                            {isRuler ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 0° Ruler</div> : null}
-                                            {isDispo ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 29° Dispositor</div> : null}
-                                          </td>
-                                          <td className={cn("py-2.5 pr-3", isRuler && "font-semibold")}>{zero}</td>
-                                          <td className={cn("py-2.5", isDispo && "font-semibold")}>{ana}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                                <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign run as <strong>The Manager</strong> or <strong>The Tourist</strong>, routine voltage, no opening rawness and no closing urgency.</div>
-                              </div>
+                              <details className="mt-5 group rounded-lg border border-indigo-500/30 bg-indigo-500/5 p-3">
+                                <summary className="cursor-pointer text-sm font-semibold select-none flex items-center justify-between gap-3">
+                                  <span>The Full Zodiac Voltage Map</span>
+                                  <span className="text-[11px] uppercase tracking-wider opacity-70 group-open:hidden">Tap to open</span>
+                                  <span className="text-[11px] uppercase tracking-wider opacity-70 hidden group-open:inline">Tap to close</span>
+                                </summary>
+                                <div className="mt-3 text-[13px] opacity-90">
+                                  Every sign has the same two extreme settings. Here is where {N}'s <strong>Explorer</strong> (0° Sagittarius) and <strong>CFO</strong> (29° Taurus) sit inside the larger system, and what the other ten signs sound like at the same extremes.
+                                </div>
+                                <div className="mt-3 overflow-x-auto">
+                                  <table className="w-full text-[12.5px] border-collapse">
+                                    <thead>
+                                      <tr className="border-b border-indigo-500/40">
+                                        <th className="text-left font-semibold py-2 pr-3 align-top w-[14%]">Sign</th>
+                                        <th className="text-left font-semibold py-2 pr-3 align-top w-[43%]">0° Archetype (The Raw Opener)</th>
+                                        <th className="text-left font-semibold py-2 align-top w-[43%]">29° Archetype (The Anaretic Master)</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="align-top">
+                                      {([
+                                        ["Aries",       "The Spark, raw ignition, pure initiative with no filter.",                          "The Veteran Fighter, urgent self-assertion, last-call courage."],
+                                        ["Taurus",      "The Settler, first claim on the land, body before logic.",                          "The Expert CFO, urgent mastery of resource, body, and value."],
+                                        ["Gemini",      "The First Question, raw curiosity, unfiltered talk.",                               "The Closing Reporter, urgent translator, must get the story out now."],
+                                        ["Cancer",      "The First Cry, raw need for belonging, no defense yet.",                            "The Veteran Caretaker, urgent feeding of the home, last-call nurture."],
+                                        ["Leo",         "The First Roar, raw self-expression, no audience check.",                           "The Closing Performer, urgent visibility, last-call self-claim."],
+                                        ["Virgo",       "The First Sort, raw analysis, no polish yet.",                                      "The Expert Editor, urgent refinement, last-call precision."],
+                                        ["Libra",       "The First Mirror, raw need for the other, no diplomacy yet.",                      "The Closing Diplomat, urgent fairness, last-call balance."],
+                                        ["Scorpio",     "The First Plunge, raw merge, no exit strategy.",                                    "The Veteran Investigator, urgent truth, last-call power audit."],
+                                        ["Sagittarius", "The Explorer, raw freedom, uncompromising open horizon.",                           "The Closing Prophet, urgent meaning, last-call belief."],
+                                        ["Capricorn",   "The First Climb, raw ambition, structure with no résumé yet.",                     "The Veteran Executive, urgent authority, last-call legacy build."],
+                                        ["Aquarius",    "The First Outsider, raw difference, no group to test it against.",                 "The Closing Architect, urgent system design, last-call reform."],
+                                        ["Pisces",      "The First Dissolve, raw empathy, no boundary yet.",                                 "The Closing Mystic, urgent surrender, last-call compassion."],
+                                      ] as Array<[string, string, string]>).map(([sign, zero, ana]) => {
+                                        const isRuler = rulerIsAnyZero && cr.rulerSign === sign;
+                                        const isDispo = dispoIsAnaretic && dispo!.sign === sign;
+                                        const highlight = isRuler || isDispo;
+                                        return (
+                                          <tr key={sign} className={cn("border-b border-indigo-500/15", highlight && "bg-indigo-500/10")}>
+                                            <td className="py-2.5 pr-3">
+                                              <strong>{sign}</strong>
+                                              {isRuler ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 0° Ruler</div> : null}
+                                              {isDispo ? <div className="text-[10px] uppercase tracking-wider opacity-70 mt-0.5">{N}'s 29° Dispositor</div> : null}
+                                            </td>
+                                            <td className={cn("py-2.5 pr-3", isRuler && "font-semibold")}>{zero}</td>
+                                            <td className={cn("py-2.5", isDispo && "font-semibold")}>{ana}</td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                  <div className="mt-2 text-[11px] opacity-70">Middle degrees (10°–20°) of any sign run as <strong>The Manager</strong> or <strong>The Tourist</strong>, routine voltage, no opening rawness and no closing urgency.</div>
+                                </div>
+                              </details>
 
                               {inChironReturnSec1 ? (
                                 <Row label="The Chiron Return Frame">
