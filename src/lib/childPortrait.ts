@@ -2299,8 +2299,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     cloakingNote,
     pressureSignature,
 
-    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus), degree: Venus.degree ?? null } : undefined,
-    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron), degree: Chiron.degree ?? null } : undefined,
+    venusPlacement: Venus?.sign ? { sign: Venus.sign, house: houseOf(chart, Venus), degree: Venus.degree ?? null, retrograde: !!(Venus as any).isRetrograde } : undefined,
+    chironPlacement: Chiron?.sign ? { sign: Chiron.sign, house: houseOf(chart, Chiron), degree: Chiron.degree ?? null, retrograde: !!(Chiron as any).isRetrograde } : undefined,
     ascDegree: chart.houseCusps?.house1?.degree ?? null,
     twelfthHouseBodies: (() => {
       const out: Array<{ name: string; sign: string }> = [];
