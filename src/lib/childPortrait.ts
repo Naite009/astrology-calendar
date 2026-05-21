@@ -321,12 +321,12 @@ const SATURN_SACRED_STRUGGLE_BY_SIGN: Record<string, string> = {
 // Communication scripts by Saturn sign. These are the *how to say it* phrases
 // used in the Personal Standards / Boundary section. They translate the inner
 // Saturn theme into a concrete sentence a parent or partner can actually use,
-// so the section is a Communication Strategy — not a restatement of the
+// so the section is a Communication Strategy, not a restatement of the
 // Mastery Spot text.
 const SATURN_COMMUNICATION_SCRIPT: Record<string, { opener: string; avoid: string }> = {
-  Aries:       { opener: "\"You don't have to get it right on the first try — just start, and we'll adjust together.\"", avoid: "rushing them or calling them slow to act" },
+  Aries:       { opener: "\"You don't have to get it right on the first try, just start, and we'll adjust together.\"", avoid: "rushing them or calling them slow to act" },
   Taurus:      { opener: "\"You have enough, and you are enough. Take the time you need.\"",                              avoid: "implying they're being greedy, stingy, or stuck" },
-  Gemini:      { opener: "\"Say it however it comes out — I'll meet you in the middle.\"",                                avoid: "correcting their words mid-sentence" },
+  Gemini:      { opener: "\"Say it however it comes out, I'll meet you in the middle.\"",                                avoid: "correcting their words mid-sentence" },
   Cancer:      { opener: "\"Being soft here is safe. I'm not going anywhere.\"",                                          avoid: "calling them too sensitive or dramatic" },
   Leo:         { opener: "\"I see you, and being seen here won't cost you anything.\"",                                   avoid: "shaming them in front of other people" },
   Virgo:       { opener: "\"This is already good enough. We're not graded on this.\"",                                    avoid: "pointing out the one small thing they missed" },
@@ -335,22 +335,22 @@ const SATURN_COMMUNICATION_SCRIPT: Record<string, { opener: string; avoid: strin
   Sagittarius: { opener: "\"Your read on this counts. What does it look like from where you're standing?\"",              avoid: "telling them their meaning of it is wrong" },
   Capricorn:   { opener: "\"You don't have to earn this with output. The standard is yours to set.\"",                    avoid: "tying your approval to what they produced" },
   Aquarius:    { opener: "\"You don't have to fit in here to belong here.\"",                                             avoid: "guilt-tripping them into 'joining in'" },
-  Pisces:      { opener: "\"No is a complete sentence — you don't have to explain it.\"",                                 avoid: "pressuring them to justify a soft refusal" },
+  Pisces:      { opener: "\"No is a complete sentence, you don't have to explain it.\"",                                 avoid: "pressuring them to justify a soft refusal" },
 };
 
 const SATURN_HOUSE_SUPPORT: Record<number, string> = {
-  1: "their identity and physical presence — never tease their body or how they show up; affirm 'you get to take up space'",
-  2: "their sense of worth and material safety — affirm 'you are enough as you are, with what you have'",
-  3: "their voice and learning — never correct their words in public; let them finish their sentence",
-  4: "their sense of home and belonging — make 'home' explicitly unconditional out loud, repeatedly",
-  5: "their right to play and create — never criticize their creative output; celebrate the act, not the product",
-  6: "their daily competence and body — never compare their pace to a sibling's; affirm small wins",
-  7: "their experience of being chosen — be visibly delighted by their company without conditions",
-  8: "their right to privacy and depth — never read their journal or pry; let them come to you",
-  9: "their right to their own meaning and beliefs — let them disagree without being corrected",
-  10: "their public reputation — never publicly shame them; success-pressure lands sideways",
-  11: "their right to belong with peers — protect their friendships and group time",
-  12: "their need for genuine alone-time — protect their rest and inner world",
+  1: "their identity and physical presence, never tease their body or how they show up; affirm 'you get to take up space'",
+  2: "their sense of worth and material safety, affirm 'you are enough as you are, with what you have'",
+  3: "their voice and learning, never correct their words in public; let them finish their sentence",
+  4: "their sense of home and belonging, make 'home' explicitly unconditional out loud, repeatedly",
+  5: "their right to play and create, never criticize their creative output; celebrate the act, not the product",
+  6: "their daily competence and body, never compare their pace to a sibling's; affirm small wins",
+  7: "their experience of being chosen, be visibly delighted by their company without conditions",
+  8: "their right to privacy and depth, never read their journal or pry; let them come to you",
+  9: "their right to their own meaning and beliefs, let them disagree without being corrected",
+  10: "their public reputation, never publicly shame them; success-pressure lands sideways",
+  11: "their right to belong with peers, protect their friendships and group time",
+  12: "their need for genuine alone-time, protect their rest and inner world",
 };
 
 // For adults: Saturn-by-house becomes a "Standard" they're claiming
@@ -551,14 +551,14 @@ const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: st
 };
 
 // ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo literally looks like in the room.
-// Keyed by Rising sign. Concrete, observable behavior — no astro-nouns.
+// Keyed by Rising sign. Concrete, observable behavior, no astro-nouns.
 const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
-  Taurus:      "they refuse to be rushed out the door — the body sets the pace and the schedule has to bend",
+  Taurus:      "they refuse to be rushed out the door, the body sets the pace and the schedule has to bend",
   Gemini:      "they're already mid-sentence about three different things before their feet hit the kitchen floor",
   Cancer:      "they scan everyone's face for the mood of the morning before they say a word",
   Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
-  Virgo:       "they spot the one thing out of place — the crumbs, the wrong mug — and can't unsee it",
+  Virgo:       "they spot the one thing out of place, the crumbs, the wrong mug, and can't unsee it",
   Libra:       "they smooth the first tension in the room before they've even sat down",
   Scorpio:     "they go quiet and watch, reading who is actually safe to talk to first",
   Sagittarius: "they're already half out the door, talking about the trip, the plan, anything past this kitchen",
@@ -567,17 +567,17 @@ const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Pisces:      "they feel the loud music, the bright light, the leftover tension from last night, all of it at once",
 };
 
-// ── Elder/parent advice per Rising mask — what NOT to do at 8 AM.
+// ── Elder/parent advice per Rising mask, what NOT to do at 8 AM.
 const RISING_ELDER_ADVICE: Record<string, string> = {
-  Aries:       "Don't tell them to slow down — give them the first job of the morning so the energy has a target.",
+  Aries:       "Don't tell them to slow down, give them the first job of the morning so the energy has a target.",
   Taurus:      "Don't rush the body. Give a 10-minute warning, not a 'we leave now.'",
   Gemini:      "Don't shut down the chatter. Ask one real question and the wiring lands.",
-  Cancer:      "Don't perform 'fine' over a tense morning — they read the room either way. Name it briefly.",
+  Cancer:      "Don't perform 'fine' over a tense morning, they read the room either way. Name it briefly.",
   Leo:         "Don't skip the greeting. A warm hello costs nothing and changes the day.",
-  Virgo:       "Don't call them picky. They are flooded by the out-of-place thing — fix it or name it, then move on.",
+  Virgo:       "Don't call them picky. They are flooded by the out-of-place thing, fix it or name it, then move on.",
   Libra:       "Don't ask them to take a side at breakfast. Let them have neutral ground until they're warmed up.",
   Scorpio:     "Don't push for a chipper morning report. Quiet is the runway, not the problem.",
-  Sagittarius: "Don't pin them down to the table. Keep one door symbolically open — talk about later in the day.",
+  Sagittarius: "Don't pin them down to the table. Keep one door symbolically open, talk about later in the day.",
   Capricorn:   "Don't drop them into chaos. A two-sentence map of the day lets the nervous system settle.",
   Aquarius:    "Don't demand warmth on cue. Let them observe; warmth comes once they're not being watched.",
   Pisces:      "Don't tell them to toughen up. Lower the music, dim the light, give them five quiet minutes to dock.",
@@ -632,13 +632,13 @@ const HOUSE_COMFORT: Record<number, string> = {
   12: "the comfort of disappearing and processing in private",
 };
 const HOUSE_EDGE: Record<number, string> = {
-  1: "the intensity of the me — claiming a body, a face, and a pulse in the room",
+  1: "the intensity of the me, claiming a body, a face, and a pulse in the room",
   2: "the edge of pure self-worth without the props",
   3: "the edge of listening for the real signal and saying the actual sentence",
   4: "the edge of being seen and rooted in the world, not just at home",
   5: "the edge of co-creating with one specific other person instead of an audience",
   6: "the edge of resting the body and trusting that nothing breaks",
-  7: "the intensity of the me — taking a clear position even if it costs the we",
+  7: "the intensity of the me, taking a clear position even if it costs the we",
   8: "the edge of merging, sharing power, and letting another in fully",
   9: "the edge of the small mundane detail and the practical daily craft",
   10: "the edge of the private inner life beneath the public role",
@@ -658,7 +658,7 @@ const MOON_PHASE_PROFILE: Record<MoonPhaseName, { label: string; instinct: strin
   New: {
     label: "Seed / Instinct",
     instinct: "acts on raw instinct before they can fully explain why",
-    banTold: "Don't tell them to 'plan it first' — that kills the seed",
+    banTold: "Don't tell them to 'plan it first', that kills the seed",
     trueWork: "Their work is to trust the impulse and start unpolished",
   },
   Crescent: {
@@ -676,7 +676,7 @@ const MOON_PHASE_PROFILE: Record<MoonPhaseName, { label: string; instinct: strin
   Gibbous: {
     label: "Refiner / Perfecter",
     instinct: "edits, adjusts, and pressure-tests almost obsessively before reveal",
-    banTold: "Don't tell them they are 'picky' — the refinement IS the contribution",
+    banTold: "Don't tell them they are 'picky', the refinement IS the contribution",
     trueWork: "Their work is to perfect the offering before sharing it",
   },
   Full: {
@@ -811,35 +811,35 @@ const MERCURY_NERVOUS_SYSTEM_PACE: Record<string, string> = {
   Pisces: "image-, metaphor- and music-based; facts arrive sideways through story and atmosphere",
 };
 
-// Tight planetary "conversations" — short, behavioral readings for the Mastery Spot.
+// Tight planetary "conversations", short, behavioral readings for the Mastery Spot.
 // Keys are sorted "A-B" alphabetically so lookup is deterministic.
 const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
   "Moon-Sun": {
-    hard: "an internal head/heart split — what they want and what they need don't always match, and they feel both pulls at once",
-    soft: "internal alignment between what they want and what they need — the inside and the outside agree",
+    hard: "an internal head/heart split, what they want and what they need don't always match, and they feel both pulls at once",
+    soft: "internal alignment between what they want and what they need, the inside and the outside agree",
   },
   "Saturn-Sun": {
     hard: "an inner critic that audits every move and asks 'is this good enough yet?' before they've even started",
     soft: "natural discipline and the ability to play the long game without burning out",
   },
   "Pluto-Sun": {
-    hard: "an all-or-nothing pressure around being seen — fully invisible or in full power, rarely in between",
+    hard: "an all-or-nothing pressure around being seen, fully invisible or in full power, rarely in between",
     soft: "natural depth and the ability to regenerate after intense seasons",
   },
   "Sun-Uranus": {
-    hard: "a freedom-versus-belonging tug — they bolt the second things feel boxed in",
+    hard: "a freedom-versus-belonging tug, they bolt the second things feel boxed in",
     soft: "originality and permission to be themselves without apology",
   },
   "Mars-Sun": {
-    hard: "drive on overdrive — they push through even when the body is asking them to slow",
+    hard: "drive on overdrive, they push through even when the body is asking them to slow",
     soft: "clean courage and the ability to act on what matters without overthinking",
   },
   "Sun-Venus": {
-    hard: "identity tied to being liked — they may shape-shift a little to keep the love",
+    hard: "identity tied to being liked, they may shape-shift a little to keep the love",
     soft: "natural warmth and easy magnetism in how they show up",
   },
   "Neptune-Sun": {
-    hard: "an identity that blurs in groups — they absorb other people's roles and lose their own outline",
+    hard: "an identity that blurs in groups, they absorb other people's roles and lose their own outline",
     soft: "imagination and a compassionate, artistic sense of self",
   },
   "Jupiter-Sun": {
@@ -851,11 +851,11 @@ const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
     soft: "the wisdom to see and name other people's hidden wounds with real care",
   },
   "Mars-Moon": {
-    hard: "feelings and actions on a hair-trigger — emotion fires before the pause arrives",
+    hard: "feelings and actions on a hair-trigger, emotion fires before the pause arrives",
     soft: "emotional courage and the ability to act on what they feel without freezing",
   },
   "Moon-Saturn": {
-    hard: "emotional self-protection — they may swallow the feeling instead of saying it out loud",
+    hard: "emotional self-protection, they may swallow the feeling instead of saying it out loud",
     soft: "emotional steadiness and the ability to hold their own through hard moments",
   },
   "Moon-Pluto": {
@@ -863,27 +863,27 @@ const ASPECT_CONVERSATION: Record<string, { hard: string; soft: string }> = {
     soft: "emotional depth and the capacity to be with other people's intensity without flinching",
   },
   "Moon-Uranus": {
-    hard: "mood shifts that surprise even them — predictability has to be built, not assumed",
+    hard: "mood shifts that surprise even them, predictability has to be built, not assumed",
     soft: "emotional originality and freedom from inherited family patterns",
   },
   "Moon-Neptune": {
-    hard: "emotional osmosis — they pick up the room's mood and carry it as if it were their own",
+    hard: "emotional osmosis, they pick up the room's mood and carry it as if it were their own",
     soft: "deep empathy and a poetic emotional sense",
   },
   "Jupiter-Moon": {
-    hard: "feelings that swell big — generosity that can leave them emotionally empty",
+    hard: "feelings that swell big, generosity that can leave them emotionally empty",
     soft: "natural emotional warmth, faith, and easy generosity of heart",
   },
   "Moon-Venus": {
-    hard: "love and need tangled — they may confuse being needed with being loved",
+    hard: "love and need tangled, they may confuse being needed with being loved",
     soft: "emotional warmth, easy affection, and a soothing presence",
   },
   "Chiron-Moon": {
-    hard: "a tender early-comfort wound — small ruptures register much bigger than they look",
+    hard: "a tender early-comfort wound, small ruptures register much bigger than they look",
     soft: "compassion and the gift of soothing others through their own remembered tenderness",
   },
   "Mercury-Moon": {
-    hard: "feelings and words running on different tracks — they may not have the language for what they feel in real time",
+    hard: "feelings and words running on different tracks, they may not have the language for what they feel in real time",
     soft: "the gift of putting emotion into clear, honest language",
   },
 };
@@ -917,7 +917,7 @@ const CLASH_BEHAVIOR_BY_RULER_ELEMENT: Record<"fire" | "earth" | "air" | "water"
   water: "we change the temperature of a room without saying anything, and people feel it before we name it",
 };
 
-// Energy Rule: Mars-by-house — how the drive resets, and what shows up when it can't.
+// Energy Rule: Mars-by-house, how the drive resets, and what shows up when it can't.
 const MARS_HOUSE_DISCHARGE: Record<number, { action: string; shadow: string }> = {
   1:  { action: "moving the body first thing, claiming physical space before talking",                          shadow: "irritability that lands on whoever is closest, and a low-grade 'why am I picking a fight' feeling" },
   2:  { action: "physical work that produces something they can see or touch (cooking, building, lifting)",     shadow: "compulsive spending, food, or body-tinkering as a stand-in for the missing discharge" },
@@ -1035,18 +1035,18 @@ const ABSORPTION_ARCHETYPE_BY_SIGN: Record<string, string> = {
 // Mars sign → the specific shape the pressure leak takes if the discharge
 // route is blocked. Used in the Pressure Logic Consequence sentence.
 const PRESSURE_CONSEQUENCE_BY_MARS_SIGN: Record<string, string> = {
-  Aries:       "an Aries-style explosion — short, hot, all at once, then gone",
-  Taurus:      "a Taurus-style stonewall — they go immovable and refuse to be moved",
-  Gemini:      "a Gemini-style verbal cut — quick, articulate, surgical",
+  Aries:       "an Aries-style explosion, short, hot, all at once, then gone",
+  Taurus:      "a Taurus-style stonewall, they go immovable and refuse to be moved",
+  Gemini:      "a Gemini-style verbal cut, quick, articulate, surgical",
   Cancer:      "a Cancer-style emotional flood that takes hours to settle",
-  Leo:         "a Leo-style pride flare — they freeze you out for not seeing them",
+  Leo:         "a Leo-style pride flare, they freeze you out for not seeing them",
   Virgo:       "a Virgo-style hyper-criticism aimed at whoever is closest",
   Libra:       "a Libra-style cold politeness that quietly ends the conversation",
-  Scorpio:     "a Scorpio-style total shutdown — eye contact gone, room temperature drops",
-  Sagittarius: "a Sagittarius-style 'I'm out' — they leave the room, the topic, or the plan",
-  Capricorn:   "a Capricorn-style icy withdrawal — work-mode replaces relationship-mode",
-  Aquarius:    "an Aquarius-style detachment — they go conceptual and stop being reachable",
-  Pisces:      "a Pisces-style dissolve — they fog out, get sick, or disappear inward",
+  Scorpio:     "a Scorpio-style total shutdown, eye contact gone, room temperature drops",
+  Sagittarius: "a Sagittarius-style 'I'm out', they leave the room, the topic, or the plan",
+  Capricorn:   "a Capricorn-style icy withdrawal, work-mode replaces relationship-mode",
+  Aquarius:    "an Aquarius-style detachment, they go conceptual and stop being reachable",
+  Pisces:      "a Pisces-style dissolve, they fog out, get sick, or disappear inward",
 };
 
 // Sun sign → "their desire to ___" for the Internal Audit / Safety formula.
@@ -1081,7 +1081,7 @@ const MOON_DESIRE_BY_SIGN: Record<string, string> = {
   Pisces:      "soak in soft sensory input and rest",
 };
 
-// What the auditing planet does NOT want to happen — used after "they are
+// What the auditing planet does NOT want to happen, used after "they are
 // careful because they don't want to ___" in the Safety/Audit sentence.
 const AUDIT_LOSS_BY_PLANET: Record<string, string> = {
   Saturn:  "be caught short, be wrong in public, or look incompetent",
@@ -1104,13 +1104,13 @@ const PRESSURE_NEED_BY_HOUSE: Record<number, string> = {
   3:  "the right to draft their thoughts in private before being asked to explain",
   4:  "an actual locked door at home and zero unannounced family check-ins",
   5:  "private creative time where no one watches the work in progress",
-  6:  "uninterrupted routine — no surprise schedule changes on the day-of",
+  6:  "uninterrupted routine, no surprise schedule changes on the day-of",
   7:  "one-on-one time without an audience and without third parties weighing in",
   8:  "total privacy around money, intimacy, and what they're processing emotionally",
   9:  "room to wrestle privately with their own beliefs before being asked to defend them",
   10: "the ability to manage their public reputation themselves, in their own timing",
   11: "the right to step out of the group when the group gets loud",
-  12: "real, scheduled, uninterrupted alone time — not 'when there's a gap' alone time",
+  12: "real, scheduled, uninterrupted alone time, not 'when there's a gap' alone time",
 };
 
 const PRESSURE_NEED_LABEL_BY_HOUSE: Record<number, string> = {
@@ -1196,7 +1196,7 @@ export interface ChildPortrait {
     extraHolding?: string;
   };
 
-  // NEW: The lead story — luminary in hard aspect to Saturn/Pluto/Uranus
+  // NEW: The lead story, luminary in hard aspect to Saturn/Pluto/Uranus
   coreConflict?: {
     luminary: "Sun" | "Moon";
     luminarySign: string;
@@ -1251,7 +1251,7 @@ export interface ChildPortrait {
     body: string;
   };
 
-  // NEW: Chart Ruler — the "Captain of the Ship" (ruler of Ascendant)
+  // NEW: Chart Ruler, the "Captain of the Ship" (ruler of Ascendant)
   chartRuler?: {
     rulerName: string;
     rulerSign: string;
@@ -1271,7 +1271,7 @@ export interface ChildPortrait {
   };
 
 
-  // NEW: Tightest planetary "conversations" — top luminary aspects with behavioral readings
+  // NEW: Tightest planetary "conversations", top luminary aspects with behavioral readings
   tightestAspects?: Array<{
     a: string;
     b: string;
@@ -1281,7 +1281,7 @@ export interface ChildPortrait {
     line: string;
   }>;
 
-  // NEW: Moon Phase Profile (Sun–Moon angular distance) — names Balsamic etc.
+  // NEW: Moon Phase Profile (Sun–Moon angular distance), names Balsamic etc.
   moonPhaseProfile?: {
     phase: MoonPhaseName;
     angle: number;     // 0–360
@@ -1516,7 +1516,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   const sunSign = Sun?.sign;
   const sunHouse = houseOf(chart, Sun);
 
-  // 3rd house ruler — for both Mercury stage and learning style
+  // 3rd house ruler, for both Mercury stage and learning style
   const thirdCuspSign = chart.houseCusps?.house3?.sign;
   const thirdRulerName = thirdCuspSign ? TRADITIONAL_RULERS[thirdCuspSign] : undefined;
   const thirdRuler = thirdRulerName ? planets[thirdRulerName] : undefined;
@@ -1692,7 +1692,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const tightSun = sunAspects[0];
     // 1st-house Sun overlay: the pressure is to Exist Out Loud (concrete behavior, not "self-advocacy").
     const firstHouseOverlay = sunHouse === 1
-      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair" — a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
+      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair", a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
       : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
@@ -1706,7 +1706,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       sunLine =
         `${chart.name} is practicing ${practice} while ${fightVerb} ${challenge} (${sunSign} Sun ${tightSun.aspect} ${apSign} ${ap}${apHouse ? `, ${ordinal(apHouse)} house` : ""}, orb ${tightSun.orb.toFixed(1)}°). ` +
         `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
-        `${chart.name} isn't being difficult or distant — the nervous system is protecting ${goal} from getting exposed too fast.` +
+        `${chart.name} isn't being difficult or distant, the nervous system is protecting ${goal} from getting exposed too fast.` +
         firstHouseOverlay + ` ` +
         `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
@@ -1727,7 +1727,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""} is the soul's stretch: ${nnDefault}. It will feel uncomfortable on purpose.`
       : phase === "elder"
         ? `North Node in ${nnSign}${nnHouse ? ` (${ordinal(nnHouse)} house)` : ""}: the lessons mastered here are ${nnDefault}. This is the wisdom they've earned the right to teach.`
-        : `The most honest direction for ${chart.name} right now is ${nnDefault}. It feels uncomfortable on purpose — that discomfort is the signal they are headed the right way (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
+        : `The most honest direction for ${chart.name} right now is ${nnDefault}. It feels uncomfortable on purpose, that discomfort is the signal they are headed the right way (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
     : "";
   const snSign = SouthNode?.sign;
   const snHouse = houseOf(chart, SouthNode);
@@ -1744,12 +1744,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   // Adult-only "trade X for Y" pivot line
   const tradeLine = phase === "adult" && snTired && nnCall
-    ? `Stop ${snTired}. Start ${nnCall}. The old habit feels safe, but the energy has already left it — the aliveness is on the other side.`
+    ? `Stop ${snTired}. Start ${nnCall}. The old habit feels safe, but the energy has already left it, the aliveness is on the other side.`
     : undefined;
 
   // For adults, lead with the bottom-line interpretation
   const nnLineFinal = nnSign && phase === "adult"
-    ? `Where ${chart.name}'s energy actually returns right now: ${nnDefault}. Every time they default to the old habit instead, they feel flat — that flatness is the signal to pivot here (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
+    ? `Where ${chart.name}'s energy actually returns right now: ${nnDefault}. Every time they default to the old habit instead, they feel flat, that flatness is the signal to pivot here (North Node in ${nnSign}${nnHouse ? `, ${ordinal(nnHouse)} house` : ""}).`
     : nnLine;
 
   // === 3. Mastery Spot ====================================================
@@ -1791,7 +1791,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   if (age != null && age >= 45 && age <= 52 && chironSign) {
     chironReturnSpotlight = {
       title: "The Wound Becomes the Expertise",
-      body: `The biggest thing ${chart.name} struggled with in their twenties — ${chironTender} (Chiron in ${chironSign}${chironHouse ? `, ${ordinal(chironHouse)} house` : ""}) — is finally becoming their greatest strength. This is the heart of the reading right now. The wound is not getting louder; other people are starting to come to ${chart.name} for help with the exact thing that used to hurt. The job this decade is not more healing for themselves. It is letting other people benefit from the path they already walked.`,
+      body: `The biggest thing ${chart.name} struggled with in their twenties, ${chironTender} (Chiron in ${chironSign}${chironHouse ? `, ${ordinal(chironHouse)} house` : ""}), is finally becoming their greatest strength. This is the heart of the reading right now. The wound is not getting louder; other people are starting to come to ${chart.name} for help with the exact thing that used to hurt. The job this decade is not more healing for themselves. It is letting other people benefit from the path they already walked.`,
     };
   }
 
@@ -1832,14 +1832,14 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   // Personal Standards / Boundary is a COMMUNICATION STRATEGY, not a restatement
   // of the Mastery Spot. We translate the Saturn theme into an actual script
   // (what to say, what to avoid) and pair it with the Mars-based nervous-system
-  // reset. We never re-quote the inner-Saturn struggle line here — that lives
+  // reset. We never re-quote the inner-Saturn struggle line here, that lives
   // in the Mastery Spot.
   const commScript = saturnSign ? SATURN_COMMUNICATION_SCRIPT[saturnSign] : null;
   const boundaryMars = marsSign ? MARS_RESET_BY_SIGN[marsSign] : null;
   let boundary: string;
   if (isAdultLike) {
     const standardClause = saturnAdultLabel
-      ? ` Frame it as a ${saturnAdultLabel} — this territory is theirs to set, not anyone else's to approve.`
+      ? ` Frame it as a ${saturnAdultLabel}, this territory is theirs to set, not anyone else's to approve.`
       : "";
     const resetClause = boundaryMars ? ` If the nervous system is already hot, reset first: ${boundaryMars}, then deliver the line.` : "";
     const scriptClause = commScript
@@ -1849,7 +1849,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   } else {
     const resetClause = boundaryMars ? ` First, regulate the body: ${boundaryMars}.` : "";
     const scriptClause = commScript
-      ? ` Then use the opener: ${commScript.opener} Avoid ${commScript.avoid} — for them, that tone registers as "I am defective," not "I made a mistake."`
+      ? ` Then use the opener: ${commScript.opener} Avoid ${commScript.avoid}, for them, that tone registers as "I am defective," not "I made a mistake."`
       : " Then state the limit calmly as structure, not shame.";
     boundary = `Redirect, then communicate.${resetClause}${scriptClause}`.trim();
   }
@@ -1881,7 +1881,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       ? (SUN_DESIRE_BY_SIGN[c.luminarySign] ?? "be themselves out loud")
       : (MOON_DESIRE_BY_SIGN[c.luminarySign] ?? "feel safe in their own skin");
     const loss = AUDIT_LOSS_BY_PLANET[c.outerPlanet] ?? "lose control of the outcome";
-    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). This is The Internal Audit: their desire to ${desire} is being audited in real time by ${audit}. They aren't hesitant and they aren't shy — they are careful, because they don't want to ${loss}. What you may be reading as "distant," "over-prepared," or "too logical" is actually ${fear} from the inside. The work is not to silence the ${c.outerPlanet}. It is to let the ${c.luminarySign} ${c.luminary} lead first and let ${c.outerPlanet} edit second, instead of the other way around.`;
+    const synthesis = `${chart.name}'s ${c.luminarySign} ${c.luminary} (${lumFlavor}) ${aspectVerb} ${c.outerPlanet} in ${c.outerSign} (orb ${c.orb.toFixed(1)}°). This is The Internal Audit: their desire to ${desire} is being audited in real time by ${audit}. They aren't hesitant and they aren't shy, they are careful, because they don't want to ${loss}. What you may be reading as "distant," "over-prepared," or "too logical" is actually ${fear} from the inside. The work is not to silence the ${c.outerPlanet}. It is to let the ${c.luminarySign} ${c.luminary} lead first and let ${c.outerPlanet} edit second, instead of the other way around.`;
 
     coreConflict = { ...c, synthesis };
   }
@@ -1895,7 +1895,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const domainClause = domain ? `, ${domain}` : "";
     const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
     const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
-    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. They look like ${surfaceArch}, but they absorb like ${absorbArch}. Underneath the surface tone there is ${undercurrent}${domainClause}. The ah-ha: if you only address the surface (the ${thirdCuspSign} tone), you clog the undercurrent (the ${thirdRulerSign} processing) — and the next thing that comes out is either a sudden quiet or a sudden too-much. Speak to both layers and the whole channel stays open.`;
+    const synthesis = `${chart.name} speaks the language of ${voice} (3rd-house cusp in ${thirdCuspSign}), but the actual engine driving their voice is ${thirdRulerName} in ${thirdRulerSign}${thirdRulerHouse ? ` in the ${ordinal(thirdRulerHouse)} house` : ""}. They look like ${surfaceArch}, but they absorb like ${absorbArch}. Underneath the surface tone there is ${undercurrent}${domainClause}. The ah-ha: if you only address the surface (the ${thirdCuspSign} tone), you clog the undercurrent (the ${thirdRulerSign} processing), and the next thing that comes out is either a sudden quiet or a sudden too-much. Speak to both layers and the whole channel stays open.`;
 
     hiddenEngine = {
       thirdSign: thirdCuspSign,
@@ -2040,7 +2040,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const houseClause = thirdRulerHouse ? ` running through ${HOUSE_THEME[thirdRulerHouse]}` : "";
       const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[thirdCuspSign] ?? "themselves";
       const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[thirdRulerSign] ?? "an open channel";
-      const line = `${chart.name} speaks ${thirdCuspSign}, but ${chart.name} processes like ${thirdRulerSign}. The surface tone everyone meets first is ${surfaceArch}; underneath, ${chart.name} absorbs like ${absorbArch}${houseClause}. The friction: ${friction}. In real life that means ${behavior}. If anyone responds only to the surface ${thirdCuspSign} tone, the ${thirdRulerSign} undercurrent stays clogged — and the next thing out of ${chart.name} is either a sudden silence or a sudden too-much.`;
+      const line = `${chart.name} speaks ${thirdCuspSign}, but ${chart.name} processes like ${thirdRulerSign}. The surface tone everyone meets first is ${surfaceArch}; underneath, ${chart.name} absorbs like ${absorbArch}${houseClause}. The friction: ${friction}. In real life that means ${behavior}. If anyone responds only to the surface ${thirdCuspSign} tone, the ${thirdRulerSign} undercurrent stays clogged, and the next thing out of ${chart.name} is either a sudden silence or a sudden too-much.`;
 
       cognitiveClash = {
         cuspSign: thirdCuspSign,
@@ -2060,7 +2060,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   let energyDischarge: ChildPortrait["energyDischarge"] = undefined;
   if (marsSign && marsHouse && MARS_HOUSE_DISCHARGE[marsHouse]) {
     const m = MARS_HOUSE_DISCHARGE[marsHouse];
-    const line = `${chart.name}'s stress lands in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}) — that is where the body carries it. The safety valve is ${m.action}. Skip the valve and the pressure leaks out as ${m.shadow}. ${chart.name} needs that release built into the day, not earned at the end of it.`;
+    const line = `${chart.name}'s stress lands in the ${ordinal(marsHouse)} house (${HOUSE_THEME[marsHouse]}), that is where the body carries it. The safety valve is ${m.action}. Skip the valve and the pressure leaks out as ${m.shadow}. ${chart.name} needs that release built into the day, not earned at the end of it.`;
     energyDischarge = { marsSign, marsHouse, action: m.action, shadow: m.shadow, line };
   }
 
@@ -2150,8 +2150,8 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const need = PRESSURE_NEED_BY_HOUSE[needHouse] ?? PRESSURE_NEED_BY_HOUSE[12];
       const needLabel = PRESSURE_NEED_LABEL_BY_HOUSE[needHouse] ?? "Cloaking Time";
       const consequence = marsSign
-        ? (PRESSURE_CONSEQUENCE_BY_MARS_SIGN[marsSign] ?? "a total shutdown — the door closes and stays closed")
-        : "a total shutdown — the door closes and stays closed";
+        ? (PRESSURE_CONSEQUENCE_BY_MARS_SIGN[marsSign] ?? "a total shutdown, the door closes and stays closed")
+        : "a total shutdown, the door closes and stays closed";
       const roleLabel = pick.name === captainName ? "Captain (Chart Ruler)" : "Engine";
       const triggerClause =
         pick.trigger === "12th house"
@@ -2159,7 +2159,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
           : pick.trigger === "Scorpio"
           ? `their ${roleLabel} (${pick.name}) lives in Scorpio${bodyHouse ? ` in the ${ordinal(bodyHouse)} house` : ""}`
           : `their ${roleLabel} (${pick.name} in ${bodySign}${bodyHouse ? `, ${ordinal(bodyHouse)} house` : ""}) is in hard aspect to Pluto`;
-      const line = `There is a massive internal world inside ${chart.name} that feels "too big" for the room, because ${triggerClause}. They aren't being quiet, shy, or withholding — they are actively managing an undercurrent in real time so it doesn't leak out as too much. The pressure is real and it is constant. If you don't provide ${needLabel} — meaning ${need} — the consequence isn't a polite ask twice: it's ${consequence}. Build the cloaking need into the schedule on purpose, before they have to ask for it, and the pressure stays workable instead of explosive.`;
+      const line = `There is a massive internal world inside ${chart.name} that feels "too big" for the room, because ${triggerClause}. They aren't being quiet, shy, or withholding, they are actively managing an undercurrent in real time so it doesn't leak out as too much. The pressure is real and it is constant. If you don't provide ${needLabel}, meaning ${need}, the consequence isn't a polite ask twice: it's ${consequence}. Build the cloaking need into the schedule on purpose, before they have to ask for it, and the pressure stays workable instead of explosive.`;
       pressureSignature = {
         body: pick.name,
         bodySign,
@@ -2177,7 +2177,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
 
 
-  // === Real Talk (Decipher) — attach a blunt 2-3 sentence translation
+  // === Real Talk (Decipher), attach a blunt 2-3 sentence translation
   // to each major synthesis block. Survival-strategy framing, "wise friend"
   // tone, no jargon. Uses already-computed sign/house data above.
   const N = chart.name;
@@ -2193,12 +2193,12 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   if (hiddenEngine) {
     const surfaceArch = SURFACE_ARCHETYPE_BY_SIGN[hiddenEngine.thirdSign] ?? "themselves";
     const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[hiddenEngine.rulerSign] ?? "an open channel";
-    hiddenEngine.realTalk = `Real talk: ${N} performs ${hiddenEngine.thirdSign} on the outside so people think they've got the read, but inside they're absorbing like ${absorbArch}. They look like ${surfaceArch}; they process like ${absorbArch}. The ${hiddenEngine.thirdSign} tone is a stall move — it buys time while the actual ${hiddenEngine.rulerSign} processor finishes the math. Don't argue with the surface; speak to the processor.`;
+    hiddenEngine.realTalk = `Real talk: ${N} performs ${hiddenEngine.thirdSign} on the outside so people think they've got the read, but inside they're absorbing like ${absorbArch}. They look like ${surfaceArch}; they process like ${absorbArch}. The ${hiddenEngine.thirdSign} tone is a stall move, it buys time while the actual ${hiddenEngine.rulerSign} processor finishes the math. Don't argue with the surface; speak to the processor.`;
   }
 
   if (cognitiveClash) {
     const absorbArch = ABSORPTION_ARCHETYPE_BY_SIGN[cognitiveClash.rulerSign] ?? "an open channel";
-    cognitiveClash.realTalk = `Real talk: when ${N} sounds ${cognitiveClash.cuspSign}, the ${cognitiveClash.rulerSign} inside is already two steps ahead. They aren't being inconsistent — they're using the surface tone to buy a few seconds while the actual ${cognitiveClash.rulerSign} read finishes loading. If you push the surface for an answer, you'll get a stall, not a lie.`;
+    cognitiveClash.realTalk = `Real talk: when ${N} sounds ${cognitiveClash.cuspSign}, the ${cognitiveClash.rulerSign} inside is already two steps ahead. They aren't being inconsistent, they're using the surface tone to buy a few seconds while the actual ${cognitiveClash.rulerSign} read finishes loading. If you push the surface for an answer, you'll get a stall, not a lie.`;
   }
 
   if (coreConflict) {
@@ -2213,7 +2213,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   }
 
   if (internalTugOfWar) {
-    internalTugOfWar.realTalk = `Real talk: ${N} is running two true things at once. ${internalTugOfWar.a} wants the move; ${internalTugOfWar.b} wants to make sure the move doesn't cost them. The arguing isn't dysfunction — it's quality control. The fix is to let ${internalTugOfWar.a} go first, then let ${internalTugOfWar.b} edit the receipt, not the impulse.`;
+    internalTugOfWar.realTalk = `Real talk: ${N} is running two true things at once. ${internalTugOfWar.a} wants the move; ${internalTugOfWar.b} wants to make sure the move doesn't cost them. The arguing isn't dysfunction, it's quality control. The fix is to let ${internalTugOfWar.a} go first, then let ${internalTugOfWar.b} edit the receipt, not the impulse.`;
   }
 
   if (cloakingNote) {
@@ -2222,17 +2222,17 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
 
   if (pressureSignature) {
     const sign = pressureSignature.bodySign;
-    pressureSignature.realTalk = `Real talk: ${N} is sitting on a ${sign} volcano. They need a door they can lock so they can decompress without ${pressureSignature.consequence}. It isn't about being shy or rude. It's about safety — theirs and yours.`;
+    pressureSignature.realTalk = `Real talk: ${N} is sitting on a ${sign} volcano. They need a door they can lock so they can decompress without ${pressureSignature.consequence}. It isn't about being shy or rude. It's about safety, theirs and yours.`;
   }
 
   if (saturnBlock) {
     const reason = SATURN_REAL_REASON[saturnBlock.sign] ?? "learned early that competence was the safest currency in the room";
     const payoff = SIGN_PAYOFF[saturnBlock.sign] ?? "in charge";
-    saturnBlock.realTalk = `Real talk: this isn't a "struggle area." ${N} ${reason}, so the chase for feeling ${payoff} became the strategy. The mastery is letting that strategy retire when it isn't needed anymore — and letting someone else hold the weight without it costing them their identity.`;
+    saturnBlock.realTalk = `Real talk: this isn't a "struggle area." ${N} ${reason}, so the chase for feeling ${payoff} became the strategy. The mastery is letting that strategy retire when it isn't needed anymore, and letting someone else hold the weight without it costing them their identity.`;
   }
 
   if (chironBlock) {
-    chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna — don't try to remove it; protect it and use it on purpose.`;
+    chironBlock.realTalk = `Real talk: the tender spot isn't broken. It's exactly where ${N} got extra fluent at reading other people, because they had to. The "wound" is also the antenna, don't try to remove it; protect it and use it on purpose.`;
   }
 
   // === No-Repeats Pass ====================================================
@@ -2313,7 +2313,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     { pattern: /\bunfolding\b/gi,            replacement: "happening" },
     { pattern: /\bmeaning[-\s]?makers?\b/gi, replacement: "sense-maker" },
     // Smooth dashes/quotes that drift in from templates.
-    { pattern: /\s+—\s+/g,                   replacement: ", " },
+    { pattern: /\s+,\s+/g,                   replacement: ", " },
   ];
   function scrubHardBan<T>(node: T): T {
     if (typeof node === "string") {
