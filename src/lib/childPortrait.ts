@@ -930,9 +930,9 @@ const MARS_HOUSE_DISCHARGE: Record<number, { action: string; shadow: string }> =
   5:  { action: "play, sport, art, creative risk, romance, anything that feels like joyful release",            shadow: "shame-spirals about 'wasted potential' and picking fights with the people they love most" },
   6:  { action: "structured exercise, routines they can master, fixing one small broken thing per day",         shadow: "body symptoms (gut, sleep, headaches) carrying the rage the mouth won't say" },
   7:  { action: "vigorous one-on-one engagement: sparring conversation, partnered training, real debate",       shadow: "passive-aggressive jabs at a partner, or a constant low simmer of 'they always start it'" },
-  8:  { action: "intense private outlets: heavy lifting, sex, deep therapy work, financial deep-dives",        shadow: "control battles, sudden financial chaos, or icy withdrawal that looks like punishment" },
+  8:  { action: "intense private outlets: heavy lifting, sex, deep therapy work, deep dives into money and shared resources",        shadow: "control battles, sudden money chaos, or icy withdrawal that looks like punishment" },
   9:  { action: "long walks, travel, study sprints, big-stakes outdoor adventure, teaching",                   shadow: "preaching at people, restless 'I have to get out of here' agitation, picking fights about beliefs" },
-  10: { action: "ambition-driven output: a real project, a public deliverable, building visible reputation",   shadow: "career sabotage, burnout, or aggression that lands on subordinates and bosses" },
+  10: { action: "a real project, a public piece of work, building visible reputation",   shadow: "career sabotage, burnout, or aggression that lands on coworkers and bosses" },
   11: { action: "group sport, activism, organizing, sweating with friends",                                    shadow: "alienating their own friend group, or burning a bridge in a community they love" },
   12: { action: "private movement no one watches: solo swim, dawn run, breathwork, journaling sweat out",      shadow: "self-attack, depression-shaped fatigue, illness, or rage they turn inward instead of out" },
 };
