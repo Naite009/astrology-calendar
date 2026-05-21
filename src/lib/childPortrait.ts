@@ -196,7 +196,7 @@ const SUN_PLAIN_BY_SIGN: Record<string, string> = {
   Aries: "wired to start things and move first; needs action to feel like themselves",
   Taurus: "wired for steadiness, comfort, and building things that last",
   Gemini: "wired to ask questions, talk, and connect ideas",
-  Cancer: "wired to care for people and to track how everyone in the room is feeling",
+  Cancer: "wired to care for people and to track the emotional weather of whoever is in the room with them",
   Leo: "wired to be seen warmly and to express themselves out loud",
   Virgo: "wired to be useful, to notice details, and to make things work better",
   Libra: "wired to keep things fair and to think about themselves and the other person at the same time",
