@@ -1440,11 +1440,25 @@ function buildAdultAnchor(
     };
   }
   if (age <= 55) {
-    const jup = jupiterSign ? ` Jupiter in ${jupiterSign} gives them the exact language to teach what they lived through.` : "";
+    // Plain-English breakdown of the three placements that drive this stage.
+    const sunPlain = sunSign ? (SUN_PLAIN_BY_SIGN[sunSign] ?? `a ${sunSign} core`) : "their core self";
+    const sunHousePlain = sunHouse ? ` ${SUN_HOUSE_PLAIN[sunHouse] ?? ""}` : "";
+    const sunSentence = sunSign
+      ? `${sunSign} Sun${sunHouse ? ` in the ${ordinal(sunHouse)} house` : ""} means ${name} is ${sunPlain}.${sunHousePlain}`
+      : "";
+    const chironPlain = chironSign ? (CHIRON_TENDER_BY_SIGN[chironSign] ?? "a specific sore spot only they fully know") : "";
+    const chironSentence = chironSign
+      ? `Chiron in ${chironSign} means the old wound is about ${chironPlain}. That sore spot has been there since childhood.`
+      : "";
+    const jupiterPlain = jupiterSign ? (JUPITER_TEACHES_BY_SIGN[jupiterSign] ?? `${jupiterSign} territory`) : "";
+    const jupiterSentence = jupiterSign
+      ? `Jupiter in ${jupiterSign} means ${name}'s natural teaching ground is ${jupiterPlain}.`
+      : "";
+    const stageSentence = `Put together, this is the Chiron Return decade (around ages 49-50): the wound stops being a thing ${name} hides and turns into the exact thing other people start asking them for help with. Jupiter${jupiterSign ? ` in ${jupiterSign}` : ""} gives them the plain words to teach it.`;
     return {
       stage: "Chiron Return: The Wound Becomes Expertise (46-55)",
       focus: `${sunFocus} · Chiron ${chironSign ? `in ${chironSign}` : ""} · Jupiter ${jupiterSign ? `in ${jupiterSign}` : ""}`.trim(),
-      body: `The biggest struggle ${name} had in their twenties is finally becoming their greatest strength. The sore spot is not getting bigger; other people are starting to come to ${name} for help with it.${jup} The old "${sat}" pressure is still there, but now ${name} is running the show instead of auditioning for it.`,
+      body: [sunSentence, chironSentence, jupiterSentence, stageSentence].filter(Boolean).join(" "),
     };
   }
   if (age <= 70) {
