@@ -1267,8 +1267,8 @@ export interface ChildPortrait {
   };
 
   // Lightweight placements used by the Narrative Briefing prose blocks
-  venusPlacement?: { sign: string; house: number | null; degree: number | null };
-  chironPlacement?: { sign: string; house: number | null; degree: number | null };
+  venusPlacement?: { sign: string; house: number | null; degree: number | null; retrograde?: boolean };
+  chironPlacement?: { sign: string; house: number | null; degree: number | null; retrograde?: boolean };
   ascDegree?: number | null;
   twelfthHouseBodies?: Array<{ name: string; sign: string }>;
 
