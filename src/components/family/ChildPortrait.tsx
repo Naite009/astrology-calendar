@@ -462,12 +462,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                           <details className="mt-1">
                                             <summary className="cursor-pointer text-[11px] uppercase tracking-wider opacity-70 hover:opacity-100 select-none">What 29° means →</summary>
                                             <div className="mt-2 text-[12px] opacity-90 leading-relaxed font-normal">
-                                              29° is the very last degree of a sign, called <strong>anaretic</strong> or the "degree of fate." The placement has lived the entire sign already and is one breath from changing signs forever. That creates a now-or-never pressure, like a senior expert on their last day, trying to ship the final, definitive version of the lesson. It feels urgent, high-stakes, slightly impatient, and carries a felt responsibility to get this sign <em>right</em> before time runs out.
+                                              29° is the very last degree of a sign, called the <strong>anaretic degree</strong> or "the degree of fate." The planet has already lived the entire sign and is one breath from leaving it for good. That creates a "now or never" feeling, like someone on their last day in a job they have spent years learning, trying to put everything they know into one last clear act. It feels urgent and a little impatient, with a strong sense of needing to get this sign <em>right</em> before time runs out.
                                             </div>
                                           </details>
                                         </td>
-                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Safety Builder" : "The Closing-Degree Master"}</strong>, urgent, high-stakes, "now-or-never" mastery. Carries the full weight of the sign's lesson.</td>
-                                        <td className="py-3"><strong>The Manager</strong>, 10°–20°. Routine, calm, ongoing work. No deadline pressure inside the placement.</td>
+                                        <td className="py-3 pr-3"><strong>{dispoIsCFO ? "The Safety Builder" : "The Closing-Degree Master"}</strong>: urgent, high-stakes, "now or never" mastery. Carries the full weight of the sign's lesson.</td>
+                                        <td className="py-3"><strong>The Manager</strong> (10°–20°): calm, ongoing, no deadline pressure inside the placement.</td>
                                       </tr>
                                     ) : null}
                                     {mutualReception ? (
