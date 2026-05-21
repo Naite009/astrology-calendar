@@ -1202,9 +1202,16 @@ export interface ChildPortrait {
     rulerName: string;
     rulerSign: string;
     rulerHouse: number | null;
+    rulerDegree?: number | null;
     ascSign: string;
     line: string;
     realTalk?: string;
+    dispositor?: {
+      name: string;
+      sign: string;
+      house: number | null;
+      degree: number | null;
+    };
   };
 
 
@@ -1870,7 +1877,21 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       const line = filter
         ? `${chart.name}'s ${ascSign} Filter isn't about being ${filter.stereotype}. It is fueled by ${rulerName} in ${rulerPlanet.sign}${rulerHouse ? ` (${ordinal(rulerHouse)} house)` : ""}, which means they ${filter.verb} in order to protect ${drive}${houseClause}. The surface job of the filter is to ${filter.surfaceJob}; the deeper job, run by ${rulerName}, is to keep ${drive} intact.`
         : `With ${ascSign} Rising, the chart's boss is ${rulerName} in ${rulerPlanet.sign}${rulerHouse ? ` (${ordinal(rulerHouse)} house)` : ""}, which means ${chart.name}'s motivation runs through ${drive}${houseClause}.`;
-      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, ascSign, line };
+      // Dispositor chain: who hosts the chart ruler's sign?
+      let dispositor: NonNullable<ChildPortrait["chartRuler"]>["dispositor"] = undefined;
+      const dispoName = TRADITIONAL_RULERS[rulerPlanet.sign];
+      if (dispoName && dispoName !== rulerName) {
+        const dispoPlanet = planets[dispoName];
+        if (dispoPlanet?.sign) {
+          dispositor = {
+            name: dispoName,
+            sign: dispoPlanet.sign,
+            house: houseOf(chart, dispoPlanet),
+            degree: dispoPlanet.degree ?? null,
+          };
+        }
+      }
+      chartRuler = { rulerName, rulerSign: rulerPlanet.sign, rulerHouse, rulerDegree: rulerPlanet.degree ?? null, ascSign, line, dispositor };
     }
   }
 

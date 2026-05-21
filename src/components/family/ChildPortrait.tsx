@@ -307,32 +307,41 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       </div>
                     );
 
-                    // ── I. The Environmental Baseline ─────────────────────────────────
+                    // ── I. The Chain of Command (Rising → Ruler → Dispositor) ────────
                     if (cr && venus) {
                       const ascStr = `${cr.ascSign} Rising${fmtDeg(ascDegree) ? ` (${fmtDeg(ascDegree)})` : ""}`;
                       const venusDeg = fmtDeg(venus.degree);
                       const zeroDeg = cr.rulerName === "Venus" && typeof venus.degree === "number" && venus.degree < 1;
                       const rulerStr = `${cr.rulerName} in ${cr.rulerSign}${venusDeg && cr.rulerName === "Venus" ? ` (${venusDeg})` : ""}${cr.rulerHouse ? `, ${ord(cr.rulerHouse)} House` : ""}`;
+                      const dispo = cr.dispositor;
+                      const dispoDeg = fmtDeg(dispo?.degree ?? null);
+                      const dispoStr = dispo
+                        ? `${dispo.name} in ${dispo.sign}${dispoDeg ? ` (${dispoDeg})` : ""}${dispo.house ? `, ${ord(dispo.house)} House` : ""}`
+                        : null;
+                      const inChironReturnSec1 = inChironReturn;
                       movements.push({
-                        key: "environmental-baseline",
+                        key: "chain-of-command",
                         roman: "I",
-                        title: "The Environmental Baseline",
-                        tag: "Rising / Chart Ruler",
+                        title: "The Chain of Command",
+                        tag: "Rising · Ruler · Dispositor",
                         tone: "emerald",
                         icon: <Shield className="h-4 w-4" />,
                         body: (
                           <>
-                            <Row label="The Math"><M>{ascStr}</M> ruled by <M>{rulerStr}</M></Row>
+                            <Row label="The Math">
+                              <M>{ascStr}</M> is ruled by <M>{rulerStr}</M>{dispoStr ? <>, which is hosted by <M>{dispoStr}</M></> : null}.
+                            </Row>
                             <Row label="The Physics">
-                              The Rising sign is the <strong>front door</strong>, but the Chart Ruler decides <em>what the door is for</em>. {N}'s door is <M>{ascStr}</M>, so on the surface it looks like a standard Libra setup: read the room, smooth the edges, keep things pleasant. That is the cover story. The actual operator behind the door is <M>{rulerStr}</M>{zeroDeg ? <>, sitting at the <M>0° anaretic</M> opening of the sign</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has exactly one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {zeroDeg ? <>The <M>0.0°</M> degree is the rawest, most uncompromising expression of the sign, there is no nuance layered on top yet, so the demand for open space runs at <strong>maximum amplitude</strong>. </> : null}
+                              The Rising sign is the <strong>front door</strong>, the Chart Ruler is the <strong>operator</strong> behind it, and the Dispositor is the <strong>actual anchor</strong> the whole system reports to. {N}'s door is <M>{ascStr}</M>, so the surface looks like standard Libra: read the room, smooth the edges, keep things pleasant. That is the cover story. The operator behind the door is <M>{rulerStr}</M>{zeroDeg ? <>, sitting at the <M>0° anaretic</M> opening of the sign, which is the rawest, most uncompromising amplitude {cr.rulerSign} can run at</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius has exactly one non-negotiable requirement: freedom to move" : `${cr.rulerSign} has its own non-negotiable requirement`}. {dispoStr ? <>But the chain does not stop there. That {cr.rulerName} reports up to <M>{dispoStr}</M>, and {dispo!.sign === "Taurus" ? "Taurus in the 8th House is built to convert lived intensity, loss, debt, intimacy, survival, into durable, physical wisdom that does not evaporate" : `${dispo!.sign}${dispo!.house ? ` in the ${ord(dispo!.house)} House` : ""} is built to convert experience into resource`}. </> : null}
                             </Row>
                             <Row label="The Truth">
-                              That changes the entire function of her Libra Rising. It is not "wants to be liked." It is a <strong>Tactical Tool</strong>. Generic Libra Rising soothes the room because it wants approval. {N}'s Libra Rising soothes the room because her <M>{cr.rulerName} at {venusDeg} {cr.rulerSign}</M> cannot tolerate being trapped, and a calm room is the fastest exit from emotional captivity. The diplomacy is not the goal, it is the <strong>tradecraft</strong>. She greases the social tracks so her {cr.rulerSign === "Sagittarius" ? "Sagittarius" : cr.rulerSign} ruler can keep its independence intact. The mask exists to protect the freedom of the operator behind it. Every smoothed conflict, every defused tension, every "I'm fine" is the {cr.rulerName === "Venus" ? "Venus" : cr.rulerName}-ruler buying back its right to leave the conversation, the room, or the relationship on its own terms.
+                              That changes the entire function of her Libra Rising. It is not "wants to be liked." It is a <strong>Tactical Tool</strong>. The diplomacy is the tradecraft her <M>{cr.rulerName} in {cr.rulerSign}</M> uses to keep its independence intact, every smoothed conflict and every "I'm fine" is the ruler buying back its right to leave on its own terms. {dispoStr ? <>And underneath the freedom move, the real prize is the <M>{dispo!.name} in {dispo!.sign}</M> anchor: everything she lives through is being deposited into a <strong>physical library of wisdom</strong> her system can stand on later. {inChironReturnSec1 ? <>At <M>age {age}</M>, inside the Chiron Return window, that anchor is exactly what turns the past four decades of struggle into <strong>Expertise</strong>. The freedom stops being escape and starts being authority. </> : null}</> : null}
                             </Row>
                           </>
                         ),
                       });
                     }
+
 
                     // ── II. The Identity Glitch ───────────────────────────────────────
                     if (sun && chiron && sunChiron) {
