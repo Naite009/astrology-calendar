@@ -351,6 +351,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       const cfoLabel = dispoIsCFO ? "the Expert CFO" : (dispoIsAnaretic ? `the ${dispo!.sign} master at the closing degree` : (dispo ? `the ${dispo!.sign} anchor` : ""));
                       const hasVoltage = rulerIsAnyZero || dispoIsAnaretic;
 
+                      // ── Retrograde physics ──
+                      const dispoRx = !!dispo?.retrograde;
+                      const chironRx = !!chiron?.retrograde;
+                      const sunIsAnaretic = !!sun && typeof (sun as any).degree === "number" && (sun as any).degree >= 28;
+                      const chironIsAnaretic = !!chiron && typeof (chiron as any).degree === "number" && (chiron as any).degree >= 29;
+                      const hasRetroLayer = dispoRx || chironRx;
+
                       const inChironReturnSec1 = inChironReturn;
                       movements.push({
                         key: "chain-of-command",
