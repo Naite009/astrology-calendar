@@ -371,7 +371,7 @@ const SATURN_HOUSE_ADULT_STANDARD: Record<number, string> = {
 
 
 const CHIRON_TENDER_BY_SIGN: Record<string, string> = {
-  Aries: "feeling weak, behind, or 'less than' physically",
+  Aries: "having to fight for the right to exist as themselves: going first, taking up space, getting angry, asserting 'I want this' without apologizing or shrinking",
   Taurus: "feeling like they don't have enough or aren't enough materially",
   Gemini: "feeling stupid, mis-heard, or talked over",
   Cancer: "feeling unwelcome, unwanted, or like 'too much'",
