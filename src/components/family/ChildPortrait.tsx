@@ -546,7 +546,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
                               {inChironReturnSec1 ? (
                                 <Row label="The Chiron Return Frame">
-                                  At <M>age {age}</M>, the work is not lowering the voltage. The work is <strong>stopping the audit</strong> that has been treating the voltage as a defect for forty-nine years, and <strong>owning the {rulerIsExplorer && dispoIsCFO ? "freedom and safety" : "extreme-degree"} loop</strong> as the actual instrument.
+                                  At <M>age {age}</M>, the work is not turning the intensity down. It is finally <strong>stopping the inner question</strong> she has been asking for almost five decades, whether her two strong needs ({rulerIsExplorer && dispoIsCFO ? "freedom and safety" : "both extreme-degree placements"}) are allowed to be this loud. They are. The chart was always built this way.
                                 </Row>
                               ) : null}
                             </>
