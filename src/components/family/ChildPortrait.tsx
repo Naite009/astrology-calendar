@@ -385,6 +385,24 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                 {N} does not experience herself as having a single inner boss. She runs a constant partnership between a <strong>High-Energy Launch</strong> ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and a <strong>Strategic Financier</strong> ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). The {dispoIsCFO ? "CFO" : dispo!.name} side is <em>not</em> a brake meant to stop the {rulerIsExplorer ? "Explorer" : cr.rulerName}. It is the <strong>Financier</strong> that funds the launch. She is a <strong>Grounded {rulerIsExplorer ? "Explorer" : cr.rulerSign}</strong> who builds massive internal value on the {dispo!.sign} side <em>specifically so she can remain un-tethered on the {cr.rulerSign} side</em>. Every dollar of expertise, body knowledge, and resource gets stacked for one reason: to buy <strong>Strategic Autonomy</strong>, the right to move without ever having to ask permission or money again.
                               </Row>
                             ) : null}
+                            {hasRetroLayer ? (
+                              <Row label="The Retrograde Layer, Internalized Mandate">
+                                {dispoRx ? <>The {dispoIsCFO ? "CFO" : dispo!.name} is <strong>Retrograde</strong>. That means the foundation is <strong>Internalized</strong>. {N} does not trust outside experts or borrowed templates to tell her what her resource is worth. The {dispoIsCFO ? "Expert CFO" : dispo!.sign + " anchor"} is <strong>self-taught and self-audited</strong>, the sole architect of her own security. The world did not hand her the manual, so she wrote it from the inside. </> : null}
+                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The "sting" is not actually coming from the room. It is a <strong>re-run of an internal tape</strong>, a self-generated security check. The Permission Audit is an <strong>internal loop</strong>; {N} is her own harshest auditor, and the permission she keeps scanning for is permission from herself. </> : null}
+                                {dispoRx && chironRx ? <>Put together, this is a <strong>Self-Sourcing Power Plant</strong>. The Explorer breaks free using a <strong>Private Bank</strong> that no one else can sign off on, audited by an <strong>Internal Auditor</strong> who answers only to her. Nothing in this loop needs outside approval to operate. </> : null}
+                              </Row>
+                            ) : null}
+                            {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
+                              <Row label="The Anaretic Stack, Deadline Mechanic">
+                                {N} carries multiple bodies parked at the <strong>Maximum Pressure Threshold</strong>{(() => {
+                                  const parts: string[] = [];
+                                  if (sunIsAnaretic) parts.push(`Sun at ${fmtDeg((sun as any).degree)} ${sun.sign}`);
+                                  if (dispoIsAnaretic) parts.push(`${dispo!.name} at ${fmtDeg(dispo!.degree)} ${dispo!.sign}${dispoRx ? " Rx" : ""}`);
+                                  if (chironIsAnaretic) parts.push(`Chiron at ${fmtDeg((chiron as any).degree)} ${chiron.sign}${chironRx ? " Rx" : ""}`);
+                                  return parts.length ? <> ({parts.join(", ")})</> : null;
+                                })()}. This is not a personality trait. It is a <strong>Deadline Mechanic</strong>, a felt mandate to ship the definitive version of each lesson before the sign closes. Every movement above carries that "now-or-never" voltage.
+                              </Row>
+                            ) : null}
                             {isDegreeOpposition ? (
                               <Row label="The Opposition Layer">
                                 On top of the loop, the two co-rulers are sitting across from each other by degree, <M>{cr.rulerName} at {fmtDeg(venus.degree)} {cr.rulerSign}</M> and <M>{dispo!.name} at {fmtDeg(dispo!.degree)} {dispo!.sign}</M> form a tight <M>{pairOrb!.toFixed(1)}° opposition</M> across the wheel. That is the <strong>Launch desk</strong> (Freedom) and the <strong>Financier desk</strong> (Leveraged Expertise) firing at the same time, in direct dialogue across the chart. It is not indecision. It is two real needs paired in tension so each one stays honest, the launch never gets reckless because the financier is watching, and the financier never hoards because the launch is pulling.
