@@ -299,6 +299,51 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     };
                     const movements: Movement[] = [];
 
+                    // ── Universal sign / house / phase lookups ─────────────────────────
+                    // Plain-language "what this sign actually needs" used everywhere a
+                    // sign appears in a decision context. No jargon. Felt-sense only.
+                    const SIGN_NEED: Record<string, { need: string; check: string; element: "fire" | "earth" | "air" | "water"; mode: "cardinal" | "fixed" | "mutable"; }> = {
+                      Aries:       { need: "to move first, to start the thing, to not wait for permission",                       check: "Does this let me act now, on my own steam, without asking?",       element: "fire",  mode: "cardinal" },
+                      Taurus:      { need: "to feel her body, money, food, time, and peace stay steady",                          check: "Will I still feel safe and rested after this?",                    element: "earth", mode: "fixed" },
+                      Gemini:      { need: "to keep options open, talk it through, and stay curious",                             check: "Does this leave room to change my mind and keep learning?",         element: "air",   mode: "mutable" },
+                      Cancer:      { need: "to feel emotionally safe and close to the people who matter",                        check: "Do my people, my home, and my gut feel okay with this?",            element: "water", mode: "cardinal" },
+                      Leo:         { need: "to be seen as herself, to express, to be proud of what she made",                    check: "Can I put my name on this and still feel like me?",                 element: "fire",  mode: "fixed" },
+                      Virgo:       { need: "for the details to add up, for the work to be useful and clean",                     check: "Are the pieces actually working? What needs fixing first?",         element: "earth", mode: "mutable" },
+                      Libra:       { need: "for the relationship to stay fair and the room to stay calm",                        check: "Is this fair to everyone, and can I live with the other side of it?", element: "air",   mode: "cardinal" },
+                      Scorpio:     { need: "for the truth to be on the table, even if it stings",                                check: "Is anyone hiding the real thing? Can I trust this all the way down?", element: "water", mode: "fixed" },
+                      Sagittarius: { need: "room to move, honesty, and a way out if it stops being true",                        check: "Does this grow my world or shrink it?",                             element: "fire",  mode: "mutable" },
+                      Capricorn:   { need: "for the plan to be real, the work to count, and the structure to hold",              check: "In five years, will I be glad I did this?",                         element: "earth", mode: "cardinal" },
+                      Aquarius:    { need: "for the answer to be her own, not just what the group expects",                      check: "Is this actually true for me, or am I going along with it?",        element: "air",   mode: "fixed" },
+                      Pisces:      { need: "for the choice to feel right in her body, beyond the logic",                         check: "What does my gut say once I stop reading about it?",                element: "water", mode: "mutable" },
+                    };
+
+                    const HOUSE_LIFE_AREA: Record<number, string> = {
+                      1:  "how she shows up and what she looks like to the world",
+                      2:  "her money, her body, her self-worth, and what she owns",
+                      3:  "talking, learning, siblings, neighbors, and short trips",
+                      4:  "home, family roots, and the people she came from",
+                      5:  "play, creativity, romance, kids, and what she makes for fun",
+                      6:  "daily routine, work, health, and the small habits that hold the day",
+                      7:  "one-on-one relationships, partnerships, and close opponents",
+                      8:  "shared money, intimacy, debt, trust, and the things people keep quiet about",
+                      9:  "travel, beliefs, school, publishing, and the bigger picture",
+                      10: "career, reputation, and what the public sees her doing",
+                      11: "friends, groups, community, and the future she is building toward",
+                      12: "the inside-only stuff: dreams, private grief, behind the scenes",
+                    };
+
+                    // Universal element-contrast frame, used when ruler and dispositor
+                    // sit in different elements. Replaces Lauren-specific Sag/Taurus copy.
+                    const elementVoice = (el: "fire" | "earth" | "air" | "water"): string => {
+                      switch (el) {
+                        case "fire":  return "wants to move, do, and feel alive";
+                        case "earth": return "wants steady ground, real proof, and a body that feels safe";
+                        case "air":   return "wants to think it through, talk it out, and keep options open";
+                        case "water": return "wants the feeling to be right, not just the logic";
+                      }
+                    };
+
+
                     // Small subheader used inside each movement body
                     const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
                       <div className="mt-3 first:mt-0">
