@@ -360,6 +360,7 @@ export function composePortrait(p: ChildPortrait): ComposedPortrait {
 
   return {
     oneSentence,
+    systemMechanism,
     stageAsk,
     misreads: misreads.slice(0, 3),
     whatHelps,
