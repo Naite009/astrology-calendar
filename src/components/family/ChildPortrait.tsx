@@ -299,6 +299,51 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     };
                     const movements: Movement[] = [];
 
+                    // ── Universal sign / house / phase lookups ─────────────────────────
+                    // Plain-language "what this sign actually needs" used everywhere a
+                    // sign appears in a decision context. No jargon. Felt-sense only.
+                    const SIGN_NEED: Record<string, { need: string; check: string; element: "fire" | "earth" | "air" | "water"; mode: "cardinal" | "fixed" | "mutable"; }> = {
+                      Aries:       { need: "to move first, to start the thing, to not wait for permission",                       check: "Does this let me act now, on my own steam, without asking?",       element: "fire",  mode: "cardinal" },
+                      Taurus:      { need: "to feel her body, money, food, time, and peace stay steady",                          check: "Will I still feel safe and rested after this?",                    element: "earth", mode: "fixed" },
+                      Gemini:      { need: "to keep options open, talk it through, and stay curious",                             check: "Does this leave room to change my mind and keep learning?",         element: "air",   mode: "mutable" },
+                      Cancer:      { need: "to feel emotionally safe and close to the people who matter",                        check: "Do my people, my home, and my gut feel okay with this?",            element: "water", mode: "cardinal" },
+                      Leo:         { need: "to be seen as herself, to express, to be proud of what she made",                    check: "Can I put my name on this and still feel like me?",                 element: "fire",  mode: "fixed" },
+                      Virgo:       { need: "for the details to add up, for the work to be useful and clean",                     check: "Are the pieces actually working? What needs fixing first?",         element: "earth", mode: "mutable" },
+                      Libra:       { need: "for the relationship to stay fair and the room to stay calm",                        check: "Is this fair to everyone, and can I live with the other side of it?", element: "air",   mode: "cardinal" },
+                      Scorpio:     { need: "for the truth to be on the table, even if it stings",                                check: "Is anyone hiding the real thing? Can I trust this all the way down?", element: "water", mode: "fixed" },
+                      Sagittarius: { need: "room to move, honesty, and a way out if it stops being true",                        check: "Does this grow my world or shrink it?",                             element: "fire",  mode: "mutable" },
+                      Capricorn:   { need: "for the plan to be real, the work to count, and the structure to hold",              check: "In five years, will I be glad I did this?",                         element: "earth", mode: "cardinal" },
+                      Aquarius:    { need: "for the answer to be her own, not just what the group expects",                      check: "Is this actually true for me, or am I going along with it?",        element: "air",   mode: "fixed" },
+                      Pisces:      { need: "for the choice to feel right in her body, beyond the logic",                         check: "What does my gut say once I stop reading about it?",                element: "water", mode: "mutable" },
+                    };
+
+                    const HOUSE_LIFE_AREA: Record<number, string> = {
+                      1:  "how she shows up and what she looks like to the world",
+                      2:  "her money, her body, her self-worth, and what she owns",
+                      3:  "talking, learning, siblings, neighbors, and short trips",
+                      4:  "home, family roots, and the people she came from",
+                      5:  "play, creativity, romance, kids, and what she makes for fun",
+                      6:  "daily routine, work, health, and the small habits that hold the day",
+                      7:  "one-on-one relationships, partnerships, and close opponents",
+                      8:  "shared money, intimacy, debt, trust, and the things people keep quiet about",
+                      9:  "travel, beliefs, school, publishing, and the bigger picture",
+                      10: "career, reputation, and what the public sees her doing",
+                      11: "friends, groups, community, and the future she is building toward",
+                      12: "the inside-only stuff: dreams, private grief, behind the scenes",
+                    };
+
+                    // Universal element-contrast frame, used when ruler and dispositor
+                    // sit in different elements. Replaces Lauren-specific Sag/Taurus copy.
+                    const elementVoice = (el: "fire" | "earth" | "air" | "water"): string => {
+                      switch (el) {
+                        case "fire":  return "wants to move, do, and feel alive";
+                        case "earth": return "wants steady ground, real proof, and a body that feels safe";
+                        case "air":   return "wants to think it through, talk it out, and keep options open";
+                        case "water": return "wants the feeling to be right, not just the logic";
+                      }
+                    };
+
+
                     // Small subheader used inside each movement body
                     const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
                       <div className="mt-3 first:mt-0">
@@ -369,22 +414,29 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         body: (
                           <>
                             <Row label="The Three Links">
-                              The chain of command has three links. Link 1 is the <strong>Rising sign</strong> (the part of {N} that people meet first, before they know her): <M>{ascStr}</M>. Link 2 is the <strong>Chart Ruler</strong> (the planet in charge of that Rising sign, which sets what {N} is actually trying to get out of any room she walks into): <M>{rulerStr}</M>. Link 3 is the <strong>Dispositor</strong> (the planet in charge of the sign the Chart Ruler is sitting in, which sets the rule the Chart Ruler has to follow before it can act). {dispoStr ? <>{cr.rulerName} is in <strong>{cr.rulerSign}</strong>, and {cr.rulerSign} is ruled by <strong>{dispo!.name}</strong>, so {dispo!.name} is the Dispositor: <M>{dispoStr}</M>.</> : <>The Chart Ruler is in its own sign, so there is no separate Dispositor.</>} {mutualReception ? <>Now the part that matters: {dispo!.name} is sitting in <strong>{dispo!.sign}</strong>, and {dispo!.sign} is ruled by <strong>{cr.rulerName}</strong>. So the chain loops back on itself. {cr.rulerName} is in charge of {dispo!.name}, and {dispo!.name} is in charge of {cr.rulerName}. They are stuck running every decision past each other. That setup has a name in astrology: <strong>Mutual Reception</strong>. <strong>This is not indecision.</strong> It means {N} has two real needs tied together. The {cr.rulerSign} side says, "I need room to move, choose, and leave if I have to." The {dispo!.sign} side says, "I need my body, money, time, and peace to feel safe." A real yes has to respect both. A vacation can be a yes if it feels free and does not leave her stressed after. A job can be a yes if it gives her growth and does not trap her. A purchase can be a yes if it feels good now and still feels responsible later. When one side feels excited but the other side feels tight, her body may say no fast. That is not overthinking. It is her noticing that one real need is being ignored.</> : null}
+                              The chain of command has three links. Link 1 is the <strong>Rising sign</strong> (the part of {N} that people meet first, before they know her): <M>{ascStr}</M>. Link 2 is the <strong>Chart Ruler</strong> (the planet in charge of that Rising sign, which sets what {N} is actually trying to get out of any room she walks into): <M>{rulerStr}</M>. Link 3 is the <strong>Dispositor</strong> (the planet in charge of the sign the Chart Ruler is sitting in, which sets the rule the Chart Ruler has to follow before it can act). {dispoStr ? <>{cr.rulerName} is in <strong>{cr.rulerSign}</strong>, and {cr.rulerSign} is ruled by <strong>{dispo!.name}</strong>, so {dispo!.name} is the Dispositor: <M>{dispoStr}</M>.</> : <>The Chart Ruler is in its own sign (this is called "domicile"), so there is no separate Dispositor. {cr.rulerName} runs the chain by itself, which makes the {cr.rulerSign} need extra loud and uncompromising.</>}
                             </Row>
+
+                            {/* Universal Two Sides — fires for every chart that has a separate dispositor, mutual reception or not. */}
+                            {dispo && SIGN_NEED[cr.rulerSign] && SIGN_NEED[dispo.sign] ? (
+                              <Row label="The Two Sides Of Her">
+                                Every time {N} has to say yes or no to something, two inner voices weigh in. The <strong>{cr.rulerName} side</strong> ({cr.rulerSign}{cr.rulerHouse ? `, ${ord(cr.rulerHouse)} House` : ""}) needs <em>{SIGN_NEED[cr.rulerSign].need}</em>, and the question it asks is: "{SIGN_NEED[cr.rulerSign].check}" The <strong>{dispo.name} side</strong> ({dispo.sign}{dispo.house ? `, ${ord(dispo.house)} House` : ""}) needs <em>{SIGN_NEED[dispo.sign].need}</em>, and the question it asks is: "{SIGN_NEED[dispo.sign].check}" {SIGN_NEED[cr.rulerSign].element === SIGN_NEED[dispo.sign].element ? (
+                                  <>Both voices are in the same element ({SIGN_NEED[cr.rulerSign].element}), so they tend to agree, which means when they do say yes she moves fast and confident, but when they both say no it lands as flat refusal with no middle ground. </>
+                                ) : (
+                                  <>The {cr.rulerName} side {elementVoice(SIGN_NEED[cr.rulerSign].element)}. The {dispo.name} side {elementVoice(SIGN_NEED[dispo.sign].element)}. Those two are made of different stuff, so a choice that thrills one can feel wrong to the other. </>
+                                )}{cr.rulerHouse && dispo.house ? <>And the two sides care about different parts of life: the {cr.rulerName} side is working on <em>{HOUSE_LIFE_AREA[cr.rulerHouse] ?? "its house theme"}</em>, while the {dispo.name} side is working on <em>{HOUSE_LIFE_AREA[dispo.house] ?? "its house theme"}</em>. </> : null}A real yes for {N} is the kind of yes where both sides get something. A slow no usually means one side is being asked to lose, and her body knows it before her mouth does.
+                              </Row>
+                            ) : null}
+
                             {hasVoltage ? (
                               <Row label="Why The Degrees Change The Reading">
-                                {rulerIsAnyZero ? <>The Chart Ruler sits at <M>0° {cr.rulerSign}</M>, the very first degree of the sign. That spot is called the <strong>Aries Point</strong>. A normal {cr.rulerSign} placement reads as {cr.rulerSign === "Sagittarius" ? <>experienced and philosophical, the person who has travelled and formed opinions</> : <>a settled, learned version of {cr.rulerSign}</>}. At 0°, none of that experience has been earned yet, so the need shows up raw and loud, with no filter and no compromise. For {N} that means a strong, public need for {cr.rulerSign === "Sagittarius" ? "freedom, honesty, and an open horizon" : "what this sign wants"}. </> : null}
+                                {rulerIsAnyZero ? <>The Chart Ruler sits at <M>0° {cr.rulerSign}</M>, the very first degree of the sign. That spot is called the <strong>Aries Point</strong>. A normal {cr.rulerSign} placement reads as {cr.rulerSign === "Sagittarius" ? <>experienced and philosophical, the person who has travelled and formed opinions</> : <>a settled, learned version of {cr.rulerSign}</>}. At 0°, none of that experience has been earned yet, so the need shows up raw and loud, with no filter and no compromise. For {N} that means a strong, public need for {SIGN_NEED[cr.rulerSign]?.need ?? "what this sign wants"}. </> : null}
                                 {dispoIsAnaretic ? <>The Dispositor sits at <M>{fmtDeg(dispo!.degree)} {dispo!.sign}</M>, the very last degree of the sign. That spot is called the <strong>anaretic degree</strong>, sometimes "the degree of fate." A normal {dispo!.name} in {dispo!.sign} would read as {dispo!.sign === "Taurus" ? <>quiet comfort: stay put, build slow security, eat well, do not move</> : <>a relaxed mid-sign version of {dispo!.sign}</>}. <strong>That reading does not apply here.</strong> At 29°, {dispo!.name} has already lived the whole sign and is one breath from leaving it. The placement behaves like someone on their last day in a job they have mastered, urgently trying to put the lessons of {dispo!.sign === "Taurus" ? <>Taurus, money, the body, food, comfort, and lasting value</> : dispo!.sign} into something real before time runs out. So {dispo!.name} here is not the calm Taurus couch. It is urgent, focused, and unwilling to let the lesson go to waste. It wants {N} to build <strong>real skill and real safety</strong> ({dispo!.house === 8 ? <>through the <strong>8th House</strong>: shared money, trust, debt, secrets, and deep specialist knowledge</> : dispo!.house ? <>through the <strong>{ord(dispo!.house)} House</strong></> : <>through the dispositor's house</>}).</> : null}
                               </Row>
                             ) : null}
                             <Row label="How These Three Links Actually Work">
-                              The Rising sign is the part of {N} other people meet first. The Chart Ruler is the planet that quietly drives what that Rising sign is really after. The Dispositor is the planet the Chart Ruler answers to. {N}'s Rising is <M>{ascStr}</M>, so on the surface she reads as classic Libra: she scans the room, smooths the edges, and keeps things pleasant. Underneath, the Chart Ruler is <M>{rulerStr}</M>{rulerIsAnyZero ? <>, at the loudest possible degree of {cr.rulerSign}</> : null}, and {cr.rulerSign === "Sagittarius" ? "Sagittarius needs space, honesty, movement, and a way out" : `${cr.rulerSign} has its own strong need`}. {dispoStr ? <>That ruler then answers to <M>{dispoStr}</M>, which {dispo!.sign === "Taurus" ? "asks simple body questions: Will this leave me steady? Will I still have enough money, time, calm, and control over my own life?" : "asks what would make the choice feel solid"}. </> : null}{mutualReception ? <>Normally the chain ends there. Here it does not. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so the decision gets handed straight back. No other planet has the final word. <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> keep checking with each other, which is why both needs have to be honored before a real yes can land. </> : null}
+                              The Rising sign is the part of {N} other people meet first. The Chart Ruler is the planet that quietly drives what that Rising sign is really after. The Dispositor is the planet the Chart Ruler answers to. {N}'s Rising is <M>{ascStr}</M>, so on the surface she reads as classic {cr.ascSign}, with that sign's social style on display. Underneath, the Chart Ruler is <M>{rulerStr}</M>{rulerIsAnyZero ? <>, at the loudest possible degree of {cr.rulerSign}</> : null}, and the {cr.rulerSign} need is for {SIGN_NEED[cr.rulerSign]?.need ?? "what that sign wants"}. {dispoStr ? <>That ruler then answers to <M>{dispoStr}</M>, which asks: "{SIGN_NEED[dispo!.sign]?.check ?? "would this feel right?"}" </> : null}{mutualReception ? <>Normally the chain ends there. Here it does not. {dispo!.name} in {dispo!.sign} is itself ruled by {cr.rulerName}, so the decision gets handed straight back. No other planet has the final word. <M>{cr.rulerName}</M> and <M>{dispo!.name}</M> keep checking with each other, which is why both needs have to be honored before a real yes can land. That setup has a name in astrology: <strong>Mutual Reception</strong>. It is not indecision. It means neither side outranks the other, ever. </> : <>So the final word on any decision comes from the {dispo!.name} side checking the {cr.rulerName} side's plan against its own need. </>}
                             </Row>
-                            {mutualReception ? (
-                              <Row label="The Two Sides Of Her">
-                                {N} does not feel like she has one simple inner voice. She has one side that wants movement, truth, and freedom ({rulerIsAnyZero ? "0° " : ""}{cr.rulerName} in {cr.rulerSign}) and another side that needs steadiness, proof, and real safety ({dispoIsAnaretic ? `${fmtDeg(dispo!.degree)} ` : ""}{dispo!.name} in {dispo!.sign}). The {dispo!.name} side is not trying to shut the {rulerIsExplorer ? "free" : cr.rulerName} side down. It is asking, "Will I still feel okay after this?" When both sides agree, she moves fast. When freedom would cost her peace, or safety would make her feel trapped, she slows down.
-                              </Row>
-                            ) : null}
                             {hasRetroLayer ? (
                               <Row label="The Retrograde Layer">
                                 {dispoRx ? <>The {dispo!.name} side is <strong>Retrograde</strong>, which means the safety check happens on the inside first. {N} does not really trust outside experts or borrowed advice to tell her what her time, skill, body, and money are worth. She figured out her own version of what safe looks like, and she trusts that version more than anyone else's. </> : null}
@@ -409,12 +461,13 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               </Row>
                             ) : null}
                             <Row label="The Bottom Line">
-                              Her Libra Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {mutualReception ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo!.name} side notice what would actually feel safe. When the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside her Chiron Return window, the work is learning that <strong>she does not have to pick one side and abandon the other</strong>. She can say both out loud: "I need room to move" and "I need to feel steady after I move." </> : null}
+                              Her {cr.ascSign} Rising is not "wants to be liked." It is how she keeps the room calm enough to hear herself clearly. {dispo ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo.name} side notice what would actually feel safe. When the room gets chaotic, she may lose track of her own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside her Chiron Return window, the work is learning that <strong>she does not have to pick one side and abandon the other</strong>. She can say both out loud: "I need {SIGN_NEED[cr.rulerSign]?.need ?? "room to move"}" and "I need {dispo ? SIGN_NEED[dispo.sign]?.need ?? "to feel steady after I move" : "to feel steady after I move"}." </> : null}
                             </Row>
 
                           </>
                         ),
                       });
+
 
                       // ── IV. The Voltage Scale (clickable key) ──
                       if (hasVoltage || mutualReception) {
@@ -648,9 +701,92 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     }
 
 
+                    // ── VI. The Moon, How She Recharges (UNIVERSAL) ──────────────────
+                    // Fires for every chart. Uses Moon Phase profile + tightest Moon aspect.
+                    const moonPhase = portrait.moonPhaseProfile;
+                    const tightestMoonAsp = (math.moonAspects ?? [])
+                      .slice()
+                      .sort((a, b) => a.orb - b.orb)[0];
+                    if (moonPhase || tightestMoonAsp) {
+                      movements.push({
+                        key: "moon-recharge",
+                        roman: "VI",
+                        title: "How She Recharges",
+                        tag: moonPhase ? `Moon Phase · ${moonPhase.label}` : "Moon",
+                        tone: "rose",
+                        icon: <Heart className="h-4 w-4" />,
+                        body: (
+                          <>
+                            {moonPhase ? (
+                              <>
+                                <Row label="The Math">
+                                  At <M>{N}</M>'s birth the Sun and Moon were <M>{moonPhase.angle.toFixed(0)}°</M> apart, which puts her in the <M>{moonPhase.phase}</M> phase, sometimes called <strong>{moonPhase.label}</strong>.
+                                </Row>
+                                <Row label="What This Means">
+                                  Moon phase is not about the sign of the Moon. It is about <em>where in the cycle</em> she was born, and that sets her natural pace. {moonPhase.instinct}
+                                </Row>
+                                <Row label="What She Was Told She Should Do (And Why It Drains Her)">
+                                  {moonPhase.banTold}
+                                </Row>
+                                <Row label="What Actually Refills Her">
+                                  {moonPhase.trueWork}
+                                </Row>
+                              </>
+                            ) : null}
+                            {tightestMoonAsp ? (
+                              <Row label="The Loudest Inner Voice">
+                                {N}'s tightest Moon contact is <M>Moon {tightestMoonAsp.aspect} {tightestMoonAsp.to}</M> (orb {tightestMoonAsp.orb.toFixed(1)}°). That means her gut, her body, and her emotional reset button do not run on their own. They are wired to {tightestMoonAsp.to}. {tightestMoonAsp.aspect === "opposition" || tightestMoonAsp.aspect === "square" ? <>The two pull on her at the same time, so when she tries to rest, the {tightestMoonAsp.to} side will not let her settle until something gets dealt with. The friction is not a flaw. It is the signal that says "do not skip this part."</> : <>The two move together easily, which means {tightestMoonAsp.to}'s energy is already baked into how she calms down, no extra effort required, but it can also be invisible to her because it feels normal.</>}
+                              </Row>
+                            ) : null}
+                          </>
+                        ),
+                      });
+                    }
+
+                    // ── VII. The Sun, Where She Is Meant To Show Up (UNIVERSAL) ──────
+                    // Fires for every chart. Uses Sun sign + house + tightest non-Chiron Sun aspect.
+                    const sunSignNeed = sun?.sign ? SIGN_NEED[sun.sign] : null;
+                    const sunHouseArea = sun?.house ? HOUSE_LIFE_AREA[sun.house] : null;
+                    const tightestSunAsp = (math.sunAspects ?? [])
+                      .filter(a => a.to !== "Chiron")
+                      .slice()
+                      .sort((a, b) => a.orb - b.orb)[0];
+                    if (sun && (sunSignNeed || sunHouseArea || tightestSunAsp)) {
+                      movements.push({
+                        key: "sun-shine",
+                        roman: "VII",
+                        title: "Where She Is Meant To Show Up",
+                        tag: `Sun in ${sun.sign}${sun.house ? ` · ${ord(sun.house)} House` : ""}`,
+                        tone: "amber",
+                        icon: <Star className="h-4 w-4" />,
+                        body: (
+                          <>
+                            <Row label="The Math">
+                              <M>{sun.sign} Sun{sun.house ? `, ${ord(sun.house)} House` : ""}</M>. The Sun is what {N} is here to become and where she is supposed to use up her energy on purpose. The sign says <em>how</em>. The house says <em>where in life</em>.
+                            </Row>
+                            {sunSignNeed ? (
+                              <Row label={`How She Is Meant To Show Up (${sun.sign})`}>
+                                The {sun.sign} Sun is wired to: <em>{sunSignNeed.need}</em>. That is not a personality preference. It is the core fuel. When she lives that way, she has energy. When she tries to be the opposite of that to keep the peace, she burns out, gets sick, or goes flat. The question {sun.sign} keeps asking, even when she does not say it out loud, is: "{sunSignNeed.check}"
+                              </Row>
+                            ) : null}
+                            {sunHouseArea ? (
+                              <Row label={`Where She Is Meant To Spend It (${ord(sun.house!)} House)`}>
+                                The Sun lives in the part of her chart that runs <em>{sunHouseArea}</em>. That is the area of life where her energy is supposed to go on purpose. If she puts her main effort somewhere else, her chart will keep nudging her back here through tiredness, restlessness, or things falling apart in the wrong area until she puts her time back where the Sun actually lives.
+                              </Row>
+                            ) : null}
+                            {tightestSunAsp ? (
+                              <Row label="The Voice Tied To Her Sun">
+                                Her tightest Sun contact is <M>Sun {tightestSunAsp.aspect} {tightestSunAsp.to}</M> (orb {tightestSunAsp.orb.toFixed(1)}°). That means every time she steps out as herself, {tightestSunAsp.to} shows up too. {tightestSunAsp.aspect === "conjunction" ? <>The two are fused, so she does not get to be herself without {tightestSunAsp.to}'s flavor on it. That is hers to own, not hide.</> : tightestSunAsp.aspect === "opposition" || tightestSunAsp.aspect === "square" ? <>The two are in a tug-of-war. Showing up as herself activates {tightestSunAsp.to}, which then asks her to deal with whatever {tightestSunAsp.to} represents before the next step. The friction is the price of entry, not a sign she should stop.</> : <>The two work together easily, which means {tightestSunAsp.to}'s gift is built into who she already is. The risk is taking it for granted because it never felt hard-earned.</>}
+                              </Row>
+                            ) : null}
+                          </>
+                        ),
+                      });
+                    }
 
 
                     if (movements.length === 0) return null;
+
 
                     const toneStyles: Record<Movement["tone"], { wrap: string; bar: string; chip: string; iconWrap: string; roman: string; body: string; }> = {
                       emerald: {
@@ -694,7 +830,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <div className="font-semibold text-base">Behavioral Portrait</div>
                         </div>
                         {movements.sort((a, b) => {
-                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
+                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7 } as Record<string, number>)[s] ?? 99;
                           return r(a.roman) - r(b.roman);
                         }).map((m) => {
                           const t = toneStyles[m.tone];
