@@ -765,7 +765,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               <M>{sun.sign} Sun{sun.house ? `, ${ord(sun.house)} House` : ""}</M>. The Sun is what {N} is here to become and where she is supposed to use up her energy on purpose. The sign says <em>how</em>. The house says <em>where in life</em>.
                             </Row>
                             {sunSignNeed ? (
-                              <Row label="How She Is Meant To Show Up ({sun.sign})">
+                              <Row label={`How She Is Meant To Show Up (${sun.sign})`}>
                                 The {sun.sign} Sun is wired to: <em>{sunSignNeed.need}</em>. That is not a personality preference. It is the core fuel. When she lives that way, she has energy. When she tries to be the opposite of that to keep the peace, she burns out, gets sick, or goes flat. The question {sun.sign} keeps asking, even when she does not say it out loud, is: "{sunSignNeed.check}"
                               </Row>
                             ) : null}
