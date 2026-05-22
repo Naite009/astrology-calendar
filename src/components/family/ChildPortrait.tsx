@@ -156,6 +156,34 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               )}
             </section>
 
+            {/* 1b. How The System Works — driver / translator / trigger */}
+            <section className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-primary" />
+                <div className="font-semibold text-base">How The System Works</div>
+              </div>
+              <div className="rounded-md border border-primary/30 bg-background/40 p-4 space-y-3">
+                <p className="leading-relaxed text-foreground/90">{composed.systemMechanism.synthesis}</p>
+                <div className="grid sm:grid-cols-3 gap-2 pt-2 border-t border-border">
+                  <div className="rounded border border-border bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">Driver</div>
+                    <div className="text-sm font-medium">{composed.systemMechanism.driver.label}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.driver.detail}</div>
+                  </div>
+                  <div className="rounded border border-border bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold mb-1">Translator</div>
+                    <div className="text-sm font-medium">{composed.systemMechanism.translator.label}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.translator.detail}</div>
+                  </div>
+                  <div className="rounded border border-border bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-amber-600 font-semibold mb-1">Stress Trigger</div>
+                    <div className="text-sm font-medium">{composed.systemMechanism.trigger.label}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.trigger.detail}</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* 2. What This Stage Is Asking */}
             <section className="space-y-2">
               <div className="flex items-center gap-2">
