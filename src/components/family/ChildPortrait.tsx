@@ -701,9 +701,92 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     }
 
 
+                    // ── VI. The Moon, How She Recharges (UNIVERSAL) ──────────────────
+                    // Fires for every chart. Uses Moon Phase profile + tightest Moon aspect.
+                    const moonPhase = portrait.moonPhaseProfile;
+                    const tightestMoonAsp = (math.moonAspects ?? [])
+                      .slice()
+                      .sort((a, b) => a.orb - b.orb)[0];
+                    if (moonPhase || tightestMoonAsp) {
+                      movements.push({
+                        key: "moon-recharge",
+                        roman: "VI",
+                        title: "How She Recharges",
+                        tag: moonPhase ? `Moon Phase · ${moonPhase.label}` : "Moon",
+                        tone: "rose",
+                        icon: <Heart className="h-4 w-4" />,
+                        body: (
+                          <>
+                            {moonPhase ? (
+                              <>
+                                <Row label="The Math">
+                                  At <M>{N}</M>'s birth the Sun and Moon were <M>{moonPhase.angle.toFixed(0)}°</M> apart, which puts her in the <M>{moonPhase.phase}</M> phase, sometimes called <strong>{moonPhase.label}</strong>.
+                                </Row>
+                                <Row label="What This Means">
+                                  Moon phase is not about the sign of the Moon. It is about <em>where in the cycle</em> she was born, and that sets her natural pace. {moonPhase.instinct}
+                                </Row>
+                                <Row label="What She Was Told She Should Do (And Why It Drains Her)">
+                                  {moonPhase.banTold}
+                                </Row>
+                                <Row label="What Actually Refills Her">
+                                  {moonPhase.trueWork}
+                                </Row>
+                              </>
+                            ) : null}
+                            {tightestMoonAsp ? (
+                              <Row label="The Loudest Inner Voice">
+                                {N}'s tightest Moon contact is <M>Moon {tightestMoonAsp.aspect} {tightestMoonAsp.to}</M> (orb {tightestMoonAsp.orb.toFixed(1)}°). That means her gut, her body, and her emotional reset button do not run on their own. They are wired to {tightestMoonAsp.to}. {tightestMoonAsp.aspect === "opposition" || tightestMoonAsp.aspect === "square" ? <>The two pull on her at the same time, so when she tries to rest, the {tightestMoonAsp.to} side will not let her settle until something gets dealt with. The friction is not a flaw. It is the signal that says "do not skip this part."</> : <>The two move together easily, which means {tightestMoonAsp.to}'s energy is already baked into how she calms down, no extra effort required, but it can also be invisible to her because it feels normal.</>}
+                              </Row>
+                            ) : null}
+                          </>
+                        ),
+                      });
+                    }
+
+                    // ── VII. The Sun, Where She Is Meant To Show Up (UNIVERSAL) ──────
+                    // Fires for every chart. Uses Sun sign + house + tightest non-Chiron Sun aspect.
+                    const sunSignNeed = sun?.sign ? SIGN_NEED[sun.sign] : null;
+                    const sunHouseArea = sun?.house ? HOUSE_LIFE_AREA[sun.house] : null;
+                    const tightestSunAsp = (math.sunAspects ?? [])
+                      .filter(a => a.to !== "Chiron")
+                      .slice()
+                      .sort((a, b) => a.orb - b.orb)[0];
+                    if (sun && (sunSignNeed || sunHouseArea || tightestSunAsp)) {
+                      movements.push({
+                        key: "sun-shine",
+                        roman: "VII",
+                        title: "Where She Is Meant To Show Up",
+                        tag: `Sun in ${sun.sign}${sun.house ? ` · ${ord(sun.house)} House` : ""}`,
+                        tone: "amber",
+                        icon: <Star className="h-4 w-4" />,
+                        body: (
+                          <>
+                            <Row label="The Math">
+                              <M>{sun.sign} Sun{sun.house ? `, ${ord(sun.house)} House` : ""}</M>. The Sun is what {N} is here to become and where she is supposed to use up her energy on purpose. The sign says <em>how</em>. The house says <em>where in life</em>.
+                            </Row>
+                            {sunSignNeed ? (
+                              <Row label="How She Is Meant To Show Up ({sun.sign})">
+                                The {sun.sign} Sun is wired to: <em>{sunSignNeed.need}</em>. That is not a personality preference. It is the core fuel. When she lives that way, she has energy. When she tries to be the opposite of that to keep the peace, she burns out, gets sick, or goes flat. The question {sun.sign} keeps asking, even when she does not say it out loud, is: "{sunSignNeed.check}"
+                              </Row>
+                            ) : null}
+                            {sunHouseArea ? (
+                              <Row label={`Where She Is Meant To Spend It (${ord(sun.house!)} House)`}>
+                                The Sun lives in the part of her chart that runs <em>{sunHouseArea}</em>. That is the area of life where her energy is supposed to go on purpose. If she puts her main effort somewhere else, her chart will keep nudging her back here through tiredness, restlessness, or things falling apart in the wrong area until she puts her time back where the Sun actually lives.
+                              </Row>
+                            ) : null}
+                            {tightestSunAsp ? (
+                              <Row label="The Voice Tied To Her Sun">
+                                Her tightest Sun contact is <M>Sun {tightestSunAsp.aspect} {tightestSunAsp.to}</M> (orb {tightestSunAsp.orb.toFixed(1)}°). That means every time she steps out as herself, {tightestSunAsp.to} shows up too. {tightestSunAsp.aspect === "conjunction" ? <>The two are fused, so she does not get to be herself without {tightestSunAsp.to}'s flavor on it. That is hers to own, not hide.</> : tightestSunAsp.aspect === "opposition" || tightestSunAsp.aspect === "square" ? <>The two are in a tug-of-war. Showing up as herself activates {tightestSunAsp.to}, which then asks her to deal with whatever {tightestSunAsp.to} represents before the next step. The friction is the price of entry, not a sign she should stop.</> : <>The two work together easily, which means {tightestSunAsp.to}'s gift is built into who she already is. The risk is taking it for granted because it never felt hard-earned.</>}
+                              </Row>
+                            ) : null}
+                          </>
+                        ),
+                      });
+                    }
 
 
                     if (movements.length === 0) return null;
+
 
                     const toneStyles: Record<Movement["tone"], { wrap: string; bar: string; chip: string; iconWrap: string; roman: string; body: string; }> = {
                       emerald: {
