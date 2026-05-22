@@ -100,33 +100,10 @@ export function validateChart(chart: NatalChart): ChartValidation {
     }
   }
 
-  // 4. BOUNDARY PLANETS: any core planet within 1° of a cusp is a red flag.
-  // This is the check that catches Ike's Sun at Aries 12°29' vs 6th cusp at Aries 12°21'.
-  for (const planetName of CORE_PLANETS) {
-    const p: NatalPlanetPosition | undefined = (chart.planets as any)[planetName];
-    if (!p?.sign) continue;
-    const pAbs = absLon(p.sign, p.degree ?? 0, (p as any).minutes ?? 0);
-    if (pAbs == null) continue;
+  // Note: boundary-planet warnings were removed. The chart data is the source of
+  // truth, and asking the user to "verify against the original chart" is not
+  // useful when the chart wheel they would verify against IS this data.
 
-    for (let i = 1; i <= 12; i++) {
-      const c = cuspAbs[i];
-      if (c == null) continue;
-      const delta = Math.min(
-        Math.abs(pAbs - c),
-        Math.abs(pAbs - c - 360),
-        Math.abs(pAbs - c + 360),
-      );
-      if (delta < 1) {
-        const side = ((pAbs - c + 360) % 360) < 180 ? "just past" : "just before";
-        issues.push({
-          severity: "warning",
-          code: `BOUNDARY_${planetName}_${i}`,
-          message: `${planetName} (${p.sign} ${p.degree ?? 0}°${(p as any).minutes ?? 0}') sits ${delta.toFixed(2)}° ${side} the ${i}th-house cusp (${formatCusp(cusps, i)}). A small cusp error will flip the house.`,
-          fix: `Verify the ${i}th-house cusp against the original chart before trusting the house assignment for ${planetName}.`,
-        });
-      }
-    }
-  }
 
   return { ok: issues.every((i) => i.severity !== "error"), issues };
 }
