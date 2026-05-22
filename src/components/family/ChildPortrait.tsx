@@ -830,7 +830,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <div className="font-semibold text-base">Behavioral Portrait</div>
                         </div>
                         {movements.sort((a, b) => {
-                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 } as Record<string, number>)[s] ?? 99;
+                          const r = (s: string) => ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7 } as Record<string, number>)[s] ?? 99;
                           return r(a.roman) - r(b.roman);
                         }).map((m) => {
                           const t = toneStyles[m.tone];
