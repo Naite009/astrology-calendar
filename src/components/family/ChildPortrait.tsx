@@ -314,7 +314,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       Sagittarius: { need: "room to move, honesty, and a way out if it stops being true",                        check: "Does this grow my world or shrink it?",                             element: "fire",  mode: "mutable" },
                       Capricorn:   { need: "for the plan to be real, the work to count, and the structure to hold",              check: "In five years, will I be glad I did this?",                         element: "earth", mode: "cardinal" },
                       Aquarius:    { need: "for the answer to be their own, not just what the group expects",                      check: "Is this actually true for me, or am I going along with it?",        element: "air",   mode: "fixed" },
-                      Pisces:      { need: "for the choice to feel right in their body, beyond the logic",                         check: "What does my gut say once I stop reading about it?",                element: "water", mode: "mutable" },
+                      Pisces:      { need: "for the choice to feel right in them body, beyond the logic",                         check: "What does my gut say once I stop reading about it?",                element: "water", mode: "mutable" },
                     };
 
                     const HOUSE_LIFE_AREA: Record<number, string> = {
@@ -424,7 +424,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                                   <>Both voices are in the same element ({SIGN_NEED[cr.rulerSign].element}), so they tend to agree, which means when they do say yes they move fast and confident, but when they both say no it lands as flat refusal with no middle ground. </>
                                 ) : (
                                   <>The {cr.rulerName} side {elementVoice(SIGN_NEED[cr.rulerSign].element)}. The {dispo.name} side {elementVoice(SIGN_NEED[dispo.sign].element)}. Those two are made of different stuff, so a choice that thrills one can feel wrong to the other. </>
-                                )}{cr.rulerHouse && dispo.house ? <>And the two sides care about different parts of life: the {cr.rulerName} side is working on <em>{HOUSE_LIFE_AREA[cr.rulerHouse] ?? "its house theme"}</em>, while the {dispo.name} side is working on <em>{HOUSE_LIFE_AREA[dispo.house] ?? "its house theme"}</em>. </> : null}A real yes for {N} is the kind of yes where both sides get something. A slow no usually means one side is being asked to lose, and their body knows it before their mouth does.
+                                )}{cr.rulerHouse && dispo.house ? <>And the two sides care about different parts of life: the {cr.rulerName} side is working on <em>{HOUSE_LIFE_AREA[cr.rulerHouse] ?? "its house theme"}</em>, while the {dispo.name} side is working on <em>{HOUSE_LIFE_AREA[dispo.house] ?? "its house theme"}</em>. </> : null}A real yes for {N} is the kind of yes where both sides get something. A slow no usually means one side is being asked to lose, and their body knows it before them mouth does.
                               </Row>
                             ) : null}
 
@@ -440,8 +440,8 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             {hasRetroLayer ? (
                               <Row label="The Retrograde Layer">
                                 {dispoRx ? <>The {dispo!.name} side is <strong>Retrograde</strong>, which means the safety check happens on the inside first. {N} does not really trust outside experts or borrowed advice to tell them what their time, skill, body, and money are worth. They figured out their own version of what safe looks like, and they trust that version more than anyone else's. </> : null}
-                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The hurt of feeling like they have to prove they are allowed to take up space is not coming from the room. It is coming from their own head. The voice asking "is this okay, am I allowed?" is their own voice, and the permission they keep waiting on is permission from themself. </> : null}
-                                {dispoRx && chironRx ? <>Put together: the answer has to feel true inside their before they can act on it. The free side will not move if the safe side feels ignored. The safe side will not relax if the free side feels trapped. Nothing in this is waiting on outside approval. </> : null}
+                                {chironRx ? <>Chiron is <strong>Retrograde</strong> too. The hurt of feeling like they have to prove they are allowed to take up space is not coming from the room. It is coming from them own head. The voice asking "is this okay, am I allowed?" is their own voice, and the permission they keep waiting on is permission from themself. </> : null}
+                                {dispoRx && chironRx ? <>Put together: the answer has to feel true inside them before they can act on it. The free side will not move if the safe side feels ignored. The safe side will not relax if the free side feels trapped. Nothing in this is waiting on outside approval. </> : null}
                               </Row>
                             ) : null}
                             {(sunIsAnaretic || chironIsAnaretic || dispoIsAnaretic) ? (
@@ -461,7 +461,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                               </Row>
                             ) : null}
                             <Row label="The Bottom Line">
-                              Their {cr.ascSign} Rising is not "wants to be liked." It is how they keep the room calm enough to hear themself clearly. {dispo ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo.name} side notice what would actually feel safe. When the room gets chaotic, they may lose track of their own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside their Chiron Return window, the work is learning that <strong>they do not have to pick one side and abandon the other</strong>. They can say both out loud: "I need {SIGN_NEED[cr.rulerSign]?.need ?? "room to move"}" and "I need {dispo ? SIGN_NEED[dispo.sign]?.need ?? "to feel steady after I move" : "to feel steady after I move"}." </> : null}
+                              Their {cr.ascSign} Rising is not "wants to be liked." It is how they keep the room calm enough to hear themself clearly. {dispo ? <>A calm room helps the {cr.rulerName} side say what it actually wants, and helps the {dispo.name} side notice what would actually feel safe. When the room gets chaotic, they may lose track of them own answer and start managing everyone else instead. </> : null}{inChironReturnSec1 ? <>At <M>age {age}</M>, inside them Chiron Return window, the work is learning that <strong>they do not have to pick one side and abandon the other</strong>. They can say both out loud: "I need {SIGN_NEED[cr.rulerSign]?.need ?? "room to move"}" and "I need {dispo ? SIGN_NEED[dispo.sign]?.need ?? "to feel steady after I move" : "to feel steady after I move"}." </> : null}
                             </Row>
 
                           </>
@@ -481,7 +481,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           body: (
                             <>
                               <Row label="Why This Reading Hits Harder">
-                                Most planets sit in the middle of a sign (around 10°–20°), where the placement reads as steady and predictable. {N}'s key planets sit at the <strong>very first</strong> and <strong>very last</strong> degree of their signs. Those two spots have specific names in astrology and they change the reading. The intensity they feel is not a personality quirk: it is what those degrees actually do.
+                                Most planets sit in the middle of a sign (around 10°–20°), where the placement reads as steady and predictable. {N}'s key planets sit at the <strong>very first</strong> and <strong>very last</strong> degree of them signs. Those two spots have specific names in astrology and they change the reading. The intensity they feel is not a personality quirk: it is what those degrees actually do.
                               </Row>
                               <div className="mt-4 overflow-x-auto">
                                 <table className="w-full text-[13px] border-collapse">
@@ -631,7 +631,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <>
                             <Row label="The Math"><M>{sunStr}</M> {aspectName} <M>{chiStr}</M> at a <M>{tight ? "very tight " : "tight "}{orbStr} orb</M> (the closer the orb, the stronger the effect; anything under {stingOrbCap}° is considered very close).</Row>
                             <Row label="What This Aspect Does">
-                              The Sun is who {N} is meant to be. Chiron is the old sore spot, the place they expect to get hurt for showing up. When these two are this close to each other in the chart, the part of their that wants to be seen and the part of their that braces for a bad reaction are tied together. Every time one shows up, the other shows up right behind it. At <M>{orbStr}</M> there is almost no space between the two.
+                              The Sun is who {N} is meant to be. Chiron is the old sore spot, the place they expect to get hurt for showing up. When these two are this close to each other in the chart, the part of them that wants to be seen and the part of them that braces for a bad reaction are tied together. Every time one shows up, the other shows up right behind it. At <M>{orbStr}</M> there is almost no space between the two.
                             </Row>
                             <Row label="What It Feels Like">
                               The moment {N} starts to take up space, be seen, or speak as themself, they feel a small inner flinch, like they have to first check that it is okay. This is not their watching faces in the room to see if people approve. It is an inner voice asking, "am I allowed to do this?" The voice runs whether anyone in the room is reacting or not, and it costs energy all day.
@@ -662,10 +662,10 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <>
                             <Row label="The Math">{marsStr ? <><M>{marsStr}</M> with <M>{translatorStr}</M></> : <><M>{translatorStr}</M></>}</Row>
                             <Row label="What This Placement Does">
-                              {marsStr ? <>{N}'s Mars (the part of their that wants to act and push) is strong{isScorpio ? <>, especially in <M>Scorpio</M>, which runs hot and does not coast</> : null}. But the part of their that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Everything that happens there has to be felt and processed inside first, before it can come out loud. </> : <>The part of {N} that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Anything that happens there has to be felt and processed inside first, before it can come out loud. </>}
+                              {marsStr ? <>{N}'s Mars (the part of them that wants to act and push) is strong{isScorpio ? <>, especially in <M>Scorpio</M>, which runs hot and does not coast</> : null}. But the part of them that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Everything that happens there has to be felt and processed inside first, before it can come out loud. </> : <>The part of {N} that turns feelings into <em>words</em> ({translatorStr}) lives in the <strong>12th House</strong>. The 12th is the quiet, behind-the-scenes house. Anything that happens there has to be felt and processed inside first, before it can come out loud. </>}
                             </Row>
                             <Row label="What It Feels Like">
-                              {N} feels things strongly and fast, but the words for those feelings take longer to arrive. They are not choosing to go quiet. The 12th House placement means the words have to take the long way around before they can come out of their mouth. If someone pushes their to answer before the words are ready, what comes out can sound sharp or jumbled, not because they meant it that way, but because they were rushed before the sentence finished forming inside.
+                              {N} feels things strongly and fast, but the words for those feelings take longer to arrive. They are not choosing to go quiet. The 12th House placement means the words have to take the long way around before they can come out of them mouth. If someone pushes their to answer before the words are ready, what comes out can sound sharp or jumbled, not because they meant it that way, but because they were rushed before the sentence finished forming inside.
                             </Row>
                           </>
                         ),
@@ -685,7 +685,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                           <>
                             <Row label="The Math"><M>Transit Chiron conjunct Natal Chiron</M> · window <M>ages 48–51</M></Row>
                             <Row label="What This Transit Does">
-                              Once every ~50 years, Chiron comes back to the exact degree it was in at birth. The old sore spot stops being something to keep patching. The 29° Taurus side of their has spent decades quietly learning what actually keeps their steady. The Chiron Return is when that lived experience starts to count: the body knows, the lessons about money and boundaries are real, and the ground under their feet is not pretend.
+                              Once every ~50 years, Chiron comes back to the exact degree it was in at birth. The old sore spot stops being something to keep patching. The 29° Taurus side of them has spent decades quietly learning what actually keeps their steady. The Chiron Return is when that lived experience starts to count: the body knows, the lessons about money and boundaries are real, and the ground under them feet is not pretend.
                             </Row>
                             {chiron?.retrograde ? (
                               <Row label="Natal Chiron Retrograde">
@@ -771,7 +771,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                             ) : null}
                             {sunHouseArea ? (
                               <Row label={`Where She Is Meant To Spend It (${ord(sun.house!)} House)`}>
-                                The Sun lives in the part of their chart that runs <em>{sunHouseArea}</em>. That is the area of life where their energy is supposed to go on purpose. If they put their main effort somewhere else, their chart will keep nudging their back here through tiredness, restlessness, or things falling apart in the wrong area until they put their time back where the Sun actually lives.
+                                The Sun lives in the part of them chart that runs <em>{sunHouseArea}</em>. That is the area of life where their energy is supposed to go on purpose. If they put their main effort somewhere else, their chart will keep nudging their back here through tiredness, restlessness, or things falling apart in the wrong area until they put their time back where the Sun actually lives.
                               </Row>
                             ) : null}
                             {tightestSunAsp ? (
