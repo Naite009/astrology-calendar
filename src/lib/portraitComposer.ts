@@ -180,6 +180,80 @@ export function composePortrait(p: ChildPortrait): ComposedPortrait {
 
   const oneSentence = `At ${stageWord}, ${name} is learning ${learning}, but regulates best through ${regulation}.`;
 
+  // 1b. SYSTEM MECHANISM — driver / translator / trigger / reaction.
+  // Show how placements interact, not as separate traits.
+  // Driver: chart ruler (what runs the system). Fallback: Sun.
+  // Translator: Sun-sign expression OR Rising (how it gets out into the world).
+  // Trigger: tightest hard aspect, else pressure signature, else Moon hard aspect,
+  //          else Saturn placement.
+  // Reaction: Mars-sign discharge / pressure consequence / Moon hard-aspect note.
+  const driver = p.chartRuler
+    ? {
+        label: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}` +
+          (p.chartRuler.rulerHouse ? ` (${ord(p.chartRuler.rulerHouse)} house)` : ""),
+        detail: `the chart ruler, the engine running underneath everything ${name} does`,
+      }
+    : sunSign
+    ? { label: `${sunSign} Sun`, detail: `the core motive ${name} is here to practice` }
+    : { label: "their core engine", detail: "the part of them that runs the show" };
+
+  const translator = sunSign
+    ? {
+        label: `${sunSign} Sun` + (p.identityInvitation.sun?.house ? ` in the ${ord(p.identityInvitation.sun.house)} house` : ""),
+        detail: `how that engine actually comes out in the world (${SUN_LEARNING[sunSign] ?? "their way of being seen"})`,
+      }
+    : p.chartRuler
+    ? {
+        label: `${p.chartRuler.ascSign} Rising`,
+        detail: `the doorway the engine has to walk through to reach other people`,
+      }
+    : { label: "their outward style", detail: "the way the engine reaches other people" };
+
+  // Pick the strongest stress trigger
+  const tightHard = tightAspects.find(a => a.quality === "hard");
+  const tightMoonHard = moonAspectsHard[0];
+  let trigger: { label: string; detail: string };
+  let reaction: string;
+  if (p.pressureSignature) {
+    trigger = {
+      label: `${p.pressureSignature.body} under ${p.pressureSignature.trigger} pressure`,
+      detail: `the engine is in a place that needs ${p.pressureSignature.needLabel.toLowerCase()}`,
+    };
+    reaction = p.pressureSignature.consequence;
+  } else if (tightHard) {
+    trigger = {
+      label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
+      detail: `the two strongest internal voices pulling against each other`,
+    };
+    reaction = tightHard.line || `${name}'s system locks up or over-corrects until one side wins`;
+  } else if (tightMoonHard) {
+    trigger = {
+      label: `Moon ${tightMoonHard.aspect} ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
+      detail: `the safety system has a tender wire on it`,
+    };
+    reaction = marsSign && MARS_RESET[marsSign]
+      ? `the body needs to discharge before anything else lands (${MARS_RESET[marsSign]})`
+      : `the feeling goes underground until the room feels safe again`;
+  } else if (p.masterySpot.saturn) {
+    trigger = {
+      label: `Saturn in ${p.masterySpot.saturn.sign}` + (p.masterySpot.saturn.house ? ` (${ord(p.masterySpot.saturn.house)} house)` : ""),
+      detail: `the area where ${name} fears doing it wrong in front of someone`,
+    };
+    reaction = `${name} either freezes, over-prepares, or quietly opts out before being judged`;
+  } else {
+    trigger = { label: "stress in their key area", detail: "what knocks the system off balance" };
+    reaction = marsSign && MARS_RESET[marsSign]
+      ? `the body needs to reset (${MARS_RESET[marsSign]})`
+      : `the system goes quiet until it can find ground again`;
+  }
+
+  const synthesis =
+    `${name} is driven by ${driver.label}, ` +
+    `but expresses through ${translator.label}, ` +
+    `so when ${trigger.label} shows up, the system reacts by ${reaction}.`;
+
+  const systemMechanism = { driver, translator, trigger, reaction, synthesis };
+
   // 2. STAGE ASK
   const stageAsk = {
     title: p.developmentalAnchor.stage,
