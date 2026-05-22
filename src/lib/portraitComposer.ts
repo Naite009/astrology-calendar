@@ -122,6 +122,13 @@ const MOON12_MISREAD =
 
 export interface ComposedPortrait {
   oneSentence: string;
+  systemMechanism: {
+    driver: { label: string; detail: string };       // what runs the system
+    translator: { label: string; detail: string };   // how it gets expressed
+    trigger: { label: string; detail: string };      // what breaks it
+    reaction: string;                                 // what the system does
+    synthesis: string;                                // the one-paragraph "working system" sentence
+  };
   stageAsk: {
     title: string;
     body: string;
