@@ -1199,14 +1199,29 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       });
     }
 
-    // STEP 1b — BODY REACTION (Mars). When Mars is fast/in 1st house, the body
-    // reacts BEFORE the words are ready, regardless of Mercury's processing speed.
-    if (marsSign && (marsHouse === 1 || ["Aries","Leo","Sagittarius","Scorpio","Gemini"].includes(marsSign))) {
+    // STEP 1b — BODY REACTION (Mars). House decides timing. 1st house = body-first
+    // reflex; 6th = friction-routed through the nervous system; 8th = compressed
+    // and released at once; 12th/4th = submerged. Sign describes style, not speed.
+    if (marsSign && marsHouse) {
+      const marsHouseLine: Record<number, string> = {
+        1: "the body reacts before any sentence forms (1st house: immediate, reflex, body-first)",
+        2: "the body reacts through what it counts as safe (2nd house)",
+        3: "the body reacts at conversational pace (3rd house)",
+        4: "the body reacts privately first and surfaces later (4th house: internal)",
+        5: "the body reacts through expression or play (5th house)",
+        6: "the body reacts through friction and strain (6th house: routed through the nervous system before it can land)",
+        7: "the body reacts off the other person (7th house: mirror)",
+        8: "the body holds the reaction compressed until trust, then releases at once (8th house)",
+        9: "the body reacts through movement and reframing (9th house)",
+        10: "the body reacts in public view (10th house: broadcast)",
+        11: "the body reacts against the group context (11th house)",
+        12: "the body's reaction goes underground first (12th house: submerged)",
+      };
       seqSteps.push({
         cue: "Then immediately:",
-        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
-        action: `the body reacts before any sentence forms — intensity rises in the chest, tone shifts, posture changes. This is not slow; it is fast and contained. Mars activates BEFORE Mercury has the words ready.`,
-        rank: "Priority 2: Mars body-reaction, which fires ahead of language when stakes register.",
+        lead: `Mars in ${marsSign} (${ord(marsHouse)} house)`,
+        action: `${marsHouseLine[marsHouse] ?? "the body reacts on its own clock"}. This is the BODY responding, not the words. Mars may activate before Mercury has the language ready.`,
+        rank: "Priority 2: Mars body-reaction (timing from house). Reaction is not language.",
       });
     }
 
