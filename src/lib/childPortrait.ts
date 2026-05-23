@@ -533,24 +533,24 @@ const RISING_FILTER: Record<string, { stereotype: string; verb: string; surfaceJ
   Pisces: { stereotype: "dreamy", verb: "use a soft, permeable presence", surfaceJob: "let the room's mood enter so it can be read from the inside" },
 };
 
-// ── Rising Scanner: physical "what does this sign scan a room for" + mask label + safety payoff
+// ── Rising Scanner: first safety filter + mask label + safety payoff
 // Used by the Identity Invitation Filter section to follow the Scanner / Boss / Synthesis / Why template.
 const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: string }> = {
   Aries:       { mask: "Starter",         scanFor: "Who's in charge here? Where's the first move?",            safety: "moving first so no one can pin them in place" },
   Taurus:      { mask: "Anchor",          scanFor: "What feels solid? What's about to get rushed?",            safety: "setting the pace so nothing can shove their body" },
   Gemini:      { mask: "Reporter",        scanFor: "What's the story? Who's actually saying what?",            safety: "gathering options before anyone locks them into one" },
-  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who is hurting in the room?",                 safety: "reading the emotional weather before they expose their own" },
+  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who needs care?",                            safety: "checking emotional safety before they expose their own" },
   Leo:         { mask: "Performer",       scanFor: "Where is the warmth? Who is actually looking?",            safety: "controlling how they get seen instead of being caught off-guard" },
   Virgo:       { mask: "Editor",          scanFor: "What is out of place? What's about to break?",             safety: "fixing the small thing first so the big thing can't blindside them" },
-  Libra:       { mask: "Diplomat",        scanFor: "Who's uncomfortable? Where's the imbalance in the room?",  safety: "smoothing the surface so no one turns hostile toward them" },
+  Libra:       { mask: "Diplomat",        scanFor: "What is fair here? Where is the pressure to choose too fast?", safety: "keeping enough balance to choose without being pushed" },
   Scorpio:     { mask: "X-Ray",           scanFor: "What is the real story underneath what people are saying?", safety: "knowing the truth before anyone can use it against them" },
   Sagittarius: { mask: "Explorer",        scanFor: "Where's the exit? Where's the bigger story?",              safety: "keeping a door open so they never feel cornered" },
   Capricorn:   { mask: "Manager",         scanFor: "Who's in charge here? What are the rules?",                safety: "knowing the structure before they have to play inside it" },
   Aquarius:    { mask: "Outsider",        scanFor: "What is the group missing? Where can I stand outside this?", safety: "staying one step outside the group so it can't absorb them" },
-  Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
+  Pisces:      { mask: "Sponge",          scanFor: "What feeling is in the air? Who is hurting?",              safety: "noticing the emotional weather before it overwhelms their nervous system" },
 };
 
-// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo literally looks like in the room.
+// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo can look like in daily life.
 // Keyed by Rising sign. Concrete, observable behavior, no astro-nouns.
 const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
@@ -559,7 +559,7 @@ const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Cancer:      "they read the face of whoever walked in first to check what kind of morning this is going to be",
   Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
   Virgo:       "they spot the one thing out of place, the crumbs, the wrong mug, and can't unsee it",
-  Libra:       "they smooth the first tension in the room before they've even sat down",
+  Libra:       "they wait to see what feels fair before they name what they want",
   Scorpio:     "they go quiet and watch, reading who is actually safe to talk to first",
   Sagittarius: "they're already half out the door, talking about the trip, the plan, anything past this kitchen",
   Capricorn:   "they want to know the plan for the day before they'll fully arrive in the morning",
