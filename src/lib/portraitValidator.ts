@@ -17,7 +17,17 @@
 import type { ComposedPortrait } from "./portraitComposer";
 
 export type ValidationViolation = {
-  rule: "planet-job" | "house-meaning" | "mutual-reception" | "final-authority" | "sign-speed" | "life-stage-erasure";
+  rule:
+    | "planet-job"
+    | "house-meaning"
+    | "mutual-reception"
+    | "final-authority"
+    | "sign-speed"
+    | "life-stage-erasure"
+    | "saturn-leak"
+    | "chiron-leak"
+    | "mechanical-voice"
+    | "parenting-burden";
   location: string;
   found: string;
   expected: string;
@@ -93,6 +103,42 @@ const HOUSE_MEANING_BANS: Array<{
     rule: "house-meaning",
     expected: "12th house = hidden/submerged/delayed. Public visibility is the 10th house.",
   },
+  // 2nd house ≠ daily rhythm / groups.
+  {
+    re: /2nd house[^.]{0,80}(daily rhythm|group|belonging|public)/i,
+    rule: "house-meaning",
+    expected: "2nd house = body safety, worth, resources, sustainability. Not daily rhythm (6th), not groups (11th).",
+  },
+  // 4th house ≠ public expression.
+  {
+    re: /4th house[^.]{0,80}(public|visible|on display|broadcast|performance)/i,
+    rule: "house-meaning",
+    expected: "4th house = private inner room, family imprint, emotional root. Public/visible is the 10th house.",
+  },
+  // 7th-house "other person's mood" language outside the 7th.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|8th|9th|10th|11th|12th) house[^.]{0,120}other person'?s mood/i,
+    rule: "house-meaning",
+    expected: "'Other person's mood' is 7th-house framing. Do not apply to non-7th-house placements.",
+  },
+  // Group/belonging language attached to non-11th placements.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|12th) house[^.]{0,120}(group belonging|trusted circle|peer field|still part of the group)/i,
+    rule: "house-meaning",
+    expected: "Group belonging language belongs to the 11th house only.",
+  },
+  // Body-safety language attached to non-2nd placements.
+  {
+    re: /(?:in the )?(?:1st|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th) house[^.]{0,120}(body safety|sustainability|what feels sustainable)/i,
+    rule: "house-meaning",
+    expected: "Body-safety / sustainability language belongs to the 2nd house only.",
+  },
+  // Nervous-system friction language attached to non-6th placements.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|7th|8th|9th|10th|11th|12th) house[^.]{0,120}(nervous system friction|routed through the nervous system|body strain)/i,
+    rule: "house-meaning",
+    expected: "Nervous-system friction belongs to the 6th house only.",
+  },
 ];
 
 // SIGN-as-SPEED bans: sign names paired with speed adjectives.
@@ -121,12 +167,44 @@ const FINAL_AUTHORITY_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"
   },
 ];
 
+// MECHANICAL-VOICE bans for the main Portrait text. These words may appear
+// inside the deep-dive "mechanism" layer but must not show up in core/parent
+// paragraphs. Detected via field paths; see validateComposedPortrait below.
+const MECHANICAL_WORDS = /(?:circuit|voltage|hardware|the (?:signal|output)|discharges the circuit|firing the circuit)/i;
+const MECHANICAL_BAN = {
+  re: MECHANICAL_WORDS,
+  rule: "mechanical-voice" as const,
+  expected:
+    "Main Portrait must read human. Translate mechanical wording into: what it feels like, what it looks like, what helps. Reserve circuit/voltage/signal for the deep-dive layer.",
+};
+
+// PARENTING-BURDEN bans: child must not be told to self-regulate or
+// self-pause. Adults create the pause and lower the pressure.
+const PARENTING_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"]; expected: string }> = [
+  {
+    re: /\b(the child|he|she|they) should (pause|regulate|self-?regulate|slow down|calm down)\b/i,
+    rule: "parenting-burden",
+    expected: "Reframe as adult action: 'Adults should create the pause' / 'Adults should lower the pressure and give space.'",
+  },
+  {
+    re: /\bbuild in a pause on purpose\b/i,
+    rule: "parenting-burden",
+    expected: "Reframe as adult-directed: 'Adults should create the pause for them instead of demanding they create it under pressure.'",
+  },
+];
+
 const ALL_BANS = [
   ...PLANET_JOB_BANS,
   ...HOUSE_MEANING_BANS,
   ...SIGN_SPEED_BANS,
   ...FINAL_AUTHORITY_BANS,
+  ...PARENTING_BANS,
 ];
+
+// Field paths where mechanical wording is NOT allowed (main Portrait, parent
+// translation, headlines). The "deepDive" / "mechanism" / "chartStory" paths
+// are exempt because that's where the technical layer lives.
+const MECHANICAL_PROTECTED_PATHS = /^(corePortrait|parentTranslation|headline|tagline|liveMechanic|finalAuthority)/i;
 
 // Walk every string leaf in the portrait and yield [path, value] pairs.
 function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
@@ -148,7 +226,21 @@ function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
   }
 }
 
-export function validateComposedPortrait(portrait: ComposedPortrait): ValidationResult {
+// Optional chart context for chart-aware leak detection. When provided, we
+// flag Saturn audit language / Chiron permission language that appears in
+// charts where those planets are NOT actually central.
+export type ChartValidationContext = {
+  saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
+  chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
+};
+
+const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
+const CHIRON_LEAK_RE = /\b(permission wound|allowed to be said|Chiron permission|permission check)\b/i;
+
+export function validateComposedPortrait(
+  portrait: ComposedPortrait,
+  ctx?: ChartValidationContext,
+): ValidationResult {
   const violations: ValidationViolation[] = [];
   for (const [loc, value] of walkStrings(portrait)) {
     for (const ban of ALL_BANS) {
@@ -160,6 +252,45 @@ export function validateComposedPortrait(portrait: ComposedPortrait): Validation
           found: m[0].slice(0, 160),
           expected: ban.expected,
         });
+      }
+    }
+    // Mechanical-voice only flagged in main/parent-facing fields.
+    if (MECHANICAL_PROTECTED_PATHS.test(loc)) {
+      const m = MECHANICAL_BAN.re.exec(value);
+      if (m) {
+        violations.push({
+          rule: MECHANICAL_BAN.rule,
+          location: loc,
+          found: m[0].slice(0, 160),
+          expected: MECHANICAL_BAN.expected,
+        });
+      }
+    }
+    // Chart-aware Saturn / Chiron leak detection.
+    if (ctx) {
+      if (ctx.saturnCentral === false) {
+        const m = SATURN_LEAK_RE.exec(value);
+        if (m) {
+          violations.push({
+            rule: "saturn-leak",
+            location: loc,
+            found: m[0].slice(0, 160),
+            expected:
+              "Saturn-flavored audit/correctness language is only allowed when Saturn is actually central (tight Sun–Saturn, Merc–Sat reception, or angular Saturn). Replace with the chart's actual pressure gate.",
+          });
+        }
+      }
+      if (ctx.chironCentral === false) {
+        const m = CHIRON_LEAK_RE.exec(value);
+        if (m) {
+          violations.push({
+            rule: "chiron-leak",
+            location: loc,
+            found: m[0].slice(0, 160),
+            expected:
+              "Chiron permission-wound language is only allowed when Chiron is actually central. Replace with the chart's actual permission/authority source.",
+          });
+        }
       }
     }
   }
