@@ -1627,7 +1627,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
   // Rising Filter = Behavioral Astrology only. No invented archetypes (no "Explorer/Teacher/CEO").
-  // Structure: Sun+Rising combo as Nervous-System Goal → ruler as the engine/drive → kitchen scene → elder advice.
+  // Structure: Sun+Rising combo as Nervous-System Goal, ruler as the engine/drive, daily behavior, support.
   // The ruler is cited as planet-in-sign-in-house with its drive, NOT relabeled as a mask archetype.
   let risingLine = "";
   if (ascSign) {
@@ -1650,16 +1650,16 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         ? "Zero Entanglements: the right to change their mind and walk away without negotiating it"
         : (RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them");
       const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
-      // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Kitchen + elder.
+      // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Daily behavior + support.
       const lead = sunSign
-        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
-        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) through a ${scanner.mask} filter (${ascSign} Rising), so the self-work has to pass through the safety system first. `
+        : `${chart.name} meets life through a ${scanner.mask} filter (${ascSign} Rising). `;
       risingLine =
         lead +
-        `The engine running that scan is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}, and it needs ${drive}. ` +
+        `The engine running that filter is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}, and it needs ${drive}. ` +
         `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety} so ${drive} stays intact. ` +
-        (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
-        (elderTip ? `For the adult in the room: ${elderTip}` : "");
+        (kitchen ? `In daily life this can look like: ${kitchen}. ` : "") +
+        (elderTip ? `Support that works: ${elderTip}` : "");
 
       // SURGICAL OVERRIDE: Libra Rising + 1st House Sun = "Nice for a Reason" / polite buffer copy.
       if (ascSign === "Libra" && sunHouse === 1) {
@@ -1667,22 +1667,22 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
           ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to clear the room.`
           : ` Underneath, ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} is the engine: it needs ${drive}.`;
         risingLine =
-          `${chart.name} uses a Libra Diplomat mask to build a polite buffer around themselves. ` +
-          `${chart.name} isn't being nice to be liked; being nice keeps people at a distance so they don't interfere with the 1st-house need to just be themselves. ` +
-          `It is a peace treaty ${chart.name} signs every morning to buy a little space.` +
+          `${chart.name} uses Libra manners as a boundary system, not as a personality summary. ` +
+          `${chart.name} is not being pleasant just to be liked; the pleasant layer buys time to choose without being pushed, corrected, or pulled into someone else's agenda. ` +
+          `The 1st-house work is simple and hard: have a preference without immediately putting it on trial.` +
           venusClause +
-          (kitchen ? ` At 8 AM in the kitchen: ${kitchen}.` : "") +
-          (elderTip ? ` For the adult in the room: ${elderTip}` : "");
+          (kitchen ? ` In daily life this can look like: ${kitchen}.` : "") +
+          (elderTip ? ` Support that works: ${elderTip}` : "");
       }
     } else if (scanner) {
       const lead = sunSign
-        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
-        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) through a ${scanner.mask} filter (${ascSign} Rising), so the self-work has to pass through the safety system first. `
+        : `${chart.name} meets life through a ${scanner.mask} filter (${ascSign} Rising). `;
       risingLine =
         lead +
         `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety}. ` +
-        (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
-        (elderTip ? `For the adult in the room: ${elderTip}` : "");
+        (kitchen ? `In daily life this can look like: ${kitchen}. ` : "") +
+        (elderTip ? `Support that works: ${elderTip}` : "");
     } else {
       risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a scan pattern, not the inner self.`;
     }
