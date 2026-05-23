@@ -1450,8 +1450,10 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       }
       seqSteps.push({
         cue: "After the moment:",
-        lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
-        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
+        lead: ikeAuthorityPattern ? `Mercury in Pisces` : `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
+        action: ikeAuthorityPattern
+          ? `Mercury in Pisces tries to put words around what Mars already did. The action may have spoken first, and the explanation may arrive later, once the pressure has dropped and the private inner-room processing has caught up. ${finalAuthorityLine}`
+          : `the operating system catches up offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
         rank: finalAuthorityRank,
       });
     }
