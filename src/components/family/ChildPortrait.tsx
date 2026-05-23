@@ -436,8 +436,8 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     Extreme degree · Ascendant at {portrait.ascDegree.toFixed(1)}°
                   </summary>
                   <div className="p-3 pt-1 border-t border-border text-sm text-muted-foreground leading-relaxed">
-                    A Rising sign at the very start (0°) or very end (29°) tends to act like a doorway in motion —
-                    the surface presentation shifts noticeably across life stages.
+                    A Rising sign at the very start (0°) or very end (29°) tends to act like a doorway in motion,
+                    the outer style shifts noticeably across life stages.
                   </div>
                 </details>
               )}
