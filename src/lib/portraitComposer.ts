@@ -1490,6 +1490,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         balanced: "regulation happens in ordinary daily rhythm",
         private: "regulation happens privately, away from the room that triggered it",
         delayed: "regulation happens later and underground, not in the moment",
+        belonging: `regulation depends on trusted belonging — ${name} resets only when ${name} feels included, accepted, and still part of the group, not just because the conversation is over`,
       }[moonTiming];
       signals.push({
         role: "Regulation and reset (not speech)",
