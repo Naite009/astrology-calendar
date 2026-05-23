@@ -7,6 +7,71 @@
 // This file is presentation-layer prioritization only.
 
 import type { ChildPortrait } from "./childPortrait";
+import type { NatalChart } from "@/hooks/useNatalChart";
+
+// ── Plain-language "what this placement actually does in real life" ──────────
+// These are deliberately concrete and behavioral, so the bridge sentence
+// reads like an explanation, not an astrology lookup.
+
+const SUN_FEELS: Record<string, string> = {
+  Aries: "they need to move first and be the one who starts things",
+  Taurus: "they need things to feel steady and physically safe before they commit",
+  Gemini: "they need to talk, ask questions, and try a few angles before settling",
+  Cancer: "they feel the emotional weather of a room before anything else",
+  Leo: "they need to be seen as themselves, not as a role they're playing",
+  Virgo: "they need things to actually work, and they'll notice what's off",
+  Libra: "they're tracking fairness and the connection in the room at all times",
+  Scorpio: "they need to know what's really going on under the surface",
+  Sagittarius: "they need the bigger why before they'll fully buy in",
+  Capricorn: "they need a real plan and to be treated as capable",
+  Aquarius: "they need to be met as their own person, not a category",
+  Pisces: "they absorb everything happening around them, even when they don't show it",
+};
+
+const MERCURY_FEELS: Record<string, string> = {
+  Aries: "processes fast and out loud, and gets blunt when forced to slow down",
+  Taurus: "processes slowly, needs concrete examples, and won't be rushed into an answer",
+  Gemini: "processes by talking, comparing, and sampling several ideas at once",
+  Cancer: "processes through memory and feeling, so logic comes after the mood is read",
+  Leo: "processes through story and self-expression, and needs an audience to think clearly",
+  Virgo: "processes by sorting details and checking what's wrong before what's right",
+  Libra: "processes by weighing both sides, which can look like indecision",
+  Scorpio: "processes privately, goes deep on one thing, and won't share until it's true",
+  Sagittarius: "processes through the big picture and gets impatient with small steps",
+  Capricorn: "processes by structure and consequence, and won't speak until it's sound",
+  Aquarius: "processes logically and needs space to figure out what's true on their own",
+  Pisces: "processes through impression and feeling, so words can lag behind what they know",
+};
+
+const MOON_FEELS: Record<string, string> = {
+  Aries: "settles by doing something physical, not by talking it through",
+  Taurus: "settles by predictable rhythm, food, and not being rushed",
+  Gemini: "settles by being talked with and given a few options",
+  Cancer: "settles by closeness and knowing the plan ahead of time",
+  Leo: "settles by warm, sincere attention from someone they trust",
+  Virgo: "settles by completing a small, competent task",
+  Libra: "settles in a calm room where fairness has been named out loud",
+  Scorpio: "settles in privacy and one-on-one trust, never in a crowd",
+  Sagittarius: "settles when given honesty and room to move",
+  Capricorn: "settles when there's clear structure and they have one piece of control",
+  Aquarius: "settles when they're treated as their own person and given space",
+  Pisces: "settles with low stimulation, soft input, and rest",
+};
+
+const MARS_FEELS: Record<string, string> = {
+  Aries: "discharges fast and physical, so the energy needs an outlet before talking",
+  Taurus: "burns slow and steady, but locks in hard once pushed past a limit",
+  Gemini: "fires through words and quick switches, and scatters under pressure",
+  Cancer: "protects sideways, through care and indirect action, not confrontation",
+  Leo: "needs the energy to come out through performance, play, or being seen",
+  Virgo: "channels into fixing and improving, and turns critical when blocked",
+  Libra: "fights by negotiating, and freezes when forced to pick a side",
+  Scorpio: "goes underground with the energy until it can come out one-on-one",
+  Sagittarius: "needs to move while it processes, no face-to-face cornering",
+  Capricorn: "channels into a plan and pushes through, but quietly resents being managed",
+  Aquarius: "acts on principle and refuses guilt as a motivator",
+  Pisces: "needs low stimulation to reset; otherwise it leaks out as withdrawal",
+};
 
 // ── Plain-language sign lookups for composer-only copy ───────────────────────
 const MOON_SAFETY: Record<string, string> = {
@@ -129,6 +194,12 @@ export interface ComposedPortrait {
     reaction: string;                                 // what the system does
     synthesis: string;                                // the one-paragraph "working system" sentence
   };
+  bridge?: {
+    // Plain-language paragraph connecting 2+ placements to a real behavior.
+    paragraph: string;
+    // The placements it linked, for transparency.
+    placements: string[];
+  };
   stageAsk: {
     title: string;
     body: string;
@@ -146,7 +217,7 @@ function ord(n: number): string {
 }
 
 // ── Composer ─────────────────────────────────────────────────────────────────
-export function composePortrait(p: ChildPortrait): ComposedPortrait {
+export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedPortrait {
   const name = p.name;
   const phase = p.lifePhase;
   const age = p.age;
@@ -164,7 +235,7 @@ export function composePortrait(p: ChildPortrait): ComposedPortrait {
 
   // Regulation source: prefer explicit Mars house discharge, then Moon-sign safety,
   // then 12th-house cloaking note.
-  const moonSign = p.moonPhaseProfile ? undefined : undefined; // moon sign isn't on portrait directly
+  // moon sign is read later from `chart` when computing the bridge.
   // We derive moon-sign regulation from Moon hard aspects' presence; otherwise fall back to Mars sign.
   const marsSign = p.energyDischarge?.marsSign;
   const regulationParts: string[] = [];
@@ -347,11 +418,71 @@ export function composePortrait(p: ChildPortrait): ComposedPortrait {
   }
   const chartStory = storyParts.join(" ");
 
+  // 5b. BRIDGE — "Why This Works": connect 2 real placements to a real behavior,
+  // in plain language, no jargon. This is the most important section.
+  const mercurySign =
+    p.cognitiveProfile?.mercurySign ||
+    (chart?.planets?.Mercury as any)?.sign ||
+    undefined;
+  const moonSign = (chart?.planets?.Moon as any)?.sign || undefined;
+
+  type Anchor = { label: string; feel: string };
+  const anchors: Record<string, Anchor> = {};
+  if (sunSign && SUN_FEELS[sunSign]) {
+    anchors.Sun = { label: `Sun in ${sunSign}`, feel: SUN_FEELS[sunSign] };
+  }
+  if (mercurySign && MERCURY_FEELS[mercurySign]) {
+    anchors.Mercury = { label: `Mercury in ${mercurySign}`, feel: MERCURY_FEELS[mercurySign] };
+  }
+  if (moonSign && MOON_FEELS[moonSign]) {
+    anchors.Moon = { label: `Moon in ${moonSign}`, feel: MOON_FEELS[moonSign] };
+  }
+  if (marsSign && MARS_FEELS[marsSign]) {
+    anchors.Mars = { label: `Mars in ${marsSign}`, feel: MARS_FEELS[marsSign] };
+  }
+
+  // Priority pairings: pick the first pair where both anchors exist.
+  const pairings: Array<[string, string]> = [
+    ["Sun", "Mercury"],
+    ["Sun", "Moon"],
+    ["Moon", "Mercury"],
+    ["Sun", "Mars"],
+    ["Moon", "Mars"],
+    ["Mercury", "Mars"],
+  ];
+
+  let bridge: ComposedPortrait["bridge"] = undefined;
+  const pair = pairings.find(([x, y]) => anchors[x] && anchors[y]);
+  if (pair) {
+    const [aKey, bKey] = pair;
+    const a = anchors[aKey];
+    const b = anchors[bKey];
+
+    // Behavior + "what helps" tail tuned to which pair we picked.
+    const behaviorByPair: Record<string, string> = {
+      "Sun|Mercury": `when you ask ${name} a direct question in the moment, the answer may not show up right away — not because ${name} is avoiding it, but because the part that feels and the part that thinks need a beat to catch up to each other. Giving ${name} a little space works because it lets those two parts meet.`,
+      "Sun|Moon": `when something hard happens, what ${name} needs to feel safe is not always the same as what ${name} is trying to be in the world. Both have to be honored, or the system stays on edge. Naming the difference out loud is what brings it down.`,
+      "Moon|Mercury": `${name} can talk about a feeling clearly and still not feel settled, because thinking it through and actually calming down are two different jobs. Help with both, in that order, and the system lands.`,
+      "Sun|Mars": `${name} can know what they want and still get stuck on how to push for it, because the wanting and the doing run on different fuel. Giving the body its outlet first usually unlocks the rest.`,
+      "Moon|Mars": `when ${name} is upset, the body needs to move before the heart can talk. If you try to discuss the feeling first, it will stall. Discharge first, talk second.`,
+      "Mercury|Mars": `${name}'s thinking and ${name}'s drive can pull in different directions, so the words and the action don't always line up. Slowing down one and letting the other catch up is what makes both make sense.`,
+    };
+    const tail = behaviorByPair[`${aKey}|${bKey}`] ?? `the two parts have to be allowed to do their separate jobs before they line up.`;
+
+    const paragraph =
+      `${name}'s ${a.label}, which means ${a.feel}. ` +
+      `But ${name}'s ${b.label}, which ${b.feel}. ` +
+      `So ${tail}`;
+
+    bridge = { paragraph, placements: [a.label, b.label] };
+  }
+
   // Themes picked (for transparency)
   const themesPicked = [
     "developmental anchor",
     p.chartRuler ? "chart ruler" : null,
     sunSign ? "sun core" : null,
+    bridge ? `bridge: ${bridge.placements.join(" + ")}` : null,
     tightAspects.length ? `${tightAspects.length} tight aspect(s)` : null,
     p.cloakingNote ? "12th-house cloaking" : null,
     p.masterySpot.saturn ? "saturn pattern" : null,
@@ -361,6 +492,7 @@ export function composePortrait(p: ChildPortrait): ComposedPortrait {
   return {
     oneSentence,
     systemMechanism,
+    bridge,
     stageAsk,
     misreads: misreads.slice(0, 3),
     whatHelps,

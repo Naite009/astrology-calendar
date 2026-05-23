@@ -49,7 +49,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
-  const composed = portrait ? composePortrait(portrait) : null;
+  const composed = portrait && selected ? composePortrait(portrait, selected.chart) : null;
   const validation = selected ? validateChart(selected.chart) : null;
 
   return (
@@ -156,107 +156,143 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               )}
             </section>
 
-            {/* 1b. How The System Works — driver / translator / trigger */}
-            <section className="space-y-2">
+            {/* ── BOX 1 · REAL LIFE (green) ── what to do, no astrology language */}
+            <section className="rounded-lg border-2 border-emerald-500/50 bg-emerald-50/60 dark:bg-emerald-950/20 p-4 space-y-5">
               <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">How The System Works</div>
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" aria-hidden />
+                <div className="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300 font-bold">
+                  Real Life · What To Do
+                </div>
               </div>
-              <div className="rounded-md border border-primary/30 bg-background/40 p-4 space-y-3">
+
+              {/* What This Stage Is Asking */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+                  <div className="font-semibold text-base">What This Stage Is Asking</div>
+                  <Badge variant="outline" className="text-[10px]">{composed.stageAsk.title}</Badge>
+                </div>
+                <p className="leading-relaxed text-foreground/90">{composed.stageAsk.body}</p>
+              </div>
+
+              {/* What Gets Misread */}
+              {composed.misreads.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <div className="font-semibold text-base">What Gets Misread</div>
+                  </div>
+                  <div className="space-y-2">
+                    {composed.misreads.map((m, i) => (
+                      <div key={i} className="rounded-md border border-amber-400/40 bg-background/60 p-3">
+                        <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold mb-1">
+                          Looks like
+                        </div>
+                        <p className="text-sm mb-2">{m.looksLike}</p>
+                        <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold mb-1">
+                          Actually is
+                        </div>
+                        <p className="text-sm">{m.actuallyIs}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* What Helps */}
+              {composed.whatHelps.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <HeartHandshake className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+                    <div className="font-semibold text-base">What Helps</div>
+                  </div>
+                  <ul className="space-y-2">
+                    {composed.whatHelps.map((h, i) => (
+                      <li key={i} className="rounded-md border border-emerald-500/30 bg-background/60 p-3 text-sm leading-relaxed">
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+
+            {/* ── BOX 2 · WHY THIS WORKS (yellow) ── the bridge */}
+            {composed.bridge && (
+              <section className="rounded-lg border-2 border-amber-500/60 bg-amber-50/70 dark:bg-amber-950/25 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500" aria-hidden />
+                  <div className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-300 font-bold">
+                    The Bridge · Why This Works
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-amber-600" />
+                  <div className="font-semibold text-base">Why This Works</div>
+                </div>
+                <p className="leading-relaxed text-foreground/90 text-[15px]">{composed.bridge.paragraph}</p>
+                <div className="text-[10px] text-muted-foreground/80 italic pt-1">
+                  Connecting: {composed.bridge.placements.join(" + ")}
+                </div>
+              </section>
+            )}
+
+            {/* ── BOX 3 · THE ASTROLOGY (blue) ── deep logic, behavioral phrasing */}
+            <section className="rounded-lg border-2 border-sky-500/50 bg-sky-50/60 dark:bg-sky-950/20 p-4 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-500" aria-hidden />
+                <div className="text-[10px] uppercase tracking-widest text-sky-700 dark:text-sky-300 font-bold">
+                  The Astrology · Chart Story Behind It
+                </div>
+              </div>
+
+              {/* How The System Works */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-sky-700 dark:text-sky-300" />
+                  <div className="font-semibold text-base">How The System Works</div>
+                </div>
                 <p className="leading-relaxed text-foreground/90">{composed.systemMechanism.synthesis}</p>
-                <div className="grid sm:grid-cols-3 gap-2 pt-2 border-t border-border">
-                  <div className="rounded border border-border bg-background/60 p-2.5">
-                    <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">Driver</div>
+                <div className="grid sm:grid-cols-3 gap-2 pt-2">
+                  <div className="rounded border border-sky-500/30 bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold mb-1">Driver</div>
                     <div className="text-sm font-medium">{composed.systemMechanism.driver.label}</div>
                     <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.driver.detail}</div>
                   </div>
-                  <div className="rounded border border-border bg-background/60 p-2.5">
-                    <div className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold mb-1">Translator</div>
+                  <div className="rounded border border-sky-500/30 bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold mb-1">Translator</div>
                     <div className="text-sm font-medium">{composed.systemMechanism.translator.label}</div>
                     <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.translator.detail}</div>
                   </div>
-                  <div className="rounded border border-border bg-background/60 p-2.5">
-                    <div className="text-[10px] uppercase tracking-wider text-amber-600 font-semibold mb-1">Stress Trigger</div>
+                  <div className="rounded border border-sky-500/30 bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold mb-1">Stress Trigger</div>
                     <div className="text-sm font-medium">{composed.systemMechanism.trigger.label}</div>
                     <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.trigger.detail}</div>
                   </div>
                 </div>
               </div>
-            </section>
 
-            {/* 2. What This Stage Is Asking */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Anchor className="h-4 w-4 text-primary" />
-                <div className="font-semibold text-base">What This Stage Is Asking</div>
-                <Badge variant="outline" className="text-[10px]">{composed.stageAsk.title}</Badge>
-              </div>
-              <div className="rounded-md border border-border bg-background/40 p-3">
-                <p className="leading-relaxed text-foreground/90">{composed.stageAsk.body}</p>
-              </div>
-            </section>
-
-            {/* 3. What Gets Misread */}
-            {composed.misreads.length > 0 && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <div className="font-semibold text-base">What Gets Misread</div>
-                </div>
+              {/* Chart Story */}
+              {composed.chartStory && (
                 <div className="space-y-2">
-                  {composed.misreads.map((m, i) => (
-                    <div key={i} className="rounded-md border border-amber-400/40 bg-amber-50/50 dark:bg-amber-950/20 p-3">
-                      <div className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold mb-1">
-                        Looks like
-                      </div>
-                      <p className="text-sm mb-2">{m.looksLike}</p>
-                      <div className="text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold mb-1">
-                        Actually is
-                      </div>
-                      <p className="text-sm">{m.actuallyIs}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* 4. What Helps */}
-            {composed.whatHelps.length > 0 && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <HeartHandshake className="h-4 w-4 text-emerald-600" />
-                  <div className="font-semibold text-base">What Helps</div>
-                </div>
-                <ul className="space-y-2">
-                  {composed.whatHelps.map((h, i) => (
-                    <li key={i} className="rounded-md border border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-950/20 p-3 text-sm leading-relaxed">
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* 5. The Chart Story Behind It */}
-            {composed.chartStory && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <div className="font-semibold text-base">The Chart Story Behind It</div>
-                </div>
-                <div className="rounded-md border border-border bg-background/40 p-3">
-                  <p className="leading-relaxed text-muted-foreground">{composed.chartStory}</p>
-                  <div className="mt-2 text-[10px] text-muted-foreground/70 italic">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-sky-700 dark:text-sky-300" />
+                    <div className="font-semibold text-base">The Chart Story Behind It</div>
+                  </div>
+                  <p className="leading-relaxed text-foreground/90">{composed.chartStory}</p>
+                  <div className="text-[10px] text-muted-foreground/70 italic">
                     Themes selected: {composed.themesPicked.join(" · ")}
                   </div>
                 </div>
-              </section>
-            )}
+              )}
+            </section>
 
-            {/* 6. Optional Deep Dive */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Compass className="h-4 w-4 text-muted-foreground" />
+
+            {/* ── BOX 4 · OPTIONAL DEEP DIVE (purple) ── collapsibles, not the main reading */}
+            <section className="rounded-lg border-2 border-violet-500/40 bg-violet-50/40 dark:bg-violet-950/15 p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-violet-500" aria-hidden />
+                <Compass className="h-4 w-4 text-violet-700 dark:text-violet-300" />
                 <div className="font-semibold text-base">Optional Deep Dive</div>
               </div>
 
