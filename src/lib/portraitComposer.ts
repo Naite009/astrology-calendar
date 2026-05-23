@@ -194,6 +194,12 @@ export interface ComposedPortrait {
     reaction: string;                                 // what the system does
     synthesis: string;                                // the one-paragraph "working system" sentence
   };
+  bridge?: {
+    // Plain-language paragraph connecting 2+ placements to a real behavior.
+    paragraph: string;
+    // The placements it linked, for transparency.
+    placements: string[];
+  };
   stageAsk: {
     title: string;
     body: string;
