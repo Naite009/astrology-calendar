@@ -1727,9 +1727,21 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     themesPicked,
   };
 
-  // GLOBAL VALIDATION LAYER — A–H check before display.
+  // GLOBAL VALIDATION LAYER — A–K check before display.
+  // Pass chart context so Saturn/Chiron leak detection is chart-aware.
   try {
-    composed.validation = validateComposedPortrait(composed);
+    const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.bodyA + a.bodyB) && /Saturn/.test(a.bodyA + a.bodyB) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const sunChironAny = tightAspects.find(a => /Sun/.test(a.bodyA + a.bodyB) && /Chiron/.test(a.bodyA + a.bodyB) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const planetsForCtx = (chart?.planets as any) ?? {};
+    const mercSatReceptionCtx =
+      planetsForCtx.Mercury?.sign && planetsForCtx.Saturn?.sign &&
+      RULER_OF[planetsForCtx.Mercury.sign] === "Saturn" &&
+      RULER_OF[planetsForCtx.Saturn.sign] === "Mercury";
+    const saturnCentral = Boolean(
+      (sunSaturnAny && sunSaturnAny.orb < 3) || mercSatReceptionCtx,
+    );
+    const chironCentral = Boolean(sunChironAny && sunChironAny.orb < 2.5);
+    composed.validation = validateComposedPortrait(composed, { saturnCentral, chironCentral });
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
     }
