@@ -534,12 +534,122 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     bridge = { paragraph, placements: [a.label, b.label] };
   }
 
+  // ── CHAIN OF COMMAND ────────────────────────────────────────────────────────
+  // Walk: chart ruler -> ruler of its sign -> ruler of that planet's sign -> ...
+  // Stops when a planet lands in its own sign (final dispositor), or when the
+  // walk re-enters a planet already visited (a loop / mutual reception).
+  // This is the "who reports to whom" of the chart, and it tells you what's
+  // really pulling the strings underneath the chart ruler.
+  let chainOfCommand: ComposedPortrait["chainOfCommand"] = undefined;
+  const allPlanets = chart?.planets as Record<string, any> | undefined;
+  if (p.chartRuler && allPlanets) {
+    const steps: Array<{ planet: string; sign: string; house: number | null; reason: string }> = [];
+    const seen = new Map<string, number>(); // planet name -> step index
+    let currentName: string | undefined = p.chartRuler.rulerName;
+    let currentSign: string | undefined = p.chartRuler.rulerSign;
+    let currentHouse: number | null = p.chartRuler.rulerHouse;
+    let finalDispositor: { planet: string; sign: string; house: number | null } | undefined;
+    let loop: string[] | undefined;
+    let mutualReception: { a: string; b: string; aSign: string; bSign: string } | undefined;
+
+    // Push step 0 (chart ruler itself).
+    steps.push({
+      planet: currentName!,
+      sign: currentSign!,
+      house: currentHouse,
+      reason: `Chart ruler. This is the planet ${name} reports to before anyone else, because it rules the Rising sign (${p.chartRuler.ascSign}).`,
+    });
+    seen.set(currentName!, 0);
+
+    let safety = 0;
+    while (safety++ < 12 && currentSign) {
+      const nextName = RULER_OF[currentSign];
+      if (!nextName) break;
+      // Self-rulership: planet lives in the sign it rules. Final dispositor reached.
+      if (nextName === currentName) {
+        finalDispositor = { planet: currentName, sign: currentSign, house: currentHouse };
+        break;
+      }
+      const nextPlanet = allPlanets[nextName];
+      if (!nextPlanet?.sign) break;
+      const nextHouse: number | null = ((): number | null => {
+        // approximate: re-derive from chart house cusps via the same helper isn't
+        // available here; fall back to null. Sign-level chain is the important part.
+        return null;
+      })();
+
+      // Mutual reception: A is in B's sign AND B is in A's sign.
+      if (RULER_OF[nextPlanet.sign] === currentName) {
+        mutualReception = {
+          a: currentName!, aSign: currentSign,
+          b: nextName, bSign: nextPlanet.sign,
+        };
+        steps.push({
+          planet: nextName, sign: nextPlanet.sign, house: nextHouse,
+          reason: `Mutual reception with ${currentName}. They host each other's sign, so they trade authority back and forth instead of one being the final boss.`,
+        });
+        break;
+      }
+
+      // Loop detection: we've been here before.
+      if (seen.has(nextName)) {
+        const startIdx = seen.get(nextName)!;
+        loop = steps.slice(startIdx).map(s => s.planet).concat(nextName);
+        steps.push({
+          planet: nextName, sign: nextPlanet.sign, house: nextHouse,
+          reason: `Closes the loop. ${loop.join(" -> ")} all point at each other, so the system has no single final boss; authority circulates.`,
+        });
+        break;
+      }
+
+      steps.push({
+        planet: nextName, sign: nextPlanet.sign, house: nextHouse,
+        reason: `${currentName} is in ${currentSign}, and ${nextName} rules ${currentSign}. So ${currentName} hands authority up to ${nextName}.`,
+      });
+      seen.set(nextName, steps.length - 1);
+      currentName = nextName;
+      currentSign = nextPlanet.sign;
+      currentHouse = nextHouse;
+    }
+
+    // Build a plain-language narrative.
+    const chainLine = steps.map(s => `${s.planet} in ${s.sign}`).join(" -> ");
+    let narrative = `Walk the chain of command from the top down: ${chainLine}. `;
+    if (mutualReception) {
+      narrative +=
+        `${mutualReception.a} and ${mutualReception.b} are in mutual reception (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
+        `and ${mutualReception.b} sits in ${mutualReception.bSign}). They both host each other's sign, which means they ` +
+        `borrow each other's strength. In real life this looks like ${name} being able to switch between two different ways ` +
+        `of operating depending on the situation, without losing themselves in either. Neither one is the boss; they are ` +
+        `partners running the show together.`;
+    } else if (loop) {
+      narrative +=
+        `There is no single final boss. ${loop.join(", ")} all point at each other in a loop, so authority circulates ` +
+        `between them. In daily life, this means ${name} doesn't have one fixed "true north" inside; the same situation ` +
+        `can be run by a different planet each time, depending on which one got activated first. It can feel like ` +
+        `running on a wheel that keeps handing off the steering, which is why ${name} sometimes ends up back where they started.`;
+    } else if (finalDispositor) {
+      narrative +=
+        `${finalDispositor.planet} is the final dispositor (it sits in ${finalDispositor.sign}, the sign it already rules). ` +
+        `That means every other planet in the chain eventually reports to ${finalDispositor.planet}. ` +
+        `In real life, ${finalDispositor.planet} is the part of ${name} that has the last word when decisions get hard. ` +
+        `When ${name} is unsure, the answer their system will quietly default to is whatever ${finalDispositor.planet}'s job is.`;
+    } else {
+      narrative += `The chain runs but doesn't close cleanly; treat the last planet in the chain as the working boss for now.`;
+    }
+
+    chainOfCommand = { steps, finalDispositor, loop, mutualReception, narrative };
+  }
+
   // Themes picked (for transparency)
   const themesPicked = [
     "developmental anchor",
     p.chartRuler ? "chart ruler" : null,
     sunSign ? "sun core" : null,
     bridge ? `bridge: ${bridge.placements.join(" + ")}` : null,
+    chainOfCommand?.mutualReception ? "mutual reception" : null,
+    chainOfCommand?.loop ? "dispositor loop" : null,
+    chainOfCommand?.finalDispositor ? `final dispositor: ${chainOfCommand.finalDispositor.planet}` : null,
     tightAspects.length ? `${tightAspects.length} tight aspect(s)` : null,
     p.cloakingNote ? "12th-house cloaking" : null,
     p.masterySpot.saturn ? "saturn pattern" : null,
@@ -554,6 +664,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     misreads: misreads.slice(0, 3),
     whatHelps,
     chartStory,
+    chainOfCommand,
     themesPicked,
   };
 }
