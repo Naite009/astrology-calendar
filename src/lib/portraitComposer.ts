@@ -8,6 +8,7 @@
 
 import type { ChildPortrait } from "./childPortrait";
 import type { NatalChart } from "@/hooks/useNatalChart";
+import { validateComposedPortrait } from "./portraitValidator";
 
 // ── Plain-language "what this placement actually does in real life" ──────────
 // These are deliberately concrete and behavioral, so the bridge sentence
@@ -229,7 +230,20 @@ export interface ComposedPortrait {
     narrative: string;
   };
   themesPicked: string[];
+  // Global validation result (A–H check). `ok: false` means at least one
+  // section violated planet-job / house-meaning / mutual-reception /
+  // final-authority / sign-speed rules. Surfaced for dev review.
+  validation?: {
+    ok: boolean;
+    violations: Array<{
+      rule: "planet-job" | "house-meaning" | "mutual-reception" | "final-authority" | "sign-speed" | "life-stage-erasure";
+      location: string;
+      found: string;
+      expected: string;
+    }>;
+  };
 }
+
 
 // Traditional rulerships (matches childPortrait.ts).
 const RULER_OF: Record<string, string> = {
@@ -1641,7 +1655,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     p.masterySpot.chiron ? "chiron pattern" : null,
   ].filter(Boolean) as string[];
 
-  return {
+  const composed: ComposedPortrait = {
     lifeStageChapter,
     corePortrait,
     systemMechanism,
@@ -1655,4 +1669,16 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     chainOfCommand,
     themesPicked,
   };
+
+  // GLOBAL VALIDATION LAYER — A–H check before display.
+  try {
+    composed.validation = validateComposedPortrait(composed);
+    if (typeof console !== "undefined" && !composed.validation.ok) {
+      console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
+    }
+  } catch (_e) {
+    // Validator is best-effort; never block the portrait on it.
+  }
+
+  return composed;
 }
