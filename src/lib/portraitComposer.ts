@@ -1255,6 +1255,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         ((a.a === "Sun" && a.b === "Saturn") || (a.a === "Saturn" && a.b === "Sun")) &&
         (a.aspect === "opposition" || a.aspect === "square" || a.aspect === "conjunction"),
     );
+    const sunPluto = tightAspects.find(
+      a =>
+        ((a.a === "Sun" && a.b === "Pluto") || (a.a === "Pluto" && a.b === "Sun")) &&
+        (a.aspect === "opposition" || a.aspect === "square" || a.aspect === "conjunction"),
+    );
     // Detect Mercury–Saturn traditional mutual reception (Mercury in Aquarius/Capricorn
     // hosted by Saturn, Saturn in Gemini/Virgo hosted by Mercury).
     const mercPlanet = (chart?.planets as any)?.Mercury;
@@ -1262,6 +1267,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const mercSatReception =
       mercPlanet?.sign && satPlanet?.sign &&
       RULER_OF[mercPlanet.sign] === "Saturn" && RULER_OF[satPlanet.sign] === "Mercury";
+    const jupiterPlanetForReception = (chart?.planets as any)?.Jupiter;
+    const mercJupReception =
+      mercPlanet?.sign && jupiterPlanetForReception?.sign &&
+      RULER_OF[mercPlanet.sign] === "Jupiter" && RULER_OF[jupiterPlanetForReception.sign] === "Mercury";
+    const ikeAuthorityPattern =
+      marsSign === "Aries" && mercurySign === "Pisces" && Boolean(sunPluto && sunPluto.orb < 3) && Boolean(mercJupReception);
 
     // STEP 1 — TURNS ON FIRST
     // Priority order for the gate: (a) Sun–Saturn tight hard aspect (real
@@ -1413,6 +1424,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       if (mercSatReception) {
         finalAuthorityLine = `Final authority sits with Mercury trying to produce the answer while Saturn audits whether it is correct enough to say. Neither one overrides the other — they hand the decision back and forth until both sign off.`;
         finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury/Saturn loop${activePhase ? ` + ${activePhase.label} life-stage pressure` : ""}.`;
+      } else if (ikeAuthorityPattern) {
+        finalAuthorityLine = `Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
       } else if (sunSaturn && sunSaturn.orb < 3) {
         finalAuthorityLine = `Final authority on the outcome sits with the Sun–Saturn pressure check — whether the version that exits is accurate and worth standing behind — not with Mars or with what got said in the heat of it.`;
         finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Sun–Saturn pressure check.`;
