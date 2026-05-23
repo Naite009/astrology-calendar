@@ -326,7 +326,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Sagittarius: "blurts the honest version before the social filter arrives, and then has to manage the room they just disturbed",
     Capricorn: "freezes the face, gives a measured answer, and processes the actual reaction privately later",
     Aquarius: "detaches a half-step, observes the conversation from outside it, and answers from logic rather than from the heat",
-    Pisces: "absorbs the mood of whoever is speaking and starts feeling what they feel, which blurs where their own position even was",
+    Pisces: "can absorb the emotional tone of whoever is speaking, especially when the relationship matters, and may know the other person's mood before they have fully separated out their own position",
   };
 
   // ── What the chart ruler ACTUALLY believes underneath. This is the second
