@@ -288,10 +288,11 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
             </section>
 
 
-            {/* 6. Optional Deep Dive */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Compass className="h-4 w-4 text-muted-foreground" />
+            {/* ── BOX 4 · OPTIONAL DEEP DIVE (purple) ── collapsibles, not the main reading */}
+            <section className="rounded-lg border-2 border-violet-500/40 bg-violet-50/40 dark:bg-violet-950/15 p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-violet-500" aria-hidden />
+                <Compass className="h-4 w-4 text-violet-700 dark:text-violet-300" />
                 <div className="font-semibold text-base">Optional Deep Dive</div>
               </div>
 
