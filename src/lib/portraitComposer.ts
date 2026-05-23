@@ -1391,10 +1391,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       4: "submerged", 12: "submerged",
     };
     // Moon REGULATION timing by house (reset, not speech).
-    type MoonTiming = "in-the-moment" | "balanced" | "private" | "delayed";
+    type MoonTiming = "in-the-moment" | "balanced" | "private" | "delayed" | "belonging";
     const MOON_HOUSE_TIMING: Record<number, MoonTiming> = {
       1: "in-the-moment", 7: "in-the-moment",
-      3: "balanced", 5: "balanced", 9: "balanced", 10: "balanced", 11: "balanced", 2: "balanced", 6: "balanced",
+      3: "balanced", 5: "balanced", 9: "balanced", 10: "balanced", 2: "balanced", 6: "balanced",
+      11: "belonging",
       4: "private", 8: "private",
       12: "delayed",
     };
