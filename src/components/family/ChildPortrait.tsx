@@ -311,14 +311,14 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
 
                 {/* How the Stress Trigger was derived */}
-                <details className="rounded border border-amber-500/30 bg-background/40 mt-2">
-                  <summary className="cursor-pointer p-2.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-muted/40 rounded">
+                <div className="rounded border border-amber-500/30 bg-background/40 mt-2 p-3">
+                  <div className="font-bold text-xs text-amber-700 dark:text-amber-300 mb-1.5">
                     How was the stress trigger picked?
-                  </summary>
-                  <div className="px-3 pb-3 pt-1 text-xs text-muted-foreground leading-relaxed">
+                  </div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">
                     {composed.systemMechanism.trigger.derivation}
                   </div>
-                </details>
+                </div>
               </div>
 
               {/* Chain of Command (Dispositor walk) */}
@@ -399,43 +399,43 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
 
 
-            {/* ── BOX 4 · OPTIONAL DEEP DIVE (purple) ── collapsibles, not the main reading */}
-            <section className="rounded-lg border-2 border-violet-500/40 bg-violet-50/40 dark:bg-violet-950/15 p-4 space-y-2">
+            {/* ── BOX 4 · DEEP DIVE (purple) ── always-visible details */}
+            <section className="rounded-lg border-2 border-violet-500/40 bg-violet-50/40 dark:bg-violet-950/15 p-4 space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-violet-500" aria-hidden />
                 <Compass className="h-4 w-4 text-violet-700 dark:text-violet-300" />
-                <div className="font-semibold text-base">Optional Deep Dive</div>
+                <div className="font-semibold text-base">Deep Dive</div>
               </div>
 
               {portrait.chartRuler && (
-                <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                  <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+                <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                  <div className="font-bold text-sm mb-1.5">
                     Chart Ruler · {portrait.chartRuler.rulerName} in {portrait.chartRuler.rulerSign}
-                  </summary>
-                  <div className="p-3 pt-1 border-t border-border text-sm leading-relaxed text-muted-foreground">
+                  </div>
+                  <div className="text-sm leading-relaxed text-muted-foreground">
                     {portrait.chartRuler.line}
                   </div>
-                </details>
+                </div>
               )}
 
               {portrait.moonPhaseProfile && (
-                <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                  <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+                <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                  <div className="font-bold text-sm mb-1.5">
                     Moon Phase · {portrait.moonPhaseProfile.label}
-                  </summary>
-                  <div className="p-3 pt-1 border-t border-border text-sm space-y-2 text-muted-foreground">
+                  </div>
+                  <div className="text-sm space-y-2 text-muted-foreground">
                     <p><span className="font-semibold text-foreground">Instinct:</span> {portrait.moonPhaseProfile.instinct}</p>
                     <p><span className="font-semibold text-foreground">True work:</span> {portrait.moonPhaseProfile.trueWork}</p>
                   </div>
-                </details>
+                </div>
               )}
 
               {(portrait.masterySpot.chiron || portrait.masterySpot.saturn) && (
-                <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                  <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+                <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                  <div className="font-bold text-sm mb-1.5">
                     Chiron and Saturn (the tender places)
-                  </summary>
-                  <div className="p-3 pt-1 border-t border-border text-sm space-y-3 text-muted-foreground">
+                  </div>
+                  <div className="text-sm space-y-3 text-muted-foreground">
                     {portrait.masterySpot.saturn && (
                       <div>
                         <div className="font-semibold text-foreground mb-1">
@@ -455,37 +455,37 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                       </div>
                     )}
                   </div>
-                </details>
+                </div>
               )}
 
               {portrait.nodeHouseSynthesis && (
-                <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                  <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+                <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                  <div className="font-bold text-sm mb-1.5">
                     Nodes · comfort vs. growth edge
-                  </summary>
-                  <div className="p-3 pt-1 border-t border-border text-sm text-muted-foreground leading-relaxed">
+                  </div>
+                  <div className="text-sm text-muted-foreground leading-relaxed">
                     {portrait.nodeHouseSynthesis.line}
                   </div>
-                </details>
+                </div>
               )}
 
               {portrait.ascDegree != null && (portrait.ascDegree <= 1 || portrait.ascDegree >= 29) && (
-                <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                  <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+                <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                  <div className="font-bold text-sm mb-1.5">
                     Extreme degree · Ascendant at {portrait.ascDegree.toFixed(1)}°
-                  </summary>
-                  <div className="p-3 pt-1 border-t border-border text-sm text-muted-foreground leading-relaxed">
+                  </div>
+                  <div className="text-sm text-muted-foreground leading-relaxed">
                     A Rising sign at the very start (0°) or very end (29°) tends to act like a doorway in motion,
                     the outer style shifts noticeably across life stages.
                   </div>
-                </details>
+                </div>
               )}
 
-              <details className="rounded-md border border-dashed border-border bg-background/40 group">
-                <summary className="cursor-pointer p-3 font-medium text-sm hover:bg-muted/40 rounded-md">
+              <div className="rounded-md border border-dashed border-border bg-background/40 p-3">
+                <div className="font-bold text-sm mb-1.5">
                   Math Check · the raw aspects this reading is grounded in
-                </summary>
-                <div className="p-3 pt-1 border-t border-border text-xs space-y-2 text-muted-foreground">
+                </div>
+                <div className="text-xs space-y-2 text-muted-foreground">
                   {portrait.mathCheck.sunAspects.length > 0 && (
                     <div>
                       <div className="font-semibold text-foreground mb-1">Major aspects to the Sun</div>
@@ -507,7 +507,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     </div>
                   )}
                 </div>
-              </details>
+              </div>
             </section>
           </div>
         )}
