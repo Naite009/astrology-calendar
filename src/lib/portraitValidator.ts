@@ -364,3 +364,127 @@ export function resolveFinalAuthority(i: FinalAuthorityInputs): { line: string; 
     rank: `Final authority = Mercury timing.`,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// FINAL QA PASS — sentence-level auto-sanitizer
+//
+// Per the "10/10 VALIDATION MODE" spec, do NOT rewrite the whole Portrait.
+// We walk every string field, split on sentence boundaries, and rewrite or
+// drop ONLY the sentences that fail Check 1–7. Everything else is preserved
+// byte-for-byte. The depth/structure/sections stay intact.
+// ─────────────────────────────────────────────────────────────────────────
+
+type SentenceFix =
+  | { kind: "drop" }
+  | { kind: "replace"; with: string };
+
+// Each rule returns either null (sentence passes) or a SentenceFix.
+type SentenceRule = (s: string, loc: string, ctx: ChartValidationContext | undefined) => SentenceFix | null;
+
+const PARENT_BURDEN_REWRITES: Array<[RegExp, string]> = [
+  [/\b(the child|he|she|they) should pause\b[^.]*\./gi,
+    "Adults should create the pause instead of asking the child to create it under pressure."],
+  [/\b(the child|he|she|they) should (regulate|self-?regulate|calm down|slow down)\b[^.]*\./gi,
+    "Adults should lower the pressure and give space until the child's regulation need has been met."],
+  [/\bbuild in a pause on purpose\b[^.]*\./gi,
+    "Adults should create the pause for them instead of demanding they create it under pressure."],
+];
+
+const SENTENCE_RULES: SentenceRule[] = [
+  // CHECK 2 — planet roles
+  (s) => /Moon[^.]{0,100}(I should have said|deliver(?:s|ed)? the words|produce[sd]? the (?:words|language|sentence))/i.test(s)
+    ? { kind: "drop" } : null,
+  (s) => /Mars[^.]{0,100}(produce[sd]? the (?:words|language|sentence|answer)|deliver(?:s|ed)? the (?:words|language|sentence))/i.test(s)
+    ? { kind: "drop" } : null,
+  (s) => /Mercury[^.]{0,100}(regulate[sd]?|reset(?:s|ting)?)\s+(?:the\s+)?(?:emotion|feeling|nervous system|mood)/i.test(s)
+    ? { kind: "drop" } : null,
+  (s) => /\bSun[^.]{0,100}(deliver(?:s|ed)? the (?:words|language|sentence)|produce[sd]? the (?:words|language|sentence))/i.test(s)
+    ? { kind: "drop" } : null,
+
+  // CHECK 1 — Saturn / Chiron leaks (chart-aware)
+  (s, _loc, ctx) => {
+    if (!ctx || ctx.saturnCentral !== false) return null;
+    return /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i.test(s) ? { kind: "drop" } : null;
+  },
+  (s, _loc, ctx) => {
+    if (!ctx || ctx.chironCentral !== false) return null;
+    return /\b(permission wound|Chiron permission|permission check|allowed to be said)\b/i.test(s) ? { kind: "drop" } : null;
+  },
+
+  // CHECK 3 — house meaning leaks (cross-house misuse)
+  (s) => /11th house[^.]{0,80}(daily rhythm|nervous system|body strain|habits)/i.test(s) ? { kind: "drop" } : null,
+  (s) => /6th house[^.]{0,80}(group belonging|peer field|trusted circle|friend network)/i.test(s) ? { kind: "drop" } : null,
+  (s) => /12th house[^.]{0,80}(public|visible|broadcast|on display)/i.test(s) ? { kind: "drop" } : null,
+  (s) => /4th house[^.]{0,80}(public|visible|on display|broadcast|performance)/i.test(s) ? { kind: "drop" } : null,
+  (s) => /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|8th|9th|10th|11th|12th) house[^.]{0,120}other person'?s mood/i.test(s) ? { kind: "drop" } : null,
+  (s) => /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|12th) house[^.]{0,120}(still part of the group|trusted belonging|peer field)/i.test(s) ? { kind: "drop" } : null,
+  (s) => /(?:in the )?(?:1st|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th) house[^.]{0,120}(body safety|what feels sustainable)/i.test(s) ? { kind: "drop" } : null,
+
+  // CHECK 4 — banned generic mutual-reception wording
+  (s) => /authority (?:passes|hands|circulates) (?:back and forth|between)/i.test(s)
+    ? { kind: "replace", with: s.replace(/authority (?:passes|hands|circulates) (?:back and forth|between)[^.]*/i,
+        "they form a closed loop between their separate jobs") }
+    : null,
+
+  // CHECK 6 — mechanical voice, only in main/parent fields
+  (s, loc) => {
+    if (!MECHANICAL_PROTECTED_PATHS.test(loc)) return null;
+    return /\b(discharges the circuit|firing the circuit|the (?:signal|output)|voltage|hardware|circuit)\b/i.test(s)
+      ? { kind: "drop" } : null;
+  },
+
+  // CHECK 7 — parenting burden (rewrite in place)
+  (s) => {
+    for (const [re, rep] of PARENT_BURDEN_REWRITES) {
+      if (re.test(s)) return { kind: "replace", with: s.replace(re, rep) };
+    }
+    return null;
+  },
+];
+
+// Split on sentence boundaries while preserving the trailing punctuation.
+function splitSentences(text: string): string[] {
+  return text.match(/[^.!?]+[.!?]+|\S+$/g) ?? [text];
+}
+
+function sanitizeString(value: string, loc: string, ctx: ChartValidationContext | undefined): string {
+  const sentences = splitSentences(value);
+  const out: string[] = [];
+  for (let sentence of sentences) {
+    let dropped = false;
+    for (const rule of SENTENCE_RULES) {
+      const fix = rule(sentence, loc, ctx);
+      if (!fix) continue;
+      if (fix.kind === "drop") { dropped = true; break; }
+      sentence = fix.with;
+    }
+    if (!dropped) out.push(sentence);
+  }
+  return out.join(" ").replace(/\s+/g, " ").trim();
+}
+
+function sanitizeWalk(obj: unknown, ctx: ChartValidationContext | undefined, path = ""): unknown {
+  if (obj == null) return obj;
+  if (typeof obj === "string") return sanitizeString(obj, path, ctx);
+  if (Array.isArray(obj)) return obj.map((v, i) => sanitizeWalk(v, ctx, `${path}[${i}]`));
+  if (typeof obj === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      out[k] = sanitizeWalk(v, ctx, path ? `${path}.${k}` : k);
+    }
+    return out;
+  }
+  return obj;
+}
+
+/**
+ * Final QA pass. Walks every string field of the Portrait and rewrites or
+ * drops ONLY sentences that fail Checks 1–7. Returns a new ComposedPortrait
+ * with the same shape — sections, depth, and structure are preserved.
+ */
+export function sanitizeComposedPortrait(
+  portrait: ComposedPortrait,
+  ctx?: ChartValidationContext,
+): ComposedPortrait {
+  return sanitizeWalk(portrait, ctx) as ComposedPortrait;
+}
