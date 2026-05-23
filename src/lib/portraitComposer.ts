@@ -637,7 +637,8 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     portraitParts.push(`Here is the hardware. ${hardwareLines.join(" ")}`);
   }
   if (collisionLines.length >= 1) {
-    portraitParts.push(`And here is what that actually feels like in the body. ${collisionLines.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
+    const uniqueCollisions = Array.from(new Set(collisionLines));
+    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
