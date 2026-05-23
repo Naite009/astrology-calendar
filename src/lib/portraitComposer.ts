@@ -1364,46 +1364,55 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       addMedium(p.chartRuler.rulerName, p.chartRuler.rulerHouse);
     }
 
-    // TIMING COLLISION — compare Mercury vs Mars speed, and check Moon reset.
+    // TIMING COLLISION — compare Mercury DELIVERY (sign speed + house lag) vs
+    // Mars BODY-REACTION speed. Mercury can process fast in sign and still
+    // deliver late because of house (12th/8th/4th delay expression).
     const mercSpeed: Speed = mercurySign ? (MERC_SPEED[mercurySign] ?? "balanced") : "balanced";
     const marsSpeed: Speed = marsSign ? (MARS_SPEED[marsSign] ?? "balanced") : "balanced";
     const moonSpeed: Speed = moonSignEarly ? (MOON_RESET[moonSignEarly] ?? "balanced") : "balanced";
+    const mercExpLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
 
     const speedRank: Record<Speed, number> = { fast: 3, balanced: 2, "mood-paced": 1, slow: 1 };
-    const mercFaster = speedRank[mercSpeed] > speedRank[marsSpeed];
-    const marsFaster = speedRank[marsSpeed] > speedRank[mercSpeed];
+    // Effective delivery rank: down-shift Mercury by one tier if house delays expression.
+    const mercDeliveryRank = Math.max(1, speedRank[mercSpeed] - (mercExpLag === "delayed" ? 2 : 0));
+    const marsRank = speedRank[marsSpeed];
+    const mercFaster = mercDeliveryRank > marsRank;
+    const marsFaster = marsRank > mercDeliveryRank;
 
     let comparison: string;
     let mismatch: string;
-    if (mercFaster) {
-      comparison = `Mercury in ${mercurySign} (${mercSpeed}) processes faster than Mars in ${marsSign} (${marsSpeed}) reacts.`;
-      mismatch = `The words arrive before the body is ready to back them up. That shows up as talking past a feeling, then later noticing the body never caught up. Pressure is felt in the gap between what was said and what the body actually did with it.`;
-    } else if (marsFaster) {
-      comparison = `Mars in ${marsSign} (${marsSpeed}) reacts faster than Mercury in ${mercurySign} (${mercSpeed}) can form the words.`;
-      mismatch = `The body moves first and the words show up late. That shows up as a reaction (a tightening, a leaving, a shutdown) before there is language for it, which can read to other people as out of nowhere when it is actually delayed processing.`;
+    if (marsFaster) {
+      comparison = `Mars in ${marsSign} reacts immediately in the body (${marsSpeed}), while Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words later${mercExpLag === "delayed" ? " — processing is accurate, but expression lags because of the house" : ""}.`;
+      mismatch = `The body reacts first. The words arrive after. That shows up as a tightening, a shift in tone, or going still BEFORE there is language for it. To the room it can read as out-of-nowhere when it is actually accurate processing arriving on a slower delivery clock.`;
+    } else if (mercFaster) {
+      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words faster than Mars in ${marsSign} (${marsSpeed}) gets the body to back them up.`;
+      mismatch = `The words arrive before the body is ready. That shows up as sounding articulate in the moment, then noticing later that the body never agreed. Pressure sits in the gap between what was said and what the body actually did with it.`;
     } else {
-      comparison = `Mercury in ${mercurySign} and Mars in ${marsSign} run at the same speed (${mercSpeed}).`;
-      mismatch = `Reaction and language fire together, which is efficient but leaves no buffer. There is no second voice arriving late to soften the first, so whatever comes out in the moment is the version the room gets to keep.`;
+      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} and Mars in ${marsSign} arrive at the same time.`;
+      mismatch = `Reaction and language fire together with no buffer. Whatever comes out in the moment is the version the room keeps — there is no second voice arriving late to soften it.`;
     }
-    // Moon reset note (overwhelm if reset is slow while everything else is fast/mood-paced).
-    const moonNote =
-      moonSpeed === "slow" || moonSpeed === "mood-paced"
-        ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
-        : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
-        ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up, which can look like brushing it off when actually it just got metabolized first.`
-        : "";
-    mismatch += moonNote;
+    // Moon reset note — also house-aware. Moon in 12th resets PRIVATELY, later, not in the moment.
+    const moonInPrivateHouse = moonHouseHere === 12 || moonHouseHere === 8 || moonHouseHere === 4;
+    const moonHouseNote = moonInPrivateHouse
+      ? ` And the Moon in ${moonSignEarly}${moonHouseHere ? ` (${ord(moonHouseHere)} house)` : ""} does not reset in the moment — regulation happens later, privately, away from the room that triggered it.`
+      : moonSpeed === "slow" || moonSpeed === "mood-paced"
+      ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
+      : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
+      ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up.`
+      : "";
+    mismatch += moonHouseNote;
 
-    // REAL-TIME OUTPUT
-    const fastest = mercFaster ? "Mercury" : marsFaster ? "Mars" : "Mercury and Mars together";
-    const slowest = mercFaster ? "Mars" : marsFaster ? "Mercury" : "the Moon";
+    // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
+    // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
+    const fastest = marsFaster ? "Mars (body reaction)" : mercFaster ? "Mercury (words)" : "Mercury and Mars together";
+    const slowest = marsFaster ? "Mercury (the words)" : mercFaster ? "Mars (the body)" : "the Moon";
     const realTimeOutput = {
-      comesOut: `What actually exits the body first is whatever ${fastest} produces — ${mercFaster ? "a sentence" : marsFaster ? "a physical reaction or a tone shift" : "speech and reaction at the same time"} — shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium.`,
+      comesOut: `What exits first is whatever ${fastest} produces. ${marsFaster ? `A physical reaction or shift in tone hits the room before any sentence forms.` : mercFaster ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then attempts the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium${mercExpLag === "delayed" ? " — which often means the output is partial, edited, or arrives later than the understanding" : ""}.`,
       blocked: p.chartRuler
-        ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the output before it lands, so the full version is held back until it passes that gate.`
-        : `What gets blocked is the part of the response that has not finished forming yet — the system will not release it half-formed.`,
-      late: `What shows up late is ${slowest}'s version of the answer. That is the "I should have said..." or "I should have done..." that arrives minutes or hours after the moment.`,
-      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They hear or see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
+        ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the words BEFORE they exit, so the full version is held back until it clears that gate.`
+        : `What gets blocked is the part of the response that has not finished forming — the system will not release it half-formed.`,
+      late: `What shows up late is ${slowest}'s version. That is the "I should have said..." or the body finally registering what happened — minutes or hours after the moment.`,
+      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
     };
 
     // HUMAN TRANSLATION
