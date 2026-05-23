@@ -1664,7 +1664,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       // SURGICAL OVERRIDE: Libra Rising + 1st House Sun = "Nice for a Reason" / polite buffer copy.
       if (ascSign === "Libra" && sunHouse === 1) {
         const venusClause = isVenusSag2H
-          ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to clear the room.`
+          ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to create distance fast.`
           : ` Underneath, ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} is the engine: it needs ${drive}.`;
         risingLine =
           `${chart.name} uses Libra manners as a boundary system, not as a personality summary. ` +
@@ -1696,7 +1696,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const tightSun = sunAspects[0];
     // 1st-house Sun overlay: the pressure is to Exist Out Loud (concrete behavior, not "self-advocacy").
     const firstHouseOverlay = sunHouse === 1
-      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair", a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
+      ? ` Because the Sun sits in the 1st house, ${chart.name} can feel like even having a preference has to be justified. The work is not self-advocacy in the abstract; it is naming a want before editing it into something more acceptable.`
       : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
@@ -1712,7 +1712,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
         `${chart.name} isn't being difficult or distant, the nervous system is protecting ${goal} from getting exposed too fast.` +
         firstHouseOverlay + ` ` +
-        `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
+        `Support that works: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
       sunLine =
         `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
