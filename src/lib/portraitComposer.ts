@@ -1082,9 +1082,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mutualReception) {
       narrative +=
         `${mutualReception.a} and ${mutualReception.b} are in mutual reception (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
-        `and ${mutualReception.b} sits in ${mutualReception.bSign}). Each one is sitting in the other's sign, so authority ` +
-        `passes back and forth between them. In real life this looks like ${name} switching between two different operating ` +
-        `modes depending on which situation is in front of them, with neither mode fully overriding the other.`;
+        `and ${mutualReception.b} sits in ${mutualReception.bSign}). This creates a loop with no final authority — ` +
+        `decisions involving these two do not land cleanly, they oscillate. In daily life, ${name} can swing between the ` +
+        `two modes depending on which one got activated first, with neither fully overriding the other.`;
     } else if (loop) {
       narrative +=
         `There is no single final boss. ${loop.join(", ")} all point at each other in a loop, so authority circulates ` +
