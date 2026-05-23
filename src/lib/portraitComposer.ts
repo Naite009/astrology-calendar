@@ -187,27 +187,37 @@ const MOON12_MISREAD =
 export interface ComposedPortrait {
   oneSentence: string;
   systemMechanism: {
-    driver: { label: string; detail: string };       // what runs the system
-    translator: { label: string; detail: string };   // how it gets expressed
-    trigger: { label: string; detail: string };      // what breaks it
-    reaction: string;                                 // what the system does
-    synthesis: string;                                // the one-paragraph "working system" sentence
+    driver: { label: string; detail: string };
+    translator: { label: string; detail: string };
+    trigger: { label: string; detail: string; derivation: string };
+    reaction: string;
+    synthesis: string;
   };
   bridge?: {
-    // Plain-language paragraph connecting 2+ placements to a real behavior.
     paragraph: string;
-    // The placements it linked, for transparency.
     placements: string[];
   };
-  stageAsk: {
-    title: string;
-    body: string;
-  };
+  stageAsk: { title: string; body: string };
   misreads: Array<{ looksLike: string; actuallyIs: string }>;
   whatHelps: string[];
   chartStory: string;
-  themesPicked: string[]; // for debugging / display
+  // NEW: Dispositor chain walked from chart ruler to its final boss.
+  chainOfCommand?: {
+    steps: Array<{ planet: string; sign: string; house: number | null; reason: string }>;
+    finalDispositor?: { planet: string; sign: string; house: number | null };
+    loop?: string[];                  // names of planets in the cycle
+    mutualReception?: { a: string; b: string; aSign: string; bSign: string };
+    narrative: string;                // full plain-language explanation
+  };
+  themesPicked: string[];
 }
+
+// Traditional rulerships (matches childPortrait.ts).
+const RULER_OF: Record<string, string> = {
+  Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
+  Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
+  Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Saturn", Pisces: "Jupiter",
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function ord(n: number): string {
